@@ -22,14 +22,17 @@
 
 struct matrix_material
 {
-  gsl_matrix *corr ;  /* The correlation matrix */
-  gsl_matrix *cov ;   /* The covariance matrix */
+  gsl_matrix *corr;             /* The correlation matrix */
+  gsl_matrix *cov;              /* The covariance matrix */
 
   /* Moment matrices */
-  const gsl_matrix *n ;           /* MOMENT 0 */
-  const gsl_matrix *mean_matrix;  /* MOMENT 1 */
-  const gsl_matrix *var_matrix;   /* MOMENT 2 */
+  gsl_matrix *n;                /* MOMENT 0 */
+  gsl_matrix *mean_matrix;      /* MOMENT 1 */
+  gsl_matrix *var_matrix;       /* MOMENT 2 */
 };
+
+#define MATRIX_MATERIAL_INIT { .corr = NULL }
+void matrix_material_uninit (struct matrix_material *);
 
 struct dictionary;
 struct variable;

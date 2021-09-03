@@ -129,7 +129,7 @@ struct covariance
    be identical.  If missing values are involved, then element (i,j)
    is the moment of the i th variable, when paired with the j th variable.
  */
-const gsl_matrix *
+gsl_matrix *
 covariance_moments (const struct covariance *cov, int m)
 {
   return cov->moments[m];

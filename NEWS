@@ -8,6 +8,8 @@ Changes from 1.4.1 to 1.5.3:
 
  * The DEFINE command is now supported.
 
+ * The MATRIX DATA command is now fully implemented.
+
  * An error in the displayed signficance of oneway anova
    contrasts tests has been corrected.
 

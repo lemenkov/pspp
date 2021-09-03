@@ -178,6 +178,7 @@ Free Documentation License".
 * Data Selection::              Select certain cases for analysis.
 * Conditionals and Looping::    Doing things many times or not at all.
 * Statistics::                  Basic statistical procedures.
+* Matrices::                    Matrix operations and transformations.
 * Utilities::                   Other commands.
 
 * Invoking pspp-convert::       Utility for converting among file formats.
@@ -208,6 +209,7 @@ Free Documentation License".
 @include data-selection.texi
 @include flow-control.texi
 @include statistics.texi
+@include matrices.texi
 @include utilities.texi
 
 @include pspp-convert.texi

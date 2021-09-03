@@ -1536,10 +1536,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           id->ai_cov = NULL;
           gsl_matrix_free (id->ai_cor);
           id->ai_cor = NULL;
-	  gsl_matrix_free (id->mm.corr);
-	  id->mm.corr = NULL;
-	  gsl_matrix_free (id->mm.cov);
-	  id->mm.cov = NULL;
+
+          matrix_material_uninit (&id->mm);
 	}
 
       idata_free (id);

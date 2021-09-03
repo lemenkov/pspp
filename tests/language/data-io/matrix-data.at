@@ -16,56 +16,48 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([MATRIX DATA])
 
-AT_SETUP([Matrix data (lower file)])
-
-AT_DATA([matrix-data.pspp], [dnl
-matrix data
-    variables = rowtype_
-    var01 TO var08
-    /format = lower diagonal
-    /file = 'matrix.dat'
-    .
-
-list.
+dnl Keep this test in sync with Example 1 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - LOWER DIAGONAL with ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ var01 TO var08
+    /FILE='matrix-data.txt'.
+FORMATS var01 TO var08(F5.2).
+LIST.
+])
+AT_DATA([matrix-data.txt], [dnl
+MEAN  24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+SD     5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+N       92    92    92    92    92    92    92    92
+'CORR'  1.00
+CORR   .18  1.00
+CORR  -.22  -.17  1.00
+"CORR"   .36   .31  -.14  1.00
+COR   .27   .16  -.12   .22  1.00
+CORR   .33   .15  -.17   .24   .21  1.00
+CORR   .50   .29  -.20   .32   .12   .38  1.00
+CORR   .17   .29  -.05   .20   .27   .20   .04  1.00
 ])
 
-AT_DATA([matrix.dat], [dnl
-mean  24.3  5.4  69.7  20.1  13.4  2.7  27.9  3.7
-sd    5.7   1.5  23.5  5.8   2.8   4.5  5.4   1.5
-n     92    92   92    92    92    92   92    92
-corr 1.00
-corr .18  1.00
-corr -.22  -.17  1.00
-corr .36  .31  -.14  1.00
-corr .27  .16  -.12  .22  1.00
-corr .33  .15  -.17  .24  .21  1.00
-corr .50  .29  -.20  .32  .12  .38  1.00
-corr .17  .29  -.05  .20  .27  .20  .04  1.00
-])
-
-
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
-mean,,24.3000,5.4000,69.7000,20.1000,13.4000,2.7000,27.9000,3.7000
-STDDEV,,5.7000,1.5000,23.5000,5.8000,2.8000,4.5000,5.4000,1.5000
-n,,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000
-corr,var01,1.0000,.1800,-.2200,.3600,.2700,.3300,.5000,.1700
-corr,var02,.1800,1.0000,-.1700,.3100,.1600,.1500,.2900,.2900
-corr,var03,-.2200,-.1700,1.0000,-.1400,-.1200,-.1700,-.2000,-.0500
-corr,var04,.3600,.3100,-.1400,1.0000,.2200,.2400,.3200,.2000
-corr,var05,.2700,.1600,-.1200,.2200,1.0000,.2100,.1200,.2700
-corr,var06,.3300,.1500,-.1700,.2400,.2100,1.0000,.3800,.2000
-corr,var07,.5000,.2900,-.2000,.3200,.1200,.3800,1.0000,.0400
-corr,var08,.1700,.2900,-.0500,.2000,.2700,.2000,.0400,1.0000
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+CORR,var01,1.00,.18,-.22,.36,.27,.33,.50,.17
+CORR,var02,.18,1.00,-.17,.31,.16,.15,.29,.29
+CORR,var03,-.22,-.17,1.00,-.14,-.12,-.17,-.20,-.05
+CORR,var04,.36,.31,-.14,1.00,.22,.24,.32,.20
+CORR,var05,.27,.16,-.12,.22,1.00,.21,.12,.27
+CORR,var06,.33,.15,-.17,.24,.21,1.00,.38,.20
+CORR,var07,.50,.29,-.20,.32,.12,.38,1.00,.04
+CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
 ])
 AT_CLEANUP
 
-
-
-AT_SETUP([Matrix data (upper)])
-
-AT_DATA([matrix-data.pspp], [dnl
+AT_SETUP([MATRIX DATA - UPPER DIAGONAL with ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_  var01 var02 var03 var04
     /format = upper diagonal.
@@ -73,7 +65,7 @@ matrix data
 begin data
 mean        34 35 36 37
 sd          22 11 55 66
-n_vector    100 101 102 103
+n_ve    100 101 102 103
 corr        1 9 8 7
 corr        1 6 5
 corr        1 4
@@ -83,24 +75,22 @@ end data.
 list.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
-mean,,34.0000,35.0000,36.0000,37.0000
+MEAN,,34.0000,35.0000,36.0000,37.0000
 STDDEV,,22.0000,11.0000,55.0000,66.0000
 N,,100.0000,101.0000,102.0000,103.0000
-corr,var01,1.0000,9.0000,8.0000,7.0000
-corr,var02,9.0000,1.0000,6.0000,5.0000
-corr,var03,8.0000,6.0000,1.0000,4.0000
-corr,var04,7.0000,5.0000,4.0000,1.0000
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var02,9.0000,1.0000,6.0000,5.0000
+CORR,var03,8.0000,6.0000,1.0000,4.0000
+CORR,var04,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
-AT_SETUP([Matrix data (full)])
-
+AT_SETUP([MATRIX DATA - FULL with ROWTYPE_])
 dnl Just for fun, this one is in a different case.
-AT_DATA([matrix-data.pspp], [dnl
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = ROWTYPE_  var01 var02 var03 var04
     /format = full diagonal.
@@ -118,8 +108,7 @@ end data.
 list.
 ])
 
-
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
 MEAN,,34.0000,35.0000,36.0000,37.0000
@@ -130,13 +119,11 @@ CORR,var02,9.0000,1.0000,6.0000,5.0000
 CORR,var03,8.0000,6.0000,1.0000,4.0000
 CORR,var04,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
 
-AT_SETUP([Matrix data (upper nodiagonal)])
-
-AT_DATA([matrix-data.pspp], [dnl
+AT_SETUP([MATRIX DATA - UPPER NODIAGONAL with ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_  var01 var02 var03 var04
     /format = upper nodiagonal.
@@ -153,27 +140,63 @@ end data.
 list.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
-mean,,34.0000,35.0000,36.0000,37.0000
+MEAN,,34.0000,35.0000,36.0000,37.0000
 STDDEV,,22.0000,11.0000,55.0000,66.0000
-n,,100.0000,101.0000,102.0000,103.0000
-corr,var01,1.0000,9.0000,8.0000,7.0000
-corr,var02,9.0000,1.0000,6.0000,5.0000
-corr,var03,8.0000,6.0000,1.0000,4.0000
-corr,var04,7.0000,5.0000,4.0000,1.0000
+N,,100.0000,101.0000,102.0000,103.0000
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var02,9.0000,1.0000,6.0000,5.0000
+CORR,var03,8.0000,6.0000,1.0000,4.0000
+CORR,var04,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
+dnl Keep this test in sync with Example 2 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - UPPER NODIAGONAL with ROWTYPE_ - 2])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ var01 TO var08
+    /FORMAT=UPPER NODIAGONAL.
+BEGIN DATA.
+MEAN  24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+SD     5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+N       92    92    92    92    92    92    92    92
+CORR         .17   .50  -.33   .27   .36  -.22   .18
+CORR               .29   .29  -.20   .32   .12   .38
+CORR                     .05   .20  -.15   .16   .21
+CORR                           .20   .32  -.17   .12
+CORR                                 .27   .12  -.24
+CORR                                      -.20  -.38
+CORR                                             .04
+END DATA.
+FORMATS var01 TO var08(F6.2).
+LIST.
+])
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+CORR,var01,1.00,.17,.50,-.33,.27,.36,-.22,.18
+CORR,var02,.17,1.00,.29,.29,-.20,.32,.12,.38
+CORR,var03,.50,.29,1.00,.05,.20,-.15,.16,.21
+CORR,var04,-.33,.29,.05,1.00,.20,.32,-.17,.12
+CORR,var05,.27,-.20,.20,.20,1.00,.27,.12,-.24
+CORR,var06,.36,.32,-.15,.32,.27,1.00,-.20,-.38
+CORR,var07,-.22,.12,.16,-.17,.12,-.20,1.00,.04
+CORR,var08,.18,.38,.21,.12,-.24,-.38,.04,1.00
+])
+AT_CLEANUP
 
-AT_SETUP([Matrix data (lower nodiagonal)])
-
-AT_DATA([matrix-data.pspp], [dnl
+AT_SETUP([MATRIX DATA - LOWER NODIAGONAL with ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_  var01 var02 var03 var04
-    /format = lower nodiagonal.
+    /format = lower nodiagonal
+    /cells = 2.
 
 begin data
 mean 34 35 36 37
@@ -187,25 +210,23 @@ end data.
 list.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+matrix-data.sps:4: warning: MATRIX DATA: CELLS is ignored when VARIABLES includes ROWTYPE_
+
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
-mean,,34.0000,35.0000,36.0000,37.0000
+MEAN,,34.0000,35.0000,36.0000,37.0000
 STDDEV,,22.0000,11.0000,55.0000,66.0000
-n,,100.0000,101.0000,102.0000,103.0000
-corr,var01,1.0000,9.0000,8.0000,7.0000
-corr,var02,9.0000,1.0000,6.0000,5.0000
-corr,var03,8.0000,6.0000,1.0000,4.0000
-corr,var04,7.0000,5.0000,4.0000,1.0000
+N,,100.0000,101.0000,102.0000,103.0000
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var02,9.0000,1.0000,6.0000,5.0000
+CORR,var03,8.0000,6.0000,1.0000,4.0000
+CORR,var04,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
-
-
-AT_SETUP([Matrix data split data])
-
-AT_DATA([matrix-data.pspp], [dnl
+AT_SETUP([MATRIX DATA - split data])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = s1 s2 rowtype_  var01 var02 var03
     /split=s1 s2.
@@ -230,8 +251,7 @@ display dictionary.
 list.
 ])
 
-
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
 s1,1,Scale,Input,8,Right,F4.0,F4.0
@@ -242,62 +262,229 @@ var01,5,Scale,Input,8,Right,F10.4,F10.4
 var02,6,Scale,Input,8,Right,F10.4,F10.4
 var03,7,Scale,Input,8,Right,F10.4,F10.4
 
+Table: Split Values
+Variable,Value
+s1,8
+s2,0
+
 Table: Data List
 s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
-8,0,mean,,21.4000,5.0000,72.9000
+8,0,MEAN,,21.4000,5.0000,72.9000
 8,0,STDDEV,,6.5000,1.6000,22.8000
-8,0,n,,106.0000,106.0000,106.0000
-8,0,corr,var01,1.0000,.4100,-.1600
-8,0,corr,var02,.4100,1.0000,-.2200
-8,0,corr,var03,-.1600,-.2200,1.0000
-8,1,mean,,11.4000,1.0000,52.9000
+8,0,N,,106.0000,106.0000,106.0000
+8,0,CORR,var01,1.0000,.4100,-.1600
+8,0,CORR,var02,.4100,1.0000,-.2200
+8,0,CORR,var03,-.1600,-.2200,1.0000
+
+Table: Split Values
+Variable,Value
+s1,8
+s2,1
+
+Table: Data List
+s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
+8,1,MEAN,,11.4000,1.0000,52.9000
 8,1,STDDEV,,9.5000,8.6000,12.8000
-8,1,n,,10.0000,11.0000,12.0000
-8,1,corr,var01,1.0000,.5100,.3600
-8,1,corr,var02,.5100,1.0000,-.4100
-8,1,corr,var03,.3600,-.4100,1.0000
+8,1,N,,10.0000,11.0000,12.0000
+8,1,CORR,var01,1.0000,.5100,.3600
+8,1,CORR,var02,.5100,1.0000,-.4100
+8,1,CORR,var03,.3600,-.4100,1.0000
 ])
 
 AT_CLEANUP
 
+dnl Keep this test in sync with Example 4 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - split data - 2])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=s1 ROWTYPE_  var01 TO var04
+    /SPLIT=s1
+    /FORMAT=FULL.
+BEGIN DATA.
+0 MEAN 34 35 36 37
+0 SD   22 11 55 66
+0 N    99 98 99 92
+0 CORR  1 .9 .8 .7
+0 CORR .9  1 .6 .5
+0 CORR .8 .6  1 .4
+0 CORR .7 .5 .4  1
+1 MEAN 44 45 34 39
+1 SD   23 15 51 46
+1 N    98 34 87 23
+1 CORR  1 .2 .3 .4
+1 CORR .2  1 .5 .6
+1 CORR .3 .5  1 .7
+1 CORR .4 .6 .7  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+LIST.
+])
 
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+Table: Split Values
+Variable,Value
+s1,0
 
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+0,MEAN,,34.0,35.0,36.0,37.0
+0,STDDEV,,22.0,11.0,55.0,66.0
+0,N,,99.0,98.0,99.0,92.0
+0,CORR,var01,1.0,.9,.8,.7
+0,CORR,var02,.9,1.0,.6,.5
+0,CORR,var03,.8,.6,1.0,.4
+0,CORR,var04,.7,.5,.4,1.0
 
-AT_SETUP([Matrix data duplicate variable])
+Table: Split Values
+Variable,Value
+s1,1
 
-dnl Negative test to check for sane behaviour in the face of bad syntax
-AT_DATA([matrix-data.pspp], [dnl
-set decimal = dot .
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+1,MEAN,,44.0,45.0,34.0,39.0
+1,STDDEV,,23.0,15.0,51.0,46.0
+1,N,,98.0,34.0,87.0,23.0
+1,CORR,var01,1.0,.2,.3,.4
+1,CORR,var02,.2,1.0,.5,.6
+1,CORR,var03,.3,.5,1.0,.7
+1,CORR,var04,.4,.6,.7,1.0
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 5 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - factor variables])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ f1 var01 TO var04
+    /FACTOR=f1.
+BEGIN DATA.
+MEAN 0 34 35 36 37
+SD   0 22 11 55 66
+N    0 99 98 99 92
+MEAN 1 44 45 34 39
+SD   1 23 15 51 46
+N    1 98 34 87 23
+CORR .  1
+CORR . .9  1
+CORR . .8 .6  1
+CORR . .7 .5 .4  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+Table: Data List
+ROWTYPE_,f1,VARNAME_,var01,var02,var03,var04
+MEAN,0,,34.0,35.0,36.0,37.0
+STDDEV,0,,22.0,11.0,55.0,66.0
+N,0,,99.0,98.0,99.0,92.0
+MEAN,1,,44.0,45.0,34.0,39.0
+STDDEV,1,,23.0,15.0,51.0,46.0
+N,1,,98.0,34.0,87.0,23.0
+CORR,.,var01,1.0,.9,.8,.7
+CORR,.,var02,.9,1.0,.6,.5
+CORR,.,var03,.8,.6,1.0,.4
+CORR,.,var04,.7,.5,.4,1.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX DATA - bad ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
-    variables = s1 s1 rowtype_  var01 var02 var03
-    /split=s1.
+    variables = rowtype_  var01 var02 var03 var04
+    /format = upper diagonal.
 
 begin data
-0   mean     21.4  5.0  72.9
-0   sd       6.5   1.6  22.8
-0   n        106   106  106
-0   corr     1
-0   corr    .41  1
-0   corr    -.16  -.22  1
-end data .
+cork        1 9 8 7
+corr        1 6 5
+corr        1 4
+corr        1
+end data.
 
 list.
 ])
 
-
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
-matrix-data.pspp:3: error: MATRIX DATA: Variable s1 appears twice in variable list.
-
-matrix-data.pspp:6: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
+"matrix-data.sps:6.1-6.4: error: Unknown row type ""cork""."
 ])
-
 AT_CLEANUP
 
+AT_SETUP([MATRIX DATA - unexpected ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+matrix data
+    variables = rowtype_ f1 var01 var02 var03 var04
+    /content = corr (sd)
+    /factor = f1
+    /format = upper diagonal.
 
+begin data
+corr . 1 9 8 7
+corr . 1 6 5
+corr . 1 4
+corr . 1
+sd   . 1 2 3 4
 
-AT_SETUP([Matrix data - long variable names])
+corr 0 1 9 8 7
+corr 0 1 6 5
+corr 0 1 4
+corr 0 1
+sd   0 1 2 3 4
+end data.
 
-AT_DATA([matrix-data.pspp], [dnl
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+matrix-data.sps:12: warning: Data contains pooled row type STDDEV not included in CONTENTS.
+
+matrix-data.sps:14: warning: Data contains with-factors row type CORR not included in CONTENTS.
+
+Table: Data List
+ROWTYPE_,f1,VARNAME_,var01,var02,var03,var04
+CORR,.,var01,1.0000,9.0000,8.0000,7.0000
+CORR,.,var02,9.0000,1.0000,6.0000,5.0000
+CORR,.,var03,8.0000,6.0000,1.0000,4.0000
+CORR,.,var04,7.0000,5.0000,4.0000,1.0000
+STDDEV,.,,1.0000,2.0000,3.0000,4.0000
+CORR,0,var01,1.0000,9.0000,8.0000,7.0000
+CORR,0,var02,9.0000,1.0000,6.0000,5.0000
+CORR,0,var03,8.0000,6.0000,1.0000,4.0000
+CORR,0,var04,7.0000,5.0000,4.0000,1.0000
+STDDEV,0,,1.0000,2.0000,3.0000,4.0000
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX DATA - bad number])
+AT_DATA([matrix-data.sps], [dnl
+matrix data
+    variables = rowtype_  var01 var02 var03 var04
+    /format = upper diagonal.
+
+begin data
+corr        1 9 8 7
+corr        1 x 5
+corr        1 4
+corr        1
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
+matrix-data.sps:7.15: error: Field contents are not numeric.
+
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var02,9.0000,1.0000,.    ,5.0000
+CORR,var03,8.0000,.    ,1.0000,4.0000
+CORR,var04,7.0000,5.0000,4.0000,1.0000
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX DATA - long variable names])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_  var01 var_two variable_number_three variableFour
     /format = upper diagonal.
@@ -315,29 +502,25 @@ end data.
 list.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var_two,variable_number_three,variableFour
-mean,,34.0000,35.0000,36.0000,37.0000
+MEAN,,34.0000,35.0000,36.0000,37.0000
 STDDEV,,22.0000,11.0000,55.0000,66.0000
 N,,100.0000,101.0000,102.0000,103.0000
-corr,var01,1.0000,9.0000,8.0000,7.0000
-corr,var_two,9.0000,1.0000,6.0000,5.0000
-corr,variable_number_three,8.0000,6.0000,1.0000,4.0000
-corr,variableFour,7.0000,5.0000,4.0000,1.0000
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var_two,9.0000,1.0000,6.0000,5.0000
+CORR,variable_number_three,8.0000,6.0000,1.0000,4.0000
+CORR,variableFour,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
-
-
-AT_SETUP([Matrix reader - read integrity])
-
+AT_SETUP([MATRIX DATA - read integrity])
 dnl Check that matrices presented are read correctly.
 dnl The example below is an unlikely one since all
 dnl covariance/correlation matrices must be symmetrical
 dnl but it serves a purpose for this test.
-AT_DATA([matrix-reader.pspp], [dnl
+AT_DATA([matrix-reader.sps], [dnl
 matrix data
     variables = rowtype_  var01 to var9
     /format = full.
@@ -355,7 +538,9 @@ corr 71 72 73 74 75 76 77 78 79
 corr 81 82 83 84 85 86 87 88 89
 corr 91 92 93 94 95 96 97 98 99
 end data.
-
+DEBUG MATRIX READ.
+FORMATS var01 to var09(F3.0).
+list.
 factor  /matrix = in (corr = *)
 	/analysis var02 var04 var06
 	/method = correlation
@@ -363,7 +548,36 @@ factor  /matrix = in (corr = *)
 	/print correlation.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-reader.pspp], [0], [dnl
+AT_CHECK([pspp --testing-mode -O format=csv matrix-reader.sps], [0], [dnl
+Table: Debug Matrix Reader
+,,,var01,var02,var03,var04,var05,var06,var07,var08,var09
+1,Correlation,var01,11.000,12.000,13.000,14.000,15.000,16.000,17.000,18.000,19.000
+,,var02,21.000,22.000,23.000,24.000,25.000,26.000,27.000,28.000,29.000
+,,var03,31.000,32.000,33.000,34.000,35.000,36.000,37.000,38.000,39.000
+,,var04,41.000,42.000,43.000,44.000,45.000,46.000,47.000,48.000,49.000
+,,var05,51.000,52.000,53.000,54.000,55.000,56.000,57.000,58.000,59.000
+,,var06,61.000,62.000,63.000,64.000,65.000,66.000,67.000,68.000,69.000
+,,var07,71.000,72.000,73.000,74.000,75.000,76.000,77.000,78.000,79.000
+,,var08,81.000,82.000,83.000,84.000,85.000,86.000,87.000,88.000,89.000
+,,var09,91.000,92.000,93.000,94.000,95.000,96.000,97.000,98.000,99.000
+,N,Value,1.000,2.000,3.000,4.000,5.000,6.000,7.000,8.000,9.000
+,Mean,Value,.000,.000,.000,.000,.000,.000,.000,.000,.000
+,Standard Deviation,Value,100.000,200.000,300.000,400.000,500.000,600.000,700.000,800.000,900.000
+
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08,var09
+N,,1,2,3,4,5,6,7,8,9
+STDDEV,,100,200,300,400,500,600,700,800,900
+CORR,var01,11,12,13,14,15,16,17,18,19
+CORR,var02,21,22,23,24,25,26,27,28,29
+CORR,var03,31,32,33,34,35,36,37,38,39
+CORR,var04,41,42,43,44,45,46,47,48,49
+CORR,var05,51,52,53,54,55,56,57,58,59
+CORR,var06,61,62,63,64,65,66,67,68,69
+CORR,var07,71,72,73,74,75,76,77,78,79
+CORR,var08,81,82,83,84,85,86,87,88,89
+CORR,var09,91,92,93,94,95,96,97,98,99
+
 Table: Correlation Matrix
 ,,var02,var04,var06
 Correlation,var02,22.000,24.000,26.000
@@ -377,15 +591,12 @@ var02,6.73,-2.23
 var04,6.95,2.15
 var06,9.22,.01
 ])
-
 AT_CLEANUP
 
-
-AT_SETUP([Matrix data - too many rows])
-
+AT_SETUP([MATRIX DATA - too many rows])
 dnl Test for a crash which occurred when the matrix had more rows declared
 dnl than variables to hold them.
-AT_DATA([matrix-data.pspp], [dnl
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_
     var01 var02 var03 var04
@@ -404,27 +615,85 @@ begin data
     corr    1.00  .70
     corr    1.00
 end data .
-
-execute.
+FORMATS var01 TO var04 (F6.2).
+LIST.
 ])
 
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
+matrix-data.sps:10.29-10.31: error: Extraneous data expecting end of line.
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
-matrix-data.pspp:13: error: MATRIX DATA: There are 4 variable declared but the data has at least 5 matrix rows.
+matrix-data.sps:11.24-11.31: error: Extraneous data expecting end of line.
 
-matrix-data.pspp:20: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
+matrix-data.sps:12.19-12.32: error: Extraneous data expecting end of line.
+
+matrix-data.sps:18: error: Matrix CORR had 9 rows but 4 rows were expected.
+
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+MEAN,,21.40,5.00,72.90,17.40
+STDDEV,,6.50,1.60,22.80,5.70
+N,,106.00,106.00,106.00,106.00
+CORR,var01,1.00,.32,.48,.28
+CORR,var02,.32,1.00,.72,.54
+CORR,var03,.48,.72,1.00,.50
+CORR,var04,.28,.54,.50,1.00
 ])
-
-
 AT_CLEANUP
 
+AT_SETUP([MATRIX DATA - too few rows])
+AT_DATA([matrix-data.sps], [dnl
+matrix data
+    variables = rowtype_ s1 var01 var02 var03 var04
+    /split s1
+    /format = upper diagonal
+    /file='matrix-data.txt'.
+FORMATS var01 TO var04 (F6.2).
+LIST.
+])
+AT_DATA([matrix-data.txt], [dnl
+mean 1    21.4  5.0  72.9  17.4
+sd   1    6.5  1.6  22.8  5.7
+n    1   106  106  106  106
+corr 1   1.00  .32  .48  .28
+corr 2   1.00  .32  .48  .28
+corr 2        2.00  .72  .54
+])
 
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
+matrix-data.txt:5: error: Matrix CORR had 1 rows but 4 rows were expected.
+ 
+matrix-data.txt:6: error: Matrix CORR had 2 rows but 4 rows were expected.
 
+Table: Split Values
+Variable,Value
+s1,1
 
-AT_SETUP([Matrix data (badly formed)])
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+1,MEAN,,21.40,5.00,72.90,17.40
+1,STDDEV,,6.50,1.60,22.80,5.70
+1,N,,106.00,106.00,106.00,106.00
+1,CORR,var01,1.00,.32,.48,.28
+1,CORR,var02,.32,1.00,.  ,.  @&t@
+1,CORR,var03,.48,.  ,1.00,.  @&t@
+1,CORR,var04,.28,.  ,.  ,1.00
 
-AT_DATA([data.pspp], [dnl
-data list list /ROWTYPE_ (a8) VARNAME_(a4) v1 v2 v3 v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx.
+Table: Split Values
+Variable,Value
+s1,2
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+2,CORR,var01,1.00,.32,.48,.28
+2,CORR,var02,.32,2.00,.72,.54
+2,CORR,var03,.48,.72,1.00,.  @&t@
+2,CORR,var04,.28,.54,.  ,1.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX DATA - badly formed])
+AT_DATA([data.sps], [dnl
+data list list NOTABLE /ROWTYPE_ (a8) VARNAME_(a4) v1 v2 v3 v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx.
 begin data
 mean ""                          1 2 3 4
 sd   ""                          5 6 7 8
@@ -435,22 +704,26 @@ corr v3                          111 222 333 444
 corr v4                           4 3 21 1
 end data.
 
-list.
-
-factor matrix=in(corr = *)
-	.
+DEBUG MATRIX READ.
 ])
 
-AT_CHECK([pspp -O format=csv data.pspp], [1], [ignore])
+AT_CHECK([pspp --testing-mode -O format=csv data.sps], [0], [dnl
+data.sps:12: warning: DEBUG MATRIX READ: CORR matrix has 4 columns but 3 rows named variables to be analyzed (and 1 rows named unknown variables).
 
+Table: Debug Matrix Reader
+,,,v1,v2,v3,v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx
+1,Correlation,v1,11.000,22.000,33.000,44.000
+,,v2,55.000,66.000,77.000,88.000
+,,v3,111.000,222.000,333.000,444.000
+,,v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx,.   ,.   ,.   ,.   @&t@
+,N,Value,2.000,3.000,4.000,5.000
+,Mean,Value,1.000,2.000,3.000,4.000
+,Standard Deviation,Value,.000,.000,.000,.000
+])
 AT_CLEANUP
 
-
-
-
-AT_SETUP([Matrix data (N subcommand)])
-
-AT_DATA([matrix-data.pspp], [dnl
+AT_SETUP([MATRIX DATA - N subcommand])
+AT_DATA([matrix-data.sps], [dnl
 matrix data
     variables = rowtype_  var01 var02 var03 var04
     /n = 99
@@ -467,29 +740,65 @@ end data.
 list.
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
-"matrix-data.pspp:12: warning: MATRIX DATA: The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
+matrix-data.sps:8: error: N record is not allowed with N subcommand.  Ignoring N record.
 
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
 N,,99.0000,99.0000,99.0000,99.0000
-mean,,34.0000,35.0000,36.0000,37.0000
+MEAN,,34.0000,35.0000,36.0000,37.0000
 STDDEV,,22.0000,11.0000,55.0000,66.0000
-corr,var01,1.0000,9.0000,8.0000,7.0000
-corr,var02,9.0000,1.0000,6.0000,5.0000
-corr,var03,8.0000,6.0000,1.0000,4.0000
-corr,var04,7.0000,5.0000,4.0000,1.0000
+CORR,var01,1.0000,9.0000,8.0000,7.0000
+CORR,var02,9.0000,1.0000,6.0000,5.0000
+CORR,var03,8.0000,6.0000,1.0000,4.0000
+CORR,var04,7.0000,5.0000,4.0000,1.0000
 ])
-
 AT_CLEANUP
 
+dnl Keep this test in sync with Example 3 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - N subcommand - 2])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ var01 TO var08
+    /FORMAT=UPPER NODIAGONAL
+    /N 92.
+BEGIN DATA.
+MEAN  24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+SD     5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+CORR         .17   .50  -.33   .27   .36  -.22   .18
+CORR               .29   .29  -.20   .32   .12   .38
+CORR                     .05   .20  -.15   .16   .21
+CORR                           .20   .32  -.17   .12
+CORR                                 .27   .12  -.24
+CORR                                      -.20  -.38
+CORR                                             .04
+END DATA.
+FORMATS var01 TO var08(F6.2).
+LIST.
+])
 
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+CORR,var01,1.00,.17,.50,-.33,.27,.36,-.22,.18
+CORR,var02,.17,1.00,.29,.29,-.20,.32,.12,.38
+CORR,var03,.50,.29,1.00,.05,.20,-.15,.16,.21
+CORR,var04,-.33,.29,.05,1.00,.20,.32,-.17,.12
+CORR,var05,.27,-.20,.20,.20,1.00,.27,.12,-.24
+CORR,var06,.36,.32,-.15,.32,.27,1.00,-.20,-.38
+CORR,var07,-.22,.12,.16,-.17,.12,-.20,1.00,.04
+CORR,var08,.18,.38,.21,.12,-.24,-.38,.04,1.00
+])
+AT_CLEANUP
 
 dnl A "no-crash" test.  This was observed to cause problems.
 dnl See bug #58596
-AT_SETUP([Matrix data crash])
+AT_SETUP([MATRIX DATA - crash])
 
-AT_DATA([matrix-data.pspp], [dnl
+AT_DATA([matrix-data.sps], [dnl
 begin data
 corr 31
 
@@ -505,6 +814,396 @@ matrix data
 begin data
 ])
 
-AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [ignore])
+AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [ignore])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 6 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - LOWER DIAGONAL without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=var01 TO var08
+   /CONTENTS=MEAN SD N CORR.
+BEGIN DATA.
+24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+ 5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+  92    92    92    92    92    92    92    92
+1.00
+ .18  1.00
+-.22  -.17  1.00
+ .36   .31  -.14  1.00
+ .27   .16  -.12   .22  1.00
+ .33   .15  -.17   .24   .21  1.00
+ .50   .29  -.20   .32   .12   .38  1.00
+ .17   .29  -.05   .20   .27   .20   .04  1.00
+END DATA.
+FORMATS var01 TO var08(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+CORR,var01,1.00,.18,-.22,.36,.27,.33,.50,.17
+CORR,var02,.18,1.00,-.17,.31,.16,.15,.29,.29
+CORR,var03,-.22,-.17,1.00,-.14,-.12,-.17,-.20,-.05
+CORR,var04,.36,.31,-.14,1.00,.22,.24,.32,.20
+CORR,var05,.27,.16,-.12,.22,1.00,.21,.12,.27
+CORR,var06,.33,.15,-.17,.24,.21,1.00,.38,.20
+CORR,var07,.50,.29,-.20,.32,.12,.38,1.00,.04
+CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
+])
+AT_CLEANUP
 
+AT_SETUP([MATRIX DATA - extraneous data without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=var01 TO var08
+   /CONTENTS=MEAN SD N CORR.
+BEGIN DATA.
+24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+ 5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+  92    92    92    92    92    92    92    92
+1.00   .18
+ .18  1.00
+-.22  -.17  1.00
+ .36   .31  -.14  1.00
+ .27   .16  -.12   .22  1.00
+ .33   .15  -.17   .24   .21  1.00
+ .50   .29  -.20   .32   .12   .38  1.00
+ .17   .29  -.05   .20   .27   .20   .04  1.00
+END DATA.
+FORMATS var01 TO var08(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [1], [dnl
+matrix-data.sps:8.8-8.10: error: Extraneous data expecting end of line.
+
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+CORR,var01,1.00,.18,-.22,.36,.27,.33,.50,.17
+CORR,var02,.18,1.00,-.17,.31,.16,.15,.29,.29
+CORR,var03,-.22,-.17,1.00,-.14,-.12,-.17,-.20,-.05
+CORR,var04,.36,.31,-.14,1.00,.22,.24,.32,.20
+CORR,var05,.27,.16,-.12,.22,1.00,.21,.12,.27
+CORR,var06,.33,.15,-.17,.24,.21,1.00,.38,.20
+CORR,var07,.50,.29,-.20,.32,.12,.38,1.00,.04
+CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 7 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - Split variables with explicit values without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=s1 var01 TO var04
+    /SPLIT=s1
+    /FORMAT=FULL
+    /CONTENTS=MEAN SD N CORR.
+BEGIN DATA.
+0 34 35 36 37
+0 22 11 55 66
+0 99 98 99 92
+0  1 .9 .8 .7
+0 .9  1 .6 .5
+0 .8 .6  1 .4
+0 .7 .5 .4  1
+1 44 45 34 39
+1 23 15 51 46
+1 98 34 87 23
+1  1 .2 .3 .4
+1 .2  1 .5 .6
+1 .3 .5  1 .7
+1 .4 .6 .7  1
+END DATA.
+FORMATS var01 TO var04(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Split Values
+Variable,Value
+s1,0
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+0,MEAN,,34.00,35.00,36.00,37.00
+0,STDDEV,,22.00,11.00,55.00,66.00
+0,N,,99.00,98.00,99.00,92.00
+0,CORR,var01,1.00,.90,.80,.70
+0,CORR,var02,.90,1.00,.60,.50
+0,CORR,var03,.80,.60,1.00,.40
+0,CORR,var04,.70,.50,.40,1.00
+
+Table: Split Values
+Variable,Value
+s1,1
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+1,MEAN,,44.00,45.00,34.00,39.00
+1,STDDEV,,23.00,15.00,51.00,46.00
+1,N,,98.00,34.00,87.00,23.00
+1,CORR,var01,1.00,.20,.30,.40
+1,CORR,var02,.20,1.00,.50,.60
+1,CORR,var03,.30,.50,1.00,.70
+1,CORR,var04,.40,.60,.70,1.00
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 8 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - Split variable with sequential values without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=var01 TO var04
+    /SPLIT=s1
+    /FORMAT=FULL
+    /CONTENTS=MEAN SD N CORR.
+BEGIN DATA.
+34 35 36 37
+22 11 55 66
+99 98 99 92
+ 1 .9 .8 .7
+.9  1 .6 .5
+.8 .6  1 .4
+.7 .5 .4  1
+44 45 34 39
+23 15 51 46
+98 34 87 23
+ 1 .2 .3 .4
+.2  1 .5 .6
+.3 .5  1 .7
+.4 .6 .7  1
+END DATA.
+FORMATS var01 TO var04(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Split Values
+Variable,Value
+s1,1
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+1,MEAN,,34.00,35.00,36.00,37.00
+1,STDDEV,,22.00,11.00,55.00,66.00
+1,N,,99.00,98.00,99.00,92.00
+1,CORR,var01,1.00,.90,.80,.70
+1,CORR,var02,.90,1.00,.60,.50
+1,CORR,var03,.80,.60,1.00,.40
+1,CORR,var04,.70,.50,.40,1.00
+
+Table: Split Values
+Variable,Value
+s1,2
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+2,MEAN,,44.00,45.00,34.00,39.00
+2,STDDEV,,23.00,15.00,51.00,46.00
+2,N,,98.00,34.00,87.00,23.00
+2,CORR,var01,1.00,.20,.30,.40
+2,CORR,var02,.20,1.00,.50,.60
+2,CORR,var03,.30,.50,1.00,.70
+2,CORR,var04,.40,.60,.70,1.00
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 9 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - Factor variables grouping within-cell records by factor without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=f1 var01 TO var04
+    /FACTOR=f1
+    /CELLS=2
+    /CONTENTS=(MEAN SD N) CORR.
+BEGIN DATA.
+0 34 35 36 37
+0 22 11 55 66
+0 99 98 99 92
+1 44 45 34 39
+1 23 15 51 46
+1 98 34 87 23
+   1
+  .9  1
+  .8 .6  1
+  .7 .5 .4  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,f1,VARNAME_,var01,var02,var03,var04
+MEAN,0,,34.0,35.0,36.0,37.0
+STDDEV,0,,22.0,11.0,55.0,66.0
+N,0,,99.0,98.0,99.0,92.0
+MEAN,1,,44.0,45.0,34.0,39.0
+STDDEV,1,,23.0,15.0,51.0,46.0
+N,1,,98.0,34.0,87.0,23.0
+CORR,.,var01,1.0,.9,.8,.7
+CORR,.,var02,.9,1.0,.6,.5
+CORR,.,var03,.8,.6,1.0,.4
+CORR,.,var04,.7,.5,.4,1.0
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 10 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - Factor variables grouping within-cell records by row type without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=f1 var01 TO var04
+    /FACTOR=f1
+    /CELLS=2
+    /CONTENTS=(MEAN) (SD) (N) CORR.
+BEGIN DATA.
+0 34 35 36 37
+1 44 45 34 39
+0 22 11 55 66
+1 23 15 51 46
+0 99 98 99 92
+1 98 34 87 23
+   1
+  .9  1
+  .8 .6  1
+  .7 .5 .4  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,f1,VARNAME_,var01,var02,var03,var04
+MEAN,0,,34.0,35.0,36.0,37.0
+MEAN,1,,44.0,45.0,34.0,39.0
+STDDEV,0,,22.0,11.0,55.0,66.0
+STDDEV,1,,23.0,15.0,51.0,46.0
+N,0,,99.0,98.0,99.0,92.0
+N,1,,98.0,34.0,87.0,23.0
+CORR,.,var01,1.0,.9,.8,.7
+CORR,.,var02,.9,1.0,.6,.5
+CORR,.,var03,.8,.6,1.0,.4
+CORR,.,var04,.7,.5,.4,1.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX DATA - syntax errors])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA VARIABLES=var01 varname_.
+MATRIX DATA VARIABLES=v v v.
+MATRIX DATA VARIABLES=rowtype_ v1 v2 v3/SPLIT=rowtype_.
+MATRIX DATA VARIABLES=rowtype_ v1 v2 v3/FACTORS=rowtype_.
+MATRIX DATA VARIABLES=rowtype_ s1 v1 v2 v3/SPLIT=v1/FACTORS=v1.
+
+MATRIX DATA VARIABLES=v1 v2 v3/FORMAT=FULL NODIAGONAL.
+MATRIX DATA VARIABLES=v1 v2 v3/FACTORS=v1.
+MATRIX DATA VARIABLES=v1 v2 v3.
+BEGIN DATA.
+END DATA.
+MATRIX DATA VARIABLES=v1/FACTORS=v1.
+MATRIX DATA VARIABLES=v1 v2 v3 ROWTYPE_.
+MATRIX DATA VARIABLES=v1 v2 v3/CONTENTS=N/N=5.
+MATRIX DATA VARIABLES=v1/CONTENTS=XYZZY.
+MATRIX DATA VARIABLES=v1/CONTENTS=(.
+MATRIX DATA VARIABLES=v1/CONTENTS=(CORR.
+MATRIX DATA VARIABLES=v1/CONTENTS=).
+MATRIX DATA.
+MATRIX DATA VARIABLES=v*.
+MATRIX DATA VARIABLES=v/N=-1.
+MATRIX DATA VARIABLES=v/FORMAT=XYZZY.
+MATRIX DATA VARIABLES=v/FILE=123.
+MATRIX DATA VARIABLES=v/SPLIT=123.
+MATRIX DATA VARIABLES=v/CELLS=-1.
+MATRIX DATA VARIABLES=v/XYZZY.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [1], [dnl
+matrix-data.sps:1: error: MATRIX DATA: VARIABLES may not include VARNAME_.
+
+matrix-data.sps:2: error: MATRIX DATA: Variable v appears twice in variable list.
+
+matrix-data.sps:3: error: MATRIX DATA: ROWTYPE_ is not allowed on SPLIT or FACTORS.
+
+matrix-data.sps:4: error: MATRIX DATA: ROWTYPE_ is not allowed on SPLIT or FACTORS.
+
+matrix-data.sps:5: error: MATRIX DATA: v1 may not appear on both SPLIT and FACTORS.
+
+matrix-data.sps:7: error: MATRIX DATA: FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive.
+
+matrix-data.sps:8: error: MATRIX DATA: CELLS is required when factor variables are specified and VARIABLES does not include ROWTYPE_.
+
+matrix-data.sps:9: warning: MATRIX DATA: CONTENTS was not specified and VARIABLES does not include ROWTYPE_.  Assuming CONTENTS=CORR.
+
+matrix-data.sps:12: error: MATRIX DATA: CELLS is required when factor variables are specified and VARIABLES does not include ROWTYPE_.
+
+matrix-data.sps:13: error: MATRIX DATA: VARIABLES includes ROWTYPE_ but the continuous variables are not the last ones on VARIABLES.
+
+matrix-data.sps:14: error: MATRIX DATA: Cannot specify N on CONTENTS along with the N subcommand.
+
+matrix-data.sps:15.35-15.39: error: MATRIX DATA: Syntax error at `XYZZY': Row type keyword expected.
+
+matrix-data.sps:16.36: error: MATRIX DATA: Syntax error at end of command: Row type keyword expected.
+
+matrix-data.sps:17.40: error: MATRIX DATA: Syntax error at end of command: Row type keyword expected.
+
+matrix-data.sps:18.35: error: MATRIX DATA: Syntax error at `)': Row type keyword expected.
+
+matrix-data.sps:19.12: error: MATRIX DATA: Syntax error at end of command: expecting VARIABLES.
+
+matrix-data.sps:20.24: error: MATRIX DATA: Syntax error at `*': expecting `/'.
+
+matrix-data.sps:21.27-21.28: error: MATRIX DATA: Syntax error at `-1': Expected non-negative integer for N.
+
+matrix-data.sps:22.32-22.36: error: MATRIX DATA: Syntax error at `XYZZY'.
+
+matrix-data.sps:23.30-23.32: error: MATRIX DATA: Syntax error at `123': expecting a file name or handle name.
+
+matrix-data.sps:24.31-24.33: error: MATRIX DATA: Syntax error at `123': expecting variable name.
+
+matrix-data.sps:25.31-25.32: error: MATRIX DATA: Syntax error at `-1': Expected non-negative integer for CELLS.
+
+matrix-data.sps:26.25-26.29: error: MATRIX DATA: Syntax error at `XYZZY'.
+])
+AT_CLEANUP
+
+dnl I don't know what lunatic thought this was OK, but we strive to be
+dnl compatible.
+AT_SETUP([MATRIX DATA - plus and minus as delimiters])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ var01 TO var08.
+BEGIN DATA.
+MEAN+24.3+5.4+69.7+20.1+13.4+2.7+27.9+3.7
+SD +5.7+1.5+23.5+5.8+2.8+4.5+5.4+1.5
+N+92+92+92+92+92+92+92+92
+CORR+1.00
+CORR+.18+1.00
+CORR-.22e+0-.17+1.00
+CORR+.36d-0+.31-.14+1.00
+CORR+.27+.16-.12+.22+1.00
+CORR+.33+.15-.17+.24+.21+1.00
+CORR+.50+.29-.20+.32+.12+.38+1.00
+CORR+.17+.29-.05+.20+.27+.20+.04+1.00
+END DATA.
+FORMATS var01 TO var08(F5.2).
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+CORR,var01,1.00,.18,-.22,.36,.27,.33,.50,.17
+CORR,var02,.18,1.00,-.17,.31,.16,.15,.29,.29
+CORR,var03,-.22,-.17,1.00,-.14,-.12,-.17,-.20,-.05
+CORR,var04,.36,.31,-.14,1.00,.22,.24,.32,.20
+CORR,var05,.27,.16,-.12,.22,1.00,.21,.12,.27
+CORR,var06,.33,.15,-.17,.24,.21,1.00,.38,.20
+CORR,var07,.50,.29,-.20,.32,.12,.38,1.00,.04
+CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
+])
 AT_CLEANUP

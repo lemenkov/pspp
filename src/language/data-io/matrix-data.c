@@ -16,12 +16,17 @@
 
 #include <config.h>
 
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
+
 #include "data/case.h"
 #include "data/casereader.h"
 #include "data/casewriter.h"
+#include "data/data-in.h"
 #include "data/dataset.h"
 #include "data/dictionary.h"
 #include "data/format.h"
+#include "data/short-names.h"
 #include "data/transformations.h"
 #include "data/variable.h"
 #include "language/command.h"
@@ -32,493 +37,949 @@
 #include "language/data-io/placement-parser.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/variable-parser.h"
+#include "libpspp/assertion.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
-#include "libpspp/misc.h"
+#include "libpspp/str.h"
 
+#include "gl/c-ctype.h"
+#include "gl/minmax.h"
 #include "gl/xsize.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* DATA LIST transformation data. */
-struct data_list_trns
+#define ROWTYPES                                \
+    /* Matrix row types. */                     \
+    RT(CORR,     2)                             \
+    RT(COV,      2)                             \
+    RT(MAT,      2)                             \
+    RT(N_MATRIX, 2)                             \
+    RT(PROX,     2)                             \
+                                                \
+    /* Vector row types. */                     \
+    RT(COUNT,    1)                             \
+    RT(DFE,      1)                             \
+    RT(MEAN,     1)                             \
+    RT(MSE,      1)                             \
+    RT(STDDEV,   1)                             \
+    RT(N, 1)                                    \
+                                                \
+    /* Scalar row types. */                     \
+    RT(N_SCALAR, 0)
+
+enum rowtype
   {
-    struct data_parser *parser; /* Parser. */
-    struct dfm_reader *reader;  /* Data file reader. */
-    struct variable *end;	/* Variable specified on END subcommand. */
+#define RT(NAME, DIMS) C_##NAME,
+    ROWTYPES
+#undef RT
   };
 
-static trns_free_func data_list_trns_free;
-static trns_proc_func data_list_trns_proc;
-
-enum diagonal
+enum
   {
-    DIAGONAL,
-    NO_DIAGONAL
+#define RT(NAME, DIMS) +1
+    N_ROWTYPES = ROWTYPES
+#undef RT
+  };
+verify (N_ROWTYPES < 32);
+
+/* Returns the number of dimensions in the indexes for row type RT.  A matrix
+   has 2 dimensions, a vector has 1, a scalar has 0. */
+static int
+rowtype_dimensions (enum rowtype rt)
+{
+  static const int rowtype_dims[N_ROWTYPES] = {
+#define RT(NAME, DIMS) [C_##NAME] = DIMS,
+    ROWTYPES
+#undef RT
+  };
+  return rowtype_dims[rt];
+}
+
+static struct substring
+rowtype_name (enum rowtype rt)
+{
+  static const struct substring rowtype_names[N_ROWTYPES] = {
+#define RT(NAME, DIMS) [C_##NAME] = SS_LITERAL_INITIALIZER (#NAME),
+    ROWTYPES
+#undef RT
   };
 
-enum triangle
-  {
-    LOWER,
-    UPPER,
-    FULL
-  };
+  return rowtype_names[rt];
+}
 
-static const int ROWTYPE_WIDTH = 8;
+static bool
+rowtype_from_string (struct substring token, enum rowtype *rt)
+{
+  ss_trim (&token, ss_cstr (CC_SPACES));
+  for (size_t i = 0; i < N_ROWTYPES; i++)
+    if (lex_id_match (rowtype_name (i), token))
+      {
+        *rt = i;
+        return true;
+      }
 
+  if (lex_id_match (ss_cstr ("N_VECTOR"), token))
+    {
+      *rt = C_N;
+      return true;
+    }
+  else if (lex_id_match (ss_cstr ("SD"), token))
+    {
+      *rt = C_STDDEV;
+      return true;
+    }
+
+  return false;
+}
+
+static bool
+rowtype_parse (struct lexer *lexer, enum rowtype *rt)
+{
+  bool parsed = (lex_token (lexer) == T_ID
+                 && rowtype_from_string (lex_tokss (lexer), rt));
+  if (parsed)
+    lex_get (lexer);
+  return parsed;
+}
+
 struct matrix_format
-{
-  enum triangle triangle;
-  enum diagonal diagonal;
-  const struct variable *rowtype;
-  const struct variable *varname;
-  int n_continuous_vars;
-  struct variable **split_vars;
-  size_t n_split_vars;
-  long n;
-};
+  {
+    bool span;
+    enum triangle
+      {
+        LOWER,
+        UPPER,
+        FULL
+      }
+    triangle;
+    enum diagonal
+      {
+        DIAGONAL,
+        NO_DIAGONAL
+      }
+    diagonal;
 
-/*
-valid rowtype_ values:
-  CORR,
-  COV,
-  MAT,
+    bool input_rowtype;
+    struct variable **input_vars;
+    size_t n_input_vars;
 
+    /* How to read matrices with each possible number of dimensions (0=scalar,
+       1=vector, 2=matrix). */
+    struct matrix_sched
+      {
+        /* Number of rows and columns in the matrix: (1,1) for a scalar, (1,n) for
+           a vector, (n,n) for a matrix. */
+        int nr, nc;
 
-  MSE,
-  DFE,
-  MEAN,
-  STDDEV (or SD),
-  N_VECTOR (or N),
-  N_SCALAR,
-  N_MATRIX,
-  COUNT,
-  PROX.
-*/
+        /* Rows of data to read and the number of columns in each.  Because we
+           often read just a triangle and sometimes omit the diagonal, 'n_rp' can
+           be less than 'nr' and 'rp[i]->y' isn't always 'y'. */
+        struct row_sched
+          {
+            /* The y-value of the row inside the matrix. */
+            int y;
 
-/* Sets the value of OUTCASE which corresponds to VNAME
-   to the value STR.  VNAME must be of type string.
- */
+            /* first and last (exclusive) columns to read in this row. */
+            int x0, x1;
+          }
+          *rp;
+        size_t n_rp;
+      }
+    ms[3];
+
+    struct variable *rowtype;
+    struct variable *varname;
+    struct variable **cvars;
+    int n_cvars;
+    struct variable **svars;
+    size_t *svar_indexes;
+    size_t n_svars;
+    struct variable **fvars;
+    size_t *fvar_indexes;
+    size_t n_fvars;
+    int cells;
+    int n;
+
+    unsigned int pooled_rowtype_mask;
+    unsigned int factor_rowtype_mask;
+
+    struct content
+      {
+        bool open;
+        enum rowtype rowtype;
+        bool close;
+      }
+    *contents;
+    size_t n_contents;
+  };
+
 static void
-set_varname_column (struct ccase *outcase, const struct variable *vname,
-     const char *str)
+matrix_format_uninit (struct matrix_format *mf)
 {
-  int len = var_get_width (vname);
-  uint8_t *s = case_str_rw (outcase, vname);
-
-  strncpy (CHAR_CAST (char *, s), str, len);
+  free (mf->input_vars);
+  for (int i = 0; i < 3; i++)
+    free (mf->ms[i].rp);
+  free (mf->cvars);
+  free (mf->svars);
+  free (mf->svar_indexes);
+  free (mf->fvars);
+  free (mf->fvar_indexes);
+  free (mf->contents);
 }
 
 static void
-blank_varname_column (struct ccase *outcase, const struct variable *vname)
+set_string (struct ccase *outcase, const struct variable *var,
+            struct substring src)
 {
-  int len = var_get_width (vname);
-  uint8_t *s = case_str_rw (outcase, vname);
-
-  memset (s, ' ', len);
+  struct substring dst = case_ss (outcase, var);
+  for (size_t i = 0; i < dst.length; i++)
+    dst.string[i] = i < src.length ? src.string[i] : ' ';
 }
 
-static struct casereader *
-preprocess (struct casereader *casereader0, const struct dictionary *dict, void *aux)
+static void
+parse_msg (struct dfm_reader *reader, const struct substring *token,
+           char *text, enum msg_severity severity)
 {
-  struct matrix_format *mformat = aux;
-  const struct caseproto *proto = casereader_get_proto (casereader0);
-  struct casewriter *writer = autopaging_writer_create (proto);
-  struct ccase *prev_case = NULL;
-  double **matrices = NULL;
-  size_t n_splits = 0;
-
-  const size_t sizeof_matrix =
-    sizeof (double) * mformat->n_continuous_vars * mformat->n_continuous_vars;
-
-
-  /* Make an initial pass to populate our temporary matrix */
-  struct casereader *pass0 = casereader_clone (casereader0);
-  struct ccase *c;
-  union value *prev_values = XCALLOC (mformat->n_split_vars,  union value);
-  int row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ? 1 : 0;
-  bool first_case = true;
-  for (; (c = casereader_read (pass0)) != NULL; case_unref (c))
+  int first_column = 0;
+  if (token)
     {
-      int s;
-      bool match = false;
-      if (!first_case)
-	{
-	  match = true;
-	  for (s = 0; s < mformat->n_split_vars; ++s)
-	    {
-	      const struct variable *svar = mformat->split_vars[s];
-	      const union value *sv = case_data (c, svar);
-	      if (! value_equal (prev_values + s, sv, var_get_width (svar)))
-		{
-		  match = false;
-		  break;
-		}
-	    }
-	}
-      first_case = false;
-
-      if (matrices == NULL || ! match)
-	{
-	  row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ?
-	    1 : 0;
-
-	  n_splits++;
-	  matrices = xrealloc (matrices, sizeof (double*)  * n_splits);
-	  matrices[n_splits - 1] = xmalloc (sizeof_matrix);
-	}
-
-      for (s = 0; s < mformat->n_split_vars; ++s)
-	{
-	  const struct variable *svar = mformat->split_vars[s];
-	  const union value *sv = case_data (c, svar);
-	  value_clone (prev_values + s, sv, var_get_width (svar));
-	}
-
-      int c_offset = (mformat->triangle == UPPER) ? row : 0;
-      if (mformat->triangle == UPPER && mformat->diagonal == NO_DIAGONAL)
-	c_offset++;
-      const union value *v = case_data (c, mformat->rowtype);
-      const char *val = CHAR_CAST (const char *, v->s);
-      if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
-	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
-	{
-	  if (row >= mformat->n_continuous_vars)
-	    {
-	      msg (SE,
-		   _("There are %d variable declared but the data has at least %d matrix rows."),
-		   mformat->n_continuous_vars, row + 1);
-	      case_unref (c);
-	      casereader_destroy (pass0);
-	      free (prev_values);
-	      goto error;
-	    }
-	  int col;
-	  for (col = c_offset; col < mformat->n_continuous_vars; ++col)
-	    {
-	      const struct variable *var =
-		dict_get_var (dict,
-			      1 + col - c_offset +
-			      var_get_dict_index (mformat->varname));
-
-	      double e = case_data (c, var)->f;
-	      if (e == SYSMIS)
-	      	continue;
-
-	      /* Fill in the lower triangle */
-	      (matrices[n_splits-1])[col + mformat->n_continuous_vars * row] = e;
-
-	      if (mformat->triangle != FULL)
-		/* Fill in the upper triangle */
-		(matrices[n_splits-1]) [row + mformat->n_continuous_vars * col] = e;
-	    }
-	  row++;
-	}
-    }
-  casereader_destroy (pass0);
-  free (prev_values);
-
-  if (!matrices)
-    goto error;
-
-  /* Now make a second pass to fill in the other triangle from our
-     temporary matrix */
-  const int idx = var_get_dict_index (mformat->varname);
-  row = 0;
-
-  if (mformat->n >= 0)
-    {
-      int col;
-      struct ccase *outcase = case_create (proto);
-      union value *v = case_data_rw (outcase, mformat->rowtype);
-      memcpy (v->s, "N       ", ROWTYPE_WIDTH);
-      blank_varname_column (outcase, mformat->varname);
-      for (col = 0; col < mformat->n_continuous_vars; ++col)
-	{
-	  union value *dest_val =
-	    case_data_rw_idx (outcase,
-			      1 + col + var_get_dict_index (mformat->varname));
-	  dest_val->f = mformat->n;
-	}
-      casewriter_write (writer, outcase);
+      struct substring line = dfm_get_record (reader);
+      if (token->string >= line.string && token->string < ss_end (line))
+        first_column = ss_pointer_to_position (line, token->string) + 1;
     }
 
-  n_splits = 0;
-  prev_values = xcalloc (mformat->n_split_vars, sizeof *prev_values);
-  first_case = true;
-  for (; (c = casereader_read (casereader0)) != NULL; prev_case = c)
+  int line_number = dfm_get_line_number (reader);
+  struct msg_location *location = xmalloc (sizeof *location);
+  *location = (struct msg_location) {
+    .file_name = xstrdup (dfm_get_file_name (reader)),
+    .first_line = line_number,
+    .last_line = line_number + 1,
+    .first_column = first_column,
+    .last_column = first_column ? first_column + token->length : 0,
+  };
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
+    .category = MSG_C_DATA,
+    .severity = severity,
+    .location = location,
+    .text = text,
+  };
+  msg_emit (m);
+}
+
+static void PRINTF_FORMAT (3, 4)
+parse_warning (struct dfm_reader *reader, const struct substring *token,
+               const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  parse_msg (reader, token, xvasprintf (format, args), MSG_S_WARNING);
+  va_end (args);
+}
+
+static void PRINTF_FORMAT (3, 4)
+parse_error (struct dfm_reader *reader, const struct substring *token,
+             const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  parse_msg (reader, token, xvasprintf (format, args), MSG_S_ERROR);
+  va_end (args);
+}
+
+/* Advance to beginning of next token. */
+static bool
+more_tokens (struct substring *p, struct dfm_reader *r)
+{
+  for (;;)
     {
-      int s;
-      bool match = false;
-      if (!first_case)
-	{
-	  match = true;
-	  for (s = 0; s < mformat->n_split_vars; ++s)
-	    {
-	      const struct variable *svar = mformat->split_vars[s];
-	      const union value *sv = case_data (c, svar);
-	      if (! value_equal (prev_values + s, sv, var_get_width (svar)))
-		{
-		  match = false;
-		  break;
-		}
-	    }
-	}
-      first_case = false;
-      if (! match)
-	{
-	  n_splits++;
-	  row = 0;
-	}
+      ss_ltrim (p, ss_cstr (CC_SPACES ","));
+      if (p->length)
+        return true;
 
-      for (s = 0; s < mformat->n_split_vars; ++s)
-	{
-	  const struct variable *svar = mformat->split_vars[s];
-	  const union value *sv = case_data (c, svar);
-	  value_clone (prev_values + s, sv, var_get_width (svar));
-	}
+      dfm_forward_record (r);
+      if (dfm_eof (r))
+        return false;
+      *p = dfm_get_record (r);
+    }
+}
 
-      case_unref (prev_case);
-      const union value *v = case_data (c, mformat->rowtype);
-      const char *val = CHAR_CAST (const char *, v->s);
-      if (mformat->n >= 0)
-	{
-	  if (0 == strncasecmp (val, "n       ", ROWTYPE_WIDTH) ||
-	      0 == strncasecmp (val, "n_vector", ROWTYPE_WIDTH))
-	    {
-	      msg (SW,
-		   _("The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."));
-	      continue;
-	    }
-	}
+static bool
+next_token (struct substring *p, struct dfm_reader *r, struct substring *token)
+{
+  if (!more_tokens (p, r))
+    return false;
 
-      struct ccase *outcase = case_create (proto);
-      case_copy (outcase, 0, c, 0, caseproto_get_n_widths (proto));
+  /* Collect token. */
+  int c = ss_first (*p);
+  if (c == '\'' || c == '"')
+    {
+      ss_advance (p, 1);
+      ss_get_until (p, c, token);
+    }
+  else
+    {
+      size_t n = 1;
+      for (;;)
+        {
+          c = ss_at (*p, n);
+          if (c == EOF
+              || ss_find_byte (ss_cstr (CC_SPACES ","), c) != SIZE_MAX
+              || ((c == '+' || c == '-')
+                  && ss_find_byte (ss_cstr ("dDeE"),
+                                   ss_at (*p, n - 1)) == SIZE_MAX))
+            break;
+          n++;
+        }
+      ss_get_bytes (p, n, token);
+    }
+  return true;
+}
 
-      if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
-	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
-	{
-	  int col;
-	  const struct variable *var = dict_get_var (dict, idx + 1 + row);
-	  set_varname_column (outcase, mformat->varname, var_get_name (var));
-	  value_copy (case_data_rw (outcase, mformat->rowtype), v, ROWTYPE_WIDTH);
+static bool
+next_number (struct substring *p, struct dfm_reader *r, double *d)
+{
+  struct substring token;
+  if (!next_token (p, r, &token))
+    return false;
 
-	  for (col = 0; col < mformat->n_continuous_vars; ++col)
-	    {
-	      union value *dest_val =
-		case_data_rw_idx (outcase,
-				  1 + col + var_get_dict_index (mformat->varname));
-	      dest_val->f = (matrices[n_splits - 1])[col + mformat->n_continuous_vars * row];
-	      if (col == row && mformat->diagonal == NO_DIAGONAL)
-		dest_val->f = 1.0;
-	    }
-	  row++;
-	}
+  union value v;
+  char *error = data_in (token, dfm_reader_get_encoding (r), FMT_F,
+                         settings_get_fmt_settings (), &v, 0, NULL);
+  if (error)
+    {
+      parse_error (r, &token, "%s", error);
+      free (error);
+    }
+  *d = v.f;
+  return true;
+}
+
+static bool
+next_rowtype (struct substring *p, struct dfm_reader *r, enum rowtype *rt)
+{
+  struct substring token;
+  if (!next_token (p, r, &token))
+    return false;
+
+  if (rowtype_from_string (token, rt))
+    return true;
+
+  parse_error (r, &token, _("Unknown row type \"%.*s\"."),
+               (int) token.length, token.string);
+  return false;
+}
+
+struct read_matrix_params
+  {
+    /* Adjustments to first and last row to read. */
+    int dy0, dy1;
+
+    /* Left and right columns to read in first row, inclusive.
+       For x1, INT_MAX is the rightmost column. */
+    int x0, x1;
+
+    /* Adjustment to x0 and x1 for each subsequent row we read.  Each of these
+       is 0 to keep it the same or -1 or +1 to adjust it by that much. */
+    int dx0, dx1;
+  };
+
+static const struct read_matrix_params *
+get_read_matrix_params (const struct matrix_format *mf)
+{
+  if (mf->triangle == FULL)
+    {
+      /* 1 2 3 4
+         2 1 5 6
+         3 5 1 7
+         4 6 7 1 */
+      static const struct read_matrix_params rmp = { 0, 0, 0, INT_MAX, 0, 0 };
+      return &rmp;
+    }
+  else if (mf->triangle == LOWER)
+    {
+      if (mf->diagonal == DIAGONAL)
+        {
+          /* 1 . . .
+             2 1 . .
+             3 5 1 .
+             4 6 7 1 */
+          static const struct read_matrix_params rmp = { 0, 0, 0, 0, 0, 1 };
+          return &rmp;
+        }
       else
-	{
-	  blank_varname_column (outcase, mformat->varname);
-	}
-
-      /* Special case for SD and N_VECTOR: Rewrite as STDDEV and N respectively */
-      if (0 == strncasecmp (val, "sd      ", ROWTYPE_WIDTH))
-	{
-	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), ROWTYPE_WIDTH,
-			       (uint8_t *) "STDDEV", 6, ' ');
-	}
-      else if (0 == strncasecmp (val, "n_vector", ROWTYPE_WIDTH))
-	{
-	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), ROWTYPE_WIDTH,
-			       (uint8_t *) "N", 1, ' ');
-	}
-
-      casewriter_write (writer, outcase);
+        {
+          /* . . . .
+             2 . . .
+             3 5 . .
+             4 6 7 . */
+          static const struct read_matrix_params rmp = { 1, 0, 0, 0, 0, 1 };
+          return &rmp;
+        }
     }
-
-  /* If NODIAGONAL is specified, then a final case must be written */
-  if (mformat->diagonal == NO_DIAGONAL)
+  else if (mf->triangle == UPPER)
     {
-      int col;
-      struct ccase *outcase = case_create (proto);
-
-      if (prev_case)
-	case_copy (outcase, 0, prev_case, 0, caseproto_get_n_widths (proto));
-
-      const struct variable *var = dict_get_var (dict, idx + 1 + row);
-      set_varname_column (outcase, mformat->varname, var_get_name (var));
-
-      for (col = 0; col < mformat->n_continuous_vars; ++col)
-	{
-	  union value *dest_val =
-	    case_data_rw_idx (outcase, 1 + col +
-			      var_get_dict_index (mformat->varname));
-	  dest_val->f = (matrices[n_splits - 1]) [col + mformat->n_continuous_vars * row];
-	  if (col == row && mformat->diagonal == NO_DIAGONAL)
-	    dest_val->f = 1.0;
-	}
-
-      casewriter_write (writer, outcase);
+      if (mf->diagonal == DIAGONAL)
+        {
+          /* 1 2 3 4
+             . 1 5 6
+             . . 1 7
+             . . . 1 */
+          static const struct read_matrix_params rmp = { 0, 0, 0, INT_MAX, 1, 0 };
+          return &rmp;
+        }
+      else
+        {
+          /* . 2 3 4
+             . . 5 6
+             . . . 7
+             . . . . */
+          static const struct read_matrix_params rmp = { 0, -1, 1, INT_MAX, 1, 0 };
+          return &rmp;
+        }
     }
-  free (prev_values);
-
-  if (prev_case)
-    case_unref (prev_case);
-
-  int i;
-  for (i = 0 ; i < n_splits; ++i)
-    free (matrices[i]);
-  free (matrices);
-  struct casereader *reader1 = casewriter_make_reader (writer);
-  casereader_destroy (casereader0);
-  return reader1;
-
-
-error:
-  if (prev_case)
-    case_unref (prev_case);
-
-  if (matrices)
-    for (i = 0 ; i < n_splits; ++i)
-      free (matrices[i]);
-  free (matrices);
-  casereader_destroy (casereader0);
-  casewriter_destroy (writer);
-  return NULL;
+  else
+    NOT_REACHED ();
 }
 
-int
-cmd_matrix (struct lexer *lexer, struct dataset *ds)
+static void
+schedule_matrices (struct matrix_format *mf)
 {
-  struct dictionary *dict;
-  struct data_parser *parser;
-  struct dfm_reader *reader;
-  struct file_handle *fh = NULL;
-  char *encoding = NULL;
-  struct matrix_format mformat;
-  int i;
-  size_t n_names;
-  char **names = NULL;
+  struct matrix_sched *ms0 = &mf->ms[0];
+  ms0->nr = 1;
+  ms0->nc = 1;
+  ms0->rp = xmalloc (sizeof *ms0->rp);
+  ms0->rp[0] = (struct row_sched) { .y = 0, .x0 = 0, .x1 = 1 };
+  ms0->n_rp = 1;
 
-  mformat.triangle = LOWER;
-  mformat.diagonal = DIAGONAL;
-  mformat.n_split_vars = 0;
-  mformat.split_vars = NULL;
-  mformat.n = -1;
+  struct matrix_sched *ms1 = &mf->ms[1];
+  ms1->nr = 1;
+  ms1->nc = mf->n_cvars;
+  ms1->rp = xmalloc (sizeof *ms1->rp);
+  ms1->rp[0] = (struct row_sched) { .y = 0, .x0 = 0, .x1 = mf->n_cvars };
+  ms1->n_rp = 1;
 
-  dict = (in_input_program ()
-          ? dataset_dict (ds)
-          : dict_create (get_default_encoding ()));
-  parser = data_parser_create (dict);
-  reader = NULL;
+  struct matrix_sched *ms2 = &mf->ms[2];
+  ms2->nr = mf->n_cvars;
+  ms2->nc = mf->n_cvars;
+  ms2->rp = xmalloc (mf->n_cvars * sizeof *ms2->rp);
+  ms2->n_rp = 0;
 
-  data_parser_set_type (parser, DP_DELIMITED);
-  data_parser_set_warn_missing_fields (parser, false);
-  data_parser_set_span (parser, false);
+  const struct read_matrix_params *rmp = get_read_matrix_params (mf);
+  int x0 = rmp->x0;
+  int x1 = rmp->x1 < mf->n_cvars ? rmp->x1 : mf->n_cvars - 1;
+  int y0 = rmp->dy0;
+  int y1 = (int) mf->n_cvars + rmp->dy1;
+  for (int y = y0; y < y1; y++)
+    {
+      assert (x0 >= 0 && x0 < mf->n_cvars);
+      assert (x1 >= 0 && x1 < mf->n_cvars);
+      assert (x1 >= x0);
 
-  mformat.rowtype = dict_create_var (dict, "ROWTYPE_", ROWTYPE_WIDTH);
+      ms2->rp[ms2->n_rp++] = (struct row_sched) {
+        .y = y, .x0 = x0, .x1 = x1 + 1
+      };
 
-  mformat.n_continuous_vars = 0;
-  mformat.n_split_vars = 0;
+      x0 += rmp->dx0;
+      x1 += rmp->dx1;
+    }
+}
 
-  if (! lex_force_match_id (lexer, "VARIABLES"))
-    goto error;
+static bool
+read_id_columns (const struct matrix_format *mf,
+                 struct substring *p, struct dfm_reader *r,
+                 double *d, enum rowtype *rt)
+{
+  for (size_t i = 0; mf->input_vars[i] != mf->cvars[0]; i++)
+    if (!(mf->input_vars[i] == mf->rowtype
+          ? next_rowtype (p, r, rt)
+          : next_number (p, r, &d[i])))
+      return false;
+  return true;
+}
 
+static bool
+equal_id_columns (const struct matrix_format *mf,
+                  const double *a, const double *b)
+{
+  for (size_t i = 0; mf->input_vars[i] != mf->cvars[0]; i++)
+    if (mf->input_vars[i] != mf->rowtype && a[i] != b[i])
+      return false;
+  return true;
+}
+
+static bool
+equal_split_columns (const struct matrix_format *mf,
+                     const double *a, const double *b)
+{
+  for (size_t i = 0; i < mf->n_svars; i++)
+    {
+      size_t idx = mf->svar_indexes[i];
+      if (a[idx] != b[idx])
+        return false;
+    }
+  return true;
+}
+
+static bool
+is_pooled (const struct matrix_format *mf, const double *d)
+{
+  for (size_t i = 0; i < mf->n_fvars; i++)
+    if (d[mf->fvar_indexes[i]] != SYSMIS)
+      return false;
+  return true;
+}
+
+static void
+matrix_sched_init (const struct matrix_format *mf, enum rowtype rt,
+                   gsl_matrix *m)
+{
+  int n_dims = rowtype_dimensions (rt);
+  const struct matrix_sched *ms = &mf->ms[n_dims];
+  double diagonal = n_dims < 2 || rt != C_CORR ? SYSMIS : 1.0;
+  for (size_t y = 0; y < ms->nr; y++)
+    for (size_t x = 0; x < ms->nc; x++)
+      gsl_matrix_set (m, y, x, y == x ? diagonal : SYSMIS);
+}
+
+static void
+matrix_sched_output (const struct matrix_format *mf, enum rowtype rt,
+                     gsl_matrix *m, const double *d, int split_num,
+                     struct casewriter *w)
+{
+  int n_dims = rowtype_dimensions (rt);
+  const struct matrix_sched *ms = &mf->ms[n_dims];
+
+  if (rt == C_N_SCALAR)
+    {
+      for (size_t x = 1; x < mf->n_cvars; x++)
+        gsl_matrix_set (m, 0, x, gsl_matrix_get (m, 0, 0));
+      rt = C_N;
+    }
+
+  for (int y = 0; y < ms->nr; y++)
+    {
+      struct ccase *c = case_create (casewriter_get_proto (w));
+      for (size_t i = 0; mf->input_vars[i] != mf->cvars[0]; i++)
+        if (mf->input_vars[i] != mf->rowtype)
+          *case_num_rw (c, mf->input_vars[i]) = d[i];
+      if (mf->n_svars && !mf->svar_indexes)
+        *case_num_rw (c, mf->svars[0]) = split_num;
+      set_string (c, mf->rowtype, rowtype_name (rt));
+      const char *varname = n_dims == 2 ? var_get_name (mf->cvars[y]) : "";
+      set_string (c, mf->varname, ss_cstr (varname));
+      for (int x = 0; x < mf->n_cvars; x++)
+        *case_num_rw (c, mf->cvars[x]) = gsl_matrix_get (m, y, x);
+      casewriter_write (w, c);
+    }
+}
+
+static void
+matrix_sched_output_n (const struct matrix_format *mf, double n,
+                       gsl_matrix *m, const double *d, int split_num,
+                       struct casewriter *w)
+{
+  gsl_matrix_set (m, 0, 0, n);
+  matrix_sched_output (mf, C_N_SCALAR, m, d, split_num, w);
+}
+
+static void
+check_eol (const struct matrix_format *mf, struct substring *p,
+           struct dfm_reader *r)
+{
+  if (!mf->span)
+    {
+      ss_ltrim (p, ss_cstr (CC_SPACES ","));
+      if (p->length)
+        {
+          parse_error (r, p, _("Extraneous data expecting end of line."));
+          p->length = 0;
+        }
+    }
+}
+
+static void
+parse_data_with_rowtype (const struct matrix_format *mf,
+                         struct dfm_reader *r, struct casewriter *w)
+{
+  if (dfm_eof (r))
+    return;
+  struct substring p = dfm_get_record (r);
+
+  double *prev = NULL;
+  gsl_matrix *m = gsl_matrix_alloc (mf->n_cvars, mf->n_cvars);
+
+  double *d = xnmalloc (mf->n_input_vars, sizeof *d);
+  enum rowtype rt;
+
+  double *d_next = xnmalloc (mf->n_input_vars, sizeof *d_next);
+
+  if (!read_id_columns (mf, &p, r, d, &rt))
+    goto exit;
+  for (;;)
+    {
+      /* If this has rowtype N but there was an N subcommand, then the
+         subcommand takes precedence, so we will suppress outputting this
+         record.  We still need to parse it, though, so we can't skip other
+         work. */
+      bool suppress_output = mf->n >= 0 && (rt == C_N || rt == C_N_SCALAR);
+      if (suppress_output)
+        parse_error (r, NULL, _("N record is not allowed with N subcommand.  "
+                                "Ignoring N record."));
+
+      /* If there's an N subcommand, and this is a new split, then output an N
+         record. */
+      if (mf->n >= 0 && (!prev || !equal_split_columns (mf, prev, d)))
+        {
+          matrix_sched_output_n (mf, mf->n, m, d, 0, w);
+
+          if (!prev)
+            prev = xnmalloc (mf->n_input_vars, sizeof *prev);
+          memcpy (prev, d, mf->n_input_vars * sizeof *prev);
+        }
+
+      /* Usually users don't provide the CONTENTS subcommand with ROWTYPE_, but
+         if they did then warn if ROWTYPE_ is an unexpected type. */
+      if (mf->factor_rowtype_mask || mf->pooled_rowtype_mask)
+        {
+          const char *name = rowtype_name (rt).string;
+          if (is_pooled (mf, d))
+            {
+              if (!((1u << rt) & mf->pooled_rowtype_mask))
+                parse_warning (r, NULL, _("Data contains pooled row type %s not "
+                                          "included in CONTENTS."), name);
+            }
+          else
+            {
+              if (!((1u << rt) & mf->factor_rowtype_mask))
+                parse_warning (r, NULL, _("Data contains with-factors row type "
+                                          "%s not included in CONTENTS."), name);
+            }
+        }
+
+      /* Initialize the matrix to be filled-in. */
+      int n_dims = rowtype_dimensions (rt);
+      const struct matrix_sched *ms = &mf->ms[n_dims];
+      matrix_sched_init (mf, rt, m);
+
+      enum rowtype rt_next;
+      bool eof;
+
+      size_t n_rows;
+      for (n_rows = 1; ; n_rows++)
+        {
+          if (n_rows <= ms->n_rp)
+            {
+              const struct row_sched *rs = &ms->rp[n_rows - 1];
+              size_t y = rs->y;
+              for (size_t x = rs->x0; x < rs->x1; x++)
+                {
+                  double e;
+                  if (!next_number (&p, r, &e))
+                    goto exit;
+                  gsl_matrix_set (m, y, x, e);
+                  if (n_dims == 2 && mf->triangle != FULL)
+                    gsl_matrix_set (m, x, y, e);
+                }
+              check_eol (mf, &p, r);
+            }
+          else
+            {
+              /* Suppress bad input data.  We'll issue an error later. */
+              p.length = 0;
+            }
+
+          eof = (!more_tokens (&p, r)
+                 || !read_id_columns (mf, &p, r, d_next, &rt_next));
+          if (eof)
+            break;
+
+          if (!equal_id_columns (mf, d, d_next) || rt_next != rt)
+            break;
+        }
+      if (!suppress_output)
+        matrix_sched_output (mf, rt, m, d, 0, w);
+
+      if (n_rows != ms->n_rp)
+        parse_error (r, NULL,
+                     _("Matrix %s had %zu rows but %zu rows were expected."),
+                     rowtype_name (rt).string, n_rows, ms->n_rp);
+      if (eof)
+        break;
+
+      double *d_tmp = d;
+      d = d_next;
+      d_next = d_tmp;
+
+      rt = rt_next;
+    }
+
+exit:
+  free (prev);
+  gsl_matrix_free (m);
+  free (d);
+  free (d_next);
+}
+
+static void
+parse_matrix_without_rowtype (const struct matrix_format *mf,
+                              struct substring *p, struct dfm_reader *r,
+                              gsl_matrix *m, enum rowtype rowtype, bool pooled,
+                              int split_num, struct casewriter *w)
+{
+  int n_dims = rowtype_dimensions (rowtype);
+  const struct matrix_sched *ms = &mf->ms[n_dims];
+
+  double *d = xnmalloc (mf->n_input_vars, sizeof *d);
+  matrix_sched_init (mf, rowtype, m);
+  for (size_t i = 0; i < ms->n_rp; i++)
+    {
+      int y = ms->rp[i].y;
+      int k = 0;
+      int h = 0;
+      for (size_t j = 0; j < mf->n_input_vars; j++)
+        {
+          const struct variable *iv = mf->input_vars[j];
+          if (k < mf->n_cvars && iv == mf->cvars[k])
+            {
+              if (k < ms->rp[i].x1 - ms->rp[i].x0)
+                {
+                  double e;
+                  if (!next_number (p, r, &e))
+                    goto exit;
+
+                  int x = k + ms->rp[i].x0;
+                  gsl_matrix_set (m, y, x, e);
+                  if (n_dims == 2 && mf->triangle != FULL)
+                    gsl_matrix_set (m, x, y, e);
+                }
+              k++;
+              continue;
+            }
+          if (h < mf->n_fvars && iv == mf->fvars[h])
+            {
+              h++;
+              if (pooled)
+                {
+                  d[j] = SYSMIS;
+                  continue;
+                }
+            }
+
+          double e;
+          if (!next_number (p, r, &e))
+            goto exit;
+          d[j] = e;
+        }
+      check_eol (mf, p, r);
+    }
+
+  matrix_sched_output (mf, rowtype, m, d, split_num, w);
+exit:
+  free (d);
+}
+
+static void
+parse_data_without_rowtype (const struct matrix_format *mf,
+                            struct dfm_reader *r, struct casewriter *w)
+{
+  if (dfm_eof (r))
+    return;
+  struct substring p = dfm_get_record (r);
+
+  gsl_matrix *m = gsl_matrix_alloc (mf->n_cvars, mf->n_cvars);
+
+  int split_num = 1;
+  do
+    {
+      for (size_t i = 0; i < mf->n_contents; )
+        {
+          size_t j = i;
+          if (mf->contents[i].open)
+            while (!mf->contents[j].close)
+              j++;
+
+          if (mf->contents[i].open)
+            {
+              for (size_t k = 0; k < mf->cells; k++)
+                for (size_t h = i; h <= j; h++)
+                  parse_matrix_without_rowtype (mf, &p, r, m,
+                                                mf->contents[h].rowtype, false,
+                                                split_num, w);
+            }
+          else
+            parse_matrix_without_rowtype (mf, &p, r, m, mf->contents[i].rowtype,
+                                          true, split_num, w);
+          i = j + 1;
+        }
+
+      split_num++;
+    }
+  while (more_tokens (&p, r));
+
+  gsl_matrix_free (m);
+}
+
+/* Parses VARIABLES=varnames for MATRIX DATA and returns a dictionary with the
+   named variables in it. */
+static struct dictionary *
+parse_matrix_data_variables (struct lexer *lexer)
+{
+  if (!lex_force_match_id (lexer, "VARIABLES"))
+    return NULL;
   lex_match (lexer, T_EQUALS);
 
-  if (! parse_mixed_vars (lexer, dict, &names, &n_names, PV_NO_DUPLICATE))
+  struct dictionary *dict = dict_create (get_default_encoding ());
+
+  size_t n_names = 0;
+  char **names = NULL;
+  if (!parse_DATA_LIST_vars (lexer, dict, &names, &n_names, PV_NO_DUPLICATE))
     {
-      int i;
-      for (i = 0; i < n_names; ++i)
-	free (names[i]);
-      free (names);
-      goto error;
+      dict_unref (dict);
+      return NULL;
     }
 
-  int longest_name = 0;
-  for (i = 0; i < n_names; ++i)
-    {
-      maximize_int (&longest_name, strlen (names[i]));
-    }
+  for (size_t i = 0; i < n_names; i++)
+    if (!strcasecmp (names[i], "ROWTYPE_"))
+      dict_create_var_assert (dict, "ROWTYPE_", 8);
+    else
+      dict_create_var_assert (dict, names[i], 0);
 
-  mformat.varname = dict_create_var (dict, "VARNAME_",
-				     8 * DIV_RND_UP (longest_name, 8));
-
-  for (i = 0; i < n_names; ++i)
-    {
-      if (0 == strcasecmp (names[i], "ROWTYPE_"))
-	{
-	  const struct fmt_spec fmt = fmt_for_input (FMT_A, 8, 0);
-	  data_parser_add_delimited_field (parser,
-					   &fmt,
-					   var_get_case_index (mformat.rowtype),
-					   "ROWTYPE_");
-	}
-      else
-	{
-	  const struct fmt_spec fmt = fmt_for_input (FMT_F, 10, 4);
-	  struct variable *v = dict_create_var (dict, names[i], 0);
-	  var_set_both_formats (v, &fmt);
-	  data_parser_add_delimited_field (parser,
-					   &fmt,
-					   var_get_case_index (mformat.varname) +
-					   ++mformat.n_continuous_vars,
-					   names[i]);
-	}
-    }
-  for (i = 0; i < n_names; ++i)
+  for (size_t i = 0; i < n_names; ++i)
     free (names[i]);
   free (names);
 
+  if (dict_lookup_var (dict, "VARNAME_"))
+    {
+      msg (SE, _("VARIABLES may not include VARNAME_."));
+      dict_unref (dict);
+      return NULL;
+    }
+  return dict;
+}
+
+static bool
+parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
+                           bool *taken_vars,
+                           struct variable ***vars, size_t **indexes,
+                           size_t *n_vars)
+{
+  if (!parse_variables (lexer, dict, vars, n_vars, 0))
+    return false;
+
+  *indexes = xnmalloc (*n_vars, sizeof **indexes);
+  for (size_t i = 0; i < *n_vars; i++)
+    {
+      struct variable *v = (*vars)[i];
+      if (!strcasecmp (var_get_name (v), "ROWTYPE_"))
+        {
+          msg (SE, _("ROWTYPE_ is not allowed on SPLIT or FACTORS."));
+          goto error;
+        }
+      (*indexes)[i] = var_get_dict_index (v);
+
+      bool *tv = &taken_vars[var_get_dict_index (v)];
+      if (*tv)
+        {
+          msg (SE, _("%s may not appear on both SPLIT and FACTORS."),
+               var_get_name (v));
+          goto error;
+        }
+      *tv = true;
+
+      var_set_both_formats (v, &(struct fmt_spec) { .type = FMT_F, .w = 4 });
+    }
+  return true;
+
+error:
+  free (*vars);
+  *vars = NULL;
+  *n_vars = 0;
+  free (*indexes);
+  *indexes = NULL;
+  return false;
+}
+
+int
+cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
+{
+  struct dictionary *dict = parse_matrix_data_variables (lexer);
+  if (!dict)
+    return CMD_FAILURE;
+
+  size_t n_input_vars = dict_get_var_cnt (dict);
+  struct variable **input_vars = xnmalloc (n_input_vars, sizeof *input_vars);
+  for (size_t i = 0; i < n_input_vars; i++)
+    input_vars[i] = dict_get_var (dict, i);
+
+  int varname_width = 8;
+  for (size_t i = 0; i < n_input_vars; i++)
+    {
+      int w = strlen (var_get_name (input_vars[i]));
+      varname_width = MAX (w, varname_width);
+    }
+
+  struct variable *rowtype = dict_lookup_var (dict, "ROWTYPE_");
+  bool input_rowtype = rowtype != NULL;
+  if (!rowtype)
+    rowtype = dict_create_var_assert (dict, "ROWTYPE_", 8);
+
+  struct matrix_format mf = {
+    .input_rowtype = input_rowtype,
+    .input_vars = input_vars,
+    .n_input_vars = n_input_vars,
+
+    .rowtype = rowtype,
+    .varname = dict_create_var_assert (dict, "VARNAME_", varname_width),
+
+    .triangle = LOWER,
+    .diagonal = DIAGONAL,
+    .n = -1,
+    .cells = -1,
+  };
+
+  bool *taken_vars = xzalloc (n_input_vars);
+  if (input_rowtype)
+    taken_vars[var_get_dict_index (rowtype)] = true;
+
+  struct file_handle *fh = NULL;
   while (lex_token (lexer) != T_ENDCMD)
     {
-      if (! lex_force_match (lexer, T_SLASH))
+      if (!lex_force_match (lexer, T_SLASH))
 	goto error;
 
       if (lex_match_id (lexer, "N"))
 	{
 	  lex_match (lexer, T_EQUALS);
 
-	  if (! lex_force_int_range (lexer, "N", 0, INT_MAX))
+	  if (!lex_force_int_range (lexer, "N", 0, INT_MAX))
 	    goto error;
 
-	  mformat.n = lex_integer (lexer);
+	  mf.n = lex_integer (lexer);
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "FORMAT"))
 	{
 	  lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_SLASH && (lex_token (lexer) != T_ENDCMD))
+	  while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
 	    {
 	      if (lex_match_id (lexer, "LIST"))
-		{
-		  data_parser_set_span (parser, false);
-		}
+                mf.span = false;
 	      else if (lex_match_id (lexer, "FREE"))
-		{
-		  data_parser_set_span (parser, true);
-		}
+                mf.span = true;
 	      else if (lex_match_id (lexer, "UPPER"))
-		{
-		  mformat.triangle = UPPER;
-		}
+                mf.triangle = UPPER;
 	      else if (lex_match_id (lexer, "LOWER"))
-		{
-		  mformat.triangle = LOWER;
-		}
+                mf.triangle = LOWER;
 	      else if (lex_match_id (lexer, "FULL"))
-		{
-		  mformat.triangle = FULL;
-		}
+                mf.triangle = FULL;
 	      else if (lex_match_id (lexer, "DIAGONAL"))
-		{
-		  mformat.diagonal = DIAGONAL;
-		}
+                mf.diagonal = DIAGONAL;
 	      else if (lex_match_id (lexer, "NODIAGONAL"))
-		{
-		  mformat.diagonal = NO_DIAGONAL;
-		}
+                mf.diagonal = NO_DIAGONAL;
 	      else
 		{
 		  lex_error (lexer, NULL);
@@ -531,132 +992,204 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
           fh_unref (fh);
 	  fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
-	  if (fh == NULL)
+	  if (!fh)
 	    goto error;
 	}
-      else if (lex_match_id (lexer, "SPLIT"))
+      else if (!mf.n_svars && lex_match_id (lexer, "SPLIT"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!mf.input_rowtype
+              && lex_token (lexer) == T_ID
+              && !dict_lookup_var (dict, lex_tokcstr (lexer)))
+            {
+              mf.svars = xmalloc (sizeof *mf.svars);
+              mf.svars[0] = dict_create_var_assert (dict, lex_tokcstr (lexer),
+                                                    0);
+              var_set_both_formats (
+                mf.svars[0], &(struct fmt_spec) { .type = FMT_F, .w = 4 });
+              mf.n_svars = 1;
+              lex_get (lexer);
+            }
+          else if (!parse_matrix_data_subvars (lexer, dict, taken_vars,
+                                               &mf.svars, &mf.svar_indexes,
+                                               &mf.n_svars))
+            goto error;
+        }
+      else if (!mf.n_fvars && lex_match_id (lexer, "FACTORS"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!parse_matrix_data_subvars (lexer, dict, taken_vars,
+                                          &mf.fvars, &mf.fvar_indexes,
+                                          &mf.n_fvars))
+            goto error;
+        }
+      else if (lex_match_id (lexer, "CELLS"))
 	{
+          if (mf.input_rowtype)
+            msg (SW, _("CELLS is ignored when VARIABLES includes ROWTYPE_"));
+
 	  lex_match (lexer, T_EQUALS);
-	  if (! parse_variables (lexer, dict, &mformat.split_vars, &mformat.n_split_vars, 0))
-	    {
-	      free (mformat.split_vars);
-	      goto error;
-	    }
-	  int i;
-	  for (i = 0; i < mformat.n_split_vars; ++i)
-	    {
-	      const struct fmt_spec fmt = fmt_for_input (FMT_F, 4, 0);
-	      var_set_both_formats (mformat.split_vars[i], &fmt);
-	    }
-	  dict_reorder_vars (dict, mformat.split_vars, mformat.n_split_vars);
-	  mformat.n_continuous_vars -= mformat.n_split_vars;
+
+	  if (!lex_force_int_range (lexer, "CELLS", 0, INT_MAX))
+	    goto error;
+
+	  mf.cells = lex_integer (lexer);
+	  lex_get (lexer);
 	}
+      else if (lex_match_id (lexer, "CONTENTS"))
+        {
+          lex_match (lexer, T_EQUALS);
+
+          size_t allocated_contents = mf.n_contents;
+          bool in_parens = false;
+          for (;;)
+            {
+              bool open = !in_parens && lex_match (lexer, T_LPAREN);
+              enum rowtype rt;
+              if (!rowtype_parse (lexer, &rt))
+                {
+                  if (open || in_parens || (lex_token (lexer) != T_ENDCMD
+                                            && lex_token (lexer) != T_SLASH))
+                    {
+                      lex_error (lexer, _("Row type keyword expected."));
+                      goto error;
+                    }
+                  break;
+                }
+
+              if (open)
+                in_parens = true;
+
+              if (in_parens)
+                mf.factor_rowtype_mask |= 1u << rt;
+              else
+                mf.pooled_rowtype_mask |= 1u << rt;
+
+              bool close = in_parens && lex_match (lexer, T_RPAREN);
+              if (close)
+                in_parens = false;
+
+              if (mf.n_contents >= allocated_contents)
+                mf.contents = x2nrealloc (mf.contents, &allocated_contents,
+                                          sizeof *mf.contents);
+              mf.contents[mf.n_contents++] = (struct content) {
+                .open = open, .rowtype = rt, .close = close
+              };
+            }
+        }
       else
 	{
 	  lex_error (lexer, NULL);
 	  goto error;
 	}
     }
-
-  if (mformat.diagonal == NO_DIAGONAL && mformat.triangle == FULL)
+  if (mf.diagonal == NO_DIAGONAL && mf.triangle == FULL)
     {
-      msg (SE, _("FORMAT = FULL and FORMAT = NODIAGONAL are mutually exclusive."));
+      msg (SE, _("FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive."));
       goto error;
     }
+  if (!mf.input_rowtype)
+    {
+      if (mf.cells < 0)
+        {
+          if (mf.n_fvars)
+            {
+              msg (SE, _("CELLS is required when factor variables are specified "
+                         "and VARIABLES does not include ROWTYPE_."));
+              goto error;
+            }
+          mf.cells = 1;
+        }
+
+      if (!mf.n_contents)
+        {
+          msg (SW, _("CONTENTS was not specified and VARIABLES does not "
+                     "include ROWTYPE_.  Assuming CONTENTS=CORR."));
+
+          mf.n_contents = 1;
+          mf.contents = xmalloc (sizeof *mf.contents);
+          *mf.contents = (struct content) { .rowtype = C_CORR };
+        }
+    }
+  mf.cvars = xmalloc (mf.n_input_vars * sizeof *mf.cvars);
+  for (size_t i = 0; i < mf.n_input_vars; i++)
+    if (!taken_vars[i])
+      {
+        struct variable *v = input_vars[i];
+        mf.cvars[mf.n_cvars++] = v;
+        var_set_both_formats (v, &(struct fmt_spec) { .type = FMT_F, .w = 10,
+                                                      .d = 4 });
+      }
+  if (!mf.n_cvars)
+    {
+      msg (SE, _("At least one continuous variable is required."));
+      goto error;
+    }
+  if (mf.input_rowtype)
+    {
+      for (size_t i = 0; i < mf.n_cvars; i++)
+        if (mf.cvars[i] != input_vars[n_input_vars - mf.n_cvars + i])
+          {
+            msg (SE, _("VARIABLES includes ROWTYPE_ but the continuous "
+                       "variables are not the last ones on VARIABLES."));
+            goto error;
+          }
+    }
+  unsigned int rowtype_mask = mf.pooled_rowtype_mask | mf.factor_rowtype_mask;
+  if (rowtype_mask & (1u << C_N) && mf.n >= 0)
+    {
+      msg (SE, _("Cannot specify N on CONTENTS along with the N subcommand."));
+      goto error;
+    }
+
+  struct variable **order = xnmalloc (dict_get_var_cnt (dict), sizeof *order);
+  size_t n_order = 0;
+  for (size_t i = 0; i < mf.n_svars; i++)
+    order[n_order++] = mf.svars[i];
+  order[n_order++] = mf.rowtype;
+  for (size_t i = 0; i < mf.n_fvars; i++)
+    order[n_order++] = mf.fvars[i];
+  order[n_order++] = mf.varname;
+  for (size_t i = 0; i < mf.n_cvars; i++)
+    order[n_order++] = mf.cvars[i];
+  assert (n_order == dict_get_var_cnt (dict));
+  dict_reorder_vars (dict, order, n_order);
+  free (order);
+
+  dict_set_split_vars (dict, mf.svars, mf.n_svars);
+
+  schedule_matrices (&mf);
 
   if (fh == NULL)
     fh = fh_inline_file ();
-  fh_set_default_handle (fh);
-
-  if (!data_parser_any_fields (parser))
-    {
-      msg (SE, _("At least one variable must be specified."));
-      goto error;
-    }
 
   if (lex_end_of_command (lexer) != CMD_SUCCESS)
     goto error;
 
-  reader = dfm_open_reader (fh, lexer, encoding);
+  struct dfm_reader *reader = dfm_open_reader (fh, lexer, NULL);
   if (reader == NULL)
     goto error;
 
-  if (in_input_program ())
-    {
-      struct data_list_trns *trns = xmalloc (sizeof *trns);
-      trns->parser = parser;
-      trns->reader = reader;
-      trns->end = NULL;
-      add_transformation (ds, data_list_trns_proc, data_list_trns_free, trns);
-    }
+  struct casewriter *writer = autopaging_writer_create (dict_get_proto (dict));
+  if (mf.input_rowtype)
+    parse_data_with_rowtype (&mf, reader, writer);
   else
-    {
-      data_parser_make_active_file (parser, ds, reader, dict, preprocess,
-				    &mformat);
-    }
+    parse_data_without_rowtype (&mf, reader, writer);
+  dfm_close_reader (reader);
 
+  dataset_set_dict (ds, dict);
+  dataset_set_source (ds, casewriter_make_reader (writer));
+
+  matrix_format_uninit (&mf);
+  free (taken_vars);
   fh_unref (fh);
-  free (encoding);
-  free (mformat.split_vars);
 
-  return CMD_DATA_LIST;
+  return CMD_SUCCESS;
 
  error:
-  data_parser_destroy (parser);
-  if (!in_input_program ())
-    dict_unref (dict);
+  matrix_format_uninit (&mf);
+  free (taken_vars);
+  dict_unref (dict);
   fh_unref (fh);
-  free (encoding);
-  free (mformat.split_vars);
-  return CMD_CASCADING_FAILURE;
-}
-
-
-/* Input procedure. */
-
-/* Destroys DATA LIST transformation TRNS.
-   Returns true if successful, false if an I/O error occurred. */
-static bool
-data_list_trns_free (void *trns_)
-{
-  struct data_list_trns *trns = trns_;
-  data_parser_destroy (trns->parser);
-  dfm_close_reader (trns->reader);
-  free (trns);
-  return true;
-}
-
-/* Handle DATA LIST transformation TRNS, parsing data into *C. */
-static int
-data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
-{
-  struct data_list_trns *trns = trns_;
-  int retval;
-
-  *c = case_unshare (*c);
-  if (data_parser_parse (trns->parser, trns->reader, *c))
-    retval = TRNS_CONTINUE;
-  else if (dfm_reader_error (trns->reader) || dfm_eof (trns->reader) > 1)
-    {
-      /* An I/O error, or encountering end of file for a second
-         time, should be escalated into a more serious error. */
-      retval = TRNS_ERROR;
-    }
-  else
-    retval = TRNS_END_FILE;
-
-  /* If there was an END subcommand handle it. */
-  if (trns->end != NULL)
-    {
-      double *end = &case_data_rw (*c, trns->end)->f;
-      if (retval == TRNS_END_FILE)
-        {
-          *end = 1.0;
-          retval = TRNS_CONTINUE;
-        }
-      else
-        *end = 0.0;
-    }
-
-  return retval;
+  return CMD_FAILURE;
 }

@@ -44,7 +44,7 @@ const gsl_matrix * covariance_calculate_unnormalized (struct covariance *);
 
 void covariance_destroy (struct covariance *cov);
 
-const gsl_matrix *covariance_moments (const struct covariance *cov, int m);
+gsl_matrix *covariance_moments (const struct covariance *cov, int m);
 
 const struct categoricals * covariance_get_categoricals (const struct covariance *cov);
 size_t covariance_dim (const struct covariance * cov);
