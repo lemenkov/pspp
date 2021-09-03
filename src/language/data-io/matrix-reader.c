@@ -182,7 +182,7 @@ matrix_fill_row (gsl_matrix **matrix,
   for (col = 0; col < n_vars; ++col)
     {
       const struct variable *cv = vars [col];
-      double x = case_data (c, cv)->f;
+      double x = case_num (c, cv);
       assert (col  < (*matrix)->size2);
       assert (mrow < (*matrix)->size1);
       gsl_matrix_set (*matrix, mrow, col, x);

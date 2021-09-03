@@ -356,7 +356,7 @@ count_trns_proc (void *trns_, struct ccase **c,
 	  counter += count_numeric (crit, *c);
 	else
 	  counter += count_string (crit, *c);
-      case_data_rw (*c, dv->var)->f = counter;
+      *case_num_rw (*c, dv->var) = counter;
     }
   return TRNS_CONTINUE;
 }

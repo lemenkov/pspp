@@ -101,8 +101,8 @@ xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
                             colour->blue / 255.0);
 
       xrchart_datum (cr, geom, 0,
-		     case_data_idx (c, SP_IDX_X)->f,
-		     case_data_idx (c, SP_IDX_Y)->f);
+		     case_num_idx (c, SP_IDX_X),
+		     case_num_idx (c, SP_IDX_Y));
     }
   casereader_destroy (data);
   cairo_restore (cr);

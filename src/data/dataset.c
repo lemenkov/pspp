@@ -818,7 +818,7 @@ store_case_num (void *var_, struct ccase **cc, casenumber case_num)
   struct variable *var = var_;
 
   *cc = case_unshare (*cc);
-  case_data_rw (*cc, var)->f = case_num;
+  *case_num_rw (*cc, var) = case_num;
 
   return TRNS_CONTINUE;
 }

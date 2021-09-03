@@ -482,7 +482,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 		}
 
 	      long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
-	      *n += qc->wv ? case_data (c, qc->wv)->f : 1.0;
+	      *n += qc->wv ? case_num (c, qc->wv) : 1.0;
 	      kmeans->n++;
 
 	      for (j = 0; j < qc->n_vars; ++j)
@@ -491,7 +491,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 		  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 		    continue;
 		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
-		  *x += val->f * (qc->wv ? case_data (c, qc->wv)->f : 1.0);
+		  *x += val->f * (qc->wv ? case_num (c, qc->wv) : 1.0);
 		}
 	    }
 
@@ -537,7 +537,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	      }
 
 	    long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
-	    *n += qc->wv ? case_data (c, qc->wv)->f : 1.0;
+	    *n += qc->wv ? case_num (c, qc->wv) : 1.0;
 	    kmeans->n++;
 	  }
 	casereader_destroy (cs);
@@ -621,10 +621,10 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
   *c = case_unshare (*c);
 
   if (std->CASE_IDX_MEMBERSHIP >= 0)
-    case_data_rw (*c, std->membership)->f = case_data_idx (ca, std->CASE_IDX_MEMBERSHIP)->f;
+    *case_num_rw (*c, std->membership) = case_num_idx (ca, std->CASE_IDX_MEMBERSHIP);
 
   if (std->CASE_IDX_DISTANCE >= 0)
-    case_data_rw (*c, std->distance)->f = case_data_idx (ca, std->CASE_IDX_DISTANCE)->f;
+    *case_num_rw (*c, std->distance) = case_num_idx (ca, std->CASE_IDX_DISTANCE);
 
   case_unref (ca);
 
@@ -708,10 +708,10 @@ quick_cluster_show_membership (struct Kmeans *kmeans,
 	/* Calculate the membership and distance values.  */
 	struct ccase *outc = case_create (proto);
 	if (qc->save_values & SAVE_MEMBERSHIP)
-	  case_data_rw_idx (outc, qc->save_trans_data->CASE_IDX_MEMBERSHIP)->f = cluster + 1;
+	  *case_num_rw_idx (outc, qc->save_trans_data->CASE_IDX_MEMBERSHIP) = cluster + 1;
 
 	if (qc->save_values & SAVE_DISTANCE)
-	  case_data_rw_idx (outc, qc->save_trans_data->CASE_IDX_DISTANCE)->f
+	  *case_num_rw_idx (outc, qc->save_trans_data->CASE_IDX_DISTANCE)
 	    = sqrt (dist_from_case (kmeans, c, qc, clust));
 
 	casewriter_write (qc->save_trans_data->writer, outc);

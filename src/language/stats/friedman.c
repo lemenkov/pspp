@@ -123,7 +123,7 @@ friedman_execute (const struct dataset *ds,
       double prev_x = SYSMIS;
       int run_length = 0;
 
-      const double w = weight ? case_data (c, weight)->f: 1.0;
+      const double w = weight ? case_num (c, weight) : 1.0;
 
       fr.cc += w;
 

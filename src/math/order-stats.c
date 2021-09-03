@@ -125,8 +125,8 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
 
   for (; (cx = casereader_read (reader)) != NULL; case_unref (cx))
     {
-      const double weight = (wt_idx == -1) ? 1.0 : case_data_idx (cx, wt_idx)->f;
-      const double this_value = case_data_idx (cx, val_idx)->f;
+      const double weight = wt_idx == -1 ? 1.0 : case_num_idx (cx, wt_idx);
+      const double this_value = case_num_idx (cx, val_idx);
 
       /* The casereader MUST be sorted */
       assert (this_value >= prev_value);

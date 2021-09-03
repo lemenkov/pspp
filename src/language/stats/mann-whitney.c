@@ -127,7 +127,7 @@ mann_whitney_execute (const struct dataset *ds,
 	{
 	  const union value *group = case_data (c, nst->indep_var);
 	  const size_t group_var_width = var_get_width (nst->indep_var);
-	  const double rank = case_data_idx (c, rank_idx)->f;
+	  const double rank = case_num_idx (c, rank_idx);
 
 	  if (value_equal (group, &nst->val1, group_var_width))
 	    {

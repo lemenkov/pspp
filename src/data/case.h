@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "libpspp/compiler.h"
+#include "libpspp/str.h"
 #include "data/caseproto.h"
 
 struct variable;
@@ -94,9 +95,13 @@ union value *case_data_rw_idx (struct ccase *, size_t idx);
 
 double case_num (const struct ccase *, const struct variable *);
 double case_num_idx (const struct ccase *, size_t idx);
+double *case_num_rw (struct ccase *, const struct variable *);
+double *case_num_rw_idx (struct ccase *, size_t idx);
 
 const uint8_t *case_str (const struct ccase *, const struct variable *);
 const uint8_t *case_str_idx (const struct ccase *, size_t idx);
+struct substring case_ss (const struct ccase *, const struct variable *);
+struct substring case_ss_idx (const struct ccase *, size_t width, size_t idx);
 uint8_t *case_str_rw (struct ccase *, const struct variable *);
 uint8_t *case_str_rw_idx (struct ccase *, size_t idx);
 
@@ -121,7 +126,7 @@ void case_unref__ (struct ccase *);
    This function should be used before attempting to modify any
    of the data in a case that might be shared, e.g.:
         c = case_unshare (c);              // Make sure that C is not shared.
-        case_data_rw (c, myvar)->f = 1;    // Modify data in C.
+        *case_num_rw (c, myvar) = 1;       // Modify data in C.
 */
 static inline struct ccase *
 case_unshare (struct ccase *c)

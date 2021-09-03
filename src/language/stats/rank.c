@@ -573,12 +573,12 @@ rank_sorted_file (struct casereader *input,
           size_t i;
 
           out_case = case_create (casewriter_get_proto (output));
-          case_data_rw_idx (out_case, 0)->f = case_num_idx (c, 1);
+          *case_num_rw_idx (out_case, 0) = case_num_idx (c, 1);
           for (i = 0; i < cmd->n_rs; ++i)
             {
               rank_function_t func = rank_func[cmd->rs[i].rfunc];
               double rank = func (cmd, tw, cc, cc_1, tie_group, w);
-              case_data_rw_idx (out_case, i + 1)->f = rank;
+              *case_num_rw_idx (out_case, i + 1) = rank;
             }
 
           casewriter_write (output, out_case);
@@ -928,7 +928,7 @@ rank_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
             size_t i;
 
             for (i = 0; i < trns->n_funcs; i++)
-              case_data_rw (*c, iv->output_vars[i])->f
+              *case_num_rw (*c, iv->output_vars[i])
                 = case_num_idx (iv->current, i + 1);
             advance_ranking (iv);
             break;

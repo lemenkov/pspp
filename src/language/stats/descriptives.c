@@ -606,7 +606,7 @@ descriptives_set_all_sysmis_zscores (const struct dsc_trns *t, struct ccase *c)
   const struct dsc_z_score *z;
 
   for (z = t->z_scores; z < t->z_scores + t->z_score_cnt; z++)
-    case_data_rw (c, z->z_var)->f = SYSMIS;
+    *case_num_rw (c, z->z_var) = SYSMIS;
 }
 
 /* Transformation function to calculate Z-scores. Will return SYSMIS if any of
@@ -684,7 +684,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
   for (z = t->z_scores; z < t->z_scores + t->z_score_cnt; z++)
     {
       double input = case_num (*c, z->src_var);
-      double *output = &case_data_rw (*c, z->z_var)->f;
+      double *output = case_num_rw (*c, z->z_var);
 
       if (z->mean == SYSMIS || z->std_dev == SYSMIS
           || var_is_num_missing (z->src_var, input, t->exclude))
@@ -904,7 +904,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
     {
       c = case_create (casewriter_get_proto (dsc->z_writer));
       z_idx = 0;
-      case_data_rw_idx (c, z_idx++)->f = count;
+      *case_num_rw_idx (c, z_idx++) = count;
     }
   else
     c = NULL;
@@ -945,8 +945,8 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
 
       if (dv->z_name && c != NULL)
         {
-          case_data_rw_idx (c, z_idx++)->f = dv->stats[DSC_MEAN];
-          case_data_rw_idx (c, z_idx++)->f = dv->stats[DSC_STDDEV];
+          *case_num_rw_idx (c, z_idx++) = dv->stats[DSC_MEAN];
+          *case_num_rw_idx (c, z_idx++) = dv->stats[DSC_STDDEV];
         }
     }
 

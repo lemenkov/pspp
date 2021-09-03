@@ -939,7 +939,7 @@ service_cell_map (const struct means *means, const struct mtable *mt,
                                                               NULL);
                   stat_update *su = cell_spec[means->statistics[stat]].su;
                   su (cell->stat[stat + v * means->n_statistics], weight,
-		      case_data (c, dep_var)->f);
+		      case_num (c, dep_var));
                 }
             }
         }

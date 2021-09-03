@@ -527,7 +527,7 @@ data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
   /* If there was an END subcommand handle it. */
   if (trns->end != NULL)
     {
-      double *end = &case_data_rw (*c, trns->end)->f;
+      double *end = case_num_rw (*c, trns->end);
       if (retval == TRNS_END_FILE)
         {
           *end = 1.0;

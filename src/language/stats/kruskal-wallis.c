@@ -192,7 +192,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 			   value_hash (&rank->group, group_var_width, 0));
 	    }
 
-	  rank->sum_of_ranks += case_data_idx (c, rank_idx)->f;
+	  rank->sum_of_ranks += case_num_idx (c, rank_idx);
 	  rank->n += dict_get_case_weight (dict, c, &warn);
 
 	  /* If this assertion fires, then either the data wasn't sorted or some other

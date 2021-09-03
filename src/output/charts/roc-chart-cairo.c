@@ -58,11 +58,11 @@ xrchart_draw_roc (const struct chart *chart, cairo_t *cr,
       xrchart_vector_start (cr, geom, rv->name);
       for (; (cc = casereader_read (r)) != NULL; case_unref (cc))
 	{
-	  double se = case_data_idx (cc, ROC_TP)->f;
-	  double sp = case_data_idx (cc, ROC_TN)->f;
+	  double se = case_num_idx (cc, ROC_TP);
+	  double sp = case_num_idx (cc, ROC_TN);
 
-	  se /= case_data_idx (cc, ROC_FN)->f + case_data_idx (cc, ROC_TP)->f ;
-	  sp /= case_data_idx (cc, ROC_TN)->f + case_data_idx (cc, ROC_FP)->f ;
+	  se /= case_num_idx (cc, ROC_FN) + case_num_idx (cc, ROC_TP);
+	  sp /= case_num_idx (cc, ROC_TN) + case_num_idx (cc, ROC_FP);
 
 	  xrchart_vector (cr, geom, 1 - sp, se);
 	}

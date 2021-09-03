@@ -367,7 +367,7 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
   assert (!cat->cat_to_iact);
 
   double weight;
-  weight = cat->wv ? case_data (c, cat->wv)->f : 1.0;
+  weight = cat->wv ? case_num (c, cat->wv) : 1.0;
   weight = var_force_valid_weight (cat->wv, weight, NULL);
 
   /* Update the frequency table for each variable. */

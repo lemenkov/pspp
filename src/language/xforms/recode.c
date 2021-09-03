@@ -710,7 +710,7 @@ recode_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
 
       if (trns->dst_type == VAL_NUMERIC)
         {
-          double *dst = &case_data_rw (*c, dst_var)->f;
+          double *dst = case_num_rw (*c, dst_var);
           if (out != NULL)
             *dst = !out->copy_input ? out->value.f : case_num (*c, src_var);
           else if (trns->src_vars != trns->dst_vars)

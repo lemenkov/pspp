@@ -101,16 +101,16 @@ u (const struct group_data *grp0, const struct group_data *grp1)
     {
       struct ccase *c1;
       struct casereader *r1 = casereader_clone (grp1->reader);
-      double x0 = case_data_idx (c0, 0)->f;
-      double cc0 = case_data_idx (c0, 1)->f;
+      double x0 = case_num_idx (c0, 0);
+      double cc0 = case_num_idx (c0, 1);
       double w0 = cc0 - prev_cc0;
 
       double prev_cc1 = 0;
 
       for (; (c1 = casereader_read (r1)); case_unref (c1))
         {
-          double x1 = case_data_idx (c1, 0)->f;
-          double cc1 = case_data_idx (c1, 1)->f;
+          double x1 = case_num_idx (c1, 0);
+          double cc1 = case_num_idx (c1, 1);
 
           if (x0 > x1)
             {
@@ -203,7 +203,7 @@ void variance_calculation (struct casereader *ir, const struct variable *var,
 
   for (; (c = casereader_read (r)); case_unref (c))
     {
-      double w = case_data_idx (c, w_idx)->f;
+      double w = case_num_idx (c, w_idx);
 
       for (i = 0; i < n; ++i)
         result[i] += f[i] (w);
@@ -295,12 +295,11 @@ jonckheere_terpstra_execute (const struct dataset *ds,
         for (; (c = casereader_read (group)); case_unref (c))
           {
             struct ccase *c_out = case_create (proto);
-            const union value *x = case_data (c, nst->vars[v]);
 
-            case_data_rw_idx (c_out, 0)->f = x->f;
+            *case_num_rw_idx (c_out, 0) = case_num (c, nst->vars[v]);
 
             cc += dict_get_case_weight (dict, c, &warn);
-            case_data_rw_idx (c_out, 1)->f = cc;
+            *case_num_rw_idx (c_out, 1) = cc;
             casewriter_write (writer, c_out);
           }
 

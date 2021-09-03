@@ -568,7 +568,7 @@ autorecode_trns_proc (void *arc_, struct ccase **c,
       size_t hash = value_hash (value, width, 0);
       const struct arc_item *item = find_arc_item (spec->items, value, width,
                                                    hash);
-      case_data_rw (*c, spec->dst)->f = item ? item->to : SYSMIS;
+      *case_num_rw (*c, spec->dst) = item ? item->to : SYSMIS;
     }
 
   return TRNS_CONTINUE;

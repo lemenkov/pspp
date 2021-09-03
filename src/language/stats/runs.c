@@ -143,7 +143,7 @@ runs_execute (const struct dataset *ds,
 		struct ccase *c;
 		for (; (c = casereader_read (group)); case_unref (c))
 		  {
-		    const double w = weight ? case_data (c, weight)->f: 1.0;
+		    const double w = weight ? case_num (c, weight) : 1.0;
 		    const union value *val = case_data (c, var);
 		    if (var_is_value_missing (var, val, exclude))
 		      continue;
@@ -191,7 +191,7 @@ runs_execute (const struct dataset *ds,
  	    for (; (c = casereader_read (reader));)
 	      {
 		const union value *val = case_data (c, var);
-		const double w = weight ? case_data (c, weight)->f: 1.0;
+		const double w = weight ? case_num (c, weight) : 1.0;
 		if (var_is_value_missing (var, val, exclude))
 		  {
 		    case_unref (c);
@@ -224,7 +224,7 @@ runs_execute (const struct dataset *ds,
 	struct casereader *reader = casereader_clone (input);
 	for (; (c = casereader_read (reader)); case_unref (c))
 	  {
-	    const double w = weight ? case_data (c, weight)->f: 1.0;
+	    const double w = weight ? case_num (c, weight) : 1.0;
 	    for (v = 0; v < otp->n_vars; ++v)
 	      {
 		const struct variable *var = otp->vars[v];
@@ -260,7 +260,7 @@ runs_execute (const struct dataset *ds,
 
   for (; (c = casereader_read (input)); case_unref (c))
     {
-      const double w = weight ? case_data (c, weight)->f: 1.0;
+      const double w = weight ? case_num (c, weight) : 1.0;
 
       for (v = 0; v < otp->n_vars; ++v)
 	{

@@ -80,7 +80,7 @@ cochran_execute (const struct dataset *ds,
   for (; (c = casereader_read (input)); case_unref (c))
     {
       double case_hits = 0.0;
-      const double w = weight ? case_data (c, weight)->f: 1.0;
+      const double w = weight ? case_num (c, weight) : 1.0;
       for (v = 0; v < ct->n_vars; ++v)
 	{
 	  const struct variable *var = ct->vars[v];

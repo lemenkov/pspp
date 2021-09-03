@@ -323,6 +323,29 @@ case_num_idx (const struct ccase *c, size_t idx)
   return c->values[idx].f;
 }
 
+/* Returns a pointer to the `double' in the `union value' in C for variable V.
+   The caller is allowed to modify the returned data.
+
+   Case C must be drawn from V's dictionary and must not be shared. */
+double *
+case_num_rw (struct ccase *c, const struct variable *v)
+{
+  assert_variable_matches_case (c, v);
+  assert (!case_is_shared (c));
+  return &c->values[var_get_case_index (v)].f;
+}
+
+/* Returns a pointer to the `double' in the `union value' in C numbered IDX.
+   The caller is allowed to modify the returned data.
+
+   Case C must not be shared. */
+double *
+case_num_rw_idx (struct ccase *c, size_t idx)
+{
+  assert (!case_is_shared (c));
+  return &c->values[idx].f;
+}
+
 /* Returns the string value of the `union value' in C for
    variable V.  Case C must be drawn from V's dictionary.  The
    caller must not modify the return value.
@@ -346,6 +369,26 @@ case_str_idx (const struct ccase *c, size_t idx)
 {
   assert (idx < c->proto->n_widths);
   return c->values[idx].s;
+}
+
+/* Returns a substring for the `union value' in C for variable V.  Case C must
+   be drawn from V's dictionary. */
+struct substring
+case_ss (const struct ccase *c, const struct variable *v)
+{
+  assert_variable_matches_case (c, v);
+  return ss_buffer (CHAR_CAST (char *, c->values[var_get_case_index (v)].s),
+                    var_get_width (v));
+}
+
+/* Returns a substring for the `union value' in C numbered IDX.  WIDTH must be
+   the value's width. */
+struct substring
+case_ss_idx (const struct ccase *c, size_t width, size_t idx)
+{
+  assert (width > 0);
+  assert (idx < c->proto->n_widths);
+  return ss_buffer (CHAR_CAST (char *, c->values[idx].s), width);
 }
 
 /* Returns the string value of the `union value' in C for

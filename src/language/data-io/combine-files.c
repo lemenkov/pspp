@@ -835,7 +835,7 @@ create_output_case (const struct comb_proc *proc)
     {
       struct comb_file *file = &proc->files[i];
       if (file->in_var != NULL)
-        case_data_rw (output, file->in_var)->f = false;
+        *case_num_rw (output, file->in_var) = false;
     }
   return output;
 }
@@ -844,7 +844,7 @@ static void
 mark_file_used (const struct comb_file *file, struct ccase *output)
 {
   if (file->in_var != NULL)
-    case_data_rw (output, file->in_var)->f = true;
+    *case_num_rw (output, file->in_var) = true;
 }
 
 /* Copies the data from FILE's case into output case OUTPUT.
@@ -913,7 +913,7 @@ output_case (struct comb_proc *proc, struct ccase *output, union value by[])
         {
           new_BY = !subcase_equal_xx (&proc->by_vars, proc->prev_BY, by);
           if (proc->last != NULL)
-            case_data_rw (proc->buffered_case, proc->last)->f = new_BY;
+            *case_num_rw (proc->buffered_case, proc->last) = new_BY;
           casewriter_write (proc->output, proc->buffered_case);
         }
       else
@@ -921,7 +921,7 @@ output_case (struct comb_proc *proc, struct ccase *output, union value by[])
 
       proc->buffered_case = output;
       if (proc->first != NULL)
-        case_data_rw (proc->buffered_case, proc->first)->f = new_BY;
+        *case_num_rw (proc->buffered_case, proc->first) = new_BY;
 
       if (new_BY)
         {
@@ -946,7 +946,7 @@ output_buffered_case (struct comb_proc *proc)
   if (proc->prev_BY != NULL)
     {
       if (proc->last != NULL)
-        case_data_rw (proc->buffered_case, proc->last)->f = 1.0;
+        *case_num_rw (proc->buffered_case, proc->last) = 1.0;
       casewriter_write (proc->output, proc->buffered_case);
       proc->buffered_case = NULL;
     }

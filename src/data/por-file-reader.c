@@ -901,7 +901,7 @@ por_file_casereader_read (struct casereader *reader, void *r_)
       int width = caseproto_get_width (r->proto, i);
 
       if (width == 0)
-        case_data_rw_idx (c, i)->f = read_float (r);
+        *case_num_rw_idx (c, i) = read_float (r);
       else
         {
           uint8_t buf[256];

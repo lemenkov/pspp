@@ -1068,7 +1068,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
     {
       struct ccase *outcase ;
       const struct variable *var = examine->dep_vars[v];
-      const double x = case_data (c, var)->f;
+      const double x = case_num (c, var);
 
       if (var_is_value_missing (var, case_data (c, var), examine->dep_excl))
         {
@@ -1090,11 +1090,11 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
 
       /* Save the value and the ID to the writer */
       assert (examine->id_idx != -1);
-      case_data_rw_idx (outcase, EX_VAL)->f = x;
+      *case_num_rw_idx (outcase, EX_VAL) = x;
       value_copy (case_data_rw_idx (outcase, EX_ID),
                   case_data_idx (c, examine->id_idx), examine->id_width);
 
-      case_data_rw_idx (outcase, EX_WT)->f = weight;
+      *case_num_rw_idx (outcase, EX_WT) = weight;
 
       es[v].cc += weight;
 
@@ -1148,8 +1148,8 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       for (reader = casereader_clone (es[v].sorted_reader);
            (c = casereader_read (reader)) != NULL; case_unref (c))
         {
-          const double val = case_data_idx (c, EX_VAL)->f;
-          double wt = case_data_idx (c, EX_WT)->f;
+          const double val = case_num_idx (c, EX_VAL);
+          double wt = case_num_idx (c, EX_WT);
 	  wt = var_force_valid_weight (examine->wv, wt, &warn);
 
           moments_pass_two (es[v].mom, val, wt);

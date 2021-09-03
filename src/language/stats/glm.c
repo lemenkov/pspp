@@ -618,8 +618,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
       for (v = 0; v < cmd->n_dep_vars; ++v)
-	moments_pass_one (ws.totals, case_data (c, cmd->dep_vars[v])->f,
-			  weight);
+	moments_pass_one (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass1 (cov, c);
     }
@@ -636,8 +635,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
       for (v = 0; v < cmd->n_dep_vars; ++v)
-	moments_pass_two (ws.totals, case_data (c, cmd->dep_vars[v])->f,
-			  weight);
+	moments_pass_two (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass2 (cov, c);
     }

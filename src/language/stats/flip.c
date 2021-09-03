@@ -440,7 +440,7 @@ flip_casereader_read (struct casereader *reader, void *flip_)
           flip->error = true;
           return NULL;
         }
-      case_data_rw_idx (c, i + 1)->f = in;
+      *case_num_rw_idx (c, i + 1) = in;
     }
 
   flip->cases_read++;

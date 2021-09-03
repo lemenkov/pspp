@@ -63,9 +63,9 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
   minimize (&np->y_min, y);
 
   cp = case_create (casewriter_get_proto (np->writer));
-  case_data_rw_idx (cp, NP_IDX_Y)->f = y;
-  case_data_rw_idx (cp, NP_IDX_NS)->f = ns;
-  case_data_rw_idx (cp, NP_IDX_DNS)->f = dns;
+  *case_num_rw_idx (cp, NP_IDX_Y) = y;
+  *case_num_rw_idx (cp, NP_IDX_NS) = ns;
+  *case_num_rw_idx (cp, NP_IDX_DNS) = dns;
   casewriter_write (np->writer, cp);
 
   np->prev_cc = cc;

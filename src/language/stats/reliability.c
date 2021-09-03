@@ -426,11 +426,8 @@ append_sum (const struct ccase *c, casenumber n UNUSED, void *aux)
   double sum = 0;
   const struct cronbach *s = aux;
 
-  int v;
-  for (v = 0 ; v < s->n_items; ++v)
-    {
-      sum += case_data (c, s->items[v])->f;
-    }
+  for (int v = 0 ; v < s->n_items; ++v)
+    sum += case_num (c, s->items[v]);
 
   return sum;
 };
@@ -495,9 +492,9 @@ do_reliability (struct casereader *input, struct dataset *ds,
 	  struct cronbach *s = &rel->sc[si];
 
 	  for (i = 0 ; i < s->n_items ; ++i)
-	    moments1_add (s->m[i], case_data (c, s->items[i])->f, weight);
+	    moments1_add (s->m[i], case_num (c, s->items[i]), weight);
 
-	  moments1_add (s->total, case_data_idx (c, s->totals_idx)->f, weight);
+	  moments1_add (s->total, case_num_idx (c, s->totals_idx), weight);
 	}
     }
   casereader_destroy (input);

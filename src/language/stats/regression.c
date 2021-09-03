@@ -175,14 +175,14 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
         {
           if (ws->pred_idx != -1)
             {
-              double pred = case_data_idx (in, ws->extras * k + ws->pred_idx)->f;
-              case_data_rw (*c, ws->predvars[k])->f = pred;
+              double pred = case_num_idx (in, ws->extras * k + ws->pred_idx);
+              *case_num_rw (*c, ws->predvars[k]) = pred;
             }
 
           if (ws->res_idx != -1)
             {
-              double resid = case_data_idx (in, ws->extras * k + ws->res_idx)->f;
-              case_data_rw (*c, ws->residvars[k])->f = resid;
+              double resid = case_num_idx (in, ws->extras * k + ws->res_idx);
+              *case_num_rw (*c, ws->residvars[k]) = resid;
             }
         }
       case_unref (in);
@@ -827,14 +827,14 @@ run_regression (const struct regression *cmd,
               if (cmd->pred)
                 {
                   double pred = linreg_predict (models[k], vals, n_indep);
-                  case_data_rw_idx (outc, k * ws->extras + ws->pred_idx)->f = pred;
+                  *case_num_rw_idx (outc, k * ws->extras + ws->pred_idx) = pred;
                 }
 
               if (cmd->resid)
                 {
-                  double obs = case_data (c, linreg_dep_var (models[k]))->f;
+                  double obs = case_num (c, linreg_dep_var (models[k]));
                   double res = linreg_residual (models[k], obs,  vals, n_indep);
-                  case_data_rw_idx (outc, k * ws->extras + ws->res_idx)->f = res;
+                  *case_num_rw_idx (outc, k * ws->extras + ws->res_idx) = res;
                 }
 	      free (vals);
 	      free (vars);

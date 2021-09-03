@@ -227,7 +227,7 @@ predictor_value (const struct ccase *c,
 {
   /* Values of the scalar predictor variables */
   if (index < n_x)
-    return case_data (c, x[index])->f;
+    return case_num (c, x[index]);
 
   /* Coded values of categorical predictor variables (or interactions) */
   if (cats && index - n_x  < categoricals_df_total (cats))

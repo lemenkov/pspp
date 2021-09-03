@@ -301,7 +301,7 @@ void
 covariance_accumulate_pass1 (struct covariance *cov, const struct ccase *c)
 {
   size_t i, j, m;
-  const double weight = cov->wv ? case_data (c, cov->wv)->f : 1.0;
+  const double weight = cov->wv ? case_num (c, cov->wv) : 1.0;
 
   assert (cov->passes == 2);
   if (!cov->pass_one_first_case_seen)
@@ -346,7 +346,7 @@ void
 covariance_accumulate_pass2 (struct covariance *cov, const struct ccase *c)
 {
   size_t i, j;
-  const double weight = cov->wv ? case_data (c, cov->wv)->f : 1.0;
+  const double weight = cov->wv ? case_num (c, cov->wv) : 1.0;
 
   assert (cov->passes == 2);
   assert (cov->state >= 1);
@@ -464,7 +464,7 @@ void
 covariance_accumulate (struct covariance *cov, const struct ccase *c)
 {
   size_t i, j, m;
-  const double weight = cov->wv ? case_data (c, cov->wv)->f : 1.0;
+  const double weight = cov->wv ? case_num (c, cov->wv) : 1.0;
 
   assert (cov->passes == 1);
 

@@ -336,9 +336,7 @@ dump_casereader (struct casereader *reader)
     {
       int i;
       for (i = 0 ; i < case_get_value_cnt (c); ++i)
-	{
-	  printf ("%g ", case_data_idx (c, i)->f);
-	}
+        printf ("%g ", case_num_idx (c, i));
       printf ("\n");
     }
 
@@ -358,7 +356,7 @@ match_positives (const struct ccase *c, void *aux)
 {
   struct cmd_roc *roc = aux;
   const struct variable *wv = dict_get_weight (roc->dict);
-  const double weight = wv ? case_data (c, wv)->f : 1.0;
+  const double weight = wv ? case_num (c, wv) : 1.0;
 
   const bool positive =
   (0 == value_compare_3way (case_data (c, roc->state_var), &roc->state_value,
@@ -428,7 +426,7 @@ accumulate_counts (struct casereader *input,
   for (; (cpc = casereader_read (input)); case_unref (cpc))
     {
       struct ccase *new_case;
-      const double cp = case_data_idx (cpc, ROC_CUTPOINT)->f;
+      const double cp = case_num_idx (cpc, ROC_CUTPOINT);
 
       assert (cp != SYSMIS);
 
@@ -438,10 +436,8 @@ accumulate_counts (struct casereader *input,
 
       new_case = case_clone (cpc);
 
-      if (pos_cond (result, cp))
-	case_data_rw_idx (new_case, true_index)->f += weight;
-      else
-	case_data_rw_idx (new_case, false_index)->f += weight;
+      int index = pos_cond (result, cp) ? true_index : false_index;
+      *case_num_rw_idx (new_case, index) += weight;
 
       prev_cp = cp;
 
@@ -509,8 +505,8 @@ process_group (const struct variable *var, struct casereader *reader,
       struct ccase *c2;
       struct casereader *r2 = casereader_clone (rclone);
 
-      const double weight1 = case_data_idx (c1, weight_idx)->f;
-      const double d1 = case_data (c1, var)->f;
+      const double weight1 = case_num_idx (c1, weight_idx);
+      const double d1 = case_num (c1, var);
       double n_eq = 0.0;
       double n_pred = 0.0;
 
@@ -522,8 +518,8 @@ process_group (const struct variable *var, struct casereader *reader,
 
       for (; (c2 = casereader_read (r2)); case_unref (c2))
 	{
-	  const double d2 = case_data (c2, var)->f;
-	  const double weight2 = case_data_idx (c2, weight_idx)->f;
+	  const double d2 = case_num (c2, var);
+	  const double weight2 = case_num_idx (c2, weight_idx);
 
 	  if (d1 == d2)
 	    {
@@ -536,9 +532,9 @@ process_group (const struct variable *var, struct casereader *reader,
 	    }
 	}
 
-      case_data_rw_idx (new_case, VALUE)->f = d1;
-      case_data_rw_idx (new_case, N_EQ)->f = n_eq;
-      case_data_rw_idx (new_case, N_PRED)->f = n_pred;
+      *case_num_rw_idx (new_case, VALUE) = d1;
+      *case_num_rw_idx (new_case, N_EQ) = n_eq;
+      *case_num_rw_idx (new_case, N_PRED) = n_pred;
 
       casewriter_write (wtr, new_case);
 
@@ -624,11 +620,11 @@ append_cutpoint (struct casewriter *writer, double cutpoint)
 {
   struct ccase *cc = case_create (casewriter_get_proto (writer));
 
-  case_data_rw_idx (cc, ROC_CUTPOINT)->f = cutpoint;
-  case_data_rw_idx (cc, ROC_TP)->f = 0;
-  case_data_rw_idx (cc, ROC_FN)->f = 0;
-  case_data_rw_idx (cc, ROC_TN)->f = 0;
-  case_data_rw_idx (cc, ROC_FP)->f = 0;
+  *case_num_rw_idx (cc, ROC_CUTPOINT) = cutpoint;
+  *case_num_rw_idx (cc, ROC_TP) = 0;
+  *case_num_rw_idx (cc, ROC_FN) = 0;
+  *case_num_rw_idx (cc, ROC_TN) = 0;
+  *case_num_rw_idx (cc, ROC_FP) = 0;
 
   casewriter_write (writer, cc);
 }
@@ -791,18 +787,18 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	{
 	  struct ccase *pos_case = case_create (n_proto);
 	  struct ccase *cneg;
-	  const double jpos = case_data_idx (cpos, VALUE)->f;
+	  const double jpos = case_num_idx (cpos, VALUE);
 
 	  while ((cneg = casereader_read (n_neg_reader)))
 	    {
 	      struct ccase *nc = case_create (n_proto);
 
-	      const double jneg = case_data_idx (cneg, VALUE)->f;
+	      const double jneg = case_num_idx (cneg, VALUE);
 
-	      case_data_rw_idx (nc, VALUE)->f = jneg;
-	      case_data_rw_idx (nc, N_POS_EQ)->f = 0;
+	      *case_num_rw_idx (nc, VALUE) = jneg;
+	      *case_num_rw_idx (nc, N_POS_EQ) = 0;
 
-	      case_data_rw_idx (nc, N_POS_GT)->f = SYSMIS;
+	      *case_num_rw_idx (nc, N_POS_GT) = SYSMIS;
 
 	      *case_data_rw_idx (nc, N_NEG_EQ) = *case_data_idx (cneg, N_EQ);
 	      *case_data_rw_idx (nc, N_NEG_LT) = *case_data_idx (cneg, N_PRED);
@@ -814,11 +810,11 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 		break;
 	    }
 
-	  case_data_rw_idx (pos_case, VALUE)->f = jpos;
+	  *case_num_rw_idx (pos_case, VALUE) = jpos;
 	  *case_data_rw_idx (pos_case, N_POS_EQ) = *case_data_idx (cpos, N_EQ);
 	  *case_data_rw_idx (pos_case, N_POS_GT) = *case_data_idx (cpos, N_PRED);
-	  case_data_rw_idx (pos_case, N_NEG_EQ)->f = 0;
-	  case_data_rw_idx (pos_case, N_NEG_LT)->f = SYSMIS;
+	  *case_num_rw_idx (pos_case, N_NEG_EQ) = 0;
+	  *case_num_rw_idx (pos_case, N_NEG_LT) = SYSMIS;
 
 	  casewriter_write (w, pos_case);
 	}
@@ -840,13 +836,13 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 
 	for (; (c = casereader_read (r)); case_unref (c))
 	  {
-	    double n_pos_gt = case_data_idx (c, N_POS_GT)->f;
+	    double n_pos_gt = case_num_idx (c, N_POS_GT);
 	    struct ccase *nc = case_clone (c);
 
 	    if (n_pos_gt == SYSMIS)
 	      {
 		n_pos_gt = prev_pos_gt;
-		case_data_rw_idx (nc, N_POS_GT)->f = n_pos_gt;
+		*case_num_rw_idx (nc, N_POS_GT) = n_pos_gt;
 	      }
 
 	    casewriter_write (w, nc);
@@ -865,13 +861,13 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 
 	for (; (c = casereader_read (r)); case_unref (c))
 	  {
-	    double n_neg_lt = case_data_idx (c, N_NEG_LT)->f;
+	    double n_neg_lt = case_num_idx (c, N_NEG_LT);
 	    struct ccase *nc = case_clone (c);
 
 	    if (n_neg_lt == SYSMIS)
 	      {
 		n_neg_lt = prev_neg_lt;
-		case_data_rw_idx (nc, N_NEG_LT)->f = n_neg_lt;
+		*case_num_rw_idx (nc, N_NEG_LT) = n_neg_lt;
 	      }
 
 	    casewriter_write (w, nc);
@@ -888,28 +884,28 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	  {
 	    struct ccase *next_case = casereader_peek (r, 0);
 
-	    const double j = case_data_idx (c, VALUE)->f;
-	    double n_pos_eq = case_data_idx (c, N_POS_EQ)->f;
-	    double n_pos_gt = case_data_idx (c, N_POS_GT)->f;
-	    double n_neg_eq = case_data_idx (c, N_NEG_EQ)->f;
-	    double n_neg_lt = case_data_idx (c, N_NEG_LT)->f;
+	    const double j = case_num_idx (c, VALUE);
+	    double n_pos_eq = case_num_idx (c, N_POS_EQ);
+	    double n_pos_gt = case_num_idx (c, N_POS_GT);
+	    double n_neg_eq = case_num_idx (c, N_NEG_EQ);
+	    double n_neg_lt = case_num_idx (c, N_NEG_LT);
 
-	    if (prev_case && j == case_data_idx (prev_case, VALUE)->f)
+	    if (prev_case && j == case_num_idx (prev_case, VALUE))
 	      {
-		if (0 ==  case_data_idx (c, N_POS_EQ)->f)
+		if (0 ==  case_num_idx (c, N_POS_EQ))
 		  {
-		    n_pos_eq = case_data_idx (prev_case, N_POS_EQ)->f;
-		    n_pos_gt = case_data_idx (prev_case, N_POS_GT)->f;
+		    n_pos_eq = case_num_idx (prev_case, N_POS_EQ);
+		    n_pos_gt = case_num_idx (prev_case, N_POS_GT);
 		  }
 
-		if (0 ==  case_data_idx (c, N_NEG_EQ)->f)
+		if (0 ==  case_num_idx (c, N_NEG_EQ))
 		  {
-		    n_neg_eq = case_data_idx (prev_case, N_NEG_EQ)->f;
-		    n_neg_lt = case_data_idx (prev_case, N_NEG_LT)->f;
+		    n_neg_eq = case_num_idx (prev_case, N_NEG_EQ);
+		    n_neg_lt = case_num_idx (prev_case, N_NEG_LT);
 		  }
 	      }
 
-	    if (NULL == next_case || j != case_data_idx (next_case, VALUE)->f)
+	    if (NULL == next_case || j != case_num_idx (next_case, VALUE))
 	      {
 		rs[i].auc += n_pos_gt * n_neg_eq + (n_pos_eq * n_neg_eq) / 2.0;
 
@@ -1087,11 +1083,11 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
       int coord_idx = 0;
       for (; (cc = casereader_read (r)) != NULL; case_unref (cc))
 	{
-	  const double se = case_data_idx (cc, ROC_TP)->f /
-	    (case_data_idx (cc, ROC_TP)->f + case_data_idx (cc, ROC_FN)->f);
+	  const double se = case_num_idx (cc, ROC_TP) /
+	    (case_num_idx (cc, ROC_TP) + case_num_idx (cc, ROC_FN));
 
-	  const double sp = case_data_idx (cc, ROC_TN)->f /
-	    (case_data_idx (cc, ROC_TN)->f + case_data_idx (cc, ROC_FP)->f);
+	  const double sp = case_num_idx (cc, ROC_TN) /
+	    (case_num_idx (cc, ROC_TN) + case_num_idx (cc, ROC_FP));
 
           if (coord_idx >= n_coords)
             {

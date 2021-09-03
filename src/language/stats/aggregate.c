@@ -789,12 +789,11 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 
               cout = case_create (casewriter_get_proto (iter->writer));
 
-	      case_data_rw (cout, iter->subject)->f
-                = case_data (input, iter->src)->f;
+	      *case_num_rw (cout, iter->subject) = case_num (input, iter->src);
 
 	      wv = dict_get_case_weight (agr->src_dict, input, NULL);
 
-	      case_data_rw (cout, iter->weight)->f = wv;
+	      *case_num_rw (cout, iter->weight) = wv;
 
 	      iter->cc += wv;
 

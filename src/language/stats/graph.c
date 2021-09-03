@@ -355,8 +355,8 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 
   for (;(c = casereader_read (input)) != NULL; case_unref (c))
     {
-      const double x      = case_data_idx (c, HG_IDX_X)->f;
-      const double weight = case_data_idx (c, HG_IDX_WT)->f;
+      const double x      = case_num_idx (c, HG_IDX_X);
+      const double weight = case_num_idx (c, HG_IDX_WT);
       moments_pass_two (cmd->es[0].mom, x, weight);
       histogram_add (histogram, x, weight);
     }
@@ -489,7 +489,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
 	{
 	  const double weight = dict_get_case_weight (cmd->dict,c,NULL);
 	  const double x = (cmd->n_dep_vars > 0)
-	    ? case_data (c, cmd->dep_vars[0])->f : SYSMIS;
+	    ? case_num (c, cmd->dep_vars[0]) : SYSMIS;
 
 	  cc += weight;
 
@@ -609,7 +609,7 @@ run_graph (struct graph *cmd, struct casereader *input)
       struct ccase *outcase = case_create (cmd->gr_proto);
       const double weight = dict_get_case_weight (cmd->dict,c,NULL);
       if (cmd->chart_type == CT_HISTOGRAM)
-	case_data_rw_idx (outcase, HG_IDX_WT)->f = weight;
+	*case_num_rw_idx (outcase, HG_IDX_WT) = weight;
       if (cmd->chart_type == CT_SCATTERPLOT && cmd->n_by_vars > 0)
 	value_copy (case_data_rw_idx (outcase, SP_IDX_BY),
 		    case_data (c, cmd->by_var[0]),
@@ -617,7 +617,7 @@ run_graph (struct graph *cmd, struct casereader *input)
       for(int v=0;v<cmd->n_dep_vars;v++)
 	{
 	  const struct variable *var = cmd->dep_vars[v];
-	  const double x = case_data (c, var)->f;
+	  const double x = case_num (c, var);
 
 	  if (var_is_value_missing (var, case_data (c, var), cmd->dep_excl))
 	    {
@@ -625,7 +625,7 @@ run_graph (struct graph *cmd, struct casereader *input)
 	      continue;
 	    }
 	  /* Magically v value fits to SP_IDX_X, SP_IDX_Y, HG_IDX_X */
-	  case_data_rw_idx (outcase, v)->f = x;
+	  *case_num_rw_idx (outcase, v) = x;
 
 	  if (x > cmd->es[v].maximum)
 	    cmd->es[v].maximum = x;

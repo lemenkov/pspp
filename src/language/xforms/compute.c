@@ -133,7 +133,7 @@ compute_num (void *compute_, struct ccase **c, casenumber case_num)
       || expr_evaluate_num (compute->test, *c, case_num) == 1.0)
     {
       *c = case_unshare (*c);
-      case_data_rw (*c, compute->variable)->f
+      *case_num_rw (*c, compute->variable)
         = expr_evaluate_num (compute->rvalue, *c, case_num);
     }
 
@@ -170,7 +170,7 @@ compute_num_vec (void *compute_, struct ccase **c, casenumber case_num)
         }
 
       *c = case_unshare (*c);
-      case_data_rw (*c, vector_get_var (compute->vector, rindx - 1))->f
+      *case_num_rw (*c, vector_get_var (compute->vector, rindx - 1))
         = expr_evaluate_num (compute->rvalue, *c, case_num);
     }
 

@@ -264,7 +264,7 @@ can_translate (struct ccase *c, void *can_)
   struct casereader_append_numeric *can = can_;
   double new_value = can->func (c, can->n++, can->aux);
   c = case_unshare_and_resize (c, can->proto);
-  case_data_rw_idx (c, caseproto_get_n_widths (can->proto) - 1)->f = new_value;
+  *case_num_rw_idx (c, caseproto_get_n_widths (can->proto) - 1) = new_value;
   return c;
 }
 
@@ -405,7 +405,7 @@ car_translate (struct ccase *input, void *car_)
 {
   struct casereader_append_rank *car = car_;
 
-  const double value = case_data (input, car->var)->f;
+  const double value = case_num (input, car->var);
 
   if (car->prev_value != SYSMIS)
     {
@@ -420,7 +420,7 @@ car_translate (struct ccase *input, void *car_)
       double weight = 1.0;
       if (car->weight)
 	{
-	  weight = case_data (input, car->weight)->f;
+	  weight = case_num (input, car->weight);
 	  if (car->err && weight < 0)
 	    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
 	}
@@ -430,13 +430,13 @@ car_translate (struct ccase *input, void *car_)
 	  struct ccase *c = casereader_peek (car->clone, car->n + ++k);
 	  if (c == NULL)
 	    break;
-	  vxx = case_data (c, car->var)->f;
+	  vxx = case_num (c, car->var);
 
 	  if (vxx == value)
 	    {
 	      if (car->weight)
 		{
-		  double w = case_data (c, car->weight)->f;
+		  double w = case_num (c, car->weight);
 
 		  if (car->err && w < 0)
 		    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
@@ -462,7 +462,7 @@ car_translate (struct ccase *input, void *car_)
   car->n++;
 
   input = case_unshare_and_resize (input, car->proto);
-  case_data_rw_idx (input, caseproto_get_n_widths (car->proto) - 1)->f
+  *case_num_rw_idx (input, caseproto_get_n_widths (car->proto) - 1)
     = car->mean_rank;
   car->prev_value = value;
   return input;
@@ -490,7 +490,7 @@ uniquify (const struct ccase *c, void *aux)
   struct consolidator *cdr = aux;
   const union value *current_value = case_data (c, cdr->key);
   const int key_width = var_get_width (cdr->key);
-  const double weight = cdr->weight ? case_data (c, cdr->weight)->f : 1.0;
+  const double weight = cdr->weight ? case_num (c, cdr->weight) : 1.0;
   struct ccase *next_case = casereader_peek (cdr->clone, cdr->n + 1);
   int dir = 0;
 
@@ -530,12 +530,12 @@ consolodate_weight (struct ccase *input, void *aux)
   if (cdr->weight)
     {
       c = case_unshare (input);
-      case_data_rw (c, cdr->weight)->f = cdr->prev_cc;
+      *case_num_rw (c, cdr->weight) = cdr->prev_cc;
     }
   else
     {
       c = case_unshare_and_resize (input, cdr->proto);
-      case_data_rw_idx (c, caseproto_get_n_widths (cdr->proto) - 1)->f = cdr->prev_cc;
+      *case_num_rw_idx (c, caseproto_get_n_widths (cdr->proto) - 1) = cdr->prev_cc;
     }
 
   return c;

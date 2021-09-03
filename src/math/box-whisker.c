@@ -105,7 +105,7 @@ acc (struct statistic *s, const struct ccase *cx,
     {
       ds_put_format (&o->label,
                      "%ld",
-                     (casenumber) case_data_idx (cx, bw->id_idx)->f);
+                     (casenumber) case_num_idx (cx, bw->id_idx));
     }
 
   ll_push_head (&bw->outliers, &o->ll);

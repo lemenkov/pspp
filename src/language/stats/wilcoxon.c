@@ -49,7 +49,7 @@ append_difference (const struct ccase *c, casenumber n UNUSED, void *aux)
 {
   const variable_pair *vp = aux;
 
-  return case_data (c, (*vp)[0])->f - case_data (c, (*vp)[1])->f;
+  return case_num (c, (*vp)[0]) - case_num (c, (*vp)[1]);
 }
 
 static void show_ranks_box (const struct wilcoxon_state *,
@@ -124,19 +124,14 @@ wilcoxon_execute (const struct dataset *ds,
 	  double d = append_difference (c, 0, vp);
 
 	  if (d > 0)
-	    {
-	      case_data_rw (output, ws[i].sign)->f = 1.0;
-
-	    }
+            *case_num_rw (output, ws[i].sign) = 1.0;
 	  else if (d < 0)
-	    {
-	      case_data_rw (output, ws[i].sign)->f = -1.0;
-	    }
+            *case_num_rw (output, ws[i].sign) = -1.0;
 	  else
 	    {
 	      double w = 1.0;
 	      if (weight)
-		w = case_data (c, weight)->f;
+		w = case_num (c, weight);
 
 	      /* Central point values should be dropped */
 	      ws[i].n_zeros += w;
@@ -144,10 +139,10 @@ wilcoxon_execute (const struct dataset *ds,
               continue;
 	    }
 
-	  case_data_rw (output, ws[i].absdiff)->f = fabs (d);
+	  *case_num_rw (output, ws[i].absdiff) = fabs (d);
 
 	  if (weight)
-	   case_data_rw (output, weightx)->f = case_data (c, weight)->f;
+	   *case_num_rw (output, weightx) = case_num (c, weight);
 
 	  casewriter_write (writer, output);
 	}
@@ -169,11 +164,9 @@ wilcoxon_execute (const struct dataset *ds,
 
       for (; (c = casereader_read (rr)) != NULL; case_unref (c))
 	{
-	  double sign = case_data (c, ws[i].sign)->f;
-	  double rank = case_data_idx (c, weight ? 3 : 2)->f;
-	  double w = 1.0;
-	  if (weight)
-	    w = case_data (c, weightx)->f;
+	  double sign = case_num (c, ws[i].sign);
+	  double rank = case_num_idx (c, weight ? 3 : 2);
+	  double w = weight ? case_num (c, weightx) : 1.0;
 
 	  if (sign > 0)
 	    {

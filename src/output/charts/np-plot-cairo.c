@@ -48,8 +48,8 @@ np_plot_chart_draw (const struct chart *chart, cairo_t *cr,
   data = casereader_clone (npp->data);
   for (; (c = casereader_read (data)) != NULL; case_unref (c))
     xrchart_datum (cr, geom, 0,
-                 case_data_idx (c, NP_IDX_Y)->f,
-                 case_data_idx (c, NP_IDX_NS)->f);
+                   case_num_idx (c, NP_IDX_Y),
+                   case_num_idx (c, NP_IDX_NS));
   casereader_destroy (data);
 
   xrchart_line (cr, geom, npp->slope, npp->intercept,
@@ -74,8 +74,8 @@ dnp_plot_chart_draw (const struct chart *chart, cairo_t *cr,
 
   data = casereader_clone (dnpp->data);
   for (; (c = casereader_read (data)) != NULL; case_unref (c))
-    xrchart_datum (cr, geom, 0, case_data_idx (c, NP_IDX_Y)->f,
-                   case_data_idx (c, NP_IDX_DNS)->f);
+    xrchart_datum (cr, geom, 0, case_num_idx (c, NP_IDX_Y),
+                   case_num_idx (c, NP_IDX_DNS));
   casereader_destroy (data);
 
   xrchart_line (cr, geom, 0, 0, dnpp->y_min, dnpp->y_max, XRCHART_DIM_X);
