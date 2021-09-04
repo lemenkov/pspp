@@ -26,6 +26,7 @@
 #include "libpspp/temp-file.h"
 #include "libpspp/str.h"
 
+#include "gl/xalloc-oversized.h"
 #include "gl/xalloc.h"
 
 /* Fast, low-overhead memory block suballocator. */

@@ -59,6 +59,7 @@
 #include "output/charts/barchart.h"
 
 #include "gl/minmax.h"
+#include "gl/xalloc-oversized.h"
 #include "gl/xalloc.h"
 #include "gl/xsize.h"
 
