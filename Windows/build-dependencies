@@ -282,6 +282,11 @@ for t in $tarballs ; do
             pre_configure=""
             prefix=$SANDBOX/Install
             case $pkg in
+                cairo-*)
+                    extra_cflags="-fstack-protector";;
+                gsl-*)
+                    extra_config_flags="GSL_LDFLAGS=-XCClinker -fstack-protector";
+                    extra_cflags="-fstack-protector";;
                 librsvg-*)
                     extra_config_flags="--disable-tools --enable-introspection=no --disable-gtk-doc-html"
                     build_procs=1
@@ -330,6 +335,8 @@ for t in $tarballs ; do
                     ;;
                 pango-1.48.*)
                     build_system="meson";
+                    extra_cflags="-fstack-protector";
+                    extra_ldflags="-fstack-protector";
                     ;;
                 spread-sheet-widget-*)
                     ;;
@@ -345,7 +352,7 @@ for t in $tarballs ; do
                                      meson setup --prefix=$prefix \
                                      --libdir=lib \
                                      --cross-file=$SANDBOX/cross-file.txt \
-                                     -Dc_link_args=-L$SANDBOX/Install/lib \
+                                     -Dc_link_args="-L$SANDBOX/Install/lib $extra_ldflags" \
                                      -Dc_args="-I$SANDBOX/Install/include $extra_cflags" \
                                      --wrap-mode=nodownload \
                                      $meson_opts \
@@ -359,9 +366,10 @@ for t in $tarballs ; do
                         $SANDBOX/Source/$pkg/configure \
                             --host="$arch" \
                             --prefix="$prefix" \
-                            $extra_config_flags \
-                            CPPFLAGS="-I $depdir/include" \
-                            LDFLAGS="-L$depdir/lib" \
+                            "$extra_config_flags" \
+                            CFLAGS="$extra_cflags" \
+                            CPPFLAGS="-I $depdir/include $extra_cppflags" \
+                            LDFLAGS="-L$depdir/lib $extra_ldflags" \
                             PKG_CONFIG_LIBDIR="$depdir/lib/pkgconfig" &&
                         make -j $build_procs && make install && $extra_build
                     ;;
