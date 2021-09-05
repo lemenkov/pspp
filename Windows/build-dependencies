@@ -51,7 +51,7 @@ while test $# -gt 0; do
     shift 1;
 done
 
-if test -z "$SANDBOX" || -z "$arch"; then
+if test -z "$SANDBOX" -o -z "$arch"; then
             printf "Usage: $0 --arch=<arch> --sandbox=<dir> [--tarballs=<dir>]\n";
     exit 1;
 fi
