@@ -41,6 +41,8 @@ while test $# -gt 0; do
             SANDBOX=${1##--sandbox=};;
         --tarballs=*)
             SRC_TARBALL_DIR=${1##--tarballs=};;
+        --no-clean)
+            noclean=yes;;
         *)
             printf "Usage: $0 --arch=<arch> --sandbox=<dir> [--tarballs=<dir>]\n";
             exit 1;
@@ -62,7 +64,7 @@ fi
 
 SRC_TARBALL_DIR=`eval echo $SRC_TARBALL_DIR`
 
-rm -rIf $SANDBOX
+test "x$noclean" = "xyes" || rm -rIf $SANDBOX
 
 default_build_procs=$(expr $(cat /proc/cpuinfo | grep -c '^processor') + 1)
 
