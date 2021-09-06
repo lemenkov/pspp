@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-#    Copyright (C) 2020  Free Software Foundation
+#    Copyright (C) 2020, 2021Free Software Foundation
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -14,24 +14,22 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 use strict;
 use warnings;
 
-if (-t 0 || @ARGV) {
-    print <<EOF;
+if (-t 1 || @ARGV != 1 || $ARGV[0] eq '--help') {
+    print STDERR <<EOF;
 $0: generate code page tables from ICU encoding list
-usage: $0 < convrtrs.txt > sys-file-encoding.c
+usage: $0 CONVRTRS-TXT > sys-file-encoding.c
 
-To regenerate the encoding data, get the latest ICU encoding data from:
-http://source.icu-project.org/repos/icu/icu/trunk/source/data/mappings/convrtrs.txt
-then convert it with this script using the command above.
+To update the encoding data, get the latest ICU encoding data from:
+https://raw.githubusercontent.com/unicode-org/icu/main/icu4c/source/data/mappings/convrtrs.txt
 EOF
     exit (@ARGV && $ARGV[0] eq '--help' ? 0 : 1);
 }
 
-open (CONVERTERS, '<', 'convrtrs.txt')
-  or die "convrtrs.txt: open failed ($!)\n";
+open (CONVERTERS, '<', $ARGV[0])
+  or die "$ARGV[0]: open failed ($!)\n";
 
 our $WINDOWS = 3;		# Windows code pages.
 our $IBM = 2;			# IBM code pages.
