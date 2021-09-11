@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2017 Free Software Foundation
+   Copyright (C) 2017, 2021 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,6 +45,8 @@ struct options_dialog
   GtkWidget *maximize;
   GtkWidget *alert;
   GtkWidget *raise;
+
+  GtkWidget *show_tips;
 };
 
 GType
@@ -75,10 +77,13 @@ options_dialog (PsppireDataWindow *de)
   GtkWidget *dialog ;
 
   gboolean disp_labels = true;
+  gboolean show_tips = true;
 
   fd.xml = builder_new ("options.ui");
 
   dialog = get_widget_assert (fd.xml, "options-dialog");
+
+  fd.show_tips = get_widget_assert (fd.xml, "checkbutton-show-tips");
 
   fd.show_labels = get_widget_assert (fd.xml, "radiobutton-labels");
   fd.show_names  = get_widget_assert (fd.xml, "radiobutton-names");
@@ -103,6 +108,13 @@ options_dialog (PsppireDataWindow *de)
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.show_names),
 				    !disp_labels);
+    }
+
+  if (psppire_conf_get_boolean (fd.conf,
+				"startup", "show-user-tips", &show_tips))
+    {
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.show_tips),
+				    show_tips);
     }
 
 
@@ -182,6 +194,10 @@ options_dialog (PsppireDataWindow *de)
       psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "alert",
 				gtk_toggle_button_get_active
 				(GTK_TOGGLE_BUTTON (fd.alert)));
+
+      psppire_conf_set_boolean (fd.conf, "startup", "show-user-tips",
+				gtk_toggle_button_get_active
+				(GTK_TOGGLE_BUTTON (fd.show_tips)));
     }
 
   g_object_unref (fd.xml);
