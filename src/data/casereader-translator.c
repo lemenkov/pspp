@@ -502,6 +502,11 @@ uniquify (const struct ccase *c, void *aux)
 
   dir = value_compare_3way (case_data (next_case, cdr->key),
 			    current_value, key_width);
+  if (dir > 0)
+    dir = 1;
+  if (dir < 0)
+    dir = -1;
+      
   case_unref (next_case);
   if (dir != 0)
     {
