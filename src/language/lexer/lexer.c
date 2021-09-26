@@ -1952,6 +1952,7 @@ static bool
 lex_source_get_lookahead (struct lex_source *src)
 {
   struct merger m = MERGER_INIT;
+  struct token out;
   for (size_t i = 0; ; i++)
     {
       while (lex_stage_count (&src->merge) <= i && !lex_source_get_merge (src))
@@ -1963,7 +1964,6 @@ lex_source_get_lookahead (struct lex_source *src)
           return false;
         }
 
-      struct token out;
       int retval = merger_add (&m, &lex_stage_nth (&src->merge, i)->token,
                                &out);
       if (!retval)
