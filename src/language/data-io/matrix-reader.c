@@ -183,6 +183,9 @@ matrix_reader_destroy (struct matrix_reader *mr)
   if (mr == NULL)
     return false;
   bool ret = casegrouper_destroy (mr->grouper);
+  free (mr->svars);
+  free (mr->cvars);
+  free (mr->fvars);
   free (mr);
   return ret;
 }
