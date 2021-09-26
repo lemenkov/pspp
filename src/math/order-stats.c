@@ -128,6 +128,9 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
       const double weight = wt_idx == -1 ? 1.0 : case_num_idx (cx, wt_idx);
       const double this_value = case_num_idx (cx, val_idx);
 
+      if (weight == SYSMIS)
+        continue;
+
       /* The casereader MUST be sorted */
       assert (this_value >= prev_value);
 
@@ -169,4 +172,3 @@ order_stats_accumulate (struct order_stats **os, size_t nos,
                               wv ? var_get_case_index (wv) : -1,
                               var_get_case_index (var));
 }
-
