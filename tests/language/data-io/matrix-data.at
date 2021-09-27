@@ -561,7 +561,6 @@ Table: Debug Matrix Reader
 ,,var08,81.000,82.000,83.000,84.000,85.000,86.000,87.000,88.000,89.000
 ,,var09,91.000,92.000,93.000,94.000,95.000,96.000,97.000,98.000,99.000
 ,N,Value,1.000,2.000,3.000,4.000,5.000,6.000,7.000,8.000,9.000
-,Mean,Value,.000,.000,.000,.000,.000,.000,.000,.000,.000
 ,Standard Deviation,Value,100.000,200.000,300.000,400.000,500.000,600.000,700.000,800.000,900.000
 
 Table: Data List
@@ -718,7 +717,6 @@ Table: Debug Matrix Reader
 ,,v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx,.   ,.   ,.   ,.   @&t@
 ,N,Value,2.000,3.000,4.000,5.000
 ,Mean,Value,1.000,2.000,3.000,4.000
-,Standard Deviation,Value,.000,.000,.000,.000
 ])
 AT_CLEANUP
 

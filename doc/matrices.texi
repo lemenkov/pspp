@@ -14,7 +14,8 @@ Some @pspp{} procedures work with matrices by producing numeric
 matrices that report results of data analysis, or by consuming
 matrices as a basis for further analysis.  This chapter documents the
 format of data files that store these matrices and commands for
-working with them.
+working with them, as well as @pspp{}'s general-purpose facility for
+matrix operations.
 
 @node Matrix Files
 @section Matrix Files
@@ -57,9 +58,9 @@ order.  This column is blank for vector data.  @cmd{MATRIX DATA} makes
 variables, but at least 8 bytes.
 
 @item
-One or more continuous variables.  These are the variables whose data
-was analyzed to produce the matrices.  @cmd{MATRIX DATA} assigns
-continuous variables format F10.4.
+One or more numeric continuous variables.  These are the variables
+whose data was analyzed to produce the matrices.  @cmd{MATRIX DATA}
+assigns continuous variables format F10.4.
 @end enumerate
 
 Case weights are ignored in matrix files. 
@@ -572,3 +573,36 @@ BEGIN DATA.
   .7 .5 .4  1
 END DATA.
 @end example
+
+@node MCONVERT
+@section MCONVERT
+
+@display
+MCONVERT
+    [[MATRIX=]
+     [IN(@{@samp{*}|'@var{file}'@})]
+     [OUT(@{@samp{*}|'@var{file}'@})]]
+    [/@{REPLACE,APPEND@}].
+@end display
+
+The @cmd{MCONVERT} command converts matrix data from a correlation
+matrix and a vector of standard deviations into a covariance matrix,
+or vice versa.
+
+By default, @cmd{MCONVERT} both reads and writes the active file.  Use
+the @cmd{MATRIX} subcommand to specify other files.  To read a matrix
+file, specify its name inside parentheses following @code{IN}.  To
+write a matrix file, specify its name inside parentheses following
+@code{OUT}.  Use @samp{*} to explicitly specify the active file for
+input or output.
+
+When @cmd{MCONVERT} reads the input, by default it substitutes a
+correlation matrix and a vector of standard deviations each time it
+encounters a covariance matrix, and vice versa.  Specify
+@code{/APPEND} to instead have @cmd{MCONVERT} add the other form of
+data without removing the existing data.  Use @code{/REPLACE} to
+explicitly request removing the existing data.
+
+The @cmd{MCONVERT} command requires its input to be a matrix file.
+Use @cmd{MATRIX DATA} to convert text input into matrix file format.
+@xref{MATRIX DATA}, for details.

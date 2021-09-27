@@ -1,0 +1,222 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2021 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+AT_BANNER([MCONVERT])
+
+AT_SETUP([MCONVERT])
+AT_DATA([mconvert.sps], [dnl
+MATRIX DATA VARIABLES=s ROWTYPE_ var01 TO var03/SPLIT s.
+BEGIN DATA.
+0 COV  1.0
+0 COV  1.0 16.0
+0 COV  8.1 18.0 81.0
+1 CORR 1
+1 CORR .25 1
+1 CORR .9 .5 1
+1 STDDEV 1 4 9
+END DATA.
+FORMATS var01 TO var03(F5.2).
+SPLIT FILE OFF.
+MCONVERT.
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv mconvert.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,CORR,var01,1.00,.25,.90
+0,CORR,var02,.25,1.00,.50
+0,CORR,var03,.90,.50,1.00
+0,STDDEV,,1.00,4.00,9.00
+1,STDDEV,,1.00,4.00,9.00
+1,COV,var01,1.00,1.00,8.10
+1,COV,var02,1.00,16.00,18.00
+1,COV,var03,8.10,18.00,81.00
+])
+AT_CLEANUP
+
+AT_SETUP([MCONVERT from .sav file])
+AT_DATA([input.sps], [dnl
+MATRIX DATA VARIABLES=s ROWTYPE_ var01 TO var03/SPLIT s.
+BEGIN DATA.
+0 COV  1.0
+0 COV  1.0 16.0
+0 COV  8.1 18.0 81.0
+1 CORR 1
+1 CORR .25 1
+1 CORR .9 .5 1
+1 STDDEV 1 4 9
+END DATA.
+FORMATS var01 TO var03(F5.2).
+SPLIT FILE OFF.
+SAVE OUTFILE='input.sav'.
+])
+AT_DATA([mconvert.sps], [dnl
+MCONVERT MATRIX=IN('input.sav').
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv input.sps])
+AT_CHECK([pspp -O format=csv mconvert.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,CORR,var01,1.00,.25,.90
+0,CORR,var02,.25,1.00,.50
+0,CORR,var03,.90,.50,1.00
+0,STDDEV,,1.00,4.00,9.00
+1,STDDEV,,1.00,4.00,9.00
+1,COV,var01,1.00,1.00,8.10
+1,COV,var02,1.00,16.00,18.00
+1,COV,var03,8.10,18.00,81.00
+])
+AT_CLEANUP
+
+AT_SETUP([MCONVERT to .sav file])
+AT_DATA([mconvert.sps], [dnl
+MATRIX DATA VARIABLES=s ROWTYPE_ var01 TO var03/SPLIT s.
+BEGIN DATA.
+0 COV  1.0
+0 COV  1.0 16.0
+0 COV  8.1 18.0 81.0
+1 CORR 1
+1 CORR .25 1
+1 CORR .9 .5 1
+1 STDDEV 1 4 9
+END DATA.
+FORMATS var01 TO var03(F5.2).
+SPLIT FILE OFF.
+MCONVERT/REPLACE/OUT('output.sav').
+LIST.
+])
+AT_DATA([output.sps], [dnl
+GET 'output.sav'.
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv mconvert.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,COV,var01,1.00,1.00,8.10
+0,COV,var02,1.00,16.00,18.00
+0,COV,var03,8.10,18.00,81.00
+1,CORR,var01,1.00,.25,.90
+1,CORR,var02,.25,1.00,.50
+1,CORR,var03,.90,.50,1.00
+1,STDDEV,,1.00,4.00,9.00
+])
+AT_CHECK([pspp -O format=csv output.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,CORR,var01,1.00,.25,.90
+0,CORR,var02,.25,1.00,.50
+0,CORR,var03,.90,.50,1.00
+0,STDDEV,,1.00,4.00,9.00
+1,STDDEV,,1.00,4.00,9.00
+1,COV,var01,1.00,1.00,8.10
+1,COV,var02,1.00,16.00,18.00
+1,COV,var03,8.10,18.00,81.00
+])
+AT_CLEANUP
+
+AT_SETUP([MCONVERT from .sav file to .sav file])
+AT_DATA([input.sps], [dnl
+MATRIX DATA VARIABLES=s ROWTYPE_ var01 TO var03/SPLIT s.
+BEGIN DATA.
+0 COV  1.0
+0 COV  1.0 16.0
+0 COV  8.1 18.0 81.0
+1 CORR 1
+1 CORR .25 1
+1 CORR .9 .5 1
+1 STDDEV 1 4 9
+END DATA.
+FORMATS var01 TO var03(F5.2).
+SPLIT FILE OFF.
+SAVE OUTFILE='input.sav'.
+])
+AT_DATA([mconvert.sps], [dnl
+MCONVERT MATRIX=IN('input.sav') OUT('output.sav')/REPLACE.
+LIST.
+])
+AT_DATA([output.sps], [dnl
+GET 'output.sav'.
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv input.sps])
+AT_CHECK([pspp -O format=csv mconvert.sps], [1], [dnl
+mconvert.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+])
+AT_CHECK([pspp -O format=csv output.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,CORR,var01,1.00,.25,.90
+0,CORR,var02,.25,1.00,.50
+0,CORR,var03,.90,.50,1.00
+0,STDDEV,,1.00,4.00,9.00
+1,STDDEV,,1.00,4.00,9.00
+1,COV,var01,1.00,1.00,8.10
+1,COV,var02,1.00,16.00,18.00
+1,COV,var03,8.10,18.00,81.00
+])
+AT_CLEANUP
+
+AT_SETUP([MCONVERT with APPEND])
+AT_DATA([mconvert.sps], [dnl
+MATRIX DATA VARIABLES=s ROWTYPE_ var01 TO var03/SPLIT s.
+BEGIN DATA.
+0 COV  1.0
+0 COV  1.0 16.0
+0 COV  8.1 18.0 81.0
+1 CORR 1
+1 CORR .25 1
+1 CORR .9 .5 1
+1 STDDEV 1 4 9
+END DATA.
+FORMATS var01 TO var03(F5.2).
+SPLIT FILE OFF.
+MCONVERT/APPEND.
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv mconvert.sps], [0], [dnl
+Table: Data List
+s,ROWTYPE_,VARNAME_,var01,var02,var03
+0,COV,var01,1.00,1.00,8.10
+0,COV,var02,1.00,16.00,18.00
+0,COV,var03,8.10,18.00,81.00
+0,CORR,var01,1.00,.25,.90
+0,CORR,var02,.25,1.00,.50
+0,CORR,var03,.90,.50,1.00
+0,STDDEV,,1.00,4.00,9.00
+1,CORR,var01,1.00,.25,.90
+1,CORR,var02,.25,1.00,.50
+1,CORR,var03,.90,.50,1.00
+1,STDDEV,,1.00,4.00,9.00
+1,COV,var01,1.00,1.00,8.10
+1,COV,var02,1.00,16.00,18.00
+1,COV,var03,8.10,18.00,81.00
+])
+AT_CLEANUP
+
+AT_SETUP([MCONVERT negative test])
+AT_DATA([mconvert.sps], [MCONVERT.
+])
+AT_CHECK([pspp mconvert.sps], [1], [dnl
+mconvert.sps:1: error: MCONVERT: No active file is defined and no external file
+is specified on MATRIX=IN.
+])
+AT_CLEANUP

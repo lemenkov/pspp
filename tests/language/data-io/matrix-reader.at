@@ -1,0 +1,54 @@
+AT_BANNER([Matrix reader])
+
+AT_SETUP([Matrix reader - negative tests])
+AT_DATA([matrix-reader.sps], [dnl
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (f1) VARNAME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) VARNAME_(a8) f1 (f1) ROWTYPE_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(f8) f1 (f1) VARNAME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (f1) VARNAME_ (f8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTPYE_(a8) f1 (f1) VARNAME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (f1) VARANME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (a1) ROWTYPE_(a8) f1 (f1) VARNAME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (a1) VARNAME_ (a8) c1 to c5 (f8.2).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (f1) VARNAME_ (a8) c1 to c5 (a8).
+DEBUG MATRIX READ NODATA.
+
+DATA LIST LIST NOTABLE /s1 (f1) ROWTYPE_(a8) f1 (f1) VARNAME_ (a8).
+DEBUG MATRIX READ NODATA.
+])
+AT_CHECK([pspp matrix-reader.sps --testing-mode -O format=csv], [1], [dnl
+matrix-reader.sps:5: error: DEBUG MATRIX READ: Variable ROWTYPE_ must precede VARNAME_ in matrix file dictionary.
+
+matrix-reader.sps:8: error: DEBUG MATRIX READ: Matrix dataset variable ROWTYPE_ should be of string type.
+
+matrix-reader.sps:11: error: DEBUG MATRIX READ: Matrix dataset variable VARNAME_ should be of string type.
+
+matrix-reader.sps:14: error: DEBUG MATRIX READ: Matrix dataset lacks a variable called ROWTYPE_.
+
+matrix-reader.sps:17: error: DEBUG MATRIX READ: Matrix dataset lacks a variable called VARNAME_.
+
+matrix-reader.sps:20: error: DEBUG MATRIX READ: Matrix dataset variable s1 should be numeric.
+
+matrix-reader.sps:23: error: DEBUG MATRIX READ: Matrix dataset variable f1 should be numeric.
+
+matrix-reader.sps:26: error: DEBUG MATRIX READ: Matrix dataset variable c1 should be numeric.
+
+matrix-reader.sps:29: error: DEBUG MATRIX READ: Matrix dataset does not have any continuous variables.
+])
+AT_CLEANUP

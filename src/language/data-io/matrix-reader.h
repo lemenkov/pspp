@@ -20,6 +20,28 @@
 #include <gsl/gsl_matrix.h>
 #include <stdbool.h>
 
+struct casereader;
+struct ccase;
+struct dictionary;
+struct matrix_reader;
+struct variable;
+
+struct matrix_reader
+  {
+    const struct dictionary *dict;
+    struct casegrouper *grouper;
+
+    /* Variables in 'dict'. */
+    const struct variable **svars;  /* Split variables. */
+    size_t n_svars;
+    const struct variable *rowtype; /* ROWTYPE_. */
+    const struct variable **fvars;  /* Factor variables. */
+    size_t n_fvars;
+    const struct variable *varname; /* VARNAME_. */
+    const struct variable **cvars;  /* Continuous variables. */
+    size_t n_cvars;
+  };
+
 struct matrix_material
 {
   gsl_matrix *corr;             /* The correlation matrix */
@@ -34,22 +56,18 @@ struct matrix_material
 #define MATRIX_MATERIAL_INIT { .corr = NULL }
 void matrix_material_uninit (struct matrix_material *);
 
-struct dictionary;
-struct variable;
-struct casereader;
+struct matrix_reader *matrix_reader_create (const struct dictionary *,
+                                            struct casereader *);
 
+bool matrix_reader_destroy (struct matrix_reader *mr);
 
-struct matrix_reader;
+bool matrix_reader_next (struct matrix_material *mm, struct matrix_reader *mr,
+                         struct casereader **groupp);
 
-struct matrix_reader *create_matrix_reader_from_case_reader (const struct dictionary *dict,
-							     struct casereader *in_reader,
-							     const struct variable ***vars, size_t *n_vars);
-
-bool destroy_matrix_reader (struct matrix_reader *mr);
-
-bool next_matrix_from_reader (struct matrix_material *mm,
-			      struct matrix_reader *mr,
-			      const struct variable **vars, int n_vars);
+struct substring matrix_reader_get_string (const struct ccase *,
+                                           const struct variable *);
+void matrix_reader_set_string (struct ccase *, const struct variable *,
+                               struct substring);
 
 
 #endif

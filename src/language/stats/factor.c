@@ -1145,8 +1145,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       if (! lex_force_match (lexer, T_RPAREN))
 	goto error;
 
-      mr = create_matrix_reader_from_case_reader (dict, matrix_reader,
-						  &factor.vars, &factor.n_vars);
+      mr = matrix_reader_create (dict, matrix_reader);
+      factor.vars = xmemdup (mr->cvars, mr->n_cvars * sizeof *mr->cvars);
+      factor.n_vars = mr->n_cvars;
     }
   else
     {
@@ -1177,6 +1178,13 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           free (factor.vars);
           factor.vars = vars;
           factor.n_vars = n_vars;
+
+          if (mr)
+            {
+              free (mr->cvars);
+              mr->cvars = xmemdup (vars, n_vars * sizeof *vars);
+              mr->n_cvars = n_vars;
+            }
         }
       else if (lex_match_id (lexer, "PLOT"))
 	{
@@ -1527,8 +1535,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
     {
       struct idata *id = idata_alloc (factor.n_vars);
 
-      while (next_matrix_from_reader (&id->mm, mr,
-				      factor.vars, factor.n_vars))
+      while (matrix_reader_next (&id->mm, mr, NULL))
 	{
 	  do_factor_by_matrix (&factor, id);
 
@@ -1546,13 +1553,12 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
     if (! run_factor (ds, &factor))
       goto error;
 
-
-  destroy_matrix_reader (mr);
+  matrix_reader_destroy (mr);
   free (factor.vars);
   return CMD_SUCCESS;
 
  error:
-  destroy_matrix_reader (mr);
+  matrix_reader_destroy (mr);
   free (factor.vars);
   return CMD_FAILURE;
 }
@@ -2005,9 +2011,10 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 static void
 do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 {
-  if (!idata->mm.cov && !idata->mm.corr)
+  if (!idata->mm.cov && !(idata->mm.corr && idata->mm.var_matrix))
     {
-      msg (ME, _("The dataset has no complete covariance or correlation matrix."));
+      msg (ME, _("The dataset has no covariance matrix or a "
+                 "correlation matrix along with standard devications."));
       return;
     }
 
@@ -2055,7 +2062,8 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       gsl_matrix_free (tmp);
     }
 
-  if (factor->print & PRINT_UNIVARIATE)
+  if (factor->print & PRINT_UNIVARIATE
+      && idata->mm.n && idata->mm.mean_matrix && idata->mm.var_matrix)
     {
       struct pivot_table *table = pivot_table_create (
         N_("Descriptive Statistics"));
@@ -2089,7 +2097,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       pivot_table_submit (table);
     }
 
-  if (factor->print & PRINT_KMO)
+  if (factor->print & PRINT_KMO && idata->mm.n)
     {
       struct pivot_table *table = pivot_table_create (
         N_("KMO and Bartlett's Test"));

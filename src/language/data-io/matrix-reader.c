@@ -23,12 +23,14 @@
 
 #include "data/casegrouper.h"
 #include "data/casereader.h"
+#include "data/casewriter.h"
 #include "data/data-out.h"
 #include "data/dataset.h"
 #include "data/dictionary.h"
 #include "data/format.h"
 #include "data/variable.h"
 #include "language/command.h"
+#include "language/lexer/lexer.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
@@ -93,81 +95,90 @@ matrix_material_uninit (struct matrix_material *mm)
   gsl_matrix_free (mm->var_matrix);
 }
 
-struct matrix_reader
+static const struct variable *
+find_matrix_string_var (const struct dictionary *dict, const char *name)
 {
-  const struct dictionary *dict;
-  const struct variable *varname;
-  const struct variable *rowtype;
-  struct casegrouper *grouper;
-};
+  const struct variable *var = dict_lookup_var (dict, name);
+  if (var == NULL)
+    {
+      msg (SE, _("Matrix dataset lacks a variable called %s."), name);
+      return NULL;
+    }
+  if (!var_is_alpha (var))
+    {
+      msg (SE, _("Matrix dataset variable %s should be of string type."), name);
+      return NULL;
+    }
+  return var;
+}
 
 struct matrix_reader *
-create_matrix_reader_from_case_reader (const struct dictionary *dict, struct casereader *in_reader,
-				       const struct variable ***vars, size_t *n_vars)
+matrix_reader_create (const struct dictionary *dict,
+                      struct casereader *in_reader)
 {
-  struct matrix_reader *mr = xzalloc (sizeof *mr);
+  const struct variable *varname = find_matrix_string_var (dict, "VARNAME_");
+  const struct variable *rowtype = find_matrix_string_var (dict, "ROWTYPE_");
+  if (!varname || !rowtype)
+    return NULL;
 
-  mr->varname = dict_lookup_var (dict, "varname_");
-  mr->dict = dict;
-  if (mr->varname == NULL)
+  size_t varname_idx = var_get_dict_index (varname);
+  size_t rowtype_idx = var_get_dict_index (rowtype);
+  if (varname_idx < rowtype_idx)
     {
-      msg (ME, _("Matrix dataset lacks a variable called %s."), "VARNAME_");
-      free (mr);
+      msg (SE, _("Variable %s must precede %s in matrix file dictionary."),
+           "ROWTYPE_", "VARNAME_");
       return NULL;
     }
 
-  if (!var_is_alpha (mr->varname))
+  for (size_t i = 0; i < dict_get_var_cnt (dict); i++)
     {
-      msg (ME, _("Matrix dataset variable %s should be of string type."),
-	   "VARNAME_");
-      free (mr);
+      const struct variable *v = dict_get_var (dict, i);
+      if (!var_is_numeric (v) && v != rowtype && v != varname)
+        {
+          msg (SE, _("Matrix dataset variable %s should be numeric."),
+               var_get_name (v));
+          return NULL;
+        }
+    }
+
+  size_t n_vars;
+  const struct variable **vars;
+  dict_get_vars (dict, &vars, &n_vars, DC_SCRATCH);
+
+  /* Different kinds of variables. */
+  size_t first_svar = 0;
+  size_t n_svars = rowtype_idx;
+  size_t first_fvar = rowtype_idx + 1;
+  size_t n_fvars = varname_idx - rowtype_idx - 1;
+  size_t first_cvar = varname_idx + 1;
+  size_t n_cvars = n_vars - varname_idx - 1;
+  if (!n_cvars)
+    {
+      msg (SE, _("Matrix dataset does not have any continuous variables."));
+      free (vars);
       return NULL;
     }
 
-  mr->rowtype = dict_lookup_var (dict, "rowtype_");
-  if (mr->rowtype == NULL)
-    {
-      msg (ME, _("Matrix dataset lacks a variable called %s."), "ROWTYPE_");
-      free (mr);
-      return NULL;
-    }
-
-  if (!var_is_alpha (mr->rowtype))
-    {
-      msg (ME, _("Matrix dataset variable %s should be of string type."),
-	   "ROWTYPE_");
-      free (mr);
-      return NULL;
-    }
-
-  size_t dvarcnt;
-  const struct variable **dvars = NULL;
-  dict_get_vars (dict, &dvars, &dvarcnt, DC_SCRATCH);
-
-  if (n_vars)
-    *n_vars = dvarcnt - var_get_dict_index (mr->varname) - 1;
-
-  if (vars)
-    {
-      int i;
-      *vars = xcalloc (*n_vars, sizeof (struct variable **));
-
-      for (i = 0; i < *n_vars; ++i)
-	{
-	  (*vars)[i] = dvars[i + var_get_dict_index (mr->varname) + 1];
-	}
-    }
-
-  /* All the variables before ROWTYPE_ (if any) are split variables */
-  mr->grouper = casegrouper_create_vars (in_reader, dvars, var_get_dict_index (mr->rowtype));
-
-  free (dvars);
+  struct matrix_reader *mr = xmalloc (sizeof *mr);
+  *mr = (struct matrix_reader) {
+    .dict = dict,
+    .grouper = casegrouper_create_vars (in_reader, &vars[first_svar], n_svars),
+    .svars = xmemdup (vars + first_svar, n_svars * sizeof *mr->svars),
+    .n_svars = n_svars,
+    .rowtype = rowtype,
+    .fvars = xmemdup (vars + first_fvar, n_fvars * sizeof *mr->fvars),
+    .n_fvars = n_fvars,
+    .varname = varname,
+    .cvars = xmemdup (vars + first_cvar, n_cvars * sizeof *mr->cvars),
+    .n_cvars = n_cvars,
+  };
+  free (vars);
 
   return mr;
 }
 
 bool
-destroy_matrix_reader (struct matrix_reader *mr)
+matrix_reader_destroy (struct matrix_reader *mr)
 {
   if (mr == NULL)
     return false;
@@ -214,26 +225,43 @@ find_varname (const struct variable **vars, int n_vars,
   return -1;
 }
 
+struct substring
+matrix_reader_get_string (const struct ccase *c, const struct variable *var)
+{
+  struct substring s = case_ss (c, var);
+  ss_rtrim (&s, ss_cstr (CC_SPACES));
+  return s;
+}
+
+void
+matrix_reader_set_string (struct ccase *c, const struct variable *var,
+                          struct substring src)
+{
+  struct substring dst = case_ss (c, var);
+  for (size_t i = 0; i < dst.length; i++)
+    dst.string[i] = i < src.length ? src.string[i] : ' ';
+}
+
 bool
-next_matrix_from_reader (struct matrix_material *mm,
-			 struct matrix_reader *mr,
-			 const struct variable **vars, int n_vars)
+matrix_reader_next (struct matrix_material *mm, struct matrix_reader *mr,
+                    struct casereader **groupp)
 {
   struct casereader *group;
-
-  assert (vars);
-
   if (!casegrouper_get_next_group (mr->grouper, &group))
     {
       *mm = (struct matrix_material) MATRIX_MATERIAL_INIT;
+      if (groupp)
+        *groupp = NULL;
       return false;
     }
 
-  *mm = (struct matrix_material) {
-    .n = gsl_matrix_calloc (n_vars, n_vars),
-    .mean_matrix = gsl_matrix_calloc (n_vars, n_vars),
-    .var_matrix = gsl_matrix_calloc (n_vars, n_vars),
-  };
+  if (groupp)
+    *groupp = casereader_clone (group);
+
+  const struct variable **vars = mr->cvars;
+  size_t n_vars = mr->n_cvars;
+
+  *mm = (struct matrix_material) { .n = NULL };
 
   struct matrix
     {
@@ -251,23 +279,25 @@ next_matrix_from_reader (struct matrix_material *mm,
   struct ccase *c;
   for (; (c = casereader_read (group)); case_unref (c))
     {
-      struct substring rowtype = case_ss (c, mr->rowtype);
-      ss_rtrim (&rowtype, ss_cstr (CC_SPACES));
+      struct substring rowtype = matrix_reader_get_string (c, mr->rowtype);
 
-      gsl_matrix *v
-        = (ss_equals_case (rowtype, ss_cstr ("N")) ? mm->n
-           : ss_equals_case (rowtype, ss_cstr ("MEAN")) ? mm->mean_matrix
-           : ss_equals_case (rowtype, ss_cstr ("STDDEV")) ? mm->var_matrix
+      gsl_matrix **v
+        = (ss_equals_case (rowtype, ss_cstr ("N")) ? &mm->n
+           : ss_equals_case (rowtype, ss_cstr ("MEAN")) ? &mm->mean_matrix
+           : ss_equals_case (rowtype, ss_cstr ("STDDEV")) ? &mm->var_matrix
            : NULL);
       if (v)
         {
+          if (!*v)
+            *v = gsl_matrix_calloc (n_vars, n_vars);
+
           for (int x = 0; x < n_vars; ++x)
             {
               double n = case_num (c, vars[x]);
-              if (v == mm->var_matrix)
+              if (v == &mm->var_matrix)
                 n *= n;
               for (int y = 0; y < n_vars; ++y)
-                gsl_matrix_set (v, y, x, n);
+                gsl_matrix_set (*v, y, x, n);
             }
           continue;
         }
@@ -303,7 +333,7 @@ next_matrix_from_reader (struct matrix_material *mm,
 
   for (size_t i = 0; i < N_MATRICES; i++)
     if (matrices[i].good_rows && matrices[i].good_rows != n_vars)
-      msg (SW, _("%s matrix has %d columns but %zu rows named variables "
+      msg (SW, _("%s matrix has %zu columns but %zu rows named variables "
                  "to be analyzed (and %zu rows named unknown variables)."),
            matrices[i].name, n_vars, matrices[i].good_rows,
            matrices[i].bad_rows);
@@ -312,12 +342,21 @@ next_matrix_from_reader (struct matrix_material *mm,
 }
 
 int
-cmd_debug_matrix_read (struct lexer *lexer UNUSED, struct dataset *ds)
+cmd_debug_matrix_read (struct lexer *lexer, struct dataset *ds)
 {
-  const struct variable **vars;
-  size_t n_vars;
-  struct matrix_reader *mr = create_matrix_reader_from_case_reader (
-    dataset_dict (ds), proc_open (ds), &vars, &n_vars);
+  if (lex_match_id (lexer, "NODATA"))
+    {
+      struct casereader *cr = casewriter_make_reader (
+        mem_writer_create (dict_get_proto (dataset_dict (ds))));
+      struct matrix_reader *mr = matrix_reader_create (dataset_dict (ds), cr);
+      if (!mr)
+        return CMD_FAILURE;
+      matrix_reader_destroy (mr);
+      return CMD_SUCCESS;
+    }
+
+  struct matrix_reader *mr = matrix_reader_create (dataset_dict (ds),
+                                                   proc_open (ds));
   if (!mr)
     return CMD_FAILURE;
 
@@ -348,9 +387,10 @@ cmd_debug_matrix_read (struct lexer *lexer UNUSED, struct dataset *ds)
       if (!i)
         pivot_category_create_leaf_rc (d->root, pivot_value_new_text ("Value"),
                                        PIVOT_RC_CORRELATION);
-      for (size_t j = 0; j < n_vars; j++)
+      for (size_t j = 0; j < mr->n_cvars; j++)
         pivot_category_create_leaf_rc (
-          d->root, pivot_value_new_variable (vars[j]), PIVOT_RC_CORRELATION);
+          d->root, pivot_value_new_variable (mr->cvars[j]),
+          PIVOT_RC_CORRELATION);
     }
 
   struct pivot_dimension *stat = pivot_dimension_create (pt, PIVOT_AXIS_ROW,
@@ -365,7 +405,7 @@ cmd_debug_matrix_read (struct lexer *lexer UNUSED, struct dataset *ds)
   int split_num = 0;
 
   struct matrix_material mm = MATRIX_MATERIAL_INIT;
-  while (next_matrix_from_reader (&mm, mr, vars, n_vars))
+  while (matrix_reader_next (&mm, mr, NULL))
     {
       pivot_category_create_leaf (split->root,
                                   pivot_value_new_integer (split_num + 1));
@@ -383,14 +423,14 @@ cmd_debug_matrix_read (struct lexer *lexer UNUSED, struct dataset *ds)
           {
             if (i == MM_COV || i == MM_CORR)
               {
-                for (size_t y = 0; y < n_vars; y++)
-                  for (size_t x = 0; x < n_vars; x++)
+                for (size_t y = 0; y < mr->n_cvars; y++)
+                  for (size_t x = 0; x < mr->n_cvars; x++)
                     pivot_table_put4 (
                       pt, y + 1, x, i, split_num,
                       pivot_value_new_number (gsl_matrix_get (m[i], y, x)));
               }
             else
-              for (size_t x = 0; x < n_vars; x++)
+              for (size_t x = 0; x < mr->n_cvars; x++)
                 {
                   double n = gsl_matrix_get (m[i], 0, x);
                   if (i == MM_STDDEV)
@@ -407,7 +447,6 @@ cmd_debug_matrix_read (struct lexer *lexer UNUSED, struct dataset *ds)
 
   proc_commit (ds);
 
-  destroy_matrix_reader (mr);
-  free (vars);
+  matrix_reader_destroy (mr);
   return CMD_SUCCESS;
 }
