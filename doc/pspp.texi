@@ -90,6 +90,15 @@ graphic user interface
 @end quotation
 @end macro
 
+@ifnottex
+@macro times{}
+×
+@end macro
+@macro ne{}
+≠
+@end macro
+@end ifnottex
+
 @c A macro to indicate variable names used in examples.
 @c NOT metasyntactical variables - for that use @var
 @macro exvar{VAR}

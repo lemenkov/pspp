@@ -51,6 +51,7 @@ language_stats_sources = \
 	src/language/stats/jonckheere-terpstra.h \
 	src/language/stats/mann-whitney.c \
 	src/language/stats/mann-whitney.h \
+	src/language/stats/matrix.c \
 	src/language/stats/means.c \
 	src/language/stats/means.h \
 	src/language/stats/means-calc.c \

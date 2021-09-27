@@ -607,3 +607,2083 @@ explicitly request removing the existing data.
 The @cmd{MCONVERT} command requires its input to be a matrix file.
 Use @cmd{MATRIX DATA} to convert text input into matrix file format.
 @xref{MATRIX DATA}, for details.
+
+@node MATRIX
+@section MATRIX
+@vindex MATRIX
+@vindex END MATRIX
+
+@display
+@t{MATRIX.}
+@dots{}@i{matrix commands}@dots{}
+@t{END MATRIX.}
+@end display
+
+@noindent
+The following basic matrix commands are supported:
+
+@display
+@t{COMPUTE} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]@t{=}@i{expression}@t{.}
+@t{CALL} @i{procedure}@t{(}@i{argument}@t{,} @dots{}).
+@t{PRINT} [@i{expression}]
+      [@t{/FORMAT}@t{=}@i{format}]
+      [@t{/TITLE}@t{=}@i{title}]
+      [@t{/SPACE}@t{=}@{@t{NEWPAGE} @math{|} @i{n}@}]
+      [@{@t{/RLABELS}@t{=}@i{string}@dots{} @math{|} @t{/RNAMES}@t{=}@i{expression}@}]
+      [@{@t{/CLABELS}@t{=}@i{string}@dots{} @math{|} @t{/CNAMES}@t{=}@i{expression}@}]@t{.}
+@end display
+
+@noindent
+The following matrix commands offer support for flow control:
+
+@display
+@t{DO IF} @i{expression}@t{.}
+  @dots{}@i{matrix commands}@dots{}
+[@t{ELSE IF} @i{expression}@t{.}
+  @dots{}@i{matrix commands}@dots{}]@dots{}
+[@t{ELSE}
+  @dots{}@i{matrix commands}@dots{}]
+@t{END IF}@t{.}
+
+@t{LOOP} [@i{var}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{step}]] [@t{IF} @i{expression}]@t{.}
+  @dots{}@i{matrix commands}@dots{}
+@t{END LOOP} [@t{IF} @i{expression}]@t{.}
+
+@t{BREAK}@t{.}
+@end display
+
+@noindent
+The following matrix commands support matrix input and output:
+
+@display
+@t{READ} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]
+     [@t{/FILE}@t{=}@i{file}]
+     @t{/FIELD}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{width}]
+     [@t{/FORMAT}@t{=}@i{format}]
+     [@t{/SIZE}@t{=}@i{expression}]
+     [@t{/MODE}@t{=}@{@t{RECTANGULAR} @math{|} @t{SYMMETRIC}@}]
+     [@t{/REREAD}]@t{.}
+@t{WRITE} @i{expression}
+      [@t{/OUTFILE}@t{=}@i{file}]
+      @t{/FIELD}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{width}]
+      [@t{/MODE}@t{=}@{@t{RECTANGULAR} @math{|} @t{TRIANGULAR}@}]
+      [@t{/HOLD}]
+      [@t{/FORMAT}@t{=}@i{format}]@t{.}
+@t{GET} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]
+    [@t{/FILE}@t{=}@{@i{file} @math{|} @t{*}@}]
+    [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+    [@t{/NAMES}@t{=}@i{expression}]
+    [@t{/MISSING}@t{=}@{@t{ACCEPT} @math{|} @t{OMIT} @math{|} @i{number}@}]
+    [@t{/SYSMIS}@t{=}@{@t{OMIT} @math{|} @i{number}@}]@t{.}
+@t{SAVE} @i{expression}
+     [@t{/OUTFILE}@t{=}@{@i{file} @math{|} @t{*}@}]
+     [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+     [@t{/NAMES}@t{=}@i{expression}]
+     [@t{/STRINGS}@t{=}@i{variable}@dots{}]@t{.}
+@t{MGET} [@t{/FILE}@t{=}@i{file}]
+     [@t{/TYPE}@t{=}@{@t{COV} @math{|} @t{CORR} @math{|} @t{MEAN} @math{|} @t{STDDEV} @math{|} @t{N} @math{|} @t{COUNT}@}]@t{.}
+@t{MSAVE} @i{expression}
+      @t{/TYPE}@t{=}@{@t{COV} @math{|} @t{CORR} @math{|} @t{MEAN} @math{|} @t{STDDEV} @math{|} @t{N} @math{|} @t{COUNT}@}
+      [@t{/OUTFILE}@t{=}@i{file}]
+      [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+      [@t{/SNAMES}@t{=}@i{variable}@dots{}]
+      [@t{/SPLIT}@t{=}@i{expression}]
+      [@t{/FNAMES}@t{=}@i{variable}@dots{}]
+      [@t{/FACTOR}@t{=}@i{expression}]@t{.}
+@end display
+
+@noindent
+The following matrix commands provide additional support:
+
+@display
+@t{DISPLAY} [@{@t{DICTIONARY} @math{|} @t{STATUS}@}]@t{.}
+@t{RELEASE} @i{variable}@dots{}@t{.}
+@end display
+
+@code{MATRIX} and @code{END MATRIX} enclose a special @pspp{}
+sub-language, called the matrix language.  The matrix language does
+not require an active dataset to be defined and only a few of the
+matrix language commands work with any datasets that are defined.
+Each instance of @code{MATRIX}@dots{}@code{END MATRIX} is a separate
+program whose state is independent of any instance, so that variables
+declared within a matrix program are forgotten at its end.
+
+The matrix language works with matrices, where a @dfn{matrix} is a
+rectangular array of real numbers.  An @math{@var{n}@times{}@var{m}}
+matrix has @var{n} rows and @var{m} columns.  Some special cases are
+important: a @math{@var{n}@times{}1} matrix is a @dfn{column vector},
+a @math{1@times{}@var{n}} is a @dfn{row vector}, and a
+@math{1@times{}1} matrix is a @dfn{scalar}.
+
+The matrix language also has limited support for matrices that contain
+8-byte strings instead of numbers.  Strings longer than 8 bytes are
+truncated, and shorter strings are padded with spaces.  String
+matrices are mainly useful for labeling rows and columns when printing
+numerical matrices with the @code{MATRIX PRINT} command.  Arithmetic
+operations on string matrices will not produce useful results.  The
+user should not mix strings and numbers within a matrix.
+
+The matrix language does not work with cases.  A variable in the
+matrix language represents a single matrix.
+
+The matrix language does not support missing values.
+
+@code{MATRIX} is a procedure, so it cannot be enclosed inside @code{DO
+IF}, @code{LOOP}, etc.
+
+Macros may be used within a matrix program, and macros may expand to
+include entire matrix programs.  The @code{DEFINE} command may not
+appear within a matrix program.  @xref{DEFINE}, for more information
+about macros.
+
+The following sections describe the details of the matrix language:
+first, the syntax of matrix expressions, then each of the supported
+commands.  The @code{COMMENT} command (@pxref{COMMENT}) is also
+supported.
+
+@node Matrix Expressions
+@subsection Matrix Expressions
+
+Many matrix commands use expressions.  A matrix expression may use the
+following operators, listed in descending order of operator
+precedence.  Within a single level, operators associate from left to
+right.
+
+@itemize @bullet
+@item
+Function call @t{()} and matrix construction @t{@{@}}
+
+@item
+Indexing @t{()}
+
+@item
+Unary @t{+} and @t{-}
+
+@item
+Integer sequence @t{:}
+
+@item
+Exponentiation @t{**} and @t{&**}
+
+@item
+Multiplication @t{*} and @t{&*}, and division @t{/} and @t{&/}
+
+@item
+Addition @t{+} and subtraction @t{-}
+
+@item
+Relational @t{< <= = >= > <>}
+
+@item
+Logical @t{NOT}
+
+@item
+Logical @t{AND}
+
+@item
+Logical @t{OR} and @t{XOR}
+@end itemize
+
+@xref{Matrix Functions}, for the available matrix functions.  The
+remaining operators are described in more detail below.
+
+@cindex restricted expressions
+Expressions appear in the matrix language in some contexts where there
+would be ambiguity whether @samp{/} is an operator or a separator
+between subcommands.  In these contexts, only the operators with
+higher precedence than @samp{/} are allowed outside parentheses.
+Later sections call these @dfn{restricted expressions}.
+
+@node Matrix Construction Operator
+@subsubsection Matrix Construction Operator @t{@{@}}
+
+Use the @t{@{}@t{@}} operator to construct matrices.  Within
+the curly braces, commas separate elements within a row and semicolons
+separate rows.  The following examples show a @math{2@times{}3}
+matrix, a @math{1@times{}4} row vector, a @math{3@times{}1} column
+vector, and a scalar.
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{1, 2, 3; 4, 5, 6@}}
+@tab @result{}
+@tab
+@ifnottex
+@t{[1  2  3] @* [4  5  6]}
+@end ifnottex
+@iftex
+@math{\left(\matrix{1 & 2 & 3 \cr 4 & 5 & 6}\right)}
+@end iftex
+@
+@item @t{@{3.14, 6.28, 9.24, 12.57@}}
+@tab @result{}
+@tab
+@ifnottex
+[3.14  6.28  9.42  12.57]
+@end ifnottex
+@iftex
+@math{(\matrix{3.14 & 6.28 & 9.42 & 12.57})}
+@end iftex
+@
+@item @t{@{1.41; 1.73; 2@}}
+@tab @result{}
+@tab
+@ifnottex
+@t{[1.41] @* [1.73] @* [2.00]}
+@end ifnottex
+@iftex
+@math{(\matrix{1.41 & 1.73 & 2.00})}
+@end iftex
+@
+@item @t{@{5@}}
+@tab @result{}
+@tab 5
+@end multitable
+
+Curly braces are not limited to holding numeric literals.  They can
+contain calculations, and they can paste together matrices and vectors
+in any way as long as the result is rectangular.  For example, if
+@samp{m} is matrix @code{@{1, 2; 3, 4@}}, @samp{r} is row vector
+@code{@{5, 6@}}, and @samp{c} is column vector @code{@{7, 8@}}, then
+curly braces can be used as follows:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{m, c; r, 10@}}
+@tab @result{}
+@tab
+@ifnottex
+@t{[1 2  7] @* [3 4  8] @* [5 6 10]}
+@end ifnottex
+@iftex
+@math{\left(\matrix{1 & 2 & 7 \cr 3 & 4 & 8 \cr 5 & 6 & 10}\right)}
+@end iftex
+@
+@item @t{@{c, 2 * c, T(r)@}}
+@tab @result{}
+@tab
+@ifnottex
+@t{[7 14 5] @* [8 16 6]}
+@end ifnottex
+@iftex
+@math{\left(\matrix{7 & 14 & 5 \cr 8 & 16 & 6}\right)}
+@end iftex
+@end multitable
+
+The final example above uses the transposition function @code{T}.
+
+@node Matrix Sequence Operator
+@subsubsection Integer Sequence Operator @samp{:}
+
+The syntax @code{@var{first}:@var{last}:@var{step}} yields a row
+vector of consecutive integers from @var{first} to @var{last} counting
+by @var{step}.  The final @code{:@var{step}} is optional and
+defaults to 1 when omitted.
+
+Each of @var{first}, @var{last}, and @var{step} must be a scalar and
+should be an integer (any fractional part is discarded).  Because
+@samp{:} has a high precedence, operands other than numeric literals
+must usually be parenthesized.
+
+When @var{step} is positive (or omitted) and @math{@var{end} <
+@var{start}}, or if @var{step} is negative and @math{@var{end} >
+@var{start}}, then the result is an empty matrix.  If @var{step} is 0,
+then @pspp{} reports an error.
+
+Here are some examples:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{1:6}      @tab @result{} @tab @t{@{1, 2, 3, 4, 5, 6@}}
+@item @t{1:6:2}    @tab @result{} @tab @t{@{1, 3, 5@}}
+@item @t{-1:-5:-1} @tab @result{} @tab @t{@{-1, -2, -3, -4, -5@}}
+@item @t{-1:-5}    @tab @result{} @tab @t{@{@}}
+@item @t{2:1:0}    @tab @result{} @tab (error)
+@end multitable
+
+@node Matrix Index Operator
+@subsubsection Index Operator @code{()}
+
+The result of the submatrix or indexing operator, written
+@code{@var{m}(@var{rindex}, @var{cindex})}, contains the rows of
+@var{m} whose indexes are given in vector @var{rindex} and the columns
+whose indexes are given in vector @var{cindex}.
+
+In the simplest case, if @var{rindex} and @var{cindex} are both
+scalars, the result is also a scalar:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{10, 20; 30, 40@}(1, 1)} @tab @result{} @tab @t{10}
+@item @t{@{10, 20; 30, 40@}(1, 2)} @tab @result{} @tab @t{20}
+@item @t{@{10, 20; 30, 40@}(2, 1)} @tab @result{} @tab @t{30}
+@item @t{@{10, 20; 30, 40@}(2, 2)} @tab @result{} @tab @t{40}
+@end multitable
+
+If the index arguments have multiple elements, then the result
+includes multiple rows or columns:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{10, 20; 30, 40@}(1:2, 1)} @tab @result{} @tab @t{@{10; 30@}}
+@item @t{@{10, 20; 30, 40@}(2, 1:2)} @tab @result{} @tab @t{@{30, 40@}}
+@item @t{@{10, 20; 30, 40@}(1:2, 1:2)} @tab @result{} @tab @t{@{10, 20; 30, 40@}}
+@end multitable
+
+The special argument @samp{:} may stand in for all the rows or columns
+in the matrix being indexed, like this:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{10, 20; 30, 40@}(:, 1)} @tab @result{} @tab @t{@{10; 30@}}
+@item @t{@{10, 20; 30, 40@}(2, :)} @tab @result{} @tab @t{@{30, 40@}}
+@item @t{@{10, 20; 30, 40@}(:, :)} @tab @result{} @tab @t{@{10, 20; 30, 40@}}
+@end multitable
+
+The index arguments do not have to be in order, and they may contain
+repeated values, like this:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{10, 20; 30, 40@}(@{2, 1@}, 1)} @tab @result{} @tab @t{@{30; 10@}}
+@item @t{@{10, 20; 30, 40@}(2, @{2; 2; 1@})} @tab @result{} @tab @t{@{40, 40, 30@}}
+@item @t{@{10, 20; 30, 40@}(2:1:-1, :)} @tab @result{} @tab @t{@{30, 40; 10, 20@}}
+@end multitable
+
+When the matrix being indexed is a row or column vector, only a single
+index argument is needed, like this:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{11, 12, 13, 14, 15@}(2:4)} @tab @result{} @tab @t{@{12, 13, 14@}}
+@item @t{@{11; 12; 13; 14; 15@}(2:4)} @tab @result{} @tab @t{@{12; 13; 14@}}
+@end multitable
+
+When an index is not an integer, @pspp{} discards the fractional part.
+It is an error for an index to be less than 1 or greater than the
+number of rows or columns:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{11, 12, 13, 14@}(@{2.5, 4.6@})} @tab @result{} @tab @t{@{12, 14@}}
+@item @t{@{11; 12; 13; 14@}(0)} @tab @result{} @tab (error)
+@end multitable
+
+@node Matrix Unary Operators
+@subsubsection Unary Operators
+
+The unary operators take a single operand of any dimensions and
+operate on each of its elements independently.  The unary operators
+are:
+
+@table @code
+@item -
+Inverts the sign of each element.
+
+@item +
+No change.
+
+@item NOT
+Logical inversion: each positive value becomes 0 and each zero or
+negative value becomes 1.
+@end table
+
+Examples:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{-@{1, -2; 3, -4@}} @tab @result{} @tab @t{@{-1, 2; -3, 4@}}
+@item @t{+@{1, -2; 3, -4@}} @tab @result{} @tab @t{@{1, -2; 3, -4@}}
+@item @t{NOT @{1, 0; -1, 1@}} @tab @result{} @tab @t{@{0, 1; 1, 0@}}
+@end multitable
+
+@node Matrix Elementwise Binary Operators
+@subsubsection Elementwise Binary Operators
+
+The elementwise binary operators require their operands to be matrices
+with the same dimensions.  Alternatively, if one operand is a scalar,
+then its value is treated as if it were duplicated to the dimensions
+of the other operand.  The result is a matrix of the same size as the
+operands, in which each element is the result of the applying the
+operator to the corresponding elements of the operands.
+
+The elementwise binary operators are listed below.
+
+@itemize @bullet
+@item
+The arithmetic operators, for familiar arithmetic operations:
+
+@table @asis
+@item @code{+}
+Addition.
+
+@item @code{-}
+Subtraction.
+
+@item @code{*}
+Multiplication, if one operand is a scalar.  (Otherwise this is matrix
+multiplication, described below.)
+
+@item @code{/} or @code{&/}
+Division.
+
+@item @code{&*}
+Multiplication.
+
+@item @code{&**}
+Exponentiation.
+@end table
+
+@item
+The relational operators, whose results are 1 when a comparison is
+true and 0 when it is false:
+
+@table @asis
+@item @code{<} or @code{LT}
+Less than.
+
+@item @code{<=} or @code{LE}
+Less than or equal.
+
+@item @code{=} or @code{EQ}
+Equal.
+
+@item @code{>} or @code{GT}
+Greater than.
+
+@item @code{>=} or @code{GE}
+Greater than or equal.
+
+@item @code{<>} or @code{~=} or @code{NE}
+Not equal.
+@end table
+
+@item
+The logical operators, which treat positive operands as true and
+nonpositive operands as false.  They yield 0 for false and 1 for true:
+
+@table @code
+@item AND
+True if both operands are true.
+
+@item OR
+True if at least one operand is true.
+
+@item XOR
+True if exactly one operand is true.
+@end table
+@end itemize
+
+Examples:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{1 + 2} @tab @result{} @tab @t{3}
+@item @t{1 + @{3; 4@}} @tab @result{} @tab @t{@{4; 5@}}
+@item @t{@{66, 77; 88, 99@} + 5} @tab @result{} @tab @t{@{71, 82; 93, 104@}}
+@item @t{@{4, 8; 3, 7@} + @{1, 0; 5, 2@}} @tab @result{} @tab @t{@{5, 8; 8, 9@}}
+@item @t{@{1, 2; 3, 4@} < @{4, 3; 2, 1@}} @tab @result{} @tab @t{@{1, 1; 0, 0@}}
+@item @t{@{1, 3; 2, 4@} >= 3} @tab @result{} @tab @t{@{0, 1; 0, 1@}}
+@item @t{@{0, 0; 1, 1@} AND @{0, 1; 0, 1@}} @tab @result{} @tab @t{@{0, 0; 0, 1@}}
+@end multitable
+
+@node Matrix Multiplication Operator
+@subsubsection Matrix Multiplication Operator @samp{*}
+
+If @code{A} is an @math{@var{m}@times{}@var{n}} matrix and @code{B} is
+an @math{@var{n}@times{}@var{p}} matrix, then @code{A*B} is the
+@math{@var{m}@times{}@var{p}} matrix multiplication product @code{C}.
+@pspp{} reports an error if the number of columns in @code{A} differs
+from the number of rows in @code{B}.
+
+The @code{*} operator performs elementwise multiplication (see above)
+if one of its operands is a scalar.
+
+No built-in operator yields the inverse of matrix multiplication.
+Instead, multiply by the result of @code{INV} or @code{GINV}.
+
+Some examples:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{1, 2, 3@} * @{4; 5; 6@}} @tab @result{} @tab @t{32}
+@item @t{@{4; 5; 6@} * @{1, 2, 3@}} @tab @result{} @tab @t{@{4,@w{ } 8, 12; @*@w{ }5, 10, 15; @*@w{ }6, 12, 18@}}
+@end multitable
+
+@node Matrix Exponentiation Operator
+@subsubsection Matrix Exponentiation Operator @code{**}
+
+The result of @code{A**B} is defined as follows when @code{A} is a
+square matrix and @code{B} is an integer scalar:
+
+@itemize @bullet
+@item
+For @code{B > 0}, @code{A**B} is @code{A*@dots{}*A}, where there are
+@code{B} @samp{A}s.  (@pspp{} implements this efficiently for large
+@code{B}, using exponentiation by squaring.)
+
+@item
+For @code{B < 0}, @code{A**B} is @code{INV(A**(-B))}.
+
+@item
+For @code{B = 0}, @code{A**B} is the identity matrix.
+@end itemize
+
+@noindent
+@pspp{} reports an error if @code{A} is not square or @code{B} is not
+an integer.
+
+Examples:
+
+@multitable @columnfractions .4 .05 .4
+@item @t{@{2, 5; 1, 4@}**3} @tab @result{} @tab @t{@{48, 165; 33, 114@}}
+@item @t{@{2, 5; 1, 4@}**0} @tab @result{} @tab @t{@{1, 0; 0, 1@}}
+@item @t{10*@{4, 7; 2, 6@}**-1} @tab @result{} @tab @t{@{6, -7; -2, 4@}}
+@end multitable
+
+@node Matrix Functions
+@subsection Matrix Functions
+
+The matrix language support numerous functions in multiple categories.
+The following subsections document each of the currently supported
+functions.  The first letter of each parameter's name indicate the
+required argument type:
+
+@table @var
+@item s
+A scalar.
+
+@item n
+A nonnegative integer scalar.  (Non-integers are accepted and silently
+rounded down to the nearest integer.)
+
+@item V
+A row or column vector.
+
+@item M
+A matrix.
+@end table
+
+@node Matrix Elementwise Functions
+@subsubsection Elementwise Functions
+
+These functions act on each element of their argument independently,
+like the elementwise operators (@pxref{Matrix Elementwise Binary
+Operators}).
+
+@deffn {Matrix Function} ABS (@var{M})
+Takes the absolute value of each element of @var{M}.
+
+@t{ABS(@{-1, 2; -3, 0@}) @result{} @{1, 2; 3, 0@}}
+@end deffn
+
+@deffn {Matrix Function} ARSIN (@var{M})
+@deffnx {Matrix Function} ARTAN (@var{M})
+Computes the inverse sine or tangent, respectively, of each element in
+@var{M}.  The results are in radians, between @math{-\pi/2} and
+@math{+\pi/2}, inclusive.
+
+The value of @math{\pi} can be computed as @code{4*ARTAN(1)}.
+
+@t{ARSIN(@{-1, 0, 1@}) @result{} @{-1.57, 0, 1.57@}} (approximately)
+
+@t{ARTAN(@{-5, -1, 1, 5@}) @result{} @{-1.37, -.79, .79, 1.37@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} COS (@var{M})
+@deffnx {Matrix Function} SIN (@var{M})
+Computes the cosine or sine, respectively, of each element in @var{M},
+which must be in radians.
+
+@t{COS(@{0.785, 1.57; 3.14, 1.57 + 3.14@}) @result{} @{.71, 0; -1, 0@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} EXP (@var{M})
+Computes @math{e^x} for each element @var{x} in @var{M}.
+
+@t{EXP(@{2, 3; 4, 5@}) @result{} @{7.39, 20.09; 54.6, 148.4@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} LG10 (@var{M})
+@deffnx {Matrix Function} LN (@var{M})
+Takes the logarithm with base 10 or base @math{e}, respectively, of
+each element in @var{M}.
+
+@t{LG10(@{1, 10, 100, 1000@}) @result{} @{0, 1, 2, 3@}} @*
+@t{LG10(0) @result{}} (error)
+
+@t{LN(@{EXP(1), 1, 2, 3, 4@}) @result{} @{1, 0, .69, 1.1, 1.39@}} (approximately) @*
+@t{LN(0) @result{}} (error)
+@end deffn
+
+@deffn {Matrix Function} MOD (@var{M}, @var{s})
+Takes each element in @var{M} modulo nonzero scalar value @var{s},
+that is, the remainder of division by @var{s}.  The sign of the result
+is the same as the sign of the dividend.
+
+@t{MOD(@{5, 4, 3, 2, 1, 0@}, 3) @result{} @{2, 1, 0, 2, 1, 0@}} @*
+@t{MOD(@{5, 4, 3, 2, 1, 0@}, -3) @result{} @{2, 1, 0, 2, 1, 0@}} @*
+@t{MOD(@{-5, -4, -3, -2, -1, 0@}, 3) @result{} @{-2, -1, 0, -2, -1, 0@}} @*
+@t{MOD(@{-5, -4, -3, -2, -1, 0@}, -3) @result{} @{-2, -1, 0, -2, -1, 0@}} @*
+@t{MOD(@{5, 4, 3, 2, 1, 0@}, 1.5) @result{} @{.5, 1.0, .0, .5, 1.0, .0@}} @*
+@t{MOD(@{5, 4, 3, 2, 1, 0@}, 0) @result{}} (error)
+@end deffn
+
+@deffn {Matrix Function} RND (@var{M})
+@deffnx {Matrix Function} TRUNC (@var{M})
+Rounds each element of @var{M} to an integer.  @code{RND} rounds to
+the nearest integer, with halves rounded to even integers, and
+@code{TRUNC} rounds toward zero.
+
+@t{RND(@{-1.6, -1.5, -1.4@}) @result{} @{-2, -2, -1@}} @*
+@t{RND(@{-.6, -.5, -.4@}) @result{} @{-1, 0, 0@}} @*
+@t{RND(@{.4, .5, .6@} @result{} @{0, 0, 1@}} @*
+@t{RND(@{1.4, 1.5, 1.6@}) @result{} @{1, 2, 2@}}
+
+@t{TRUNC(@{-1.6, -1.5, -1.4@}) @result{} @{-1, -1, -1@}} @*
+@t{TRUNC(@{-.6, -.5, -.4@}) @result{} @{0, 0, 0@}} @*
+@t{TRUNC(@{.4, .5, .6@} @result{} @{0, 0, 0@}} @*
+@t{TRUNC(@{1.4, 1.5, 1.6@}) @result{} @{1, 1, 1@}}
+@end deffn
+
+@deffn {Matrix Function} SQRT (@var{M})
+Takes the square root of each element of @var{M}, which must not be
+negative.
+
+@t{SQRT(@{0, 1, 2, 4, 9, 81@}) @result{} @{0, 1, 1.41, 2, 3, 9@}} (approximately) @*
+@t{SQRT(-1) @result{}} (error)
+@end deffn
+
+@node Matrix Logical Functions
+@subsubsection Logical Functions
+
+@deffn {Matrix Function} ALL (@var{M})
+Returns a scalar with value 1 if all of the elements in @var{M} are
+nonzero, or 0 if at least one element is zero.
+
+@t{ALL(@{1, 2, 3@} < @{2, 3, 4@}) @result{} 1} @*
+@t{ALL(@{2, 2, 3@} < @{2, 3, 4@}) @result{} 0} @*
+@t{ALL(@{2, 3, 3@} < @{2, 3, 4@}) @result{} 0} @*
+@t{ALL(@{2, 3, 4@} < @{2, 3, 4@}) @result{} 0}
+@end deffn
+
+@deffn {Matrix Function} ANY (@var{M})
+Returns a scalar with value 1 if any of the elements in @var{M} is
+nonzero, or 0 if all of them are zero.
+
+@t{ANY(@{1, 2, 3@} < @{2, 3, 4@}) @result{} 1} @*
+@t{ANY(@{2, 2, 3@} < @{2, 3, 4@}) @result{} 1} @*
+@t{ANY(@{2, 3, 3@} < @{2, 3, 4@}) @result{} 1} @*
+@t{ANY(@{2, 3, 4@} < @{2, 3, 4@}) @result{} 0}
+@end deffn
+
+@node Matrix Construction Functions
+@subsubsection Matrix Construction Functions
+
+@deffn {Matrix Function} BLOCK (@var{M1}, @dots{}, @var{Mn})
+Returns a block diagonal matrix with as many rows as the sum of its
+arguments' row counts and as many columns as the sum of their columns.
+Each argument matrix is placed along the main diagonal of the result,
+and all other elements are zero.
+
+@format
+@t{BLOCK(@{1, 2; 3, 4@}, 5, @{7; 8; 9@}, @{10, 11@}) @result{}
+   1   2   0   0   0   0
+   3   4   0   0   0   0
+   0   0   5   0   0   0
+   0   0   0   7   0   0
+   0   0   0   8   0   0
+   0   0   0   9   0   0
+   0   0   0   0  10  11}
+@end format
+@end deffn
+
+@deffn {Matrix Function} IDENT (@var{n})
+@deffnx {Matrix Function} IDENT (@var{nr}, @var{nc})
+Returns an identity matrix, whose main diagonal elements are one and
+whose other elements are zero.  The returned matrix has @var{n} rows
+and columns or @var{nr} rows and @var{nc} columns, respectively.
+
+@format
+@t{IDENT(1) @result{} 1
+IDENT(2) @result{}
+  1  0
+  0  1
+IDENT(3, 5) @result{}
+  1  0  0  0  0
+  0  1  0  0  0
+  0  0  1  0  0
+IDENT(5, 3) @result{}
+  1  0  0
+  0  1  0
+  0  0  1
+  0  0  0
+  0  0  0}
+@end format
+@end deffn
+
+@deffn {Matrix Function} MAGIC (@var{n})
+Returns an @math{@var{n}@times{}@var{n}} matrix that contains each of
+the integers @math{1@dots{}@var{n}} once, in which each column, each
+row, and each diagonal sums to @math{n(n^2+1)/2}.  There are many
+magic squares with given dimensions, but this function always returns
+the same one for a given value of @var{n}.
+
+@t{MAGIC(3) @result{} @{8, 1, 6; 3, 5, 7; 4, 9, 2@}} @*
+@t{MAGIC(4) @result{} @{1, 5, 12, 16; 15, 11, 6, 2; 14, 8, 9, 3; 4, 10, 7, 13@}}
+@end deffn
+
+@deffn {Matrix Function} MAKE (@var{nr}, @var{nc}, @var{s})
+Returns an @math{@var{nr}@times{}@var{nc}} matrix whose elements are
+all @var{s}.
+
+@t{MAKE(1, 2, 3) @result{} @{3, 3@}} @*
+@t{MAKE(2, 1, 4) @result{} @{4; 4@}} @*
+@t{MAKE(2, 3, 5) @result{} @{5, 5, 5; 5, 5, 5@}}
+@end deffn
+
+@deffn {Matrix Function} MDIAG (@var{V})
+@anchor{MDIAG} Given @var{n}-element vector @var{V}, returns a
+@math{@var{n}@times{}@var{n}} matrix whose main diagonal is copied
+from @var{V}.  The other elements in the returned vector are zero.
+
+Use @code{CALL SETDIAG} (@pxref{CALL SETDIAG}) to replace the main
+diagonal of a matrix in-place.
+
+@format
+@t{MDIAG(@{1, 2, 3, 4@}) @result{}
+  1  0  0  0
+  0  2  0  0
+  0  0  3  0
+  0  0  0  4}
+@end format
+@end deffn
+
+@deffn {Matrix Function} RESHAPE (@var{M}, @var{nr}, @var{nc})
+Returns an @math{@var{nr}@times{}@var{nc}} matrix whose elements come
+from @var{M}, which must have the same number of elements as the new
+matrix, copying elements from @var{M} to the new matrix row by row.
+
+@format
+@t{RESHAPE(1:12, 1, 12) @result{}
+   1   2   3   4   5   6   7   8   9  10  11  12
+RESHAPE(1:12, 2, 6) @result{}
+   1   2   3   4   5   6
+   7   8   9  10  11  12
+RESHAPE(1:12, 3, 4) @result{}
+   1   2   3   4
+   5   6   7   8
+   9  10  11  12
+RESHAPE(1:12, 4, 3) @result{}
+   1   2   3
+   4   5   6
+   7   8   9
+  10  11  12}
+@end format
+@end deffn
+
+@deffn {Matrix Function} T (@var{M})
+@deffnx {Matrix Function} TRANSPOS (@var{M})
+Returns @var{M} with rows exchanged for columns.
+
+@t{T(@{1, 2, 3@}) @result{} @{1; 2; 3@}} @*
+@t{T(@{1; 2; 3@}) @result{} @{1, 2, 3@}}
+@end deffn
+
+@deffn {Matrix Function} UNIFORM (@var{nr}, @var{nc})
+Returns a @math{@var{nr}@times{}@var{nc}} matrix in which each element
+is randomly chosen from a uniform distribution of real numbers between
+0 and 1.  Random number generation honors the current seed setting
+(@pxref{SET SEED}).
+
+The following example shows one possible output, but of course every
+result will be different (given different seeds):
+
+@format
+@t{UNIFORM(4, 5)*10 @result{}
+  7.71  2.99   .21  4.95  6.34
+  4.43  7.49  8.32  4.99  5.83
+  2.25   .25  1.98  7.09  7.61
+  2.66  1.69  2.64   .88  1.50}
+@end format
+@end deffn
+
+@node Matrix Minimum and Maximum and Sum Functions
+@subsubsection Minimum, Maximum, and Sum Functions
+
+@deffn {Matrix Function} CMIN (@var{M})
+@deffnx {Matrix Function} CMAX (@var{M})
+@deffnx {Matrix Function} CSUM (@var{M})
+@deffnx {Matrix Function} CSSQ (@var{M})
+Returns a row vector with the same number of columns as @var{M}, in
+which each element is the minimum, maximum, sum, or sum of squares,
+respectively, of the elements in the same column of @var{M}.
+
+@t{CMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{1, 2, 3@}} @*
+@t{CMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{7, 8, 9@}} @*
+@t{CSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{12, 15, 18@}} @*
+@t{CSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{66, 93, 126@}}
+@end deffn
+
+@deffn {Matrix Function} MMIN (@var{M})
+@deffnx {Matrix Function} MMAX (@var{M})
+@deffnx {Matrix Function} MSUM (@var{M})
+@deffnx {Matrix Function} MSSQ (@var{M})
+Returns the minimum, maximum, sum, or sum of squares, respectively, of
+the elements of @var{M}.
+
+@t{MMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 1} @*
+@t{MMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 9} @*
+@t{MSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 45} @*
+@t{MSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 285}
+@end deffn
+
+@deffn {Matrix Function} RMIN (@var{M})
+@deffnx {Matrix Function} RMAX (@var{M})
+@deffnx {Matrix Function} RSUM (@var{M})
+@deffnx {Matrix Function} RSSQ (@var{M})
+Returns a column vector with the same number of rows as @var{M}, in
+which each element is the minimum, maximum, sum, or sum of squares,
+respectively, of the elements in the same row of @var{M}.
+
+@t{RMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{1; 4; 7@}} @*
+@t{RMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{3; 6; 9@}} @*
+@t{RSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{6; 15; 24@}} @*
+@t{RSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{14; 77; 194@}}
+@end deffn
+
+@deffn {Matrix Function} SSCP (@var{M})
+Returns @math{@var{M}^T @times{} @var{M}}.
+
+@t{SSCP(@{1, 2, 3; 4, 5, 6@}) @result{} @{17, 22, 27; 22, 29, 36; 27, 36, 45@}}
+@end deffn
+
+@deffn {Matrix Function} TRACE (@var{M})
+Returns the sum of the elements along @var{M}'s main diagonal,
+equivalent to @code{MSUM(DIAG(@var{M}))}.
+
+@t{TRACE(MDIAG(1:5)) @result{} 15}
+@end deffn
+
+@node Matrix Property Functions
+@subsubsection Matrix Property Functions
+
+@deffn {Matrix Function} NROW (@var{M})
+@deffnx {Matrix Function} NCOL (@var{M})
+Returns the number of row or columns, respectively, in @var{M}.
+
+@format
+@t{NROW(@{1, 0; -2, -3; 3, 3@}) @result{} 3
+NROW(1:5) @result{} 1
+
+NCOL(@{1, 0; -2, -3; 3, 3@}) @result{} 2
+NCOL(1:5) @result{} 5}
+@end format
+@end deffn
+
+@deffn {Matrix Function} DIAG (@var{M})
+Returns a column vector containing a copy of @var{M}'s main diagonal.
+The vector's length is the lesser of @code{NCOL(@var{M})} and
+@code{NROW(@var{M})}.
+
+@t{DIAG(@{1, 0; -2, -3; 3, 3@}) @result{} @{1; -3@}}
+@end deffn
+
+@node Matrix Rank Ordering Functions
+@subsubsection Matrix Rank Ordering Functions
+
+The @code{GRADE} and @code{RANK} functions each take a matrix @var{M}
+and return a matrix @var{r} with the same dimensions.  Each element in
+@var{r} ranges between 1 and the number of elements @var{n} in
+@var{M}, inclusive.  When the elements in @var{M} all have unique
+values, both of these functions yield the same results: the smallest
+element in @var{M} corresponds to value 1 in @var{r}, the next
+smallest to 2, and so on, up to the largest to @var{n}.  When multiple
+elements in @var{M} have the same value, these functions use different
+rules for handling the ties.
+
+@deffn {Matrix Function} GRADE (@var{M})
+Returns a ranking of @var{M}, turning duplicate values into sequential
+ranks.  The returned matrix always contains each of the integers 1
+through the number of elements in the matrix exactly once.
+
+@t{GRADE(@{1, 0, 3; 3, 1, 2; 3, 0, 5@})} @result{} @t{@{3, 1, 6; 7, 4, 5; 8, 2, 9@}}
+@end deffn
+
+@deffn {Matrix Function} RNKORDER (@var{M})
+Returns a ranking of @var{M}, turning duplicate values into the mean
+of their sequential ranks.
+
+@t{RNKORDER(@{1, 0, 3; 3, 1, 2; 3, 0, 5@})} @*@w{ }@result{} @t{@{3.5, 1.5, 7; 7, 3.5, 5; 7, 1.5, 9@}}
+@end deffn
+
+@noindent
+One may use @code{GRADE} to sort a vector:
+
+@example
+COMPUTE v(GRADE(v))=v.   /* Sort v in ascending order.
+COMPUTE v(GRADE(-v))=v.  /* Sort v in descending order.
+@end example
+
+@node Matrix Algebra Functions
+@subsubsection Matrix Algebra Functions
+
+@deffn {Matrix Function} CHOL (@var{M})
+Matrix @var{M} must be an @math{@var{n}@times{}@var{n}} symmetric
+positive-definite matrix.  Returns an @math{@var{n}@times{}@var{n}}
+matrix @var{B} such that @math{@var{B}^T@times{}@var{B}=@var{M}}.
+
+@format
+@t{CHOL(@{4, 12, -16; 12, 37, -43; -16, -43, 98@}) @result{}
+  2  6 -8
+  0  1  5
+  0  0  3}
+@end format
+@end deffn
+
+@deffn {Matrix Function} DESIGN (@var{M})
+Returns a design matrix for @var{M}.  The design matrix has the same
+number of rows as @var{M}.  Each column @var{c} in @var{M}, from left
+to right, yields a group of columns in the output.  For each unique
+value @var{v} in @var{c}, from top to bottom, add a column to the
+output in which @var{v} becomes 1 and other values become 0.
+
+@pspp{} issues a warning if a column only contains a single unique value.
+
+@format
+@t{DESIGN(@{1; 2; 3@}) @result{} @{1, 0, 0; 0, 1, 0; 0, 0, 1@}}
+@t{DESIGN(@{5; 8; 5@}) @result{} @{1, 0; 0, 1; 1, 0@}}
+@t{DESIGN(@{1, 5; 2, 8; 3, 5@})}
+ @result{} @t{@{1, 0, 0, 1, 0; 0, 1, 0, 0, 1; 0, 0, 1, 1, 0@}}
+@t{DESIGN(@{5; 5; 5@})} @result{} (warning)
+@end format
+@end deffn
+
+@deffn {Matrix Function} DET (@var{M})
+Returns the determinant of square matrix @var{M}.
+
+@t{DET(@{3, 7; 1, -4@}) @result{} -19}
+@end deffn
+
+@deffn {Matrix Function} EVAL (@var{M})
+@anchor{EVAL}
+Returns a column vector containing the eigenvalues of symmetric matrix
+@var{M}, sorted in ascending order.
+
+Use @code{CALL EIGEN} (@pxref{CALL EIGEN}) to compute eigenvalues and
+eigenvectors of a matrix.
+
+@t{EVAL(@{2, 0, 0; 0, 3, 4; 0, 4, 9@}) @result{} @{11; 2; 1@}}
+@end deffn
+
+@deffn {Matrix Function} GINV (@var{M})
+Returns the @math{@var{k}@times{}@var{n}} matrix @var{A} that is the
+@dfn{generalized inverse} of @math{@var{n}@times{}@var{k}} matrix
+@var{M}, defined such that
+@math{@var{M}@times{}@var{A}@times{}@var{M}=@var{M}} and
+@math{@var{A}@times{}@var{M}@times{}@var{A}=@var{A}}.
+
+@t{GINV(@{1, 2@}) @result{} @{.2; .4@}} (approximately) @*
+@t{@{1:9@} * GINV(1:9) * @{1:9@} @result{} @{1:9@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} GSCH (@var{M})
+@var{M} must be a @math{@var{n}@times{}@var{m}} matrix, @math{@var{m}
+@geq{} @var{n}}, with rank @var{n}.  Returns an
+@math{@var{n}@times{}@var{n}} orthonormal basis for @var{M}, obtained
+using the Gram-Schmidt process.
+
+@t{GSCH(@{3, 2; 1, 2@}) * SQRT(10) @result{} @{3, -1; 1, 3@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} INV (@var{M})
+Returns the @math{@var{n}@times{}@var{n}} matrix @var{A} that is the
+inverse of @math{@var{n}@times{}@var{n}} matrix @var{M}, defined such
+that @math{@var{M}@times{}@var{A} = @var{A}@times{}@var{M} = I}, where
+@var{I} is the identity matrix.  @var{M} must not be singular, that
+is, @math{\det(@var{M}) @ne{} 0}.
+
+@t{INV(@{4, 7; 2, 6@}) @result{} @{.6, -.7; -.2, .4@}} (approximately)
+@end deffn
+
+@deffn {Matrix Function} KRONEKER (@var{Ma}, @var{Mb})
+Returns the @math{@var{pm}@times{}@var{qn}} matrix @var{P} that is the
+@dfn{Kroneker product} of @math{@var{m}@times{}@var{n}} matrix
+@var{Ma} and @math{@var{p}@times{}@var{q}} matrix @var{Mb}.  One may
+view @var{P} as the concatenation of multiple
+@math{@var{p}@times{}@var{q}} blocks, each of which is the scalar
+product of @var{Mb} by a different element of @var{Ma}.  For example,
+when @code{A} is a @math{2@times{}2} matrix, @code{KRONEKER(A, B)} is
+equivalent to @code{@{A(1,1)*B, A(1,2)*B; A(2,1)*B, A(2,2)*B@}}.
+
+@format
+@t{KRONEKER(@{1, 2; 3, 4@}, @{0, 5; 6, 7@}) @result{}
+   0   5   0  10
+   6   7  12  14
+   0  15   0  20
+  18  21  24  28}
+@end format
+@end deffn
+
+@deffn {Matrix Function} RANK (@var{M})
+Returns the rank of matrix @var{M}, a integer scalar whose value is
+the dimension of the vector space spanned by its columns or,
+equivalently, by its rows.
+
+@format
+@t{RANK(@{1, 0, 1; -2, -3, 1; 3, 3, 0@}) @result{} 2
+RANK(@{1, 1, 0, 2; -1, -1, 0, -2@}) @result{} 1
+RANK(@{1, -1; 1, -1; 0, 0; 2, -2@}) @result{} 1
+RANK(@{1, 2, 1; -2, -3, 1; 3, 5, 0@}) @result{} 2
+RANK(@{1, 0, 2; 2, 1, 0; 3, 2, 1@}) @result{} 3}
+@end format
+@end deffn
+
+@deffn {Matrix Function} SOLVE (@var{Ma}, @var{Mb})
+@var{Ma} must be an @math{@var{n}@times{}@var{n}} matrix, with
+@math{\det(@var{Ma}) @ne{} 0}, and @var{Mb} an
+@math{@var{n}@times{}@var{k}} matrix.  Returns an
+@math{@var{n}@times{}@var{k}} matrix @var{X} such that @math{@var{Ma}
+@times{} @var{X} = @var{Mb}}.
+
+All of the following examples show approximate results:
+
+@format
+@t{SOLVE(@{2, 3; 4, 9@}, @{6, 2; 15, 5@}) @result{}
+   1.50    .50
+   1.00    .33
+SOLVE(@{1, 3, -2; 3, 5, 6; 2, 4, 3@}, @{5; 7; 8@}) @result{}
+ -15.00
+   8.00
+   2.00
+SOLVE(@{2, 1, -1; -3, -1, 2; -2, 1, 2@}, @{8; -11; -3@}) @result{}
+   2.00
+   3.00
+  -1.00}
+@end format
+@end deffn
+
+@deffn {Matrix Function} SVAL (@var{M})
+@anchor{SVAL}
+
+Given @math{@var{n}@times{}@var{k}} matrix @var{M}, returns a
+@math{\min(@var{n},@var{k})}-element column vector containing the
+singular values of @var{M} in descending order.
+
+Use @code{CALL SVD} (@pxref{CALL SVD}) to compute the full singular
+value decomposition of a matrix.
+
+@format
+@t{SVAL(@{1, 1; 0, 0@}) @result{} @{1.41; .00@}
+SVAL(@{1, 0, 1; 0, 1, 1; 0, 0, 0@}) @result{} @{1.73; 1.00; .00@}
+SVAL(@{2, 4; 1, 3; 0, 0; 0, 0@}) @result{} @{5.46; .37@}}
+@end format
+@end deffn
+
+@deffn {Matrix Function} SWEEP (@var{M}, @var{nk})
+Given @math{@var{r}@times{}@var{c}} matrix @var{M} and integer scalar
+@math{k = @var{nk}} such that @math{1 @leq{} k @leq{}
+\min(@var{r},@var{c})}, returns the @math{@var{r}@times{}@var{c}}
+sweep matrix @var{A}.
+
+If @math{@var{M}_{kk} @ne{} 0}, then:
+
+@display
+@math{@var{A}_{kk} = 1/@var{M}_{kk}},
+@math{@var{A}_{ik} = -@var{M}_{ik}/@var{M}_{kk} @r{for} i @ne{} k},
+@math{@var{A}_{kj} = @var{M}_{kj}/@var{M}_{kk} @r{for} j @ne{} k, @r{and}}
+@math{@var{A}_{ij} = @var{M}_{ij} - @var{M}_{ik}@var{M}_{kj}/@var{M}_{kk} @r{for} i @ne{} k @r{and} j @ne{} k}.
+@end display
+
+If @math{@var{M}_{kk} = 0}, then:
+
+@display
+@math{@var{A}_{ik} = @var{A}_{ki} = 0 @r{and}}
+@math{@var{A}_{ij} = @var{M}_{ij}, @r{for} i @ne{} k @r{and} j @ne{} k}.
+@end display
+
+Given @t{M = @{0, 1, 2; 3, 4, 5; 6, 7, 8@}}, then (approximately):
+
+@format
+@t{SWEEP(M, 1) @result{}
+   .00   .00   .00
+   .00  4.00  5.00
+   .00  7.00  8.00
+SWEEP(M, 2) @result{}
+  -.75  -.25   .75
+   .75   .25  1.25
+   .75 -1.75  -.75
+SWEEP(M, 3) @result{}
+ -1.50  -.75  -.25
+  -.75  -.38  -.63
+   .75   .88   .13}
+@end format
+@end deffn
+
+@node Matrix Statistical Distribution Functions
+@subsubsection Matrix Statistical Distribution Functions
+
+The matrix language can calculate several functions of standard
+statistical distributions using the same syntax and semantics as in
+@pspp{} transformation expressions.  @xref{Statistical Distribution
+Functions}, for details.
+
+The matrix language extends the PDF, CDF, SIG, IDF, NPDF, and NCDF
+functions by allowing the first parameters to each of these functions
+to be a vector or matrix with any dimensions.  In addition,
+@code{CDF.BVNOR} and @code{PDF.BVNOR} allow either or both of their
+first two parameters to be vectors or matrices; if both are non-scalar
+then they must have the same dimensions.  In each case, the result is
+a matrix or vector with the same dimensions as the input populated
+with elementwise calculations.
+
+@node Matrix EOF Function
+@subsubsection EOF Function
+
+This function works with files being used on the @code{READ} statement.
+
+@deffn {Matrix Function} EOF (@var{file})
+@anchor{EOF Matrix Function}
+
+Given a file handle or file name @var{file}, returns an integer scalar
+1 if the last line in the file has been read or 0 if more lines are
+available.  Determining this requires attempting to read another line,
+which means that @code{REREAD} on the next @code{READ} command
+following @code{EOF} on the same file will be ineffective.
+@end deffn
+
+The @code{EOF} function gives a matrix program the flexibility to read
+a file with text data without knowing the length of the file in
+advance.  For example, the following program will read all the lines
+of data in @file{data.txt}, each consisting of three numbers, as rows
+in matrix @code{data}:
+
+@verbatim
+MATRIX.
+COMPUTE data={}.
+LOOP IF NOT EOF('data.txt').
+  READ row/FILE='data.txt'/FIELD=1 TO 1000/SIZE={1,3}.
+  COMPUTE data={data; row}.
+END LOOP.
+PRINT data.
+END MATRIX.
+
+@end verbatim
+
+@node Matrix COMPUTE Command
+@subsection The @code{COMPUTE} Command
+
+@display
+@t{COMPUTE} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]@t{=}@i{expression}@t{.}
+@end display
+
+The @code{COMPUTE} command evaluates an expression and assigns the
+result to a variable or a submatrix of a variable.  Assigning to a
+submatrix uses the same syntax as the index operator (@pxref{Matrix
+Index Operator}).
+
+@node Matrix CALL command
+@subsection The @code{CALL} Command
+
+A matrix function returns a single result.  The @code{CALL} command
+implements procedures, which take a similar syntactic form to
+functions but yield results by modifying their arguments rather than
+returning a value.
+
+Output arguments to a @code{CALL} procedure must be a single variable
+name.
+
+The following procedures are implemented via @code{CALL} to allow them
+to return multiple results.  For these procedures, the output
+arguments need not name existing variables; if they do, then their
+previous values are replaced:
+
+@table @asis
+@item @t{CALL EIGEN(@var{M}, @var{evec}, @var{eval})}
+@anchor{CALL EIGEN}
+
+Computes the eigenvalues and eigenvector of symmetric
+@math{@var{n}@times{}@var{n}} matrix @var{M}.  Assigns the
+eigenvectors of @var{M} to the columns of
+@math{@var{n}@times{}@var{n}} matrix @var{evec} and the eigenvalues in
+descending order to @var{n}-element column vector @var{eval}.
+
+Use the @code{EVAL} function (@pxref{EVAL}) to compute just the
+eigenvalues of a symmetric matrix.
+
+For example, the following matrix language commands:
+@example
+CALL EIGEN(@{1, 0; 0, 1@}, evec, eval).
+PRINT evec.
+PRINT eval.
+
+CALL EIGEN(@{3, 2, 4; 2, 0, 2; 4, 2, 3@}, evec2, eval2).
+PRINT evec2.
+PRINT eval2.
+@end example
+
+@noindent
+yield this output:
+
+@example
+evec
+  1  0
+  0  1
+
+eval
+  1
+  1
+
+evec2
+  -.6666666667   .0000000000   .7453559925
+  -.3333333333  -.8944271910  -.2981423970
+  -.6666666667   .4472135955  -.5962847940
+
+eval2
+  8.0000000000
+ -1.0000000000
+ -1.0000000000
+@end example
+  
+@item @t{CALL SVD(@var{M}, @var{U}, @var{S}, @var{V})}
+@anchor{CALL SVD}
+
+Computes the singular value decomposition of
+@math{@var{n}@times{}@var{k}} matrix @var{M}, assigning @var{S} a
+@math{@var{n}@times{}@var{k}} diagonal matrix and to @var{U} and
+@var{V} unitary @math{@var{k}@times{}@var{k}} matrices such that
+@math{@var{M} = @var{U}@times{}@var{S}@times{}@var{V}^T}.  The main
+diagonal of @var{Q} contains the singular values of @var{M}.
+
+Use the @code{SVAL} function (@pxref{SVAL}) to compute just the
+singular values of a matrix.
+
+For example, the following matrix program:
+
+@example
+CALL SVD(@{3, 2, 2; 2, 3, -2@}, u, s, v).
+PRINT (u * s * T(v))/FORMAT F5.1.
+@end example
+
+@noindent
+yields this output:
+
+@example
+(u * s * T(v))
+   3.0   2.0   2.0
+   2.0   3.0  -2.0
+@end example
+@end table
+
+The final procedure is implemented via @code{CALL} to allow it to
+modify a matrix instead of returning a modified version.  For this
+procedure, the output argument must name an existing variable.
+
+@table @asis
+@item @t{CALL SETDIAG(@var{M}, @var{V})}
+@anchor{CALL SETDIAG}
+
+Replaces the main diagonal of @math{@var{n}@times{}@var{p}} matrix
+@var{M} by the contents of @var{k}-element vector @var{V}.  If
+@math{@var{k} = 1}, so that @var{V} is a scalar, replaces all of the
+diagonal elements of @var{M} by @var{V}.  If @math{@var{k} <
+\min(@var{n},@var{p})}, only the upper @var{k} diagonal elements are
+replaced; if @math{@var{k} > \min(@var{n},@var{p})}, then the 
+extra elements of @var{V} are ignored.
+
+Use the @code{MDIAG} function (@pxref{MDIAG}) to construct a new
+matrix with a specified main diagonal.
+
+For example, this matrix program:
+
+@example
+COMPUTE x=@{1, 2, 3; 4, 5, 6; 7, 8, 9@}.
+CALL SETDIAG(x, 10).
+PRINT x.
+@end example
+
+@noindent
+outputs the following:
+
+@example
+x
+  10   2   3
+   4  10   6
+   7   8  10
+@end example
+@end table
+
+@node Matrix PRINT Command
+@subsection The @code{PRINT} Command
+
+@display
+@t{PRINT} [@i{expression}]
+      [@t{/FORMAT}@t{=}@i{format}]
+      [@t{/TITLE}@t{=}@i{title}]
+      [@t{/SPACE}@t{=}@{@t{NEWPAGE} @math{|} @i{n}@}]
+      [@{@t{/RLABELS}@t{=}@i{string}@dots{} @math{|} @t{/RNAMES}@t{=}@i{expression}@}]
+      [@{@t{/CLABELS}@t{=}@i{string}@dots{} @math{|} @t{/CNAMES}@t{=}@i{expression}@}]@t{.}
+@end display
+
+The @code{PRINT} command is commonly used to display a matrix.  It
+evaluates the restricted @var{expression}, if present, and outputs it
+either as text or a pivot table, depending on the setting of
+@code{MDISPLAY} (@pxref{SET MDISPLAY}).
+
+Use the @code{FORMAT} subcommand to specify a format, such as
+@code{F8.2}, for displaying the matrix elements.  @code{FORMAT} is
+optional for numerical matrices.  When it is omitted, @pspp{} chooses
+how to format entries automatically using @var{m}, the magnitude of
+the largest-magnitude element in the matrix to be displayed:
+
+@enumerate
+@item
+If @math{@var{m} < 10^{11}} and the matrix's elements are all
+integers, @pspp{} chooses the narrowest @code{F} format that fits
+@var{m} plus a sign.  For example, if the matrix is @t{@{1:10@}}, then
+@math{m = 10}, which fits in 3 columns with room for a sign, the
+format is @code{F3.0}.
+
+@item
+Otherwise, if @math{@var{m} @geq{} 10^9} or @math{@var{m} @leq{}
+10^{-4}}, @pspp{} scales all of the numbers in the matrix by
+@math{10^x}, where @var{x} is the exponent that would be used to
+display @var{m} in scientific notation.  For example, for
+@math{@var{m} = 5.123@times{}10^{20}}, the scale factor is
+@math{10^{20}}.  @pspp{} displays the scaled values in format
+@code{F13.10} and notes the scale factor in the output.
+
+@item
+Otherwise, @pspp{} displays the matrix values, without scaling, in
+format @code{F13.10}.
+@end enumerate
+
+The optional @code{TITLE} subcommand specifies a title for the output
+text or table, as a quoted string.  When it is omitted, the syntax of
+the matrix expression is used as the title.
+
+Use the @code{SPACE} subcommand to request extra space above the
+matrix output.  With a numerical argument, it adds the specified
+number of lines of blank space above the matrix.  With @code{NEWPAGE}
+as an argument, it prints the matrix at the top of a new page.  The
+@code{SPACE} subcommand has no effect when a matrix is output as a
+pivot table.
+
+The @code{RLABELS} and @code{RNAMES} subcommands, which are mutually
+exclusive, can supply a label to accompany each row in the output.
+With @code{RLABELS}, specify the labels as comma-separated strings or
+other tokens.  With @code{RNAMES}, specify a single expression that
+evaluates to a vector of strings.  Either way, if there are more
+labels than rows, the extra labels are ignored, and if there are more
+rows than labels, the extra rows are unlabeled.  For output to a pivot
+table with @code{RLABELS}, the labels can be any length; otherwise,
+the labels are truncated to 8 bytes.
+
+The @code{CLABELS} and @code{CNAMES} subcommands work for labeling
+columns as @code{RLABELS} and @code{RNAMES} do for labeling rows.
+
+When the @var{expression} is omitted, @code{PRINT} does not output a
+matrix.  Instead, it outputs only the text specified on @code{TITLE},
+if any, preceded by any space specified on the @code{SPACE}
+subcommand, if any.  Any other subcommands are ignored, and the
+command acts as if @code{MDISPLAY} is set to @code{TEXT} regardless of
+its actual setting.
+
+The following syntax demonstrates two different ways to label the rows
+and columns of a matrix with @code{PRINT}:
+
+@example
+MATRIX.
+COMPUTE m=@{1, 2, 3; 4, 5, 6; 7, 8, 9@}.
+PRINT m/RLABELS=a, b, c/CLABELS=x, y, z.
+
+COMPUTE rlabels=@{"a", "b", "c"@}.
+COMPUTE clabels=@{"x", "y", "z"@}.
+PRINT m/RNAMES=rlabels/CNAMES=clabels.
+END MATRIX.
+@end example
+
+@noindent
+With @code{MDISPLAY=TEXT} (the default), this program outputs the
+following (twice):
+
+@example
+m
+                x        y        z
+a               1        2        3
+b               4        5        6
+c               7        8        9
+@end example
+
+@noindent
+With @samp{SET MDISPLAY=TABLES.} added above @samp{MATRIX.}, the
+output becomes the following (twice):
+
+@psppoutput {matrix-print}
+
+@node Matrix DO IF Command
+@subsection The @code{DO IF} Command
+
+@display
+@t{DO IF} @i{expression}@t{.}
+  @dots{}@i{matrix commands}@dots{}
+[@t{ELSE IF} @i{expression}@t{.}
+  @dots{}@i{matrix commands}@dots{}]@dots{}
+[@t{ELSE}
+  @dots{}@i{matrix commands}@dots{}]
+@t{END IF}@t{.}
+@end display
+
+A @code{DO IF} command evaluates its expression argument.  If the
+@code{DO IF} expression evaluates to true, then @pspp{} executes the
+associated commands.  Otherwise, @pspp{} evaluates the expression on
+each @code{ELSE IF} clause (if any) in order, and executes the
+commands associated with the first one that yields a true value.
+Finally, if the @code{DO IF} and all the @code{ELSE IF} expressions
+all evaluate to false, @pspp{} executes the commands following the
+@code{ELSE} clause (if any).
+
+Each expression on @code{DO IF} and @code{ELSE IF} must evaluate to a
+scalar.  Positive scalars are considered to be true, and scalars that
+are zero or negative are considered to be false.
+
+The following matrix language fragment sets @samp{b} to the term
+following @samp{a} in the
+@url{https://en.wikipedia.org/wiki/Juggler_sequence, Juggler
+sequence}:
+
+@example
+DO IF MOD(a, 2) = 0.
+  COMPUTE b = TRUNC(a &** (1/2)).
+ELSE.
+  COMPUTE b = TRUNC(a &** (3/2)).
+END IF.
+@end example
+
+@node Matrix LOOP and BREAK Commands
+@subsection The @code{LOOP} and @code{BREAK} Commands
+
+@display
+@t{LOOP} [@i{var}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{step}]] [@t{IF} @i{expression}]@t{.}
+  @dots{}@i{matrix commands}@dots{}
+@t{END LOOP} [@t{IF} @i{expression}]@t{.}
+
+@t{BREAK}@t{.}
+@end display
+
+The @code{LOOP} command executes a nested group of matrix commands,
+called the loop's @dfn{body}, repeatedly.  It has three optional
+clauses that control how many times the loop body executes.
+Regardless of these clauses, the global @code{MXLOOPS} setting, which
+defaults to 40, also limits the number of iterations of a loop.  To
+iterate more times, raise the maximum with @code{SET MXLOOPS} outside
+of the @code{MATRIX} command (@pxref{SET MXLOOPS}).
+
+The optional index clause causes @var{var} to be assigned successive
+values on each trip through the loop: first @var{first}, then
+@math{@var{first} + @var{step}}, then @math{@var{first} + 2 @times{}
+@var{step}}, and so on.  The loop ends when @math{@var{var} >
+@var{last}}, for positive @var{step}, or @math{@var{var} <
+@var{last}}, for negative @var{step}.  If @var{step} is not specified,
+it defaults to 1.  All the index clause expressions must evaluate to
+scalars, and non-integers are rounded toward zero.  If @var{step}
+evaluates as zero (or rounds to zero), then the loop body never
+executes.
+
+The optional @code{IF} on @code{LOOP} is evaluated before each
+iteration through the loop body.  If its expression, which must
+evaluate to a scalar, is zero or negative, then the loop terminates
+without executing the loop body.
+
+The optional @code{IF} on @code{END LOOP} is evaluated after each
+iteration through the loop body.  If its expression, which must
+evaluate to a scalar, is zero or negative, then the loop terminates.
+
+The following computes and prints @math{l(n)}, whose value is the
+number of steps in the
+@url{https://en.wikipedia.org/wiki/Juggler_sequence, Juggler sequence}
+for @math{n}, for @math{n} from 2 to 10 inclusive:
+
+@example
+COMPUTE l = @{@}.
+LOOP n = 2 TO 10.
+  COMPUTE a = n.
+  LOOP i = 1 TO 100.
+    DO IF MOD(a, 2) = 0.
+      COMPUTE a = TRUNC(a &** (1/2)).
+    ELSE.
+      COMPUTE a = TRUNC(a &** (3/2)).
+    END IF.
+  END LOOP IF a = 1.
+  COMPUTE l = @{l; i@}.
+END LOOP.
+PRINT l.
+@end example
+
+@menu
+* Matrix BREAK Command::
+@end menu
+
+@node Matrix BREAK Command
+@subsubsection The @code{BREAK} Command
+
+The @code{BREAK} command may be used inside a loop body, ordinarily
+within a @code{DO IF} command.  If it is executed, then the loop
+terminates immediately, jumping to the command just following
+@code{END LOOP}.  When multiple @code{LOOP} commands nest,
+@code{BREAK} terminates the innermost loop.
+
+The following example is a revision of the one above that shows how
+@code{BREAK} could substitute for the index and @code{IF} clauses on
+@code{LOOP} and @code{END LOOP}:
+
+@example
+COMPUTE l = @{@}.
+LOOP n = 2 TO 10.
+  COMPUTE a = n.
+  COMPUTE i = 1.
+  LOOP.
+    DO IF MOD(a, 2) = 0.
+      COMPUTE a = TRUNC(a &** (1/2)).
+    ELSE.
+      COMPUTE a = TRUNC(a &** (3/2)).
+    END IF.
+    DO IF a = 1.
+      BREAK.
+    END IF.
+    COMPUTE i = i + 1.
+  END LOOP.
+  COMPUTE l = @{l; i@}.
+END LOOP.
+PRINT l.
+@end example
+
+@node Matrix READ and WRITE Commands
+@subsection The @code{READ} and @code{WRITE} Commands
+
+The @code{READ} and @code{WRITE} commands perform matrix input and
+output with text files.  They share the following syntax for
+specifying how data is divided among input lines:
+
+@display
+@t{/FIELD}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{width}]
+[@t{/FORMAT}@t{=}@i{format}]
+@end display
+
+Both commands require the @code{FIELD} subcommand.  It specifies the
+range of columns, from @var{first} to @var{last}, inclusive, that the
+data occupies on each line of the file.  The leftmost column is column
+1.  The columns must be literal numbers, not expressions.  To use
+entire lines, even if they might be very long, specify a column range
+such as @code{1 TO 100000}.
+
+The @code{FORMAT} subcommand is optional for numerical matrices.  For
+string matrix input and output, specify an @code{A} format.  In
+addition to @code{FORMAT}, the optional @code{BY} specification on
+@code{FIELD} determine the meaning of each text line:
+
+@itemize @bullet
+@item
+With neither @code{BY} nor @code{FORMAT}, the numbers in the text file
+are in @code{F} format separated by spaces or commas.  For
+@code{WRITE}, @pspp{} uses as many digits of precision as needed to
+accurately represent the numbers in the matrix.
+
+@item
+@code{BY @i{width}} divides the input area into fixed-width fields
+with the given @i{width}.  The input area must be a multiple of
+@i{width} columns wide.  Numbers are read or written as
+@code{F@i{width}.0} format.
+
+@item
+@code{FORMAT=@i{count}F} divides the input area into @i{count}
+equal-width fields per line.  The input area must be a multiple of
+@i{count} columns wide.  Another format type may be substituted for
+@code{F}.
+
+@item
+@code{FORMAT=F@i{w}}[@code{.@i{d}}] divides the input area into fixed-width
+fields with width @i{w}.  The input area must be a multiple of @i{w}
+columns wide.  Another format type may be substituted for @code{F}.
+The @code{READ} command disregards @i{d}.
+
+@item
+@code{FORMAT=F} specifies format @code{F} without indicating a field
+width.  Another format type may be substituted for @code{F}.  The
+@code{WRITE} command accepts this form, but it has no effect unless
+@code{BY} is also used to specify a field width.
+@end itemize
+
+If @code{BY} and @code{FORMAT} both specify or imply a field width,
+then they must indicate the same field width.
+
+@node Matrix READ Command
+@subsubsection The @code{READ} Command
+
+@display
+@t{READ} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]
+     [@t{/FILE}@t{=}@i{file}]
+     @t{/FIELD}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{width}]
+     [@t{/FORMAT}@t{=}@i{format}]
+     [@t{/SIZE}@t{=}@i{expression}]
+     [@t{/MODE}@t{=}@{@t{RECTANGULAR} @math{|} @t{SYMMETRIC}@}]
+     [@t{/REREAD}]@t{.}
+@end display
+
+The @code{READ} command reads from a text file into a matrix variable.
+Specify the target variable just after the command name, either just a
+variable name to create or replace an entire variable, or a variable
+name followed by an indexing expression to replace a submatrix of an
+existing variable.
+
+The @code{FILE} subcommand is required in the first @code{READ}
+command that appears within @code{MATRIX}.  It specifies the text file
+to be read, either as a file name in quotes or a file handle
+previously declared on @code{FILE HANDLE} (@pxref{FILE HANDLE}).
+Later @code{READ} commands (in syntax order) use the previous
+referenced file if @code{FILE} is omitted.
+
+The @code{FIELD} and @code{FORMAT} subcommands specify how input lines
+are interpreted.  @code{FIELD} is required, but @code{FORMAT} is
+optional.  @xref{Matrix READ and WRITE Commands}, for details.
+
+The @code{SIZE} subcommand is required for reading into an entire
+variable.  Its restricted expression argument should evaluate to a
+2-element vector @code{@{@var{n},@w{ }@var{m}@}} or
+@code{@{@var{n};@w{ }@var{m}@}}, which indicates a
+@math{@var{n}@times{}@var{m}} matrix destination.  A scalar @var{n} is
+also allowed and indicates a @math{@var{n}@times{}1} column vector
+destination.  When the destination is a submatrix, @code{SIZE} is
+optional, and if it is present then it must match the size of the
+submatrix.
+
+By default, or with @code{MODE=RECTANGULAR}, the command reads an
+entry for every row and column.  With @code{MODE=SYMMETRIC}, the
+command reads only the entries on and below the matrix's main
+diagonal, and copies the entries above the main diagonal from the
+corresponding symmetric entries below it.  Only square matrices
+may use @code{MODE=SYMMETRIC}.
+
+Ordinarily, each @code{READ} command starts from a new line in the
+text file.  Specify the @code{REREAD} subcommand to instead start from
+the last line read by the previous @code{READ} command.  This has no
+effect for the first @code{READ} command to read from a particular
+file.  It is also ineffective just after a command that uses the
+@code{EOF} matrix function (@pxref{EOF Matrix Function}) on a
+particular file, because @code{EOF} has to try to read the next line
+from the file to determine whether the file contains more input.
+
+@subsubheading Example 1: Basic Use
+
+The following matrix program reads the same matrix @code{@{1, 2, 4; 2,
+3, 5; 4, 5, 6@}} into matrix variables @code{v}, @code{w}, and
+@code{x}:
+
+@example
+READ v /FILE='input.txt' /FIELD=1 TO 100 /SIZE=@{3, 3@}.
+READ w /FIELD=1 TO 100 /SIZE=@{3; 3@} /MODE=SYMMETRIC.
+READ x /FIELD=1 TO 100 BY 1/SIZE=@{3, 3@} /MODE=SYMMETRIC.
+@end example
+
+@noindent
+given that @file{input.txt} contains the following:
+
+@example
+1, 2, 4
+2, 3, 5
+4, 5, 6
+1
+2 3
+4 5 6
+1
+23
+456
+@end example
+
+The @code{READ} command will read as many lines of input as needed for
+a particular row, so it's also acceptable to break any of the lines
+above into multiple lines.  For example, the first line @code{1, 2, 4}
+could be written with a line break following either or both commas.
+
+@subsubheading Example 2: Reading into a Submatrix
+
+The following reads a @math{5@times{}5} matrix from @file{input2.txt},
+reversing the order of the rows:
+
+@example
+COMPUTE m = MAKE(5, 5, 0).
+LOOP r = 5 TO 1 BY -1.
+  READ m(r, :) /FILE='input2.txt' /FIELD=1 TO 100.
+END LOOP.
+@end example
+
+@subsubheading Example 3: Using @code{REREAD}
+
+Suppose each of the 5 lines in a file @file{input3.txt} starts with an
+integer @var{count} followed by @var{count} numbers, e.g.:
+
+@example
+1 5
+3 1 2 3
+5 6 -1 2 5 1
+2 8 9
+3 1 3 2
+@end example
+
+@noindent
+Then, the following reads this file into a matrix @code{m}:
+
+@example
+COMPUTE m = MAKE(5, 5, 0).
+LOOP i = 1 TO 5.
+  READ count /FILE='input3.txt' /FIELD=1 TO 1 /SIZE=1.
+  READ m(i, 1:count) /FIELD=3 TO 100 /REREAD.
+END LOOP.
+@end example
+
+@node Matrix WRITE Command
+@subsubsection The @code{WRITE} Command
+
+@display
+@t{WRITE} @i{expression}
+      [@t{/OUTFILE}@t{=}@i{file}]
+      @t{/FIELD}@t{=}@i{first} @t{TO} @i{last} [@t{BY} @i{width}]
+      [@t{/FORMAT}@t{=}@i{format}]
+      [@t{/MODE}@t{=}@{@t{RECTANGULAR} @math{|} @t{TRIANGULAR}@}]
+      [@t{/HOLD}]@t{.}
+@end display
+
+The @code{WRITE} command evaluates @i{expression} and writes its value
+to a text file in a specified format.  Write the expression to
+evaluate just after the command name.
+
+The @code{OUTFILE} subcommand is required in the first @code{WRITE}
+command that appears within @code{MATRIX}.  It specifies the text file
+to be written, either as a file name in quotes or a file handle
+previously declared on @code{FILE HANDLE} (@pxref{FILE HANDLE}).
+Later @code{WRITE} commands (in syntax order) use the previous
+referenced file if @code{FILE} is omitted.
+
+The @code{FIELD} and @code{FORMAT} subcommands specify how output
+lines are formed.  @code{FIELD} is required, but @code{FORMAT} is
+optional.  @xref{Matrix READ and WRITE Commands}, for details.
+
+By default, or with @code{MODE=RECTANGULAR}, the command writes an
+entry for every row and column.  With @code{MODE=TRIANGULAR}, the
+command writes only the entries on and below the matrix's main
+diagonal.  Entries above the diagonal are not written.  Only square
+matrices may be written with @code{MODE=TRIANGULAR}.
+
+Ordinarily, each @code{WRITE} command writes complete lines to the
+output file.  With @code{HOLD}, the final line written by @code{WRITE}
+will be held back for the next @code{WRITE} command to augment.  This
+can be useful to write more than one matrix on a single output line.
+
+@subsubheading Example 1: Basic Usage
+
+This matrix program:
+
+@example
+WRITE @{1, 2; 3, 4@} /OUTFILE='matrix.txt' /FIELD=1 TO 80.
+@end example
+
+@noindent
+writes the following to @file{matrix.txt}:
+
+@example
+ 1 2
+ 3 4
+@end example
+
+@subsubheading Example 2: Triangular Matrix
+
+This matrix program:
+
+@example
+WRITE MAGIC(5) /OUTFILE='matrix.txt' /FIELD=1 TO 80 BY 5 /MODE=TRIANGULAR.
+@end example
+
+@noindent
+writes the following to @file{matrix.txt}:
+
+@example
+    17
+    23    5
+     4    6   13
+    10   12   19   21
+    11   18   25    2    9
+@end example
+
+@node Matrix GET Command
+@subsection The @code{GET} Command
+
+@display
+@t{GET} @i{variable}[@t{(}@i{index}[@t{,}@i{index}]@t{)}]
+    [@t{/FILE}@t{=}@{@i{file} @math{|} @t{*}@}]
+    [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+    [@t{/NAMES}@t{=}@i{variable}]
+    [@t{/MISSING}@t{=}@{@t{ACCEPT} @math{|} @t{OMIT} @math{|} @i{number}@}]
+    [@t{/SYSMIS}@t{=}@{@t{OMIT} @math{|} @i{number}@}]@t{.}
+@end display
+
+The @code{READ} command reads numeric data from an SPSS system file,
+SPSS/PC+ system file, or SPSS portable file into a matrix variable or
+submatrix:
+
+@itemize @bullet
+@item
+To read data into a variable, specify just its name following
+@code{GET}.  The variable need not already exist; if it does, it is
+replaced.  The variable will have as many columns as there are
+variables specified on the @code{VARIABLES} subcommand and as many
+rows as there are cases in the input file.
+
+@item
+To read data into a submatrix, specify the name of an existing
+variable, followed by an indexing expression, just after @code{GET}.
+The submatrix must have as many columns as variables specified on
+@code{VARIABLES} and as many rows as cases in the input file.
+@end itemize
+
+Specify the name or handle of the file to be read on @code{FILE}.  Use
+@samp{*}, or simply omit the @code{FILE} subcommand, to read from the
+active file.  Reading from the active file is only permitted if it was
+already defined outside @code{MATRIX}.
+
+List the variables to be read as columns in the matrix on the
+@code{VARIABLES} subcommand.  The list can use @code{TO} for
+collections of variables or @code{ALL} for all variables.  If
+@code{VARIABLES} is omitted, all variables are read.  Only numeric
+variables may be read.
+
+If a variable is named on @code{NAMES}, then the names of the
+variables read as data columns are stored in a string vector within
+the given name, replacing any existing matrix variable with that name.
+Variable names are truncated to 8 bytes.
+
+The @code{MISSING} and @code{SYSMIS} subcommands control the treatment
+of missing values in the input file.  By default, any user- or
+system-missing data in the variables being read from the input causes
+an error that prevents @code{GET} from executing.  To accept missing
+values, specify one of the following settings on @code{MISSING}:
+
+@table @asis
+@item @code{ACCEPT}
+Accept user-missing values with no change.
+
+By default, system-missing values still yield an error.  Use the
+@code{SYSMIS} subcommand to change this treatment:
+
+@table @asis
+@item @code{OMIT}
+Skip any case that contains a system-missing value.
+
+@item @i{number}
+Recode the system-missing value to @i{number}.
+@end table
+
+@item @code{OMIT}
+Skip any case that contains any user- or system-missing value.
+
+@item @i{number}
+Recode all user- and system-missing values to @i{number}.
+@end table
+
+The @code{SYSMIS} subcommand has an effect only with
+@code{MISSING=ACCEPT}.
+
+@node Matrix SAVE Command
+@subsection The @code{SAVE} Command
+
+@display
+@t{SAVE} @i{expression}
+     [@t{/OUTFILE}@t{=}@{@i{file} @math{|} @t{*}@}]
+     [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+     [@t{/NAMES}@t{=}@i{expression}]
+     [@t{/STRINGS}@t{=}@i{variable}@dots{}]@t{.}
+@end display
+
+The @code{SAVE} matrix command evaluates @i{expression} and writes the
+resulting matrix to an SPSS system file.  In the system file, each
+matrix row becomes a case and each column becomes a variable.
+
+Specify the name or handle of the SPSS system file on the
+@code{OUTFILE} subcommand, or @samp{*} to write the output as the new
+active file.  The @code{OUTFILE} subcommand is required on the first
+@code{SAVE} command, in syntax order, within @code{MATRIX}.  For
+@code{SAVE} commands after the first, the default output file is the
+same as the previous.
+
+When multiple @code{SAVE} commands write to one destination within a
+single @code{MATRIX}, the later commands append to the same output
+file.  All the matrices written to the file must have the same number
+of columns.  The @code{VARIABLES}, @code{NAMES}, and @code{STRINGS}
+subcommands are honored only for the first @code{SAVE} command that
+writes to a given file.
+
+By default, @code{SAVE} names the variables in the output file
+@code{COL1} through @code{COL@i{n}}.  Use @code{VARIABLES} or
+@code{NAMES} to give the variables meaningful names.  The
+@code{VARIABLES} subcommand accepts a comma-separated list of variable
+names.  Its alternative, @code{NAMES}, instead accepts an expression
+that must evaluate to a row or column string vector of names.  The
+number of names need not exactly match the number of columns in the
+matrix to be written: extra names are ignored; extra columns use
+default names.
+
+By default, @code{SAVE} assumes that the matrix to be written is all
+numeric.  To write string columns, specify a comma-separated list of
+the string columns' variable names on @code{STRINGS}.
+
+@node Matrix MGET Command
+@subsection The @code{MGET} Command
+
+@display
+@t{MGET} [@t{/FILE}@t{=}@i{file}]
+     [@t{/TYPE}@t{=}@{@t{COV} @math{|} @t{CORR} @math{|} @t{MEAN} @math{|} @t{STDDEV} @math{|} @t{N} @math{|} @t{COUNT}@}]@t{.}
+@end display
+
+The @code{MGET} command reads the data from a matrix file
+(@pxref{Matrix Files}) into matrix variables.
+
+All of @code{MGET}'s subcommands are optional.  Specify the name or
+handle of the matrix file to be read on the @code{FILE} subcommand; if
+it is omitted, then the command reads the active file.
+
+By default, @code{MGET} reads all of the data from the matrix file.
+Specify a space-delimited list of matrix types on @code{TYPE} to limit
+the kinds of data to the one specified:
+
+@table @code
+@item COV
+Covariance matrix.
+
+@item CORR
+Correlation coefficient matrix.
+
+@item MEAN
+Vector of means.
+
+@item STDDEV
+Vector of standard deviations.
+
+@item N
+Vector of case counts.
+
+@item COUNT
+Vector of counts.
+@end table
+
+@code{MGET} reads the entire matrix file and automatically names,
+creates, and populates matrix variables using its contents.  It
+constructs the name of each variable by concatenating the following:
+
+@itemize @bullet
+@item
+A 2-character prefix that identifies the type of the matrix:
+
+@table @code
+@item CV
+Covariance matrix.
+
+@item CR
+Correlation coefficient matrix.
+
+@item MN
+Vector of means.
+
+@item SD
+Vector of standard deviations.
+
+@item NC
+Vector of case counts.
+
+@item CN
+Vector of counts.
+@end table
+
+@item
+If the matrix file has factor variables, @code{F@i{n}}, where @i{n} is
+a number identifying a group of factors: @code{F1} for the first
+group, @code{F2} for the second, and so on.  This part is omitted for
+pooled data (where the factors all have the system-missing value).
+
+@item
+If the matrix file has split file variables, @code{S@i{n}}, where
+@i{n} is a number identifying a split group: @code{S1} for the first
+group, @code{S2} for the second, and so on.
+@end itemize
+
+If @code{MGET} chooses the name of an existing variable, it issues a
+warning and does not change the variable.
+
+@node Matrix MSAVE Command
+@subsection The @code{MSAVE} Command
+
+@display
+@t{MSAVE} @i{expression}
+      @t{/TYPE}@t{=}@{@t{COV} @math{|} @t{CORR} @math{|} @t{MEAN} @math{|} @t{STDDEV} @math{|} @t{N} @math{|} @t{COUNT}@}
+      [@t{/FACTOR}@t{=}@i{expression}]
+      [@t{/SPLIT}@t{=}@i{expression}]
+      [@t{/OUTFILE}@t{=}@i{file}]
+      [@t{/VARIABLES}@t{=}@i{variable}@dots{}]
+      [@t{/SNAMES}@t{=}@i{variable}@dots{}]
+      [@t{/FNAMES}@t{=}@i{variable}@dots{}]@t{.}
+@end display
+
+The @code{MSAVE} command evaluates the @i{expression} specified just
+after the command name, and writes the resulting matrix to a matrix
+file (@pxref{Matrix Files}).
+
+The @code{TYPE} subcommand is required.  It specifies the
+@code{ROWTYPE_} to write along with this matrix.
+
+The @code{FACTOR} and @code{SPLIT} subcommands are required on the
+first @code{MSAVE} if and only if the matrix file has factor or split
+variables, respectively.  After that, their values are carried along
+from one @code{MSAVE} command to the next in syntax order as defaults.
+Each one takes an expression that must evaluate to a vector with the
+same number of entries as the matrix has factor or split variables,
+respectively.  Each @code{MSAVE} only writes data for a single
+combination of factor and split variables, so many @code{MSAVE}
+commands (or one inside a loop) may be needed to write a complete set.
+
+The remaining @code{MSAVE} subcommands define the format of the matrix
+file.  All of the @code{MSAVE} commands within a given matrix program
+write to the same matrix file, so these subcommands are only
+meaningful on the first @code{MSAVE} command within a matrix program.
+(If they are given again on later @code{MSAVE} commands, then they
+must have the same values as on the first.)
+
+The @code{OUTFILE} subcommand specifies the name or handle of the
+matrix file to be written.  Output must go to an external file, not a
+data set or the active file.
+
+The @code{VARIABLES} subcommand specifies a comma-separated list of
+the names of the continuous variables to be written to the matrix
+file.  The @code{TO} keyword can be used to define variables named
+with consecutive integer suffixes.  These names become column names
+and names that appear in @code{VARNAME_} in the matrix file.
+@code{ROWTYPE_} and @code{VARNAME_} are not allowed on
+@code{VARIABLES}.  If @code{VARIABLES} is omitted, then @pspp{} uses
+the names @code{COL1}, @code{COL2}, and so on.
+
+The @code{FNAMES} subcommand may be used to supply a comma-separated
+list of factor variable names.  The default names are @code{FAC1},
+@code{FAC2}, and so on.
+
+The @code{SNAMES} subcommand can supply a comma-separated list of
+split variable names.  The default names are @code{SPL1}, @code{SPL2},
+and so on.
+
+@node Matrix DISPLAY Command
+@subsection The @code{DISPLAY} Command
+
+@display
+@t{DISPLAY} [@{@t{DICTIONARY} @math{|} @t{STATUS}@}]@t{.}
+@end display
+
+The @code{DISPLAY} command makes @pspp{} display a table with the name
+and dimensions of each matrix variable.  The @code{DICTIONARY} and
+@code{STATUS} keywords are accepted but have no effect.
+
+@node Matrix RELEASE Command
+@subsection The @code{RELEASE} Command
+
+@display
+@t{RELEASE} @i{variable}@dots{}@t{.}
+@end display
+
+The @code{RELEASE} command accepts a comma-separated list of matrix
+variable names.  It deletes each variable and releases the memory
+associated with it.
+
+The @code{END MATRIX} command releases all matrix variables.

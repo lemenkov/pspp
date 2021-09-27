@@ -187,4 +187,13 @@ void settings_set_output_routing (enum settings_output_type,
 enum settings_output_devices settings_get_output_routing (
   enum settings_output_type);
 
+enum settings_mdisplay
+  {
+    SETTINGS_MDISPLAY_TEXT,
+    SETTINGS_MDISPLAY_TABLES
+  };
+
+enum settings_mdisplay settings_get_mdisplay (void);
+void settings_set_mdisplay (enum settings_mdisplay);
+
 #endif /* !settings_h */

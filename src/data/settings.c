@@ -48,6 +48,9 @@ struct settings
   /* Format of reals in output (SET WRB). */
   enum float_format output_float_format;
 
+  /* MATRIX...END MATRIX settings. */
+  enum settings_mdisplay mdisplay;
+
   int viewlength;
   int viewwidth;
   bool safer_mode;
@@ -90,6 +93,7 @@ static struct settings the_settings = {
   .input_float_format = FLOAT_NATIVE_DOUBLE,
   .output_integer_format = INTEGER_NATIVE,
   .output_float_format = FLOAT_NATIVE_DOUBLE,
+  .mdisplay = SETTINGS_MDISPLAY_TEXT,
   .viewlength = 24,
   .viewwidth = 79,
   .safer_mode = false,
@@ -700,4 +704,16 @@ void
 settings_set_show_variables (enum settings_value_show s)
 {
   the_settings.show_variables = s;
+}
+
+enum settings_mdisplay
+settings_get_mdisplay (void)
+{
+  return the_settings.mdisplay;
+}
+
+void
+settings_set_mdisplay (enum settings_mdisplay mdisplay)
+{
+  the_settings.mdisplay = mdisplay;
 }

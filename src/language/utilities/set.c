@@ -670,6 +670,24 @@ show_LOCALE (const struct dataset *ds UNUSED)
 }
 
 static bool
+parse_MDISPLAY (struct lexer *lexer)
+{
+  int mdisplay = force_parse_enum (lexer,
+                                   "TEXT", SETTINGS_MDISPLAY_TEXT,
+                                   "TABLES", SETTINGS_MDISPLAY_TABLES);
+  if (mdisplay >= 0)
+    settings_set_mdisplay (mdisplay);
+  return mdisplay >= 0;
+}
+
+static char *
+show_MDISPLAY (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_mdisplay () == SETTINGS_MDISPLAY_TEXT
+                  ? "TEXT" : "TABLES");
+}
+
+static bool
 parse_MESSAGES (struct lexer *lexer)
 {
   return parse_output_routing (lexer, SETTINGS_OUTPUT_NOTE);
@@ -1177,6 +1195,7 @@ static const struct setting settings[] = {
   { "JOURNAL", parse_JOURNAL, show_JOURNAL },
   { "LENGTH", parse_LENGTH, show_LENGTH },
   { "LOCALE", parse_LOCALE, show_LOCALE },
+  { "MDISPLAY", parse_MDISPLAY, show_MDISPLAY },
   { "MESSAGES", parse_MESSAGES, show_MESSAGES },
   { "MEXPAND", parse_MEXPAND, show_MEXPAND },
   { "MITERATE", parse_MITERATE, show_MITERATE },

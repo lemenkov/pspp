@@ -121,6 +121,7 @@ FIGURE_SYNTAX = \
  doc/pspp-figures/descriptives.sps \
  doc/pspp-figures/flip.sps \
  doc/pspp-figures/frequencies.sps \
+ doc/pspp-figures/matrix-print.sps \
  doc/pspp-figures/means.sps \
  doc/pspp-figures/one-sample-t.sps \
  doc/pspp-figures/independent-samples-t.sps \

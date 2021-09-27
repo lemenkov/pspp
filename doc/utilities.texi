@@ -506,6 +506,7 @@ SET
         /CC@{A,B,C,D,E@}=@{'@var{npre},@var{pre},@var{suf},@var{nsuf}','@var{npre}.@var{pre}.@var{suf}.@var{nsuf}'@}
         /DECIMAL=@{DOT,COMMA@}
         /FORMAT=@var{fmt_spec}
+        /MDISPLAY=@{TEXT,TABLES@}
         /SMALL=@var{number}
         /WIB=@{NATIVE,MSBFIRST,LSBFIRST,VAX@}
         /WRB=@{NATIVE,ISL,ISB,IDL,IDB,VF,VD,VG,ZS,ZL@}
@@ -692,10 +693,12 @@ Japanese as spoken in Japan).
 @item MXLOOPS
 @anchor{SET MXLOOPS}
 
-The maximum number of iterations for an uncontrolled loop (@pxref{LOOP}).
-The default @var{max_loops} is 40.
+The maximum number of iterations for an uncontrolled loop
+(@pxref{LOOP}), and for any loop in the matrix language (@pxref{Matrix
+LOOP and BREAK Commands}).  The default @var{max_loops} is 40.
 
 @item SEED
+@anchor{SET SEED}
 The initial pseudo-random number seed.  Set it to a real number or to
 RANDOM, to obtain an initial seed from the current time of day.
 
@@ -743,6 +746,15 @@ The default @subcmd{DOT} setting causes the decimal point character to be
 @item FORMAT
 Allows the default numeric input/output format to be specified.  The
 default is F8.2.  @xref{Input and Output Formats}.
+
+@item MDISPLAY
+@anchor{SET MDISPLAY}
+
+Controls how the @code{PRINT} command within
+@code{MATRIX}@dots{}@code{END MATRIX} outputs matrices.  With the
+default @subcmd{TEXT}, @code{PRINT} outputs matrices as text.  Change
+this setting to @code{TABLES} to instead output matrices as pivot
+tables.  @xref{Matrix PRINT Command}, for more information.
 
 @item SMALL
 This controls how @pspp{} formats small numbers in pivot tables, in

@@ -1,0 +1,4733 @@
+AT_BANNER([MATRIX])
+
+AT_SETUP([MATRIX - empty matrices])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE a={}.
+PRINT a.
+COMPUTE b={a; 1; 2; 3}.
+PRINT b.
+COMPUTE c={a, 1, 2, 3}.
+PRINT c.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+a
+
+b
+  1
+  2
+  3
+
+c
+  1  2  3
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - submatrices as rvalues - all columns or all rows])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(1, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({1}, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 2}, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 2, 3}, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({1; 3; 2}, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 3, 3}, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(1:2, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(1:3, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}({}, :).
+
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1}).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 2}).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 2, 3}).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1; 3; 2}).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 3, 3}).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1:2).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1:3).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {}).
+
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, :).
+
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(0, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 0).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(4, :).
+PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 4).
+
+PRINT {}(:,{}).
+PRINT {}({},:).
+PRINT {}({},{}).
+
+PRINT {1, 2, 3, 4}({1, 2; 3, 4}, :).
+PRINT {1, 2, 3, 4}(:, {1, 2; 3, 4}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(1, :)
+  1  2  3
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({1}, :)
+  1  2  3
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 2}, :)
+  1  2  3
+  4  5  6
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 2, 3}, :)
+  1  2  3
+  4  5  6
+  7  8  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({1; 3; 2}, :)
+  1  2  3
+  7  8  9
+  4  5  6
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({1, 3, 3}, :)
+  1  2  3
+  7  8  9
+  7  8  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(1:2, :)
+  1  2  3
+  4  5  6
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(1:3, :)
+  1  2  3
+  4  5  6
+  7  8  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}({}, :)
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1)
+  1
+  4
+  7
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1})
+  1
+  4
+  7
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 2})
+  1  2
+  4  5
+  7  8
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 2, 3})
+  1  2  3
+  4  5  6
+  7  8  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1; 3; 2})
+  1  3  2
+  4  6  5
+  7  9  8
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {1, 3, 3})
+  1  3  3
+  4  6  6
+  7  9  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1:2)
+  1  2
+  4  5
+  7  8
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 1:3)
+  1  2  3
+  4  5  6
+  7  8  9
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, {})
+
+
+
+{1, 2, 3; 4, 5, 6; 7, 8, 9}(:, :)
+  1  2  3
+  4  5  6
+  7  8  9
+
+matrix.sps:24.35: error: MATRIX: 0 is not a valid row index for a 3×3 matrix.
+   24 | PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(0, :).
+      |                                   ^
+
+matrix.sps:25.38: error: MATRIX: 0 is not a valid column index for a 3×3
+matrix.
+   25 | PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 0).
+      |                                      ^
+
+matrix.sps:26.35: error: MATRIX: 4 is not a valid row index for a 3×3 matrix.
+   26 | PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(4, :).
+      |                                   ^
+
+matrix.sps:27.38: error: MATRIX: 4 is not a valid column index for a 3×3
+matrix.
+   27 | PRINT {1, 2, 3; 4, 5, 6; 7, 8, 9}(:, 4).
+      |                                      ^
+
+{}(:,{})
+
+{}({},:)
+
+{}({},{})
+
+matrix.sps:33.20-33.31: error: MATRIX: Matrix row index must be scalar or
+vector, not a 2×2 matrix.
+   33 | PRINT {1, 2, 3, 4}({1, 2; 3, 4}, :).
+      |                    ^~~~~~~~~~~~
+
+matrix.sps:34.23-34.34: error: MATRIX: Matrix column index must be scalar or
+vector, not a 2×2 matrix.
+   34 | PRINT {1, 2, 3, 4}(:, {1, 2; 3, 4}).
+      |                       ^~~~~~~~~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - COMPUTE submatrices as lvalues])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE y={1, 2, 3; 4, 5, 6; 7, 8, 9}.
+
+COMPUTE x1=y.
+COMPUTE x1(1, :) = {11, 12, 13}.
+PRINT x1.
+
+COMPUTE x2=y.
+COMPUTE x2(2, :) = {14, 15, 16}.
+PRINT x2.
+
+COMPUTE x3=y.
+COMPUTE x3(3, :) = {17, 18, 19}.
+PRINT x3.
+
+COMPUTE x4=y.
+COMPUTE x4(:, 1) = {11; 14; 17}.
+PRINT x4.
+
+COMPUTE x5=y.
+COMPUTE x5(:, 2) = {12; 15; 18}.
+PRINT x5.
+
+COMPUTE x6=y.
+COMPUTE x6(:, 3) = {13; 16; 19}.
+PRINT x6.
+
+COMPUTE x7=y.
+COMPUTE x7(1, 1) = 11.
+PRINT x7.
+
+COMPUTE x8=y.
+COMPUTE x8(1:2, 2:3) = {12, 13; 15, 16}.
+PRINT x8.
+
+COMPUTE x9=y.
+COMPUTE x9({3, 1}, {2; 3}) = {18, 19; 12, 13}.
+PRINT x9.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+x1
+  11  12  13
+   4   5   6
+   7   8   9
+
+x2
+   1   2   3
+  14  15  16
+   7   8   9
+
+x3
+   1   2   3
+   4   5   6
+  17  18  19
+
+x4
+  11   2   3
+  14   5   6
+  17   8   9
+
+x5
+   1  12   3
+   4  15   6
+   7  18   9
+
+x6
+   1   2  13
+   4   5  16
+   7   8  19
+
+x7
+  11   2   3
+   4   5   6
+   7   8   9
+
+x8
+   1  12  13
+   4  15  16
+   7   8   9
+
+x9
+   1  12  13
+   4   5   6
+   7  18  19
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - COMPUTE submatrices as lvalues - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x={1, 2, 3; 4, 5, 6; 7, 8, 9}.
+COMPUTE x(1, :) = {}.
+COMPUTE x(1, :) = 15.
+COMPUTE x(1, :) = {11, 12}.
+COMPUTE x(1, :) = {11, 12, 13, 14}.
+COMPUTE x(:, 1) = {}.
+COMPUTE x(:, 1) = 15.
+COMPUTE x(:, 1) = {11, 12}.
+COMPUTE x(:, 1) = {11, 12, 13, 14}.
+COMPUTE x(:) = 1.
+COMPUTE x(0, 1) = 1.
+COMPUTE x(1, 0) = 1.
+COMPUTE x({1, 0, 2}, 1) = {1; 2; 3}.
+COMPUTE x(4, 3) = 1.
+COMPUTE x(3, 4) = 1.
+COMPUTE x({1, 2; 3, 4}, 5) = 1.
+COMPUTE x(3, {1, 2; 3, 4}) = 1.
+PRINT x.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:3.9-3.15: error: MATRIX: Numbers of indexes for assigning to x
+differ from the size of the source matrix.
+    3 | COMPUTE x(1, :) = {}.
+      |         ^~~~~~~
+
+matrix.sps:3.11: note: MATRIX: There is 1 row index.
+    3 | COMPUTE x(1, :) = {}.
+      |           ^
+
+matrix.sps:3.14: note: MATRIX: Destination matrix x has 3 columns.
+    3 | COMPUTE x(1, :) = {}.
+      |              ^
+
+matrix.sps:3.19-3.20: note: MATRIX: The source matrix is 0×0.
+    3 | COMPUTE x(1, :) = {}.
+      |                   ^~
+
+matrix.sps:4.9-4.15: error: MATRIX: Number of column indexes for assigning to x
+differs from number of columns in source matrix.
+    4 | COMPUTE x(1, :) = 15.
+      |         ^~~~~~~
+
+matrix.sps:4.14: note: MATRIX: Destination matrix x has 3 columns.
+    4 | COMPUTE x(1, :) = 15.
+      |              ^
+
+matrix.sps:4.19-4.20: note: MATRIX: The source matrix is 1×1.
+    4 | COMPUTE x(1, :) = 15.
+      |                   ^~
+
+matrix.sps:5.9-5.15: error: MATRIX: Number of column indexes for assigning to x
+differs from number of columns in source matrix.
+    5 | COMPUTE x(1, :) = {11, 12}.
+      |         ^~~~~~~
+
+matrix.sps:5.14: note: MATRIX: Destination matrix x has 3 columns.
+    5 | COMPUTE x(1, :) = {11, 12}.
+      |              ^
+
+matrix.sps:5.19-5.26: note: MATRIX: The source matrix is 1×2.
+    5 | COMPUTE x(1, :) = {11, 12}.
+      |                   ^~~~~~~~
+
+matrix.sps:6.9-6.15: error: MATRIX: Number of column indexes for assigning to x
+differs from number of columns in source matrix.
+    6 | COMPUTE x(1, :) = {11, 12, 13, 14}.
+      |         ^~~~~~~
+
+matrix.sps:6.14: note: MATRIX: Destination matrix x has 3 columns.
+    6 | COMPUTE x(1, :) = {11, 12, 13, 14}.
+      |              ^
+
+matrix.sps:6.19-6.34: note: MATRIX: The source matrix is 1×4.
+    6 | COMPUTE x(1, :) = {11, 12, 13, 14}.
+      |                   ^~~~~~~~~~~~~~~~
+
+matrix.sps:7.9-7.15: error: MATRIX: Numbers of indexes for assigning to x
+differ from the size of the source matrix.
+    7 | COMPUTE x(:, 1) = {}.
+      |         ^~~~~~~
+
+matrix.sps:7.11: note: MATRIX: Destination matrix x has 3 rows.
+    7 | COMPUTE x(:, 1) = {}.
+      |           ^
+
+matrix.sps:7.14: note: MATRIX: There is 1 column index.
+    7 | COMPUTE x(:, 1) = {}.
+      |              ^
+
+matrix.sps:7.19-7.20: note: MATRIX: The source matrix is 0×0.
+    7 | COMPUTE x(:, 1) = {}.
+      |                   ^~
+
+matrix.sps:8.9-8.15: error: MATRIX: Number of row indexes for assigning to x
+differs from number of rows in source matrix.
+    8 | COMPUTE x(:, 1) = 15.
+      |         ^~~~~~~
+
+matrix.sps:8.11: note: MATRIX: Destination matrix x has 3 rows.
+    8 | COMPUTE x(:, 1) = 15.
+      |           ^
+
+matrix.sps:8.19-8.20: note: MATRIX: The source matrix is 1×1.
+    8 | COMPUTE x(:, 1) = 15.
+      |                   ^~
+
+matrix.sps:9.9-9.15: error: MATRIX: Numbers of indexes for assigning to x
+differ from the size of the source matrix.
+    9 | COMPUTE x(:, 1) = {11, 12}.
+      |         ^~~~~~~
+
+matrix.sps:9.11: note: MATRIX: Destination matrix x has 3 rows.
+    9 | COMPUTE x(:, 1) = {11, 12}.
+      |           ^
+
+matrix.sps:9.14: note: MATRIX: There is 1 column index.
+    9 | COMPUTE x(:, 1) = {11, 12}.
+      |              ^
+
+matrix.sps:9.19-9.26: note: MATRIX: The source matrix is 1×2.
+    9 | COMPUTE x(:, 1) = {11, 12}.
+      |                   ^~~~~~~~
+
+matrix.sps:10.9-10.15: error: MATRIX: Numbers of indexes for assigning to x
+differ from the size of the source matrix.
+   10 | COMPUTE x(:, 1) = {11, 12, 13, 14}.
+      |         ^~~~~~~
+
+matrix.sps:10.11: note: MATRIX: Destination matrix x has 3 rows.
+   10 | COMPUTE x(:, 1) = {11, 12, 13, 14}.
+      |           ^
+
+matrix.sps:10.14: note: MATRIX: There is 1 column index.
+   10 | COMPUTE x(:, 1) = {11, 12, 13, 14}.
+      |              ^
+
+matrix.sps:10.19-10.34: note: MATRIX: The source matrix is 1×4.
+   10 | COMPUTE x(:, 1) = {11, 12, 13, 14}.
+      |                   ^~~~~~~~~~~~~~~~
+
+matrix.sps:11.9-11.12: error: MATRIX: Can't use vector indexing on 3×3 matrix
+x.
+   11 | COMPUTE x(:) = 1.
+      |         ^~~~
+
+matrix.sps:12.11: error: MATRIX: 0 is not a valid row index for a 3×3 matrix.
+   12 | COMPUTE x(0, 1) = 1.
+      |           ^
+
+matrix.sps:13.14: error: MATRIX: 0 is not a valid column index for a 3×3
+matrix.
+   13 | COMPUTE x(1, 0) = 1.
+      |              ^
+
+matrix.sps:14.11-14.19: error: MATRIX: 0 is not a valid row index for a 3×3
+matrix.
+   14 | COMPUTE x({1, 0, 2}, 1) = {1; 2; 3}.
+      |           ^~~~~~~~~
+
+matrix.sps:15.11: error: MATRIX: 4 is not a valid row index for a 3×3 matrix.
+   15 | COMPUTE x(4, 3) = 1.
+      |           ^
+
+matrix.sps:16.14: error: MATRIX: 4 is not a valid column index for a 3×3
+matrix.
+   16 | COMPUTE x(3, 4) = 1.
+      |              ^
+
+matrix.sps:17.11-17.22: error: MATRIX: Matrix row index must be scalar or
+vector, not a 2×2 matrix.
+   17 | COMPUTE x({1, 2; 3, 4}, 5) = 1.
+      |           ^~~~~~~~~~~~
+
+matrix.sps:18.14-18.25: error: MATRIX: Matrix column index must be scalar or
+vector, not a 2×2 matrix.
+   18 | COMPUTE x(3, {1, 2; 3, 4}) = 1.
+      |              ^~~~~~~~~~~~
+
+x
+  1  2  3
+  4  5  6
+  7  8  9
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - subvectors as rvalues])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT {10, 20, 30}({}).
+PRINT {10, 20, 30}(2).
+PRINT {10, 20, 30}({2}).
+PRINT {10, 20, 30}({1,3}).
+PRINT {10, 20, 30}({2,3}).
+PRINT {10, 20, 30}({1;3}).
+PRINT {10, 20, 30}({2;3}).
+PRINT {10, 20, 30}(2:3).
+PRINT {10, 20, 30}(:).
+
+PRINT {10; 20; 30}({}).
+PRINT {10; 20; 30}(2).
+PRINT {10; 20; 30}({2}).
+PRINT {10; 20; 30}({1,3}).
+PRINT {10; 20; 30}({2,3}).
+PRINT {10; 20; 30}({1;3}).
+PRINT {10; 20; 30}({2;3}).
+PRINT {10; 20; 30}(2:3).
+PRINT {10; 20; 30}(:).
+
+PRINT {}({}).
+
+PRINT {1, 2; 3, 4}(:).
+PRINT {1, 2, 3, 4}({1, 2; 3, 4}).
+PRINT {1, 2, 3, 4}(0).
+PRINT {1, 2, 3, 4}(5).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+{10, 20, 30}({})
+
+{10, 20, 30}(2)
+  20
+
+{10, 20, 30}({2})
+  20
+
+{10, 20, 30}({1,3})
+  10  30
+
+{10, 20, 30}({2,3})
+  20  30
+
+{10, 20, 30}({1;3})
+  10  30
+
+{10, 20, 30}({2;3})
+  20  30
+
+{10, 20, 30}(2:3)
+  20  30
+
+{10, 20, 30}(:)
+  10  20  30
+
+{10; 20; 30}({})
+
+{10; 20; 30}(2)
+  20
+
+{10; 20; 30}({2})
+  20
+
+{10; 20; 30}({1,3})
+  10
+  30
+
+{10; 20; 30}({2,3})
+  20
+  30
+
+{10; 20; 30}({1;3})
+  10
+  30
+
+{10; 20; 30}({2;3})
+  20
+  30
+
+{10; 20; 30}(2:3)
+  20
+  30
+
+{10; 20; 30}(:)
+  10
+  20
+  30
+
+{}({})
+
+matrix.sps:24.7-24.18: error: MATRIX: Vector index operator may not be applied
+to a 2×2 matrix.
+   24 | PRINT {1, 2; 3, 4}(:).
+      |       ^~~~~~~~~~~~
+
+matrix.sps:25.20-25.31: error: MATRIX: Vector index must be scalar or vector,
+not a 2×2 matrix.
+   25 | PRINT {1, 2, 3, 4}({1, 2; 3, 4}).
+      |                    ^~~~~~~~~~~~
+
+matrix.sps:26.20: error: MATRIX: Index 0 is out of range for vector with 4
+elements.
+   26 | PRINT {1, 2, 3, 4}(0).
+      |                    ^
+
+matrix.sps:27.20: error: MATRIX: Index 5 is out of range for vector with 4
+elements.
+   27 | PRINT {1, 2, 3, 4}(5).
+      |                    ^
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - COMPUTE subvectors as lvalues])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE r={1, 2, 3, 4, 5, 6, 7, 8, 9}.
+
+COMPUTE r1=r.
+COMPUTE r1(:) = {11, 12, 13, 14, 15, 16, 17, 18, 19}.
+PRINT r1.
+
+COMPUTE r2=r.
+COMPUTE r2(:) = {11; 12; 13; 14; 15; 16; 17; 18; 19}.
+PRINT r2.
+
+COMPUTE r3=r.
+COMPUTE r3(1) = 11.
+PRINT r3.
+
+COMPUTE r4=r.
+COMPUTE r4(1:2) = {11:12}.
+PRINT r4.
+
+COMPUTE r5=r.
+COMPUTE r5({8;9}) = {18:19}.
+PRINT r5.
+
+COMPUTE c={1, 2, 3, 4, 5, 6, 7, 8, 9}.
+
+COMPUTE c1=c.
+COMPUTE c1(:) = {11, 12, 13, 14, 15, 16, 17, 18, 19}.
+PRINT c1.
+
+COMPUTE c2=c.
+COMPUTE c2(:) = {11; 12; 13; 14; 15; 16; 17; 18; 19}.
+PRINT c2.
+
+COMPUTE c3=c.
+COMPUTE c3(1) = 11.
+PRINT c3.
+
+COMPUTE c4=c.
+COMPUTE c4(1:2) = {11:12}.
+PRINT c4.
+
+COMPUTE c5=c.
+COMPUTE c5(8:9) = {18:19}.
+PRINT c5.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+r1
+  11  12  13  14  15  16  17  18  19
+
+r2
+  11  12  13  14  15  16  17  18  19
+
+r3
+  11   2   3   4   5   6   7   8   9
+
+r4
+  11  12   3   4   5   6   7   8   9
+
+r5
+   1   2   3   4   5   6   7  18  19
+
+c1
+  11  12  13  14  15  16  17  18  19
+
+c2
+  11  12  13  14  15  16  17  18  19
+
+c3
+  11   2   3   4   5   6   7   8   9
+
+c4
+  11  12   3   4   5   6   7   8   9
+
+c5
+   1   2   3   4   5   6   7  18  19
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - COMPUTE subvectors as lvalues - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE r={1, 2, 3, 4, 5, 6, 7, 8, 9}.
+COMPUTE r(1:3) = {1, 2; 3, 4}.
+COMPUTE r(1:3) = {}.
+COMPUTE r(1:3) = {1}.
+COMPUTE r(1:3) = {1, 2}.
+COMPUTE r(1:3) = {1, 2, 3, 4}.
+COMPUTE r(1:3) = {}.
+COMPUTE r(1:3) = {1}.
+COMPUTE r(1:3) = {1; 2}.
+COMPUTE r(1:3) = {1; 2; 3; 4}.
+COMPUTE r(:) = {1; 2; 3; 4}.
+COMPUTE r(0) = 5.
+COMPUTE r(10) = 5.
+COMPUTE r({1, 2; 3, 4}) = 1.
+
+COMPUTE c={1, 2, 3, 4, 5, 6, 7, 8, 9}.
+COMPUTE c(1:3) = {1, 2; 3, 4}.
+COMPUTE c(1:3) = {}.
+COMPUTE c(1:3) = {1}.
+COMPUTE c(1:3) = {1, 2}.
+COMPUTE c(1:3) = {1, 2, 3, 4}.
+COMPUTE c(1:3) = {}.
+COMPUTE c(1:3) = {1}.
+COMPUTE c(1:3) = {1; 2}.
+COMPUTE c(1:3) = {1; 2; 3; 4}.
+COMPUTE c(:) = {1; 2; 3; 4}.
+COMPUTE c(0) = 5.
+COMPUTE c(10) = 5.
+COMPUTE c({1, 2; 3, 4}) = 1.
+
+COMPUTE m = {1, 2; 3, 4}.
+COMPUTE m(5) = 1.
+COMPUTE m(:) = 1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:3.9-3.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    3 | COMPUTE r(1:3) = {1, 2; 3, 4}.
+      |         ^~~~~~
+
+matrix.sps:3.18-3.29: error: MATRIX: The source is an 2×2 matrix.
+    3 | COMPUTE r(1:3) = {1, 2; 3, 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:4.9-4.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    4 | COMPUTE r(1:3) = {}.
+      |         ^~~~~~
+
+matrix.sps:4.18-4.19: error: MATRIX: The source vector has 0 elements.
+    4 | COMPUTE r(1:3) = {}.
+      |                  ^~
+
+matrix.sps:5.9-5.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    5 | COMPUTE r(1:3) = {1}.
+      |         ^~~~~~
+
+matrix.sps:5.19: error: MATRIX: The source vector has 1 element.
+    5 | COMPUTE r(1:3) = {1}.
+      |                   ^
+
+matrix.sps:6.9-6.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    6 | COMPUTE r(1:3) = {1, 2}.
+      |         ^~~~~~
+
+matrix.sps:6.18-6.23: error: MATRIX: The source vector has 2 elements.
+    6 | COMPUTE r(1:3) = {1, 2}.
+      |                  ^~~~~~
+
+matrix.sps:7.9-7.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    7 | COMPUTE r(1:3) = {1, 2, 3, 4}.
+      |         ^~~~~~
+
+matrix.sps:7.18-7.29: error: MATRIX: The source vector has 4 elements.
+    7 | COMPUTE r(1:3) = {1, 2, 3, 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:8.9-8.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    8 | COMPUTE r(1:3) = {}.
+      |         ^~~~~~
+
+matrix.sps:8.18-8.19: error: MATRIX: The source vector has 0 elements.
+    8 | COMPUTE r(1:3) = {}.
+      |                  ^~
+
+matrix.sps:9.9-9.14: error: MATRIX: Only an 3-element vector may be assigned to
+this 3-element subvector of r.
+    9 | COMPUTE r(1:3) = {1}.
+      |         ^~~~~~
+
+matrix.sps:9.19: error: MATRIX: The source vector has 1 element.
+    9 | COMPUTE r(1:3) = {1}.
+      |                   ^
+
+matrix.sps:10.9-10.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of r.
+   10 | COMPUTE r(1:3) = {1; 2}.
+      |         ^~~~~~
+
+matrix.sps:10.18-10.23: error: MATRIX: The source vector has 2 elements.
+   10 | COMPUTE r(1:3) = {1; 2}.
+      |                  ^~~~~~
+
+matrix.sps:11.9-11.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of r.
+   11 | COMPUTE r(1:3) = {1; 2; 3; 4}.
+      |         ^~~~~~
+
+matrix.sps:11.18-11.29: error: MATRIX: The source vector has 4 elements.
+   11 | COMPUTE r(1:3) = {1; 2; 3; 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:12.9-12.12: error: MATRIX: Only an 9-element vector may be assigned
+to this 9-element subvector of r.
+   12 | COMPUTE r(:) = {1; 2; 3; 4}.
+      |         ^~~~
+
+matrix.sps:12.16-12.27: error: MATRIX: The source vector has 4 elements.
+   12 | COMPUTE r(:) = {1; 2; 3; 4}.
+      |                ^~~~~~~~~~~~
+
+matrix.sps:13.11: error: MATRIX: Index 0 is out of range for vector with 9
+elements.
+   13 | COMPUTE r(0) = 5.
+      |           ^
+
+matrix.sps:14.11-14.12: error: MATRIX: Index 10 is out of range for vector with
+9 elements.
+   14 | COMPUTE r(10) = 5.
+      |           ^~
+
+matrix.sps:15.11-15.22: error: MATRIX: Vector index must be scalar or vector,
+not a 2×2 matrix.
+   15 | COMPUTE r({1, 2; 3, 4}) = 1.
+      |           ^~~~~~~~~~~~
+
+matrix.sps:18.9-18.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   18 | COMPUTE c(1:3) = {1, 2; 3, 4}.
+      |         ^~~~~~
+
+matrix.sps:18.18-18.29: error: MATRIX: The source is an 2×2 matrix.
+   18 | COMPUTE c(1:3) = {1, 2; 3, 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:19.9-19.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   19 | COMPUTE c(1:3) = {}.
+      |         ^~~~~~
+
+matrix.sps:19.18-19.19: error: MATRIX: The source vector has 0 elements.
+   19 | COMPUTE c(1:3) = {}.
+      |                  ^~
+
+matrix.sps:20.9-20.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   20 | COMPUTE c(1:3) = {1}.
+      |         ^~~~~~
+
+matrix.sps:20.19: error: MATRIX: The source vector has 1 element.
+   20 | COMPUTE c(1:3) = {1}.
+      |                   ^
+
+matrix.sps:21.9-21.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   21 | COMPUTE c(1:3) = {1, 2}.
+      |         ^~~~~~
+
+matrix.sps:21.18-21.23: error: MATRIX: The source vector has 2 elements.
+   21 | COMPUTE c(1:3) = {1, 2}.
+      |                  ^~~~~~
+
+matrix.sps:22.9-22.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   22 | COMPUTE c(1:3) = {1, 2, 3, 4}.
+      |         ^~~~~~
+
+matrix.sps:22.18-22.29: error: MATRIX: The source vector has 4 elements.
+   22 | COMPUTE c(1:3) = {1, 2, 3, 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:23.9-23.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   23 | COMPUTE c(1:3) = {}.
+      |         ^~~~~~
+
+matrix.sps:23.18-23.19: error: MATRIX: The source vector has 0 elements.
+   23 | COMPUTE c(1:3) = {}.
+      |                  ^~
+
+matrix.sps:24.9-24.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   24 | COMPUTE c(1:3) = {1}.
+      |         ^~~~~~
+
+matrix.sps:24.19: error: MATRIX: The source vector has 1 element.
+   24 | COMPUTE c(1:3) = {1}.
+      |                   ^
+
+matrix.sps:25.9-25.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   25 | COMPUTE c(1:3) = {1; 2}.
+      |         ^~~~~~
+
+matrix.sps:25.18-25.23: error: MATRIX: The source vector has 2 elements.
+   25 | COMPUTE c(1:3) = {1; 2}.
+      |                  ^~~~~~
+
+matrix.sps:26.9-26.14: error: MATRIX: Only an 3-element vector may be assigned
+to this 3-element subvector of c.
+   26 | COMPUTE c(1:3) = {1; 2; 3; 4}.
+      |         ^~~~~~
+
+matrix.sps:26.18-26.29: error: MATRIX: The source vector has 4 elements.
+   26 | COMPUTE c(1:3) = {1; 2; 3; 4}.
+      |                  ^~~~~~~~~~~~
+
+matrix.sps:27.9-27.12: error: MATRIX: Only an 9-element vector may be assigned
+to this 9-element subvector of c.
+   27 | COMPUTE c(:) = {1; 2; 3; 4}.
+      |         ^~~~
+
+matrix.sps:27.16-27.27: error: MATRIX: The source vector has 4 elements.
+   27 | COMPUTE c(:) = {1; 2; 3; 4}.
+      |                ^~~~~~~~~~~~
+
+matrix.sps:28.11: error: MATRIX: Index 0 is out of range for vector with 9
+elements.
+   28 | COMPUTE c(0) = 5.
+      |           ^
+
+matrix.sps:29.11-29.12: error: MATRIX: Index 10 is out of range for vector with
+9 elements.
+   29 | COMPUTE c(10) = 5.
+      |           ^~
+
+matrix.sps:30.11-30.22: error: MATRIX: Vector index must be scalar or vector,
+not a 2×2 matrix.
+   30 | COMPUTE c({1, 2; 3, 4}) = 1.
+      |           ^~~~~~~~~~~~
+
+matrix.sps:33.9-33.12: error: MATRIX: Can't use vector indexing on 2×2 matrix
+m.
+   33 | COMPUTE m(5) = 1.
+      |         ^~~~
+
+matrix.sps:34.9-34.12: error: MATRIX: Can't use vector indexing on 2×2 matrix
+m.
+   34 | COMPUTE m(:) = 1.
+      |         ^~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - COMPUTE - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x.
+COMPUTE x=.
+COMPUTE x(5)=1.
+COMPUTE y(5)=1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.10: error: COMPUTE: Syntax error at end of command: expecting `='.
+
+matrix.sps:3.11: error: COMPUTE: Syntax error at end of command.
+
+matrix.sps:4.9: error: MATRIX: Undefined variable x.
+    4 | COMPUTE x(5)=1.
+      |         ^
+
+matrix.sps:5: error: COMPUTE: Undefined variable y.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - elementwise arithmetic operators])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT (-(5)).
+PRINT (-{1,2;3,4}).
+
+PRINT ({1,2;3,4} + {5,6;7,8}).
+PRINT ({1,2;3,4} + 5).
+PRINT (5 + {5,6;7,8}).
+PRINT ({1,2;3,4} + {5,6}).
+
+PRINT ({1,2;3,4} - {5,6;7,8}).
+PRINT ({1,2;3,4} - 5).
+PRINT (5 - {5,6;7,8}).
+PRINT ({1,2;3,4} - {5,6}).
+
+PRINT ({1,2;3,4} * 5).
+PRINT (5 * {5,6;7,8}).
+
+PRINT ({2,4;6,8} / 2).
+PRINT (12 / {1,2;3,4}).
+PRINT ({2,8;18,32} / {1,2;3,4}).
+
+PRINT ({1,2;3,4} &* {5,6;7,8}).
+PRINT ({1,2;3,4} &* 5).
+PRINT (5 &* {5,6;7,8}).
+PRINT ({1,2;3,4} &* {5,6}).
+
+PRINT ({2,4;6,8} &/ 2).
+PRINT (12 &/ {1,2;3,4}).
+PRINT ({2,8;18,32} &/ {1,2;3,4}).
+
+PRINT ({1,2;3,4} &** 2).
+PRINT (2 &** {1,2;3,4}).
+PRINT ({1,2;3,4} &** {2,3;4,5}).
+PRINT ({1,2;3,4} &** {5,6}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+(-(5))
+ -5
+
+(-{1,2;3,4})
+ -1 -2
+ -3 -4
+
+({1,2;3,4} + {5,6;7,8})
+   6   8
+  10  12
+
+({1,2;3,4} + 5)
+  6  7
+  8  9
+
+(5 + {5,6;7,8})
+  10  11
+  12  13
+
+matrix.sps:8.8-8.24: error: MATRIX: The operands of + must have the same
+dimensions or one must be a scalar.
+    8 | PRINT ({1,2;3,4} + {5,6}).
+      |        ^~~~~~~~~~~~~~~~~
+
+matrix.sps:8.8-8.16: note: MATRIX: The left-hand operand is a 2×2 matrix.
+    8 | PRINT ({1,2;3,4} + {5,6}).
+      |        ^~~~~~~~~
+
+matrix.sps:8.20-8.24: note: MATRIX: The right-hand operand is a 1×2 matrix.
+    8 | PRINT ({1,2;3,4} + {5,6}).
+      |                    ^~~~~
+
+({1,2;3,4} - {5,6;7,8})
+ -4 -4
+ -4 -4
+
+({1,2;3,4} - 5)
+ -4 -3
+ -2 -1
+
+(5 - {5,6;7,8})
+  0 -1
+ -2 -3
+
+matrix.sps:13.8-13.24: error: MATRIX: The operands of - must have the same
+dimensions or one must be a scalar.
+   13 | PRINT ({1,2;3,4} - {5,6}).
+      |        ^~~~~~~~~~~~~~~~~
+
+matrix.sps:13.8-13.16: note: MATRIX: The left-hand operand is a 2×2 matrix.
+   13 | PRINT ({1,2;3,4} - {5,6}).
+      |        ^~~~~~~~~
+
+matrix.sps:13.20-13.24: note: MATRIX: The right-hand operand is a 1×2 matrix.
+   13 | PRINT ({1,2;3,4} - {5,6}).
+      |                    ^~~~~
+
+({1,2;3,4} * 5)
+   5  10
+  15  20
+
+(5 * {5,6;7,8})
+  25  30
+  35  40
+
+({2,4;6,8} / 2)
+  1  2
+  3  4
+
+(12 / {1,2;3,4})
+  12   6
+   4   3
+
+({2,8;18,32} / {1,2;3,4})
+  2  4
+  6  8
+
+({1,2;3,4} &* {5,6;7,8})
+   5  12
+  21  32
+
+({1,2;3,4} &* 5)
+   5  10
+  15  20
+
+(5 &* {5,6;7,8})
+  25  30
+  35  40
+
+matrix.sps:25.8-25.25: error: MATRIX: The operands of &* must have the same
+dimensions or one must be a scalar.
+   25 | PRINT ({1,2;3,4} &* {5,6}).
+      |        ^~~~~~~~~~~~~~~~~~
+
+matrix.sps:25.8-25.16: note: MATRIX: The left-hand operand is a 2×2 matrix.
+   25 | PRINT ({1,2;3,4} &* {5,6}).
+      |        ^~~~~~~~~
+
+matrix.sps:25.21-25.25: note: MATRIX: The right-hand operand is a 1×2 matrix.
+   25 | PRINT ({1,2;3,4} &* {5,6}).
+      |                     ^~~~~
+
+({2,4;6,8} &/ 2)
+  1  2
+  3  4
+
+(12 &/ {1,2;3,4})
+  12   6
+   4   3
+
+({2,8;18,32} &/ {1,2;3,4})
+  2  4
+  6  8
+
+({1,2;3,4} &** 2)
+   1   4
+   9  16
+
+(2 &** {1,2;3,4})
+   2   4
+   8  16
+
+({1,2;3,4} &** {2,3;4,5})
+     1     8
+    81  1024
+
+matrix.sps:34.8-34.26: error: MATRIX: The operands of &** must have the same
+dimensions or one must be a scalar.
+   34 | PRINT ({1,2;3,4} &** {5,6}).
+      |        ^~~~~~~~~~~~~~~~~~~
+
+matrix.sps:34.8-34.16: note: MATRIX: The left-hand operand is a 2×2 matrix.
+   34 | PRINT ({1,2;3,4} &** {5,6}).
+      |        ^~~~~~~~~
+
+matrix.sps:34.22-34.26: note: MATRIX: The right-hand operand is a 1×2 matrix.
+   34 | PRINT ({1,2;3,4} &** {5,6}).
+      |                      ^~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - relational operators])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT ({1, 1; 2, 2} > {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} > 1).
+PRINT (2 > {1, 2; 1, 2}).
+PRINT ({1, 2} > {1; 2}).
+
+PRINT ({1, 1; 2, 2} < {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} < 2).
+PRINT (1 < {1, 2; 1, 2}).
+PRINT ({1, 2} < {1; 2}).
+
+PRINT ({1, 1; 2, 2} <> {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} <> 2).
+PRINT (1 <> {1, 2; 1, 2}).
+PRINT ({1, 2} <> {1; 2}).
+
+PRINT ({1, 1; 2, 2} >= {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} >= 2).
+PRINT (1 >= {1, 2; 1, 2}).
+PRINT ({1, 2} >= {1; 2}).
+
+PRINT ({1, 1; 2, 2} <= {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} <= 2).
+PRINT (1 <= {1, 2; 1, 2}).
+PRINT ({1, 2} <= {1; 2}).
+
+PRINT ({1, 1; 2, 2} = {1, 2; 1, 2}).
+PRINT ({1, 1; 2, 2} = 2).
+PRINT (1 = {1, 2; 1, 2}).
+PRINT ({1, 2} = {1; 2}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+({1, 1; 2, 2} > {1, 2; 1, 2})
+  0  0
+  1  0
+
+({1, 1; 2, 2} > 1)
+  0  0
+  1  1
+
+(2 > {1, 2; 1, 2})
+  1  0
+  1  0
+
+matrix.sps:5.8-5.22: error: MATRIX: The operands of > must have the same
+dimensions or one must be a scalar.
+    5 | PRINT ({1, 2} > {1; 2}).
+      |        ^~~~~~~~~~~~~~~
+
+matrix.sps:5.8-5.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+    5 | PRINT ({1, 2} > {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:5.17-5.22: note: MATRIX: The right-hand operand is a 2×1 matrix.
+    5 | PRINT ({1, 2} > {1; 2}).
+      |                 ^~~~~~
+
+({1, 1; 2, 2} < {1, 2; 1, 2})
+  0  1
+  0  0
+
+({1, 1; 2, 2} < 2)
+  1  1
+  0  0
+
+(1 < {1, 2; 1, 2})
+  0  1
+  0  1
+
+matrix.sps:10.8-10.22: error: MATRIX: The operands of < must have the same
+dimensions or one must be a scalar.
+   10 | PRINT ({1, 2} < {1; 2}).
+      |        ^~~~~~~~~~~~~~~
+
+matrix.sps:10.8-10.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   10 | PRINT ({1, 2} < {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:10.17-10.22: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   10 | PRINT ({1, 2} < {1; 2}).
+      |                 ^~~~~~
+
+({1, 1; 2, 2} <> {1, 2; 1, 2})
+  0  1
+  1  0
+
+({1, 1; 2, 2} <> 2)
+  1  1
+  0  0
+
+(1 <> {1, 2; 1, 2})
+  0  1
+  0  1
+
+matrix.sps:15.8-15.23: error: MATRIX: The operands of <> must have the same
+dimensions or one must be a scalar.
+   15 | PRINT ({1, 2} <> {1; 2}).
+      |        ^~~~~~~~~~~~~~~~
+
+matrix.sps:15.8-15.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   15 | PRINT ({1, 2} <> {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:15.18-15.23: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   15 | PRINT ({1, 2} <> {1; 2}).
+      |                  ^~~~~~
+
+({1, 1; 2, 2} >= {1, 2; 1, 2})
+  1  0
+  1  1
+
+({1, 1; 2, 2} >= 2)
+  0  0
+  1  1
+
+(1 >= {1, 2; 1, 2})
+  1  0
+  1  0
+
+matrix.sps:20.8-20.23: error: MATRIX: The operands of >= must have the same
+dimensions or one must be a scalar.
+   20 | PRINT ({1, 2} >= {1; 2}).
+      |        ^~~~~~~~~~~~~~~~
+
+matrix.sps:20.8-20.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   20 | PRINT ({1, 2} >= {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:20.18-20.23: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   20 | PRINT ({1, 2} >= {1; 2}).
+      |                  ^~~~~~
+
+({1, 1; 2, 2} <= {1, 2; 1, 2})
+  1  1
+  0  1
+
+({1, 1; 2, 2} <= 2)
+  1  1
+  1  1
+
+(1 <= {1, 2; 1, 2})
+  1  1
+  1  1
+
+matrix.sps:25.8-25.23: error: MATRIX: The operands of <= must have the same
+dimensions or one must be a scalar.
+   25 | PRINT ({1, 2} <= {1; 2}).
+      |        ^~~~~~~~~~~~~~~~
+
+matrix.sps:25.8-25.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   25 | PRINT ({1, 2} <= {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:25.18-25.23: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   25 | PRINT ({1, 2} <= {1; 2}).
+      |                  ^~~~~~
+
+({1, 1; 2, 2} = {1, 2; 1, 2})
+  1  0
+  0  1
+
+({1, 1; 2, 2} = 2)
+  0  0
+  1  1
+
+(1 = {1, 2; 1, 2})
+  1  0
+  1  0
+
+matrix.sps:30.8-30.22: error: MATRIX: The operands of = must have the same
+dimensions or one must be a scalar.
+   30 | PRINT ({1, 2} = {1; 2}).
+      |        ^~~~~~~~~~~~~~~
+
+matrix.sps:30.8-30.13: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   30 | PRINT ({1, 2} = {1; 2}).
+      |        ^~~~~~
+
+matrix.sps:30.17-30.22: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   30 | PRINT ({1, 2} = {1; 2}).
+      |                 ^~~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - logical operators])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT (NOT {-1, 0, 1}).
+
+PRINT ({-1, 0, 1; -1, 0, 1; -1, 0, 1} AND {-1, -1, -1; 0, 0, 0; 1, 1, 1}).
+PRINT ({-1, 0, 1} AND -1).
+PRINT ({-1, 0, 1} AND 0).
+PRINT ({-1, 0, 1} AND 1).
+PRINT ({-1, 0} AND {2; 3}).
+
+PRINT ({-1, 0, 1; -1, 0, 1; -1, 0, 1} OR {-1, -1, -1; 0, 0, 0; 1, 1, 1}).
+PRINT ({-1, 0, 1} OR -1).
+PRINT ({-1, 0, 1} OR 0).
+PRINT ({-1, 0, 1} OR 1).
+PRINT ({-1, 0} OR {2; 3}).
+
+PRINT ({-1, 0, 1; -1, 0, 1; -1, 0, 1} XOR {-1, -1, -1; 0, 0, 0; 1, 1, 1}).
+PRINT ({-1, 0, 1} XOR -1).
+PRINT ({-1, 0, 1} XOR 0).
+PRINT ({-1, 0, 1} XOR 1).
+PRINT ({-1, 0} XOR {2; 3}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+(NOT {-1, 0, 1})
+  1  1  0
+
+({-1, 0, 1; -1, 0, 1; -1, 0, 1} AND {-1, -1, -1; 0, 0, 0; 1, 1, 1})
+  0  0  0
+  0  0  0
+  0  0  1
+
+({-1, 0, 1} AND -1)
+ 0 0 0
+
+({-1, 0, 1} AND 0)
+ 0 0 0
+
+({-1, 0, 1} AND 1)
+  0  0  1
+
+matrix.sps:8.8-8.25: error: MATRIX: The operands of AND must have the same
+dimensions or one must be a scalar.
+    8 | PRINT ({-1, 0} AND {2; 3}).
+      |        ^~~~~~~~~~~~~~~~~~
+
+matrix.sps:8.8-8.14: note: MATRIX: The left-hand operand is a 1×2 matrix.
+    8 | PRINT ({-1, 0} AND {2; 3}).
+      |        ^~~~~~~
+
+matrix.sps:8.20-8.25: note: MATRIX: The right-hand operand is a 2×1 matrix.
+    8 | PRINT ({-1, 0} AND {2; 3}).
+      |                    ^~~~~~
+
+({-1, 0, 1; -1, 0, 1; -1, 0, 1} OR {-1, -1, -1; 0, 0, 0; 1, 1, 1})
+  0  0  1
+  0  0  1
+  1  1  1
+
+({-1, 0, 1} OR -1)
+  0  0  1
+
+({-1, 0, 1} OR 0)
+  0  0  1
+
+({-1, 0, 1} OR 1)
+  1  1  1
+
+matrix.sps:14.8-14.24: error: MATRIX: The operands of OR must have the same
+dimensions or one must be a scalar.
+   14 | PRINT ({-1, 0} OR {2; 3}).
+      |        ^~~~~~~~~~~~~~~~~
+
+matrix.sps:14.8-14.14: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   14 | PRINT ({-1, 0} OR {2; 3}).
+      |        ^~~~~~~
+
+matrix.sps:14.19-14.24: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   14 | PRINT ({-1, 0} OR {2; 3}).
+      |                   ^~~~~~
+
+({-1, 0, 1; -1, 0, 1; -1, 0, 1} XOR {-1, -1, -1; 0, 0, 0; 1, 1, 1})
+  0  0  1
+  0  0  1
+  1  1  0
+
+({-1, 0, 1} XOR -1)
+  0  0  1
+
+({-1, 0, 1} XOR 0)
+  0  0  1
+
+({-1, 0, 1} XOR 1)
+  1  1  0
+
+matrix.sps:20.8-20.25: error: MATRIX: The operands of XOR must have the same
+dimensions or one must be a scalar.
+   20 | PRINT ({-1, 0} XOR {2; 3}).
+      |        ^~~~~~~~~~~~~~~~~~
+
+matrix.sps:20.8-20.14: note: MATRIX: The left-hand operand is a 1×2 matrix.
+   20 | PRINT ({-1, 0} XOR {2; 3}).
+      |        ^~~~~~~
+
+matrix.sps:20.20-20.25: note: MATRIX: The right-hand operand is a 2×1 matrix.
+   20 | PRINT ({-1, 0} XOR {2; 3}).
+      |                    ^~~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - matrix operators])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT ({0, 1; 0, 0} * {0, 0; 1, 0}).
+PRINT ({0, 0; 1, 0} * {0, 1; 0, 0}).
+PRINT ({1, 2, 3; 4, 5, 6} * {7, 8; 9, 10; 11, 12}).
+PRINT ({3, 4, 2} * {13, 9, 7, 15; 8, 7, 4, 6; 6, 4, 0, 3}).
+COMPUTE m = {0, 1, 0, 0; 1, 0, 1, 0; 0, 1, 0, 1; 0, 0, 1, 0}.
+PRINT m**-2.
+PRINT m**-1.
+PRINT m**0.
+PRINT m**1.
+PRINT m**2.
+PRINT m**3.
+PRINT m**5.
+PRINT {3, 3.5; 3.2, 3.6}**-1/FORMAT F6.2.
+
+PRINT ({1, 2, 3} * {1, 2}).
+PRINT {1, 2, 3}**2.
+PRINT m**{1, 2}.
+PRINT m**1.5.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+({0, 1; 0, 0} * {0, 0; 1, 0})
+  1  0
+  0  0
+
+({0, 0; 1, 0} * {0, 1; 0, 0})
+  0  0
+  0  1
+
+({1, 2, 3; 4, 5, 6} * {7, 8; 9, 10; 11, 12})
+   58   64
+  139  154
+
+({3, 4, 2} * {13, 9, 7, 15; 8, 7, 4, 6; 6, 4, 0, 3})
+  83  63  37  75
+
+m**-2
+  2  0 -1  0
+  0  1  0 -1
+ -1  0  1  0
+  0 -1  0  2
+
+m**-1
+  0  1  0 -1
+  1  0  0  0
+  0  0  0  1
+ -1  0  1  0
+
+m**0
+  1  0  0  0
+  0  1  0  0
+  0  0  1  0
+  0  0  0  1
+
+m**1
+  0  1  0  0
+  1  0  1  0
+  0  1  0  1
+  0  0  1  0
+
+m**2
+  1  0  1  0
+  0  2  0  1
+  1  0  2  0
+  0  1  0  1
+
+m**3
+  0  2  0  1
+  2  0  3  0
+  0  3  0  2
+  1  0  2  0
+
+m**5
+  0  5  0  3
+  5  0  8  0
+  0  8  0  5
+  3  0  5  0
+
+{3, 3.5; 3.2, 3.6}**-1
+  -9.00   8.75
+   8.00  -7.50
+
+matrix.sps:16.8-16.25: error: MATRIX: Matrices not conformable for
+multiplication.
+   16 | PRINT ({1, 2, 3} * {1, 2}).
+      |        ^~~~~~~~~~~~~~~~~~
+
+matrix.sps:16.8-16.16: note: MATRIX: The left-hand operand is a 1×3 matrix.
+   16 | PRINT ({1, 2, 3} * {1, 2}).
+      |        ^~~~~~~~~
+
+matrix.sps:16.20-16.25: note: MATRIX: The right-hand operand is a 1×2 matrix.
+   16 | PRINT ({1, 2, 3} * {1, 2}).
+      |                    ^~~~~~
+
+matrix.sps:17.7-17.15: error: MATRIX: Matrix exponentation with ** requires a
+square matrix on the left-hand size, not one with dimensions 1×3.
+   17 | PRINT {1, 2, 3}**2.
+      |       ^~~~~~~~~
+
+matrix.sps:18.10-18.15: error: MATRIX: Matrix exponentiation with ** requires a
+scalar on the right-hand side, not a matrix with dimensions 1×2.
+   18 | PRINT m**{1, 2}.
+      |          ^~~~~~
+
+matrix.sps:19.10-19.12: error: MATRIX: Exponent 1.5 in matrix multiplication is
+non-integer or outside the valid range.
+   19 | PRINT m**1.5.
+      |          ^~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - sequences and construction])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT {1:3:-1}.
+PRINT {1:3}.
+PRINT {1:10:2}.
+PRINT {1:11:2}.
+
+PRINT {-1:-3}.
+PRINT {-1:-3:-1}.
+PRINT {-1:-10:-2}.
+PRINT {-1:-11:-2}.
+
+PRINT {1:1}.
+PRINT {1:1:-1}.
+
+PRINT {1:3:0}.
+PRINT {-1:-3:0}.
+
+PRINT {1, 2; 3}.
+PRINT {{2; 5}, 3}.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+{1:3:-1}
+
+{1:3}
+  1  2  3
+
+{1:10:2}
+  1  3  5  7  9
+
+{1:11:2}
+   1   3   5   7   9  11
+
+{-1:-3}
+
+{-1:-3:-1}
+ -1 -2 -3
+
+{-1:-10:-2}
+ -1 -3 -5 -7 -9
+
+{-1:-11:-2}
+  -1  -3  -5  -7  -9 -11
+
+{1:1}
+  1
+
+{1:1:-1}
+  1
+
+matrix.sps:15.12: error: MATRIX: The increment operand to : must be nonzero.
+   15 | PRINT {1:3:0}.
+      |            ^
+
+matrix.sps:16.14: error: MATRIX: The increment operand to : must be nonzero.
+   16 | PRINT {-1:-3:0}.
+      |              ^
+
+matrix.sps:18.7-18.15: error: MATRIX: This expression tries to vertically join
+matrices with differing numbers of columns.
+   18 | PRINT {1, 2; 3}.
+      |       ^~~~~~~~~
+
+matrix.sps:18.8-18.11: note: MATRIX: This operand is a 1×2 matrix.
+   18 | PRINT {1, 2; 3}.
+      |        ^~~~
+
+matrix.sps:18.14: note: MATRIX: This operand is a 1×1 matrix.
+   18 | PRINT {1, 2; 3}.
+      |              ^
+
+matrix.sps:19.7-19.17: error: MATRIX: This expression tries to horizontally
+join matrices with differing numbers of rows.
+   19 | PRINT {{2; 5}, 3}.
+      |       ^~~~~~~~~~~
+
+matrix.sps:19.8-19.13: note: MATRIX: This operand is a 2×1 matrix.
+   19 | PRINT {{2; 5}, 3}.
+      |        ^~~~~~
+
+matrix.sps:19.16: note: MATRIX: This operand is a 1×1 matrix.
+   19 | PRINT {{2; 5}, 3}.
+      |                ^
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - comments])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+* Comment one.
+PRINT (1+2).
+COMMENT Comment two.
+PRINT (3+4).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+(1+2)
+  3
+
+(3+4)
+  7
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - string matrices])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE m={'This is', 'a string', 'matrix', 'including', 'some', 'long strings'}.
+PRINT m/FORMAT=A8.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+m
+ This is a string matrix includin some long str
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - ABS ALL ANY ARSIN ARTAN])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT ABS({-1, 0, 1}).
+
+PRINT ALL({0, 0, 0}).
+PRINT ALL({-1, 1}).
+PRINT ALL({-1, 0, 1}).
+
+PRINT ANY({0, 0, 0}).
+PRINT ANY({-1, 1}).
+PRINT ANY({-1, 0, 1}).
+
+PRINT ARSIN({-1, 0, 1})/FORMAT=F5.2.
+
+PRINT ARTAN({-5, -1, 0, 1, 5})/FORMAT=F5.2.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+ABS({-1, 0, 1})
+  1  0  1
+
+ALL({0, 0, 0})
+ 0
+
+ALL({-1, 1})
+  1
+
+ALL({-1, 0, 1})
+ 0
+
+ANY({0, 0, 0})
+ 0
+
+ANY({-1, 1})
+  1
+
+ANY({-1, 0, 1})
+  1
+
+ARSIN({-1, 0, 1})
+ -1.57   .00  1.57
+
+ARTAN({-5, -1, 0, 1, 5})
+ -1.37  -.79   .00   .79  1.37
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - BLOCK CHOL CMAX CMIN COS])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT BLOCK({1, 2; 3, 4}, 5, {7; 8; 9}, {10, 11}).
+
+COMPUTE b=CHOL({4, 12, -16; 12, 37, -43; -16, -43, 98}).
+PRINT b.
+PRINT (T(b)*b).
+
+PRINT CMAX({9, 3, 4; 5, 8, 6; 7, 4, 11}).
+
+PRINT CMIN({9, 3, 4; 5, 8, 6; 7, 4, 11}).
+
+PRINT COS({0.785, 1.57; 3.14, 1.57 + 3.14}) /FORMAT=F5.2.
+
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+BLOCK({1, 2; 3, 4}, 5, {7; 8; 9}, {10, 11})
+   1   2   0   0   0   0
+   3   4   0   0   0   0
+   0   0   5   0   0   0
+   0   0   0   7   0   0
+   0   0   0   8   0   0
+   0   0   0   9   0   0
+   0   0   0   0  10  11
+
+b
+  2  6 -8
+  0  1  5
+  0  0  3
+
+(T(b)*b)
+   4  12 -16
+  12  37 -43
+ -16 -43  98
+
+CMAX({9, 3, 4; 5, 8, 6; 7, 4, 11})
+   9   8  11
+
+CMIN({9, 3, 4; 5, 8, 6; 7, 4, 11})
+  5  3  4
+
+COS({0.785, 1.57; 3.14, 1.57 + 3.14})
+   .71   .00
+ -1.00   .00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - CSSQ CSUM DESIGN DET DIAG])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT CSSQ({1, 2, 3; 4, 5, 6; 7, 8, 9}).
+PRINT CSUM({1, 2, 3; 4, 5, 6; 7, 8, 9}).
+PRINT DESIGN({1, 2, 0; 2, 1, 0; 3, 0, 1}).
+PRINT DESIGN({1, 2, 0; 2, 2, 0; 3, 2, 1}).
+PRINT DET({1, 2, 3; 4, 5, 6; 7, 8, 9}) /FORMAT F4.1.
+PRINT DIAG({1, 2, 3, 4; 4, 5, 6, 7; 7, 8, 9, 10}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+CSSQ({1, 2, 3; 4, 5, 6; 7, 8, 9})
+   66   93  126
+
+CSUM({1, 2, 3; 4, 5, 6; 7, 8, 9})
+  12  15  18
+
+DESIGN({1, 2, 0; 2, 1, 0; 3, 0, 1})
+  1  0  0  0  0  1  1  0
+  0  1  0  0  1  0  1  0
+  0  0  1  1  0  0  0  1
+
+warning: Column 2 in DESIGN argument has constant value.
+
+DESIGN({1, 2, 0; 2, 2, 0; 3, 2, 1})
+  1  0  0  1  0
+  0  1  0  1  0
+  0  0  1  0  1
+
+DET({1, 2, 3; 4, 5, 6; 7, 8, 9})
+   .0
+
+DIAG({1, 2, 3, 4; 4, 5, 6, 7; 7, 8, 9, 10})
+  1
+  5
+  9
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - EVAL EXP GINV GRADE GSCH])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT EVAL({2, 0, 0; 0, 3, 4; 0, 4, 9}).
+
+PRINT EXP({2, 3; 4, 5})/FORMAT F5.2.
+
+PRINT GINV({1, 2})/FORMAT F5.2.
+COMPUTE a={1, 2, 3; 4, 5, 6; 7, 8, 9}.
+COMPUTE g=GINV(a).
+PRINT (a*g*a)/FORMAT F5.2.
+
+PRINT GRADE({1, 0, 3; 3, 1, 2; 3, 0, 5}).
+COMPUTE x={26, 690, 323, 208, 671, 818, 732, 711, 585, 792}.
+COMPUTE asort=x.
+COMPUTE asort(GRADE(asort))=asort.
+PRINT asort.
+COMPUTE dsort=x.
+COMPUTE dsort(GRADE(-dsort))=dsort.
+PRINT dsort.
+
+PRINT (GSCH({3, 2; 1, 2}) * SQRT(10))/FORMAT F5.2.
+PRINT (GSCH({0, 3, 6, 2; 0, 1, 2, 2}) * SQRT(10))/FORMAT F5.2.
+PRINT GSCH({0; 0}).
+PRINT GSCH({0, 0, 0; 0, 0, 0}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+EVAL({2, 0, 0; 0, 3, 4; 0, 4, 9})
+ 11.0000000000
+  2.0000000000
+  1.0000000000
+
+EXP({2, 3; 4, 5})
+  7.39 20.09
+ 54.60 148.4
+
+GINV({1, 2})
+   .20
+   .40
+
+(a*g*a)
+  1.00  2.00  3.00
+  4.00  5.00  6.00
+  7.00  8.00  9.00
+
+GRADE({1, 0, 3; 3, 1, 2; 3, 0, 5})
+  3  1  6
+  7  4  5
+  8  2  9
+
+asort
+   26  208  323  585  671  690  711  732  792  818
+
+dsort
+  818  792  732  711  690  671  585  323  208   26
+
+(GSCH({3, 2; 1, 2}) * SQRT(10))
+  3.00 -1.00
+  1.00  3.00
+
+(GSCH({0, 3, 6, 2; 0, 1, 2, 2}) * SQRT(10))
+  3.00 -1.00
+  1.00  3.00
+
+matrix.sps:22.12-22.17: error: MATRIX: GSCH requires its argument to have at
+least as many columns as rows, but it has dimensions 2×1.
+   22 | PRINT GSCH({0; 0}).
+      |            ^~~~~~
+
+matrix.sps:23.12-23.29: error: MATRIX: 2×3 argument to GSCH contains only 0
+linearly independent columns.
+   23 | PRINT GSCH({0, 0, 0; 0, 0, 0}).
+      |            ^~~~~~~~~~~~~~~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - IDENT INV KRONEKER LG10 LN])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT IDENT(1).
+PRINT IDENT(2).
+PRINT IDENT(3,5).
+PRINT IDENT(5,3).
+
+PRINT INV({3, 3.5; 3.2, 3.6})/FORMAT F8.2.
+PRINT INV({4, 7; 2, 6})/FORMAT F8.2.
+PRINT (INV({4, -2, 1; 5, 0, 3; -1, 2, 6})*52)/FORMAT F8.2.
+
+PRINT KRONEKER({1, 2; 3, 4}, {0, 5; 6, 7}).
+
+PRINT LG10({1, 10, 100, 1000}).
+
+PRINT LN({1, 2; 3, 4})/FORMAT F5.2.
+PRINT LN(0).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+IDENT(1)
+  1
+
+IDENT(2)
+  1  0
+  0  1
+
+IDENT(3,5)
+  1  0  0  0  0
+  0  1  0  0  0
+  0  0  1  0  0
+
+IDENT(5,3)
+  1  0  0
+  0  1  0
+  0  0  1
+  0  0  0
+  0  0  0
+
+INV({3, 3.5; 3.2, 3.6})
+    -9.00     8.75
+     8.00    -7.50
+
+INV({4, 7; 2, 6})
+      .60     -.70
+     -.20      .40
+
+(INV({4, -2, 1; 5, 0, 3; -1, 2, 6})*52)
+    -6.00    14.00    -6.00
+   -33.00    25.00    -7.00
+    10.00    -6.00    10.00
+
+KRONEKER({1, 2; 3, 4}, {0, 5; 6, 7})
+   0   5   0  10
+   6   7  12  14
+   0  15   0  20
+  18  21  24  28
+
+LG10({1, 10, 100, 1000})
+  0  1  2  3
+
+LN({1, 2; 3, 4})
+   .00   .69
+  1.10  1.39
+
+matrix.sps:16.7-16.11: error: MATRIX: Argument 1 to matrix function LN must be
+greater than 0.
+   16 | PRINT LN(0).
+      |       ^~~~~
+
+matrix.sps:16.10: note: MATRIX: Argument 1 is 0.
+   16 | PRINT LN(0).
+      |          ^
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MAGIC])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+
+LOOP n=3 to 10.
+    COMPUTE m=MAGIC(n).
+    COMPUTE total=n*(n**2 + 1) / 2.
+    COMPUTE tb={MSUM(DIAG(T(m))), CSUM(m), MSUM(DIAG(m))} - total.
+    COMPUTE lr=RSUM(m) - total.
+    PRINT {tb; lr, m, lr; tb}/FORMAT F4.0.
+END LOOP.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+{tb; lr, m, lr; tb}
+    0    0    0    0    0
+    0    8    1    6    0
+    0    3    5    7    0
+    0    4    9    2    0
+    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0
+    0    1    5   12   16    0
+    0   15   11    6    2    0
+    0   14    8    9    3    0
+    0    4   10    7   13    0
+    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0
+    0   17   24    1    8   15    0
+    0   23    5    7   14   16    0
+    0    4    6   13   20   22    0
+    0   10   12   19   21    3    0
+    0   11   18   25    2    9    0
+    0    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0    0
+    0    1    5    9   28   32   36    0
+    0   35   30   27   10    7    2    0
+    0   24   14   22   18   17   16    0
+    0   13   23   15   19   20   21    0
+    0   34   31   26   11    6    3    0
+    0    4    8   12   25   29   33    0
+    0    0    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0    0    0
+    0   30   39   48    1   10   19   28    0
+    0   38   47    7    9   18   27   29    0
+    0   46    6    8   17   26   35   37    0
+    0    5   14   16   25   34   36   45    0
+    0   13   15   24   33   42   44    4    0
+    0   21   23   32   41   43    3   12    0
+    0   22   31   40   49    2   11   20    0
+    0    0    0    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0    0    0    0
+    0    1    9   17   25   40   48   56   64    0
+    0   63   55   47   39   26   18   10    2    0
+    0    3   11   19   27   38   46   54   62    0
+    0   61   53   45   37   28   20   12    4    0
+    0   60   52   44   32   33   21   13    5    0
+    0    6   14   22   30   35   43   51   59    0
+    0   58   50   42   34   31   23   15    7    0
+    0    8   16   24   36   29   41   49   57    0
+    0    0    0    0    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0    0    0    0    0
+    0   47   58   69   80    1   12   23   34   45    0
+    0   57   68   79    9   11   22   33   44   46    0
+    0   67   78    8   10   21   32   43   54   56    0
+    0   77    7   18   20   31   42   53   55   66    0
+    0    6   17   19   30   41   52   63   65   76    0
+    0   16   27   29   40   51   62   64   75    5    0
+    0   26   28   39   50   61   72   74    4   15    0
+    0   36   38   49   60   71   73    3   14   25    0
+    0   37   48   59   70   81    2   13   24   35    0
+    0    0    0    0    0    0    0    0    0    0    0
+{tb; lr, m, lr; tb}
+    0    0    0    0    0    0    0    0    0    0    0    0
+    0    1    9   17   25   33   68   76   84   92  100    0
+    0   99   91   83   75   67   34   26   18   10    2    0
+    0    3   11   19   27   35   66   74   82   90   98    0
+    0   97   89   81   72   65   36   29   20   12    4    0
+    0   60   42   58   44   56   50   49   53   47   46    0
+    0   41   59   43   57   45   51   52   48   54   55    0
+    0   96   88   80   73   64   37   28   21   13    5    0
+    0    6   14   22   30   38   63   71   79   87   95    0
+    0   94   86   78   70   62   39   31   23   15    7    0
+    0    8   16   24   32   40   61   69   77   85   93    0
+    0    0    0    0    0    0    0    0    0    0    0    0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MAKE MDIAG MMAX MMIN MOD])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT MAKE(1, 2, 3).
+PRINT MAKE(2, 1, 4).
+PRINT MAKE(2, 3, 5).
+
+PRINT MDIAG({1, 2, 3, 4}).
+PRINT MDIAG({1; 2; 3; 4}).
+PRINT MDIAG({1, 2; 3, 4}).
+
+PRINT MMAX({55, 44; 66, 11}).
+
+PRINT MMIN({55, 44; 66, 11}).
+
+PRINT MOD({5, 4, 3, 2, 1, 0}, 3).
+PRINT MOD({5, 4, 3, 2, 1, 0}, -3).
+PRINT MOD({-5, -4, -3, -2, -1, 0}, 3).
+PRINT MOD({-5, -4, -3, -2, -1, 0}, -3).
+PRINT MOD({5, 4, 3, 2, 1, 0}, 1.5) /FORMAT F5.1.
+PRINT MOD({5, 4, 3, 2, 1, 0}, 0).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+MAKE(1, 2, 3)
+  3  3
+
+MAKE(2, 1, 4)
+  4
+  4
+
+MAKE(2, 3, 5)
+  5  5  5
+  5  5  5
+
+MDIAG({1, 2, 3, 4})
+  1  0  0  0
+  0  2  0  0
+  0  0  3  0
+  0  0  0  4
+
+MDIAG({1; 2; 3; 4})
+  1  0  0  0
+  0  2  0  0
+  0  0  3  0
+  0  0  0  4
+
+matrix.sps:8.13-8.24: error: MATRIX: Function MDIAG argument 1 must be a
+vector, not a 2×2 matrix.
+    8 | PRINT MDIAG({1, 2; 3, 4}).
+      |             ^~~~~~~~~~~~
+
+MMAX({55, 44; 66, 11})
+  66
+
+MMIN({55, 44; 66, 11})
+  11
+
+MOD({5, 4, 3, 2, 1, 0}, 3)
+  2  1  0  2  1  0
+
+MOD({5, 4, 3, 2, 1, 0}, -3)
+  2  1  0  2  1  0
+
+MOD({-5, -4, -3, -2, -1, 0}, 3)
+ -2 -1  0 -2 -1  0
+
+MOD({-5, -4, -3, -2, -1, 0}, -3)
+ -2 -1  0 -2 -1  0
+
+MOD({5, 4, 3, 2, 1, 0}, 1.5)
+    .5   1.0    .0    .5   1.0    .0
+
+matrix.sps:19.7-19.32: error: MATRIX: Argument 2 to matrix function MOD must
+not be equal to 0.
+   19 | PRINT MOD({5, 4, 3, 2, 1, 0}, 0).
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSSQ MSUM NCOL NROW RANK])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT MSSQ({1, 0, 1; -2, -3, 1; 3, 3, 0}).
+
+PRINT MSUM({1, 0, 1; -2, -3, 1; 3, 3, 0}).
+
+PRINT NCOL({1, 0; -2, -3; 3, 3}).
+
+PRINT NROW({1, 0; -2, -3; 3, 3}).
+
+PRINT RANK({1, 0, 1; -2, -3, 1; 3, 3, 0}).
+PRINT RANK({1, 1, 0, 2; -1, -1, 0, -2}).
+PRINT RANK({1, -1; 1, -1; 0, 0; 2, -2}).
+PRINT RANK({1, 2, 1; -2, -3, 1; 3, 5, 0}).
+PRINT RANK({1, 0, 2; 2, 1, 0; 3, 2, 1}).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+MSSQ({1, 0, 1; -2, -3, 1; 3, 3, 0})
+  34
+
+MSUM({1, 0, 1; -2, -3, 1; 3, 3, 0})
+  4
+
+NCOL({1, 0; -2, -3; 3, 3})
+  2
+
+NROW({1, 0; -2, -3; 3, 3})
+  3
+
+RANK({1, 0, 1; -2, -3, 1; 3, 3, 0})
+  2
+
+RANK({1, 1, 0, 2; -1, -1, 0, -2})
+  1
+
+RANK({1, -1; 1, -1; 0, 0; 2, -2})
+  1
+
+RANK({1, 2, 1; -2, -3, 1; 3, 5, 0})
+  2
+
+RANK({1, 0, 2; 2, 1, 0; 3, 2, 1})
+  3
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - RESHAPE RMAX RMIN RND RNKORDER])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT RESHAPE(1:12, 1, 12).
+PRINT RESHAPE(1:12, 2, 6).
+PRINT RESHAPE(1:12, 3, 4).
+PRINT RESHAPE(1:12, 4, 3).
+PRINT RESHAPE(1:12, 6, 2).
+PRINT RESHAPE(1:12, 12, 1).
+
+PRINT RMAX({1, 0, 1; -2, -3, 1; 3, 3, 0}).
+
+PRINT RMIN({1, 0, 1; -2, -3, 1; 3, 3, 0}).
+
+PRINT RND({-1.6, -1.5, -1.4;
+           -.6, -.5, -.4;
+           .4, .5, .6;
+           1.4, 1.5, 1.6})/FORMAT F5.1.
+
+PRINT RNKORDER({1, 0, 3; 3, 1, 2; 3, 0, 5}) /FORMAT F5.1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+RESHAPE(1:12, 1, 12)
+   1   2   3   4   5   6   7   8   9  10  11  12
+
+RESHAPE(1:12, 2, 6)
+   1   2   3   4   5   6
+   7   8   9  10  11  12
+
+RESHAPE(1:12, 3, 4)
+   1   2   3   4
+   5   6   7   8
+   9  10  11  12
+
+RESHAPE(1:12, 4, 3)
+   1   2   3
+   4   5   6
+   7   8   9
+  10  11  12
+
+RESHAPE(1:12, 6, 2)
+   1   2
+   3   4
+   5   6
+   7   8
+   9  10
+  11  12
+
+RESHAPE(1:12, 12, 1)
+   1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+
+RMAX({1, 0, 1; -2, -3, 1; 3, 3, 0})
+  1
+  1
+  3
+
+RMIN({1, 0, 1; -2, -3, 1; 3, 3, 0})
+  0
+ -3
+  0
+
+RND({-1.6, -1.5, -1.4;
+           -.6, -.5, -.4;
+           .4, .5, .6;
+           1.4, 1.5, 1.6})
+  -2.0  -2.0  -1.0
+  -1.0    .0    .0
+    .0    .0   1.0
+   1.0   2.0   2.0
+
+RNKORDER({1, 0, 3; 3, 1, 2; 3, 0, 5})
+   3.5   1.5   7.0
+   7.0   3.5   5.0
+   7.0   1.5   9.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - RSSQ RSUM SIN SOLVE SQRT])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT RSSQ({1, 2, 3; 4, 5, 6; 7, 8, 9}).
+PRINT RSUM({1, 2, 3; 4, 5, 6; 7, 8, 9}).
+
+PRINT SIN({0, .78, 1.57, 2.35, 3.14}) /FORMAT F5.2.
+
+PRINT SOLVE({2, 3; 4, 9}, {6, 2; 15, 5}) /FORMAT=F6.2.
+PRINT SOLVE({1, 3, -2; 3, 5, 6; 2, 4, 3}, {5; 7; 8}) /FORMAT=F6.2.
+PRINT SOLVE({2, 1, -1; -3, -1, 2; -2, 1, 2}, {8; -11; -3}) /FORMAT=F6.2.
+PRINT SOLVE({1, 2; 3, 4}, {1, 2}).
+
+PRINT SQRT({0, 1, 2, 3, 4, 9, 81}) /FORMAT=F5.2.
+PRINT SQRT(-1).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+RSSQ({1, 2, 3; 4, 5, 6; 7, 8, 9})
+   14
+   77
+  194
+
+RSUM({1, 2, 3; 4, 5, 6; 7, 8, 9})
+   6
+  15
+  24
+
+SIN({0, .78, 1.57, 2.35, 3.14})
+   .00   .70  1.00   .71   .00
+
+SOLVE({2, 3; 4, 9}, {6, 2; 15, 5})
+   1.50    .50
+   1.00    .33
+
+SOLVE({1, 3, -2; 3, 5, 6; 2, 4, 3}, {5; 7; 8})
+ -15.00
+   8.00
+   2.00
+
+SOLVE({2, 1, -1; -3, -1, 2; -2, 1, 2}, {8; -11; -3})
+   2.00
+   3.00
+  -1.00
+
+matrix.sps:10.7-10.33: error: MATRIX: SOLVE arguments must have the same number
+of rows.
+   10 | PRINT SOLVE({1, 2; 3, 4}, {1, 2}).
+      |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+matrix.sps:10.13-10.24: note: MATRIX: Argument 1 has dimensions 2×2.
+   10 | PRINT SOLVE({1, 2; 3, 4}, {1, 2}).
+      |             ^~~~~~~~~~~~
+
+matrix.sps:10.27-10.32: note: MATRIX: Argument 2 has dimensions 1×2.
+   10 | PRINT SOLVE({1, 2; 3, 4}, {1, 2}).
+      |                           ^~~~~~
+
+SQRT({0, 1, 2, 3, 4, 9, 81})
+   .00  1.00  1.41  1.73  2.00  3.00  9.00
+
+matrix.sps:13.7-13.14: error: MATRIX: Argument 1 to matrix function SQRT must
+be greater than or equal to 0.
+   13 | PRINT SQRT(-1).
+      |       ^~~~~~~~
+
+matrix.sps:13.12-13.13: note: MATRIX: Argument 1 is -1.
+   13 | PRINT SQRT(-1).
+      |            ^~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - SSCP SVAL SWEEP TRACE TRANSPOS TRUNC])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE m={1, 2, 3; 4, 5, 6}
+COMPUTE sscp1=SSCP(m).
+COMPUTE sscp2=T(m)*m.
+PRINT sscp1.
+PRINT (sscp1 <> sscp2).
+
+PRINT SVAL({1, 1; 0, 0})/FORMAT F5.2.
+PRINT SVAL({1, 0, 1; 0, 1, 1; 0, 0, 0})/FORMAT F5.2.
+PRINT SVAL({1, 0, 0, 0, 2; 0, 0, 3, 0, 0; 0, 0, 0, 0, 0; 0, 2, 0, 0, 0})
+    /FORMAT F5.2.
+PRINT SVAL({2, 4; 1, 3; 0, 0; 0, 0})/FORMAT F5.2.
+
+COMPUTE s0 = {6, 12, 0, 12; 12, 28, 0, 25; 0, 0, 6, 2; 12, 25, 2, 28}.
+PRINT SWEEP(s0, 1)/FORMAT F5.2.
+PRINT SWEEP(SWEEP(s0, 1), 2)/FORMAT F5.2.
+PRINT SWEEP(SWEEP(SWEEP(s0, 1), 2), 3)/FORMAT F5.2.
+
+COMPUTE s1 = {6, 12, 0, 12; 12, 0, 0, 25; 0, 0, 6, 2; 12, 25, 2, 28}.
+PRINT SWEEP(s1, 2).
+
+COMPUTE s2 = {0, 1, 2; 3, 4, 5; 6, 7, 8}.
+PRINT SWEEP(s2, 1).
+PRINT SWEEP(s2, 2).
+PRINT SWEEP(s2, 3).
+
+PRINT TRACE(s0).
+
+PRINT T(s0).
+PRINT TRANSPOS(s0).
+PRINT ALL(T(T(s0)) = s0).
+
+PRINT TRUNC(SVAL({2, 4; 1, 3; 0, 0; 0, 0})).
+PRINT TRUNC(-SVAL({2, 4; 1, 3; 0, 0; 0, 0})).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+sscp1
+  17  22  27
+  22  29  36
+  27  36  45
+
+(sscp1 <> sscp2)
+ 0 0 0
+ 0 0 0
+ 0 0 0
+
+SVAL({1, 1; 0, 0})
+  1.41
+   .00
+
+SVAL({1, 0, 1; 0, 1, 1; 0, 0, 0})
+  1.73
+  1.00
+   .00
+
+SVAL({1, 0, 0, 0, 2; 0, 0, 3, 0, 0; 0, 0, 0, 0, 0; 0, 2, 0, 0, 0})
+  3.00
+  2.24
+  2.00
+   .00
+
+SVAL({2, 4; 1, 3; 0, 0; 0, 0})
+  5.46
+   .37
+
+SWEEP(s0, 1)
+   .17  2.00   .00  2.00
+ -2.00  4.00   .00  1.00
+   .00   .00  6.00  2.00
+ -2.00  1.00  2.00  4.00
+
+SWEEP(SWEEP(s0, 1), 2)
+  1.17  -.50   .00  1.50
+  -.50   .25   .00   .25
+   .00   .00  6.00  2.00
+ -1.50  -.25  2.00  3.75
+
+SWEEP(SWEEP(SWEEP(s0, 1), 2), 3)
+  1.17  -.50   .00  1.50
+  -.50   .25   .00   .25
+   .00   .00   .17   .33
+ -1.50  -.25  -.33  3.08
+
+SWEEP(s1, 2)
+   6   0   0  12
+   0   0   0   0
+   0   0   6   2
+  12   0   2  28
+
+SWEEP(s2, 1)
+  0  0  0
+  0  4  5
+  0  7  8
+
+SWEEP(s2, 2)
+  -.7500000000  -.2500000000   .7500000000
+   .7500000000   .2500000000  1.2500000000
+   .7500000000 -1.7500000000  -.7500000000
+
+SWEEP(s2, 3)
+ -1.5000000000  -.7500000000  -.2500000000
+  -.7500000000  -.3750000000  -.6250000000
+   .7500000000   .8750000000   .1250000000
+
+TRACE(s0)
+  68
+
+T(s0)
+   6  12   0  12
+  12  28   0  25
+   0   0   6   2
+  12  25   2  28
+
+TRANSPOS(s0)
+   6  12   0  12
+  12  28   0  25
+   0   0   6   2
+  12  25   2  28
+
+ALL(T(T(s0)) = s0)
+  1
+
+TRUNC(SVAL({2, 4; 1, 3; 0, 0; 0, 0}))
+  5
+  0
+
+TRUNC(-SVAL({2, 4; 1, 3; 0, 0; 0, 0}))
+ -5
+  0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - UNIFORM])
+AT_DATA([matrix.sps], [dnl
+SET SEED=10.
+MATRIX.
+PRINT (UNIFORM(4, 5)*10)/FORMAT F5.2.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+(UNIFORM(4, 5)*10)
+  7.71  2.99   .21  4.95  6.34
+  4.43  7.49  8.32  4.99  5.83
+  2.25   .25  1.98  7.09  7.61
+  2.66  1.69  2.64   .88  1.50
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - invalid function arguments])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x=MOD({1,2,3},{4,5,6}).
+COMPUTE x=MDIAG({1, 2; 3, 4}).
+COMPUTE x=ARSIN(2).
+COMPUTE x=ARSIN({1, 1; -1, 2}).
+COMPUTE x=CDF.UNIFORM(2,1,1).
+COMPUTE x=CDF.UNIFORM(1,2,1).
+COMPUTE x=CDF.UNIFORM({1,2},1,1).
+COMPUTE x=MAGIC(2).
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.23-2.29: error: MATRIX: Function MOD argument 2 must be a scalar,
+not a 1×3 matrix.
+    2 | COMPUTE x=MOD({1,2,3},{4,5,6}).
+      |                       ^~~~~~~
+
+matrix.sps:3.17-3.28: error: MATRIX: Function MDIAG argument 1 must be a
+vector, not a 2×2 matrix.
+    3 | COMPUTE x=MDIAG({1, 2; 3, 4}).
+      |                 ^~~~~~~~~~~~
+
+matrix.sps:4.17: error: MATRIX: Argument 1 to matrix function ARSIN is 2, which
+is outside the valid range [[-1,1]].
+    4 | COMPUTE x=ARSIN(2).
+      |                 ^
+
+matrix.sps:5.17-5.29: error: MATRIX: Row 2, column 2 of argument 1 to matrix
+function ARSIN is 2, which is outside the valid range [[-1,1]].
+    5 | COMPUTE x=ARSIN({1, 1; -1, 2}).
+      |                 ^~~~~~~~~~~~~
+
+error: Argument 1 to matrix function CDF.UNIFORM must be less than or equal to
+argument 3.
+
+matrix.sps:6.23: note: MATRIX: Argument 1 is 2.
+    6 | COMPUTE x=CDF.UNIFORM(2,1,1).
+      |                       ^
+
+matrix.sps:6.27: note: MATRIX: Argument 3 is 1.
+    6 | COMPUTE x=CDF.UNIFORM(2,1,1).
+      |                           ^
+
+error: Argument 2 to matrix function CDF.UNIFORM must be less than or equal to
+argument 3.
+
+matrix.sps:7.25: note: MATRIX: Argument 2 is 2.
+    7 | COMPUTE x=CDF.UNIFORM(1,2,1).
+      |                         ^
+
+matrix.sps:7.27: note: MATRIX: Argument 3 is 1.
+    7 | COMPUTE x=CDF.UNIFORM(1,2,1).
+      |                           ^
+
+error: Argument 1 to matrix function CDF.UNIFORM must be less than or equal to
+argument 3.
+
+matrix.sps:8.23-8.27: note: MATRIX: Row 1, column 2 of argument 1 is 2.
+    8 | COMPUTE x=CDF.UNIFORM({1,2},1,1).
+      |                       ^~~~~
+
+matrix.sps:8.31: note: MATRIX: Argument 3 is 1.
+    8 | COMPUTE x=CDF.UNIFORM({1,2},1,1).
+      |                               ^
+
+matrix.sps:9.11-9.18: error: MATRIX: Argument 1 to matrix function MAGIC must
+be greater than or equal to 3.
+    9 | COMPUTE x=MAGIC(2).
+      |           ^~~~~~~~
+
+matrix.sps:9.17: note: MATRIX: Argument 1 is 2.
+    9 | COMPUTE x=MAGIC(2).
+      |                 ^
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - invalid number function arguments])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x=ABS().
+COMPUTE x=ABS(1,2).
+COMPUTE x=KRONEKER(1,2,3).
+COMPUTE x=IDENT().
+COMPUTE x=IDENT(1,2,3).
+COMPUTE x=BLOCK().
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2: error: COMPUTE: Matrix function ABS requires 1 argument.
+
+matrix.sps:3: error: COMPUTE: Matrix function ABS requires 1 argument.
+
+matrix.sps:4: error: COMPUTE: Matrix function KRONEKER requires 2 arguments.
+
+matrix.sps:5: error: COMPUTE: Matrix function IDENT requires 1 or 2 arguments,
+but 0 were provided.
+
+matrix.sps:6: error: COMPUTE: Matrix function IDENT requires 1 or 2 arguments,
+but 3 were provided.
+
+matrix.sps:7: error: COMPUTE: Matrix function BLOCK requires at least one
+argument.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - CALL SETDIAG])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x={1, 2, 3; 4, 5, 6; 7, 8, 9}.
+
+COMPUTE x1=x.
+CALL SETDIAG(x1, 10).
+PRINT x1.
+
+COMPUTE x2=x.
+CALL SETDIAG(x2, {10, 11}).
+PRINT x2.
+
+COMPUTE x3=x.
+CALL SETDIAG(x3, {10, 11, 12}).
+PRINT x3.
+
+COMPUTE x4=x.
+CALL SETDIAG(x4, {10, 11, 12, 13}).
+PRINT x4.
+
+COMPUTE x5=x.
+CALL SETDIAG(x5, {10, 11; 12, 13}).
+PRINT x5.
+
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+x1
+  10   2   3
+   4  10   6
+   7   8  10
+
+x2
+  10   2   3
+   4  11   6
+   7   8   9
+
+x3
+  10   2   3
+   4  11   6
+   7   8  12
+
+x4
+  10   2   3
+   4  11   6
+   7   8  12
+
+matrix.sps:21.18-21.33: error: MATRIX: SETDIAG argument 2 must be a scalar or a
+vector, not a 2×2 matrix.
+   21 | CALL SETDIAG(x5, {10, 11; 12, 13}).
+      |                  ^~~~~~~~~~~~~~~~
+
+x5
+  1  2  3
+  4  5  6
+  7  8  9
+])
+AT_CLEANUP
+
+dnl I have some doubts about the correctness of the results below.
+AT_SETUP([MATRIX - CALL EIGEN])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+CALL EIGEN({1, 0; 0, 1}, evec, eval).
+PRINT evec.
+PRINT eval.
+
+CALL EIGEN({3, 2, 4; 2, 0, 2; 4, 2, 3}, evec2, eval2).
+PRINT evec2.
+PRINT eval2.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+evec
+  1  0
+  0  1
+
+eval
+  1
+  1
+
+evec2
+  -.6666666667   .0000000000   .7453559925
+  -.3333333333  -.8944271910  -.2981423970
+  -.6666666667   .4472135955  -.5962847940
+
+eval2
+  8.0000000000
+ -1.0000000000
+ -1.0000000000
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - CALL SVD])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+CALL SVD({3, 2, 2; 2, 3, -2}, u, s, v).
+PRINT (u * s * T(v))/FORMAT F5.1.
+
+CALL SVD({2, 4; 1, 3; 0, 0; 0, 0}, u, s, v).
+PRINT (u*s*T(v))/FORMAT F5.1.
+
+CALL SVD({-3, 1; 6, -2; 6, -2}, u, s, v).
+PRINT (u*s*T(v))/FORMAT F5.1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+(u * s * T(v))
+   3.0   2.0   2.0
+   2.0   3.0  -2.0
+
+(u*s*T(v))
+   2.0   4.0
+   1.0   3.0
+    .0    .0
+    .0    .0
+
+(u*s*T(v))
+  -3.0   1.0
+   6.0  -2.0
+   6.0  -2.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - PRINT])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT/TITLE="title 1".
+PRINT/SPACE=2/TITLE="title 2".
+
+COMPUTE m={1, 2, 3; 3, 4, 5; 6, 7, 8}.
+PRINT m/RLABELS=123, a b c, long name.
+PRINT m/RNAMES={'123', 'a b c', 'long name'}.
+PRINT m/CLABELS=col1, col2, long column name.
+PRINT m/CNAMES={'col1', 'col2', 'long column name'}.
+PRINT m/RLABELS=123, a b c, long name
+       /CLABELS=col1, col2, long column name.
+PRINT m/RNAMES={'123', 'a b c', 'long name'}
+       /CNAMES={'col1', 'col2', 'long column name'}.
+PRINT {123e10, 456e10, 500}.
+END MATRIX.
+])
+
+AT_DATA([matrix-tables.sps], [dnl
+SET MDISPLAY=TABLES.
+INCLUDE 'matrix.sps'.
+])
+
+AT_CHECK([pspp matrix.sps], [0], [dnl
+title 1
+
+
+
+title 2
+
+m
+123       1  2  3
+a b c     3  4  5
+long nam  6  7  8
+
+m
+123       1  2  3
+a b c     3  4  5
+long nam  6  7  8
+
+m
+     col1     col2 long col
+        1        2        3
+        3        4        5
+        6        7        8
+
+m
+     col1     col2 long col
+        1        2        3
+        3        4        5
+        6        7        8
+
+m
+             col1     col2 long col
+123             1        2        3
+a b c           3        4        5
+long nam        6        7        8
+
+m
+             col1     col2 long col
+123             1        2        3
+a b c           3        4        5
+long nam        6        7        8
+
+{123e10, 456e10, 500}
+  10 ** 12   X
+  1.2300000000  4.5600000000   .0000000005
+])
+
+AT_CHECK([pspp matrix-tables.sps], [0], [dnl
+title 1
+
+
+
+title 2
+
+        m
++---------+-----+
+|123      |1 2 3|
+|a b c    |3 4 5|
+|long name|6 7 8|
++---------+-----+
+
+        m
++--------+-----+
+|123     |1 2 3|
+|a b c   |3 4 5|
+|long nam|6 7 8|
++--------+-----+
+
+              m
++----+----+----------------+
+|col1|col2|long column name|
++----+----+----------------+
+|   1|   2|               3|
+|   3|   4|               5|
+|   6|   7|               8|
++----+----+----------------+
+
+          m
++----+----+--------+
+|col1|col2|long col|
++----+----+--------+
+|   1|   2|       3|
+|   3|   4|       5|
+|   6|   7|       8|
++----+----+--------+
+
+                   m
++---------+----+----+----------------+
+|         |col1|col2|long column name|
++---------+----+----+----------------+
+|123      |   1|   2|               3|
+|a b c    |   3|   4|               5|
+|long name|   6|   7|               8|
++---------+----+----+----------------+
+
+              m
++--------+----+----+--------+
+|        |col1|col2|long col|
++--------+----+----+--------+
+|123     |   1|   2|       3|
+|a b c   |   3|   4|       5|
+|long nam|   6|   7|       8|
++--------+----+----+--------+
+
+              {123e10, 456e10, 500}
++----------------------------------------------+
+|1.2300000000[[a]] 4.5600000000[[a]] .0000000005[[a]]|
++----------------------------------------------+
+a. × 10**12
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - DO IF])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+DO IF 1.
+PRINT/TITLE '1'.
+END IF.
+
+DO IF 0.
+PRINT/TITLE '2'.
+ELSE IF 1.
+PRINT/TITLE '3'.
+END IF.
+
+DO IF -1.
+PRINT/TITLE '4'.
+ELSE IF 0.
+PRINT/TITLE '5'.
+ELSE.
+PRINT/TITLE '6'.
+END IF.
+
+DO IF {1, 2}.
+END IF.
+
+DO IF 0.
+ELSE IF {}.
+END IF.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+1
+
+3
+
+6
+
+matrix.sps:20.7-20.12: error: MATRIX: Expression for DO IF must evaluate to
+scalar, not a 1×2 matrix.
+   20 | DO IF {1, 2}.
+      |       ^~~~~~
+
+matrix.sps:24.9-24.10: error: MATRIX: Expression for ELSE IF must evaluate to
+scalar, not a 0×0 matrix.
+   24 | ELSE IF {}.
+      |         ^~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - unbounded LOOP])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+* Truly unbounded loop.
+COMPUTE x=0.
+COMPUTE y={}.
+LOOP.
+COMPUTE x=x+1.
+COMPUTE y={y, x}.
+END LOOP.
+PRINT x.
+PRINT y.
+
+* Unbounded loop terminates with BREAK.
+COMPUTE x=0.
+COMPUTE y={}.
+LOOP.
+COMPUTE x=x+1.
+COMPUTE y={y, x}.
+DO IF x >= 20.
+    BREAK.
+END IF.
+END LOOP.
+PRINT x.
+PRINT y.
+
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+x
+  40
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39
+40
+
+x
+  20
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - indexed or conditional LOOP])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+* Indexed loop terminates based on index.
+COMPUTE y={}.
+LOOP x=1 TO 20.
+COMPUTE y={y, x}.
+END LOOP.
+PRINT x.
+PRINT y.
+
+* Indexed loop terminates based on MXLOOPS.
+COMPUTE y={}.
+LOOP x=1 TO 50.
+COMPUTE y={y, x}.
+END LOOP.
+PRINT x.
+PRINT y.
+
+* Indexed loop terminates with BREAK.
+COMPUTE y={}.
+LOOP x=1 TO 50.
+COMPUTE y={y, x}.
+DO IF x >= 20.
+    BREAK.
+END IF.
+END LOOP.
+PRINT x.
+PRINT y.
+
+* Indexed loop terminates with top IF.
+COMPUTE y={}.
+LOOP x=1 TO 50 IF NCOL(y) < 15.
+COMPUTE y={y, x}.
+END LOOP.
+PRINT x.
+PRINT y.
+
+* Indexed loop terminates with bottom IF.
+COMPUTE y={}.
+LOOP x=1 TO 50.
+COMPUTE y={y, x}.
+END LOOP IF NCOL(y) >= 22.
+PRINT x.
+PRINT y.
+
+* Index behavior.
+COMPUTE indexing={
+    1, 10, 1;
+    1, 10, 2;
+    1, 10, 3;
+    1, 10, -1;
+    1, 10, 0;
+    10, 1, -1;
+    10, 1, -2;
+    10, 1, -3;
+    10, 1, 1;
+    10, 1, 0
+}.
+LOOP i=1 TO NROW(indexing).
+    COMPUTE y={}.
+    LOOP j=indexing(i, 1) TO indexing(i, 2) BY indexing(i, 3).
+        COMPUTE y={y, j}.
+    END LOOP.
+    PRINT {indexing(i, :), y}.
+END LOOP.
+
+LOOP i={} TO 5.
+END LOOP.
+
+LOOP i=5 TO {}.
+END LOOP.
+
+LOOP i=5 TO 8 BY {}.
+END LOOP.
+
+LOOP IF {}.
+END LOOP.
+
+LOOP.
+END LOOP IF {}.
+
+LOOP i=1e100 to 1e200.
+END LOOP.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+x
+  20
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20
+
+x
+  40
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39
+40
+
+x
+  20
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20
+
+x
+  16
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+
+x
+  22
+
+y
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+20  21  22
+
+{indexing(i, :), y}
+   1  10   1   1   2   3   4   5   6   7   8   9  10
+{indexing(i, :), y}
+   1  10   2   1   3   5   7   9
+{indexing(i, :), y}
+   1  10   3   1   4   7  10
+{indexing(i, :), y}
+   1  10  -1
+{indexing(i, :), y}
+   1  10   0
+{indexing(i, :), y}
+  10   1  -1  10   9   8   7   6   5   4   3   2   1
+{indexing(i, :), y}
+  10   1  -2  10   8   6   4   2
+{indexing(i, :), y}
+  10   1  -3  10   7   4   1
+{indexing(i, :), y}
+  10   1   1
+{indexing(i, :), y}
+  10   1   0
+
+matrix.sps:66.8-66.9: error: MATRIX: Expression for LOOP must evaluate to
+scalar, not a 0×0 matrix.
+   66 | LOOP i={} TO 5.
+      |        ^~
+
+matrix.sps:69.13-69.14: error: MATRIX: Expression for TO must evaluate to
+scalar, not a 0×0 matrix.
+   69 | LOOP i=5 TO {}.
+      |             ^~
+
+matrix.sps:72.18-72.19: error: MATRIX: Expression for BY must evaluate to
+scalar, not a 0×0 matrix.
+   72 | LOOP i=5 TO 8 BY {}.
+      |                  ^~
+
+matrix.sps:75.9-75.10: error: MATRIX: Expression for LOOP IF must evaluate to
+scalar, not a 0×0 matrix.
+   75 | LOOP IF {}.
+      |         ^~
+
+matrix.sps:79.13-79.14: error: MATRIX: Expression for END LOOP IF must evaluate
+to scalar, not a 0×0 matrix.
+   79 | END LOOP IF {}.
+      |             ^~
+
+matrix.sps:81.8-81.12: error: MATRIX: Expression for LOOP is outside the
+integer range.
+   81 | LOOP i=1e100 to 1e200.
+      |        ^~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - BREAK outside LOOP])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+BREAK.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2: error: BREAK: BREAK not inside LOOP.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - READ])
+AT_DATA([matrix.txt], [dnl
+9
+8
+7
+6
+1 2 3
+4 5 6
+7 8 9
+10 11 12,13
+14, 15 ,16 , 17
+18
+19
+20 21 22 23
+    12        34
+5    6
+    78        89
+10   11
+$1 $2 3
+4 $5 6
+$1   $2   $3   4
+   $5$6      $78
+1% 2% 3% 4
+  56%  7%8
+abcdefghijkl
+ABCDEFGHIJKL
+])
+AT_DATA([matrix2.txt], [dnl
+2, 3, 5, 7
+11, 13, 17, 19
+23, 29, 31, 37
+41, 43, 47, 53
+])
+AT_DATA([matrix3.txt], [dnl
+1 5
+3 1 2 3
+5 6 -1 2 5 1
+2 8 9
+3 1 3 2
+])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+READ x/FILE='matrix.txt'/SIZE=4/FIELD=1 TO 1.
+PRINT x.
+READ x/FILE='matrix.txt'/SIZE={3,3}/FIELD=1 TO 80.
+PRINT x.
+READ x/SIZE={2,4}/FIELD=1 TO 80.
+PRINT x.
+READ x(:,2)/FILE='matrix.txt'/FIELD=1 TO 80.
+PRINT x.
+READ x(1,:)/SIZE={1,4}/FIELD=1 TO 80.
+PRINT x.
+
+READ x/SIZE={2,6}/FIELD=1 TO 20 BY 5.
+PRINT x.
+READ x/SIZE={2,3}/FIELD=1 TO 20/FORMAT=DOLLAR.
+PRINT x.
+READ x/SIZE={2,4}/FIELD=1 TO 20/FORMAT=DOLLAR5.1.
+PRINT x.
+READ x/SIZE={2,4}/FIELD=1 TO 12/FORMAT='4PCT'.
+PRINT x.
+READ x/SIZE={2,4}/FIELD=1 TO 12/FORMAT='4A'.
+PRINT x/FORMAT=A3.
+
+COMPUTE y={}.
+LOOP IF NOT EOF('matrix2.txt').
+READ x/FILE='matrix2.txt'/SIZE={1,4}/FIELD=1 TO 80.
+COMPUTE y={y; x}.
+END LOOP.
+PRINT y.
+
+COMPUTE m = MAKE(5, 5, 0).
+LOOP i = 1 TO 5.
+READ count /FILE='matrix3.txt' /FIELD=1 TO 1 /SIZE=1.
+READ m(i, 1:count) /FIELD=3 TO 100 /REREAD.
+END LOOP.
+PRINT m.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [0], [dnl
+x
+  9
+  8
+  7
+  6
+
+x
+  1  2  3
+  4  5  6
+  7  8  9
+
+x
+  10  11  12  13
+  14  15  16  17
+
+x
+  10  18  12  13
+  14  19  16  17
+
+x
+  20  21  22  23
+  14  19  16  17
+
+x
+   1   2   3   4   5   6
+   7   8   8   9  10  11
+
+x
+  1  2  3
+  4  5  6
+
+x
+  1  2  3  4
+  5  6  7  8
+
+x
+  1  2  3  4
+  5  6  7  8
+
+x
+ abc def ghi jkl
+ ABC DEF GHI JKL
+
+y
+   2   3   5   7
+  11  13  17  19
+  23  29  31  37
+  41  43  47  53
+
+m
+  5  0  0  0  0
+  1  2  3  0  0
+  6 -1  2  5  1
+  8  9  0  0  0
+  1  3  2  0  0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - READ - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+READ !.
+READ x/FILE=!.
+READ x/ENCODING=!.
+READ x/FIELD=!.
+READ x/FIELD=1 !.
+READ x/FIELD=1 TO !.
+READ x/FIELD=1 TO 0.
+READ x/FIELD=1 TO 10 BY !.
+READ x/FIELD=1 TO 10 BY 6.
+READ x/SIZE=!.
+READ x/MODE=!.
+READ x/FORMAT=!.
+READ x/FORMAT=F8.2/FORMAT=F8.2.
+READ x/FORMAT='5XYZZY'.
+READ x/FORMAT=XYZZY.
+READ x/!.
+READ x.
+READ x/FIELD=1 TO 10.
+READ x/FIELD=1 TO 10/SIZE={1,2}.
+READ x/FIELD=1 TO 10/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='15F'.
+READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT=F5.
+READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='2F'.
+READ x/FIELD=1 TO 10/SIZE={1,2;3,4}/FILE='matrix.txt'.
+READ x/FIELD=1 TO 10/SIZE={1,2,3}/FILE='matrix.txt'.
+READ x/FIELD=1 TO 10/SIZE={-1}/FILE='matrix.txt'.
+COMPUTE x={1,2,3}.
+READ x(:,:)/FIELD=1 TO 10/SIZE={2,2}/FILE='matrix.txt'.
+READ x/FIELD=1 TO 10/SIZE={1,3}/FILE='matrix.txt'/MODE=SYMMETRIC.
+READ x/FIELD=1 TO 10/SIZE=2/FILE='matrix.txt'.
+END MATRIX.
+])
+AT_DATA([matrix.txt], [dnl
+xyzzy
+.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.6: error: READ: Syntax error at `!': expecting identifier.
+
+matrix.sps:3.13: error: READ: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:4.17: error: READ: Syntax error at `!': expecting string.
+
+matrix.sps:5.14: error: READ: Syntax error at `!': Expected positive integer
+for FIELD.
+
+matrix.sps:6.16: error: READ: Syntax error at `!': expecting `TO'.
+
+matrix.sps:7.19: error: READ: Syntax error at `!': Expected positive integer
+for TO.
+
+matrix.sps:8.19: error: READ: Syntax error at `0': Expected positive integer
+for TO.
+
+matrix.sps:9.25: error: READ: Syntax error at `!': Expected integer between 1
+and 10 for BY.
+
+matrix.sps:10: error: READ: BY 6 does not evenly divide record width 10.
+
+matrix.sps:11.13: error: READ: Syntax error at `!'.
+
+matrix.sps:12.13: error: READ: Syntax error at `!': expecting RECTANGULAR or
+SYMMETRIC.
+
+matrix.sps:13.15: error: READ: Syntax error at `!': expecting identifier.
+
+matrix.sps:14: error: READ: Subcommand FORMAT may only be specified once.
+
+matrix.sps:15.15-15.22: error: READ: Syntax error at `'5XYZZY'': Unknown format
+XYZZY.
+
+matrix.sps:16: error: READ: Unknown format type `XYZZY'.
+
+matrix.sps:17.8: error: READ: Syntax error at `!': expecting FILE, FIELD, MODE,
+REREAD, or FORMAT.
+
+matrix.sps:18: error: READ: Required subcommand FIELD was not specified.
+
+matrix.sps:19: error: READ: SIZE is required for reading data into a full
+matrix (as opposed to a submatrix).
+
+matrix.sps:20: error: READ: Required subcommand FILE was not specified.
+
+matrix.sps:21: error: READ: 15 repetitions cannot fit in record width 10.
+
+matrix.sps:22: error: READ: FORMAT specifies field width 5 but BY specifies 2.
+
+matrix.sps:23: error: READ: FORMAT specifies 2 repetitions with record width
+10, which implies field width 5, but BY specifies field width 2.
+
+matrix.sps:24.27-24.35: error: MATRIX: SIZE must evaluate to a scalar or a 2-
+element vector, not a 2×2 matrix.
+   24 | READ x/FIELD=1 TO 10/SIZE={1,2;3,4}/FILE='matrix.txt'.
+      |                           ^~~~~~~~~
+
+matrix.sps:25.27-25.33: error: MATRIX: SIZE must evaluate to a scalar or a 2-
+element vector, not a 1×3 matrix.
+   25 | READ x/FIELD=1 TO 10/SIZE={1,2,3}/FILE='matrix.txt'.
+      |                           ^~~~~~~
+
+matrix.sps:26.28-26.29: error: MATRIX: Matrix dimensions -1×1 specified on SIZE
+are outside valid range.
+   26 | READ x/FIELD=1 TO 10/SIZE={-1}/FILE='matrix.txt'.
+      |                            ^~
+
+matrix.sps:28: error: MATRIX: Dimensions specified on SIZE differ from
+dimensions of destination submatrix.
+
+matrix.sps:28.32-28.36: note: MATRIX: SIZE specifies dimensions 2×2.
+   28 | READ x(:,:)/FIELD=1 TO 10/SIZE={2,2}/FILE='matrix.txt'.
+      |                                ^~~~~
+
+matrix.sps:28.6-28.11: note: MATRIX: Destination submatrix has dimensions 1×3.
+   28 | READ x(:,:)/FIELD=1 TO 10/SIZE={2,2}/FILE='matrix.txt'.
+      |      ^~~~~~
+
+matrix.sps:29: error: MATRIX: Cannot read non-square 1×3 matrix using READ with
+MODE=SYMMETRIC.
+
+matrix.txt:1.1-1.5: warning: Error reading "xyzzy" as format F for matrix row
+1, column 1: Field contents are not numeric.
+
+matrix.txt:2.1: warning: Error reading "." as format F for matrix row 2, column
+1: Matrix data may not contain missing value.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - WRITE])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+WRITE {1.5, 2; 3, 4.12345}/OUTFILE='matrix.txt'/FIELD=1 TO 80.
+WRITE {1.5, 2; 3, 4.12345}/OUTFILE='matrix.txt'/FIELD=1 TO 5.
+WRITE {1, 2; 3, 4}/OUTFILE='matrix.txt'/FIELD=1 TO 80 BY 5.
+WRITE {1, 2; 3, 4}/OUTFILE='matrix.txt'/FIELD=1 TO 80/FORMAT=F8.2.
+WRITE {1, 2; 3, 4}/OUTFILE='matrix.txt'/FIELD=1 TO 80/FORMAT=E.
+WRITE {1, 2; 3, 4}/OUTFILE='matrix.txt'/FIELD=1 TO 10 BY 10/FORMAT=E.
+WRITE "abcdefhi"/OUTFILE='matrix.txt'/FIELD=1 TO 80/FORMAT=A8.
+WRITE "abcdefhi"/OUTFILE='matrix.txt'/FIELD=1 TO 80/FORMAT=A4.
+WRITE "abcdefhi"/OUTFILE='matrix.txt'/FIELD=1 TO 80/FORMAT=AHEX12.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps])
+AT_CHECK([cat matrix.txt], [0], [dnl
+ 1.5 2
+ 3 4.12345
+ 1.5 2
+ 3
+ 4.12345
+     1    2
+     3    4
+     1.00    2.00
+     3.00    4.00
+ 1 2
+ 3 4
+    1.E+000
+    2.E+000
+    3.E+000
+    4.E+000
+ abcdefhi
+ abcd
+ 616263646566
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - WRITE - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+WRITE !.
+WRITE 1/OUTFILE=!.
+WRITE 1/ENCODING=!.
+WRITE 1/FIELD=!.
+WRITE 1/FIELD=1 !.
+WRITE 1/FIELD=1 TO 0.
+WRITE 1/FIELD=1 TO 10 BY 20.
+WRITE 1/FIELD=1 TO 10 BY 6.
+WRITE 1/MODE=TRAPEZOIDAL.
+WRITE 1/FORMAT=F5/FORMAT=F5.
+WRITE 1/FORMAT='5ASDF'.
+WRITE 1/FORMAT=ASDF5.
+WRITE 1/!.
+WRITE 1.
+WRITE 1/FIELD=1 TO 10.
+WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT='15F'.
+WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT='5F'.
+WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT=E.
+WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT=A9.
+WRITE {1,2}/FIELD=1 TO 10/OUTFILE='matrix.txt'/MODE=TRIANGULAR.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.7: error: WRITE: Syntax error at `!'.
+
+matrix.sps:3.17: error: WRITE: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:4.18: error: WRITE: Syntax error at `!': expecting string.
+
+matrix.sps:5.15: error: WRITE: Syntax error at `!': Expected positive integer
+for FIELD.
+
+matrix.sps:6.17: error: WRITE: Syntax error at `!': expecting `TO'.
+
+matrix.sps:7.20: error: WRITE: Syntax error at `0': Expected positive integer
+for TO.
+
+matrix.sps:8.26-8.27: error: WRITE: Syntax error at `20': Expected integer
+between 1 and 10 for BY.
+
+matrix.sps:9: error: WRITE: BY 6 does not evenly divide record width 10.
+
+matrix.sps:10.14-10.24: error: WRITE: Syntax error at `TRAPEZOIDAL': expecting
+RECTANGULAR or TRIANGULAR.
+
+matrix.sps:11: error: WRITE: Subcommand FORMAT may only be specified once.
+
+matrix.sps:12.16-12.22: error: WRITE: Syntax error at `'5ASDF'': Unknown format
+ASDF.
+
+matrix.sps:13: error: WRITE: Unknown format type `ASDF'.
+
+matrix.sps:14.9: error: WRITE: Syntax error at `!': expecting OUTFILE, FIELD,
+MODE, HOLD, or FORMAT.
+
+matrix.sps:15: error: WRITE: Required subcommand FIELD was not specified.
+
+matrix.sps:16: error: WRITE: Required subcommand OUTFILE was not specified.
+
+matrix.sps:17: error: WRITE: 15 repetitions cannot fit in record width 10.
+
+matrix.sps:18: error: WRITE: FORMAT specifies 5 repetitions with record width
+10, which implies field width 2, but BY specifies field width 5.
+
+matrix.sps:19: error: WRITE: Output format E5.0 specifies width 5, but E
+requires a width between 6 and 40.
+
+matrix.sps:20: error: WRITE: Format A9 is too wide for 8-byte matrix eleemnts.
+
+matrix.sps:21.7-21.11: error: MATRIX: WRITE with MODE=TRIANGULAR requires a
+square matrix but the matrix to be written has dimensions 1×2.
+   21 | WRITE {1,2}/FIELD=1 TO 10/OUTFILE='matrix.txt'/MODE=TRIANGULAR.
+      |       ^~~~~
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - GET])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /a b c.
+MISSING VALUES a(1) b(5).
+BEGIN DATA.
+0 0 0
+1 2 3
+4 5 6
+7 8 .
+END DATA.
+
+MATRIX.
+GET x0 /NAMES=names0.
+PRINT x0.
+PRINT names0/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x1 /VARIABLES=a b c /NAMES=names1 /MISSING=OMIT.
+PRINT x1.
+PRINT names1/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x2 /VARIABLES=a b /NAMES=names2 /MISSING=OMIT.
+PRINT x2.
+PRINT names2/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x3 /FILE=* /VARIABLES=a b c /NAMES=names3 /MISSING=5.
+PRINT x3.
+PRINT names3/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x4 /FILE=* /VARIABLES=a b /NAMES=names4 /MISSING=5.
+PRINT x4.
+PRINT names4/FORMAT=A8.
+END MATRIX.
+
+SAVE OUTFILE='matrix.sav'.
+NEW FILE.
+
+MATRIX.
+GET x5 /FILE='matrix.sav' /VARIABLES=a b c /NAMES=names5 /MISSING=ACCEPT.
+PRINT x5.
+PRINT names5/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x6 /FILE='matrix.sav' /VARIABLES=a b c /NAMES=names6 /MISSING=ACCEPT /SYSMIS=9.
+PRINT x6.
+PRINT names6/FORMAT=A8.
+END MATRIX.
+
+MATRIX.
+GET x7 /FILE='matrix.sav' /VARIABLES=a b c /NAMES=names7 /MISSING=ACCEPT /SYSMIS=OMIT.
+PRINT x7.
+PRINT names7/FORMAT=A8.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:11: error: MATRIX: Variable a in case 2 has user-missing value 1.
+
+matrix.sps:12.7-12.8: error: MATRIX: Uninitialized variable x0 used in
+expression.
+   12 | PRINT x0.
+      |       ^~
+
+names0
+ a
+ b
+ c
+
+matrix.sps:17: error: MATRIX: Variable c in case 4 is system-missing.
+
+matrix.sps:18.7-18.8: error: MATRIX: Uninitialized variable x1 used in
+expression.
+   18 | PRINT x1.
+      |       ^~
+
+names1
+ a
+ b
+ c
+
+x2
+  0  0
+  7  8
+
+names2
+ a
+ b
+
+matrix.sps:29: error: MATRIX: Variable c in case 4 is system-missing.
+
+matrix.sps:30.7-30.8: error: MATRIX: Uninitialized variable x3 used in
+expression.
+   30 | PRINT x3.
+      |       ^~
+
+names3
+ a
+ b
+ c
+
+x4
+  0  0
+  5  2
+  4  5
+  7  8
+
+names4
+ a
+ b
+
+matrix.sps:44: error: MATRIX: Variable c in case 4 is system-missing.
+
+matrix.sps:45.7-45.8: error: MATRIX: Uninitialized variable x5 used in
+expression.
+   45 | PRINT x5.
+      |       ^~
+
+names5
+ a
+ b
+ c
+
+x6
+  0  0  0
+  1  2  3
+  4  5  6
+  7  8  9
+
+names6
+ a
+ b
+ c
+
+x7
+  0  0  0
+  1  2  3
+  4  5  6
+
+names7
+ a
+ b
+ c
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - GET - negative])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /a b c * d(a1).
+MISSING VALUES a(1) b(5).
+BEGIN DATA.
+0 0 0 a
+1 2 3 b
+4 5 6 b
+7 8 . d
+END DATA.
+SAVE OUTFILE='matrix.sav'.
+
+MATRIX.
+GET !.
+GET x/VARIABLES=!.
+GET x/FILE=!.
+GET x/ENCODING=!.
+GET x/NAMES=!.
+GET x/MISSING=!.
+GET x/SYSMIS=!.
+GET x/!.
+GET x/VARIABLES=!.
+GET x/VARIABLES=x TO !.
+GET x/VARIABLES=x.
+GET x/VARIABLES=c TO a.
+GET x/VARIABLES=d.
+GET x.
+END MATRIX.
+
+NEW FILE.
+MATRIX.
+GET x/VARIABLES=a.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:12.5: error: GET: Syntax error at `!': expecting identifier.
+
+matrix.sps:13.17: error: GET: Syntax error at `!': expecting variable name.
+
+matrix.sps:14.12: error: GET: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:15.16: error: GET: Syntax error at `!': expecting string.
+
+matrix.sps:16.13: error: GET: Syntax error at `!': expecting identifier.
+
+matrix.sps:17.15: error: GET: Syntax error at `!'.
+
+matrix.sps:18.14: error: GET: Syntax error at `!'.
+
+matrix.sps:19.7: error: GET: Syntax error at `!': expecting FILE, VARIABLES,
+NAMES, MISSING, or SYSMIS.
+
+matrix.sps:20.17: error: GET: Syntax error at `!': expecting variable name.
+
+matrix.sps:21.22: error: GET: Syntax error at `!': expecting variable name.
+
+matrix.sps:22: error: MATRIX: x is not a variable name.
+
+matrix.sps:23: error: MATRIX: c TO a is not valid syntax since c precedes a in
+the dictionary.
+
+matrix.sps:24: warning: MATRIX: d is not a numeric variable.
+
+matrix.sps:25: error: MATRIX: Variable d is not numeric.
+
+error: The GET command cannot read an empty active file.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - SAVE])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+SAVE {1,2,3; 4,5,6}/OUTFILE='matrix.sav'.
+SAVE {7,8,9}/VARIABLES=a b c d.
+
+SAVE {1,2,3}/OUTFILE='matrix2.sav'/VARIABLES=v01 TO v03.
+SAVE {4,5,6}/NAMES={'x', 'y', 'z', 'w'}.
+
+SAVE {1,'abcd',3}/OUTFILE='matrix3.sav'/NAMES={'a', 'b', 'c'}/STRINGS=b.
+SAVE {4,'xyzw',6}/STRINGS=a, b.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps])
+AT_CHECK([pspp-convert matrix.sav matrix.csv && cat matrix.csv], [0], [dnl
+COL1,COL2,COL3
+1,2,3
+4,5,6
+7,8,9
+])
+AT_CHECK([pspp-convert matrix2.sav matrix2.csv && cat matrix2.csv], [0], [dnl
+v01,v02,v03
+1,2,3
+4,5,6
+])
+AT_CHECK([pspp-convert matrix3.sav matrix3.csv && cat matrix3.csv], [0], [dnl
+a,b,c
+1,abcd,3
+4,xyzw,6
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - SAVE - inline])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+SAVE {1,2,3; 4,5,6}/OUTFILE=*.
+SAVE {7,8,9}/VARIABLES=a b c d.
+END MATRIX.
+LIST.
+
+MATRIX.
+SAVE {1,2,3}/OUTFILE=*/VARIABLES=v01 TO v03.
+SAVE {4,5,6}/NAMES={'x', 'y', 'z', 'w'}.
+END MATRIX.
+LIST.
+
+MATRIX.
+SAVE {1,'abcd',3}/OUTFILE=*/NAMES={'a', 'b', 'c'}/STRINGS=b.
+SAVE {4,'xyzw',6}/STRINGS=a, b.
+END MATRIX.
+LIST.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Data List
+COL1,COL2,COL3
+1.00,2.00,3.00
+4.00,5.00,6.00
+7.00,8.00,9.00
+
+Table: Data List
+v01,v02,v03
+1.00,2.00,3.00
+4.00,5.00,6.00
+
+Table: Data List
+a,b,c
+1.00,abcd,3.00
+4.00,xyzw,6.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - SAVE - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+SAVE !.
+SAVE 1/OUTFILE=!.
+SAVE 1/VARIABLES=!.
+SAVE 1/NAMES=!.
+SAVE 1/!.
+SAVE 1.
+SAVE 1/OUTFILE='matrix.sav'/NAMES={'a'}/VARIABLES=a.
+SAVE 1/OUTFILE='matrix2.sav'.
+SAVE {1,2}/OUTFILE='matrix2.sav'.
+SAVE {1,2}/OUTFILE='matrix3.sav'/NAMES={'a', 'a'}.
+SAVE {1,2}/OUTFILE='matrix4.sav'/STRINGS=a.
+SAVE {1,2}/OUTFILE='matrix5.sav'/STRINGS=a, b.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.6: error: SAVE: Syntax error at `!'.
+
+matrix.sps:3.16: error: SAVE: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:4.18: error: SAVE: Syntax error at `!': expecting variable name.
+
+matrix.sps:5.14: error: SAVE: Syntax error at `!'.
+
+matrix.sps:6.8: error: SAVE: Syntax error at `!': expecting OUTFILE, VARIABLES,
+NAMES, or STRINGS.
+
+matrix.sps:7: error: SAVE: Required subcommand OUTFILE was not specified.
+
+matrix.sps:8: warning: SAVE: VARIABLES and NAMES both specified; ignoring
+NAMES.
+
+matrix.sps:10: error: MATRIX: Cannot save 1×2 matrix to `matrix2.sav' because
+the first SAVE to `matrix2.sav' in this matrix program wrote a 1-column matrix.
+
+matrix.sps:9: error: MATRIX: This is the location of the first SAVE to
+`matrix2.sav'.
+
+error: Duplicate variable name a in SAVE statement.
+
+error: The SAVE command STRINGS subcommand specifies an unknown variable a.
+
+error: The SAVE command STRINGS subcommand specifies 2 unknown variables,
+including a.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET])
+AT_DATA([matrix.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ var01 TO var08.
+BEGIN DATA.
+MEAN  24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+SD     5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+N       92    92    92    92    92    92    92    92
+CORR  1.00
+CORR   .18  1.00
+CORR  -.22  -.17  1.00
+CORR   .36   .31  -.14  1.00
+CORR   .27   .16  -.12   .22  1.00
+CORR   .33   .15  -.17   .24   .21  1.00
+CORR   .50   .29  -.20   .32   .12   .38  1.00
+CORR   .17   .29  -.05   .20   .27   .20   .04  1.00
+END DATA.
+
+MATRIX.
+MGET.
+PRINT MN/FORMAT=F5.1.
+PRINT SD/FORMAT=F5.1.
+PRINT NC/FORMAT=F5.0.
+PRINT CR/FORMAT=F5.2.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Dimensions,
+,Rows,Columns
+MN,1,8
+SD,1,8
+NC,1,8
+CR,8,8
+
+MN
+24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+
+SD
+5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+
+NC
+92    92    92    92    92    92    92    92
+
+CR
+1.00   .18  -.22   .36   .27   .33   .50   .17
+.18  1.00  -.17   .31   .16   .15   .29   .29
+-.22  -.17  1.00  -.14  -.12  -.17  -.20  -.05
+.36   .31  -.14  1.00   .22   .24   .32   .20
+.27   .16  -.12   .22  1.00   .21   .12   .27
+.33   .15  -.17   .24   .21  1.00   .38   .20
+.50   .29  -.20   .32   .12   .38  1.00   .04
+.17   .29  -.05   .20   .27   .20   .04  1.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET with split variables])
+AT_DATA([matrix.sps], [dnl
+matrix data
+    variables = s1 s2 rowtype_  var01 var02 var03
+    /split=s1 s2.
+
+begin data
+8 0   mean     21.4  5.0  72.9
+8 0   sd       6.5   1.6  22.8
+8 0   n        106   106  106
+8 0   corr     1
+8 0   corr    .41  1
+8 0   corr    -.16  -.22  1
+8 1   mean     11.4  1.0  52.9
+8 1   sd       9.5   8.6  12.8
+8 1   n        10   11  12
+8 1   corr     1
+8 1   corr    .51  1
+8 1   corr    .36  -.41  1
+end data.
+
+MATRIX.
+MGET.
+PRINT MNS1/FORMAT=F5.1.
+PRINT SDS1/FORMAT=F5.1.
+PRINT NCS1/FORMAT=F5.0.
+PRINT CRS1/FORMAT=F5.2.
+PRINT MNS2/FORMAT=F5.1.
+PRINT SDS2/FORMAT=F5.1.
+PRINT NCS2/FORMAT=F5.0.
+PRINT CRS2/FORMAT=F5.2.
+END MATRIX.
+])
+AT_CHECK([pspp -O format=csv matrix.sps], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Split Values,,Dimensions,
+,s1,s2,Rows,Columns
+MNS1,8,0,1,3
+SDS1,8,0,1,3
+NCS1,8,0,1,3
+CRS1,8,0,3,3
+MNS2,8,1,1,3
+SDS2,8,1,1,3
+NCS2,8,1,1,3
+CRS2,8,1,3,3
+
+MNS1
+21.4   5.0  72.9
+
+SDS1
+6.5   1.6  22.8
+
+NCS1
+106   106   106
+
+CRS1
+1.00   .41  -.16
+.41  1.00  -.22
+-.16  -.22  1.00
+
+MNS2
+11.4   1.0  52.9
+
+SDS2
+9.5   8.6  12.8
+
+NCS2
+10    11    12
+
+CRS2
+1.00   .51   .36
+.51  1.00  -.41
+.36  -.41  1.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET with factor variables])
+AT_DATA([matrix.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ f1 var01 TO var04
+    /FACTOR=f1.
+BEGIN DATA.
+MEAN 0 34 35 36 37
+SD   0 22 11 55 66
+N    0 99 98 99 92
+MEAN 1 44 45 34 39
+SD   1 23 15 51 46
+N    1 98 34 87 23
+CORR .  1
+CORR . .9  1
+CORR . .8 .6  1
+CORR . .7 .5 .4  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+SAVE OUTFILE='matrix.sav'.
+])
+AT_DATA([matrix2.sps], [dnl
+MATRIX.
+MGET FILE='matrix.sav'.
+PRINT MNF1/FORMAT=F2.0.
+PRINT SDF1/FORMAT=F2.0.
+PRINT NCF1/FORMAT=F2.0.
+PRINT MNF2/FORMAT=F2.0.
+PRINT SDF2/FORMAT=F2.0.
+PRINT NCF2/FORMAT=F2.0.
+PRINT CR/FORMAT=F3.1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps])
+AT_CHECK([pspp -O format=csv matrix2.sps], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Factors,Dimensions,
+,f1,Rows,Columns
+MNF1,0,1,4
+SDF1,0,1,4
+NCF1,0,1,4
+MNF2,1,1,4
+SDF2,1,1,4
+NCF2,1,1,4
+CR,.,4,4
+
+MNF1
+34 35 36 37
+
+SDF1
+22 11 55 66
+
+NCF1
+99 98 99 92
+
+MNF2
+44 45 34 39
+
+SDF2
+23 15 51 46
+
+NCF2
+98 34 87 23
+
+CR
+1.0  .9  .8  .7
+.9 1.0  .6  .5
+.8  .6 1.0  .4
+.7  .5  .4 1.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET with factor and split variables])
+AT_DATA([matrix.sps], [dnl
+matrix data
+    variables = s f rowtype_  var01 var02 var03
+    /split=s
+    /factor=f.
+
+begin data
+8 0   mean     21.4  5.0  72.9
+8 0   sd       6.5   1.6  22.8
+8 0   n        106   106  106
+8 .   corr     1
+8 .   corr    .41  1
+8 .   corr    -.16  -.22  1
+9 1   mean     11.4  1.0  52.9
+9 1   sd       9.5   8.6  12.8
+9 1   n        10   11  12
+9 .   corr     1
+9 .   corr    .51  1
+9 .   corr    .36  -.41  1
+end data.
+
+MATRIX.
+MGET.
+PRINT MNF1S1/FORMAT=F5.1.
+PRINT SDF1S1/FORMAT=F5.1.
+PRINT NCF1S1/FORMAT=F5.0.
+PRINT CRS1/FORMAT=F5.2.
+PRINT MNF1S2/FORMAT=F5.1.
+PRINT SDF1S2/FORMAT=F5.1.
+PRINT NCF1S2/FORMAT=F5.0.
+PRINT CRS2/FORMAT=F5.2.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Split Values,Factors,Dimensions,
+,s,f,Rows,Columns
+MNF1S1,8,0,1,3
+SDF1S1,8,0,1,3
+NCF1S1,8,0,1,3
+CRS1,8,.,3,3
+MNF1S2,9,1,1,3
+SDF1S2,9,1,1,3
+NCF1S2,9,1,1,3
+CRS2,9,.,3,3
+
+MNF1S1
+21.4   5.0  72.9
+
+SDF1S1
+6.5   1.6  22.8
+
+NCF1S1
+106   106   106
+
+CRS1
+1.00   .41  -.16
+.41  1.00  -.22
+-.16  -.22  1.00
+
+MNF1S2
+11.4   1.0  52.9
+
+SDF1S2
+9.5   8.6  12.8
+
+NCF1S2
+10    11    12
+
+CRS2
+1.00   .51   .36
+.51  1.00  -.41
+.36  -.41  1.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET with TYPE])
+AT_DATA([matrix.sps], [dnl
+MATRIX DATA
+    VARIABLES=ROWTYPE_ f1 var01 TO var04
+    /FACTOR=f1.
+BEGIN DATA.
+MEAN 0 34 35 36 37
+SD   0 22 11 55 66
+N    0 99 98 99 92
+MEAN 1 44 45 34 39
+SD   1 23 15 51 46
+N    1 98 34 87 23
+CORR .  1
+CORR . .9  1
+CORR . .8 .6  1
+CORR . .7 .5 .4  1
+END DATA.
+FORMATS var01 TO var04(F5.1).
+SAVE OUTFILE='matrix.sav'.
+])
+AT_DATA([matrix2.sps], [dnl
+MATRIX.
+MGET/FILE='matrix.sav'/TYPE=CORR.
+PRINT CR/FORMAT=F3.1.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps])
+AT_CHECK([pspp -O format=csv matrix2.sps], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Factors,Dimensions,
+,f1,Rows,Columns
+CR,.,4,4
+
+CR
+1.0  .9  .8  .7
+.9 1.0  .6  .5
+.8  .6 1.0  .4
+.7  .5  .4 1.0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - negative - parsing])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MGET !.
+MGET FILE=!.
+MGET ENCODING=!.
+MGET TYPE=!.
+MGET TYPE=CORR !.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.6: error: MGET: Syntax error at `!': expecting FILE or TYPE.
+
+matrix.sps:3.11: error: MGET: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:4.15: error: MGET: Syntax error at `!': expecting string.
+
+matrix.sps:5.11: error: MGET: Syntax error at `!': expecting COV, CORR, MEAN,
+STDDEV, N, or COUNT.
+
+matrix.sps:6.16: error: MGET: Syntax error at `!': expecting COV, CORR, MEAN,
+STDDEV, N, or COUNT.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - missing VARNAME_ and ROWTYPE_])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /x.
+BEGIN DATA.
+1
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:7: error: MATRIX: Matrix data file lacks ROWTYPE_ variable.
+
+matrix.sps:7: error: MATRIX: Matrix data file lacks VARNAME_ variable.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - wrong format for VARNAME_ and ROWTYPE_])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /VARNAME_ * ROWTYPE_ (A7).
+BEGIN DATA.
+1 asdf
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:7: error: MATRIX: ROWTYPE_ variable in matrix data file must be 8-
+byte string, but it has width 7.
+
+matrix.sps:7: error: MATRIX: VARNAME_ variable in matrix data file must be 8-
+byte string, but it has width 0.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - wrong order for VARNAME_ and ROWTYPE_])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /VARNAME_ ROWTYPE_ (A8).
+BEGIN DATA.
+asdf jkl;
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:7: error: MATRIX: ROWTYPE_ must precede VARNAME_ in matrix data
+file.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - no continuous variables])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /ROWTYPE_ VARNAME_ (A8).
+BEGIN DATA.
+asdf jkl;
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:7: error: MATRIX: Matrix data file contains no continuous variables.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - unexpected string variables])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /ROWTYPE_ VARNAME_ cvar1 (A8).
+BEGIN DATA.
+asdf jkl; zxcv
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:7: error: MATRIX: Matrix data file contains unexpected string
+variable cvar1.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - unknown ROWTYPE_])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /ROWTYPE_ VARNAME_ (A8) cvar1.
+BEGIN DATA.
+asdf jkl; 1
+END DATA.
+
+MATRIX.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [1], [dnl
+"matrix.sps:7: error: MATRIX: Matrix data file contains unknown ROWTYPE_ ""asdf""."
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - duplicate matrix variable name])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /ROWTYPE_ VARNAME_ (A8) cvar1.
+BEGIN DATA.
+corr jkl; 1
+END DATA.
+
+MATRIX.
+MGET.
+MGET.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Matrix Variables Created by MGET
+,Dimensions,
+,Rows,Columns
+CR,1,1
+
+matrix.sps:8: warning: MATRIX: Matrix data file contains variable with existing name CR.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MGET - missing values in input])
+AT_DATA([matrix.sps], [dnl
+DATA LIST LIST NOTABLE /s1 * ROWTYPE_ VARNAME_ (A8) cvar1 cvar2.
+BEGIN DATA.
+1 n "" 1 .
+2 n "" . .
+END DATA.
+
+MATRIX.
+MGET.
+PRINT ncs1/FORMAT=F5.
+PRINT ncs2/FORMAT=F5.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [1], [dnl
+"matrix.sps:8: error: MATRIX: Matrix data file variable NCS1 contains a missing value, which was treated as zero."
+
+"matrix.sps:8: error: MATRIX: Matrix data file variable NCS2 contains 2 missing values, which were treated as zero."
+
+Table: Matrix Variables Created by MGET
+,Split Values,Dimensions,
+,s1,Rows,Columns
+NCS1,1.00,1,2
+NCS2,2.00,1,2
+
+ncs1
+1     0
+
+ncs2
+0     0
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSAVE])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/VARIABLES=X,Y/OUTFILE='matrix.sav'.
+MSAVE {5, 6; 7, 8; 9, 10}/TYPE=COV/VARIABLES=X,Y.
+MSAVE {11, 12}/TYPE=MEAN.
+MSAVE {13, 14}/TYPE=STDDEV.
+MSAVE {15, 16}/TYPE=N.
+MSAVE {17, 18}/TYPE=COUNT.
+END MATRIX.
+GET 'matrix.sav'.
+LIST.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,X,Y
+CORR,X,1.00,2.00
+CORR,Y,3.00,4.00
+COV,X,5.00,6.00
+COV,Y,7.00,8.00
+COV,,9.00,10.00
+MEAN,,11.00,12.00
+STDDEV,,13.00,14.00
+N,,15.00,16.00
+COUNT,,17.00,18.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSAVE with factor variables])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/FACTOR={1,1}/FNAMES=X,Y/OUTFILE='matrix.sav'.
+MSAVE {5, 6; 7, 8; 9, 10}/TYPE=COV.
+MSAVE {11, 12}/TYPE=MEAN.
+MSAVE {13, 14}/FACTOR={2,1}/TYPE=STDDEV.
+MSAVE {15, 16}/TYPE=N.
+MSAVE {17, 18}/FACTOR={1,2}/TYPE=COUNT.
+END MATRIX.
+GET 'matrix.sav'.
+LIST.
+
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/FACTOR={5,6,7,8}/OUTFILE='matrix2.sav'.
+END MATRIX.
+GET 'matrix2.sav'.
+LIST.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,X,Y,VARNAME_,COL1,COL2
+CORR,1.00,1.00,COL1,1.00,2.00
+CORR,1.00,1.00,COL2,3.00,4.00
+COV,1.00,1.00,COL1,5.00,6.00
+COV,1.00,1.00,COL2,7.00,8.00
+COV,1.00,1.00,,9.00,10.00
+MEAN,1.00,1.00,,11.00,12.00
+STDDEV,2.00,1.00,,13.00,14.00
+N,2.00,1.00,,15.00,16.00
+COUNT,1.00,2.00,,17.00,18.00
+
+Table: Data List
+ROWTYPE_,FAC1,FAC2,FAC3,FAC4,VARNAME_,COL1,COL2
+CORR,5.00,6.00,7.00,8.00,COL1,1.00,2.00
+CORR,5.00,6.00,7.00,8.00,COL2,3.00,4.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSAVE with split variables])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/SPLIT={1,1}/SNAMES=X,Y/OUTFILE='matrix.sav'.
+MSAVE {5, 6; 7, 8; 9, 10}/TYPE=COV.
+MSAVE {11, 12}/TYPE=MEAN.
+MSAVE {13, 14}/SPLIT={2,1}/TYPE=STDDEV.
+MSAVE {15, 16}/TYPE=N.
+MSAVE {17, 18}/SPLIT={1,2}/TYPE=COUNT.
+END MATRIX.
+GET 'matrix.sav'.
+LIST.
+
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/SPLIT={5,6,7,8}/OUTFILE='matrix2.sav'.
+END MATRIX.
+GET 'matrix2.sav'.
+LIST.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Data List
+X,Y,ROWTYPE_,VARNAME_,COL1,COL2
+1.00,1.00,CORR,COL1,1.00,2.00
+1.00,1.00,CORR,COL2,3.00,4.00
+1.00,1.00,COV,COL1,5.00,6.00
+1.00,1.00,COV,COL2,7.00,8.00
+1.00,1.00,COV,,9.00,10.00
+1.00,1.00,MEAN,,11.00,12.00
+2.00,1.00,STDDEV,,13.00,14.00
+2.00,1.00,N,,15.00,16.00
+1.00,2.00,COUNT,,17.00,18.00
+
+Table: Data List
+SPL1,SPL2,SPL3,SPL4,ROWTYPE_,VARNAME_,COL1,COL2
+5.00,6.00,7.00,8.00,CORR,COL1,1.00,2.00
+5.00,6.00,7.00,8.00,CORR,COL2,3.00,4.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSAVE with factor and split variables])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MSAVE {1, 2; 3, 4}/TYPE=CORR/SPLIT=1/FACTOR=1/OUTFILE='matrix.sav'.
+MSAVE {5, 6; 7, 8; 9, 10}/TYPE=COV.
+MSAVE {11, 12}/FACTOR=2/TYPE=MEAN.
+MSAVE {13, 14}/FACTOR=1/SPLIT=2/TYPE=STDDEV.
+MSAVE {15, 16}/TYPE=N.
+MSAVE {17, 18}/FACTOR=2/TYPE=COUNT.
+END MATRIX.
+GET 'matrix.sav'.
+LIST.
+])
+AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Data List
+SPL1,ROWTYPE_,FAC1,VARNAME_,COL1,COL2
+1.00,CORR,1.00,COL1,1.00,2.00
+1.00,CORR,1.00,COL2,3.00,4.00
+1.00,COV,1.00,COL1,5.00,6.00
+1.00,COV,1.00,COL2,7.00,8.00
+1.00,COV,1.00,,9.00,10.00
+1.00,MEAN,2.00,,11.00,12.00
+2.00,STDDEV,1.00,,13.00,14.00
+2.00,N,1.00,,15.00,16.00
+2.00,COUNT,2.00,,17.00,18.00
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - MSAVE - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+MSAVE !.
+MSAVE 1/TYPE=!.
+MSAVE 1/OUTFILE=!.
+MSAVE 1/VARIABLES=!.
+MSAVE 1/FNAMES=!.
+MSAVE 1/SNAMES=!.
+MSAVE 1/SPLIT=!.
+MSAVE 1/FACTOR=!.
+MSAVE 1/!.
+MSAVE 1.
+MSAVE 1/TYPE=COV/FNAMES=x.
+MSAVE 1/TYPE=COV/SNAMES=x.
+MSAVE 1/TYPE=COV.
+
+MSAVE 1/TYPE=COV/OUTFILE='matrix.sav'
+    /FACTOR=1 /FNAMES=y
+    /SPLIT=2 /SNAMES=z
+    /VARIABLES=w.
+MSAVE 1/TYPE=COV/OUTFILE='matrix2.sav'.
+MSAVE 1/TYPE=COV/VARIABLES=x.
+MSAVE 1/TYPE=COV/FNAMES=x.
+MSAVE 1/TYPE=COV/SNAMES=x.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/VARIABLES=x/OUTFILE='matrix3.sav'/FACTOR=1/SPLIT=2.
+MSAVE {1,2}/TYPE=COV/VARIABLES=x/OUTFILE='matrix3.sav'/FACTOR=1/SPLIT=2.
+MSAVE {1,2;3}/TYPE=COV.
+MSAVE 0/TYPE=COV/FACTOR={1,2}.
+MSAVE 0/TYPE=COV/FACTOR=1/SPLIT={1;2}.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/OUTFILE='matrix4.sav'/SNAMES=x,x/SPLIT=1.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/OUTFILE='matrix5.sav'/SNAMES=x/FNAMES=x/SPLIT=1/FACTOR=1.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/OUTFILE='matrix6.sav'/VARIABLES=x/FNAMES=x/FACTOR=1.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/OUTFILE='matrix6.sav'/VARIABLES=x/SNAMES=x/SPLIT=1.
+END MATRIX.
+
+MATRIX.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/SNAMES=VARNAME_.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/SNAMES=ROWTYPE_.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/FNAMES=VARNAME_.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/FNAMES=ROWTYPE_.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=VARNAME_.
+MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=ROWTYPE_.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.7: error: MSAVE: Syntax error at `!'.
+
+matrix.sps:3.14: error: MSAVE: Syntax error at `!': expecting COV, CORR, MEAN,
+STDDEV, N, or COUNT.
+
+matrix.sps:4.17: error: MSAVE: Syntax error at `!': expecting a file name or
+handle name.
+
+matrix.sps:5.19: error: MSAVE: Syntax error at `!': expecting variable name.
+
+matrix.sps:6.16: error: MSAVE: Syntax error at `!': expecting variable name.
+
+matrix.sps:7.16: error: MSAVE: Syntax error at `!': expecting variable name.
+
+matrix.sps:8.15: error: MSAVE: Syntax error at `!'.
+
+matrix.sps:9.16: error: MSAVE: Syntax error at `!'.
+
+matrix.sps:10.9: error: MSAVE: Syntax error at `!': expecting TYPE, OUTFILE,
+VARIABLES, FNAMES, SNAMES, SPLIT, or FACTOR.
+
+matrix.sps:11: error: MSAVE: Required subcommand TYPE was not specified.
+
+matrix.sps:12: error: MSAVE: FNAMES requires FACTOR.
+
+matrix.sps:13: error: MSAVE: SNAMES requires SPLIT.
+
+matrix.sps:14: error: MSAVE: Required subcommand OUTFILE was not specified.
+
+matrix.sps:20: error: MSAVE: OUTFILE must name the same file on each MSAVE
+within a single MATRIX command.
+
+matrix.sps:21: error: MSAVE: VARIABLES must specify the same variables each
+time within a given MATRIX.
+
+matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+
+matrix.sps:22: error: MSAVE: FNAMES must specify the same variables each time
+within a given MATRIX.
+
+matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+
+matrix.sps:23: error: MSAVE: SNAMES must specify the same variables each time
+within a given MATRIX.
+
+matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+
+matrix.sps:28.7-28.11: error: MATRIX: Matrix on MSAVE has 2 columns but there
+are 1 variables.
+   28 | MSAVE {1,2}/TYPE=COV/VARIABLES=x/OUTFILE='matrix3.sav'/FACTOR=1/
+SPLIT=2.
+      |       ^~~~~
+
+matrix.sps:29.7-29.13: error: MATRIX: This expression tries to vertically join
+matrices with differing numbers of columns.
+   29 | MSAVE {1,2;3}/TYPE=COV.
+      |       ^~~~~~~
+
+matrix.sps:29.8-29.10: note: MATRIX: This operand is a 1×2 matrix.
+   29 | MSAVE {1,2;3}/TYPE=COV.
+      |        ^~~
+
+matrix.sps:29.12: note: MATRIX: This operand is a 1×1 matrix.
+   29 | MSAVE {1,2;3}/TYPE=COV.
+      |            ^
+
+matrix.sps:30.25-30.29: error: MATRIX: There are 1 factor variables, but 2
+factor values were supplied.
+   30 | MSAVE 0/TYPE=COV/FACTOR={1,2}.
+      |                         ^~~~~
+
+matrix.sps:31.33-31.37: error: MATRIX: There are 1 split variables, but 2 split
+values were supplied.
+   31 | MSAVE 0/TYPE=COV/FACTOR=1/SPLIT={1;2}.
+      |                                 ^~~~~
+
+matrix.sps:35: error: MSAVE: Variable x appears twice in variable list.
+
+matrix.sps:39: error: MATRIX: Duplicate or invalid FACTOR variable name x.
+
+matrix.sps:43: error: MATRIX: Duplicate or invalid variable name x.
+
+matrix.sps:47: error: MATRIX: Duplicate or invalid variable name x.
+
+matrix.sps:51: error: MSAVE: Variable name VARNAME_ is reserved.
+
+matrix.sps:52: error: MSAVE: Variable name ROWTYPE_ is reserved.
+
+matrix.sps:53: error: MSAVE: Variable name VARNAME_ is reserved.
+
+matrix.sps:54: error: MSAVE: Variable name ROWTYPE_ is reserved.
+
+matrix.sps:55: error: MSAVE: Variable name VARNAME_ is reserved.
+
+matrix.sps:56: error: MSAVE: Variable name ROWTYPE_ is reserved.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - DISPLAY])
+AT_DATA([matrix-template.sps], [dnl
+MATRIX.
+COMPUTE a={1,2,3}.
+COMPUTE b={1;2;3}.
+COMPUTE c={T(b),a}.
+COMPUTE d={T(a),b}.
+command.
+END MATRIX.
+])
+for command in 'DISPLAY' 'DISPLAY DICTIONARY' 'DISPLAY STATUS'; do
+    sed "s/command/$command/" < matrix-template.sps > matrix.sps
+    AT_CHECK([pspp matrix.sps -O format=csv], [0], [dnl
+Table: Matrix Variables
+,Dimension,,Size (kB)
+,Rows,Columns,
+a,1,3,0
+b,3,1,0
+c,1,6,0
+d,3,2,0
+])
+done
+AT_CLEANUP
+
+AT_SETUP([MATRIX - DISPLAY - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+DISPLAY !.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.9: error: DISPLAY: Syntax error at `!': expecting DICTIONARY or
+STATUS.
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - RELEASE])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+COMPUTE x=1.
+PRINT x.
+RELEASE X.
+PRINT x.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+x
+  1
+
+matrix.sps:5.7: error: MATRIX: Uninitialized variable x used in expression.
+    5 | PRINT x.
+      |       ^
+])
+AT_CLEANUP
+
+AT_SETUP([MATRIX - RELEASE - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+RELEASE !.
+RELEASE x.
+COMPUTE x=1.
+RELEASE x, !.
+COMPUTE x=1.
+RELEASE x y.
+COMPUTE x=1.
+RELEASE x.
+RELEASE x.
+END MATRIX.
+])
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.9: error: RELEASE: Syntax error at `!': expecting end of command.
+
+matrix.sps:3.9: error: RELEASE: Syntax error at `x': Variable name expected.
+
+matrix.sps:5.12: error: RELEASE: Syntax error at `!': expecting end of command.
+
+matrix.sps:7.11: error: RELEASE: Syntax error at `y': expecting end of command.
+])
+AT_CLEANUP

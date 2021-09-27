@@ -399,6 +399,7 @@ TESTSUITE_AT = \
 	tests/language/stats/frequencies.at \
 	tests/language/stats/glm.at \
 	tests/language/stats/logistic.at \
+	tests/language/stats/matrix.at \
 	tests/language/stats/means.at \
 	tests/language/stats/npar.at \
 	tests/language/stats/oneway.at \
