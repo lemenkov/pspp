@@ -43,7 +43,6 @@ widget_printf (const gchar *fmt, ...)
   char_directives d;
   arguments a;
   GString *output;
-  GtkWidget **widgets;
   gchar *text;
   va_list ap;
   const char *s = fmt;
@@ -51,7 +50,7 @@ widget_printf (const gchar *fmt, ...)
   if (0 !=  printf_parse (fmt, &d, &a))
     return NULL;
 
-  widgets = xcalloc (d.count, sizeof (*widgets));
+  GtkWidget **widgets = XCALLOC (d.count, GtkWidget*);
   va_start (ap, fmt);
   for (i = 0 ; i < d.count ; ++i)
     {

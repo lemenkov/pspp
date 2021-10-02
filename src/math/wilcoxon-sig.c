@@ -93,7 +93,6 @@ count_sums_to_W (unsigned long int n, long int w)
      and using int will save some memory on 64-bit systems. */
   unsigned long int total;
   unsigned long int max;
-  int *array;
 
   assert (w >= 0);
   assert (n < CHAR_BIT * sizeof (unsigned long int));
@@ -106,7 +105,7 @@ count_sums_to_W (unsigned long int n, long int w)
   else if (n == 1)
     return 1;
 
-  array = xcalloc (w + 1, sizeof *array);
+  int *array = XCALLOC (w + 1, int);
   array[w] = 1;
 
   max = w;

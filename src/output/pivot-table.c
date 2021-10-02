@@ -968,7 +968,7 @@ clone_category (struct pivot_category *old,
     .extra_depth = old->extra_depth,
 
     .subs = (old->n_subs
-             ? xzalloc (old->n_subs * sizeof *new->subs)
+             ? xcalloc (old->n_subs, sizeof *new->subs)
              : NULL),
     .n_subs = old->n_subs,
     .allocated_subs = old->n_subs,
@@ -1006,9 +1006,9 @@ clone_dimension (struct pivot_dimension *old, struct pivot_table *new_pt)
     .axis_type = old->axis_type,
     .level = old->level,
     .top_index = old->top_index,
-    .data_leaves = xzalloc (old->n_leaves * sizeof *new->data_leaves),
-    .presentation_leaves = xzalloc (old->n_leaves
-                                    * sizeof *new->presentation_leaves),
+    .data_leaves = xcalloc (old->n_leaves , sizeof *new->data_leaves),
+    .presentation_leaves = xcalloc (old->n_leaves
+                                    , sizeof *new->presentation_leaves),
     .n_leaves = old->n_leaves,
     .allocated_leaves = old->n_leaves,
     .hide_all_labels = old->hide_all_labels,

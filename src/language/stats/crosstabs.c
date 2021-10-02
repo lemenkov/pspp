@@ -606,7 +606,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
 	}
     }
 
-  int *by_iter = xcalloc (n_by, sizeof *by_iter);
+  int *by_iter = XCALLOC (n_by, int);
   proc->pivots = xnrealloc (proc->pivots,
                             proc->n_pivots + nx, sizeof *proc->pivots);
   for (int i = 0; i < nx; i++)
@@ -912,7 +912,7 @@ postcalc (struct crosstabs_proc *proc)
       if (proc->barchart)
         {
           int n_vars = (xt->n_vars > 2 ? 2 : xt->n_vars);
-          const struct variable **vars = xcalloc (n_vars, sizeof *vars);
+          const struct variable **vars = XCALLOC (n_vars, const struct variable*);
           for (size_t i = 0; i < n_vars; i++)
             vars[i] = xt->vars[i].var;
           chart_submit (barchart_create (vars, n_vars, _("Count"),

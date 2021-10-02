@@ -631,7 +631,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 			      PV_NO_DUPLICATE))
     goto error;
 
-  frq.vars = xzalloc (frq.n_vars * sizeof (*frq.vars));
+  frq.vars = xcalloc (frq.n_vars, sizeof (*frq.vars));
   for (i = 0; i < frq.n_vars; ++i)
     {
       frq.vars[i].var = vars[i];

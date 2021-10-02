@@ -671,8 +671,7 @@ run_regression_get_models (const struct regression *cmd,
 			   bool output)
 {
   size_t i;
-  struct linreg **models = NULL;
-  struct model_container *model_container = xzalloc (sizeof (*model_container) * cmd->n_vars);
+  struct model_container *model_container = XCALLOC (cmd->n_vars, struct model_container);
 
   struct ccase *c;
   struct covariance *cov;
@@ -731,7 +730,7 @@ run_regression_get_models (const struct regression *cmd,
     casereader_destroy (r);
   }
 
-  models = xcalloc (cmd->n_dep_vars, sizeof (*models));
+  struct linreg **models = XCALLOC (cmd->n_dep_vars, struct linreg*);
 
   for (int k = 0; k < cmd->n_dep_vars; k++)
     {

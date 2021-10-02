@@ -539,9 +539,8 @@ render_page_allocate__ (const struct render_params *params,
 
   for (int i = 0; i < TABLE_N_AXES; i++)
     {
-      page->cp[i] = xmalloc ((2 * n[i] + 2) * sizeof *page->cp[i]);
-      page->join_crossing[i] = xzalloc ((n[i] + 1)
-                                        * sizeof *page->join_crossing[i]);
+      page->cp[i] = xcalloc ((2 * n[i] + 2) , sizeof *page->cp[i]);
+      page->join_crossing[i] = xcalloc ((n[i] + 1) , sizeof *page->join_crossing[i]);
     }
 
   hmap_init (&page->overflows);
@@ -732,7 +731,7 @@ render_page_create (const struct render_params *params, struct table *table,
      span multiple columns. */
   struct render_row *columns[2];
   for (int i = 0; i < 2; i++)
-    columns[i] = xzalloc (nc * sizeof *columns[i]);
+    columns[i] = xcalloc (nc , sizeof *columns[i]);
   for (int y = 0; y < nr; y++)
     for (int x = 0; x < nc;)
       {
@@ -816,7 +815,7 @@ render_page_create (const struct render_params *params, struct table *table,
     }
 
   /* Calculate heights of cells that do not span multiple rows. */
-  struct render_row *rows = xzalloc (nr * sizeof *rows);
+  struct render_row *rows = XCALLOC (nr, struct render_row);
   for (int y = 0; y < nr; y++)
     for (int x = 0; x < nc;)
       {

@@ -88,7 +88,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
       gchar *line_text = NULL;
       gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
 
-      gint *counts = xzalloc (sizeof *counts * SEPARATOR_CNT);
+      gint *counts = XCALLOC (SEPARATOR_CNT, gint);
 
       struct substring cs = ss_cstr (line_text);
       for (;

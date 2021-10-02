@@ -970,10 +970,8 @@ prepare_means (struct means *cmd)
         {
           struct workspace *ws = mt->ws + i;
 	  ws->root_cell = NULL;
-          ws->control_idx = xzalloc (mt->n_layers
-					 * sizeof *ws->control_idx);
-          ws->instances = xzalloc (mt->n_layers
-					 * sizeof *ws->instances);
+          ws->control_idx = xcalloc (mt->n_layers, sizeof *ws->control_idx);
+          ws->instances = xcalloc (mt->n_layers, sizeof *ws->instances);
           int cmb = i;
           for (int l = mt->n_layers - 1; l >= 0; --l)
             {
@@ -1149,9 +1147,9 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	for (int t = 0; t < means.n_tables; ++t)
 	{
 	  struct mtable *mt = means.table + t;
-	  mt->summ = xzalloc (mt->n_combinations * mt->n_dep_vars
-			      * sizeof (*mt->summ));
-	  mt->ws = xzalloc (mt->n_combinations * sizeof (*mt->ws));
+	  mt->summ = xcalloc (mt->n_combinations * mt->n_dep_vars,
+			      sizeof (*mt->summ));
+	  mt->ws = xcalloc (mt->n_combinations, sizeof (*mt->ws));
 	}
       	run_means (&means, group, ds);
 	for (int t = 0; t < means.n_tables; ++t)

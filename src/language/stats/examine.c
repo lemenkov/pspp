@@ -1197,13 +1197,12 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 
       {
 	const int n_os = 5 + examine->n_percentiles;
-	struct order_stats **os ;
 	es[v].percentiles = pool_calloc (examine->pool, examine->n_percentiles, sizeof (*es[v].percentiles));
 
 	es[v].trimmed_mean = trimmed_mean_create (es[v].cc, 0.05);
 	es[v].shapiro_wilk = NULL;
 
-	os = xcalloc (n_os, sizeof *os);
+	struct order_stats **os = XCALLOC (n_os, struct order_stats *);
 	os[0] = &es[v].trimmed_mean->parent;
 
 	es[v].quartiles[0] = percentile_create (0.25, es[v].cc);
@@ -1806,8 +1805,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   if (percentiles_seen && examine.n_percentiles == 0)
     {
       examine.n_percentiles = 7;
-      examine.ptiles = xcalloc (examine.n_percentiles,
-                                sizeof (*examine.ptiles));
+      examine.ptiles = xcalloc (examine.n_percentiles, sizeof (*examine.ptiles));
 
       examine.ptiles[0] = 5;
       examine.ptiles[1] = 10;

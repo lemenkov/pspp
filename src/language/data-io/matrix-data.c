@@ -940,7 +940,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
     .cells = -1,
   };
 
-  bool *taken_vars = xzalloc (n_input_vars);
+  bool *taken_vars = XCALLOC (n_input_vars, bool);
   if (input_rowtype)
     taken_vars[var_get_dict_index (rowtype)] = true;
 

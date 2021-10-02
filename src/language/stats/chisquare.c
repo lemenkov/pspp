@@ -141,8 +141,8 @@ chisquare_execute (const struct dataset *ds,
   struct one_sample_test *ost = &cst->parent;
   double total_expected = 0.0;
 
-  double *df = xzalloc (sizeof (*df) * ost->n_vars);
-  double *xsq = xzalloc (sizeof (*df) * ost->n_vars);
+  double *df = XCALLOC (ost->n_vars, double);
+  double *xsq = XCALLOC (ost->n_vars, double);
   bool ok;
 
   for (i = 0 ; i < cst->n_expected ; ++i)

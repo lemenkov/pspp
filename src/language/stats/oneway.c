@@ -709,8 +709,8 @@ run_oneway (const struct oneway_spec *cmd,
   struct oneway_workspace ws;
 
   ws.actual_number_of_groups = 0;
-  ws.vws = xzalloc (cmd->n_vars * sizeof (*ws.vws));
-  ws.dd_total = xmalloc (sizeof (struct descriptive_data) * cmd->n_vars);
+  ws.vws = xcalloc (cmd->n_vars, sizeof (*ws.vws));
+  ws.dd_total = XCALLOC (cmd->n_vars, struct descriptive_data*);
 
   for (v = 0 ; v < cmd->n_vars; ++v)
     ws.dd_total[v] = dd_create (cmd->vars[v]);

@@ -85,7 +85,7 @@ acc (struct statistic *s, const struct ccase *cx,
 
   /* y is an outlier */
 
-  struct outlier *o = xzalloc (sizeof *o) ;
+  struct outlier *o = XZALLOC (struct outlier);
   o->value = y;
   o->extreme = extreme;
   ds_init_empty (&o->label);

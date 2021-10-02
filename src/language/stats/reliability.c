@@ -170,13 +170,13 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
     /* Create a default Scale */
 
     reliability.n_sc = 1;
-    reliability.sc = xzalloc (sizeof (struct cronbach) * reliability.n_sc);
+    reliability.sc = xcalloc (reliability.n_sc, sizeof (struct cronbach));
 
     ds_assign_cstr (&reliability.scale_name, "ANY");
 
     c = &reliability.sc[0];
     c->n_items = reliability.n_variables;
-    c->items = xzalloc (sizeof (struct variable*) * c->n_items);
+    c->items = xcalloc (c->n_items, sizeof (struct variable*));
 
     for (i = 0 ; i < c->n_items ; ++i)
       c->items[i] = reliability.variables[i];
@@ -310,11 +310,8 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	(reliability.split_point == -1) ? s->n_items / 2 : reliability.split_point;
 
       reliability.sc[2].n_items = s->n_items - reliability.sc[1].n_items;
-      reliability.sc[1].items = xzalloc (sizeof (struct variable *)
-				 * reliability.sc[1].n_items);
-
-      reliability.sc[2].items = xzalloc (sizeof (struct variable *) *
-				 reliability.sc[2].n_items);
+      reliability.sc[1].items = XCALLOC (reliability.sc[1].n_items, const struct variable *);
+      reliability.sc[2].items = XCALLOC (reliability.sc[2].n_items, const struct variable *);
 
       for  (i = 0; i < reliability.sc[1].n_items ; ++i)
 	reliability.sc[1].items[i] = s->items[i];
@@ -344,7 +341,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	  struct cronbach *s = &reliability.sc[i + base_sc];
 
 	  s->n_items = reliability.sc[0].n_items - 1;
-	  s->items = xzalloc (sizeof (struct variable *) * s->n_items);
+	  s->items = xcalloc (s->n_items, sizeof (struct variable *));
 	  for (v_src = 0 ; v_src < reliability.sc[0].n_items ; ++v_src)
 	    {
 	      if (v_src != i)
@@ -391,7 +388,7 @@ run_reliability (struct dataset *ds, const struct reliability *reliability)
       struct cronbach *s = &reliability->sc[si];
       int i;
 
-      s->m = xzalloc (sizeof *s->m * s->n_items);
+      s->m = xcalloc (s->n_items, sizeof *s->m);
       s->total = moments1_create (MOMENT_VARIANCE);
 
       for (i = 0 ; i < s->n_items ; ++i)

@@ -240,7 +240,7 @@ parse_function (struct lexer *lexer, struct graph *graph)
       if (!lex_force_match (lexer, T_LPAREN))
 	goto error;
 
-      graph->dep_vars = xzalloc (sizeof (graph->dep_vars) * graph->n_dep_vars);
+      graph->dep_vars = xcalloc (graph->n_dep_vars, sizeof (graph->dep_vars));
       for (v = 0; v < ag_func[i].arity; ++v)
 	{
 	  graph->dep_vars[v] = parse_variable (lexer, graph->dict);

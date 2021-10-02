@@ -233,7 +233,7 @@ compose_headings (struct table *t,
      |aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3|
      +-----+-----+-----+-----+-----+-----+-----+-----+-----+
   */
-  bool *vrules = xzalloc (n_columns + 1);
+  bool *vrules = XCALLOC (n_columns + 1, bool);
   vrules[0] = vrules[n_columns] = true;
   for (int dim_index = h_axis->n_dimensions; --dim_index >= 0; )
     {
@@ -426,7 +426,7 @@ collect_footnotes (const struct pivot_table *pt,
       return NULL;
     }
 
-  bool *refs = xzalloc (pt->n_footnotes);
+  bool *refs = XCALLOC (pt->n_footnotes, bool);
   size_t n_refs = 0;
   add_references (pt, title, refs, &n_refs);
   add_references (pt, layers, refs, &n_refs);
