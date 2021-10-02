@@ -661,6 +661,7 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   rank.ties = TIES_MEAN;
   rank.fraction = FRAC_BLOM;
   rank.print = true;
+  rank.vars = NULL;
   rank.pool = pool_create ();
 
   string_set_init (&new_names);
