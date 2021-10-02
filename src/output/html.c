@@ -180,9 +180,7 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
              struct string_map *o)
 {
   struct output_driver *d;
-  struct html_driver *html;
-
-  html = xzalloc (sizeof *html);
+  struct html_driver *html = XZALLOC (struct html_driver);
   d = &html->driver;
   output_driver_init (&html->driver, &html_driver_class, fh_get_file_name (fh),
                       device_type);

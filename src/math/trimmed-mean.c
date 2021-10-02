@@ -52,7 +52,7 @@ destroy (struct statistic *s)
 struct trimmed_mean *
 trimmed_mean_create (double W, double tail)
 {
-  struct trimmed_mean *tm = xzalloc (sizeof (*tm));
+  struct trimmed_mean *tm = XZALLOC (struct trimmed_mean);
   struct order_stats *os = &tm->parent;
   struct statistic *stat = &os->parent;
 

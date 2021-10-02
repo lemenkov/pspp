@@ -74,7 +74,7 @@ struct tukey_hinges *
 tukey_hinges_create (double W, double c_min)
 {
   double d;
-  struct tukey_hinges *th = xzalloc (sizeof (*th));
+  struct tukey_hinges *th = XZALLOC (struct tukey_hinges);
   struct order_stats *os = &th->parent;
   struct statistic *stat = &os->parent;
 

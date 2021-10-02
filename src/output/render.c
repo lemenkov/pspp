@@ -1976,7 +1976,7 @@ static struct render_overflow *
 insert_overflow (struct render_page_selection *s,
                  const struct table_cell *cell)
 {
-  struct render_overflow *of = xzalloc (sizeof *of);
+  struct render_overflow *of = XZALLOC (struct render_overflow);
   cell_to_subpage (s, cell, of->d);
   hmap_insert (&s->subpage->overflows, &of->node,
                hash_cell (of->d[H], of->d[V]));

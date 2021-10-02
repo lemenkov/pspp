@@ -175,7 +175,6 @@ barchart_create (const struct variable **var, int n_vars,
 		 const char *ylabel, bool percent,
 		 struct freq *const *cats, int n_cats)
 {
-  struct barchart *bar;
   int i;
 
   const int pidx = 0;
@@ -186,7 +185,7 @@ barchart_create (const struct variable **var, int n_vars,
 
   assert (n_vars >= 1 && n_vars <= 2);
 
-  bar = xzalloc (sizeof *bar);
+  struct barchart *bar = XZALLOC (struct barchart);
   bar->percent = percent;
   bar->var = var;
   bar->n_vars = n_vars;
@@ -222,7 +221,7 @@ barchart_create (const struct variable **var, int n_vars,
 
 	  if (!flag)
 	    {
-	      struct category *s = xzalloc (sizeof *s);
+	      struct category *s = XZALLOC (struct category);
 	      s->idx = idx++;
 	      s->width = var_get_width (var[pidx]);
 	      value_init (&s->val, s->width);
@@ -260,7 +259,7 @@ barchart_create (const struct variable **var, int n_vars,
 
 	  if (!flag)
 	    {
-	      struct category *s = xzalloc (sizeof *s);
+	      struct category *s = XZALLOC (struct category);
 	      s->idx = idx++;
 	      s->width = var_get_width (var[sidx]);
 	      value_init (&s->val, s->width);

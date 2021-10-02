@@ -263,13 +263,11 @@ terminal_opts_init (struct argv_parser *ap,
                     enum segmenter_mode *syntax_mode, bool *process_statrc,
                     char **syntax_encoding)
 {
-  struct terminal_opts *to;
-
   *syntax_mode = SEG_MODE_AUTO;
   *process_statrc = true;
   *syntax_encoding = "Auto";
 
-  to = xzalloc (sizeof *to);
+  struct terminal_opts *to = XZALLOC (struct terminal_opts);
   to->syntax_mode = syntax_mode;
   string_map_init (&to->options);
   to->has_output_driver = false;

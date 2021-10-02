@@ -704,7 +704,7 @@ decode_label_frame (struct pivot_table *table,
 
   if (target)
     {
-      struct pivot_value *value = xzalloc (sizeof *value);
+      struct pivot_value *value = XZALLOC (struct pivot_value);
       value->type = PIVOT_VALUE_TEXT;
       for (size_t i = 0; i < lf->label->n_text; i++)
         {
@@ -784,7 +784,7 @@ decode_spvdx_source_variable (const struct spvxml_node *node,
                       "source %s variable %s.",
                       sv->node_.id, sv->source, sv->source_name);
 
-  struct spv_series *s = xzalloc (sizeof *s);
+  struct spv_series *s = XZALLOC (struct spv_series);
   s->name = xstrdup (node->id);
   s->xml = node;
   s->label = xstrdup_if_nonnull (sv->label);
@@ -869,7 +869,7 @@ decode_spvdx_derived_variable (const struct spvxml_node *node,
     return xasprintf ("Derived variable %s has unknown value \"%s\"",
                       node->id, dv->value);
 
-  struct spv_series *s = xzalloc (sizeof *s);
+  struct spv_series *s = XZALLOC (struct spv_series);
   s->format = F_8_0;
   s->name = xstrdup (node->id);
   s->values = values;
@@ -959,7 +959,7 @@ pivot_value_from_data_value (const struct spv_data_value *data,
   if (error)
     return error;
 
-  struct pivot_value *v = xzalloc (sizeof *v);
+  struct pivot_value *v = XZALLOC (struct pivot_value);
   if (data->width >= 0)
     {
       if (format && fmt_get_category (f.type) == FMT_CAT_DATE)
@@ -1144,7 +1144,7 @@ add_dimension (struct spv_series **series, size_t n,
   assert (n_cats > 0);
 
   /* Make the categories. */
-  struct pivot_dimension *d = xzalloc (sizeof *d);
+  struct pivot_dimension *d = XZALLOC (struct pivot_dimension);
   table->dimensions[table->n_dimensions++] = d;
 
   series[0]->n_index = max_cat + 1;
@@ -1155,7 +1155,7 @@ add_dimension (struct spv_series **series, size_t n,
     {
       struct spv_data_value *dv = &series[0]->values[cat_rows[k]];
       int dv_num = dv ? dv->d : dv->index;
-      struct pivot_category *cat = xzalloc (sizeof *cat);
+      struct pivot_category *cat = XZALLOC (struct pivot_category);
       char *retval = pivot_value_from_data_value (
         spv_map_lookup (&series[0]->map, dv), NULL, NULL, &cat->name);
       if (retval)

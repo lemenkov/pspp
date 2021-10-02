@@ -285,7 +285,6 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o UNUSED)
 {
   struct output_driver *d;
-  struct odt_driver *odt;
   struct zip_writer *zip;
   const char *file_name = fh_get_file_name (fh);
 
@@ -293,7 +292,7 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
   if (zip == NULL)
     return NULL;
 
-  odt = xzalloc (sizeof *odt);
+  struct odt_driver *odt = XZALLOC (struct odt_driver);
   d = &odt->driver;
 
   output_driver_init (d, &odt_driver_class, file_name, device_type);

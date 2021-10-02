@@ -323,7 +323,7 @@ struct categoricals *
 categoricals_create (struct interaction *const *inter, size_t n_inter,
                      const struct variable *wv, enum mv_class fctr_excl)
 {
-  struct categoricals *cat = xzalloc (sizeof *cat);
+  struct categoricals *cat = XZALLOC (struct categoricals);
   cat->iap = pool_calloc (cat->pool, n_inter, sizeof *cat->iap);
   cat->n_iap = n_inter;
   cat->wv = wv;

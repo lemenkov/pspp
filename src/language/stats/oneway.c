@@ -526,7 +526,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "CONTRAST"))
 	{
-	  struct contrasts_node *cl = xzalloc (sizeof *cl);
+	  struct contrasts_node *cl = XZALLOC (struct contrasts_node);
 
 	  struct ll_list *coefficient_list = &cl->coefficient_list;
           lex_match (lexer, T_EQUALS);

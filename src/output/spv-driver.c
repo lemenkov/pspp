@@ -52,9 +52,7 @@ spv_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o UNUSED)
 {
   struct output_driver *d;
-  struct spv_driver *spv;
-
-  spv = xzalloc (sizeof *spv);
+  struct spv_driver *spv = XZALLOC (struct spv_driver);
   d = &spv->driver;
   spv->handle = fh;
   output_driver_init (&spv->driver, &spv_driver_class, fh_get_file_name (fh),

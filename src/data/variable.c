@@ -128,12 +128,11 @@ static void var_set_name_quiet (struct variable *v, const char *name);
 struct variable *
 var_create (const char *name, int width)
 {
-  struct variable *v;
   enum val_type type;
 
   assert (width >= 0 && width <= MAX_STRING);
 
-  v = xzalloc (sizeof *v);
+  struct variable *v = XZALLOC (struct variable);
   var_set_name_quiet (v, name);
   v->width = width;
   mv_init (&v->miss, width);

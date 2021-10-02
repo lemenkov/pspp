@@ -120,7 +120,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
 
 	      if (cn == NULL)
 		{
-		  struct separator_count_node *new_cn = xzalloc (sizeof *new_cn);
+		  struct separator_count_node *new_cn = XZALLOC (struct separator_count_node);
 		  new_cn->occurance = counts[j];
 		  new_cn->quantity = 1;
 		  hmap_insert (&count_map[j], &new_cn->node, hash);

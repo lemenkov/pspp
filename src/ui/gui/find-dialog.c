@@ -597,7 +597,7 @@ regexp_destroy (struct comparator *cmptr)
 static struct comparator *
 numeric_comparator_create (const struct variable *var, const char *target)
 {
-  struct numeric_comparator *nc = xzalloc (sizeof (*nc));
+  struct numeric_comparator *nc = XZALLOC (struct numeric_comparator);
   struct comparator *cmptr = &nc->parent;
 
   cmptr->flags = 0;
@@ -617,7 +617,7 @@ static struct comparator *
 string_comparator_create (const struct variable *var, const char *target,
 			  enum string_cmp_flags flags)
 {
-  struct string_comparator *ssc = xzalloc (sizeof (*ssc));
+  struct string_comparator *ssc = XZALLOC (struct string_comparator);
   struct comparator *cmptr = &ssc->parent;
 
   cmptr->flags = flags;
@@ -639,7 +639,7 @@ regexp_comparator_create (const struct variable *var, const char *target,
 			  enum string_cmp_flags flags)
 {
   int code;
-  struct regexp_comparator *rec = xzalloc (sizeof (*rec));
+  struct regexp_comparator *rec = XZALLOC (struct regexp_comparator);
   struct comparator *cmptr = &rec->parent;
 
   cmptr->flags = flags;

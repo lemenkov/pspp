@@ -43,7 +43,7 @@ struct argv_parser
 struct argv_parser *
 argv_parser_create (void)
 {
-  struct argv_parser *ap = xzalloc (sizeof *ap);
+  struct argv_parser *ap = XZALLOC (struct argv_parser);
   return ap;
 }
 

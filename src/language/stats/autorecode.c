@@ -132,7 +132,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   bool print = false;
 
   /* Create procedure. */
-  struct autorecode_pgm *arc = xzalloc (sizeof *arc);
+  struct autorecode_pgm *arc = XZALLOC (struct autorecode_pgm);
   arc->blank_valid = true;
 
   /* Parse variable lists. */

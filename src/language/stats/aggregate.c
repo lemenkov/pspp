@@ -565,7 +565,7 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
          variables. */
       for (i = 0; i < n_dest; i++)
 	{
-	  struct agr_var *v = xzalloc (sizeof *v);
+	  struct agr_var *v = XZALLOC (struct agr_var);
 
 	  /* Add variable to chain. */
 	  if (agr->agr_vars != NULL)

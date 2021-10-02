@@ -77,10 +77,9 @@ csv_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o)
 {
   struct output_driver *d;
-  struct csv_driver *csv;
   char *quote;
 
-  csv = xzalloc (sizeof *csv);
+  struct csv_driver *csv = XZALLOC (struct csv_driver);
   d = &csv->driver;
   output_driver_init (&csv->driver, &csv_driver_class, fh_get_file_name (fh), device_type);
 

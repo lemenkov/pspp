@@ -291,7 +291,7 @@ decode_spvlb_value (const struct pivot_table *table,
 {
   *outp = NULL;
 
-  struct pivot_value *out = xzalloc (sizeof *out);
+  struct pivot_value *out = XZALLOC (struct pivot_value);
   const struct spvlb_value_mod *vm;
 
   char *error;
@@ -540,7 +540,7 @@ decode_spvlb_categories (const struct pivot_table *table,
       if (error)
         return error;
 
-      struct pivot_category *out = xzalloc (sizeof *out);
+      struct pivot_category *out = XZALLOC (struct pivot_category);
       out->name = name;
       out->parent = parent;
       out->dimension = dimension;
@@ -629,7 +629,7 @@ decode_spvlb_dimension (const struct pivot_table *table,
   if (error)
     return error;
 
-  struct pivot_dimension *out = xzalloc (sizeof *out);
+  struct pivot_dimension *out = XZALLOC (struct pivot_dimension);
   out->level = UINT_MAX;
   out->top_index = idx;
   out->hide_all_labels = in->props->hide_all_labels;
@@ -838,7 +838,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
                       in->header->version);
 
   char *error = NULL;
-  struct pivot_table *out = xzalloc (sizeof *out);
+  struct pivot_table *out = XZALLOC (struct pivot_table);
   out->ref_cnt = 1;
   hmap_init (&out->cells);
   out->look = pivot_table_look_new_builtin_default ();

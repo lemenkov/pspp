@@ -37,9 +37,7 @@ scatterplot_create (struct casereader *reader,
 		    const char *label,
 		    double xmin, double xmax, double ymin, double ymax)
 {
-  struct scatterplot_chart *spc;
-
-  spc = xzalloc (sizeof *spc);
+  struct scatterplot_chart *spc = XZALLOC (struct scatterplot_chart);
   chart_init (&spc->chart, &scatterplot_chart_class, label);
   spc->data = reader;
 

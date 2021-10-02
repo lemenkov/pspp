@@ -300,7 +300,7 @@ generate_cell (const struct means *means,
 	       const struct workspace *ws)
 {
   int n_vars = count_one_bits (not_wild);
-  struct cell *cell = xzalloc ((sizeof *cell));
+  struct cell *cell = XZALLOC (struct cell);
   cell->values = xcalloc (n_vars, sizeof *cell->values);
   cell->vars = xcalloc (n_vars, sizeof *cell->vars);
   cell->not_wild = not_wild;

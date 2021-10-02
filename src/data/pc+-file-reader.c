@@ -190,11 +190,10 @@ static bool parse_variable_records (struct pcp_reader *, struct dictionary *,
 static struct any_reader *
 pcp_open (struct file_handle *fh)
 {
-  struct pcp_reader *r;
   struct stat s;
 
   /* Create and initialize reader. */
-  r = xzalloc (sizeof *r);
+  struct pcp_reader *r = XZALLOC (struct pcp_reader);
   r->any_reader.klass = &pcp_file_reader_class;
   r->pool = pool_create ();
   pool_register (r->pool, free, r);

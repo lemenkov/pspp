@@ -61,7 +61,6 @@ acc (struct statistic *s, const struct ccase *cx,
 {
   struct box_whisker *bw = UP_CAST (s, struct box_whisker, parent.parent);
   bool extreme;
-  struct outlier *o;
 
   if (y > bw->hinges[2] + bw->step) /* Upper outlier */
     {
@@ -86,7 +85,7 @@ acc (struct statistic *s, const struct ccase *cx,
 
   /* y is an outlier */
 
-  o = xzalloc (sizeof *o) ;
+  struct outlier *o = xzalloc (sizeof *o) ;
   o->value = y;
   o->extreme = extreme;
   ds_init_empty (&o->label);
@@ -145,7 +144,7 @@ struct box_whisker *
 box_whisker_create (const struct tukey_hinges *th,
 		    size_t id_idx, const struct variable *id_var)
 {
-  struct box_whisker *w = xzalloc (sizeof (*w));
+  struct box_whisker *w = XZALLOC (struct box_whisker);
   struct order_stats *os = &w->parent;
   struct statistic *stat = &os->parent;
 

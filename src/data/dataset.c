@@ -143,9 +143,7 @@ dataset_create_finish__ (struct dataset *ds, struct session *session)
 struct dataset *
 dataset_create (struct session *session, const char *name)
 {
-  struct dataset *ds;
-
-  ds = xzalloc (sizeof *ds);
+  struct dataset *ds = XZALLOC (struct dataset);
   ds->name = xstrdup (name);
   ds->display = DATASET_FRONT;
   ds->dict = dict_create (get_default_encoding ());

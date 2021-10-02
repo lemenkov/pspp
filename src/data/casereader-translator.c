@@ -309,7 +309,7 @@ struct casereader *
 casereader_create_arithmetic_sequence (struct casereader *subreader,
                                        double first, double increment)
 {
-  struct arithmetic_sequence *as = xzalloc (sizeof *as);
+  struct arithmetic_sequence *as = XZALLOC (struct arithmetic_sequence);
   as->first = first;
   as->increment = increment;
   return casereader_create_append_numeric (subreader, next_arithmetic,

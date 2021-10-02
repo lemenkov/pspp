@@ -250,7 +250,7 @@ struct idata
 static struct idata *
 idata_alloc (size_t n_vars)
 {
-  struct idata *id = xzalloc (sizeof (*id));
+  struct idata *id = XZALLOC (struct idata);
 
   id->n_extractions = 0;
   id->msr = gsl_vector_alloc (n_vars);

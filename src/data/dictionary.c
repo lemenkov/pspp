@@ -250,7 +250,7 @@ dict_copy_callbacks (struct dictionary *dest,
 struct dictionary *
 dict_create (const char *encoding)
 {
-  struct dictionary *d = xzalloc (sizeof *d);
+  struct dictionary *d = XZALLOC (struct dictionary);
 
   d->encoding = xstrdup (encoding);
   d->names_must_be_ids = true;

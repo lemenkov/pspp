@@ -233,7 +233,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   casenumber n_cases = CASENUMBER_MAX;
   const char *encoding;
 
-  struct psql_reader *r = xzalloc (sizeof *r);
+  struct psql_reader *r = XZALLOC (struct psql_reader);
   struct string query ;
 
   r->conn = PQconnectdb (info->conninfo);

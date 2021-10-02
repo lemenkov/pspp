@@ -31,7 +31,7 @@
 struct chart *
 spreadlevel_plot_create (const char *label, double tx_pwr)
 {
-  struct spreadlevel_plot_chart *sl = xzalloc (sizeof *sl);
+  struct spreadlevel_plot_chart *sl = XZALLOC (struct spreadlevel_plot_chart);
   chart_init (&sl->chart, &spreadlevel_plot_chart_class, label);
 
   sl->x_lower = DBL_MAX;

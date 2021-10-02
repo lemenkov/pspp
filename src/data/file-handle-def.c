@@ -221,7 +221,7 @@ static struct file_handle *
 create_handle (const char *id, char *handle_name, enum fh_referent referent,
                const char *encoding)
 {
-  struct file_handle *handle = xzalloc (sizeof *handle);
+  struct file_handle *handle = XZALLOC (struct file_handle);
 
   handle->ref_cnt = 1;
   handle->id = xstrdup_if_nonnull (id);

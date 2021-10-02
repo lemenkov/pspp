@@ -187,7 +187,7 @@ static struct xr_driver *
 xr_allocate (const char *name, int device_type,
              enum xr_output_type output_type, struct string_map *o)
 {
-  struct xr_driver *xr = xzalloc (sizeof *xr);
+  struct xr_driver *xr = XZALLOC (struct xr_driver);
   struct output_driver *d = &xr->driver;
 
   output_driver_init (d, &cairo_driver_class, name, device_type);

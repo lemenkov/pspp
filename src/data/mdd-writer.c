@@ -448,7 +448,7 @@ bool
 mdd_write (struct file_handle *fh, struct dictionary *dict,
            const char *sav_name)
 {
-  struct mdd_writer *w = xzalloc (sizeof *w);
+  struct mdd_writer *w = XZALLOC (struct mdd_writer);
   size_t n_vars = dict_get_var_cnt (dict);
 
   /* Open file handle as an exclusive writer. */

@@ -91,7 +91,7 @@ put_strftime (const char *key, const char *format,
 void
 output_engine_push (void)
 {
-  struct output_engine *e = xzalloc (sizeof (*e));
+  struct output_engine *e = XZALLOC (struct output_engine);
 
   llx_init (&e->drivers);
 

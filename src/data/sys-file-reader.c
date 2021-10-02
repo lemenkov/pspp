@@ -391,10 +391,9 @@ static struct any_reader *
 sfm_open (struct file_handle *fh)
 {
   size_t allocated_mrsets = 0;
-  struct sfm_reader *r;
 
   /* Create and initialize reader. */
-  r = xzalloc (sizeof *r);
+  struct sfm_reader *r = XZALLOC (struct sfm_reader);
   r->any_reader.klass = &sys_file_reader_class;
   r->pool = pool_create ();
   pool_register (r->pool, free, r);

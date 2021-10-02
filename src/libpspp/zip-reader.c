@@ -378,7 +378,7 @@ zip_reader_create (const char *file_name, struct zip_reader **zrp)
       return NULL;
     }
 
-  struct zip_reader *zr = xzalloc (sizeof *zr);
+  struct zip_reader *zr = XZALLOC (struct zip_reader);
   zr->ref_cnt = 1;
   zr->file_name = xstrdup (file_name);
   zr->entries = xcalloc (n_members, sizeof *zr->entries);
@@ -668,7 +668,7 @@ static char *
 inflate_init (struct zip_member *zm)
 {
   int r;
-  struct inflator *inf = xzalloc (sizeof *inf);
+  struct inflator *inf = XZALLOC (struct inflator);
 
   uint16_t flg = 0 ;
   uint16_t cmf = 0x8; /* Always 8 for inflate */

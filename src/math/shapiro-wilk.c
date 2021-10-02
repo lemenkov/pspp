@@ -119,7 +119,7 @@ shapiro_wilk_create (int n, double mean)
   if (n < 3 || n > 5000)
     return NULL;
 
-  struct shapiro_wilk *sw = xzalloc (sizeof (*sw));
+  struct shapiro_wilk *sw = XZALLOC (struct shapiro_wilk);
   struct order_stats *os = &sw->parent;
   struct statistic *stat = &os->parent;
 

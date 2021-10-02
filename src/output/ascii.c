@@ -370,9 +370,7 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
 {
   enum { BOX_ASCII, BOX_UNICODE } box;
   struct output_driver *d;
-  struct ascii_driver *a;
-
-  a = xzalloc (sizeof *a);
+  struct ascii_driver *a = XZALLOC (struct ascii_driver);
   d = &a->driver;
   output_driver_init (&a->driver, &ascii_driver_class, fh_get_file_name (fh), device_type);
   a->append = parse_boolean (opt (d, o, "append", "false"));

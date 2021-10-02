@@ -31,12 +31,10 @@ static struct chart *
 make_np_plot (const struct np *np, const struct casereader *reader,
               const char *label, bool detrended)
 {
-  struct np_plot_chart *npp;
-
   if (np->n <= 1.0)
     return NULL;
 
-  npp = xzalloc (sizeof *npp);
+  struct np_plot_chart *npp = XZALLOC (struct np_plot_chart);
   chart_init (&npp->chart, &np_plot_chart_class, label);
   npp->data = casereader_clone (reader);
   npp->y_min = np->y_min;

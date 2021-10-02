@@ -134,7 +134,7 @@ median_execute (const struct dataset *ds,
 
       if (n_sample_test == false)
 	{
-	  struct val_node *vn = xzalloc (sizeof *vn);
+	  struct val_node *vn = XZALLOC (struct val_node);
 	  value_clone (&vn->val,  &nst->val1, var_get_width (nst->indep_var));
 	  hmap_insert (&map, &vn->node, value_hash (&nst->val1,
 					    var_get_width (nst->indep_var), 0));

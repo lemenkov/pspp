@@ -145,7 +145,7 @@ covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
 			 bool centered)
 {
   size_t i;
-  struct covariance *cov = xzalloc (sizeof *cov);
+  struct covariance *cov = XZALLOC (struct covariance);
 
   cov->centered = centered;
   cov->passes = 1;

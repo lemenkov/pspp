@@ -152,7 +152,7 @@ destroy (struct statistic *stat)
 struct percentile *
 percentile_create (double p, double W)
 {
-  struct percentile *ptl = xzalloc (sizeof (*ptl));
+  struct percentile *ptl = XZALLOC (struct percentile);
   struct order_stats *os = &ptl->parent;
   struct statistic *stat = &os->parent;
 

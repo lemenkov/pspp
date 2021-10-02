@@ -74,7 +74,7 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
 struct np *
 np_create (double n, double mean, double var)
 {
-  struct np *np = xzalloc (sizeof (*np));
+  struct np *np = XZALLOC (struct np);
   struct order_stats *os = &np->parent;
   struct statistic *stat = &os->parent;
   struct caseproto *proto;

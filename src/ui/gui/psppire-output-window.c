@@ -166,10 +166,9 @@ static struct output_driver_class psppire_output_class =
 void
 psppire_output_window_setup (void)
 {
-  struct psppire_output_driver *pod;
+  struct psppire_output_driver *pod = XZALLOC (struct psppire_output_driver);
   struct output_driver *d;
 
-  pod = xzalloc (sizeof *pod);
   d = &pod->driver;
   output_driver_init (d, &psppire_output_class, "PSPPIRE",
                       SETTINGS_DEVICE_UNFILTERED);

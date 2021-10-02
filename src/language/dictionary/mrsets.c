@@ -79,11 +79,10 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
              enum mrset_type type)
 {
   const char *subcommand_name = type == MRSET_MD ? "MDGROUP" : "MCGROUP";
-  struct mrset *mrset;
   bool labelsource_varlabel;
   bool has_value;
 
-  mrset = xzalloc (sizeof *mrset);
+  struct mrset *mrset = XZALLOC (struct mrset);
   mrset->type = type;
   mrset->cat_source = MRSET_VARLABELS;
 

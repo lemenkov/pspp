@@ -598,7 +598,7 @@ text_item_create_value (enum text_item_subtype subtype,
       ex->font_style->typeface = xstrdup ("Monospaced");
     }
 
-  struct output_item *item = xzalloc (sizeof *item);
+  struct output_item *item = XZALLOC (struct output_item);
   *item = (struct output_item) {
     OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_TEXT),
     .command_name = xstrdup_if_nonnull (output_get_command_name ()),

@@ -1079,7 +1079,7 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	   r->rsd.node_type == XML_READER_TYPE_TEXT)
 	{
 	  int col;
-	  struct xml_value *xmv = xzalloc (sizeof *xmv);
+	  struct xml_value *xmv = XZALLOC (struct xml_value);
 	  xmv->text = xmlTextReaderValue (r->rsd.xtr);
 	  xmv->value = val_string;
 	  val_string = NULL;
@@ -1163,7 +1163,7 @@ init_reader (struct ods_reader *r, bool report_errors,
 struct spreadsheet *
 ods_probe (const char *filename, bool report_errors)
 {
-  struct ods_reader *r = xzalloc (sizeof *r);
+  struct ods_reader *r = XZALLOC (struct ods_reader);
 
   struct zip_reader *zr;
   char *error = zip_reader_create (filename, &zr);

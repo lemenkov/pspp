@@ -118,7 +118,7 @@ find_group (const struct levene *nl, const union value *target)
 struct levene *
 levene_create (int indep_width, const union value *cutpoint)
 {
-  struct levene *nl = xzalloc (sizeof *nl);
+  struct levene *nl = XZALLOC (struct levene);
 
   hmap_init (&nl->hmap);
 
@@ -146,7 +146,7 @@ levene_pass_one (struct levene *nl, double value, double weight, const union val
 
   if (NULL == lev)
     {
-      struct lev *l = xzalloc (sizeof *l);
+      struct lev *l = XZALLOC (struct lev);
       value_clone (&l->group, gv, nl->gvw);
       hmap_insert (&nl->hmap, &l->node, nl->hash (nl, &l->group));
       lev = l;

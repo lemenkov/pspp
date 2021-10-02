@@ -189,12 +189,10 @@ static struct lex_reader_class terminal_reader_class =
 struct lex_reader *
 terminal_reader_create (void)
 {
-  struct terminal_reader *r;
-
   if (!n_terminal_readers++)
     readline_init ();
 
-  r = xzalloc (sizeof *r);
+  struct terminal_reader *r = XZALLOC (struct terminal_reader);
   r->reader.class = &terminal_reader_class;
   r->reader.syntax = SEG_MODE_INTERACTIVE;
   r->reader.error = LEX_ERROR_TERMINAL;

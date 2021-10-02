@@ -865,7 +865,7 @@ pivot_table_create (const char *title)
 struct pivot_table *
 pivot_table_create__ (struct pivot_value *title, const char *subtype)
 {
-  struct pivot_table *table = xzalloc (sizeof *table);
+  struct pivot_table *table = XZALLOC (struct pivot_table);
   table->ref_cnt = 1;
   table->show_title = true;
   table->show_caption = true;
@@ -2818,7 +2818,7 @@ struct pivot_value *
 pivot_value_new_value (const union value *value, int width,
                        const struct fmt_spec *format, const char *encoding)
 {
-  struct pivot_value *pv = xzalloc (sizeof *pv);
+  struct pivot_value *pv = XZALLOC (struct pivot_value);
   if (width > 0)
     {
       char *s = recode_string (UTF8, encoding, CHAR_CAST (char *, value->s),

@@ -200,7 +200,6 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
                  struct sfm_write_options opts)
 {
   struct encoding_info encoding_info;
-  struct sfm_writer *w;
   mode_t mode;
   int i;
 
@@ -213,7 +212,7 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
     }
 
   /* Create and initialize writer. */
-  w = xzalloc (sizeof *w);
+  struct sfm_writer *w = XZALLOC (struct sfm_writer);
   w->fh = fh_ref (fh);
   w->lock = NULL;
   w->file = NULL;

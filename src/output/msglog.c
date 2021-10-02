@@ -57,7 +57,6 @@ struct output_driver *
 msglog_create (const char *file_name)
 {
   enum settings_output_devices type;
-  struct msglog_driver *ml;
   FILE *file;
 
   struct file_handle *handle = fh_create_file  (NULL, file_name, NULL, fh_default_properties ());
@@ -73,7 +72,7 @@ msglog_create (const char *file_name)
           ? SETTINGS_DEVICE_TERMINAL
           : SETTINGS_DEVICE_UNFILTERED);
 
-  ml = xzalloc (sizeof *ml);
+  struct msglog_driver *ml = XZALLOC (struct msglog_driver);
   ml->handle = handle;
   output_driver_init (&ml->driver, &msglog_class, file_name, type);
   ml->file = file;
