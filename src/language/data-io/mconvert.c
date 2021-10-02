@@ -209,6 +209,7 @@ cmd_mconvert (struct lexer *lexer, struct dataset *ds)
         }
 
       case_unref (model);
+      matrix_material_uninit (&mm);
     }
 
   matrix_reader_destroy (mr);
