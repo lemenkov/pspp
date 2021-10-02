@@ -290,6 +290,7 @@ tokenize_string_segment__ (enum segment_type type,
   else
     {
       tokenize_error__ (token, error);
+      ss_dealloc (&out);
       return TOKENIZE_ERROR;
     }
 }
