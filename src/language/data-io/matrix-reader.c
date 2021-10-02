@@ -353,7 +353,10 @@ cmd_debug_matrix_read (struct lexer *lexer, struct dataset *ds)
         mem_writer_create (dict_get_proto (dataset_dict (ds))));
       struct matrix_reader *mr = matrix_reader_create (dataset_dict (ds), cr);
       if (!mr)
-        return CMD_FAILURE;
+        {
+          casereader_destroy (cr);
+          return CMD_FAILURE;
+        }
       matrix_reader_destroy (mr);
       return CMD_SUCCESS;
     }
