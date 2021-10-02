@@ -253,7 +253,7 @@ median_execute (const struct dataset *ds,
 	  }
 
 	results[v].n = count;
-	results[v].sorted_array = XCALLOC (hmap_count (&map), void*);
+	results[v].sorted_array = XCALLOC (hmap_count (&map), struct val_node *);
 	results[v].var = var;
 
 	HMAP_FOR_EACH (vn, struct val_node, node, &map)
