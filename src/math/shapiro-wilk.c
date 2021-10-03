@@ -26,7 +26,6 @@
 #include "libpspp/message.h"
 
 #include "gettext.h"
-#define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
 /* Return the sum of coeff[i] * x^i for all i in the range [0,order).

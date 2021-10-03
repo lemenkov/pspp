@@ -28,8 +28,6 @@
 
 #include "gl/xalloc.h"
 
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
 
 /* Calculates variance, skewness, and kurtosis into *VARIANCE,
    *SKEWNESS, and *KURTOSIS if they are non-null and not greater

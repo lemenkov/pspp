@@ -27,10 +27,6 @@
 
 #include "gl/xalloc.h"
 
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
-#define N_(msgid) msgid
-
 double
 percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
 {
