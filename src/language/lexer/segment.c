@@ -1042,7 +1042,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
           if (ofs < 0)
             return -1;
 
-          if (input[ofs - 1] == '\r' && input[ofs] == '\n')
+          if (ofs < n && input[ofs - 1] == '\r' && input[ofs] == '\n')
             {
               if (ofs == 1)
                 {

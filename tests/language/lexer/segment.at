@@ -1643,3 +1643,16 @@ end
 ])
 PSPP_CHECK_SEGMENT([-a])
 AT_CLEANUP
+
+# This checks for regression against bug #61253.  To see the read of
+# uninitialized data, run with valgrind.  The test will pass either
+# way.  (The bug report has a more complicated crashing case.)
+AT_SETUP([input ends in carriage return])
+printf '\r' > input
+AT_DATA([expout-base], [dnl
+separate_commands
+spaces          \r
+end
+])
+PSPP_CHECK_SEGMENT
+AT_CLEANUP
