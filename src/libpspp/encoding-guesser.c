@@ -190,27 +190,33 @@ is_utf8_bom (const uint8_t *data, size_t n)
 }
 
 static bool
+is_bom_length (size_t n, size_t w)
+{
+  return n >= ENCODING_GUESS_MIN || (n && n % w == 0);
+}
+
+static bool
 is_utf16le_bom (const uint8_t *data, size_t n)
 {
-  return (n >= ENCODING_GUESS_MIN || n % 2 == 0) && get_le16 (data) == 0xfeff;
+  return is_bom_length (n, 2) && get_le16 (data) == 0xfeff;
 }
 
 static bool
 is_utf16be_bom (const uint8_t *data, size_t n)
 {
-  return (n >= ENCODING_GUESS_MIN || n % 2 == 0) && get_be16 (data) == 0xfeff;
+  return is_bom_length (n, 2) && get_be16 (data) == 0xfeff;
 }
 
 static bool
 is_utf32le_bom (const uint8_t *data, size_t n)
 {
-  return (n >= ENCODING_GUESS_MIN || n % 4 == 0) && get_le32 (data) == 0xfeff;
+  return is_bom_length (n, 4) && get_le32 (data) == 0xfeff;
 }
 
 static bool
 is_utf32be_bom (const uint8_t *data, size_t n)
 {
-  return (n >= ENCODING_GUESS_MIN || n % 4 == 0) && get_be32 (data) == 0xfeff;
+  return is_bom_length (n, 4) && get_be32 (data) == 0xfeff;
 }
 
 /* Attempts to guess the encoding of a text file based on ENCODING, an encoding
