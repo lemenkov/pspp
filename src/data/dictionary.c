@@ -1471,12 +1471,15 @@ dict_get_documents (const struct dictionary *d)
 void
 dict_set_documents (struct dictionary *d, const struct string_array *new_docs)
 {
-  size_t i;
+  /* Swap out the old documents, instead of destroying them immediately, to
+     allow the new documents to include pointers into the old ones. */
+  struct string_array old_docs = STRING_ARRAY_INITIALIZER;
+  string_array_swap (&d->documents, &old_docs);
 
-  dict_clear_documents (d);
-
-  for (i = 0; i < new_docs->n; i++)
+  for (size_t i = 0; i < new_docs->n; i++)
     dict_add_document_line (d, new_docs->strings[i], false);
+
+  string_array_destroy (&old_docs);
 }
 
 /* Replaces the documents for D by UTF-8 encoded string NEW_DOCS, dividing it
