@@ -953,11 +953,22 @@ parse_primary (struct lexer *lexer, struct expression *e)
 
     case T_LPAREN:
       {
-        union any_node *node;
-	lex_get (lexer);
-	node = parse_or (lexer, e);
-	if (node != NULL && !lex_force_match (lexer, T_RPAREN))
+        /* Count number of left parentheses so that we can match them against
+           an equal number of right parentheses.  This defeats trivial attempts
+           to exhaust the stack with a lot of left parentheses.  (More
+           sophisticated attacks will still succeed.) */
+        size_t n = 0;
+        while (lex_match (lexer, T_LPAREN))
+          n++;
+
+        union any_node *node = parse_or (lexer, e);
+	if (!node)
           return NULL;
+
+        for (size_t i = 0; i < n; i++)
+          if (!lex_force_match (lexer, T_RPAREN))
+            return NULL;
+
         return node;
       }
 
