@@ -118,6 +118,11 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "RECORDS"))
 	{
+          if (data_parser_get_records (parser) > 0)
+            {
+              lex_sbc_only_once ("RECORDS");
+              goto error;
+            }
 	  lex_match (lexer, T_EQUALS);
 	  lex_match (lexer, T_LPAREN);
 	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
@@ -143,7 +148,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
             }
 	  if (end)
 	    {
-	      msg (SE, _("The %s subcommand may only be specified once."), "END");
+              lex_sbc_only_once ("END");
 	      goto error;
 	    }
 
