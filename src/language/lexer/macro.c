@@ -1836,6 +1836,7 @@ macro_expand_do (const struct macro_token *tokens, size_t n_tokens,
 
           macro_expand (p, do_end - p, &subme, exp);
         }
+      macro_tokens_uninit (&items);
       return do_end - tokens + 1;
     }
   else if (p < end && p->token.type == T_EQUALS)
