@@ -1135,7 +1135,10 @@ expand_macro_function (const struct macro_expander *me,
   struct string_array args = STRING_ARRAY_INITIALIZER;
   size_t n_consumed = parse_function_args (me, input, n_input, mf->name, &args);
   if (!n_consumed)
-    return 0;
+    {
+      string_array_destroy (&args);
+      return 0;
+    }
 
   if (args.n < mf->min_args || args.n > mf->max_args)
     {
@@ -1158,6 +1161,7 @@ expand_macro_function (const struct macro_expander *me,
                      mf->name);
       else
         NOT_REACHED ();
+      string_array_destroy (&args);
       return 0;
     }
 
