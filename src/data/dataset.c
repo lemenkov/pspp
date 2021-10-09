@@ -198,6 +198,7 @@ dataset_destroy (struct dataset *ds)
       dataset_set_session (ds, NULL);
       dataset_clear (ds);
       dict_unref (ds->dict);
+      dict_unref (ds->permanent_dict);
       caseinit_destroy (ds->caseinit);
       trns_chain_destroy (ds->permanent_trns_chain);
       dataset_transformations_changed__ (ds, false);
