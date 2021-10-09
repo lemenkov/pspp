@@ -1997,7 +1997,7 @@ lex_source_get_lookahead (struct lex_source *src)
             .macro_rep = macro ? first->macro_rep : NULL,
             .ofs = macro ? first->ofs : 0,
             .len = macro ? (last->ofs - first->ofs) + last->len : 0,
-            .ref_cnt = first->ref_cnt,
+            .ref_cnt = macro ? first->ref_cnt : NULL,
           };
           if (t->ref_cnt)
             ++*t->ref_cnt;
