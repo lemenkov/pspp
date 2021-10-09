@@ -1899,27 +1899,32 @@ lex_source_try_get_merge (const struct lex_source *src_)
                                           _("Macro Expansion")));
 
   /* Append the macro expansion tokens to the lookahead. */
-  char *macro_rep = ds_steal_cstr (&s);
-  size_t *ref_cnt = xmalloc (sizeof *ref_cnt);
-  *ref_cnt = expansion.n;
-  for (size_t i = 0; i < expansion.n; i++)
+  if (expansion.n > 0)
     {
-      struct lex_token *token = xmalloc (sizeof *token);
-      *token = (struct lex_token) {
-        .token = expansion.mts[i].token,
-        .token_pos = c0->token_pos,
-        .token_len = (c1->token_pos + c1->token_len) - c0->token_pos,
-        .line_pos = c0->line_pos,
-        .first_line = c0->first_line,
-        .macro_rep = macro_rep,
-        .ofs = ofs[i],
-        .len = len[i],
-        .ref_cnt = ref_cnt,
-      };
-      lex_stage_push_last (&src->merge, token);
+      char *macro_rep = ds_steal_cstr (&s);
+      size_t *ref_cnt = xmalloc (sizeof *ref_cnt);
+      *ref_cnt = expansion.n;
+      for (size_t i = 0; i < expansion.n; i++)
+        {
+          struct lex_token *token = xmalloc (sizeof *token);
+          *token = (struct lex_token) {
+            .token = expansion.mts[i].token,
+            .token_pos = c0->token_pos,
+            .token_len = (c1->token_pos + c1->token_len) - c0->token_pos,
+            .line_pos = c0->line_pos,
+            .first_line = c0->first_line,
+            .macro_rep = macro_rep,
+            .ofs = ofs[i],
+            .len = len[i],
+            .ref_cnt = ref_cnt,
+          };
+          lex_stage_push_last (&src->merge, token);
 
-      ss_dealloc (&expansion.mts[i].syntax);
+          ss_dealloc (&expansion.mts[i].syntax);
+        }
     }
+  else
+    ds_destroy (&s);
   free (expansion.mts);
   free (ofs);
   free (len);
