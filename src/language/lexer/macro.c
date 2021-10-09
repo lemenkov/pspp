@@ -707,7 +707,8 @@ mc_enclose (struct macro_call *mc, const struct macro_token *mt,
       mc->n_tokens++;
 
       struct macro_tokens **argp = &mc->args[p - mc->macro->params];
-      *argp = xzalloc (sizeof **argp);
+      if (!*argp)
+        *argp = xzalloc (sizeof **argp);
       mc->state = MC_ARG;
       return 0;
     }
