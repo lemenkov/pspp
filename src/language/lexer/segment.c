@@ -943,9 +943,9 @@ segmenter_parse_mid_command__ (struct segmenter *s,
       ofs = skip_spaces (input, n, eof, 1);
       if (ofs < 0)
         return -1;
-      else if (c_isdigit (input[ofs]))
+      else if (ofs < n && c_isdigit (input[ofs]))
         return segmenter_parse_number__ (s, input, n, eof, type, ofs);
-      else if (input[ofs] == '.')
+      else if (ofs < n && input[ofs] == '.')
         {
           if (ofs + 1 >= n)
             {
