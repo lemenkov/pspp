@@ -1224,7 +1224,7 @@ read_table (struct lexer *lexer)
   if (!displayed)
     pivot_table_submit (pt);
   else
-    pivot_table_unshare (pt);
+    pivot_table_unref (pt);
 
   force_match (lexer, T_ENDCMD);
 }
