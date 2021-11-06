@@ -339,14 +339,12 @@ fmt_default_for_width (int width)
 bool
 fmt_check (const struct fmt_spec *spec, enum fmt_use use)
 {
-  const char *io_fmt;
   char str[FMT_STRING_LEN_MAX + 1];
   int min_w, max_w, max_d;
 
   assert (is_fmt_type (spec->type));
   fmt_to_string (spec, str);
 
-  io_fmt = use == FMT_FOR_INPUT ? _("Input format") : _("Output format");
   if (use == FMT_FOR_INPUT && !fmt_usable_for_input (spec->type))
     {
       msg (SE, _("Format %s may not be used for input."), str);
@@ -356,8 +354,14 @@ fmt_check (const struct fmt_spec *spec, enum fmt_use use)
   if (spec->w % fmt_step_width (spec->type))
     {
       assert (fmt_step_width (spec->type) == 2);
-      msg (SE, _("%s specifies width %d, but %s requires an even width."),
-           str, spec->w, fmt_name (spec->type));
+      if (use == FMT_FOR_INPUT)
+        msg (SE, _("Input format %s specifies width %d, "
+                   "but %s requires an even width."),
+             str, spec->w, fmt_name (spec->type));
+      else
+        msg (SE, _("Output format %s specifies width %d, "
+                   "but %s requires an even width."),
+             str, spec->w, fmt_name (spec->type));
       return false;
     }
 
@@ -365,39 +369,80 @@ fmt_check (const struct fmt_spec *spec, enum fmt_use use)
   max_w = fmt_max_width (spec->type, use);
   if (spec->w < min_w || spec->w > max_w)
     {
-      msg (SE, _("%s %s specifies width %d, but "
-                 "%s requires a width between %d and %d."),
-           io_fmt, str, spec->w, fmt_name (spec->type), min_w, max_w);
+      if (use == FMT_FOR_INPUT)
+        msg (SE, _("Input format %s specifies width %d, but "
+                   "%s requires a width between %d and %d."),
+             str, spec->w, fmt_name (spec->type), min_w, max_w);
+      else
+        msg (SE, _("Output format %s specifies width %d, but "
+                   "%s requires a width between %d and %d."),
+             str, spec->w, fmt_name (spec->type), min_w, max_w);
       return false;
     }
 
   max_d = fmt_max_decimals (spec->type, spec->w, use);
   if (!fmt_takes_decimals (spec->type) && spec->d != 0)
     {
-      msg (SE, ngettext ("%s %s specifies %d decimal place, but "
-                         "%s does not allow any decimals.",
-                         "%s %s specifies %d decimal places, but "
-                         "%s does not allow any decimals.",
-                         spec->d),
-           io_fmt, str, spec->d, fmt_name (spec->type));
+      if (use == FMT_FOR_INPUT)
+        msg (SE, ngettext ("Input format %s specifies %d decimal place, but "
+                           "%s does not allow any decimals.",
+                           "Input format %s specifies %d decimal places, but "
+                           "%s does not allow any decimals.",
+                           spec->d),
+             str, spec->d, fmt_name (spec->type));
+      else
+        msg (SE, ngettext ("Output format %s specifies %d decimal place, but "
+                           "%s does not allow any decimals.",
+                           "Output format %s specifies %d decimal places, but "
+                           "%s does not allow any decimals.",
+                           spec->d),
+             str, spec->d, fmt_name (spec->type));
       return false;
     }
   else if (spec->d > max_d)
     {
       if (max_d > 0)
-        msg (SE, ngettext ("%s %s specifies %d decimal place, but "
-                           "the given width allows at most %d decimals.",
-                           "%s %s specifies %d decimal places, but "
-                           "the given width allows at most %d decimals.",
-                           spec->d),
-             io_fmt, str, spec->d, max_d);
+        {
+          if (use == FMT_FOR_INPUT)
+            msg (SE, ngettext ("Input format %s specifies %d decimal place, "
+                               "but the given width allows at most "
+                               "%d decimals.",
+                               "Input format %s specifies %d decimal places, "
+                               "but the given width allows at most "
+                               "%d decimals.",
+                               spec->d),
+                 str, spec->d, max_d);
+          else
+            msg (SE, ngettext ("Output format %s specifies %d decimal place, "
+                               "but the given width allows at most "
+                               "%d decimals.",
+                               "Output format %s specifies %d decimal places, "
+                               "but the given width allows at most "
+                               "%d decimals.",
+                               spec->d),
+                 str, spec->d, max_d);
+        }
       else
-        msg (SE, ngettext ("%s %s specifies %d decimal place, but "
-                           "the given width does not allow for any decimals.",
-                           "%s %s specifies %d decimal places, but "
-                           "the given width does not allow for any decimals.",
-                           spec->d),
-             io_fmt, str, spec->d);
+        {
+          if (use == FMT_FOR_INPUT)
+            msg (SE, ngettext ("Input format %s specifies %d decimal place, "
+                               "but the given width does not allow "
+                               "for any decimals.",
+                               "Input format %s specifies %d decimal places, "
+                               "but the given width does not allow "
+                               "for any decimals.",
+                               spec->d),
+                 str, spec->d);
+          else
+            msg (SE, ngettext ("Output format %s specifies %d decimal place, "
+                               "but the given width does not allow "
+                               "for any decimals.",
+                               "Output format %s specifies %d decimal places, "
+                               "but the given width does not allow "
+                               "for any decimals.",
+                               spec->d),
+                 str, spec->d);
+        }
       return false;
     }
 
