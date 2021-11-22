@@ -68,7 +68,6 @@ struct lex_token
        call. */
     size_t token_pos;           /* Offset into src->buffer of token start. */
     size_t token_len;           /* Length of source for token in bytes. */
-    size_t line_pos;            /* Start of line containing token_pos. */
     int first_line;             /* Line number at token_pos. */
 
     /* For a token obtained through macro expansion, this is just this token.
@@ -225,7 +224,6 @@ struct lex_source
     /* Offsets into 'buffer'. */
     size_t journal_pos;         /* First byte not yet output to journal. */
     size_t seg_pos;             /* First byte not yet scanned as token. */
-    size_t line_pos;            /* First byte of line containing seg_pos. */
 
     int n_newlines;             /* Number of new-lines up to seg_pos. */
     bool suppress_next_newline;
@@ -1216,25 +1214,25 @@ lex_token_get_last_line_number (const struct lex_source *src,
 }
 
 static int
+lex_token_get_column__ (const struct lex_source *src, size_t offset)
+{
+  const char *newline = memrchr (src->buffer, '\n', offset);
+  size_t line_ofs = newline ? newline - src->buffer + 1 : 0;
+  return utf8_count_columns (&src->buffer[line_ofs], offset - line_ofs) + 1;
+}
+
+static int
 lex_token_get_first_column (const struct lex_source *src,
                             const struct lex_token *token)
 {
-  return utf8_count_columns (&src->buffer[token->line_pos],
-                             token->token_pos - token->line_pos) + 1;
+  return lex_token_get_column__ (src, token->token_pos);
 }
 
 static int
 lex_token_get_last_column (const struct lex_source *src,
                            const struct lex_token *token)
 {
-  char *start, *end, *newline;
-
-  start = &src->buffer[token->line_pos];
-  end = &src->buffer[token->token_pos + token->token_len];
-  newline = memrchr (start, '\n', end - start);
-  if (newline != NULL)
-    start = newline + 1;
-  return utf8_count_columns (start, end - start) + 1;
+  return lex_token_get_column__ (src, token->token_pos + token->token_len);
 }
 
 static struct msg_location
@@ -1415,7 +1413,7 @@ lex_interactive_reset (struct lexer *lexer)
   if (src != NULL && src->reader->error == LEX_ERROR_TERMINAL)
     {
       src->length = 0;
-      src->journal_pos = src->seg_pos = src->line_pos = 0;
+      src->journal_pos = src->seg_pos = 0;
       src->n_newlines = 0;
       src->suppress_next_newline = false;
       src->segmenter = segmenter_init (segmenter_get_mode (&src->segmenter),
@@ -1674,7 +1672,6 @@ lex_source_try_get_pp (struct lex_source *src)
   token->token = (struct token) { .type = T_STOP };
   token->macro_rep = NULL;
   token->ref_cnt = NULL;
-  token->line_pos = src->line_pos;
   token->token_pos = src->seg_pos;
   if (src->reader->line_number > 0)
     token->first_line = src->reader->line_number + src->n_newlines;
@@ -1703,10 +1700,7 @@ lex_source_try_get_pp (struct lex_source *src)
   token->token_len = seg_len;
   src->seg_pos += seg_len;
   if (seg_type == SEG_NEWLINE)
-    {
-      src->line_pos = src->seg_pos;
-      src->n_newlines++;
-    }
+    src->n_newlines++;
 
   /* Get a token from the segment. */
   enum tokenize_result result = token_from_segment (
@@ -1733,9 +1727,9 @@ lex_source_try_get_pp (struct lex_source *src)
       /* Calculate line length, including \n or \r\n end-of-line if present.
 
          We use src->length even though that may be beyond what we've actually
-         converted to tokens (which is only through line_pos).  That's because,
-         if we're emitting the line due to SEG_END_COMMAND, we want to take the
-         whole line through the newline, not just through the '.'. */
+         converted to tokens.  That's because, if we're emitting the line due
+         to SEG_END_COMMAND, we want to take the whole line through the
+         newline, not just through the '.'. */
       size_t max_len = src->length - src->journal_pos;
       const char *newline = memchr (line, '\n', max_len);
       size_t line_len = newline ? newline - line + 1 : max_len;
@@ -1877,7 +1871,6 @@ lex_source_try_get_merge (const struct lex_source *src_)
             .token = expansion.mts[i].token,
             .token_pos = c0->token_pos,
             .token_len = (c1->token_pos + c1->token_len) - c0->token_pos,
-            .line_pos = c0->line_pos,
             .first_line = c0->first_line,
             .macro_rep = macro_rep,
             .ofs = ofs[i],
@@ -1954,7 +1947,6 @@ lex_source_get_lookahead (struct lex_source *src)
             .token = out,
             .token_pos = first->token_pos,
             .token_len = (last->token_pos - first->token_pos) + last->token_len,
-            .line_pos = first->line_pos,
             .first_line = first->first_line,
 
             /* This works well if all the tokens were not expanded from macros,
