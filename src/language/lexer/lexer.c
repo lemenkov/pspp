@@ -65,10 +65,8 @@ struct lex_token
        location of the token in terms of the lex_source's buffer.
 
        For a token produced through macro expansion, this is the entire macro
-       call.
-
-       src->tail <= line_pos <= token_pos <= src->head. */
-    size_t token_pos;           /* Start of token. */
+       call. */
+    size_t token_pos;           /* Offset into src->buffer of token start. */
     size_t token_len;           /* Length of source for token in bytes. */
     size_t line_pos;            /* Start of line containing token_pos. */
     int first_line;             /* Line number at token_pos. */
@@ -220,12 +218,11 @@ struct lex_source
     bool eof;                   /* True if T_STOP was read from 'reader'. */
 
     /* Buffer of UTF-8 bytes. */
-    char *buffer;
+    char *buffer;               /* Source file contents. */
+    size_t length;              /* Number of bytes filled. */
     size_t allocated;           /* Number of bytes allocated. */
-    size_t tail;                /* &buffer[0] offset into UTF-8 source. */
-    size_t head;                /* &buffer[head - tail] offset into source. */
 
-    /* Positions in source file, tail <= pos <= head for each member here. */
+    /* Offsets into 'buffer'. */
     size_t journal_pos;         /* First byte not yet output to journal. */
     size_t seg_pos;             /* First byte not yet scanned as token. */
     size_t line_pos;            /* First byte of line containing seg_pos. */
@@ -1213,7 +1210,7 @@ lex_token_get_last_line_number (const struct lex_source *src,
     return 0;
   else
     {
-      char *token_str = &src->buffer[token->token_pos - src->tail];
+      char *token_str = &src->buffer[token->token_pos];
       return token->first_line + count_newlines (token_str, token->token_len) + 1;
     }
 }
@@ -1222,7 +1219,7 @@ static int
 lex_token_get_first_column (const struct lex_source *src,
                             const struct lex_token *token)
 {
-  return utf8_count_columns (&src->buffer[token->line_pos - src->tail],
+  return utf8_count_columns (&src->buffer[token->line_pos],
                              token->token_pos - token->line_pos) + 1;
 }
 
@@ -1232,8 +1229,8 @@ lex_token_get_last_column (const struct lex_source *src,
 {
   char *start, *end, *newline;
 
-  start = &src->buffer[token->line_pos - src->tail];
-  end = &src->buffer[(token->token_pos + token->token_len) - src->tail];
+  start = &src->buffer[token->line_pos];
+  end = &src->buffer[token->token_pos + token->token_len];
   newline = memrchr (start, '\n', end - start);
   if (newline != NULL)
     start = newline + 1;
@@ -1417,7 +1414,7 @@ lex_interactive_reset (struct lexer *lexer)
   struct lex_source *src = lex_source__ (lexer);
   if (src != NULL && src->reader->error == LEX_ERROR_TERMINAL)
     {
-      src->head = src->tail = 0;
+      src->length = 0;
       src->journal_pos = src->seg_pos = src->line_pos = 0;
       src->n_newlines = 0;
       src->suppress_next_newline = false;
@@ -1458,50 +1455,11 @@ lex_discard_noninteractive (struct lexer *lexer)
     }
 }
 
-static size_t
-lex_source_max_tail__ (const struct lex_source *src_)
-{
-  struct lex_source *src = CONST_CAST (struct lex_source *, src_);
-
-  assert (src->seg_pos >= src->line_pos);
-  size_t max_tail = MIN (src->journal_pos, src->line_pos);
-
-  /* Use the oldest token also. */
-  struct lex_stage *stages[] = { &src->lookahead, &src->merge, &src->pp };
-  for (size_t i = 0; i < sizeof stages / sizeof *stages; i++)
-    if (!lex_stage_is_empty (stages[i]))
-      {
-        struct lex_token *first = lex_stage_first (stages[i]);
-        assert (first->token_pos >= first->line_pos);
-        return MIN (max_tail, first->line_pos);
-      }
-
-  return max_tail;
-}
-
 static void
 lex_source_expand__ (struct lex_source *src)
 {
-  if (src->head - src->tail >= src->allocated)
-    {
-      size_t max_tail = lex_source_max_tail__ (src);
-      if (max_tail > src->tail)
-        {
-          /* Advance the tail, freeing up room at the head. */
-          memmove (src->buffer, src->buffer + (max_tail - src->tail),
-                   src->head - max_tail);
-          src->tail = max_tail;
-        }
-      else
-        {
-          /* Buffer is completely full.  Expand it. */
-          src->buffer = x2realloc (src->buffer, &src->allocated);
-        }
-    }
-  else
-    {
-      /* There's space available at the head of the buffer.  Nothing to do. */
-    }
+  if (src->length >= src->allocated)
+    src->buffer = x2realloc (src->buffer, &src->allocated);
 }
 
 static void
@@ -1511,10 +1469,10 @@ lex_source_read__ (struct lex_source *src)
     {
       lex_source_expand__ (src);
 
-      size_t head_ofs = src->head - src->tail;
-      size_t space = src->allocated - head_ofs;
+      size_t space = src->allocated - src->length;
       enum prompt_style prompt = segmenter_get_prompt (&src->segmenter);
-      size_t n = src->reader->class->read (src->reader, &src->buffer[head_ofs],
+      size_t n = src->reader->class->read (src->reader,
+                                           &src->buffer[src->length],
                                            space, prompt);
       assert (n <= space);
 
@@ -1522,14 +1480,13 @@ lex_source_read__ (struct lex_source *src)
         {
           /* End of input. */
           src->reader->eof = true;
-          lex_source_expand__ (src);
           return;
         }
 
-      src->head += n;
+      src->length += n;
     }
-  while (!memchr (&src->buffer[src->seg_pos - src->tail], '\n',
-                  src->head - src->seg_pos));
+  while (!memchr (&src->buffer[src->seg_pos], '\n',
+                  src->length - src->seg_pos));
 }
 
 static struct lex_source *
@@ -1573,8 +1530,7 @@ lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
         {
           size_t start = first->token_pos;
           size_t end = last->token_pos + last->token_len;
-          ds_put_substring (&s, ss_buffer (&src->buffer[start - src->tail],
-                                           end - start));
+          ds_put_substring (&s, ss_buffer (&src->buffer[start], end - start));
         }
       else
         {
@@ -1618,7 +1574,7 @@ lex_source_get_macro_call (struct lex_source *src, int n0, int n1)
   size_t start = token0->token_pos;
   size_t end = token1->token_pos + token1->token_len;
 
-  return ss_buffer (&src->buffer[start - src->tail], end - start);
+  return ss_buffer (&src->buffer[start], end - start);
 }
 
 static void
@@ -1688,8 +1644,7 @@ static void
 lex_get_error (struct lex_source *src, const struct lex_token *token)
 {
   char syntax[64];
-  str_ellipsize (ss_buffer (&src->buffer[token->token_pos - src->tail],
-                            token->token_len),
+  str_ellipsize (ss_buffer (&src->buffer[token->token_pos], token->token_len),
                  syntax, sizeof syntax);
 
   struct string s = DS_EMPTY_INITIALIZER;
@@ -1732,9 +1687,9 @@ lex_source_try_get_pp (struct lex_source *src)
   int seg_len;
   for (;;)
     {
-      segment = &src->buffer[src->seg_pos - src->tail];
+      segment = &src->buffer[src->seg_pos];
       seg_len = segmenter_push (&src->segmenter, segment,
-                                src->head - src->seg_pos,
+                                src->length - src->seg_pos,
                                 src->reader->eof, &seg_type);
       if (seg_len >= 0)
         break;
@@ -1773,15 +1728,15 @@ lex_source_try_get_pp (struct lex_source *src)
   for (int i = 0; i < n_lines; i++)
     {
       /* Beginning of line. */
-      const char *line = &src->buffer[src->journal_pos - src->tail];
+      const char *line = &src->buffer[src->journal_pos];
 
       /* Calculate line length, including \n or \r\n end-of-line if present.
 
-         We use src->head even though that may be beyond what we've actually
+         We use src->length even though that may be beyond what we've actually
          converted to tokens (which is only through line_pos).  That's because,
          if we're emitting the line due to SEG_END_COMMAND, we want to take the
          whole line through the newline, not just through the '.'. */
-      size_t max_len = src->head - src->journal_pos;
+      size_t max_len = src->length - src->journal_pos;
       const char *newline = memchr (line, '\n', max_len);
       size_t line_len = newline ? newline - line + 1 : max_len;
 
@@ -1873,7 +1828,7 @@ lex_source_try_get_merge (const struct lex_source *src_)
       size_t end = t->token_pos + t->token_len;
       const struct macro_token mt = {
         .token = t->token,
-        .syntax = ss_buffer (&src->buffer[start - src->tail], end - start),
+        .syntax = ss_buffer (&src->buffer[start], end - start),
       };
       const struct msg_location loc = lex_token_location (src, t, t);
       n_call = macro_call_add (mc, &mt, &loc);
