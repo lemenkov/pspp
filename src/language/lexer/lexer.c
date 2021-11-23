@@ -110,7 +110,6 @@ static void lex_stage_uninit (struct lex_stage *);
 static size_t lex_stage_count (const struct lex_stage *);
 static bool lex_stage_is_empty (const struct lex_stage *);
 
-static struct lex_token *lex_stage_last (struct lex_stage *);
 static struct lex_token *lex_stage_first (struct lex_stage *);
 static struct lex_token *lex_stage_nth (struct lex_stage *, size_t ofs);
 
@@ -150,14 +149,6 @@ lex_stage_count (const struct lex_stage *stage)
   return deque_count (&stage->deque);
 }
 
-/* Returns the last token in STAGE, which must be nonempty.  The last token is
-   the one accessed with the greatest lookahead. */
-static struct lex_token *
-lex_stage_last (struct lex_stage *stage)
-{
-  return stage->tokens[deque_front (&stage->deque, 0)];
-}
-
 /* Returns the first token in STAGE, which must be nonempty.
    The first token is the one accessed with the least lookahead. */
 static struct lex_token *
@@ -185,11 +176,18 @@ lex_stage_push_last (struct lex_stage *stage, struct lex_token *token)
   stage->tokens[deque_push_front (&stage->deque)] = token;
 }
 
+/* Removes and returns the first token from STAGE. */
+static struct lex_token *
+lex_stage_take_first (struct lex_stage *stage)
+{
+  return stage->tokens[deque_pop_back (&stage->deque)];
+}
+
 /* Removes the first token from STAGE and uninitializes it. */
 static void
 lex_stage_pop_first (struct lex_stage *stage)
 {
-  lex_token_destroy (stage->tokens[deque_pop_back (&stage->deque)]);
+  lex_token_destroy (lex_stage_take_first (stage));
 }
 
 /* Removes the first N tokens from SRC, appending them to DST as the last
@@ -198,10 +196,7 @@ static void
 lex_stage_shift (struct lex_stage *dst, struct lex_stage *src, size_t n)
 {
   for (size_t i = 0; i < n; i++)
-    {
-      lex_stage_push_last (dst, lex_stage_first (src));
-      deque_pop_back (&src->deque);
-    }
+    lex_stage_push_last (dst, lex_stage_take_first (src));
 }
 
 /* A source of tokens, corresponding to a syntax file.
@@ -240,12 +235,17 @@ struct lex_source
          in 'merge'.
 
        - merge: Tokens that need to pass through scan_merge() to end up in
-         'lookahead'.
+         'parse'.
 
-       - lookahead: Tokens available to the client for parsing. */
+       - parse: Tokens available to the client for parsing.
+
+      'pp' and 'merge' store tokens only temporarily until they pass into
+      'parse'.  Tokens then live in 'parse' until the command is fully
+      consumed, at which time they are freed together. */
     struct lex_stage pp;
     struct lex_stage merge;
-    struct lex_stage lookahead;
+    struct lex_token **parse;
+    size_t n_parse, allocated_parse, parse_ofs;
   };
 
 static struct lex_source *lex_source_create (struct lexer *,
@@ -264,8 +264,10 @@ static char *lex_source_get_syntax__ (const struct lex_source *,
                                       int n0, int n1);
 static const struct lex_token *lex_next__ (const struct lexer *, int n);
 static void lex_source_push_endcmd__ (struct lex_source *);
+static void lex_source_push_parse (struct lex_source *, struct lex_token *);
+static void lex_source_clear_parse (struct lex_source *);
 
-static bool lex_source_get_lookahead (struct lex_source *);
+static bool lex_source_get_parse (struct lex_source *);
 static void lex_source_error_valist (struct lex_source *, int n0, int n1,
                                      const char *format, va_list)
    PRINTF_FORMAT (4, 0);
@@ -361,11 +363,16 @@ lex_get (struct lexer *lexer)
   if (src == NULL)
     return;
 
-  if (!lex_stage_is_empty (&src->lookahead))
-    lex_stage_pop_first (&src->lookahead);
+  if (src->parse_ofs < src->n_parse)
+    {
+      if (src->parse[src->parse_ofs]->token.type == T_ENDCMD)
+        lex_source_clear_parse (src);
+      else
+        src->parse_ofs++;
+    }
 
-  while (lex_stage_is_empty (&src->lookahead))
-    if (!lex_source_get_lookahead (src))
+  while (src->parse_ofs == src->n_parse)
+    if (!lex_source_get_parse (src))
       {
         lex_source_destroy (src);
         src = lex_source__ (lexer);
@@ -1020,19 +1027,32 @@ static const struct lex_token *
 lex_source_next__ (const struct lex_source *src_, int n)
 {
   struct lex_source *src = CONST_CAST (struct lex_source *, src_);
-  while (lex_stage_count (&src->lookahead) <= n)
+
+  if (n < 0)
     {
-      if (!lex_stage_is_empty (&src->lookahead))
+      if (-n <= src->parse_ofs)
+        return src->parse[src->parse_ofs - (-n)];
+      else
         {
-          const struct lex_token *t = lex_stage_last (&src->lookahead);
+          static const struct lex_token endcmd_token
+            = { .token = { .type = T_ENDCMD } };
+          return &endcmd_token;
+        }
+    }
+
+  while (src->n_parse - src->parse_ofs <= n)
+    {
+      if (src->n_parse > 0)
+        {
+          const struct lex_token *t = src->parse[src->n_parse - 1];
           if (t->token.type == T_STOP || t->token.type == T_ENDCMD)
             return t;
         }
 
-      lex_source_get_lookahead (src);
+      lex_source_get_parse (src);
     }
 
-  return lex_stage_nth (&src->lookahead, n);
+  return src->parse[src->parse_ofs + n];
 }
 
 /* Returns the "struct token" of the token N after the current one in LEXER.
@@ -1420,7 +1440,7 @@ lex_interactive_reset (struct lexer *lexer)
                                        false);
       lex_stage_clear (&src->pp);
       lex_stage_clear (&src->merge);
-      lex_stage_clear (&src->lookahead);
+      lex_source_clear_parse (src);
       lex_source_push_endcmd__ (src);
     }
 }
@@ -1445,7 +1465,7 @@ lex_discard_noninteractive (struct lexer *lexer)
     {
       lex_stage_clear (&src->pp);
       lex_stage_clear (&src->merge);
-      lex_stage_clear (&src->lookahead);
+      lex_source_clear_parse (src);
 
       for (; src != NULL && src->reader->error != LEX_ERROR_TERMINAL;
            src = lex_source__ (lexer))
@@ -1913,7 +1933,7 @@ lex_source_get_merge (struct lex_source *src)
    Returns true if successful, false on failure.  In the latter case, SRC is
    exhausted and 'src->eof' is now true. */
 static bool
-lex_source_get_lookahead (struct lex_source *src)
+lex_source_get_parse (struct lex_source *src)
 {
   struct merger m = MERGER_INIT;
   struct token out;
@@ -1932,7 +1952,7 @@ lex_source_get_lookahead (struct lex_source *src)
                                &out);
       if (!retval)
         {
-          lex_stage_shift (&src->lookahead, &src->merge, 1);
+          lex_source_push_parse (src, lex_stage_take_first (&src->merge));
           return true;
         }
       else if (retval > 0)
@@ -1959,7 +1979,7 @@ lex_source_get_lookahead (struct lex_source *src)
           };
           if (t->ref_cnt)
             ++*t->ref_cnt;
-          lex_stage_push_last (&src->lookahead, t);
+          lex_source_push_parse (src, t);
 
           for (int i = 0; i < retval; i++)
             lex_stage_pop_first (&src->merge);
@@ -1971,10 +1991,28 @@ lex_source_get_lookahead (struct lex_source *src)
 static void
 lex_source_push_endcmd__ (struct lex_source *src)
 {
-  assert (lex_stage_is_empty (&src->lookahead));
+  assert (src->n_parse == 0);
+
   struct lex_token *token = xmalloc (sizeof *token);
   *token = (struct lex_token) { .token = { .type = T_ENDCMD } };
-  lex_stage_push_last (&src->lookahead, token);
+  lex_source_push_parse (src, token);
+}
+
+static void
+lex_source_push_parse (struct lex_source *src, struct lex_token *token)
+{
+  if (src->n_parse >= src->allocated_parse)
+    src->parse = x2nrealloc (src->parse, &src->allocated_parse,
+                             sizeof *src->parse);
+  src->parse[src->n_parse++] = token;
+}
+
+static void
+lex_source_clear_parse (struct lex_source *src)
+{
+  for (size_t i = 0; i < src->n_parse; i++)
+    lex_token_destroy (src->parse[i]);
+  src->n_parse = src->parse_ofs = 0;
 }
 
 static struct lex_source *
@@ -2004,7 +2042,8 @@ lex_source_destroy (struct lex_source *src)
   free (src->buffer);
   lex_stage_uninit (&src->pp);
   lex_stage_uninit (&src->merge);
-  lex_stage_uninit (&src->lookahead);
+  lex_source_clear_parse (src);
+  free (src->parse);
   ll_remove (&src->ll);
   free (src);
 }
