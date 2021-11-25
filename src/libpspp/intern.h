@@ -34,7 +34,9 @@
 #include <stddef.h>
 
 const char *intern_new (const char *);
+const char *intern_new_if_nonnull (const char *);
 const char *intern_ref (const char *);
+const char *intern_ref_if_nonnull (const char *);
 void intern_unref (const char *);
 
 size_t intern_strlen (const char *);

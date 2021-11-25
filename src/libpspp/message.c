@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "libpspp/cast.h"
+#include "libpspp/intern.h"
 #include "libpspp/str.h"
 #include "libpspp/version.h"
 #include "data/settings.h"
@@ -108,7 +109,7 @@ msg_set_handler (void (*handler) (const struct msg *, void *aux), void *aux)
 void
 msg_location_uninit (struct msg_location *loc)
 {
-  free (loc->file_name);
+  intern_unref (loc->file_name);
 }
 
 void
@@ -129,7 +130,7 @@ msg_location_dup (const struct msg_location *src)
 
   struct msg_location *dst = xmalloc (sizeof *dst);
   *dst = (struct msg_location) {
-    .file_name = xstrdup_if_nonnull (src->file_name),
+    .file_name = intern_new_if_nonnull (src->file_name),
     .first_line = src->first_line,
     .last_line = src->last_line,
     .first_column = src->first_column,

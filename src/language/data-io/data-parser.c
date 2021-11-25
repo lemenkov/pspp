@@ -29,6 +29,7 @@
 #include "data/file-handle-def.h"
 #include "data/settings.h"
 #include "language/data-io/data-reader.h"
+#include "libpspp/intern.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "output/pivot-table.h"
@@ -498,7 +499,7 @@ parse_error (const struct dfm_reader *reader, const struct field *field,
   int line_number = dfm_get_line_number (reader);
   struct msg_location *location = xmalloc (sizeof *location);
   *location = (struct msg_location) {
-    .file_name = xstrdup (dfm_get_file_name (reader)),
+    .file_name = intern_new (dfm_get_file_name (reader)),
     .first_line = line_number,
     .last_line = line_number + 1,
     .first_column = first_column,

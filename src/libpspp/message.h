@@ -74,7 +74,7 @@ msg_class_from_category_and_severity (enum msg_category category,
 
 struct msg_location
   {
-    char *file_name;            /* Name of file containing error, or NULL. */
+    const char *file_name;      /* Interned file name, or NULL. */
     int first_line;             /* 1-based line number, or 0 if none. */
     int last_line;              /* 1-based exclusive last line (0=none). */
     int first_column;           /* 1-based first column, or 0 if none. */

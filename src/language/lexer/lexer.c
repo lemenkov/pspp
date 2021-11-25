@@ -38,6 +38,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/deque.h"
 #include "libpspp/i18n.h"
+#include "libpspp/intern.h"
 #include "libpspp/ll.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
@@ -1261,7 +1262,7 @@ lex_token_location (const struct lex_source *src,
                     const struct lex_token *t1)
 {
   return (struct msg_location) {
-    .file_name = src->reader->file_name,
+    .file_name = intern_new_if_nonnull (src->reader->file_name),
     .first_line = t0->first_line,
     .last_line = lex_token_get_last_line_number (src, t1),
     .first_column = lex_token_get_first_column (src, t0),
@@ -1377,7 +1378,7 @@ lex_get_lines (const struct lexer *lexer, int n0, int n1)
 {
   struct msg_location *loc = xmalloc (sizeof *loc);
   *loc = (struct msg_location) {
-    .file_name = xstrdup_if_nonnull (lex_get_file_name (lexer)),
+    .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
     .first_line = lex_get_first_line_number (lexer, n0),
     .last_line = lex_get_last_line_number (lexer, n1),
   };

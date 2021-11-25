@@ -39,6 +39,7 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/assertion.h"
 #include "libpspp/i18n.h"
+#include "libpspp/intern.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 
@@ -253,7 +254,7 @@ parse_msg (struct dfm_reader *reader, const struct substring *token,
   int line_number = dfm_get_line_number (reader);
   struct msg_location *location = xmalloc (sizeof *location);
   *location = (struct msg_location) {
-    .file_name = xstrdup (dfm_get_file_name (reader)),
+    .file_name = intern_new (dfm_get_file_name (reader)),
     .first_line = line_number,
     .last_line = line_number + 1,
     .first_column = first_column,

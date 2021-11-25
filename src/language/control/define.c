@@ -23,6 +23,7 @@
 #include "language/lexer/macro.h"
 #include "language/lexer/scan.h"
 #include "language/lexer/token.h"
+#include "libpspp/intern.h"
 #include "libpspp/message.h"
 
 #include "gl/xalloc.h"
@@ -113,7 +114,7 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
     .location = xmalloc (sizeof *m->location),
   };
   *m->location = (struct msg_location) {
-    .file_name = xstrdup_if_nonnull (lex_get_file_name (lexer)),
+    .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
     .first_line = lex_get_first_line_number (lexer, 0),
   };
   lex_get (lexer);

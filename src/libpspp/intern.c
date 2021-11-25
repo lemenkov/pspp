@@ -77,6 +77,13 @@ intern_new (const char *s)
   return is->string;
 }
 
+const char *
+intern_new_if_nonnull (const char *s)
+{
+  return s ? intern_new (s) : NULL;
+}
+
+
 static struct interned_string *
 interned_string_from_string (const char *s_)
 {
@@ -96,17 +103,26 @@ intern_ref (const char *s)
   return s;
 }
 
+const char *
+intern_ref_if_nonnull (const char *s)
+{
+  return s ? intern_ref (s) : NULL;
+}
+
 /* Decreases the reference count on S, which must be an interned string
    returned by intern_new().  If the reference count reaches 0, frees the
    interned string. */
 void
 intern_unref (const char *s)
 {
-  struct interned_string *is = interned_string_from_string (s);
-  if (--is->ref_cnt == 0)
+  if (s)
     {
-      hmap_delete (&interns, &is->node);
-      free (is);
+      struct interned_string *is = interned_string_from_string (s);
+      if (--is->ref_cnt == 0)
+        {
+          hmap_delete (&interns, &is->node);
+          free (is);
+        }
     }
 }
 
