@@ -1893,6 +1893,9 @@ segmenter_get_mode (const struct segmenter *s)
    bytes as part of INPUT, because they have (figuratively) been consumed by
    the segmenter.
 
+   Segments can have zero length, including segment types SEG_END,
+   SEG_SEPARATE_COMMANDS, SEG_START_DOCUMENT, SEG_INLINE_DATA, and SEG_SPACES.
+
    Failure occurs only if the segment type of the N bytes in INPUT cannot yet
    be determined.  In this case segmenter_push() returns -1.  If more input is
    available, the caller should obtain some more, then call again with a larger
