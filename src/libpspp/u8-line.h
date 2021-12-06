@@ -32,6 +32,8 @@ struct u8_line
     size_t width;               /* Display width, in character positions. */
   };
 
+#define U8_LINE_INITIALIZER { .s = DS_EMPTY_INITIALIZER };
+
 void u8_line_init (struct u8_line *);
 void u8_line_destroy (struct u8_line *);
 void u8_line_clear (struct u8_line *);
