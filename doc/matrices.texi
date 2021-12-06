@@ -576,6 +576,7 @@ END DATA.
 
 @node MCONVERT
 @section MCONVERT
+@vindex MCONVERT
 
 @display
 MCONVERT

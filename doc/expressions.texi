@@ -1246,7 +1246,7 @@ Constraints: @var{a} > 0, @var{b} > 0, @var{lambda} >= 0, 0 <= @var{x}
 @end deftypefn
 
 @deftypefn {Function} {} PDF.BVNOR (@var{x0}, @var{x1}, @var{rho})
-@deftypefnx {Function} {} CDF.VBNOR (@var{x0}, @var{x1}, @var{rho})
+@deftypefnx {Function} {} CDF.BVNOR (@var{x0}, @var{x1}, @var{rho})
 Bivariate normal distribution of two standard normal variables with
 correlation coefficient @var{rho}.  Two variates @var{x0} and @var{x1}
 must be provided.  Constraints: 0 <= @var{rho} <= 1, 0 <= @var{p} <= 1.

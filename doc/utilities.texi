@@ -690,6 +690,8 @@ spoken in the United States) and @code{ja_JP.EUC-JP} (EUC-JP encoded
 Japanese as spoken in Japan).
 
 @item MXLOOPS
+@anchor{SET MXLOOPS}
+
 The maximum number of iterations for an uncontrolled loop (@pxref{LOOP}).
 The default @var{max_loops} is 40.
 

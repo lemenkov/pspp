@@ -45,6 +45,7 @@ BREAK.
 @vindex DEFINE
 @cindex macro
 
+@node Macro Overview
 @subsection Overview
 
 @display
@@ -53,20 +54,23 @@ BREAK.
 @t{!ENDDEFINE.}
 @end display
 
+@noindent
 Each @i{argument} takes the following form:
 @display
-@r{@{}@i{!arg_name} @t{=},@t{!POSITIONAL}@r{@}}
+@r{@{}@i{!arg_name}@t{=} @math{|} @t{!POSITIONAL}@r{@}}
 @r{[}@t{!DEFAULT(}@i{default}@t{)}@r{]}
 @r{[}@t{!NOEXPAND}@r{]}
-@r{@{}@t{!TOKENS(}@i{count}@t{)},@t{!CHAREND('}@i{token}@t{')},@t{!ENCLOSE('}@i{start}@t{','}@i{end}@t{')},@t{!CMDEND}@}
+@r{@{}@t{!TOKENS(}@i{count}@t{)} @math{|} @t{!CHAREND('}@i{token}@t{')} @math{|} @t{!ENCLOSE('}@i{start}@t{' @math{|} '}@i{end}@t{')} @math{|} @t{!CMDEND}@}
 @end display
 
+@noindent
 The following directives may be used within @i{body}:
 @example
 !OFFEXPAND
 !ONEXPAND
 @end example
 
+@noindent
 The following functions may be used within the body:
 @display
 @t{!BLANKS(}@i{count}@t{)}
@@ -83,6 +87,7 @@ The following functions may be used within the body:
 @t{!UPCASE(}@i{arg}@t{)}
 @end display
 
+@noindent
 The body may also include the following constructs:
 @display
 @t{!IF (}@i{condition}@t{) !THEN} @i{true-expansion} @t{!ENDIF}
@@ -98,6 +103,7 @@ The body may also include the following constructs:
 @t{!LET} @i{!var} @t{=} @i{expression}
 @end display
 
+@node Macro Introduction
 @subsection Introduction
 
 The DEFINE command creates a @dfn{macro}, which is a name for a
@@ -1002,11 +1008,9 @@ code block is executed.  The condition is evaluated at the end of the
 loop, not at the beginning, so that the body of a loop with only a
 condition on @cmd{END LOOP} will always execute at least once.
 
-If the index clause is not
-present, then the loop is executed at most @var{max_loops} (@pxref{SET}) times
-(but possibly fewer, if a condition clause evaluates to false or if
-@cmd{BREAK} executes).
-The default value of @var{max_loops} is 40.
+If the index clause is not present, then the global @code{MXLOOPS}
+setting, which defaults to 40, limits the number of iterations
+(@pxref{SET MXLOOPS}).
 
 @cmd{BREAK} also terminates @cmd{LOOP} execution (@pxref{BREAK}).
 
