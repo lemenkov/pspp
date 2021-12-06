@@ -821,9 +821,14 @@ lex_force_int (struct lexer *lexer)
 bool
 lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
 {
+  bool is_number = lex_is_number (lexer);
   bool is_integer = lex_is_integer (lexer);
-  bool too_small = is_integer && lex_integer (lexer) < min;
-  bool too_big = is_integer && lex_integer (lexer) > max;
+  bool too_small = (is_integer ? lex_integer (lexer) < min
+                    : is_number ? lex_number (lexer) < min
+                    : false);
+  bool too_big = (is_integer ? lex_integer (lexer) > max
+                  : is_number ? lex_number (lexer) > max
+                  : false);
   if (is_integer && !too_small && !too_big)
     return true;
 
