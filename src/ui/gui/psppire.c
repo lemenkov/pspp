@@ -142,9 +142,8 @@ psppire_quit (GApplication *app)
 
 
 static void
-handle_msg (const struct msg *m_, void *lexer_)
+handle_msg (const struct msg *m_, struct lexer *lexer)
 {
-  struct lexer *lexer = lexer_;
   struct msg m = {
     .category = m_->category,
     .severity = m_->severity,
@@ -165,9 +164,8 @@ handle_msg (const struct msg *m_, void *lexer_)
 void
 psppire_set_lexer (struct lexer *lexer)
 {
-  msg_set_handler (handle_msg, lexer);
+  lex_set_message_handler (lexer, handle_msg);
 }
-
 
 GtkWindow *
 psppire_preload_file (const gchar *file, GtkWindow *victim)

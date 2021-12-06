@@ -808,7 +808,7 @@ int
 main (int argc, char **argv)
 {
   set_program_name (argv[0]);
-  msg_set_handler (emit_msg, NULL);
+  msg_set_handler (&(struct msg_handler) { .output_msg = emit_msg });
   settings_init ();
   i18n_init ();
 

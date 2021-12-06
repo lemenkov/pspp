@@ -253,7 +253,6 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
   struct string input;
   size_t n_values;
   char *file_name;
-  int line_number;
   bool ok;
   size_t i;
 
@@ -261,7 +260,7 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
     file_name = xstrdup (lex_get_file_name (lexer));
   else
     file_name = NULL;
-  line_number = lex_get_first_line_number (lexer, 0);
+  int line_number = lex_ofs_start_point (lexer, lex_ofs (lexer)).line;
 
   ds_init_empty (&input);
   while (lex_is_string (lexer))

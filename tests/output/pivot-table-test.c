@@ -53,7 +53,7 @@ static const char *output_base = "render";
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
 static void read_table (struct lexer *);
-static void output_msg (const struct msg *, void *);
+static void output_msg (const struct msg *, struct lexer *);
 
 int
 main (int argc, char **argv)
@@ -74,7 +74,7 @@ main (int argc, char **argv)
     exit (1);
 
   struct lexer *lexer = lex_create ();
-  msg_set_handler (output_msg, lexer);
+  lex_set_message_handler (lexer, output_msg);
   lex_include (lexer, reader);
   lex_get (lexer);
 
@@ -1230,9 +1230,8 @@ read_table (struct lexer *lexer)
 }
 
 static void
-output_msg (const struct msg *m_, void *lexer_)
+output_msg (const struct msg *m_, struct lexer *lexer)
 {
-  struct lexer *lexer = lexer_;
   struct msg m = {
     .category = m_->category,
     .severity = m_->severity,

@@ -72,18 +72,52 @@ msg_class_from_category_and_severity (enum msg_category category,
   return category * 3 + severity;
 }
 
+/* A line number and column number within a source file.  Both are 1-based.  If
+   only a line number is available, 'column' is zero.  If neither is available,
+   'line' and 'column' are zero.
+
+   Column numbers are measured according to the width of characters as shown in
+   a typical fixed-width font, in which CJK characters have width 2 and
+   combining characters have width 0.  */
+struct msg_point
+  {
+    int line;
+    int column;
+  };
+
+/* Location of the cause of an error. */
 struct msg_location
   {
-    const char *file_name;      /* Interned file name, or NULL. */
-    int first_line;             /* 1-based line number, or 0 if none. */
-    int last_line;              /* 1-based exclusive last line (0=none). */
-    int first_column;           /* 1-based first column, or 0 if none. */
-    int last_column;            /* 1-based exclusive last column (0=none). */
+    /* Interned file name, or NULL. */
+    const char *file_name;
+
+    /* Nonnull if this came from a source file. */
+    struct lex_source *src;
+
+    /* The starting and ending point of the cause.  One of:
+
+       - Both empty, with all their members zero.
+
+       - A range of lines, with 0 < start.line <= end.line and start.column =
+         end.column = 0.
+
+       - A range of columns spanning one or more lines.  If it's on a single
+         line, then start.line = end.line and 0 < start.column <= end.column.
+         If it's across multiple lines, then 0 < start.line < end.line and the
+         column members are both positive.
+
+       Both 'start' and 'end' are inclusive, line-wise and column-wise.
+    */
+    struct msg_point start, end;
   };
 
 void msg_location_uninit (struct msg_location *);
 void msg_location_destroy (struct msg_location *);
 struct msg_location *msg_location_dup (const struct msg_location *);
+
+void msg_location_remove_columns (struct msg_location *);
+
+void msg_location_merge (struct msg_location **, const struct msg_location *);
 
 bool msg_location_is_empty (const struct msg_location *);
 void msg_location_format (const struct msg_location *, struct string *);
@@ -110,8 +144,17 @@ struct msg
   };
 
 /* Initialization. */
-void msg_set_handler (void (*handler) (const struct msg *, void *lexer),
-                      void *aux);
+struct msg_handler
+  {
+    void (*output_msg) (const struct msg *, void *aux);
+    void *aux;
+
+    void (*lex_source_ref) (const struct lex_source *);
+    void (*lex_source_unref) (struct lex_source *);
+    struct substring (*lex_source_get_line) (const struct lex_source *,
+                                             int line);
+  };
+void msg_set_handler (const struct msg_handler *);
 
 /* Working with messages. */
 struct msg *msg_dup (const struct msg *);
@@ -119,10 +162,14 @@ void msg_destroy(struct msg *);
 char *msg_to_string (const struct msg *);
 
 /* Emitting messages. */
-void vmsg (enum msg_class class, const char *format, va_list args)
-     PRINTF_FORMAT (2, 0);
+void vmsg (enum msg_class, const struct msg_location *,
+           const char *format, va_list args)
+     PRINTF_FORMAT (3, 0);
 void msg (enum msg_class, const char *format, ...)
      PRINTF_FORMAT (2, 3);
+void msg_at (enum msg_class, const struct msg_location *,
+             const char *format, ...)
+     PRINTF_FORMAT (3, 4);
 void msg_emit (struct msg *);
 
 void msg_error (int errnum, const char *format, ...)

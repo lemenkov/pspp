@@ -717,10 +717,18 @@ dfm_get_file_name (const struct dfm_reader *r)
 int
 dfm_get_line_number (const struct dfm_reader *r)
 {
-  enum fh_referent referent = fh_get_referent (r->fh);
-  return (referent == FH_REF_FILE ? r->line_number
-          : referent == FH_REF_INLINE ? lex_get_first_line_number (r->lexer, 0)
-          : -1);
+  switch (fh_get_referent (r->fh))
+    {
+    case FH_REF_FILE:
+      return r->line_number;
+
+    case FH_REF_INLINE:
+      return lex_ofs_start_point (r->lexer, lex_ofs (r->lexer)).line;
+
+    case FH_REF_DATASET:
+    default:
+      return -1;
+    }
 }
 
 /* BEGIN DATA...END DATA procedure. */

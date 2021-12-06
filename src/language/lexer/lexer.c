@@ -69,7 +69,6 @@ struct lex_token
        call. */
     size_t token_pos;           /* Offset into src->buffer of token start. */
     size_t token_len;           /* Length of source for token in bytes. */
-    int first_line;             /* Line number at token_pos. */
 
     /* For a token obtained through macro expansion, this is just this token.
 
@@ -80,6 +79,18 @@ struct lex_token
     size_t len;             /* Length of this token in macro_rep. */
     size_t *ref_cnt;        /* Number of lex_tokens that refer to macro_rep. */
   };
+
+static struct msg_point lex_token_start_point (const struct lex_source *,
+                                               const struct lex_token *);
+static struct msg_point lex_token_end_point (const struct lex_source *,
+                                             const struct lex_token *);
+
+/* Source offset of the last byte in TOKEN. */
+static size_t
+lex_token_end (const struct lex_token *token)
+{
+  return token->token_pos + MAX (token->token_len, 1) - 1;
+}
 
 static void
 lex_token_destroy (struct lex_token *t)
@@ -207,6 +218,14 @@ lex_stage_shift (struct lex_stage *dst, struct lex_stage *src, size_t n)
 struct lex_source
   {
     struct ll ll;               /* In lexer's list of sources. */
+
+    /* Reference count:
+
+       - One for struct lexer.
+
+       - One for each struct msg_location that references this source. */
+    size_t n_refs;
+
     struct lex_reader *reader;
     struct lexer *lexer;
     struct segmenter segmenter;
@@ -221,7 +240,10 @@ struct lex_source
     size_t journal_pos;         /* First byte not yet output to journal. */
     size_t seg_pos;             /* First byte not yet scanned as token. */
 
-    int n_newlines;             /* Number of new-lines up to seg_pos. */
+    /* Offset into 'buffer' of starts of lines. */
+    size_t *lines;
+    size_t n_lines, allocated_lines;
+
     bool suppress_next_newline;
 
     /* Tokens.
@@ -251,7 +273,6 @@ struct lex_source
 
 static struct lex_source *lex_source_create (struct lexer *,
                                              struct lex_reader *);
-static void lex_source_destroy (struct lex_source *);
 
 /* Lexer. */
 struct lexer
@@ -320,7 +341,10 @@ lex_destroy (struct lexer *lexer)
       struct lex_source *source, *next;
 
       ll_for_each_safe (source, next, struct lex_source, ll, &lexer->sources)
-        lex_source_destroy (source);
+        {
+          ll_remove (&source->ll);
+          lex_source_unref (source);
+        }
       macro_set_destroy (lexer->macros);
       free (lexer);
     }
@@ -375,7 +399,8 @@ lex_get (struct lexer *lexer)
   while (src->parse_ofs == src->n_parse)
     if (!lex_source_get_parse (src))
       {
-        lex_source_destroy (src);
+        ll_remove (&src->ll);
+        lex_source_unref (src);
         src = lex_source__ (lexer);
         if (src == NULL)
           return;
@@ -1025,23 +1050,18 @@ lex_next__ (const struct lexer *lexer_, int n)
 }
 
 static const struct lex_token *
-lex_source_next__ (const struct lex_source *src_, int n)
+lex_source_ofs__ (const struct lex_source *src_, int ofs)
 {
   struct lex_source *src = CONST_CAST (struct lex_source *, src_);
 
-  if (n < 0)
+  if (ofs < 0)
     {
-      if (-n <= src->parse_ofs)
-        return src->parse[src->parse_ofs - (-n)];
-      else
-        {
-          static const struct lex_token endcmd_token
-            = { .token = { .type = T_ENDCMD } };
-          return &endcmd_token;
-        }
+      static const struct lex_token endcmd_token
+        = { .token = { .type = T_ENDCMD } };
+      return &endcmd_token;
     }
 
-  while (src->n_parse - src->parse_ofs <= n)
+  while (ofs >= src->n_parse)
     {
       if (src->n_parse > 0)
         {
@@ -1053,7 +1073,13 @@ lex_source_next__ (const struct lex_source *src_, int n)
       lex_source_get_parse (src);
     }
 
-  return src->parse[src->parse_ofs + n];
+  return src->parse[ofs];
+}
+
+static const struct lex_token *
+lex_source_next__ (const struct lex_source *src, int n)
+{
+  return lex_source_ofs__ (src, n + src->parse_ofs);
 }
 
 /* Returns the "struct token" of the token N after the current one in LEXER.
@@ -1112,6 +1138,85 @@ struct substring
 lex_next_tokss (const struct lexer *lexer, int n)
 {
   return lex_next (lexer, n)->string;
+}
+
+/* Returns the offset of the current token within the command being parsed in
+   LEXER.  This is 0 for the first token in a command, 1 for the second, and so
+   on.  The return value is useful later for referring to this token in calls
+   to lex_ofs_*(). */
+int
+lex_ofs (const struct lexer *lexer)
+{
+  struct lex_source *src = lex_source__ (lexer);
+  return src ? src->parse_ofs : 0;
+}
+
+/* Returns the token within LEXER's current command with offset OFS.  Use
+   lex_ofs() to find out the offset of the current token. */
+const struct token *
+lex_ofs_token (const struct lexer *lexer_, int ofs)
+{
+  struct lexer *lexer = CONST_CAST (struct lexer *, lexer_);
+  struct lex_source *src = lex_source__ (lexer);
+
+  if (src != NULL)
+    return &lex_source_next__ (src, ofs - src->parse_ofs)->token;
+  else
+    {
+      static const struct token stop_token = { .type = T_STOP };
+      return &stop_token;
+    }
+}
+
+/* Allocates and returns a new struct msg_location that spans tokens with
+   offsets OFS0 through OFS1, inclusive, within the current command in
+   LEXER.  See lex_ofs() for an explanation of token offsets.
+
+   The caller owns and must eventually free the returned object. */
+struct msg_location *
+lex_ofs_location (const struct lexer *lexer, int ofs0, int ofs1)
+{
+  int ofs = lex_ofs (lexer);
+  return lex_get_location (lexer, ofs0 - ofs, ofs1 - ofs);
+}
+
+/* Returns a msg_point for the first character in the token with offset OFS,
+   where offset 0 is the first token in the command currently being parsed, 1
+   the second token, and so on.  These are absolute offsets, not relative to
+   the token currently being parsed within the command.
+
+   Returns zeros for a T_STOP token.
+ */
+struct msg_point
+lex_ofs_start_point (const struct lexer *lexer, int ofs)
+{
+  const struct lex_source *src = lex_source__ (lexer);
+  return (src
+          ? lex_token_start_point (src, lex_source_ofs__ (src, ofs))
+          : (struct msg_point) { 0, 0 });
+}
+
+/* Returns a msg_point for the last character, inclusive, in the token with
+   offset OFS, where offset 0 is the first token in the command currently being
+   parsed, 1 the second token, and so on.  These are absolute offsets, not
+   relative to the token currently being parsed within the command.
+
+   Returns zeros for a T_STOP token.
+
+   Most of the time, a single token is wholly within a single line of syntax,
+   so that the start and end point for a given offset have the same line
+   number.  There are two exceptions: a T_STRING token can be made up of
+   multiple segments on adjacent lines connected with "+" punctuators, and a
+   T_NEG_NUM token can consist of a "-" on one line followed by the number on
+   the next.
+ */
+struct msg_point
+lex_ofs_end_point (const struct lexer *lexer, int ofs)
+{
+  const struct lex_source *src = lex_source__ (lexer);
+  return (src
+          ? lex_token_end_point (src, lex_source_ofs__ (src, ofs))
+          : (struct msg_point) { 0, 0 });
 }
 
 /* Returns the text of the syntax in tokens N0 ahead of the current one,
@@ -1205,55 +1310,58 @@ lex_match_phrase (struct lexer *lexer, const char *s)
   return n > 0;
 }
 
+/* Returns the 1-based line number of the source text at the byte OFFSET in
+   SRC. */
 static int
-count_newlines (char *s, size_t length)
+lex_source_ofs_to_line_number (const struct lex_source *src, size_t offset)
 {
-  int n_newlines = 0;
-  char *newline;
-
-  while ((newline = memchr (s, '\n', length)) != NULL)
+  size_t lo = 0;
+  size_t hi = src->n_lines;
+  for (;;)
     {
-      n_newlines++;
-      length -= (newline + 1) - s;
-      s = newline + 1;
-    }
-
-  return n_newlines;
-}
-
-static int
-lex_token_get_last_line_number (const struct lex_source *src,
-                                const struct lex_token *token)
-{
-  if (token->first_line == 0)
-    return 0;
-  else
-    {
-      char *token_str = &src->buffer[token->token_pos];
-      return token->first_line + count_newlines (token_str, token->token_len) + 1;
+      size_t mid = (lo + hi) / 2;
+      if (mid + 1 >= src->n_lines)
+        return src->n_lines;
+      else if (offset >= src->lines[mid + 1])
+        lo = mid;
+      else if (offset < src->lines[mid])
+        hi = mid;
+      else
+        return mid + 1;
     }
 }
 
+/* Returns the 1-based column number of the source text at the byte OFFSET in
+   SRC. */
 static int
-lex_token_get_column__ (const struct lex_source *src, size_t offset)
+lex_source_ofs_to_column_number (const struct lex_source *src, size_t offset)
 {
   const char *newline = memrchr (src->buffer, '\n', offset);
   size_t line_ofs = newline ? newline - src->buffer + 1 : 0;
   return utf8_count_columns (&src->buffer[line_ofs], offset - line_ofs) + 1;
 }
 
-static int
-lex_token_get_first_column (const struct lex_source *src,
-                            const struct lex_token *token)
+static struct msg_point
+lex_source_ofs_to_point__ (const struct lex_source *src, size_t offset)
 {
-  return lex_token_get_column__ (src, token->token_pos);
+  return (struct msg_point) {
+    .line = lex_source_ofs_to_line_number (src, offset),
+    .column = lex_source_ofs_to_column_number (src, offset),
+  };
 }
 
-static int
-lex_token_get_last_column (const struct lex_source *src,
-                           const struct lex_token *token)
+static struct msg_point
+lex_token_start_point (const struct lex_source *src,
+                       const struct lex_token *token)
 {
-  return lex_token_get_column__ (src, token->token_pos + token->token_len);
+  return lex_source_ofs_to_point__ (src, token->token_pos);
+}
+
+static struct msg_point
+lex_token_end_point (const struct lex_source *src,
+                     const struct lex_token *token)
+{
+  return lex_source_ofs_to_point__ (src, lex_token_end (token));
 }
 
 static struct msg_location
@@ -1263,10 +1371,8 @@ lex_token_location (const struct lex_source *src,
 {
   return (struct msg_location) {
     .file_name = intern_new_if_nonnull (src->reader->file_name),
-    .first_line = t0->first_line,
-    .last_line = lex_token_get_last_line_number (src, t1),
-    .first_column = lex_token_get_first_column (src, t0),
-    .last_column = lex_token_get_last_column (src, t1),
+    .start = lex_token_start_point (src, t0),
+    .end = lex_token_end_point (src, t1),
   };
 }
 
@@ -1285,62 +1391,6 @@ lex_source_get_location (const struct lex_source *src, int n0, int n1)
   return lex_token_location_rw (src,
                                 lex_source_next__ (src, n0),
                                 lex_source_next__ (src, n1));
-}
-
-/* Returns the 1-based line number of the start of the syntax that represents
-   the token N after the current one in LEXER.  Returns 0 for a T_STOP token or
-   if the token is drawn from a source that does not have line numbers. */
-int
-lex_get_first_line_number (const struct lexer *lexer, int n)
-{
-  const struct lex_source *src = lex_source__ (lexer);
-  return src ? lex_source_next__ (src, n)->first_line : 0;
-}
-
-/* Returns the 1-based line number of the end of the syntax that represents the
-   token N after the current one in LEXER, plus 1.  Returns 0 for a T_STOP
-   token or if the token is drawn from a source that does not have line
-   numbers.
-
-   Most of the time, a single token is wholly within a single line of syntax,
-   but there are two exceptions: a T_STRING token can be made up of multiple
-   segments on adjacent lines connected with "+" punctuators, and a T_NEG_NUM
-   token can consist of a "-" on one line followed by the number on the next.
- */
-int
-lex_get_last_line_number (const struct lexer *lexer, int n)
-{
-  const struct lex_source *src = lex_source__ (lexer);
-  return src ? lex_token_get_last_line_number (src,
-                                               lex_source_next__ (src, n)) : 0;
-}
-
-/* Returns the 1-based column number of the start of the syntax that represents
-   the token N after the current one in LEXER.  Returns 0 for a T_STOP
-   token.
-
-   Column numbers are measured according to the width of characters as shown in
-   a typical fixed-width font, in which CJK characters have width 2 and
-   combining characters have width 0.  */
-int
-lex_get_first_column (const struct lexer *lexer, int n)
-{
-  const struct lex_source *src = lex_source__ (lexer);
-  return src ? lex_token_get_first_column (src, lex_source_next__ (src, n)) : 0;
-}
-
-/* Returns the 1-based column number of the end of the syntax that represents
-   the token N after the current one in LEXER, plus 1.  Returns 0 for a T_STOP
-   token.
-
-   Column numbers are measured according to the width of characters as shown in
-   a typical fixed-width font, in which CJK characters have width 2 and
-   combining characters have width 0.  */
-int
-lex_get_last_column (const struct lexer *lexer, int n)
-{
-  const struct lex_source *src = lex_source__ (lexer);
-  return src ? lex_token_get_last_column (src, lex_source_next__ (src, n)) : 0;
 }
 
 /* Returns the name of the syntax file from which the current command is drawn.
@@ -1363,25 +1413,14 @@ lex_get_file_name (const struct lexer *lexer)
 struct msg_location *
 lex_get_location (const struct lexer *lexer, int n0, int n1)
 {
-  struct msg_location *loc = lex_get_lines (lexer, n0, n1);
-  loc->first_column = lex_get_first_column (lexer, n0);
-  loc->last_column = lex_get_last_column (lexer, n1);
-  return loc;
-}
-
-/* Returns a newly allocated msg_location for the syntax that represents tokens
-   with 0-based offsets N0...N1, inclusive, from the current token.  The
-   location only covers the tokens' lines, not the columns.  The caller must
-   eventually free the location (with msg_location_destroy()). */
-struct msg_location *
-lex_get_lines (const struct lexer *lexer, int n0, int n1)
-{
   struct msg_location *loc = xmalloc (sizeof *loc);
   *loc = (struct msg_location) {
     .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
-    .first_line = lex_get_first_line_number (lexer, n0),
-    .last_line = lex_get_last_line_number (lexer, n1),
+    .start = lex_ofs_start_point (lexer, n0 + lex_ofs (lexer)),
+    .end = lex_ofs_end_point (lexer, n1 + lex_ofs (lexer)),
+    .src = lex_source__ (lexer),
   };
+  lex_source_ref (loc->src);
   return loc;
 }
 
@@ -1435,7 +1474,7 @@ lex_interactive_reset (struct lexer *lexer)
     {
       src->length = 0;
       src->journal_pos = src->seg_pos = 0;
-      src->n_newlines = 0;
+      src->n_lines = 0;
       src->suppress_next_newline = false;
       src->segmenter = segmenter_init (segmenter_get_mode (&src->segmenter),
                                        false);
@@ -1470,7 +1509,10 @@ lex_discard_noninteractive (struct lexer *lexer)
 
       for (; src != NULL && src->reader->error != LEX_ERROR_TERMINAL;
            src = lex_source__ (lexer))
-        lex_source_destroy (src);
+        {
+          ll_remove (&src->ll);
+          lex_source_unref (src);
+        }
     }
 }
 
@@ -1694,10 +1736,6 @@ lex_source_try_get_pp (struct lex_source *src)
   token->macro_rep = NULL;
   token->ref_cnt = NULL;
   token->token_pos = src->seg_pos;
-  if (src->reader->line_number > 0)
-    token->first_line = src->reader->line_number + src->n_newlines;
-  else
-    token->first_line = 0;
 
   /* Extract a segment. */
   const char *segment;
@@ -1721,7 +1759,12 @@ lex_source_try_get_pp (struct lex_source *src)
   token->token_len = seg_len;
   src->seg_pos += seg_len;
   if (seg_type == SEG_NEWLINE)
-    src->n_newlines++;
+    {
+      if (src->n_lines >= src->allocated_lines)
+        src->lines = x2nrealloc (src->lines, &src->allocated_lines,
+                                 sizeof *src->lines);
+      src->lines[src->n_lines++] = src->seg_pos;
+    }
 
   /* Get a token from the segment. */
   enum tokenize_result result = token_from_segment (
@@ -1839,11 +1882,9 @@ lex_source_try_get_merge (const struct lex_source *src_)
         }
 
       const struct lex_token *t = lex_stage_nth (&src->pp, ofs);
-      size_t start = t->token_pos;
-      size_t end = t->token_pos + t->token_len;
       const struct macro_token mt = {
         .token = t->token,
-        .syntax = ss_buffer (&src->buffer[start], end - start),
+        .syntax = ss_buffer (&src->buffer[t->token_pos], t->token_len),
       };
       const struct msg_location loc = lex_token_location (src, t, t);
       n_call = macro_call_add (mc, &mt, &loc);
@@ -1892,7 +1933,6 @@ lex_source_try_get_merge (const struct lex_source *src_)
             .token = expansion.mts[i].token,
             .token_pos = c0->token_pos,
             .token_len = (c1->token_pos + c1->token_len) - c0->token_pos,
-            .first_line = c0->first_line,
             .macro_rep = macro_rep,
             .ofs = ofs[i],
             .len = len[i],
@@ -1968,7 +2008,6 @@ lex_source_get_parse (struct lex_source *src)
             .token = out,
             .token_pos = first->token_pos,
             .token_len = (last->token_pos - first->token_pos) + last->token_len,
-            .first_line = first->first_line,
 
             /* This works well if all the tokens were not expanded from macros,
                or if they came from the same macro expansion.  It just gives up
@@ -2019,11 +2058,19 @@ lex_source_clear_parse (struct lex_source *src)
 static struct lex_source *
 lex_source_create (struct lexer *lexer, struct lex_reader *reader)
 {
+  size_t allocated_lines = 4;
+  size_t *lines = xmalloc (allocated_lines * sizeof *lines);
+  *lines = 0;
+
   struct lex_source *src = xmalloc (sizeof *src);
   *src = (struct lex_source) {
+    .n_refs = 1,
     .reader = reader,
     .segmenter = segmenter_init (reader->syntax, false),
     .lexer = lexer,
+    .lines = lines,
+    .n_lines = 1,
+    .allocated_lines = allocated_lines,
   };
 
   lex_source_push_endcmd__ (src);
@@ -2031,9 +2078,42 @@ lex_source_create (struct lexer *lexer, struct lex_reader *reader)
   return src;
 }
 
-static void
-lex_source_destroy (struct lex_source *src)
+void
+lex_set_message_handler (struct lexer *lexer,
+                         void (*output_msg) (const struct msg *,
+                                             struct lexer *))
 {
+  struct msg_handler msg_handler = {
+    .output_msg = (void (*)(const struct msg *, void *)) output_msg,
+    .aux = lexer,
+    .lex_source_ref = lex_source_ref,
+    .lex_source_unref = lex_source_unref,
+    .lex_source_get_line = lex_source_get_line,
+  };
+  msg_set_handler (&msg_handler);
+}
+
+void
+lex_source_ref (const struct lex_source *src_)
+{
+  struct lex_source *src = CONST_CAST (struct lex_source *, src_);
+  if (src)
+    {
+      assert (src->n_refs > 0);
+      src->n_refs++;
+    }
+}
+
+void
+lex_source_unref (struct lex_source *src)
+{
+  if (!src)
+    return;
+
+  assert (src->n_refs > 0);
+  if (--src->n_refs > 0)
+    return;
+
   char *file_name = src->reader->file_name;
   char *encoding = src->reader->encoding;
   if (src->reader->class->destroy != NULL)
@@ -2041,11 +2121,11 @@ lex_source_destroy (struct lex_source *src)
   free (file_name);
   free (encoding);
   free (src->buffer);
+  free (src->lines);
   lex_stage_uninit (&src->pp);
   lex_stage_uninit (&src->merge);
   lex_source_clear_parse (src);
   free (src->parse);
-  ll_remove (&src->ll);
   free (src);
 }
 
@@ -2221,3 +2301,14 @@ static struct lex_reader_class lex_string_reader_class =
     lex_string_read,
     lex_string_close
   };
+
+struct substring
+lex_source_get_line (const struct lex_source *src, int line)
+{
+  if (line < 1 || line > src->n_lines)
+    return ss_empty ();
+
+  size_t ofs = src->lines[line - 1];
+  size_t end = line >= src->n_lines ? src->length : src->lines[line];
+  return ss_buffer (&src->buffer[ofs], end - ofs);
+}

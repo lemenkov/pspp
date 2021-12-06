@@ -42,8 +42,7 @@
 #define _(msgid) gettext (msgid)
 
 /* Message handler as set by msg_set_handler(). */
-static void (*msg_handler)  (const struct msg *, void *aux);
-static void *msg_aux;
+static struct msg_handler msg_handler = { .output_msg = NULL };
 
 /* Disables emitting messages if positive. */
 static int messages_disabled;
@@ -52,12 +51,14 @@ static int messages_disabled;
 
 
 void
-vmsg (enum msg_class class, const char *format, va_list args)
+vmsg (enum msg_class class, const struct msg_location *location,
+      const char *format, va_list args)
 {
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
     .category = msg_class_to_category (class),
     .severity = msg_class_to_severity (class),
+    .location = msg_location_dup (location),
     .text = xvasprintf (format, args),
   };
   msg_emit (m);
@@ -70,11 +71,21 @@ msg (enum msg_class class, const char *format, ...)
 {
   va_list args;
   va_start (args, format);
-  vmsg (class, format, args);
+  vmsg (class, NULL, format, args);
   va_end (args);
 }
 
-
+/* Outputs error message in CLASS, with text FORMAT, formatted with printf.
+   LOCATION is the reported location for the message. */
+void
+msg_at (enum msg_class class, const struct msg_location *location,
+        const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  vmsg (class, location, format, args);
+  va_end (args);
+}
 
 void
 msg_error (int errnum, const char *format, ...)
@@ -95,13 +106,10 @@ msg_error (int errnum, const char *format, ...)
   msg_emit (m);
 }
 
-
-
 void
-msg_set_handler (void (*handler) (const struct msg *, void *aux), void *aux)
+msg_set_handler (const struct msg_handler *handler)
 {
-  msg_handler = handler;
-  msg_aux = aux;
+  msg_handler = *handler;
 }
 
 /* msg_location. */
@@ -109,6 +117,8 @@ msg_set_handler (void (*handler) (const struct msg *, void *aux), void *aux)
 void
 msg_location_uninit (struct msg_location *loc)
 {
+  if (msg_handler.lex_source_unref)
+    msg_handler.lex_source_unref (loc->src);
   intern_unref (loc->file_name);
 }
 
@@ -122,6 +132,48 @@ msg_location_destroy (struct msg_location *loc)
     }
 }
 
+static int
+msg_point_compare_3way (const struct msg_point *a, const struct msg_point *b)
+{
+  return (!a->line ? 1
+          : !b->line ? -1
+          : a->line > b->line ? 1
+          : a->line < b->line ? -1
+          : !a->column ? 1
+          : !b->column ? -1
+          : a->column > b->column ? 1
+          : a->column < b->column ? -1
+          : 0);
+}
+
+void
+msg_location_remove_columns (struct msg_location *location)
+{
+  location->start.column = 0;
+  location->end.column = 0;
+}
+
+void
+msg_location_merge (struct msg_location **dstp, const struct msg_location *src)
+{
+  struct msg_location *dst = *dstp;
+  if (!dst)
+    {
+      *dstp = msg_location_dup (src);
+      return;
+    }
+
+  if (dst->file_name != src->file_name)
+    {
+      /* Failure. */
+      return;
+    }
+  if (msg_point_compare_3way (&dst->start, &src->start) > 0)
+    dst->start = src->start;
+  if (msg_point_compare_3way (&dst->end, &src->end) < 0)
+    dst->end = src->end;
+}
+
 struct msg_location *
 msg_location_dup (const struct msg_location *src)
 {
@@ -129,13 +181,11 @@ msg_location_dup (const struct msg_location *src)
     return NULL;
 
   struct msg_location *dst = xmalloc (sizeof *dst);
-  *dst = (struct msg_location) {
-    .file_name = intern_new_if_nonnull (src->file_name),
-    .first_line = src->first_line,
-    .last_line = src->last_line,
-    .first_column = src->first_column,
-    .last_column = src->last_column,
-  };
+  *dst = *src;
+  if (src->file_name)
+    dst->file_name = intern_ref (src->file_name);
+  if (msg_handler.lex_source_ref && src->src)
+    msg_handler.lex_source_ref (dst->src);
   return dst;
 }
 
@@ -143,8 +193,8 @@ bool
 msg_location_is_empty (const struct msg_location *loc)
 {
   return !loc || (!loc->file_name
-                  && loc->first_line <= 0
-                  && loc->first_column <= 0);
+                  && loc->start.line <= 0
+                  && loc->start.column <= 0);
 }
 
 void
@@ -156,10 +206,10 @@ msg_location_format (const struct msg_location *loc, struct string *s)
   if (loc->file_name)
     ds_put_cstr (s, loc->file_name);
 
-  int l1 = loc->first_line;
-  int l2 = MAX (loc->first_line, loc->last_line - 1);
-  int c1 = loc->first_column;
-  int c2 = MAX (loc->first_column, loc->last_column - 1);
+  int l1 = loc->start.line;
+  int l2 = MAX (l1, loc->end.line);
+  int c1 = loc->start.column;
+  int c2 = MAX (c1, loc->end.column);
 
   if (l1 > 0)
     {
@@ -316,6 +366,47 @@ msg_to_string (const struct msg *m)
 
   ds_put_cstr (&s, m->text);
 
+  const struct msg_location *loc = m->location;
+  if (m->category != MSG_C_GENERAL
+      && loc->src && loc->start.line && loc->start.column
+      && msg_handler.lex_source_get_line)
+    {
+      int l0 = loc->start.line;
+      int l1 = loc->end.line;
+      int nl = l1 - l0;
+      for (int ln = l0; ln <= l1; ln++)
+        {
+          if (nl > 3 && ln == l0 + 2)
+            {
+              ds_put_cstr (&s, "\n  ... |");
+              ln = l1;
+            }
+
+          struct substring line = msg_handler.lex_source_get_line (
+            loc->src, ln);
+          ss_rtrim (&line, ss_cstr ("\n\r"));
+
+          ds_put_format (&s, "\n%5d | ", ln);
+          ds_put_substring (&s, line);
+
+          int c0 = ln == l0 ? loc->start.column : 1;
+          int c1 = ln == l1 ? loc->end.column : ss_utf8_count_columns (line);
+          if (c0 > 0 && c1 >= c0)
+            {
+              ds_put_cstr (&s, "\n      |");
+              ds_put_byte_multiple (&s, ' ', c0);
+              if (ln == l0)
+                {
+                  ds_put_byte (&s, '^');
+                  if (c1 > c0)
+                    ds_put_byte_multiple (&s, '~', c1 - c0);
+                }
+              else
+                ds_put_byte_multiple (&s, '-', c1 - c0 + 1);
+            }
+        }
+    }
+
   return ds_cstr (&s);
 }
 
@@ -380,8 +471,8 @@ ship_message (const struct msg *m)
       return;
 
   stack[n++] = m;
-  if (msg_handler && n <= 1)
-    msg_handler (m, msg_aux);
+  if (msg_handler.output_msg && n <= 1)
+    msg_handler.output_msg (m, msg_handler.aux);
   else
     fprintf (stderr, "%s\n", m->text);
   n--;

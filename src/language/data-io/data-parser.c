@@ -500,10 +500,8 @@ parse_error (const struct dfm_reader *reader, const struct field *field,
   struct msg_location *location = xmalloc (sizeof *location);
   *location = (struct msg_location) {
     .file_name = intern_new (dfm_get_file_name (reader)),
-    .first_line = line_number,
-    .last_line = line_number + 1,
-    .first_column = first_column,
-    .last_column = last_column,
+    .start = { .line = line_number, .column = first_column },
+    .end = { .line = line_number, .column = last_column - 1 },
   };
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {

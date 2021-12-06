@@ -26,9 +26,12 @@
 #include "language/lexer/segment.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
+#include "libpspp/message.h"
 #include "libpspp/prompt.h"
+#include "libpspp/str.h"
 
 struct lexer;
+struct lex_source;
 struct macro;
 
 /* Handling of errors. */
@@ -148,18 +151,20 @@ const char *lex_next_tokcstr (const struct lexer *, int n);
 double lex_next_tokval (const struct lexer *, int n);
 struct substring lex_next_tokss (const struct lexer *, int n);
 
+/* Looking at the current command, including lookahead and lookbehind. */
+int lex_ofs (const struct lexer *);
+const struct token *lex_ofs_token (const struct lexer *, int ofs);
+struct msg_location *lex_ofs_location (const struct lexer *, int ofs0, int ofs1);
+struct msg_point lex_ofs_start_point (const struct lexer *, int ofs);
+struct msg_point lex_ofs_end_point (const struct lexer *, int ofs);
+
 /* Token representation. */
 char *lex_next_representation (const struct lexer *, int n0, int n1);
 bool lex_next_is_from_macro (const struct lexer *, int n);
 
 /* Current position. */
-int lex_get_first_line_number (const struct lexer *, int n);
-int lex_get_last_line_number (const struct lexer *, int n);
-int lex_get_first_column (const struct lexer *, int n);
-int lex_get_last_column (const struct lexer *, int n);
 const char *lex_get_file_name (const struct lexer *);
 struct msg_location *lex_get_location (const struct lexer *, int n0, int n1);
-struct msg_location *lex_get_lines (const struct lexer *, int n0, int n1);
 const char *lex_get_encoding (const struct lexer *);
 
 /* Issuing errors. */
@@ -194,5 +199,13 @@ enum lex_error_mode lex_get_error_mode (const struct lexer *);
 void lex_discard_rest_of_command (struct lexer *);
 void lex_interactive_reset (struct lexer *);
 void lex_discard_noninteractive (struct lexer *);
+
+/* Source code access. */
+void lex_set_message_handler (struct lexer *,
+                              void (*output_msg) (const struct msg *,
+                                                  struct lexer *));
+void lex_source_ref (const struct lex_source *);
+void lex_source_unref (struct lex_source *);
+struct substring lex_source_get_line (const struct lex_source *, int line);
 
 #endif /* lexer.h */

@@ -65,7 +65,7 @@ static void add_syntax_reader (struct lexer *, const char *file_name,
                                const char *encoding, enum segmenter_mode);
 static void bug_handler(int sig);
 static void fpu_init (void);
-static void output_msg (const struct msg *, void *);
+static void output_msg (const struct msg *, struct lexer *);
 
 /* Program entry point. */
 int
@@ -109,7 +109,7 @@ main (int argc, char **argv)
   terminal_opts_done (terminal_opts, argc, argv);
   argv_parser_destroy (parser);
 
-  msg_set_handler (output_msg, lexer);
+  lex_set_message_handler (lexer, output_msg);
   session_set_default_syntax_encoding (the_session, syntax_encoding);
 
   /* Add syntax files to source stream. */
@@ -215,17 +215,21 @@ bug_handler(int sig)
 }
 
 static void
-output_msg (const struct msg *m_, void *lexer_)
+output_msg (const struct msg *m_, struct lexer *lexer)
 {
-  struct lexer *lexer = lexer_;
+  struct msg_location *location = m_->location;
+  if (!location && lexer)
+    {
+      location = lex_get_location (lexer, 0, 0);
+      msg_location_remove_columns (location);
+    }
+
   struct msg m = {
     .category = m_->category,
     .severity = m_->severity,
     .stack = m_->stack,
     .n_stack = m_->n_stack,
-    .location = (m_->location ? m_->location
-                 : lexer ? lex_get_lines (lexer, 0, 0)
-                 : NULL),
+    .location = location,
     .command_name = output_get_uppercase_command_name (),
     .text = m_->text,
   };

@@ -109,14 +109,8 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
     }
 
   struct macro *m = xmalloc (sizeof *m);
-  *m = (struct macro) {
-    .name = xstrdup (name),
-    .location = xmalloc (sizeof *m->location),
-  };
-  *m->location = (struct msg_location) {
-    .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
-    .first_line = lex_get_first_line_number (lexer, 0),
-  };
+  *m = (struct macro) { .name = xstrdup (name) };
+  struct msg_point macro_start = lex_ofs_start_point (lexer, lex_ofs (lexer));
   lex_get (lexer);
 
   if (!lex_force_match (lexer, T_LPAREN))
@@ -282,7 +276,14 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
       ds_put_byte (&body, '\n');
       lex_get (lexer);
     }
-  m->location->last_line = lex_get_last_line_number (lexer, 0);
+
+  struct msg_point macro_end = lex_ofs_end_point (lexer, lex_ofs (lexer) - 1);
+  m->location = xmalloc (sizeof *m->location);
+  *m->location = (struct msg_location) {
+    .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
+    .start = { .line = macro_start.line },
+    .end = { .line = macro_end.line },
+  };
 
   macro_tokens_from_string (&m->body, body.ss, lex_get_syntax_mode (lexer));
   ds_destroy (&body);

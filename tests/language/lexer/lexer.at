@@ -72,7 +72,7 @@ lexer.sps:9.4: error: Syntax error at `.': expecting command name.
 
 lexer.sps:10.1: error: Syntax error at `^': Bad character `^' in input.
 
-lexer.sps:11.1: error: Syntax error at `�': Bad character U+FFFD in input.
+lexer.sps:11.1-11.2: error: Syntax error at `�': Bad character U+FFFD in input.
 ])
 AT_CLEANUP
 

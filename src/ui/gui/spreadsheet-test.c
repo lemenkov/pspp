@@ -122,7 +122,7 @@ main (int argc, char *argv[])
   if (argc < 2)
     g_error ("Usage: prog file\n");
 
-  msg_set_handler (print_msg, 0);
+  msg_set_handler (&(struct msg_handler) { .output_msg = print_msg });
 
   stuff.sp = NULL;
 

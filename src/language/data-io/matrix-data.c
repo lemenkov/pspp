@@ -253,12 +253,13 @@ parse_msg (struct dfm_reader *reader, const struct substring *token,
 
   int line_number = dfm_get_line_number (reader);
   struct msg_location *location = xmalloc (sizeof *location);
+  int last_column = (first_column && token->length
+                     ? first_column + token->length - 1
+                     : 0);
   *location = (struct msg_location) {
     .file_name = intern_new (dfm_get_file_name (reader)),
-    .first_line = line_number,
-    .last_line = line_number + 1,
-    .first_column = first_column,
-    .last_column = first_column ? first_column + token->length : 0,
+    .start = { .line = line_number, .column = first_column },
+    .end = { .line = line_number, .column = last_column },
   };
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
