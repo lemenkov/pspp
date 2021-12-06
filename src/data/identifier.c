@@ -99,8 +99,20 @@ token_type_to_string (enum token_type token)
     case T_RBRACK:
       return "]";
 
+    case T_LCURLY:
+      return "{";
+
+    case T_RCURLY:
+      return "}";
+
     case T_COMMA:
       return ",";
+
+    case T_SEMICOLON:
+      return ";";
+
+    case T_COLON:
+      return ":";
 
     case T_AND:
       return "AND";

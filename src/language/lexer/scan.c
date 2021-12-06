@@ -188,6 +188,8 @@ scan_punct1__ (char c0)
     case '-': return T_DASH;
     case '[': return T_LBRACK;
     case ']': return T_RBRACK;
+    case '{': return T_LCURLY;
+    case '}': return T_RCURLY;
     case '&': return T_AND;
     case '|': return T_OR;
     case '+': return T_PLUS;
@@ -196,6 +198,8 @@ scan_punct1__ (char c0)
     case '<': return T_LT;
     case '>': return T_GT;
     case '~': return T_NOT;
+    case ';': return T_SEMICOLON;
+    case ':': return T_COLON;
     default: return T_MACRO_PUNCT;
     }
 

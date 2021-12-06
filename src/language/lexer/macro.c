@@ -334,6 +334,8 @@ classify_token (enum token_type type)
     case T_RPAREN:
     case T_LBRACK:
     case T_RBRACK:
+    case T_LCURLY:
+    case T_RCURLY:
       return TC_PUNCT;
 
     case T_PLUS:
@@ -341,6 +343,7 @@ classify_token (enum token_type type)
     case T_ASTERISK:
     case T_SLASH:
     case T_EQUALS:
+    case T_COLON:
     case T_AND:
     case T_OR:
     case T_NOT:
@@ -359,6 +362,7 @@ classify_token (enum token_type type)
       return TC_BINOP;
 
     case T_COMMA:
+    case T_SEMICOLON:
       return TC_COMMA;
     }
 

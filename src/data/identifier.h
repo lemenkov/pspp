@@ -41,7 +41,11 @@
     TOKEN_TYPE(RPAREN)              /* ) */                             \
     TOKEN_TYPE(LBRACK)              /* [ */                             \
     TOKEN_TYPE(RBRACK)              /* ] */                             \
+    TOKEN_TYPE(LCURLY)              /* { */                             \
+    TOKEN_TYPE(RCURLY)              /* } */                             \
     TOKEN_TYPE(COMMA)               /* , */                             \
+    TOKEN_TYPE(SEMICOLON)           /* ; */                             \
+    TOKEN_TYPE(COLON)               /* : */                             \
                                                                         \
     TOKEN_TYPE(AND)                 /* AND */                           \
     TOKEN_TYPE(OR)                  /* OR */                            \

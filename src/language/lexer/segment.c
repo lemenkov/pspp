@@ -956,8 +956,8 @@ segmenter_parse_mid_command__ (struct segmenter *s,
             return segmenter_parse_number__ (s, input, n, eof, type, ofs);
         }
       /* Fall through. */
-    case '(': case ')': case ',': case '=':
-    case '[': case ']': case '&': case '|': case '+':
+    case '(': case ')': case '{': case ',': case '=': case ';': case ':':
+    case '[': case ']': case '}': case '&': case '|': case '+':
       *type = SEG_PUNCT;
       s->substate = 0;
       return 1;
