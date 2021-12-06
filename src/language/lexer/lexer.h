@@ -100,6 +100,7 @@ void lex_append (struct lexer *, struct lex_reader *);
 
 /* Advancing. */
 void lex_get (struct lexer *);
+void lex_get_n (struct lexer *, size_t n);
 
 /* Token testing functions. */
 bool lex_is_number (const struct lexer *);
@@ -120,6 +121,7 @@ bool lex_match (struct lexer *, enum token_type);
 bool lex_match_id (struct lexer *, const char *);
 bool lex_match_id_n (struct lexer *, const char *, size_t n);
 bool lex_match_int (struct lexer *, int);
+bool lex_at_phrase (struct lexer *, const char *s);
 bool lex_match_phrase (struct lexer *, const char *s);
 
 /* Forcible matching functions. */

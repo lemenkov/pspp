@@ -379,6 +379,14 @@ lex_get (struct lexer *lexer)
           return;
       }
 }
+
+/* Advances LEXER by N tokens. */
+void
+lex_get_n (struct lexer *lexer, size_t n)
+{
+  while (n-- > 0)
+    lex_get (lexer);
+}
 
 /* Issuing errors. */
 
@@ -564,7 +572,8 @@ lex_next_error_valist (struct lexer *lexer, int n0, int n1,
           ds_put_cstr (&s, ": ");
           ds_put_vformat (&s, format, args);
         }
-      ds_put_byte (&s, '.');
+      if (ds_last (&s) != '.')
+        ds_put_byte (&s, '.');
       msg (SE, "%s", ds_cstr (&s));
       ds_destroy (&s);
     }
@@ -1136,6 +1145,36 @@ lex_tokens_match (const struct token *actual, const struct token *expected)
     }
 }
 
+static size_t
+lex_at_phrase__ (struct lexer *lexer, const char *s)
+{
+  struct string_lexer slex;
+  struct token token;
+
+  size_t i = 0;
+  string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE, true);
+  while (string_lexer_next (&slex, &token))
+    {
+      bool match = lex_tokens_match (lex_next (lexer, i++), &token);
+      token_uninit (&token);
+      if (!match)
+        return 0;
+    }
+  return i;
+}
+
+/* If LEXER is positioned at the sequence of tokens that may be parsed from S,
+   returns true.  Otherwise, returns false.
+
+   S may consist of an arbitrary sequence of tokens, e.g. "KRUSKAL-WALLIS",
+   "2SLS", or "END INPUT PROGRAM".  Identifiers may be abbreviated to their
+   first three letters. */
+bool
+lex_at_phrase (struct lexer *lexer, const char *s)
+{
+  return lex_at_phrase__ (lexer, s) > 0;
+}
+
 /* If LEXER is positioned at the sequence of tokens that may be parsed from S,
    skips it and returns true.  Otherwise, returns false.
 
@@ -1145,23 +1184,10 @@ lex_tokens_match (const struct token *actual, const struct token *expected)
 bool
 lex_match_phrase (struct lexer *lexer, const char *s)
 {
-  struct string_lexer slex;
-  struct token token;
-  int i;
-
-  i = 0;
-  string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE, true);
-  while (string_lexer_next (&slex, &token))
-    {
-      bool match = lex_tokens_match (lex_next (lexer, i++), &token);
-      token_uninit (&token);
-      if (!match)
-        return false;
-    }
-
-  while (i-- > 0)
-    lex_get (lexer);
-  return true;
+  size_t n = lex_at_phrase__ (lexer, s);
+  if (n > 0)
+    lex_get_n (lexer, n);
+  return n > 0;
 }
 
 static int
