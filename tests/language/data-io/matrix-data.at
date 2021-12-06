@@ -389,6 +389,71 @@ CORR,.,var04,.7,.5,.4,1.0
 ])
 AT_CLEANUP
 
+AT_SETUP([MATRIX DATA - factors and splits])
+AT_DATA([matrix-data.sps], [dnl
+matrix data
+    variables = s f rowtype_  var01 var02 var03
+    /split=s
+    /factor=f.
+
+begin data
+8 0   mean     21.4  5.0  72.9
+8 0   sd       6.5   1.6  22.8
+8 0   n        106   106  106
+8 .   corr     1
+8 .   corr    .41  1
+8 .   corr    -.16  -.22  1
+9 1   mean     11.4  1.0  52.9
+9 1   sd       9.5   8.6  12.8
+9 1   n        10   11  12
+9 .   corr     1
+9 .   corr    .51  1
+9 .   corr    .36  -.41  1
+end data.
+
+display dictionary.
+
+list.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Variables
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+s,1,Scale,Input,8,Right,F4.0,F4.0
+ROWTYPE_,2,Nominal,Input,8,Left,A8,A8
+f,3,Scale,Input,8,Right,F4.0,F4.0
+VARNAME_,4,Nominal,Input,8,Left,A8,A8
+var01,5,Scale,Input,8,Right,F10.4,F10.4
+var02,6,Scale,Input,8,Right,F10.4,F10.4
+var03,7,Scale,Input,8,Right,F10.4,F10.4
+
+Table: Split Values
+Variable,Value
+s,8
+
+Table: Data List
+s,ROWTYPE_,f,VARNAME_,var01,var02,var03
+8,MEAN,0,,21.4000,5.0000,72.9000
+8,STDDEV,0,,6.5000,1.6000,22.8000
+8,N,0,,106.0000,106.0000,106.0000
+8,CORR,.,var01,1.0000,.4100,-.1600
+8,CORR,.,var02,.4100,1.0000,-.2200
+8,CORR,.,var03,-.1600,-.2200,1.0000
+
+Table: Split Values
+Variable,Value
+s,9
+
+Table: Data List
+s,ROWTYPE_,f,VARNAME_,var01,var02,var03
+9,MEAN,1,,11.4000,1.0000,52.9000
+9,STDDEV,1,,9.5000,8.6000,12.8000
+9,N,1,,10.0000,11.0000,12.0000
+9,CORR,.,var01,1.0000,.5100,.3600
+9,CORR,.,var02,.5100,1.0000,-.4100
+9,CORR,.,var03,.3600,-.4100,1.0000
+])
+AT_CLEANUP
+
 AT_SETUP([MATRIX DATA - bad ROWTYPE_])
 AT_DATA([matrix-data.sps], [dnl
 matrix data
