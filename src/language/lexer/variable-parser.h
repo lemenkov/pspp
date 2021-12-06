@@ -71,7 +71,24 @@ bool parse_mixed_vars (struct lexer *, const struct dictionary *dict,
 bool parse_mixed_vars_pool (struct lexer *, const struct dictionary *dict,
 			    struct pool *,
                            char ***names, size_t *cnt, int opts);
+
+/* This variable parser supports the unusual situation where set of variables
+   has to be parsed before the associated dictionary is available.  Thus,
+   parsing proceeds in two phases: first, the variables are parsed in a vector
+   of "struct var_syntax"; second, when the dictionary becomes available, the
+   structs are turned into "struct variable"s. */
 
+struct var_syntax
+  {
+    char *first;                /* Always nonnull. */
+    char *last;                 /* Nonnull for var ranges (e.g. "a TO b"). */
+  };
+void var_syntax_destroy (struct var_syntax *, size_t n);
+
+bool var_syntax_parse (struct lexer *, struct var_syntax **, size_t *);
+bool var_syntax_evaluate (const struct var_syntax *, size_t,
+                          const struct dictionary *,
+                          struct variable ***, size_t *, int opts);
 
 /* Const wrappers */
 

@@ -697,6 +697,135 @@ parse_mixed_vars_pool (struct lexer *lexer, const struct dictionary *dict, struc
   return retval;
 }
 
+/* Frees the N var_syntax structures in VS, as well as VS itself. */
+void
+var_syntax_destroy (struct var_syntax *vs, size_t n)
+{
+  for (size_t i = 0; i < n; i++)
+    {
+      free (vs[i].first);
+      free (vs[i].last);
+    }
+  free (vs);
+}
+
+/* Parses syntax for variables and variable ranges from LEXER.  If successful,
+   initializes *VS to the beginning of an array of var_syntax structs and *N_VS
+   to the number of elements in the array and returns true.  On error, sets *VS
+   to NULL and *N_VS to 0 and returns false. */
+bool
+var_syntax_parse (struct lexer *lexer, struct var_syntax **vs, size_t *n_vs)
+{
+  *vs = NULL;
+  *n_vs = 0;
+
+  if (lex_token (lexer) != T_ID)
+    {
+      lex_error (lexer, _("expecting variable name"));
+      goto error;
+    }
+
+  size_t allocated_vs = 0;
+  do
+    {
+      if (allocated_vs >= *n_vs)
+        *vs = x2nrealloc (*vs, &allocated_vs, sizeof **vs);
+      struct var_syntax *new = &(*vs)[(*n_vs)++];
+      *new = (struct var_syntax) { .first = ss_xstrdup (lex_tokss (lexer)) };
+      lex_get (lexer);
+
+      if (lex_match (lexer, T_TO))
+        {
+          if (lex_token (lexer) != T_ID)
+            {
+              lex_error (lexer, _("expecting variable name"));
+              goto error;
+            }
+
+          new->last = ss_xstrdup (lex_tokss (lexer));
+          lex_get (lexer);
+        }
+    }
+  while (lex_token (lexer) == T_ID);
+  return true;
+
+error:
+  var_syntax_destroy (*vs, *n_vs);
+  *vs = NULL;
+  *n_vs = 0;
+  return false;
+}
+
+/* Looks up the N_VS var syntax structs in VS in DICT, translating them to an
+   array of variables.  If successful, initializes *VARS to the beginning of an
+   array of pointers to variables and *N_VARS to the length of the array and
+   returns true.  On error, sets *VARS to NULL and *N_VARS to 0.
+
+   For the moment, only honors PV_NUMERIC in OPTS. */
+bool
+var_syntax_evaluate (const struct var_syntax *vs, size_t n_vs,
+                     const struct dictionary *dict,
+                     struct variable ***vars, size_t *n_vars, int opts)
+{
+  assert (!(opts & ~PV_NUMERIC));
+
+  *vars = NULL;
+  *n_vars = 0;
+
+  size_t allocated_vars = 0;
+  for (size_t i = 0; i < n_vs; i++)
+    {
+      struct variable *first = dict_lookup_var (dict, vs[i].first);
+      if (!first)
+        {
+          msg (SE, _("%s is not a variable name."), vs[i].first);
+          goto error;
+        }
+
+      struct variable *last = (vs[i].last
+                               ? dict_lookup_var (dict, vs[i].last)
+                               : first);
+      if (!last)
+        {
+          msg (SE, _("%s is not a variable name."), vs[i].last);
+          goto error;
+        }
+
+      size_t first_idx = var_get_dict_index (first);
+      size_t last_idx = var_get_dict_index (last);
+      if (last_idx < first_idx)
+        {
+          msg (SE, _("%s TO %s is not valid syntax since %s "
+                     "precedes %s in the dictionary."),
+               vs[i].first, vs[i].last,
+               vs[i].first, vs[i].last);
+          goto error;
+        }
+
+      for (size_t j = first_idx; j <= last_idx; j++)
+        {
+          struct variable *v = dict_get_var (dict, j);
+          if (opts & PV_NUMERIC && !var_is_numeric (v))
+            {
+              msg (SW, _("%s is not a numeric variable."), var_get_name (v));
+              goto error;
+            }
+
+          if (*n_vars >= allocated_vars)
+            *vars = x2nrealloc (*vars, &allocated_vars, sizeof **vars);
+          (*vars)[(*n_vars)++] = v;
+        }
+    }
+
+  return true;
+
+error:
+  free (*vars);
+  *vars = NULL;
+  *n_vars = 0;
+  return false;
+}
+
 /* A set of variables. */
 struct var_set
   {
