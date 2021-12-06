@@ -63,6 +63,11 @@ void string_array_shrink (struct string_array *);
 void string_array_sort (struct string_array *);
 void string_array_uniq (struct string_array *);
 
+bool string_array_equal (const struct string_array *,
+                         const struct string_array *);
+bool string_array_equal_case (const struct string_array *,
+                              const struct string_array *);
+
 void string_array_parse (struct string_array *, struct substring string,
                          struct substring delimiters);
 char *string_array_join (const struct string_array *, const char *separator);

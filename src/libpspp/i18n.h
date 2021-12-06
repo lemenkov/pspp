@@ -18,6 +18,7 @@
 #define I18N_H
 
 #include "libpspp/compiler.h"
+#include "libpspp/str.h"
 #include <stdbool.h>
 #include <unistr.h>
 
@@ -77,7 +78,10 @@ const char *uc_name (ucs4_t uc, char buffer[16]);
 
 unsigned int utf8_hash_case_bytes (const char *, size_t n, unsigned int basis) WARN_UNUSED_RESULT;
 unsigned int utf8_hash_case_string (const char *, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int utf8_hash_case_substring (struct substring, unsigned int basis)
+  WARN_UNUSED_RESULT;
 int utf8_strcasecmp (const char *, const char *);
+int utf8_sscasecmp (struct substring, struct substring);
 int utf8_strncasecmp (const char *, size_t, const char *, size_t);
 int utf8_strverscasecmp (const char *, const char *);
 char *utf8_to_upper (const char *);

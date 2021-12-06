@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "libpspp/array.h"
+#include "libpspp/i18n.h"
 #include "libpspp/str.h"
 
 #include "gl/xalloc.h"
@@ -251,6 +252,36 @@ string_array_uniq (struct string_array *sa)
         free (s);
     }
   sa->n = n;
+}
+
+/* Returns true if A and B contain the same strings in the same order,
+   false otherwise. */
+bool
+string_array_equal (const struct string_array *a,
+                    const struct string_array *b)
+{
+  if (a->n != b->n)
+    return false;
+
+  for (size_t i = 0; i < a->n; i++)
+    if (strcmp (a->strings[i], b->strings[i]))
+      return false;
+  return true;
+}
+
+/* Returns true if A and B contain the same strings in the same order,
+   false otherwise. */
+bool
+string_array_equal_case (const struct string_array *a,
+                         const struct string_array *b)
+{
+  if (a->n != b->n)
+    return false;
+
+  for (size_t i = 0; i < a->n; i++)
+    if (utf8_strcasecmp (a->strings[i], b->strings[i]))
+      return false;
+  return true;
 }
 
 /* Divides STRING into tokens at DELIMITERS and adds each token to SA. */

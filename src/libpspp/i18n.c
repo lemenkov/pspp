@@ -880,7 +880,15 @@ utf8_hash_case_bytes (const char *s, size_t n, unsigned int basis)
 unsigned int
 utf8_hash_case_string (const char *s, unsigned int basis)
 {
-  return utf8_hash_case_bytes (s, strlen (s), basis);
+  return utf8_hash_case_substring (ss_cstr (s), basis);
+}
+
+/* Returns a hash value for UTF-8 string S, with lowercase and uppercase
+   letters treated as equal, starting from BASIS. */
+unsigned int
+utf8_hash_case_substring (struct substring s, unsigned int basis)
+{
+  return utf8_hash_case_bytes (s.string, s.length, basis);
 }
 
 /* Compares UTF-8 strings A and B case-insensitively.
@@ -888,7 +896,13 @@ utf8_hash_case_string (const char *s, unsigned int basis)
 int
 utf8_strcasecmp (const char *a, const char *b)
 {
-  return utf8_strncasecmp (a, strlen (a), b, strlen (b));
+  return utf8_sscasecmp (ss_cstr (a), ss_cstr (b));
+}
+
+int
+utf8_sscasecmp (struct substring a, struct substring b)
+{
+  return utf8_strncasecmp (a.string, a.length, b.string, b.length);
 }
 
 /* Compares UTF-8 strings A (with length AN) and B (with length BN)
