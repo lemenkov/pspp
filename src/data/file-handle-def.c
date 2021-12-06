@@ -25,6 +25,7 @@
 
 #include "data/dataset.h"
 #include "data/variable.h"
+#include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
 #include "libpspp/hash-functions.h"
@@ -390,6 +391,40 @@ const char *
 fh_get_encoding (const struct file_handle *handle)
 {
   return handle->encoding;
+}
+
+/* Returns true if A and B refer to the same file or dataset, false
+   otherwise. */
+bool
+fh_equal (const struct file_handle *a, const struct file_handle *b)
+{
+  if (a->referent != b->referent)
+    return false;
+
+  switch (a->referent)
+    {
+    case FH_REF_FILE:
+      {
+        struct file_identity *a_id = fh_get_identity (a);
+        struct file_identity *b_id = fh_get_identity (b);
+
+        int cmp = fh_compare_file_identities (a_id, b_id);
+
+        fh_free_identity (a_id);
+        fh_free_identity (b_id);
+
+        return cmp == 0;
+      }
+
+    case FH_REF_INLINE:
+      return true;
+
+    case FH_REF_DATASET:
+      return a->ds == b->ds;
+
+    default:
+      NOT_REACHED ();
+    }
 }
 
 /* Returns the dataset handle associated with HANDLE.

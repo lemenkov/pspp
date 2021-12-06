@@ -96,6 +96,8 @@ const char *fh_get_name (const struct file_handle *);
 enum fh_referent fh_get_referent (const struct file_handle *);
 const char *fh_get_encoding (const struct file_handle *);
 
+bool fh_equal (const struct file_handle *, const struct file_handle *);
+
 /* Properties of FH_REF_FILE file handles. */
 const char *fh_get_file_name (const struct file_handle *);
 const char *fh_get_file_name_encoding (const struct file_handle *handle);
