@@ -37,7 +37,8 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Creates and returns a writer for HANDLE with the given DICT. */
+/* Creates and returns a writer for HANDLE with the given DICT.  The caller
+  retains ownership of DICT, which might get modified to assign short names. */
 struct casewriter *
 any_writer_open (struct file_handle *handle, struct dictionary *dict)
 {
