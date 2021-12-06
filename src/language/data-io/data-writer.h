@@ -28,6 +28,7 @@ struct dfm_writer *dfm_open_writer (struct file_handle *,
 bool dfm_close_writer (struct dfm_writer *);
 bool dfm_write_error (const struct dfm_writer *);
 bool dfm_put_record (struct dfm_writer *, const char *rec, size_t len);
+bool dfm_put_record_utf8 (struct dfm_writer *, const char *rec, size_t len);
 const char *dfm_writer_get_encoding (const struct dfm_writer *);
 
 #endif /* data-writer.h */

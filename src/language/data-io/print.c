@@ -575,14 +575,7 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
               len--;
             }
 
-          if (is_encoding_utf8 (trns->encoding))
-            dfm_put_record (trns->writer, s, len);
-          else
-            {
-              char *recoded = recode_string (trns->encoding, UTF8, s, len);
-              dfm_put_record (trns->writer, recoded, strlen (recoded));
-              free (recoded);
-            }
+          dfm_put_record_utf8 (trns->writer, s, len);
         }
     }
 }

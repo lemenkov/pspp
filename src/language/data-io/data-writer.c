@@ -203,6 +203,25 @@ dfm_put_record (struct dfm_writer *w, const char *rec, size_t len)
   return !dfm_write_error (w);
 }
 
+/* Writes record REC (which need not be null-terminated) having length LEN to
+   the file corresponding to HANDLE.  REC is encoded in UTF-8, which this
+   function recodes to the correct encoding for W before writing.  Adds any
+   needed formatting, such as a trailing new-line.  Returns true on success,
+   false on failure. */
+bool
+dfm_put_record_utf8 (struct dfm_writer *w, const char *rec, size_t len)
+{
+  if (is_encoding_utf8 (w->encoding))
+    return dfm_put_record (w, rec, len);
+  else
+    {
+      char *recoded = recode_string (w->encoding, UTF8, rec, len);
+      bool ok = dfm_put_record (w, recoded, strlen (recoded));
+      free (recoded);
+      return ok;
+    }
+}
+
 /* Closes data file writer W. */
 bool
 dfm_close_writer (struct dfm_writer *w)
