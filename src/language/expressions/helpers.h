@@ -44,6 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "libpspp/str.h"
+#include "math/distributions.h"
 #include "math/moments.h"
 #include "math/random.h"
 
@@ -90,14 +91,6 @@ is_valid (double d)
 }
 
 size_t count_valid (double *, size_t);
-
-double idf_beta (double P, double a, double b);
-double ncdf_beta (double x, double a, double b, double lambda);
-double npdf_beta (double x, double a, double b, double lambda);
-
-double cdf_bvnor (double x0, double x1, double r);
-
-double idf_fdist (double P, double a, double b);
 
 double round_nearest (double x, double mult, double fuzzbits);
 double round_zero (double x, double mult, double fuzzbits);

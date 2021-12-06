@@ -33,6 +33,7 @@ src_math_libpspp_math_la_SOURCES = \
 	src/math/covariance.h \
 	src/math/correlation.c \
 	src/math/correlation.h \
+	src/math/distributions.c src/math/distributions.h \
 	src/math/histogram.c src/math/histogram.h \
 	src/math/interaction.c src/math/interaction.h \
 	src/math/levene.c src/math/levene.h \
