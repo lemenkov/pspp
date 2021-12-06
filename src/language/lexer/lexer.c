@@ -888,6 +888,14 @@ lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
               else
                 lex_error (lexer, _("Expected positive integer."));
             }
+          else
+            {
+              if (name)
+                lex_error (lexer, _("Expected integer %ld or greater for %s."),
+                           min, name);
+              else
+                lex_error (lexer, _("Expected integer %ld or greater."), min);
+            }
         }
       else if (report_upper_bound)
         {
