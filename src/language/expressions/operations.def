@@ -872,14 +872,14 @@ function NPDF.T (x, df > 0, nc) = unimplemented;
 // Type-1 Gumbel distribution.
 extension function CDF.T1G (x, a, b) = gsl_cdf_gumbel1_P (x, a, b);
 extension function IDF.T1G (P >= 0 && P <= 1, a, b)
-     = gsl_cdf_gumbel1_P (P, a, b);
+     = gsl_cdf_gumbel1_Pinv (P, a, b);
 extension function PDF.T1G (x, a, b) = gsl_ran_gumbel1_pdf (x, a, b);
 no_opt extension function RV.T1G (a, b) = gsl_ran_gumbel1 (get_rng (), a, b);
 
 // Type-2 Gumbel distribution.
 extension function CDF.T2G (x, a, b) = gsl_cdf_gumbel2_P (x, a, b);
 extension function IDF.T2G (P >= 0 && P <= 1, a, b)
-     = gsl_cdf_gumbel2_P (P, a, b);
+     = gsl_cdf_gumbel2_Pinv (P, a, b);
 extension function PDF.T2G (x, a, b) = gsl_ran_gumbel2_pdf (x, a, b);
 no_opt extension function RV.T2G (a, b) = gsl_ran_gumbel2 (get_rng (), a, b);
 
