@@ -29,11 +29,13 @@
 #include <string.h>
 #include <unicase.h>
 #include <unigbrk.h>
+#include <uniwidth.h>
 
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/hmapx.h"
 #include "libpspp/hash-functions.h"
+#include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "libpspp/version.h"
@@ -499,6 +501,55 @@ utf8_encoding_concat_len (const char *head, const char *tail,
                                        encoding, max_len, &result);
   free (result);
   return prefix_len + tail_len;
+}
+
+/* Returns the number of display columns that would be occupied by the LENGTH
+   bytes of UTF-8 starting at S. */
+size_t
+utf8_count_columns (const char *s_, size_t length)
+{
+  const uint8_t *s = CHAR_CAST (const uint8_t *, s_);
+
+  size_t columns = 0;
+  for (int ofs = 0; ofs < length; )
+    {
+      ucs4_t uc;
+      ofs += u8_mbtouc (&uc, s + ofs, length - ofs);
+      if (uc != '\t')
+        {
+          int width = uc_width (uc, "UTF-8");
+          if (width > 0)
+            columns += width;
+        }
+      else
+        columns = ROUND_UP (columns + 1, 8);
+    }
+  return columns;
+}
+
+/* Returns the byte offset in LENGTH-byte UTF-8 string S that is N_COLUMNS
+   display columns into the string. */
+size_t
+utf8_columns_to_bytes (const char *s_, size_t length, size_t n_columns)
+{
+  const uint8_t *s = CHAR_CAST (const uint8_t *, s_);
+
+  size_t columns = 0;
+  int ofs;
+  for (ofs = 0; ofs < length && columns < n_columns; )
+    {
+      ucs4_t uc;
+      ofs += u8_mbtouc (&uc, s + ofs, length - ofs);
+      if (uc != '\t')
+        {
+          int width = uc_width (uc, "UTF-8");
+          if (width > 0)
+            columns += width;
+        }
+      else
+        columns = ROUND_UP (columns + 1, 8);
+    }
+  return ofs;
 }
 
 /* Returns an allocated, null-terminated string, owned by the caller,

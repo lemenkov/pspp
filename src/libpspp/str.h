@@ -150,6 +150,8 @@ int ss_first_mblen (struct substring);
 ucs4_t ss_get_mb (struct substring *);
 ucs4_t ss_at_mb (struct substring, size_t ofs);
 int ss_at_mblen (struct substring, size_t ofs);
+size_t ss_utf8_count_columns (struct substring);
+struct substring ss_utf8_columns (struct substring, size_t start, size_t n);
 
 /* Variable length strings. */
 

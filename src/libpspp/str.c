@@ -26,6 +26,7 @@
 #include <unistr.h>
 
 #include "libpspp/cast.h"
+#include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/pool.h"
 
@@ -927,6 +928,22 @@ ss_at_mblen (struct substring s, size_t ofs)
     }
   else
     return 0;
+}
+
+size_t
+ss_utf8_count_columns (struct substring s)
+{
+  return utf8_count_columns (s.string, s.length);
+}
+
+/* Returns a substring of S starting at 0-based display column START and
+   running for N display columns. */
+struct substring
+ss_utf8_columns (struct substring s, size_t start, size_t n)
+{
+  ss_advance (&s, utf8_columns_to_bytes (s.string, s.length, start));
+  s.length = utf8_columns_to_bytes (s.string, s.length, n);
+  return s;
 }
 
 /* Initializes ST as an empty string. */

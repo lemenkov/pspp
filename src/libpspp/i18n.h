@@ -58,6 +58,9 @@ char *utf8_encoding_concat (const char *head, const char *tail,
 size_t utf8_encoding_concat_len (const char *head, const char *tail,
                                  const char *encoding, size_t max_len);
 
+size_t utf8_count_columns (const char *, size_t);
+size_t utf8_columns_to_bytes (const char *, size_t, size_t n_columns);
+
 char *utf8_to_filename (const char *filename);
 char *filename_to_utf8 (const char *filename);
 

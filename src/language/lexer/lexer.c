@@ -28,7 +28,6 @@
 #include <unictype.h>
 #include <unistd.h>
 #include <unistr.h>
-#include <uniwidth.h>
 
 #include "language/command.h"
 #include "language/lexer/macro.h"
@@ -1220,38 +1219,11 @@ lex_token_get_last_line_number (const struct lex_source *src,
 }
 
 static int
-count_columns (const char *s_, size_t length)
-{
-  const uint8_t *s = CHAR_CAST (const uint8_t *, s_);
-  int columns;
-  size_t ofs;
-  int mblen;
-
-  columns = 0;
-  for (ofs = 0; ofs < length; ofs += mblen)
-    {
-      ucs4_t uc;
-
-      mblen = u8_mbtouc (&uc, s + ofs, length - ofs);
-      if (uc != '\t')
-        {
-          int width = uc_width (uc, "UTF-8");
-          if (width > 0)
-            columns += width;
-        }
-      else
-        columns = ROUND_UP (columns + 1, 8);
-    }
-
-  return columns + 1;
-}
-
-static int
 lex_token_get_first_column (const struct lex_source *src,
                             const struct lex_token *token)
 {
-  return count_columns (&src->buffer[token->line_pos - src->tail],
-                        token->token_pos - token->line_pos);
+  return utf8_count_columns (&src->buffer[token->line_pos - src->tail],
+                             token->token_pos - token->line_pos) + 1;
 }
 
 static int
@@ -1265,7 +1237,7 @@ lex_token_get_last_column (const struct lex_source *src,
   newline = memrchr (start, '\n', end - start);
   if (newline != NULL)
     start = newline + 1;
-  return count_columns (start, end - start);
+  return utf8_count_columns (start, end - start) + 1;
 }
 
 static struct msg_location
