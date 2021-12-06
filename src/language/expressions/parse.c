@@ -1044,61 +1044,53 @@ word_matches (const char **test, const char **name)
   return true;
 }
 
+/* Returns 0 if TOKEN and FUNC do not match,
+   1 if TOKEN is an acceptable abbreviation for FUNC,
+   2 if TOKEN equals FUNC. */
 static int
-compare_names (const char *test, const char *name, bool abbrev_ok)
+compare_function_names (const char *token_, const char *func_)
 {
-  if (!abbrev_ok)
-    return true;
-
-  for (;;)
-    {
-      if (!word_matches (&test, &name))
-        return true;
-      if (*name == '\0' && *test == '\0')
-        return false;
-    }
-}
-
-static int
-compare_strings (const char *test, const char *name, bool abbrev_ok UNUSED)
-{
-  return c_strcasecmp (test, name);
+  const char *token = token_;
+  const char *func = func_;
+  while (*token || *func)
+    if (!word_matches (&token, &func))
+      return 0;
+  return !c_strcasecmp (token_, func_) ? 2 : 1;
 }
 
 static bool
-lookup_function_helper (const char *name,
-                        int (*compare) (const char *test, const char *name,
-                                        bool abbrev_ok),
-                        const struct operation **first,
-                        const struct operation **last)
-{
-  const struct operation *f;
-
-  for (f = operations + OP_function_first;
-       f <= operations + OP_function_last; f++)
-    if (!compare (name, f->name, !(f->flags & OPF_NO_ABBREV)))
-      {
-        *first = f;
-
-        while (f <= operations + OP_function_last
-               && !compare (name, f->name, !(f->flags & OPF_NO_ABBREV)))
-          f++;
-        *last = f;
-
-        return true;
-      }
-
-  return false;
-}
-
-static bool
-lookup_function (const char *name,
+lookup_function (const char *token,
                  const struct operation **first,
                  const struct operation **last)
 {
   *first = *last = NULL;
-  return (lookup_function_helper (name, compare_strings, first, last)
-          || lookup_function_helper (name, compare_names, first, last));
+  const struct operation *best = NULL;
+
+  for (const struct operation *f = operations + OP_function_first;
+       f <= operations + OP_function_last; f++)
+    {
+      int score = compare_function_names (token, f->name);
+      if (score == 2)
+        {
+          best = f;
+          break;
+        }
+      else if (score == 1 && !(f->flags & OPF_NO_ABBREV) && !best)
+        best = f;
+    }
+
+  if (!best)
+    return false;
+
+  *first = best;
+
+  const struct operation *f = best;
+  while (f <= operations + OP_function_last
+         && !c_strcasecmp (f->name, best->name))
+    f++;
+  *last = f;
+
+  return true;
 }
 
 static int
