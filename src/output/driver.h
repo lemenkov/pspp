@@ -35,6 +35,7 @@ void output_submit (struct output_item *);
 void output_flush (void);
 
 void output_log (const char *, ...) PRINTF_FORMAT (1, 2);
+void output_log_nocopy (char *);
 
 const char *output_get_title (void);
 void output_set_title (const char *);

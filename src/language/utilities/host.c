@@ -261,8 +261,7 @@ run_command (const char *command, struct timespec timeout)
       if (end > output && end[-1] == '\n')
         end[-1] = '\0';
 
-      output_log ("%s", output);
-      free (output);
+      output_log_nocopy (output);
     }
   free (locale_output);
 

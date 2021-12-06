@@ -298,6 +298,5 @@ expr_debug_print_postfix (const struct expression *e)
           NOT_REACHED ();
         }
     }
-  output_log ("%s", ds_cstr (&s));
-  ds_destroy (&s);
+  output_log_nocopy (ds_steal_cstr (&s));
 }

@@ -366,6 +366,12 @@ output_log (const char *format, ...)
   char *s = xvasprintf (format, args);
   va_end (args);
 
+  output_log_nocopy (s);
+}
+
+void
+output_log_nocopy (char *s)
+{
   output_submit (text_item_create_nocopy (TEXT_ITEM_LOG, s, NULL));
 }
 
