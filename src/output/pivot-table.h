@@ -739,6 +739,8 @@ struct pivot_value *pivot_value_new_value (const union value *, int width,
 
 /* Values from variable names. */
 struct pivot_value *pivot_value_new_variable (const struct variable *);
+struct pivot_value *pivot_value_new_variable__ (const char *name,
+                                                const char *label);
 
 /* Values from text strings. */
 struct pivot_value *pivot_value_new_text (const char *);

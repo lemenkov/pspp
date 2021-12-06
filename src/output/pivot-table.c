@@ -2845,12 +2845,21 @@ pivot_value_new_value (const union value *value, int width,
 struct pivot_value *
 pivot_value_new_variable (const struct variable *variable)
 {
+  return pivot_value_new_variable__ (var_get_name (variable),
+                                     var_get_label (variable));
+}
+
+/* Returns a new pivot_value for a variable with the given NAME and optional
+   LABEL. */
+struct pivot_value *
+pivot_value_new_variable__ (const char *name, const char *label)
+{
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
     .variable = {
       .type = PIVOT_VALUE_VARIABLE,
-      .var_name = xstrdup (var_get_name (variable)),
-      .var_label = xstrdup_if_nonempty (var_get_label (variable)),
+      .var_name = xstrdup (name),
+      .var_label = xstrdup_if_nonempty (label),
     },
   };
   return value;
