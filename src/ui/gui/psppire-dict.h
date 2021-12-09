@@ -81,10 +81,10 @@ gboolean       psppire_dict_set_name (PsppireDict* s, gint idx, const gchar *nam
 void           psppire_dict_delete_var (PsppireDict *s, gint idx);
 
 /* Return the number of variables in the dictionary */
-gint psppire_dict_get_var_cnt (const PsppireDict *d);
+gint psppire_dict_get_n_vars (const PsppireDict *d);
 
 /* Return the number of `union value's in the dictionary */
-size_t psppire_dict_get_value_cnt (const PsppireDict *d);
+size_t psppire_dict_get_n_values (const PsppireDict *d);
 
 /* Returns the prototype for the cases that match the dictionary */
 const struct caseproto *psppire_dict_get_proto (const PsppireDict *d);

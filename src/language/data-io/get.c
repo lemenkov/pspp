@@ -127,7 +127,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
   if (reader == NULL)
     goto error;
 
-  if (dict_get_var_cnt (dict) == 0)
+  if (dict_get_n_vars (dict) == 0)
     {
       msg (SE, _("%s: Data file dictionary has no variables."),
            fh_get_name (fh));

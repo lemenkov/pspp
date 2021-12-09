@@ -73,7 +73,7 @@ struct sfm_writer
     struct replace_file *rf;    /* Ticket for replacing output file. */
 
     enum any_compression compression;
-    casenumber case_cnt;	/* Number of cases written so far. */
+    casenumber n_cases;         /* Number of cases written so far. */
     uint8_t space;              /* ' ' in the file's character encoding. */
 
     /* Simple compression buffering.
@@ -97,8 +97,8 @@ struct sfm_writer
 
     /* Variables. */
     struct sfm_var *sfm_vars;   /* Variables. */
-    size_t sfm_var_cnt;         /* Number of variables. */
-    size_t segment_cnt;         /* Number of variables including extra segments
+    size_t sfm_n_vars;          /* Number of variables. */
+    size_t n_segments;          /* Number of variables including extra segments
                                    for long string variables. */
   };
 
@@ -226,7 +226,7 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
       && is_encoding_ebcdic_compatible (dict_get_encoding (d)))
     w->compression = ANY_COMP_SIMPLE;
 
-  w->case_cnt = 0;
+  w->n_cases = 0;
 
   w->n_opcodes = w->n_elements = 0;
   memset (w->cbuf[0], 0, 8);
@@ -235,8 +235,7 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
      data.  Also count the number of segments.  Very long strings
      occupy multiple segments, otherwise each variable only takes
      one segment. */
-  w->segment_cnt = sfm_dictionary_to_sfm_vars (d, &w->sfm_vars,
-                                               &w->sfm_var_cnt);
+  w->n_segments = sfm_dictionary_to_sfm_vars (d, &w->sfm_vars, &w->sfm_n_vars);
 
   /* Open file handle as an exclusive writer. */
   /* TRANSLATORS: this fragment will be interpolated into
@@ -265,12 +264,12 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
 
   /* Write basic variable info. */
   short_names_assign (d);
-  for (i = 0; i < dict_get_var_cnt (d); i++)
+  for (i = 0; i < dict_get_n_vars (d); i++)
     write_variable (w, dict_get_var (d, i));
 
   write_value_labels (w, d);
 
-  if (dict_get_document_line_cnt (d) > 0)
+  if (dict_get_document_n_lines (d) > 0)
     write_documents (w, d);
 
   write_integer_info_record (w, d);
@@ -348,7 +347,7 @@ calc_oct_idx (const struct dictionary *d, struct variable *target_var)
   int i;
 
   oct_idx = 0;
-  for (i = 0; i < dict_get_var_cnt (d); i++)
+  for (i = 0; i < dict_get_n_vars (d); i++)
     {
       struct variable *var = dict_get_var (d, i);
       if (var == target_var)
@@ -486,7 +485,7 @@ static void
 write_variable (struct sfm_writer *w, const struct variable *v)
 {
   int width = var_get_width (v);
-  int segment_cnt = sfm_width_to_segments (width);
+  int n_segments = sfm_width_to_segments (width);
   int seg0_width = sfm_segment_alloc_width (width, 0);
   const char *encoding = var_get_encoding (v);
   int i;
@@ -556,7 +555,7 @@ write_variable (struct sfm_writer *w, const struct variable *v)
   write_variable_continuation_records (w, seg0_width);
 
   /* Write additional segments for very long string variables. */
-  for (i = 1; i < segment_cnt; i++)
+  for (i = 1; i < n_segments; i++)
     {
       int seg_width = sfm_segment_alloc_width (width, i);
       struct fmt_spec fmt = fmt_for_output (FMT_A, MAX (seg_width, 1), 0);
@@ -599,7 +598,7 @@ write_value_labels (struct sfm_writer *w, const struct dictionary *d)
   hmap_init (&same_sets);
 
   idx = 0;
-  for (i = 0; i < dict_get_var_cnt (d); i++)
+  for (i = 0; i < dict_get_n_vars (d); i++)
     {
       struct variable *v = dict_get_var (d, i);
 
@@ -782,7 +781,7 @@ static void
 write_variable_attributes (struct sfm_writer *w, const struct dictionary *d)
 {
   struct string s = DS_EMPTY_INITIALIZER;
-  size_t n_vars = dict_get_var_cnt (d);
+  size_t n_vars = dict_get_n_vars (d);
   size_t n_attrsets = 0;
   size_t i;
 
@@ -898,13 +897,13 @@ write_variable_display_parameters (struct sfm_writer *w,
   write_int (w, 7);             /* Record type. */
   write_int (w, 11);            /* Record subtype. */
   write_int (w, 4);             /* Data item (int32) size. */
-  write_int (w, w->segment_cnt * 3); /* Number of data items. */
+  write_int (w, w->n_segments * 3); /* Number of data items. */
 
-  for (i = 0; i < dict_get_var_cnt (dict); ++i)
+  for (i = 0; i < dict_get_n_vars (dict); ++i)
     {
       struct variable *v = dict_get_var (dict, i);
       int width = var_get_width (v);
-      int segment_cnt = sfm_width_to_segments (width);
+      int n_segments = sfm_width_to_segments (width);
       int measure = (var_get_measure (v) == MEASURE_NOMINAL ? 1
                      : var_get_measure (v) == MEASURE_ORDINAL ? 2
                      : 3);
@@ -913,7 +912,7 @@ write_variable_display_parameters (struct sfm_writer *w,
                        : 2);
       int i;
 
-      for (i = 0; i < segment_cnt; i++)
+      for (i = 0; i < n_segments; i++)
         {
           int width_left = width - sfm_segment_effective_offset (width, i);
           write_int (w, measure);
@@ -933,7 +932,7 @@ write_vls_length_table (struct sfm_writer *w,
   int i;
 
   ds_init_empty (&map);
-  for (i = 0; i < dict_get_var_cnt (dict); ++i)
+  for (i = 0; i < dict_get_n_vars (dict); ++i)
     {
       const struct variable *v = dict_get_var (dict, i);
       if (sfm_width_to_segments (var_get_width (v)) > 1)
@@ -950,7 +949,7 @@ write_long_string_value_labels (struct sfm_writer *w,
                                 const struct dictionary *dict)
 {
   const char *encoding = dict_get_encoding (dict);
-  size_t n_vars = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
   size_t size, i;
 
   /* Figure out the size in advance. */
@@ -1025,7 +1024,7 @@ write_long_string_missing_values (struct sfm_writer *w,
                                   const struct dictionary *dict)
 {
   const char *encoding = dict_get_encoding (dict);
-  size_t n_vars = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
   size_t size, i;
 
   /* Figure out the size in advance. */
@@ -1106,7 +1105,7 @@ write_longvar_table (struct sfm_writer *w, const struct dictionary *dict)
   size_t i;
 
   ds_init_empty (&map);
-  for (i = 0; i < dict_get_var_cnt (dict); i++)
+  for (i = 0; i < dict_get_n_vars (dict); i++)
     {
       struct variable *v = dict_get_var (dict, i);
       if (i)
@@ -1204,7 +1203,7 @@ sys_file_casewriter_write (struct casewriter *writer, void *w_,
       return;
     }
 
-  w->case_cnt++;
+  w->n_cases++;
 
   if (w->compression == ANY_COMP_NONE)
     write_case_uncompressed (w, c);
@@ -1257,9 +1256,9 @@ close_writer (struct sfm_writer *w)
       /* Seek back to the beginning and update the number of cases.
          This is just a courtesy to later readers, so there's no need
          to check return values or report errors. */
-      if (ok && w->case_cnt <= INT32_MAX && !fseeko (w->file, 80, SEEK_SET))
+      if (ok && w->n_cases <= INT32_MAX && !fseeko (w->file, 80, SEEK_SET))
         {
-          write_int (w, w->case_cnt);
+          write_int (w, w->n_cases);
           clearerr (w->file);
         }
 
@@ -1299,7 +1298,7 @@ write_case_uncompressed (struct sfm_writer *w, const struct ccase *c)
 {
   size_t i;
 
-  for (i = 0; i < w->sfm_var_cnt; i++)
+  for (i = 0; i < w->sfm_n_vars; i++)
     {
       struct sfm_var *v = &w->sfm_vars[i];
 
@@ -1320,7 +1319,7 @@ write_case_compressed (struct sfm_writer *w, const struct ccase *c)
 {
   size_t i;
 
-  for (i = 0; i < w->sfm_var_cnt; i++)
+  for (i = 0; i < w->sfm_n_vars; i++)
     {
       struct sfm_var *v = &w->sfm_vars[i];
 

@@ -276,7 +276,7 @@ parse_dict_drop (struct lexer *lexer, struct dictionary *dict)
   dict_delete_vars (dict, v, nv);
   free (v);
 
-  if (dict_get_var_cnt (dict) == 0)
+  if (dict_get_n_vars (dict) == 0)
     {
       msg (SE, _("Cannot DROP all variables from dictionary."));
       return false;
@@ -302,16 +302,16 @@ parse_dict_keep (struct lexer *lexer, struct dictionary *dict)
   dict_reorder_vars (dict, v, nv);
 
   /* Delete the remaining variables. */
-  if (dict_get_var_cnt (dict) == nv)
+  if (dict_get_n_vars (dict) == nv)
     {
       free (v);
       return true;
     }
 
-  v = xnrealloc (v, dict_get_var_cnt (dict) - nv, sizeof *v);
-  for (i = nv; i < dict_get_var_cnt (dict); i++)
+  v = xnrealloc (v, dict_get_n_vars (dict) - nv, sizeof *v);
+  for (i = nv; i < dict_get_n_vars (dict); i++)
     v[i - nv] = dict_get_var (dict, i);
-  dict_delete_vars (dict, v, dict_get_var_cnt (dict) - nv);
+  dict_delete_vars (dict, v, dict_get_n_vars (dict) - nv);
   free (v);
 
   return true;

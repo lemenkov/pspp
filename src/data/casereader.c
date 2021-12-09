@@ -34,7 +34,7 @@ struct casereader
   {
     struct taint *taint;                  /* Corrupted? */
     struct caseproto *proto;              /* Format of contained cases. */
-    casenumber case_cnt;                  /* Number of cases,
+    casenumber n_cases;                   /* Number of cases,
                                              CASENUMBER_MAX if unknown. */
     const struct casereader_class *class; /* Class. */
     void *aux;                            /* Auxiliary data for class. */
@@ -52,7 +52,7 @@ struct casereader
 struct ccase *
 casereader_read (struct casereader *reader)
 {
-  if (reader->case_cnt != 0)
+  if (reader->n_cases != 0)
     {
       /* ->read may use casereader_swap to replace itself by
          another reader and then delegate to that reader by
@@ -61,24 +61,24 @@ casereader_read (struct casereader *reader)
          ever will.
 
          To allow this to work, however, we must decrement
-         case_cnt before calling ->read.  If we decremented
-         case_cnt after calling ->read, then this would actually
-         drop two cases from case_cnt instead of one, and we'd
+         n_cases before calling ->read.  If we decremented
+         n_cases after calling ->read, then this would actually
+         drop two cases from n_cases instead of one, and we'd
          lose the last case in the casereader. */
       struct ccase *c;
-      if (reader->case_cnt != CASENUMBER_MAX)
-        reader->case_cnt--;
+      if (reader->n_cases != CASENUMBER_MAX)
+        reader->n_cases--;
       c = reader->class->read (reader, reader->aux);
       if (c != NULL)
         {
           size_t n_widths UNUSED = caseproto_get_n_widths (reader->proto);
-          assert (case_get_value_cnt (c) >= n_widths);
+          assert (case_get_n_values (c) >= n_widths);
           expensive_assert (caseproto_equal (case_get_proto (c), 0,
                                              reader->proto, 0, n_widths));
           return c;
         }
     }
-  reader->case_cnt = 0;
+  reader->n_cases = 0;
   return NULL;
 }
 
@@ -149,7 +149,7 @@ casereader_swap (struct casereader *a, struct casereader *b)
 struct ccase *
 casereader_peek (struct casereader *reader, casenumber idx)
 {
-  if (idx < reader->case_cnt)
+  if (idx < reader->n_cases)
     {
       struct ccase *c;
       if (reader->class->peek == NULL)
@@ -158,10 +158,10 @@ casereader_peek (struct casereader *reader, casenumber idx)
       if (c != NULL)
         return c;
       else if (casereader_error (reader))
-        reader->case_cnt = 0;
+        reader->n_cases = 0;
     }
-  if (reader->case_cnt > idx)
-    reader->case_cnt = idx;
+  if (reader->n_cases > idx)
+    reader->n_cases = idx;
   return NULL;
 }
 
@@ -173,7 +173,7 @@ casereader_peek (struct casereader *reader, casenumber idx)
 bool
 casereader_is_empty (struct casereader *reader)
 {
-  if (reader->case_cnt == 0)
+  if (reader->n_cases == 0)
     return true;
   else
     {
@@ -230,9 +230,9 @@ casereader_get_taint (const struct casereader *reader)
    actual number of cases in such a casereader, use
    casereader_count_cases. */
 casenumber
-casereader_get_case_cnt (struct casereader *reader)
+casereader_get_n_cases (struct casereader *reader)
 {
-  return reader->case_cnt;
+  return reader->n_cases;
 }
 
 static casenumber
@@ -261,12 +261,12 @@ casereader_count_cases__ (const struct casereader *reader,
 casenumber
 casereader_count_cases (const struct casereader *reader)
 {
-  if (reader->case_cnt == CASENUMBER_MAX)
+  if (reader->n_cases == CASENUMBER_MAX)
     {
       struct casereader *reader_rw = CONST_CAST (struct casereader *, reader);
-      reader_rw->case_cnt = casereader_count_cases__ (reader, CASENUMBER_MAX);
+      reader_rw->n_cases = casereader_count_cases__ (reader, CASENUMBER_MAX);
     }
-  return reader->case_cnt;
+  return reader->n_cases;
 }
 
 /* Truncates READER to at most N cases. */
@@ -277,10 +277,10 @@ casereader_truncate (struct casereader *reader, casenumber n)
      "max_cases" member to struct casereader.  We could also add a "truncate"
      function to the casereader implementation, to allow the casereader to
      throw away data that cannot ever be read. */
-  if (reader->case_cnt == CASENUMBER_MAX)
-    reader->case_cnt = casereader_count_cases__ (reader, n);
-  if (reader->case_cnt > n)
-    reader->case_cnt = n;
+  if (reader->n_cases == CASENUMBER_MAX)
+    reader->n_cases = casereader_count_cases__ (reader, n);
+  if (reader->n_cases > n)
+    reader->n_cases = n;
 }
 
 /* Returns the prototype for the cases in READER.  The caller
@@ -358,13 +358,13 @@ casereader_transfer (struct casereader *reader, struct casewriter *writer)
 struct casereader *
 casereader_create_sequential (const struct taint *taint,
                               const struct caseproto *proto,
-                              casenumber case_cnt,
+                              casenumber n_cases,
                               const struct casereader_class *class, void *aux)
 {
   struct casereader *reader = xmalloc (sizeof *reader);
   reader->taint = taint != NULL ? taint_clone (taint) : taint_create ();
   reader->proto = caseproto_ref (proto);
-  reader->case_cnt = case_cnt;
+  reader->n_cases = n_cases;
   reader->class = class;
   reader->aux = aux;
   return reader;
@@ -472,7 +472,7 @@ compare_random_readers_by_offset (const struct heap_node *a_,
    member functions and auxiliary data to pass to those member
    functions, respectively. */
 struct casereader *
-casereader_create_random (const struct caseproto *proto, casenumber case_cnt,
+casereader_create_random (const struct caseproto *proto, casenumber n_cases,
                           const struct casereader_random_class *class,
                           void *aux)
 {
@@ -481,7 +481,7 @@ casereader_create_random (const struct caseproto *proto, casenumber case_cnt,
   shared->class = class;
   shared->aux = aux;
   shared->min_offset = 0;
-  return casereader_create_sequential (NULL, proto, case_cnt,
+  return casereader_create_sequential (NULL, proto, n_cases,
                                        &random_reader_casereader_class,
                                        make_random_reader (shared, 0));
 }
@@ -550,7 +550,7 @@ random_reader_clone (struct casereader *reader, void *br_)
   struct random_reader_shared *shared = br->shared;
   return casereader_create_sequential (casereader_get_taint (reader),
                                        reader->proto,
-                                       casereader_get_case_cnt (reader),
+                                       casereader_get_n_cases (reader),
                                        &random_reader_casereader_class,
                                        make_random_reader (shared,
                                                            br->offset));

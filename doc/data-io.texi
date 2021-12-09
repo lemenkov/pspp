@@ -484,7 +484,7 @@ DATA LIST FREE
         [(@{TAB,'@var{c}'@}, @dots{})]
         [@{NOTABLE,TABLE@}]
         [FILE='@var{file_name}' [ENCODING='@var{encoding}']]
-        [SKIP=@var{record_cnt}]
+        [SKIP=@var{n_records}]
         /@var{var_spec}@dots{}
 
 where each @var{var_spec} takes one of the forms

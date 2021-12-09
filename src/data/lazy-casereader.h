@@ -30,7 +30,7 @@
 #include "data/case.h"
 
 struct casereader *lazy_casereader_create (const struct caseproto *,
-                                           casenumber case_cnt,
+                                           casenumber n_cases,
                                            struct casereader *(*) (void *aux),
                                            void *aux,
                                            unsigned long int *serial);

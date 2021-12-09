@@ -128,13 +128,12 @@ static void
 init_list_mark (struct init_list *list, const struct init_list *exclude,
                 enum leave_class include, const struct dictionary *d)
 {
-  size_t var_cnt = dict_get_var_cnt (d);
-  size_t i;
+  size_t n_vars = dict_get_n_vars (d);
 
   assert (list != exclude);
-  list->values = xnrealloc (list->values, list->cnt + dict_get_var_cnt (d),
+  list->values = xnrealloc (list->values, list->cnt + dict_get_n_vars (d),
                             sizeof *list->values);
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
       size_t case_index = var_get_case_index (v);

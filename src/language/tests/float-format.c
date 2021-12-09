@@ -61,7 +61,7 @@ static const struct assoc fp_formats[] =
     {"X", FLOAT_HEX},
     {"FP", FLOAT_FP},
   };
-static const size_t format_cnt = sizeof fp_formats / sizeof *fp_formats;
+static const size_t n_formats = sizeof fp_formats / sizeof *fp_formats;
 
 /* Parses a floating-point format name into *FORMAT,
    and returns success. */
@@ -70,7 +70,7 @@ parse_float_format (struct lexer *lexer, enum float_format *format)
 {
   size_t i;
 
-  for (i = 0; i < format_cnt; i++)
+  for (i = 0; i < n_formats; i++)
     if (lex_match_id (lexer, fp_formats[i].name))
       {
         *format = fp_formats[i].format;
@@ -86,7 +86,7 @@ get_float_format_name (enum float_format format)
 {
   size_t i;
 
-  for (i = 0; i < format_cnt; i++)
+  for (i = 0; i < n_formats; i++)
     if (fp_formats[i].format == format)
       return fp_formats[i].name;
 
@@ -275,26 +275,26 @@ int
 cmd_debug_float_format (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   struct fp fp[16];
-  size_t fp_cnt = 0;
+  size_t n_fps = 0;
   bool bijective = false;
   bool ok;
 
   for (;;)
     {
-      if (fp_cnt >= sizeof fp / sizeof *fp)
+      if (n_fps >= sizeof fp / sizeof *fp)
         {
           msg (SE, "Too many values in single command.");
           return CMD_FAILURE;
         }
-      if (!parse_fp (lexer, &fp[fp_cnt++]))
+      if (!parse_fp (lexer, &fp[n_fps++]))
         return CMD_FAILURE;
 
-      if (lex_token (lexer) == T_ENDCMD && fp_cnt > 1)
+      if (lex_token (lexer) == T_ENDCMD && n_fps > 1)
         break;
       else if (!lex_force_match (lexer, T_EQUALS))
         return CMD_FAILURE;
 
-      if (fp_cnt == 1)
+      if (n_fps == 1)
         {
           if (lex_match (lexer, T_EQUALS))
             bijective = true;
@@ -319,8 +319,8 @@ cmd_debug_float_format (struct lexer *lexer, struct dataset *ds UNUSED)
     {
       size_t i, j;
 
-      for (i = 0; i < fp_cnt; i++)
-        for (j = 0; j < fp_cnt; j++)
+      for (i = 0; i < n_fps; i++)
+        for (j = 0; j < n_fps; j++)
           if (!verify_conversion (&fp[i], &fp[j]))
             ok = false;
     }
@@ -328,7 +328,7 @@ cmd_debug_float_format (struct lexer *lexer, struct dataset *ds UNUSED)
     {
       size_t i;
 
-      for (i = 1; i < fp_cnt; i++)
+      for (i = 1; i < n_fps; i++)
         if (!verify_conversion (&fp[i - 1], &fp[i]))
           ok = false;
     }

@@ -243,7 +243,7 @@ casereader_filter_weight_destroy (void *cfw_)
 struct casereader_filter_missing
   {
     struct variable **vars;     /* Variables whose values to filter. */
-    size_t var_cnt;             /* Number of variables. */
+    size_t n_vars;              /* Number of variables. */
     enum mv_class class;        /* Types of missing values to filter. */
     casenumber *n_missing;
   };
@@ -253,7 +253,7 @@ static bool casereader_filter_missing_destroy (void *);
 
 /* Creates and returns a casereader that filters out cases from
    READER that have a missing value in the given CLASS for any of
-   the VAR_CNT variables in VARS.  Only cases that have
+   the N_VARS variables in VARS.  Only cases that have
    non-missing values for all of these variables are passed
    through.
 
@@ -273,16 +273,16 @@ static bool casereader_filter_missing_destroy (void *);
    when the filtering casereader is destroyed. */
 struct casereader *
 casereader_create_filter_missing (struct casereader *reader,
-                                  const struct variable *const*vars, size_t var_cnt,
+                                  const struct variable *const *vars, size_t n_vars,
                                   enum mv_class class,
 				  casenumber *n_missing,
                                   struct casewriter *exclude)
 {
-  if (var_cnt > 0 && class != MV_NEVER)
+  if (n_vars > 0 && class != MV_NEVER)
     {
       struct casereader_filter_missing *cfm = xmalloc (sizeof *cfm);
-      cfm->vars = xmemdup (vars, sizeof *vars * var_cnt);
-      cfm->var_cnt = var_cnt;
+      cfm->vars = xmemdup (vars, sizeof *vars * n_vars);
+      cfm->n_vars = n_vars;
       cfm->class = class;
       cfm->n_missing = n_missing;
       if (n_missing) *n_missing = 0;
@@ -304,7 +304,7 @@ casereader_filter_missing_include (const struct ccase *c, void *cfm_)
   const struct casereader_filter_missing *cfm = cfm_;
   size_t i;
 
-  for (i = 0; i < cfm->var_cnt; i++)
+  for (i = 0; i < cfm->n_vars; i++)
     {
       struct variable *var = cfm->vars[i];
       const union value *value = case_data (c, var);

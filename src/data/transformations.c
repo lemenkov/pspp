@@ -42,8 +42,8 @@ struct transformation
 struct trns_chain
   {
     struct transformation *trns;        /* Array of transformations. */
-    size_t trns_cnt;                    /* Number of transformations. */
-    size_t trns_cap;                    /* Allocated capacity. */
+    size_t n_trns;                      /* Number of transformations. */
+    size_t allocated_trns;              /* Allocated capacity. */
     bool finalized;                     /* Finalize functions called? */
   };
 
@@ -53,8 +53,8 @@ trns_chain_create (void)
 {
   struct trns_chain *chain = xmalloc (sizeof *chain);
   chain->trns = NULL;
-  chain->trns_cnt = 0;
-  chain->trns_cap = 0;
+  chain->n_trns = 0;
+  chain->allocated_trns = 0;
   chain->finalized = false;
   return chain;
 }
@@ -69,7 +69,7 @@ trns_chain_finalize (struct trns_chain *chain)
       size_t i;
 
       chain->finalized = true;
-      for (i = 0; i < chain->trns_cnt; i++)
+      for (i = 0; i < chain->n_trns; i++)
         {
           struct transformation *trns = &chain->trns[i];
           trns_finalize_func *finalize = trns->finalize;
@@ -95,7 +95,7 @@ trns_chain_destroy (struct trns_chain *chain)
       /* Needed to ensure that the control stack gets cleared. */
       trns_chain_finalize (chain);
 
-      for (i = 0; i < chain->trns_cnt; i++)
+      for (i = 0; i < chain->n_trns; i++)
         {
           struct transformation *trns = &chain->trns[i];
           if (trns->free != NULL)
@@ -113,7 +113,7 @@ trns_chain_destroy (struct trns_chain *chain)
 bool
 trns_chain_is_empty (const struct trns_chain *chain)
 {
-  return chain->trns_cnt == 0;
+  return chain->n_trns == 0;
 }
 
 /* Adds a transformation to CHAIN with finalize function
@@ -128,11 +128,11 @@ trns_chain_append (struct trns_chain *chain, trns_finalize_func *finalize,
 
   chain->finalized = false;
 
-  if (chain->trns_cnt == chain->trns_cap)
-    chain->trns = x2nrealloc (chain->trns, &chain->trns_cap,
+  if (chain->n_trns == chain->allocated_trns)
+    chain->trns = x2nrealloc (chain->trns, &chain->allocated_trns,
                               sizeof *chain->trns);
 
-  trns = &chain->trns[chain->trns_cnt++];
+  trns = &chain->trns[chain->n_trns++];
   trns->idx_ofs = 0;
   trns->finalize = finalize;
   trns->execute = execute;
@@ -151,22 +151,22 @@ trns_chain_splice (struct trns_chain *dst, struct trns_chain *src)
   assert (dst->finalized);
   assert (src->finalized);
 
-  if (dst->trns_cnt + src->trns_cnt > dst->trns_cap)
+  if (dst->n_trns + src->n_trns > dst->allocated_trns)
     {
-      dst->trns_cap = dst->trns_cnt + src->trns_cnt;
-      dst->trns = xnrealloc (dst->trns, dst->trns_cap, sizeof *dst->trns);
+      dst->allocated_trns = dst->n_trns + src->n_trns;
+      dst->trns = xnrealloc (dst->trns, dst->allocated_trns, sizeof *dst->trns);
     }
 
-  for (i = 0; i < src->trns_cnt; i++)
+  for (i = 0; i < src->n_trns; i++)
     {
-      struct transformation *d = &dst->trns[i + dst->trns_cnt];
+      struct transformation *d = &dst->trns[i + dst->n_trns];
       const struct transformation *s = &src->trns[i];
       *d = *s;
-      d->idx_ofs += src->trns_cnt;
+      d->idx_ofs += src->n_trns;
     }
-  dst->trns_cnt += src->trns_cnt;
+  dst->n_trns += src->n_trns;
 
-  src->trns_cnt = 0;
+  src->n_trns = 0;
   trns_chain_destroy (src);
 }
 
@@ -175,7 +175,7 @@ trns_chain_splice (struct trns_chain *dst, struct trns_chain *src)
 size_t
 trns_chain_next (struct trns_chain *chain)
 {
-  return chain->trns_cnt;
+  return chain->n_trns;
 }
 
 /* Executes the given CHAIN of transformations on *C,
@@ -191,7 +191,7 @@ trns_chain_execute (const struct trns_chain *chain, enum trns_result start,
   size_t i;
 
   assert (chain->finalized);
-  for (i = start < 0 ? 0 : start; i < chain->trns_cnt;)
+  for (i = start < 0 ? 0 : start; i < chain->n_trns;)
     {
       struct transformation *trns = &chain->trns[i];
       int retval = trns->execute (trns->aux, c, case_nr);

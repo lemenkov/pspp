@@ -23,7 +23,7 @@
 struct dictionary;
 
 struct vector *vector_create (const char *name,
-                              struct variable **var, size_t var_cnt);
+                              struct variable **var, size_t n_vars);
 struct vector *vector_clone (const struct vector *old,
                              const struct dictionary *old_dict,
                              const struct dictionary *new_dict);
@@ -32,7 +32,7 @@ void vector_destroy (struct vector *);
 const char *vector_get_name (const struct vector *);
 enum val_type vector_get_type (const struct vector *);
 struct variable *vector_get_var (const struct vector *, size_t idx);
-size_t vector_get_var_cnt (const struct vector *);
+size_t vector_get_n_vars (const struct vector *);
 
 bool vector_is_valid_name (const char *name, bool issue_error);
 

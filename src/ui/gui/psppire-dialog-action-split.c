@@ -94,7 +94,7 @@ refresh (PsppireDialogAction *pda)
 
   GtkTreeModel *liststore = gtk_tree_view_get_model (GTK_TREE_VIEW (act->tv));
 
-  gint n_vars = dict_get_split_cnt (pda->dict->dict);
+  gint n_vars = dict_get_n_splits (pda->dict->dict);
 
   gtk_list_store_clear (GTK_LIST_STORE (liststore));
 

@@ -201,22 +201,18 @@ string function MIN (string a[n])
 
 absorb_miss function NMISS (a[n])
 {
-  size_t i;
-  size_t missing_cnt = 0;
-
-  for (i = 0; i < n; i++)
-    missing_cnt += a[i] == SYSMIS;
-  return missing_cnt;
+  size_t n_missings = 0;
+  for (size_t i = 0; i < n; i++)
+    n_missings += a[i] == SYSMIS;
+  return n_missings;
 }
 
 absorb_miss function NVALID (a[n])
 {
-  size_t i;
-  size_t valid_cnt = 0;
-
-  for (i = 0; i < n; i++)
-    valid_cnt += a[i] != SYSMIS;
-  return valid_cnt;
+  size_t n_valids = 0;
+  for (size_t i = 0; i < n; i++)
+    n_valids += a[i] != SYSMIS;
+  return n_valids;
 }
 
 absorb_miss boolean function RANGE (x != SYSMIS, a[n*2])
@@ -979,7 +975,7 @@ no_opt operator VEC_ELEM_NUM (idx)
      vector v;
      case c;
 {
-  if (idx >= 1 && idx <= vector_get_var_cnt (v))
+  if (idx >= 1 && idx <= vector_get_n_vars (v))
     {
       const struct variable *var = vector_get_var (v, (size_t) idx - 1);
       double value = case_num (c, var);
@@ -1004,7 +1000,7 @@ absorb_miss no_opt string operator VEC_ELEM_STR (idx)
      vector v;
      case c;
 {
-  if (idx >= 1 && idx <= vector_get_var_cnt (v))
+  if (idx >= 1 && idx <= vector_get_n_vars (v))
     {
       struct variable *var = vector_get_var (v, (size_t) idx - 1);
       return copy_string (e, CHAR_CAST_BUG (char *, case_str (c, var)),

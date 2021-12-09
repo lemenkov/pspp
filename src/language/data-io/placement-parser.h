@@ -25,9 +25,9 @@ struct pool;
 struct lexer;
 
 bool parse_record_placement (struct lexer *, int *record, int *column);
-bool parse_var_placements (struct lexer *, struct pool *, size_t var_cnt,
+bool parse_var_placements (struct lexer *, struct pool *, size_t n_vars,
                            enum fmt_use,
-                           struct fmt_spec **, size_t *format_cnt);
+                           struct fmt_spec **, size_t *n_formats);
 bool execute_placement_format (const struct fmt_spec *,
                                int *record, int *column);
 bool parse_column (struct lexer *lexer, int base, int *column);

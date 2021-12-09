@@ -248,7 +248,7 @@ dataset_reader_decode (struct any_reader *r_, const char *encoding UNUSED,
       info->integer_format = INTEGER_NATIVE;
       info->float_format = FLOAT_NATIVE_DOUBLE;
       info->compression = ANY_COMP_NONE;
-      info->case_cnt = casereader_get_case_cnt (reader);
+      info->n_cases = casereader_get_n_cases (reader);
     }
   free (r);
 

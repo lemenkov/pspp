@@ -58,21 +58,22 @@
 struct dictionary
   {
     int ref_cnt;
-    struct vardict_info *var;	/* Variables. */
-    size_t var_cnt, var_cap;    /* Number of variables, capacity. */
+    struct vardict_info *vars;	/* Variables. */
+    size_t n_vars;              /* Number of variables. */
+    size_t allocated_vars;      /* Allocated space in 'vars'. */
     struct caseproto *proto;    /* Prototype for dictionary cases
                                    (updated lazily). */
     struct hmap name_map;	/* Variable index by name. */
     int next_value_idx;         /* Index of next `union value' to allocate. */
     const struct variable **split;    /* SPLIT FILE vars. */
-    size_t split_cnt;           /* SPLIT FILE count. */
+    size_t n_splits;            /* SPLIT FILE count. */
     struct variable *weight;    /* WEIGHT variable. */
     struct variable *filter;    /* FILTER variable. */
     casenumber case_limit;      /* Current case limit (N command). */
     char *label;		/* File label. */
     struct string_array documents; /* Documents. */
     struct vector **vector;     /* Vectors of variables. */
-    size_t vector_cnt;          /* Number of vectors. */
+    size_t n_vectors;           /* Number of vectors. */
     struct attrset attributes;  /* Custom attributes. */
     struct mrset **mrsets;      /* Multiple response sets. */
     size_t n_mrsets;            /* Number of multiple response sets. */
@@ -153,7 +154,7 @@ unindex_vars (struct dictionary *d, size_t from, size_t to)
   size_t i;
 
   for (i = from; i < to; i++)
-    unindex_var (d, &d->var[i]);
+    unindex_var (d, &d->vars[i]);
 }
 
 /* Re-sets the dict_index in the dictionary variables with
@@ -164,7 +165,7 @@ reindex_vars (struct dictionary *d, size_t from, size_t to, bool skip_callbacks)
   size_t i;
 
   for (i = from; i < to; i++)
-    reindex_var (d, &d->var[i], skip_callbacks);
+    reindex_var (d, &d->vars[i], skip_callbacks);
 }
 
 
@@ -212,9 +213,9 @@ void
 dict_dump (const struct dictionary *d)
 {
   int i;
-  for (i = 0 ; i < d->var_cnt ; ++i)
+  for (i = 0 ; i < d->n_vars ; ++i)
     {
-      const struct variable *v = d->var[i].var;
+      const struct variable *v = d->vars[i].var;
       printf ("Name: %s;\tdict_idx: %zu; case_idx: %zu\n",
 	      var_get_name (v),
 	      var_get_dict_index (v),
@@ -280,13 +281,13 @@ dict_clone (const struct dictionary *s)
   d = dict_create (s->encoding);
   dict_set_names_must_be_ids (d, dict_get_names_must_be_ids (s));
 
-  for (i = 0; i < s->var_cnt; i++)
+  for (i = 0; i < s->n_vars; i++)
     {
-      struct variable *sv = s->var[i].var;
+      struct variable *sv = s->vars[i].var;
       struct variable *dv = dict_clone_var_assert (d, sv);
       size_t i;
 
-      for (i = 0; i < var_get_short_name_cnt (sv); i++)
+      for (i = 0; i < var_get_n_short_names (sv); i++)
         var_set_short_name (dv, i, var_get_short_name (sv, i));
 
       var_get_vardict (dv)->case_index = var_get_vardict (sv)->case_index;
@@ -294,11 +295,11 @@ dict_clone (const struct dictionary *s)
 
   d->next_value_idx = s->next_value_idx;
 
-  d->split_cnt = s->split_cnt;
-  if (d->split_cnt > 0)
+  d->n_splits = s->n_splits;
+  if (d->n_splits > 0)
     {
-       d->split = xnmalloc (d->split_cnt, sizeof *d->split);
-      for (i = 0; i < d->split_cnt; i++)
+       d->split = xnmalloc (d->n_splits, sizeof *d->split);
+      for (i = 0; i < d->n_splits; i++)
         d->split[i] = dict_lookup_var_assert (d, var_get_name (s->split[i]));
     }
 
@@ -312,9 +313,9 @@ dict_clone (const struct dictionary *s)
   dict_set_label (d, dict_get_label (s));
   dict_set_documents (d, dict_get_documents (s));
 
-  d->vector_cnt = s->vector_cnt;
-  d->vector = xnmalloc (d->vector_cnt, sizeof *d->vector);
-  for (i = 0; i < s->vector_cnt; i++)
+  d->n_vectors = s->n_vectors;
+  d->vector = xnmalloc (d->n_vectors, sizeof *d->vector);
+  for (i = 0; i < s->n_vectors; i++)
     d->vector[i] = vector_clone (s->vector[i], s, d);
 
   dict_set_attributes (d, dict_get_attributes (s));
@@ -339,7 +340,7 @@ dict_clone (const struct dictionary *s)
 
 
 /* Returns the SPLIT FILE vars (see cmd_split_file()).  Call
-   dict_get_split_cnt() to determine how many SPLIT FILE vars
+   dict_get_n_splits() to determine how many SPLIT FILE vars
    there are.  Returns a null pointer if and only if there are no
    SPLIT FILE vars. */
 const struct variable *const *
@@ -350,9 +351,9 @@ dict_get_split_vars (const struct dictionary *d)
 
 /* Returns the number of SPLIT FILE vars. */
 size_t
-dict_get_split_cnt (const struct dictionary *d)
+dict_get_n_splits (const struct dictionary *d)
 {
-  return d->split_cnt;
+  return d->n_splits;
 }
 
 /* Removes variable V, which must be in D, from D's set of split
@@ -364,10 +365,10 @@ dict_unset_split_var (struct dictionary *d, struct variable *v, bool skip_callba
 
   assert (dict_contains_var (d, v));
 
-  orig_count = d->split_cnt;
-  d->split_cnt = remove_equal (d->split, d->split_cnt, sizeof *d->split,
+  orig_count = d->n_splits;
+  d->n_splits = remove_equal (d->split, d->n_splits, sizeof *d->split,
                                &v, compare_var_ptrs, NULL);
-  if (orig_count != d->split_cnt && !skip_callbacks)
+  if (orig_count != d->n_splits && !skip_callbacks)
     {
       if (d->changed) d->changed (d, d->changed_data);
       /* We changed the set of split variables so invoke the
@@ -378,18 +379,19 @@ dict_unset_split_var (struct dictionary *d, struct variable *v, bool skip_callba
 }
 
 
-/* Sets CNT split vars SPLIT in dictionary D. */
+/* Sets N split vars SPLIT in dictionary D. */
 static void
 dict_set_split_vars__ (struct dictionary *d,
-                       struct variable *const *split, size_t cnt, bool skip_callbacks)
+                       struct variable *const *split, size_t n,
+                       bool skip_callbacks)
 {
-  assert (cnt == 0 || split != NULL);
+  assert (n == 0 || split != NULL);
 
-  d->split_cnt = cnt;
-  if (cnt > 0)
+  d->n_splits = n;
+  if (n > 0)
    {
-    d->split = xnrealloc (d->split, cnt, sizeof *d->split) ;
-    memcpy (d->split, split, cnt * sizeof *d->split);
+    d->split = xnrealloc (d->split, n, sizeof *d->split) ;
+    memcpy (d->split, split, n * sizeof *d->split);
    }
   else
    {
@@ -405,12 +407,12 @@ dict_set_split_vars__ (struct dictionary *d,
     }
 }
 
-/* Sets CNT split vars SPLIT in dictionary D. */
+/* Sets N split vars SPLIT in dictionary D. */
 void
 dict_set_split_vars (struct dictionary *d,
-                     struct variable *const *split, size_t cnt)
+                     struct variable *const *split, size_t n)
 {
-  dict_set_split_vars__ (d, split, cnt, false);
+  dict_set_split_vars__ (d, split, n, false);
 }
 
 
@@ -448,12 +450,12 @@ dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks
   dict_clear_vectors (d);
 
   /* Remove V from var array. */
-  unindex_vars (d, dict_index, d->var_cnt);
-  remove_element (d->var, d->var_cnt, sizeof *d->var, dict_index);
-  d->var_cnt--;
+  unindex_vars (d, dict_index, d->n_vars);
+  remove_element (d->vars, d->n_vars, sizeof *d->vars, dict_index);
+  d->n_vars--;
 
   /* Update dict_index for each affected variable. */
-  reindex_vars (d, dict_index, d->var_cnt, skip_callbacks);
+  reindex_vars (d, dict_index, d->n_vars, skip_callbacks);
 
   /* Free memory. */
   var_clear_vardict (v);
@@ -508,14 +510,14 @@ dict_delete_vars (struct dictionary *d,
    details. Deleting consecutive vars will result in less callbacks
    compared to iterating over dict_delete_var.
    A simple while loop over dict_delete_var will
-   produce (d->var_cnt - IDX) * COUNT variable changed callbacks
+   produce (d->n_vars - IDX) * COUNT variable changed callbacks
    plus COUNT variable delete callbacks.
-   This here produces d->var_cnt - IDX variable changed callbacks
+   This here produces d->n_vars - IDX variable changed callbacks
    plus COUNT variable delete callbacks. */
 void
 dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 {
-  assert (idx + count <= d->var_cnt);
+  assert (idx + count <= d->n_vars);
 
   /* We need to store the variable and the corresponding case_index
      for the delete callbacks later. We store them in a linked list.*/
@@ -530,7 +532,7 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
     {
       struct delvar *dv = xmalloc (sizeof (struct delvar));
       assert (dv);
-      struct variable *v = d->var[i].var;
+      struct variable *v = d->vars[i].var;
 
       dict_unset_split_var (d, v, false);
       dict_unset_mrset_var (d, v);
@@ -549,12 +551,12 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
   dict_clear_vectors (d);
 
   /* Remove variables from var array. */
-  unindex_vars (d, idx, d->var_cnt);
-  remove_range (d->var, d->var_cnt, sizeof *d->var, idx, count);
-  d->var_cnt -= count;
+  unindex_vars (d, idx, d->n_vars);
+  remove_range (d->vars, d->n_vars, sizeof *d->vars, idx, count);
+  d->n_vars -= count;
 
   /* Reindexing will result variable-changed callback */
-  reindex_vars (d, idx, d->var_cnt, false);
+  reindex_vars (d, idx, d->n_vars, false);
 
   invalidate_proto (d);
   if (d->changed) d->changed (d, d->changed_data);
@@ -582,9 +584,9 @@ dict_delete_scratch_vars (struct dictionary *d)
 
   /* FIXME: this can be done in O(count) time, but this algorithm
      is O(count**2). */
-  for (i = 0; i < d->var_cnt;)
-    if (var_get_dict_class (d->var[i].var) == DC_SCRATCH)
-      dict_delete_var (d, d->var[i].var);
+  for (i = 0; i < d->n_vars;)
+    if (var_get_dict_class (d->vars[i].var) == DC_SCRATCH)
+      dict_delete_var (d, d->vars[i].var);
     else
       i++;
 }
@@ -598,14 +600,14 @@ dict_clear__ (struct dictionary *d, bool skip_callbacks)
 {
   /* FIXME?  Should we really clear case_limit, label, documents?
      Others are necessarily cleared by deleting all the variables.*/
-  while (d->var_cnt > 0)
+  while (d->n_vars > 0)
     {
-      dict_delete_var__ (d, d->var[d->var_cnt - 1].var, skip_callbacks);
+      dict_delete_var__ (d, d->vars[d->n_vars - 1].var, skip_callbacks);
     }
 
-  free (d->var);
-  d->var = NULL;
-  d->var_cnt = d->var_cap = 0;
+  free (d->vars);
+  d->vars = NULL;
+  d->n_vars = d->allocated_vars = 0;
   invalidate_proto (d);
   hmap_clear (&d->name_map);
   d->next_value_idx = 0;
@@ -674,42 +676,42 @@ dict_unref (struct dictionary *d)
 
 /* Returns the number of variables in D. */
 size_t
-dict_get_var_cnt (const struct dictionary *d)
+dict_get_n_vars (const struct dictionary *d)
 {
-  return d->var_cnt;
+  return d->n_vars;
 }
 
 /* Returns the variable in D with dictionary index IDX, which
    must be between 0 and the count returned by
-   dict_get_var_cnt(), exclusive. */
+   dict_get_n_vars(), exclusive. */
 struct variable *
 dict_get_var (const struct dictionary *d, size_t idx)
 {
-  assert (idx < d->var_cnt);
+  assert (idx < d->n_vars);
 
-  return d->var[idx].var;
+  return d->vars[idx].var;
 }
 
-/* Sets *VARS to an array of pointers to variables in D and *CNT
+/* Sets *VARS to an array of pointers to variables in D and *N
    to the number of variables in *D.  All variables are returned
    except for those, if any, in the classes indicated by EXCLUDE.
    (There is no point in putting DC_SYSTEM in EXCLUDE as
    dictionaries never include system variables.) */
 void
 dict_get_vars (const struct dictionary *d, const struct variable ***vars,
-               size_t *cnt, enum dict_class exclude)
+               size_t *n, enum dict_class exclude)
 {
-  dict_get_vars_mutable (d, (struct variable ***) vars, cnt, exclude);
+  dict_get_vars_mutable (d, (struct variable ***) vars, n, exclude);
 }
 
-/* Sets *VARS to an array of pointers to variables in D and *CNT
+/* Sets *VARS to an array of pointers to variables in D and *N
    to the number of variables in *D.  All variables are returned
    except for those, if any, in the classes indicated by EXCLUDE.
    (There is no point in putting DC_SYSTEM in EXCLUDE as
    dictionaries never include system variables.) */
 void
 dict_get_vars_mutable (const struct dictionary *d, struct variable ***vars,
-                       size_t *cnt, enum dict_class exclude)
+                       size_t *n, enum dict_class exclude)
 {
   size_t count;
   size_t i;
@@ -717,22 +719,22 @@ dict_get_vars_mutable (const struct dictionary *d, struct variable ***vars,
   assert (exclude == (exclude & DC_ALL));
 
   count = 0;
-  for (i = 0; i < d->var_cnt; i++)
+  for (i = 0; i < d->n_vars; i++)
     {
-      enum dict_class class = var_get_dict_class (d->var[i].var);
+      enum dict_class class = var_get_dict_class (d->vars[i].var);
       if (!(class & exclude))
         count++;
     }
 
   *vars = xnmalloc (count, sizeof **vars);
-  *cnt = 0;
-  for (i = 0; i < d->var_cnt; i++)
+  *n = 0;
+  for (i = 0; i < d->n_vars; i++)
     {
-      enum dict_class class = var_get_dict_class (d->var[i].var);
+      enum dict_class class = var_get_dict_class (d->vars[i].var);
       if (!(class & exclude))
-        (*vars)[(*cnt)++] = d->var[i].var;
+        (*vars)[(*n)++] = d->vars[i].var;
     }
-  assert (*cnt == count);
+  assert (*n == count);
 }
 
 static struct variable *
@@ -744,21 +746,21 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
   assert (case_index >= d->next_value_idx);
 
   /* Update dictionary. */
-  if (d->var_cnt >= d->var_cap)
+  if (d->n_vars >= d->allocated_vars)
     {
       size_t i;
 
-      d->var = x2nrealloc (d->var, &d->var_cap, sizeof *d->var);
+      d->vars = x2nrealloc (d->vars, &d->allocated_vars, sizeof *d->vars);
       hmap_clear (&d->name_map);
-      for (i = 0; i < d->var_cnt; i++)
+      for (i = 0; i < d->n_vars; i++)
         {
-          var_set_vardict (d->var[i].var, &d->var[i]);
-          hmap_insert_fast (&d->name_map, &d->var[i].name_node,
-                            d->var[i].name_node.hash);
+          var_set_vardict (d->vars[i].var, &d->vars[i]);
+          hmap_insert_fast (&d->name_map, &d->vars[i].name_node,
+                            d->vars[i].name_node.hash);
         }
     }
 
-  vardict = &d->var[d->var_cnt++];
+  vardict = &d->vars[d->n_vars++];
   vardict->dict = d;
   vardict->var = v;
   hmap_insert (&d->name_map, &vardict->name_node,
@@ -904,10 +906,10 @@ dict_reorder_var (struct dictionary *d, struct variable *v, size_t new_index)
 {
   size_t old_index = var_get_dict_index (v);
 
-  assert (new_index < d->var_cnt);
+  assert (new_index < d->n_vars);
 
   unindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1);
-  move_element (d->var, d->var_cnt, sizeof *d->var, old_index, new_index);
+  move_element (d->vars, d->n_vars, sizeof *d->vars, old_index, new_index);
   reindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1, false);
 }
 
@@ -923,9 +925,9 @@ dict_reorder_vars (struct dictionary *d,
   size_t i;
 
   assert (count == 0 || order != NULL);
-  assert (count <= d->var_cnt);
+  assert (count <= d->n_vars);
 
-  new_var = xnmalloc (d->var_cap, sizeof *new_var);
+  new_var = xnmalloc (d->allocated_vars, sizeof *new_var);
 
   /* Add variables in ORDER to new_var. */
   for (i = 0; i < count; i++)
@@ -940,17 +942,17 @@ dict_reorder_vars (struct dictionary *d,
     }
 
   /* Add remaining variables to new_var. */
-  for (i = 0; i < d->var_cnt; i++)
-    if (d->var[i].dict != NULL)
-      new_var[count++] = d->var[i];
-  assert (count == d->var_cnt);
+  for (i = 0; i < d->n_vars; i++)
+    if (d->vars[i].dict != NULL)
+      new_var[count++] = d->vars[i];
+  assert (count == d->n_vars);
 
   /* Replace old vardicts by new ones. */
-  free (d->var);
-  d->var = new_var;
+  free (d->vars);
+  d->vars = new_var;
 
   hmap_clear (&d->name_map);
-  reindex_vars (d, 0, d->var_cnt, false);
+  reindex_vars (d, 0, d->n_vars, false);
 }
 
 /* Changes the name of variable V that is currently in a dictionary to
@@ -1337,11 +1339,11 @@ dict_get_proto (const struct dictionary *d_)
       size_t i;
 
       d->proto = caseproto_create ();
-      d->proto = caseproto_reserve (d->proto, d->var_cnt);
-      for (i = 0; i < d->var_cnt; i++)
+      d->proto = caseproto_reserve (d->proto, d->n_vars);
+      for (i = 0; i < d->n_vars; i++)
         d->proto = caseproto_set_width (d->proto,
-                                        var_get_case_index (d->var[i].var),
-                                        var_get_width (d->var[i].var));
+                                        var_get_case_index (d->vars[i].var),
+                                        var_get_width (d->vars[i].var));
     }
   return d->proto;
 }
@@ -1371,9 +1373,9 @@ dict_compact_values (struct dictionary *d)
   size_t i;
 
   d->next_value_idx = 0;
-  for (i = 0; i < d->var_cnt; i++)
+  for (i = 0; i < d->n_vars; i++)
     {
-      struct variable *v = d->var[i].var;
+      struct variable *v = d->vars[i].var;
       set_var_case_index (v, d->next_value_idx++);
     }
   invalidate_proto (d);
@@ -1392,21 +1394,18 @@ dict_compact_values (struct dictionary *d)
 size_t
 dict_count_values (const struct dictionary *d, unsigned int exclude_classes)
 {
-  size_t i;
-  size_t cnt;
-
   assert ((exclude_classes & ~((1u << DC_ORDINARY)
                                | (1u << DC_SYSTEM)
                                | (1u << DC_SCRATCH))) == 0);
 
-  cnt = 0;
-  for (i = 0; i < d->var_cnt; i++)
+  size_t n = 0;
+  for (size_t i = 0; i < d->n_vars; i++)
     {
-      enum dict_class class = var_get_dict_class (d->var[i].var);
+      enum dict_class class = var_get_dict_class (d->vars[i].var);
       if (!(exclude_classes & (1u << class)))
-        cnt++;
+        n++;
     }
-  return cnt;
+  return n;
 }
 
 /* Returns the case prototype that would result after deleting
@@ -1428,9 +1427,9 @@ dict_get_compacted_proto (const struct dictionary *d,
                                | (1u << DC_SCRATCH))) == 0);
 
   proto = caseproto_create ();
-  for (i = 0; i < d->var_cnt; i++)
+  for (i = 0; i < d->n_vars; i++)
     {
-      struct variable *v = d->var[i].var;
+      struct variable *v = d->vars[i].var;
       if (!(exclude_classes & (1u << var_get_dict_class (v))))
         proto = caseproto_add_width (proto, var_get_width (v));
     }
@@ -1537,7 +1536,7 @@ dict_add_document_line (struct dictionary *d, const char *line,
 
 /* Returns the number of document lines in dictionary D. */
 size_t
-dict_get_document_line_cnt (const struct dictionary *d)
+dict_get_document_n_lines (const struct dictionary *d)
 {
   return d->documents.n;
 }
@@ -1551,57 +1550,55 @@ dict_get_document_line (const struct dictionary *d, size_t idx)
   return d->documents.strings[idx];
 }
 
-/* Creates in D a vector named NAME that contains the CNT
+/* Creates in D a vector named NAME that contains the N
    variables in VAR.  Returns true if successful, or false if a
    vector named NAME already exists in D. */
 bool
 dict_create_vector (struct dictionary *d,
                     const char *name,
-                    struct variable **var, size_t cnt)
+                    struct variable **var, size_t n)
 {
-  size_t i;
-
-  assert (cnt > 0);
-  for (i = 0; i < cnt; i++)
+  assert (n > 0);
+  for (size_t i = 0; i < n; i++)
     assert (dict_contains_var (d, var[i]));
 
   if (dict_lookup_vector (d, name) == NULL)
     {
-      d->vector = xnrealloc (d->vector, d->vector_cnt + 1, sizeof *d->vector);
-      d->vector[d->vector_cnt++] = vector_create (name, var, cnt);
+      d->vector = xnrealloc (d->vector, d->n_vectors + 1, sizeof *d->vector);
+      d->vector[d->n_vectors++] = vector_create (name, var, n);
       return true;
     }
   else
     return false;
 }
 
-/* Creates in D a vector named NAME that contains the CNT
+/* Creates in D a vector named NAME that contains the N
    variables in VAR.  A vector named NAME must not already exist
    in D. */
 void
 dict_create_vector_assert (struct dictionary *d,
                            const char *name,
-                           struct variable **var, size_t cnt)
+                           struct variable **var, size_t n)
 {
   assert (dict_lookup_vector (d, name) == NULL);
-  dict_create_vector (d, name, var, cnt);
+  dict_create_vector (d, name, var, n);
 }
 
 /* Returns the vector in D with index IDX, which must be less
-   than dict_get_vector_cnt (D). */
+   than dict_get_n_vectors (D). */
 const struct vector *
 dict_get_vector (const struct dictionary *d, size_t idx)
 {
-  assert (idx < d->vector_cnt);
+  assert (idx < d->n_vectors);
 
   return d->vector[idx];
 }
 
 /* Returns the number of vectors in D. */
 size_t
-dict_get_vector_cnt (const struct dictionary *d)
+dict_get_n_vectors (const struct dictionary *d)
 {
-  return d->vector_cnt;
+  return d->n_vectors;
 }
 
 /* Looks up and returns the vector within D with the given
@@ -1610,7 +1607,7 @@ const struct vector *
 dict_lookup_vector (const struct dictionary *d, const char *name)
 {
   size_t i;
-  for (i = 0; i < d->vector_cnt; i++)
+  for (i = 0; i < d->n_vectors; i++)
     if (!utf8_strcasecmp (vector_get_name (d->vector[i]), name))
       return d->vector[i];
   return NULL;
@@ -1622,12 +1619,12 @@ dict_clear_vectors (struct dictionary *d)
 {
   size_t i;
 
-  for (i = 0; i < d->vector_cnt; i++)
+  for (i = 0; i < d->n_vectors; i++)
     vector_destroy (d->vector[i]);
   free (d->vector);
 
   d->vector = NULL;
-  d->vector_cnt = 0;
+  d->n_vectors = 0;
 }
 
 /* Multiple response sets. */
@@ -1855,7 +1852,7 @@ dict_destroy_internal_var (struct variable *var)
 
       /* Destroy internal_dict if it has no variables left, just so that
          valgrind --leak-check --show-reachable won't show internal_dict. */
-      if (dict_get_var_cnt (internal_dict) == 0)
+      if (dict_get_n_vars (internal_dict) == 0)
         {
           dict_unref (internal_dict);
           internal_dict = NULL;
@@ -1866,5 +1863,5 @@ dict_destroy_internal_var (struct variable *var)
 int
 vardict_get_dict_index (const struct vardict_info *vardict)
 {
-  return vardict - vardict->dict->var;
+  return vardict - vardict->dict->vars;
 }

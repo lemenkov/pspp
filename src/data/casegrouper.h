@@ -42,7 +42,7 @@ casegrouper_create_func (struct casereader *,
                          void *aux);
 struct casegrouper *casegrouper_create_vars (struct casereader *,
                                              const struct variable *const *vars,
-                                             size_t var_cnt);
+                                             size_t n_vars);
 struct casegrouper *casegrouper_create_splits (struct casereader *,
                                                const struct dictionary *);
 struct casegrouper *casegrouper_create_subcase (struct casereader *,

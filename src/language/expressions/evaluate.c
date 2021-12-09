@@ -51,7 +51,7 @@ expr_evaluate (struct expression *e, const struct ccase *c, int case_idx,
 
   for (;;)
     {
-      assert (op < e->ops + e->op_cnt);
+      assert (op < e->ops + e->n_ops);
       switch (op++->operation)
 	{
         case OP_number:
@@ -248,7 +248,7 @@ expr_debug_print_postfix (const struct expression *e)
 {
   struct string s = DS_EMPTY_INITIALIZER;
 
-  for (size_t i = 0; i < e->op_cnt; i++)
+  for (size_t i = 0; i < e->n_ops; i++)
     {
       union operation_data *op = &e->ops[i];
       if (i > 0)

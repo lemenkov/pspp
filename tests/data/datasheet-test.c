@@ -117,15 +117,15 @@ check_datasheet_casereader (struct mc *mc, struct casereader *reader,
   if (!check_caseproto (mc, proto, casereader_get_proto (reader),
                         "casereader"))
     return;
-  else if (casereader_get_case_cnt (reader) != n_rows)
+  else if (casereader_get_n_cases (reader) != n_rows)
     {
-      if (casereader_get_case_cnt (reader) == CASENUMBER_MAX
+      if (casereader_get_n_cases (reader) == CASENUMBER_MAX
           && casereader_count_cases (reader) == n_rows)
         mc_error (mc, "datasheet casereader has unknown case count");
       else
         mc_error (mc, "casereader row count (%lu) does not match "
                   "expected (%zu)",
-                  (unsigned long int) casereader_get_case_cnt (reader),
+                  (unsigned long int) casereader_get_n_cases (reader),
                   n_rows);
     }
   else

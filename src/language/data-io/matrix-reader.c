@@ -130,7 +130,7 @@ matrix_reader_create (const struct dictionary *dict,
       return NULL;
     }
 
-  for (size_t i = 0; i < dict_get_var_cnt (dict); i++)
+  for (size_t i = 0; i < dict_get_n_vars (dict); i++)
     {
       const struct variable *v = dict_get_var (dict, i);
       if (!var_is_numeric (v) && v != rowtype && v != varname)

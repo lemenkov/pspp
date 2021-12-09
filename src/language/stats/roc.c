@@ -335,7 +335,7 @@ dump_casereader (struct casereader *reader)
   for (; (c = casereader_read (r)); case_unref (c))
     {
       int i;
-      for (i = 0 ; i < case_get_value_cnt (c); ++i)
+      for (i = 0 ; i < case_get_n_values (c); ++i)
         printf ("%g ", case_num_idx (c, i));
       printf ("\n");
     }

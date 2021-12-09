@@ -41,7 +41,7 @@ void casewindow_pop_tail (struct casewindow *, casenumber cnt);
 struct ccase *casewindow_get_case (const struct casewindow *,
                                    casenumber case_idx);
 const struct caseproto *casewindow_get_proto (const struct casewindow *);
-casenumber casewindow_get_case_cnt (const struct casewindow *);
+casenumber casewindow_get_n_cases (const struct casewindow *);
 
 bool casewindow_error (const struct casewindow *);
 void casewindow_force_error (struct casewindow *);

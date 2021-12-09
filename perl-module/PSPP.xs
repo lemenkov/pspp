@@ -280,7 +280,7 @@ int
 get_var_cnt (dict)
  struct pspp_dict *dict
 CODE:
- RETVAL = dict_get_var_cnt (dict->dict);
+ RETVAL = dict_get_n_vars (dict->dict);
 OUTPUT:
 RETVAL
 
@@ -329,7 +329,7 @@ pxs_get_variable (dict, idx)
 INIT:
  SV *errstr = get_sv("PSPP::errstr", TRUE);
  sv_setpv (errstr, "");
- if ( SvIV (idx) >= dict_get_var_cnt (dict->dict))
+ if ( SvIV (idx) >= dict_get_n_vars (dict->dict))
   {
     sv_setpv (errstr, "The dictionary doesn't have that many variables.");
     XSRETURN_UNDEF;
@@ -688,7 +688,7 @@ CODE:
  size_t nv;
  struct ccase *c;
 
- if ( av_len (av_case) >= dict_get_var_cnt (swi->dict->dict))
+ if ( av_len (av_case) >= dict_get_n_vars (swi->dict->dict))
    XSRETURN_UNDEF;
 
  c =  case_create (dict_get_proto (swi->dict->dict));
@@ -730,7 +730,7 @@ CODE:
   }
 
  /* The remaining variables must be sysmis or blank string */
- while (i < dict_get_var_cnt (swi->dict->dict))
+ while (i < dict_get_n_vars (swi->dict->dict))
  {
    const struct variable *v = vv[i++];
    union value *val = case_data_rw (c, v);
@@ -806,8 +806,8 @@ PPCODE:
  {
   int v;
 
-  EXTEND (SP, dict_get_var_cnt (sfr->dict->dict));
-  for (v = 0; v < dict_get_var_cnt (sfr->dict->dict); ++v )
+  EXTEND (SP, dict_get_n_vars (sfr->dict->dict));
+  for (v = 0; v < dict_get_n_vars (sfr->dict->dict); ++v )
     {
       const struct variable *var = dict_get_var (sfr->dict->dict, v);
       const union value *val = case_data (c, var);

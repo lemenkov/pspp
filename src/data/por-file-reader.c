@@ -77,7 +77,7 @@ struct pfm_reader
     int line_length;            /* Number of characters so far on this line. */
     char cc;			/* Current character. */
     char *trans;                /* 256-byte character set translation table. */
-    int var_cnt;                /* Number of variables. */
+    int n_vars;                 /* Number of variables. */
     int weight_index;		/* 0-based index of weight variable, or -1. */
     struct caseproto *proto;    /* Format of output cases. */
     bool ok;                    /* Set false on I/O error. */
@@ -265,7 +265,7 @@ pfm_open (struct file_handle *fh)
   r->line_length = 0;
   r->weight_index = -1;
   r->trans = NULL;
-  r->var_cnt = 0;
+  r->n_vars = 0;
   r->proto = NULL;
   r->ok = true;
   if (setjmp (r->bail_out))
@@ -588,7 +588,7 @@ read_version_data (struct pfm_reader *r, struct any_read_info *info)
       info->float_format = FLOAT_NATIVE_DOUBLE;
       info->integer_format = INTEGER_NATIVE;
       info->compression = ANY_COMP_NONE;
-      info->case_cnt = -1;
+      info->n_cases = -1;
 
       /* Date. */
       info->creation_date = xmalloc (11);
@@ -680,9 +680,9 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
   if (!match (r, '4'))
     error (r, _("Expected variable count record."));
 
-  r->var_cnt = read_int (r);
-  if (r->var_cnt <= 0)
-    error (r, _("Invalid number of variables %d."), r->var_cnt);
+  r->n_vars = read_int (r);
+  if (r->n_vars <= 0)
+    error (r, _("Invalid number of variables %d."), r->n_vars);
 
   if (match (r, '5'))
     read_int (r);
@@ -694,7 +694,7 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
         error (r, _("Weight variable name (%s) truncated."), weight_name);
     }
 
-  for (i = 0; i < r->var_cnt; i++)
+  for (i = 0; i < r->n_vars; i++)
     {
       int width;
       char name[256];
@@ -859,11 +859,8 @@ read_value_label (struct pfm_reader *r, struct dictionary *dict)
 static void
 read_documents (struct pfm_reader *r, struct dictionary *dict)
 {
-  int line_cnt;
-  int i;
-
-  line_cnt = read_int (r);
-  for (i = 0; i < line_cnt; i++)
+  int n_lines = read_int (r);
+  for (int i = 0; i < n_lines; i++)
     {
       char line[256];
       read_string (r, line);
@@ -896,7 +893,7 @@ por_file_casereader_read (struct casereader *reader, void *r_)
       return NULL;
     }
 
-  for (i = 0; i < r->var_cnt; i++)
+  for (i = 0; i < r->n_vars; i++)
     {
       int width = caseproto_get_width (r->proto, i);
 
@@ -920,28 +917,28 @@ pfm_detect (FILE *file)
 {
   unsigned char header[464];
   char trans[256];
-  int cooked_cnt, raw_cnt, line_len;
+  int n_cooked, n_raws, line_len;
   int i;
 
-  cooked_cnt = raw_cnt = 0;
+  n_cooked = n_raws = 0;
   line_len = 0;
-  while (cooked_cnt < sizeof header)
+  while (n_cooked < sizeof header)
     {
       int c = getc (file);
-      if (c == EOF || raw_cnt++ > 512)
+      if (c == EOF || n_raws++ > 512)
         return ferror (file) ? -errno : 0;
       else if (c == '\n')
         {
-          while (line_len < 80 && cooked_cnt < sizeof header)
+          while (line_len < 80 && n_cooked < sizeof header)
             {
-              header[cooked_cnt++] = ' ';
+              header[n_cooked++] = ' ';
               line_len++;
             }
           line_len = 0;
         }
       else if (c != '\r')
         {
-          header[cooked_cnt++] = c;
+          header[n_cooked++] = c;
           line_len++;
         }
     }

@@ -302,7 +302,7 @@ main (int argc, char *argv[])
         goto error;
       dict_reorder_vars (dict, keep_vars, n_keep_vars);
       dict_delete_consecutive_vars (dict, n_keep_vars,
-                                    dict_get_var_cnt (dict) - n_keep_vars);
+                                    dict_get_n_vars (dict) - n_keep_vars);
       free (keep_vars);
     }
 

@@ -33,7 +33,7 @@ int
 cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
 {
   struct variable **vars;
-  size_t var_cnt;
+  size_t n_vars;
   bool ok;
 
   if (proc_make_temporary_transformations_permanent (ds))
@@ -41,9 +41,9 @@ cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
                "Temporary transformations will be made permanent."),
 	 "DELETE VARIABLES", "TEMPORARY");
 
-  if (!parse_variables (lexer, dataset_dict (ds), &vars, &var_cnt, PV_NONE))
+  if (!parse_variables (lexer, dataset_dict (ds), &vars, &n_vars, PV_NONE))
     goto error;
-  if (var_cnt == dict_get_var_cnt (dataset_dict (ds)))
+  if (n_vars == dict_get_n_vars (dataset_dict (ds)))
     {
       msg (SE, _("%s may not be used to delete all variables "
                  "from the active dataset dictionary.  "
@@ -56,7 +56,7 @@ cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
   if (!ok)
     goto error;
 
-  dict_delete_vars (dataset_dict (ds), vars, var_cnt);
+  dict_delete_vars (dataset_dict (ds), vars, n_vars);
 
   /* XXX A bunch of bugs conspire to make executing transformations again here
      necessary, even though it shouldn't be.

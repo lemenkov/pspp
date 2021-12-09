@@ -31,7 +31,7 @@ struct var_set *var_set_create_from_dict (const struct dictionary *d);
 struct var_set *var_set_create_from_array (struct variable *const *var,
                                            size_t);
 
-size_t var_set_get_cnt (const struct var_set *vs);
+size_t var_set_get_n (const struct var_set *vs);
 
 void var_set_destroy (struct var_set *vs);
 

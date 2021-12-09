@@ -42,7 +42,7 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
                      const struct variable ***vars, bool *saw_direction)
 {
   const struct variable **local_vars = NULL;
-  size_t var_cnt = 0;
+  size_t n_vars = 0;
 
   if (vars == NULL)
     vars = &local_vars;
@@ -53,12 +53,12 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
 
   do
     {
-      size_t prev_var_cnt = var_cnt;
+      size_t prev_n_vars = n_vars;
       enum subcase_direction direction;
       size_t i;
 
       /* Variables. */
-      if (!parse_variables_const (lexer, dict, vars, &var_cnt,
+      if (!parse_variables_const (lexer, dict, vars, &n_vars,
                                   PV_APPEND | PV_NO_SCRATCH))
         goto error;
 
@@ -82,7 +82,7 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
       else
         direction = SC_ASCEND;
 
-      for (i = prev_var_cnt; i < var_cnt; i++)
+      for (i = prev_n_vars; i < n_vars; i++)
         {
           const struct variable *var = (*vars)[i];
           if (!subcase_add_var (ordering, var, direction))

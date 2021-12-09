@@ -48,7 +48,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
   do
     {
       char **vectors;
-      size_t vector_cnt, vector_cap;
+      size_t n_vectors, allocated_vectors;
 
       /* Get the name(s) of the new vector(s). */
       if (!lex_force_id (lexer)
@@ -56,7 +56,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 	return CMD_CASCADING_FAILURE;
 
       vectors = NULL;
-      vector_cnt = vector_cap = 0;
+      n_vectors = allocated_vectors = 0;
       while (lex_token (lexer) == T_ID)
 	{
           size_t i;
@@ -68,7 +68,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 	      goto fail;
 	    }
 
-          for (i = 0; i < vector_cnt; i++)
+          for (i = 0; i < n_vectors; i++)
             if (!utf8_strcasecmp (vectors[i], lex_tokcstr (lexer)))
 	      {
 		msg (SE, _("Vector name %s is given twice."),
@@ -76,10 +76,10 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 		goto fail;
 	      }
 
-          if (vector_cnt == vector_cap)
-            vectors = pool_2nrealloc (pool,
-                                       vectors, &vector_cap, sizeof *vectors);
-          vectors[vector_cnt++] = pool_strdup (pool, lex_tokcstr (lexer));
+          if (n_vectors == allocated_vectors)
+            vectors = pool_2nrealloc (pool, vectors, &allocated_vectors,
+                                      sizeof *vectors);
+          vectors[n_vectors++] = pool_strdup (pool, lex_tokcstr (lexer));
 
 	  lex_get (lexer);
 	  lex_match (lexer, T_COMMA);
@@ -93,7 +93,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
           struct variable **v;
           size_t nv;
 
-	  if (vector_cnt > 1)
+	  if (n_vectors > 1)
 	    {
 	      msg (SE, _("A slash must separate each vector "
                          "specification in VECTOR's long form."));
@@ -113,20 +113,20 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
           bool seen_format = false;
 
           struct variable **vars;
-          int var_cnt;
+          int n_vars;
 
           size_t i;
 
-          var_cnt = 0;
+          n_vars = 0;
           format = fmt_for_output (FMT_F, 8, 2);
           seen_format = false;
           while (!lex_match (lexer, T_RPAREN))
             {
-              if (lex_is_integer (lexer) && var_cnt == 0)
+              if (lex_is_integer (lexer) && n_vars == 0)
                 {
                   if (!lex_force_int_range (lexer, NULL, 1, INT_MAX))
                     goto fail;
-                  var_cnt = lex_integer (lexer);
+                  n_vars = lex_integer (lexer);
                   lex_get (lexer);
                 }
               else if (lex_token (lexer) == T_ID && !seen_format)
@@ -143,7 +143,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                 }
               lex_match (lexer, T_COMMA);
             }
-          if (var_cnt == 0)
+          if (n_vars == 0)
             {
               lex_error (lexer, _("expecting vector length"));
               goto fail;
@@ -151,10 +151,10 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 
 	  /* Check that none of the variables exist and that their names are
              not excessively long. */
-          for (i = 0; i < vector_cnt; i++)
+          for (i = 0; i < n_vectors; i++)
 	    {
               int j;
-	      for (j = 0; j < var_cnt; j++)
+	      for (j = 0; j < n_vars; j++)
 		{
                   char *name = xasprintf ("%s%d", vectors[i], j + 1);
                   if (!dict_id_is_valid (dict, name, true))
@@ -173,11 +173,11 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 	    }
 
 	  /* Finally create the variables and vectors. */
-          vars = pool_nmalloc (pool, var_cnt, sizeof *vars);
-          for (i = 0; i < vector_cnt; i++)
+          vars = pool_nmalloc (pool, n_vars, sizeof *vars);
+          for (i = 0; i < n_vectors; i++)
 	    {
               int j;
-	      for (j = 0; j < var_cnt; j++)
+	      for (j = 0; j < n_vars; j++)
 		{
                   char *name = xasprintf ("%s%d", vectors[i], j + 1);
 		  vars[j] = dict_create_var_assert (dict, name,
@@ -185,7 +185,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                   var_set_both_formats (vars[j], &format);
                   free (name);
 		}
-              dict_create_vector_assert (dict, vectors[i], vars, var_cnt);
+              dict_create_vector_assert (dict, vectors[i], vars, n_vars);
 	    }
 	}
       else

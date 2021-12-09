@@ -1048,17 +1048,17 @@ static unsigned int
 expected_perms (int *values, size_t cnt)
 {
   size_t i, j;
-  unsigned int perm_cnt;
+  unsigned int n_perms;
 
-  perm_cnt = factorial (cnt);
+  n_perms = factorial (cnt);
   for (i = 0; i < cnt; i = j)
     {
       for (j = i + 1; j < cnt; j++)
         if (values[i] != values[j])
           break;
-      perm_cnt /= factorial (j - i);
+      n_perms /= factorial (j - i);
     }
-  return perm_cnt;
+  return n_perms;
 }
 
 /* Tests llx_min and llx_max. */
@@ -1076,11 +1076,11 @@ test_min_max (void)
       int *values;
       int *new_values = xnmalloc (cnt, sizeof *values);
 
-      size_t perm_cnt;
+      size_t n_perms;
 
       allocate_ascending (cnt, &list, &elems, &elemp, &values);
 
-      perm_cnt = 1;
+      n_perms = 1;
       while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                    compare_elements, &aux_data))
         {
@@ -1127,9 +1127,9 @@ test_min_max (void)
                     check (max != elemp[r1] && max_elem->x == max_int);
                   }
               }
-          perm_cnt++;
+          n_perms++;
         }
-      check (perm_cnt == factorial (cnt));
+      check (n_perms == factorial (cnt));
       check_list_contents (&list, values, cnt);
 
       free_elements (cnt, &list, elems, elemp, values);
@@ -1322,11 +1322,11 @@ test_permutations_no_dups (void)
       int *old_values = xnmalloc (cnt, sizeof *values);
       int *new_values = xnmalloc (cnt, sizeof *values);
 
-      size_t perm_cnt;
+      size_t n_perms;
 
       allocate_ascending (cnt, &list, &elems, NULL, &values);
 
-      perm_cnt = 1;
+      n_perms = 1;
       extract_values (&list, old_values, cnt);
       while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                    compare_elements, &aux_data))
@@ -1337,12 +1337,12 @@ test_permutations_no_dups (void)
                                                sizeof *new_values,
                                                compare_ints, NULL) > 0);
           memcpy (old_values, new_values, (cnt) * sizeof *old_values);
-          perm_cnt++;
+          n_perms++;
         }
-      check (perm_cnt == factorial (cnt));
+      check (n_perms == factorial (cnt));
       check_list_contents (&list, values, cnt);
 
-      perm_cnt = 1;
+      n_perms = 1;
       llx_reverse (llx_head (&list), llx_null (&list));
       extract_values (&list, old_values, cnt);
       while (llx_prev_permutation (llx_head (&list), llx_null (&list),
@@ -1354,9 +1354,9 @@ test_permutations_no_dups (void)
                                                sizeof *new_values,
                                                compare_ints, NULL) < 0);
           memcpy (old_values, new_values, (cnt) * sizeof *old_values);
-          perm_cnt++;
+          n_perms++;
         }
-      check (perm_cnt == factorial (cnt));
+      check (n_perms == factorial (cnt));
       llx_reverse (llx_head (&list), llx_null (&list));
       check_list_contents (&list, values, cnt);
 
@@ -1387,7 +1387,7 @@ test_permutations_with_dups (void)
         int *old_values = xnmalloc (max_elems, sizeof *values);
         int *new_values = xnmalloc (max_elems, sizeof *values);
 
-        unsigned int permutation_cnt;
+        unsigned int n_permutations;
         int left = cnt;
         int value = 0;
 
@@ -1406,7 +1406,7 @@ test_permutations_with_dups (void)
             value++;
           }
 
-        permutation_cnt = 1;
+        n_permutations = 1;
         extract_values (&list, old_values, cnt);
         while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                      compare_elements, &aux_data))
@@ -1417,12 +1417,12 @@ test_permutations_with_dups (void)
                                                  sizeof *new_values,
                                                  compare_ints, NULL) > 0);
             memcpy (old_values, new_values, cnt * sizeof *old_values);
-            permutation_cnt++;
+            n_permutations++;
           }
-        check (permutation_cnt == expected_perms (values, cnt));
+        check (n_permutations == expected_perms (values, cnt));
         check_list_contents (&list, values, cnt);
 
-        permutation_cnt = 1;
+        n_permutations = 1;
         llx_reverse (llx_head (&list), llx_null (&list));
         extract_values (&list, old_values, cnt);
         while (llx_prev_permutation (llx_head (&list), llx_null (&list),
@@ -1433,10 +1433,10 @@ test_permutations_with_dups (void)
                                                  old_values, cnt,
                                                  sizeof *new_values,
                                                  compare_ints, NULL) < 0);
-            permutation_cnt++;
+            n_permutations++;
           }
         llx_reverse (llx_head (&list), llx_null (&list));
-        check (permutation_cnt == expected_perms (values, cnt));
+        check (n_permutations == expected_perms (values, cnt));
         check_list_contents (&list, values, cnt);
 
         free_elements (cnt, &list, elems, elemp, values);
@@ -1452,10 +1452,10 @@ test_merge_no_dups (void)
   const int max_elems = 8;
   const int max_fillxer = 3;
 
-  int merge_cnt, pattern, pfx, gap, sfx, order;
+  int n_merges, pattern, pfx, gap, sfx, order;
 
-  for (merge_cnt = 0; merge_cnt < max_elems; merge_cnt++)
-    for (pattern = 0; pattern <= (1 << merge_cnt); pattern++)
+  for (n_merges = 0; n_merges < max_elems; n_merges++)
+    for (pattern = 0; pattern <= (1 << n_merges); pattern++)
       for (pfx = 0; pfx < max_fillxer; pfx++)
         for (gap = 0; gap < max_fillxer; gap++)
           for (sfx = 0; sfx < max_fillxer; sfx++)
@@ -1466,46 +1466,46 @@ test_merge_no_dups (void)
                 struct llx **elemp;
                 int *values;
 
-                int list_cnt = pfx + merge_cnt + gap + sfx;
+                int n_lists = pfx + n_merges + gap + sfx;
                 int a0, a1, b0, b1;
                 int i, j;
 
-                allocate_elements (list_cnt, &list,
+                allocate_elements (n_lists, &list,
                                    &elems, &elemp, &values);
 
                 j = 0;
                 for (i = 0; i < pfx; i++)
                   elems[j++]->x = 100 + i;
                 a0 = j;
-                for (i = 0; i < merge_cnt; i++)
+                for (i = 0; i < n_merges; i++)
                   if (pattern & (1u << i))
                     elems[j++]->x = i;
                 a1 = j;
                 for (i = 0; i < gap; i++)
                   elems[j++]->x = 200 + i;
                 b0 = j;
-                for (i = 0; i < merge_cnt; i++)
+                for (i = 0; i < n_merges; i++)
                   if (!(pattern & (1u << i)))
                     elems[j++]->x = i;
                 b1 = j;
                 for (i = 0; i < sfx; i++)
                   elems[j++]->x = 300 + i;
-                check (list_cnt == j);
+                check (n_lists == j);
 
                 j = 0;
                 for (i = 0; i < pfx; i++)
                   values[j++] = 100 + i;
                 if (order == 0)
-                  for (i = 0; i < merge_cnt; i++)
+                  for (i = 0; i < n_merges; i++)
                     values[j++] = i;
                 for (i = 0; i < gap; i++)
                   values[j++] = 200 + i;
                 if (order == 1)
-                  for (i = 0; i < merge_cnt; i++)
+                  for (i = 0; i < n_merges; i++)
                     values[j++] = i;
                 for (i = 0; i < sfx; i++)
                   values[j++] = 300 + i;
-                check (list_cnt == j);
+                check (n_lists == j);
 
                 if (order == 0)
                   llx_merge (elemp[a0], elemp[a1], elemp[b0], elemp[b1],
@@ -1514,9 +1514,9 @@ test_merge_no_dups (void)
                   llx_merge (elemp[b0], elemp[b1], elemp[a0], elemp[a1],
                              compare_elements, &aux_data);
 
-                check_list_contents (&list, values, list_cnt);
+                check_list_contents (&list, values, n_lists);
 
-                free_elements (list_cnt, &list, elems, elemp, values);
+                free_elements (n_lists, &list, elems, elemp, values);
               }
 }
 
@@ -1615,12 +1615,12 @@ test_sort_exhaustive (void)
       struct element **perm_elems;
       int *perm_values;
 
-      size_t perm_cnt;
+      size_t n_perms;
 
       allocate_ascending (cnt, &list, &elems, NULL, &values);
       allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
 
-      perm_cnt = 1;
+      n_perms = 1;
       while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                    compare_elements, &aux_data))
         {
@@ -1640,9 +1640,9 @@ test_sort_exhaustive (void)
           check (llx_is_sorted (llx_head (&perm_list), llx_null (&perm_list),
                                 compare_elements, &aux_data));
           llx_destroy (&perm_list, NULL, NULL, &llx_malloc_mgr);
-          perm_cnt++;
+          n_perms++;
         }
-      check (perm_cnt == factorial (cnt));
+      check (n_perms == factorial (cnt));
 
       free_elements (cnt, &list, elems, NULL, values);
       free_elements (cnt, NULL, perm_elems, NULL, perm_values);
@@ -1667,7 +1667,7 @@ test_sort_stable (void)
         struct element **perm_elems;
         int *perm_values;
 
-        size_t perm_cnt;
+        size_t n_perms;
         int i, j;
 
         allocate_elements (cnt, &list, &elems, NULL, &values);
@@ -1682,7 +1682,7 @@ test_sort_stable (void)
             elems[i]->y = i;
           }
 
-        perm_cnt = 1;
+        n_perms = 1;
         while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                      compare_elements_y, &aux_data))
           {
@@ -1702,9 +1702,9 @@ test_sort_stable (void)
             check (llx_is_sorted (llx_head (&perm_list), llx_null (&perm_list),
                                   compare_elements_x_y, &aux_data));
             llx_destroy (&perm_list, NULL, NULL, &llx_malloc_mgr);
-            perm_cnt++;
+            n_perms++;
           }
-        check (perm_cnt == factorial (cnt));
+        check (n_perms == factorial (cnt));
 
         free_elements (cnt, &list, elems, NULL, values);
         free_elements (cnt, NULL, perm_elems, NULL, perm_values);
@@ -1832,29 +1832,29 @@ test_sort_unique (void)
         struct element **perm_elems;
         int *perm_values;
 
-        int unique_cnt;
+        int n_uniques;
         int *unique_values;
 
-        size_t perm_cnt;
+        size_t n_perms;
         int i, j;
 
         allocate_elements (cnt, &list, &elems, NULL, &values);
         allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
 
-        j = unique_cnt = 0;
+        j = n_uniques = 0;
         for (i = 0; i < cnt; i++)
           {
             elems[i]->x = values[i] = j;
-            unique_cnt = j + 1;
+            n_uniques = j + 1;
             if (inc_pat & (1 << i))
               j++;
           }
 
-        unique_values = xnmalloc (unique_cnt, sizeof *unique_values);
-        for (i = 0; i < unique_cnt; i++)
+        unique_values = xnmalloc (n_uniques, sizeof *unique_values);
+        for (i = 0; i < n_uniques; i++)
           unique_values[i] = i;
 
-        perm_cnt = 1;
+        n_perms = 1;
         while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                      compare_elements, &aux_data))
           {
@@ -1871,13 +1871,13 @@ test_sort_unique (void)
             llx_sort_unique (llx_head (&perm_list), llx_null (&perm_list), NULL,
                              compare_elements, &aux_data,
                              &llx_malloc_mgr);
-            check_list_contents (&perm_list, unique_values, unique_cnt);
+            check_list_contents (&perm_list, unique_values, n_uniques);
             check (llx_is_sorted (llx_head (&perm_list), llx_null (&perm_list),
                                   compare_elements_x_y, &aux_data));
             llx_destroy (&perm_list, NULL, NULL, &llx_malloc_mgr);
-            perm_cnt++;
+            n_perms++;
           }
-        check (perm_cnt == expected_perms (values, cnt));
+        check (n_perms == expected_perms (values, cnt));
 
         free_elements (cnt, &list, elems, NULL, values);
         free_elements (cnt, NULL, perm_elems, NULL, perm_values);
@@ -1902,7 +1902,7 @@ test_insert_ordered (void)
         struct element **perm_elems;
         int *perm_values;
 
-        size_t perm_cnt;
+        size_t n_perms;
         int i, j;
 
         allocate_elements (cnt, &list, &elems, NULL, &values);
@@ -1917,7 +1917,7 @@ test_insert_ordered (void)
             elems[i]->y = i;
           }
 
-        perm_cnt = 1;
+        n_perms = 1;
         while (llx_next_permutation (llx_head (&list), llx_null (&list),
                                      compare_elements_y, &aux_data))
           {
@@ -1938,9 +1938,9 @@ test_insert_ordered (void)
             check (llx_is_sorted (llx_head (&perm_list), llx_null (&perm_list),
                                   compare_elements_x_y, &aux_data));
             llx_destroy (&perm_list, NULL, NULL, &llx_malloc_mgr);
-            perm_cnt++;
+            n_perms++;
           }
-        check (perm_cnt == factorial (cnt));
+        check (n_perms == factorial (cnt));
 
         free_elements (cnt, &list, elems, NULL, values);
         free_elements (cnt, NULL, perm_elems, NULL, perm_values);

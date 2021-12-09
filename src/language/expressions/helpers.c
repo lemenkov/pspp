@@ -167,11 +167,11 @@ recognize_unit (struct substring name, enum date_unit *unit)
       { DATE_MINUTES, SS_LITERAL_INITIALIZER ("minutes") },
       { DATE_SECONDS, SS_LITERAL_INITIALIZER ("seconds") },
     };
-  const int unit_name_cnt = sizeof unit_names / sizeof *unit_names;
+  const int n_unit_names = sizeof unit_names / sizeof *unit_names;
 
   const struct unit_name *un;
 
-  for (un = unit_names; un < &unit_names[unit_name_cnt]; un++)
+  for (un = unit_names; un < &unit_names[n_unit_names]; un++)
     if (ss_equals_case (un->name, name))
       {
         *unit = un->unit;
@@ -430,15 +430,12 @@ compare_string_3way (const struct substring *a, const struct substring *b)
 }
 
 size_t
-count_valid (double *d, size_t d_cnt)
+count_valid (double *d, size_t n)
 {
-  size_t valid_cnt;
-  size_t i;
-
-  valid_cnt = 0;
-  for (i = 0; i < d_cnt; i++)
-    valid_cnt += is_valid (d[i]);
-  return valid_cnt;
+  size_t n_valid = 0;
+  for (size_t i = 0; i < n; i++)
+    n_valid += is_valid (d[i]);
+  return n_valid;
 }
 
 struct substring

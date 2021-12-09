@@ -80,7 +80,7 @@ struct any_read_info
     enum integer_format integer_format;
     enum float_format float_format;
     enum any_compression compression;
-    casenumber case_cnt;        /* -1 if unknown. */
+    casenumber n_cases;         /* -1 if unknown. */
     char *product;		/* Product name. */
     char *product_ext;          /* Extra product info. */
 

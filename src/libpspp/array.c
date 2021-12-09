@@ -129,17 +129,17 @@ count_equal (const void *array, size_t count, size_t size,
              algo_compare_func *compare, const void *aux)
 {
   const char *first = array;
-  size_t equal_cnt = 0;
+  size_t n_equals = 0;
 
   while (count-- > 0)
     {
       if (compare (element, first, aux) == 0)
-        equal_cnt++;
+        n_equals++;
 
       first += size;
     }
 
-  return equal_cnt;
+  return n_equals;
 }
 
 /* Counts and return the number of elements in ARRAY, which
@@ -151,17 +151,17 @@ count_if (const void *array, size_t count, size_t size,
           algo_predicate_func *predicate, const void *aux)
 {
   const char *first = array;
-  size_t true_cnt = 0;
+  size_t n_trues = 0;
 
   while (count-- > 0)
     {
       if (predicate (first, aux) != 0)
-        true_cnt++;
+        n_trues++;
 
       first += size;
     }
 
-  return true_cnt;
+  return n_trues;
 }
 
 /* Byte-wise swap objects A and B, each SIZE bytes. */
@@ -229,9 +229,9 @@ size_t
 partition (void *array, size_t count, size_t size,
            algo_predicate_func *predicate, const void *aux)
 {
-  size_t true_cnt = count;
+  size_t n_trues = count;
   char *first = array;
-  char *last = first + true_cnt * size;
+  char *last = first + n_trues * size;
 
   for (;;)
     {
@@ -246,7 +246,7 @@ partition (void *array, size_t count, size_t size,
 
           first += size;
         }
-      true_cnt--;
+      n_trues--;
 
       /* Move LAST backward to point to last element that passes
          PREDICATE. */
@@ -259,7 +259,7 @@ partition (void *array, size_t count, size_t size,
           else if (predicate (last, aux))
             break;
           else
-            true_cnt--;
+            n_trues--;
         }
 
       /* By swapping FIRST and LAST we extend the starting and
@@ -270,8 +270,8 @@ partition (void *array, size_t count, size_t size,
     }
 
  done:
-  assert (is_partitioned (array, count, size, true_cnt, predicate, aux));
-  return true_cnt;
+  assert (is_partitioned (array, count, size, n_trues, predicate, aux));
+  return n_trues;
 }
 
 /* Checks whether ARRAY, which contains COUNT elements of SIZE
@@ -280,17 +280,17 @@ partition (void *array, size_t count, size_t size,
    elements.  AUX is passed as auxiliary data to PREDICATE. */
 bool
 is_partitioned (const void *array, size_t count, size_t size,
-                size_t true_cnt,
+                size_t n_trues,
                 algo_predicate_func *predicate, const void *aux)
 {
   const char *first = array;
   size_t idx;
 
-  assert (true_cnt <= count);
-  for (idx = 0; idx < true_cnt; idx++)
+  assert (n_trues <= count);
+  for (idx = 0; idx < n_trues; idx++)
     if (predicate (first + idx * size, aux) == 0)
       return false;
-  for (idx = true_cnt; idx < count; idx++)
+  for (idx = n_trues; idx < count; idx++)
     if (predicate (first + idx * size, aux) != 0)
       return false;
   return true;
@@ -308,7 +308,7 @@ copy_if (const void *array, size_t count, size_t size,
   const char *input = array;
   const char *last = input + size * count;
   char *output = result;
-  size_t nonzero_cnt = 0;
+  size_t n_nonzeros = 0;
 
   while (input < last)
     {
@@ -316,16 +316,16 @@ copy_if (const void *array, size_t count, size_t size,
         {
           memcpy (output, input, size);
           output += size;
-          nonzero_cnt++;
+          n_nonzeros++;
         }
 
       input += size;
     }
 
-  assert (nonzero_cnt == count_if (array, count, size, predicate, aux));
-  assert (nonzero_cnt == count_if (result, nonzero_cnt, size, predicate, aux));
+  assert (n_nonzeros == count_if (array, count, size, predicate, aux));
+  assert (n_nonzeros == count_if (result, n_nonzeros, size, predicate, aux));
 
-  return nonzero_cnt;
+  return n_nonzeros;
 }
 
 /* Removes N elements starting at IDX from ARRAY, which consists

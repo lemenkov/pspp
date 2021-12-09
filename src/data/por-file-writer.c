@@ -63,7 +63,7 @@ struct pfm_writer
 
     int lc;			/* Number of characters on this line so far. */
 
-    size_t var_cnt;             /* Number of variables. */
+    size_t n_vars;              /* Number of variables. */
     struct pfm_var *vars;       /* Variables. */
 
     int digits;                 /* Digits of precision. */
@@ -120,12 +120,12 @@ pfm_open_writer (struct file_handle *fh, struct dictionary *dict,
   w->file = NULL;
   w->rf = NULL;
   w->lc = 0;
-  w->var_cnt = 0;
+  w->n_vars = 0;
   w->vars = NULL;
 
-  w->var_cnt = dict_get_var_cnt (dict);
-  w->vars = xnmalloc (w->var_cnt, sizeof *w->vars);
-  for (i = 0; i < w->var_cnt; i++)
+  w->n_vars = dict_get_n_vars (dict);
+  w->vars = xnmalloc (w->n_vars, sizeof *w->vars);
+  for (i = 0; i < w->n_vars; i++)
     {
       const struct variable *dv = dict_get_var (dict, i);
       struct pfm_var *pv = &w->vars[i];
@@ -166,7 +166,7 @@ pfm_open_writer (struct file_handle *fh, struct dictionary *dict,
   write_version_data (w);
   write_variables (w, dict);
   write_value_labels (w, dict);
-  if (dict_get_document_line_cnt (dict) > 0)
+  if (dict_get_document_n_lines (dict) > 0)
     write_documents (w, dict);
   buf_write (w, "F", 1);
   if (ferror (w->file))
@@ -335,12 +335,12 @@ write_variables (struct pfm_writer *w, struct dictionary *dict)
     }
 
   buf_write (w, "4", 1);
-  write_int (w, dict_get_var_cnt (dict));
+  write_int (w, dict_get_n_vars (dict));
 
   buf_write (w, "5", 1);
   write_int (w, ceil (w->digits * (log (10) / log (30))));
 
-  for (i = 0; i < dict_get_var_cnt (dict); i++)
+  for (i = 0; i < dict_get_n_vars (dict); i++)
     {
       struct variable *v = dict_get_var (dict, i);
       struct missing_values mv;
@@ -400,7 +400,7 @@ write_value_labels (struct pfm_writer *w, const struct dictionary *dict)
 {
   int i;
 
-  for (i = 0; i < dict_get_var_cnt (dict); i++)
+  for (i = 0; i < dict_get_n_vars (dict); i++)
     {
       struct variable *v = dict_get_var (dict, i);
       const struct val_labs *val_labs = var_get_value_labels (v);
@@ -432,13 +432,13 @@ write_value_labels (struct pfm_writer *w, const struct dictionary *dict)
 static void
 write_documents (struct pfm_writer *w, const struct dictionary *dict)
 {
-  size_t line_cnt = dict_get_document_line_cnt (dict);
+  size_t n_lines = dict_get_document_n_lines (dict);
   struct string line = DS_EMPTY_INITIALIZER;
   int i;
 
   buf_write (w, "E", 1);
-  write_int (w, line_cnt);
-  for (i = 0; i < line_cnt; i++)
+  write_int (w, n_lines);
+  for (i = 0; i < n_lines; i++)
     write_string (w, dict_get_document_line (dict, i));
   ds_destroy (&line);
 }
@@ -453,7 +453,7 @@ por_file_casewriter_write (struct casewriter *writer, void *w_,
 
   if (!ferror (w->file))
     {
-      for (i = 0; i < w->var_cnt; i++)
+      for (i = 0; i < w->n_vars; i++)
         {
           struct pfm_var *v = &w->vars[i];
 
@@ -606,7 +606,7 @@ trig_to_char (int trig)
    character after the formatted number. */
 static char *
 format_trig_digits (char *string,
-                    const char trigs[], int trig_cnt, int trig_places)
+                    const char trigs[], int n_trigs, int trig_places)
 {
   if (trig_places < 0)
     {
@@ -615,7 +615,7 @@ format_trig_digits (char *string,
         *string++ = '0';
       trig_places = -1;
     }
-  while (trig_cnt-- > 0)
+  while (n_trigs-- > 0)
     {
       if (trig_places-- == 0)
         *string++ = '.';
@@ -669,9 +669,9 @@ format_trig_int (int value, bool force_sign, char string[])
    is exactly half, examines TRIGS[-1] and returns true if odd,
    false if even ("round to even"). */
 static bool
-should_round_up (const char trigs[], int trig_cnt)
+should_round_up (const char trigs[], int n_trigs)
 {
-  assert (trig_cnt > 0);
+  assert (n_trigs > 0);
 
   if (*trigs < BASE / 2)
     {
@@ -687,7 +687,7 @@ should_round_up (const char trigs[], int trig_cnt)
     {
       /* Approximately half: look more closely. */
       int i;
-      for (i = 1; i < trig_cnt; i++)
+      for (i = 1; i < n_trigs; i++)
         if (trigs[i] > 0)
           {
             /* Slightly greater than half: round up. */
@@ -704,11 +704,11 @@ should_round_up (const char trigs[], int trig_cnt)
    successful, false on failure (due to a carry out of the
    leftmost position). */
 static bool
-try_round_up (char *trigs, int trig_cnt)
+try_round_up (char *trigs, int n_trigs)
 {
-  while (trig_cnt > 0)
+  while (n_trigs > 0)
     {
-      char *round_trig = trigs + --trig_cnt;
+      char *round_trig = trigs + --n_trigs;
       if (*round_trig != BASE - 1)
         {
           /* Round this trig up to the next value. */
@@ -745,7 +745,7 @@ format_trig_double (long double value, int base_10_precision, char output[])
   /* VALUE as a set of trigesimals. */
   char buffer[DBL_DIG + 16];
   char *trigs;
-  int trig_cnt;
+  int n_trigs;
 
   /* Number of trigesimal places for trigs.
      trigs[0] has coefficient 30**(trig_places - 1),
@@ -794,7 +794,7 @@ format_trig_double (long double value, int base_10_precision, char output[])
 
   /* Dump all the trigs to buffer[], CHUNK_SIZE at a time. */
   trigs = buffer;
-  trig_cnt = 0;
+  n_trigs = 0;
   for (trigs_to_output = DIV_RND_UP (DBL_DIG * 2, 3) + 1 + (CHUNK_SIZE / 2);
        trigs_to_output > 0;
        trigs_to_output -= CHUNK_SIZE)
@@ -814,12 +814,12 @@ format_trig_double (long double value, int base_10_precision, char output[])
       /* Append the chunk, in base 30, to trigs[]. */
       for (trigs_left = CHUNK_SIZE; chunk > 0 && trigs_left > 0;)
         {
-          trigs[trig_cnt + --trigs_left] = chunk % 30;
+          trigs[n_trigs + --trigs_left] = chunk % 30;
           chunk /= 30;
         }
       while (trigs_left > 0)
-        trigs[trig_cnt + --trigs_left] = 0;
-      trig_cnt += CHUNK_SIZE;
+        trigs[n_trigs + --trigs_left] = 0;
+      n_trigs += CHUNK_SIZE;
 
       /* Proceed to the next chunk. */
       if (value == 0.)
@@ -828,10 +828,10 @@ format_trig_double (long double value, int base_10_precision, char output[])
     }
 
   /* Strip leading zeros. */
-  while (trig_cnt > 1 && *trigs == 0)
+  while (n_trigs > 1 && *trigs == 0)
     {
       trigs++;
-      trig_cnt--;
+      n_trigs--;
       trig_places--;
     }
 
@@ -842,30 +842,30 @@ format_trig_double (long double value, int base_10_precision, char output[])
   if (base_10_precision > LDBL_DIG)
     base_10_precision = LDBL_DIG;
   base_30_precision = DIV_RND_UP (base_10_precision * 2, 3);
-  if (trig_cnt > base_30_precision)
+  if (n_trigs > base_30_precision)
     {
       if (should_round_up (trigs + base_30_precision,
-                           trig_cnt - base_30_precision))
+                           n_trigs - base_30_precision))
         {
           /* Try to round up. */
           if (try_round_up (trigs, base_30_precision))
             {
               /* Rounding up worked. */
-              trig_cnt = base_30_precision;
+              n_trigs = base_30_precision;
             }
           else
             {
               /* Couldn't round up because we ran out of trigs to
                  carry into.  Do the carry here instead. */
               *trigs = 1;
-              trig_cnt = 1;
+              n_trigs = 1;
               trig_places++;
             }
         }
       else
         {
           /* Round down. */
-          trig_cnt = base_30_precision;
+          n_trigs = base_30_precision;
         }
     }
   else
@@ -875,23 +875,23 @@ format_trig_double (long double value, int base_10_precision, char output[])
     }
 
   /* Strip trailing zeros. */
-  while (trig_cnt > 1 && trigs[trig_cnt - 1] == 0)
-    trig_cnt--;
+  while (n_trigs > 1 && trigs[n_trigs - 1] == 0)
+    n_trigs--;
 
   /* Write output. */
   if (negative)
     *output++ = '-';
-  if (trig_places >= -1 && trig_places < trig_cnt + 3)
+  if (trig_places >= -1 && trig_places < n_trigs + 3)
     {
       /* Use conventional notation. */
-      format_trig_digits (output, trigs, trig_cnt, trig_places);
+      format_trig_digits (output, trigs, n_trigs, trig_places);
     }
   else
     {
       /* Use scientific notation. */
       char *op;
-      op = format_trig_digits (output, trigs, trig_cnt, trig_cnt);
-      op = format_trig_int (trig_places - trig_cnt, true, op);
+      op = format_trig_digits (output, trigs, n_trigs, n_trigs);
+      op = format_trig_int (trig_places - n_trigs, true, op);
     }
   return;
 

@@ -71,9 +71,9 @@ struct dsc_z_score
 struct dsc_trns
   {
     struct dsc_z_score *z_scores; /* Array of Z-scores. */
-    int z_score_cnt;            /* Number of Z-scores. */
+    int n_z_scores;               /* Number of Z-scores. */
     const struct variable **vars;     /* Variables for listwise missing checks. */
-    size_t var_cnt;             /* Number of variables. */
+    size_t n_vars;              /* Number of variables. */
     enum dsc_missing_type missing_type; /* Treatment of missing values. */
     enum mv_class exclude;      /* Classes of missing values to exclude. */
     const struct variable *filter;    /* Dictionary FILTER BY variable. */
@@ -142,7 +142,7 @@ struct dsc_proc
     /* Per-variable info. */
     struct dictionary *dict;    /* Dictionary. */
     struct dsc_var *vars;       /* Variables. */
-    size_t var_cnt;             /* Number of variables. */
+    size_t n_vars;              /* Number of variables. */
 
     /* User options. */
     enum dsc_missing_type missing_type; /* Treatment of missing values. */
@@ -171,7 +171,7 @@ static bool try_name (const struct dictionary *dict,
 		      struct dsc_proc *dsc, const char *name);
 static char *generate_z_varname (const struct dictionary *dict,
                                  struct dsc_proc *dsc,
-                                 const char *name, int *z_cnt);
+                                 const char *name, int *n_zs);
 static void dump_z_table (struct dsc_proc *);
 static void setup_z_trns (struct dsc_proc *, struct dataset *);
 
@@ -189,9 +189,9 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
   struct dictionary *dict = dataset_dict (ds);
   struct dsc_proc *dsc;
   const struct variable **vars = NULL;
-  size_t var_cnt = 0;
+  size_t n_vars = 0;
   int save_z_scores = 0;
-  int z_cnt = 0;
+  int n_zs = 0;
   size_t i;
   bool ok;
 
@@ -202,7 +202,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
   dsc = xmalloc (sizeof *dsc);
   dsc->dict = dict;
   dsc->vars = NULL;
-  dsc->var_cnt = 0;
+  dsc->n_vars = 0;
   dsc->missing_type = DSC_VARIABLE;
   dsc->exclude = MV_ANY;
   dsc->missing_listwise = 0.;
@@ -307,7 +307,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
 		goto error;
             }
         }
-      else if (var_cnt == 0)
+      else if (n_vars == 0)
         {
           if (lex_next_token (lexer, 1) == T_EQUALS)
             {
@@ -319,19 +319,19 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
             {
               int i;
 
-              if (!parse_variables_const (lexer, dict, &vars, &var_cnt,
+              if (!parse_variables_const (lexer, dict, &vars, &n_vars,
                                     PV_APPEND | PV_NO_DUPLICATE | PV_NUMERIC))
 		goto error;
 
-              dsc->vars = xnrealloc ((void *)dsc->vars, var_cnt, sizeof *dsc->vars);
-              for (i = dsc->var_cnt; i < var_cnt; i++)
+              dsc->vars = xnrealloc ((void *)dsc->vars, n_vars, sizeof *dsc->vars);
+              for (i = dsc->n_vars; i < n_vars; i++)
                 {
                   struct dsc_var *dv = &dsc->vars[i];
                   dv->v = vars[i];
                   dv->z_name = NULL;
                   dv->moments = NULL;
                 }
-              dsc->var_cnt = var_cnt;
+              dsc->n_vars = n_vars;
 
               if (lex_match (lexer, T_LPAREN))
                 {
@@ -342,9 +342,9 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                     }
                   if (try_name (dict, dsc, lex_tokcstr (lexer)))
                     {
-                      struct dsc_var *dsc_var = &dsc->vars[dsc->var_cnt - 1];
+                      struct dsc_var *dsc_var = &dsc->vars[dsc->n_vars - 1];
                       dsc_var->z_name = xstrdup (lex_tokcstr (lexer));
-                      z_cnt++;
+                      n_zs++;
                     }
                   else
                     msg (SE, _("Z-score variable name %s would be"
@@ -363,33 +363,33 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
 
       lex_match (lexer, T_SLASH);
     }
-  if (var_cnt == 0)
+  if (n_vars == 0)
     {
       msg (SE, _("No variables specified."));
       goto error;
     }
 
   /* Construct z-score varnames, show translation table. */
-  if (z_cnt || save_z_scores)
+  if (n_zs || save_z_scores)
     {
       struct caseproto *proto;
 
       if (save_z_scores)
         {
-          int gen_cnt = 0;
+          int n_gens = 0;
 
-          for (i = 0; i < dsc->var_cnt; i++)
+          for (i = 0; i < dsc->n_vars; i++)
             {
               struct dsc_var *dsc_var = &dsc->vars[i];
               if (dsc_var->z_name == NULL)
                 {
                   const char *name = var_get_name (dsc_var->v);
                   dsc_var->z_name = generate_z_varname (dict, dsc, name,
-                                                        &gen_cnt);
+                                                        &n_gens);
                   if (dsc_var->z_name == NULL)
                     goto error;
 
-                  z_cnt++;
+                  n_zs++;
                 }
             }
         }
@@ -402,7 +402,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                    "Temporary transformations will be made permanent."));
 
       proto = caseproto_create ();
-      for (i = 0; i < 1 + 2 * z_cnt; i++)
+      for (i = 0; i < 1 + 2 * n_zs; i++)
         proto = caseproto_add_width (proto, 0);
       dsc->z_writer = autopaging_writer_create (proto);
       caseproto_unref (proto);
@@ -418,7 +418,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
 
   /* Figure out which statistics to calculate. */
   dsc->calc_stats = dsc->show_stats;
-  if (z_cnt > 0)
+  if (n_zs > 0)
     dsc->calc_stats |= (1ul << DSC_MEAN) | (1ul << DSC_STDDEV);
   if (dsc->sort_by_stat >= 0)
     dsc->calc_stats |= 1ul << dsc->sort_by_stat;
@@ -434,7 +434,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
     if (dsc->calc_stats & (1ul << i) && dsc_info[i].moment > dsc->max_moment)
       dsc->max_moment = dsc_info[i].moment;
   if (dsc->max_moment != MOMENT_NONE)
-    for (i = 0; i < dsc->var_cnt; i++)
+    for (i = 0; i < dsc->n_vars; i++)
       dsc->vars[i].moments = moments_create (dsc->max_moment);
 
   /* Data pass. */
@@ -445,7 +445,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
   ok = proc_commit (ds) && ok;
 
   /* Z-scoring! */
-  if (ok && z_cnt)
+  if (ok && n_zs)
     setup_z_trns (dsc, ds);
 
   /* Done. */
@@ -490,7 +490,7 @@ free_dsc_proc (struct dsc_proc *dsc)
   if (dsc == NULL)
     return;
 
-  for (i = 0; i < dsc->var_cnt; i++)
+  for (i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dsc_var = &dsc->vars[i];
       free (dsc_var->z_name);
@@ -513,7 +513,7 @@ try_name (const struct dictionary *dict, struct dsc_proc *dsc,
 
   if (dict_lookup_var (dict, name) != NULL)
     return false;
-  for (i = 0; i < dsc->var_cnt; i++)
+  for (i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dsc_var = &dsc->vars[i];
       if (dsc_var->z_name != NULL && !utf8_strcasecmp (dsc_var->z_name, name))
@@ -528,7 +528,7 @@ try_name (const struct dictionary *dict, struct dsc_proc *dsc,
    as a dynamically allocated string.  On failure, returns NULL. */
 static char *
 generate_z_varname (const struct dictionary *dict, struct dsc_proc *dsc,
-                    const char *var_name, int *z_cnt)
+                    const char *var_name, int *n_zs)
 {
   char *z_name, *trunc_name;
 
@@ -546,16 +546,16 @@ generate_z_varname (const struct dictionary *dict, struct dsc_proc *dsc,
     {
       char name[16];
 
-      (*z_cnt)++;
+      (*n_zs)++;
 
-      if (*z_cnt <= 99)
-	sprintf (name, "ZSC%03d", *z_cnt);
-      else if (*z_cnt <= 108)
-	sprintf (name, "STDZ%02d", *z_cnt - 99);
-      else if (*z_cnt <= 117)
-	sprintf (name, "ZZZZ%02d", *z_cnt - 108);
-      else if (*z_cnt <= 126)
-	sprintf (name, "ZQZQ%02d", *z_cnt - 117);
+      if (*n_zs <= 99)
+	sprintf (name, "ZSC%03d", *n_zs);
+      else if (*n_zs <= 108)
+	sprintf (name, "STDZ%02d", *n_zs - 99);
+      else if (*n_zs <= 117)
+	sprintf (name, "ZZZZ%02d", *n_zs - 108);
+      else if (*n_zs <= 126)
+	sprintf (name, "ZQZQ%02d", *n_zs - 117);
       else
 	{
 	  msg (SE, _("Ran out of generic names for Z-score variables.  "
@@ -585,7 +585,7 @@ dump_z_table (struct dsc_proc *dsc)
     table, PIVOT_AXIS_ROW, N_("Variables"));
   names->hide_all_labels = true;
 
-  for (size_t i = 0; i < dsc->var_cnt; i++)
+  for (size_t i = 0; i < dsc->n_vars; i++)
     if (dsc->vars[i].z_name != NULL)
       {
         int row = pivot_category_create_leaf (names->root,
@@ -605,7 +605,7 @@ descriptives_set_all_sysmis_zscores (const struct dsc_trns *t, struct ccase *c)
 {
   const struct dsc_z_score *z;
 
-  for (z = t->z_scores; z < t->z_scores + t->z_score_cnt; z++)
+  for (z = t->z_scores; z < t->z_scores + t->n_z_scores; z++)
     *case_num_rw (c, z->z_var) = SYSMIS;
 }
 
@@ -645,7 +645,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
           size_t z_idx = 0;
 
           t->count = case_num_idx (z_case, z_idx++);
-          for (z = t->z_scores; z < t->z_scores + t->z_score_cnt; z++)
+          for (z = t->z_scores; z < t->z_scores + t->n_z_scores; z++)
             {
               z->mean = case_num_idx (z_case, z_idx++);
               z->std_dev = case_num_idx (z_case, z_idx++);
@@ -670,7 +670,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
   if (t->missing_type == DSC_LISTWISE)
     {
       assert(t->vars);
-      for (vars = t->vars; vars < t->vars + t->var_cnt; vars++)
+      for (vars = t->vars; vars < t->vars + t->n_vars; vars++)
 	{
 	  double score = case_num (*c, *vars);
 	  if (var_is_num_missing (*vars, score, t->exclude))
@@ -681,7 +681,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
 	}
     }
 
-  for (z = t->z_scores; z < t->z_scores + t->z_score_cnt; z++)
+  for (z = t->z_scores; z < t->z_scores + t->n_z_scores; z++)
     {
       double input = case_num (*c, z->src_var);
       double *output = case_num_rw (*c, z->z_var);
@@ -718,25 +718,25 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
   struct dsc_trns *t;
   size_t cnt, i;
 
-  for (cnt = i = 0; i < dsc->var_cnt; i++)
+  for (cnt = i = 0; i < dsc->n_vars; i++)
     if (dsc->vars[i].z_name != NULL)
       cnt++;
 
   t = xmalloc (sizeof *t);
   t->z_scores = xnmalloc (cnt, sizeof *t->z_scores);
-  t->z_score_cnt = cnt;
+  t->n_z_scores = cnt;
   t->missing_type = dsc->missing_type;
   t->exclude = dsc->exclude;
   if (t->missing_type == DSC_LISTWISE)
     {
-      t->var_cnt = dsc->var_cnt;
-      t->vars = xnmalloc (t->var_cnt, sizeof *t->vars);
-      for (i = 0; i < t->var_cnt; i++)
+      t->n_vars = dsc->n_vars;
+      t->vars = xnmalloc (t->n_vars, sizeof *t->vars);
+      for (i = 0; i < t->n_vars; i++)
 	t->vars[i] = dsc->vars[i].v;
     }
   else
     {
-      t->var_cnt = 0;
+      t->n_vars = 0;
       t->vars = NULL;
     }
   t->filter = dict_get_filter (dataset_dict (ds));
@@ -745,7 +745,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
   t->ok = true;
   dsc->z_writer = NULL;
 
-  for (cnt = i = 0; i < dsc->var_cnt; i++)
+  for (cnt = i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
       if (dv->z_name != NULL)
@@ -802,7 +802,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
   pass1 = group;
   pass2 = dsc->max_moment <= MOMENT_MEAN ? NULL : casereader_clone (pass1);
 
-  for (i = 0; i < dsc->var_cnt; i++)
+  for (i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
 
@@ -837,7 +837,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
         }
       dsc->valid += weight;
 
-      for (i = 0; i < dsc->var_cnt; i++)
+      for (i = 0; i < dsc->n_vars; i++)
         {
           struct dsc_var *dv = &dsc->vars[i];
           double x = case_num (c, dv->v);
@@ -883,7 +883,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
           if (dsc->missing_type == DSC_LISTWISE && listwise_missing (dsc, c))
             continue;
 
-          for (i = 0; i < dsc->var_cnt; i++)
+          for (i = 0; i < dsc->n_vars; i++)
             {
               struct dsc_var *dv = &dsc->vars[i];
               double x = case_num (c, dv->v);
@@ -909,7 +909,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
   else
     c = NULL;
 
-  for (i = 0; i < dsc->var_cnt; i++)
+  for (i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
       double W;
@@ -964,7 +964,7 @@ listwise_missing (struct dsc_proc *dsc, const struct ccase *c)
 {
   size_t i;
 
-  for (i = 0; i < dsc->var_cnt; i++)
+  for (i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
       double x = case_num (c, dv->v);
@@ -997,12 +997,12 @@ display (struct dsc_proc *dsc)
                                   pivot_value_new_text (dsc_info[i].name));
 
   if (dsc->sort_by_stat != DSC_NONE)
-    sort (dsc->vars, dsc->var_cnt, sizeof *dsc->vars,
+    sort (dsc->vars, dsc->n_vars, sizeof *dsc->vars,
           descriptives_compare_dsc_vars, dsc);
 
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variable"));
-  for (size_t i = 0; i < dsc->var_cnt; i++)
+  for (size_t i = 0; i < dsc->n_vars; i++)
     {
       const struct dsc_var *dv = &dsc->vars[i];
 

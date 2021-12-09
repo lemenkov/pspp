@@ -200,8 +200,8 @@ struct sfm_reader
     enum integer_format integer_format; /* On-disk integer format. */
     enum float_format float_format; /* On-disk floating point format. */
     struct sfm_var *sfm_vars;   /* Variables. */
-    size_t sfm_var_cnt;         /* Number of variables. */
-    int case_cnt;               /* Number of cases */
+    size_t sfm_n_vars;          /* Number of variables. */
+    int n_cases;                /* Number of cases */
     const char *encoding;       /* String encoding. */
     bool written_by_readstat; /* From https://github.com/WizardMac/ReadStat? */
 
@@ -331,7 +331,7 @@ static bool parse_variable_records (struct sfm_reader *, struct dictionary *,
                                     struct sfm_var_record *, size_t n);
 static void parse_format_spec (struct sfm_reader *, off_t pos,
                                unsigned int format, enum which_format,
-                               struct variable *, int *format_warning_cnt);
+                               struct variable *, int *format_n_warnings);
 static void parse_document (struct dictionary *, struct sfm_document_record *);
 static void parse_display_parameters (struct sfm_reader *,
                                       const struct sfm_extension_record *,
@@ -856,7 +856,7 @@ sfm_decode (struct any_reader *r_, const char *encoding,
      sfm_read_case to use.  We cannot use the `struct variable's
      from the dictionary we created, because the caller owns the
      dictionary and may destroy or modify its variables. */
-  sfm_dictionary_to_sfm_vars (dict, &r->sfm_vars, &r->sfm_var_cnt);
+  sfm_dictionary_to_sfm_vars (dict, &r->sfm_vars, &r->sfm_n_vars);
   pool_register (r->pool, free, r->sfm_vars);
   r->proto = caseproto_ref_pool (dict_get_proto (dict), r->pool);
 
@@ -868,9 +868,8 @@ sfm_decode (struct any_reader *r_, const char *encoding,
     }
 
   return casereader_create_sequential
-    (NULL, r->proto,
-     r->case_cnt == -1 ? CASENUMBER_MAX: r->case_cnt,
-                                       &sys_file_casereader_class, r);
+    (NULL, r->proto, r->n_cases == -1 ? CASENUMBER_MAX : r->n_cases,
+     &sys_file_casereader_class, r);
 
 error:
   sfm_close (r_);
@@ -1016,10 +1015,10 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
   if (!read_int (r, &header->weight_idx))
     return false;
 
-  if (!read_int (r, &r->case_cnt))
+  if (!read_int (r, &r->n_cases))
     return false;
-  if (r->case_cnt > INT_MAX / 2)
-    r->case_cnt = -1;
+  if (r->n_cases > INT_MAX / 2)
+    r->n_cases = -1;
 
   /* Identify floating-point format and obtain compression bias. */
   if (!read_bytes (r, raw_bias, sizeof raw_bias))
@@ -1058,7 +1057,7 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
   info->integer_format = r->integer_format;
   info->float_format = r->float_format;
   info->compression = r->compression;
-  info->case_cnt = r->case_cnt;
+  info->n_cases = r->n_cases;
 
   return true;
 }
@@ -1918,7 +1917,7 @@ parse_display_parameters (struct sfm_reader *r,
   size_t ofs;
   size_t i;
 
-  n_vars = dict_get_var_cnt (dict);
+  n_vars = dict_get_n_vars (dict);
   if (record->count == 3 * n_vars)
     includes_width = true;
   else if (record->count == 2 * n_vars)
@@ -1993,7 +1992,7 @@ rename_var_and_save_short_names (struct sfm_reader *r, off_t pos,
   /* Renaming a variable may clear its short names, but we
      want to retain them, so we save them and re-set them
      afterward. */
-  n_short_names = var_get_short_name_cnt (var);
+  n_short_names = var_get_n_short_names (var);
   short_names = xnmalloc (n_short_names, sizeof *short_names);
   for (i = 0; i < n_short_names; i++)
     {
@@ -2031,7 +2030,7 @@ parse_long_var_name_map (struct sfm_reader *r,
          converted to lowercase, as the long variable names. */
       size_t i;
 
-      for (i = 0; i < dict_get_var_cnt (dict); i++)
+      for (i = 0; i < dict_get_n_vars (dict); i++)
 	{
 	  struct variable *var = dict_get_var (dict, i);
           char *new_name;
@@ -2083,7 +2082,6 @@ parse_long_string_map (struct sfm_reader *r,
     {
       size_t idx = var_get_dict_index (var);
       long int length;
-      int segment_cnt;
       int i;
 
       /* Get length. */
@@ -2098,8 +2096,8 @@ parse_long_string_map (struct sfm_reader *r,
         }
 
       /* Check segments. */
-      segment_cnt = sfm_width_to_segments (length);
-      if (segment_cnt == 1)
+      int n_segments = sfm_width_to_segments (length);
+      if (n_segments == 1)
         {
           sys_warn (r, record->pos,
                     _("%s listed in very long string record with width %s, "
@@ -2107,7 +2105,7 @@ parse_long_string_map (struct sfm_reader *r,
                     var_get_name (var), length_s);
           continue;
         }
-      if (idx + segment_cnt > dict_get_var_cnt (dict))
+      if (idx + n_segments > dict_get_n_vars (dict))
         {
           sys_error (r, record->pos,
                      _("Very long string %s overflows dictionary."),
@@ -2117,7 +2115,7 @@ parse_long_string_map (struct sfm_reader *r,
 
       /* Get the short names from the segments and check their
          lengths. */
-      for (i = 0; i < segment_cnt; i++)
+      for (i = 0; i < n_segments; i++)
         {
           struct variable *seg = dict_get_var (dict, idx + i);
           int alloc_width = sfm_segment_alloc_width (length, i);
@@ -2134,7 +2132,7 @@ parse_long_string_map (struct sfm_reader *r,
               return false;
             }
         }
-      dict_delete_consecutive_vars (dict, idx + 1, segment_cnt - 1);
+      dict_delete_consecutive_vars (dict, idx + 1, n_segments - 1);
       var_set_width (var, length);
     }
   close_text_record (r, text);
@@ -2427,7 +2425,7 @@ assign_variable_roles (struct sfm_reader *r, struct dictionary *dict)
   size_t n_warnings = 0;
   size_t i;
 
-  for (i = 0; i < dict_get_var_cnt (dict); i++)
+  for (i = 0; i < dict_get_n_vars (dict); i++)
     {
       struct variable *var = dict_get_var (dict, i);
       struct attrset *attrs = var_get_attributes (var);
@@ -2724,12 +2722,12 @@ sys_file_casereader_read (struct casereader *reader, void *r_)
   int retval;
   int i;
 
-  if (r->error || !r->sfm_var_cnt)
+  if (r->error || !r->sfm_n_vars)
     return NULL;
 
   c = case_create (r->proto);
 
-  for (i = 0; i < r->sfm_var_cnt; i++)
+  for (i = 0; i < r->sfm_n_vars; i++)
     {
       struct sfm_var *sv = &r->sfm_vars[i];
       union value *v = case_data_rw_idx (c, sv->case_index);
@@ -2755,7 +2753,7 @@ sys_file_casereader_read (struct casereader *reader, void *r_)
 eof:
   if (i != 0)
     partial_record (r);
-  if (r->case_cnt != -1)
+  if (r->n_cases != -1)
     read_error (reader, r);
   case_unref (c);
   return NULL;
@@ -3284,11 +3282,11 @@ sys_error (struct sfm_reader *r, off_t offset, const char *format, ...)
    an error. */
 static inline int
 read_bytes_internal (struct sfm_reader *r, bool eof_is_ok,
-                     void *buf, size_t byte_cnt)
+                     void *buf, size_t n_bytes)
 {
-  size_t bytes_read = fread (buf, 1, byte_cnt, r->file);
+  size_t bytes_read = fread (buf, 1, n_bytes, r->file);
   r->pos += bytes_read;
-  if (bytes_read == byte_cnt)
+  if (bytes_read == n_bytes)
     return 1;
   else if (ferror (r->file))
     {
@@ -3308,9 +3306,9 @@ read_bytes_internal (struct sfm_reader *r, bool eof_is_ok,
    Returns true if successful.
    Returns false upon I/O error or if end-of-file is encountered. */
 static bool
-read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+read_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
-  return read_bytes_internal (r, false, buf, byte_cnt) == 1;
+  return read_bytes_internal (r, false, buf, n_bytes) == 1;
 }
 
 /* Reads BYTE_CNT bytes into BUF.
@@ -3318,9 +3316,9 @@ read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
    Returns 0 if an immediate end-of-file is encountered.
    Returns -1 if an I/O error or a partial read occurs. */
 static int
-try_read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+try_read_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
-  return read_bytes_internal (r, true, buf, byte_cnt);
+  return read_bytes_internal (r, true, buf, n_bytes);
 }
 
 /* Reads a 32-bit signed integer from R and stores its value in host format in
@@ -3711,11 +3709,11 @@ close_zstream (struct sfm_reader *r)
 }
 
 static int
-read_bytes_zlib (struct sfm_reader *r, void *buf_, size_t byte_cnt)
+read_bytes_zlib (struct sfm_reader *r, void *buf_, size_t n_bytes)
 {
   uint8_t *buf = buf_;
 
-  if (byte_cnt == 0)
+  if (n_bytes == 0)
     return 1;
 
   for (;;)
@@ -3725,13 +3723,13 @@ read_bytes_zlib (struct sfm_reader *r, void *buf_, size_t byte_cnt)
       /* Use already inflated data if there is any. */
       if (r->zout_pos < r->zout_end)
         {
-          unsigned int n = MIN (byte_cnt, r->zout_end - r->zout_pos);
+          unsigned int n = MIN (n_bytes, r->zout_end - r->zout_pos);
           memcpy (buf, &r->zout_buf[r->zout_pos], n);
           r->zout_pos += n;
-          byte_cnt -= n;
+          n_bytes -= n;
           buf += n;
 
-          if (byte_cnt == 0)
+          if (n_bytes == 0)
             return 1;
         }
 
@@ -3778,13 +3776,13 @@ read_bytes_zlib (struct sfm_reader *r, void *buf_, size_t byte_cnt)
 }
 
 static int
-read_compressed_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+read_compressed_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
   if (r->compression == ANY_COMP_SIMPLE)
-    return read_bytes (r, buf, byte_cnt);
+    return read_bytes (r, buf, n_bytes);
   else
     {
-      int retval = read_bytes_zlib (r, buf, byte_cnt);
+      int retval = read_bytes_zlib (r, buf, n_bytes);
       if (retval == 0)
         sys_error (r, r->pos, _("Unexpected end of ZLIB compressed data."));
       return retval;
@@ -3792,12 +3790,12 @@ read_compressed_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
 }
 
 static int
-try_read_compressed_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+try_read_compressed_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
   if (r->compression == ANY_COMP_SIMPLE)
-    return try_read_bytes (r, buf, byte_cnt);
+    return try_read_bytes (r, buf, n_bytes);
   else
-    return read_bytes_zlib (r, buf, byte_cnt);
+    return read_bytes_zlib (r, buf, n_bytes);
 }
 
 /* Reads a 64-bit floating-point number from R and returns its

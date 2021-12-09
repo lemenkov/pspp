@@ -214,7 +214,7 @@ on_split_change (PsppireDict *dict, gpointer data)
 {
   PsppireDataWindow  *de = PSPPIRE_DATA_WINDOW (data);
 
-  size_t n_split_vars = dict_get_split_cnt (dict->dict);
+  size_t n_split_vars = dict_get_n_splits (dict->dict);
 
   GtkWidget *split_status_area =
     get_widget_assert (de->builder, "split-file-status-area");
@@ -899,7 +899,7 @@ set_unsaved (gpointer w)
 static void
 enable_save (PsppireDataWindow *dw)
 {
-  gboolean enable = psppire_dict_get_var_cnt (dw->dict) > 0;
+  gboolean enable = psppire_dict_get_n_vars (dw->dict) > 0;
 
   GAction *save_as = g_action_map_lookup_action (G_ACTION_MAP (dw), "save-as");
   GAction *save = g_action_map_lookup_action (G_ACTION_MAP (dw), "save");
@@ -1920,7 +1920,7 @@ psppire_data_window_new (struct dataset *ds)
 bool
 psppire_data_window_is_empty (PsppireDataWindow *dw)
 {
-  return psppire_dict_get_var_cnt (dw->dict) == 0;
+  return psppire_dict_get_n_vars (dw->dict) == 0;
 }
 
 

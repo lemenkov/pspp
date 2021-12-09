@@ -37,7 +37,7 @@ struct casewriter
   {
     struct taint *taint;
     struct caseproto *proto;
-    casenumber case_cnt;
+    casenumber n_cases;
     const struct casewriter_class *class;
     void *aux;
   };
@@ -51,7 +51,7 @@ void
 casewriter_write (struct casewriter *writer, struct ccase *c)
 {
   size_t n_widths UNUSED = caseproto_get_n_widths (writer->proto);
-  assert (case_get_value_cnt (c) >= n_widths);
+  assert (case_get_n_values (c) >= n_widths);
   expensive_assert (caseproto_equal (case_get_proto (c), 0,
                                      writer->proto, 0, n_widths));
   writer->class->write (writer, writer->aux, c);
@@ -160,7 +160,7 @@ casewriter_create (const struct caseproto *proto,
   struct casewriter *writer = xmalloc (sizeof *writer);
   writer->taint = taint_create ();
   writer->proto = caseproto_ref (proto);
-  writer->case_cnt = 0;
+  writer->n_cases = 0;
   writer->class = class;
   writer->aux = aux;
   return writer;
@@ -253,7 +253,7 @@ casewriter_window_convert_to_reader (struct casewriter *writer UNUSED,
   struct casewindow *window = window_;
   struct casereader *reader =
     casereader_create_random (casewindow_get_proto (window),
-			      casewindow_get_case_cnt (window),
+			      casewindow_get_n_cases (window),
 			      &casereader_window_class, window);
 
   taint_propagate (casewindow_get_taint (window),
@@ -271,7 +271,7 @@ casereader_window_read (struct casereader *reader UNUSED, void *window_,
                         casenumber offset)
 {
   struct casewindow *window = window_;
-  if (offset >= casewindow_get_case_cnt (window))
+  if (offset >= casewindow_get_n_cases (window))
     return NULL;
   return casewindow_get_case (window, offset);
 }
@@ -287,10 +287,10 @@ casereader_window_destroy (struct casereader *reader UNUSED, void *window_)
 /* Discards CASE_CNT cases from the front of WINDOW. */
 static void
 casereader_window_advance (struct casereader *reader UNUSED, void *window_,
-                           casenumber case_cnt)
+                           casenumber n_cases)
 {
   struct casewindow *window = window_;
-  casewindow_pop_tail (window, case_cnt);
+  casewindow_pop_tail (window, n_cases);
 }
 
 /* Class for casewindow writer. */

@@ -265,7 +265,7 @@ test_insert_delete_strides (void)
       1, 2, 4, 16, 64, 4096, 262144, 16777216,
       3, 5, 17, 67, 4099, 262147, 16777259,
     };
-  const size_t stride_cnt = sizeof strides / sizeof *strides;
+  const size_t n_strides = sizeof strides / sizeof *strides;
 
   static const unsigned long offsets[] =
     {
@@ -274,7 +274,7 @@ test_insert_delete_strides (void)
       1024ul * 1024 * 512 + 23,
       ULONG_MAX - 59,
     };
-  const size_t offset_cnt = sizeof offsets / sizeof *offsets;
+  const size_t n_offsets = sizeof offsets / sizeof *offsets;
 
   int cnt = 100;
   unsigned long *insertions, *deletions;
@@ -282,10 +282,10 @@ test_insert_delete_strides (void)
 
   insertions = xnmalloc (cnt, sizeof *insertions);
   deletions = xnmalloc (cnt, sizeof *deletions);
-  for (stride = strides; stride < strides + stride_cnt; stride++)
+  for (stride = strides; stride < strides + n_strides; stride++)
     {
       printf ("%lu\n", *stride);
-      for (offset = offsets; offset < offsets + offset_cnt; offset++)
+      for (offset = offsets; offset < offsets + n_offsets; offset++)
         {
           int k;
 

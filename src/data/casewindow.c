@@ -53,7 +53,7 @@ struct casewindow_class
     void (*push_head) (void *aux, struct ccase *);
     void (*pop_tail) (void *aux, casenumber cnt);
     struct ccase *(*get_case) (void *aux, casenumber ofs);
-    casenumber (*get_case_cnt) (const void *aux);
+    casenumber (*get_n_cases) (const void *aux);
   };
 
 /* Classes. */
@@ -121,7 +121,7 @@ casewindow_to_disk (struct casewindow *old)
 {
   struct casewindow *new;
   new = do_casewindow_create (taint_clone (old->taint), old->proto, 0);
-  while (casewindow_get_case_cnt (old) > 0 && !casewindow_error (new))
+  while (casewindow_get_n_cases (old) > 0 && !casewindow_error (new))
     {
       struct ccase *c = casewindow_get_case (old, 0);
       if (c == NULL)
@@ -143,8 +143,8 @@ casewindow_push_head (struct casewindow *cw, struct ccase *c)
       cw->class->push_head (cw->aux, c);
       if (!casewindow_error (cw))
         {
-          casenumber case_cnt = cw->class->get_case_cnt (cw->aux);
-          if (case_cnt > cw->max_in_core_cases
+          casenumber n_cases = cw->class->get_n_cases (cw->aux);
+          if (n_cases > cw->max_in_core_cases
               && cw->class == &casewindow_memory_class)
             casewindow_to_disk (cw);
         }
@@ -155,10 +155,10 @@ casewindow_push_head (struct casewindow *cw, struct ccase *c)
 
 /* Deletes CASE_CNT cases at the tail of casewindow CW. */
 void
-casewindow_pop_tail (struct casewindow *cw, casenumber case_cnt)
+casewindow_pop_tail (struct casewindow *cw, casenumber n_cases)
 {
   if (!casewindow_error (cw))
-    cw->class->pop_tail (cw->aux, case_cnt);
+    cw->class->pop_tail (cw->aux, n_cases);
 }
 
 /* Returns the case that is CASE_IDX cases away from CW's tail
@@ -170,7 +170,7 @@ casewindow_get_case (const struct casewindow *cw_, casenumber case_idx)
 {
   struct casewindow *cw = CONST_CAST (struct casewindow *, cw_);
 
-  assert (case_idx >= 0 && case_idx < casewindow_get_case_cnt (cw));
+  assert (case_idx >= 0 && case_idx < casewindow_get_n_cases (cw));
   if (casewindow_error (cw))
     return NULL;
   return cw->class->get_case (cw->aux, case_idx);
@@ -178,9 +178,9 @@ casewindow_get_case (const struct casewindow *cw_, casenumber case_idx)
 
 /* Returns the number of cases in casewindow CW. */
 casenumber
-casewindow_get_case_cnt (const struct casewindow *cw)
+casewindow_get_n_cases (const struct casewindow *cw)
 {
-  return cw->class->get_case_cnt (cw->aux);
+  return cw->class->get_n_cases (cw->aux);
 }
 
 /* Returns the case prototype for the cases in casewindow CW.
@@ -250,11 +250,11 @@ casewindow_memory_push_head (void *cwm_, struct ccase *c)
 }
 
 static void
-casewindow_memory_pop_tail (void *cwm_, casenumber case_cnt)
+casewindow_memory_pop_tail (void *cwm_, casenumber n_cases)
 {
   struct casewindow_memory *cwm = cwm_;
-  assert (deque_count (&cwm->deque) >= case_cnt);
-  while (case_cnt-- > 0)
+  assert (deque_count (&cwm->deque) >= n_cases);
+  while (n_cases-- > 0)
     case_unref (cwm->cases[deque_pop_front (&cwm->deque)]);
 }
 
@@ -266,7 +266,7 @@ casewindow_memory_get_case (void *cwm_, casenumber ofs)
 }
 
 static casenumber
-casewindow_memory_get_case_cnt (const void *cwm_)
+casewindow_memory_get_n_cases (const void *cwm_)
 {
   const struct casewindow_memory *cwm = cwm_;
   return deque_count (&cwm->deque);
@@ -279,7 +279,7 @@ static const struct casewindow_class casewindow_memory_class =
     casewindow_memory_push_head,
     casewindow_memory_pop_tail,
     casewindow_memory_get_case,
-    casewindow_memory_get_case_cnt,
+    casewindow_memory_get_n_cases,
   };
 
 /* On-disk casewindow data. */
@@ -333,7 +333,7 @@ casewindow_file_get_case (void *cwf_, casenumber ofs)
 }
 
 static casenumber
-casewindow_file_get_case_cnt (const void *cwf_)
+casewindow_file_get_n_cases (const void *cwf_)
 {
   const struct casewindow_file *cwf = cwf_;
   return cwf->head - cwf->tail;
@@ -346,5 +346,5 @@ static const struct casewindow_class casewindow_file_class =
     casewindow_file_push_head,
     casewindow_file_pop_tail,
     casewindow_file_get_case,
-    casewindow_file_get_case_cnt,
+    casewindow_file_get_n_cases,
   };

@@ -75,7 +75,7 @@ casereader_create_translator (struct casereader *subreader,
   ct->destroy = destroy;
   ct->aux = aux;
   reader = casereader_create_sequential (
-    NULL, output_proto, casereader_get_case_cnt (ct->subreader),
+    NULL, output_proto, casereader_get_n_cases (ct->subreader),
     &casereader_translator_class, ct);
   taint_propagate (casereader_get_taint (ct->subreader),
                    casereader_get_taint (reader));
@@ -170,7 +170,7 @@ casereader_translate_stateless (
   cst->destroy = destroy;
   cst->aux = aux;
   reader = casereader_create_random (
-    output_proto, casereader_get_case_cnt (cst->subreader),
+    output_proto, casereader_get_n_cases (cst->subreader),
     &casereader_stateless_translator_class, cst);
   taint_propagate (casereader_get_taint (cst->subreader),
                    casereader_get_taint (reader));

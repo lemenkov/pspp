@@ -114,7 +114,7 @@ retrieve_comments (PsppireDialogAction *pda)
 
   gtk_text_buffer_set_text (buffer, "", 0);
 
-  for (i = 0 ; i < dict_get_document_line_cnt (pda->dict->dict); ++i)
+  for (i = 0 ; i < dict_get_document_n_lines (pda->dict->dict); ++i)
     add_line_to_buffer (buffer, dict_get_document_line (pda->dict->dict, i));
 }
 

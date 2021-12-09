@@ -40,8 +40,8 @@
 
 static int do_value_labels (struct lexer *,
 			    const struct dictionary *dict, bool);
-static void erase_labels (struct variable **vars, size_t var_cnt);
-static int get_label (struct lexer *, struct variable **vars, size_t var_cnt,
+static void erase_labels (struct variable **vars, size_t n_vars);
+static int get_label (struct lexer *, struct variable **vars, size_t n_vars,
                       const char *dict_encoding);
 
 /* Stubs. */
@@ -64,24 +64,24 @@ static int
 do_value_labels (struct lexer *lexer, const struct dictionary *dict, bool erase)
 {
   struct variable **vars; /* Variable list. */
-  size_t var_cnt;         /* Number of variables. */
+  size_t n_vars;         /* Number of variables. */
   int parse_err=0;        /* true if error parsing variables */
 
   lex_match (lexer, T_SLASH);
 
   while (lex_token (lexer) != T_ENDCMD)
     {
-      parse_err = !parse_variables (lexer, dict, &vars, &var_cnt,
+      parse_err = !parse_variables (lexer, dict, &vars, &n_vars,
 				    PV_SAME_WIDTH);
-      if (var_cnt < 1)
+      if (n_vars < 1)
 	{
 	  free(vars);
 	  return CMD_FAILURE;
 	}
       if (erase)
-        erase_labels (vars, var_cnt);
+        erase_labels (vars, n_vars);
       while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
-	if (!get_label (lexer, vars, var_cnt, dict_get_encoding (dict)))
+	if (!get_label (lexer, vars, n_vars, dict_get_encoding (dict)))
           goto lossage;
 
       if (lex_token (lexer) != T_SLASH)
@@ -102,21 +102,19 @@ do_value_labels (struct lexer *lexer, const struct dictionary *dict, bool erase)
   return CMD_FAILURE;
 }
 
-/* Erases all the labels for the VAR_CNT variables in VARS. */
+/* Erases all the labels for the N_VARS variables in VARS. */
 static void
-erase_labels (struct variable **vars, size_t var_cnt)
+erase_labels (struct variable **vars, size_t n_vars)
 {
-  size_t i;
-
   /* Erase old value labels if desired. */
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     var_clear_value_labels (vars[i]);
 }
 
-/* Parse all the labels for the VAR_CNT variables in VARS and add
+/* Parse all the labels for the N_VARS variables in VARS and add
    the specified labels to those variables.  */
 static int
-get_label (struct lexer *lexer, struct variable **vars, size_t var_cnt,
+get_label (struct lexer *lexer, struct variable **vars, size_t n_vars,
            const char *dict_encoding)
 {
   /* Parse all the labels and add them to the variables. */
@@ -155,7 +153,7 @@ get_label (struct lexer *lexer, struct variable **vars, size_t var_cnt,
 	  ds_truncate (&label, trunc_len);
 	}
 
-      for (i = 0; i < var_cnt; i++)
+      for (i = 0; i < n_vars; i++)
         var_replace_value_label (vars[i], &value, ds_cstr (&label));
 
       ds_destroy (&label);

@@ -144,9 +144,9 @@ buf_copy_str_lpad (char *dst, size_t dst_size, const char *src, char pad)
     memcpy (dst, src, dst_size);
   else
     {
-      size_t pad_cnt = dst_size - src_len;
-      memset (&dst[0], pad, pad_cnt);
-      memcpy (dst + pad_cnt, src, src_len);
+      size_t n_pad = dst_size - src_len;
+      memset (&dst[0], pad, n_pad);
+      memcpy (dst + n_pad, src, src_len);
     }
 }
 

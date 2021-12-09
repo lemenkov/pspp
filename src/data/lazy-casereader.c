@@ -52,7 +52,7 @@ static const struct casereader_class lazy_casereader_class;
    data source or CASENUMBER_MAX if the number of cases cannot be
    predicted in advance. */
 struct casereader *
-lazy_casereader_create (const struct caseproto *proto, casenumber case_cnt,
+lazy_casereader_create (const struct caseproto *proto, casenumber n_cases,
                         struct casereader *(*callback) (void *aux), void *aux,
                         unsigned long int *serial)
 {
@@ -63,7 +63,7 @@ lazy_casereader_create (const struct caseproto *proto, casenumber case_cnt,
   *serial = lc->serial = next_serial++;
   lc->callback = callback;
   lc->aux = aux;
-  return casereader_create_sequential (NULL, proto, case_cnt,
+  return casereader_create_sequential (NULL, proto, n_cases,
                                        &lazy_casereader_class, lc);
 }
 

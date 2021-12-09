@@ -749,7 +749,7 @@ sub print_range {
     my ($prefix, $first, $last) = @_;
     print "    ${prefix}_first = $first,\n";
     print "    ${prefix}_last = $last,\n";
-    print "    ${prefix}_cnt = ${prefix}_last - ${prefix}_first + 1";
+    print "    n_${prefix} = ${prefix}_last - ${prefix}_first + 1";
 }
 
 sub print_predicate {
@@ -786,7 +786,7 @@ sub generate_optimize_inc {
 		my ($func) = "get_$type->{ATOM}_arg";
 		push (@decls, "${ctype}arg_$name = $func (node, $arg_idx)");
 	    } else {
-		my ($decl) = "size_t arg_$idx = node->arg_cnt";
+		my ($decl) = "size_t arg_$idx = node->n_args";
 		$decl .= " - $arg_idx" if $arg_idx;
 		push (@decls, $decl);
 

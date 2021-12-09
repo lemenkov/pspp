@@ -414,11 +414,11 @@ combine_files (enum comb_command_type command,
   for (i = 0; i < proc.n_files; i++)
     {
       struct comb_file *file = &proc.files[i];
-      size_t src_var_cnt = dict_get_var_cnt (file->dict);
+      size_t src_n_vars = dict_get_n_vars (file->dict);
       size_t j;
 
-      file->mv = xnmalloc (src_var_cnt, sizeof *file->mv);
-      for (j = 0; j < src_var_cnt; j++)
+      file->mv = xnmalloc (src_n_vars, sizeof *file->mv);
+      for (j = 0; j < src_n_vars; j++)
         {
           struct variable *src_var = dict_get_var (file->dict, j);
           struct variable *dst_var = dict_lookup_var (proc.dict,
@@ -543,7 +543,7 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
         }
     }
 
-  for (i = 0; i < dict_get_var_cnt (d); i++)
+  for (i = 0; i < dict_get_n_vars (d); i++)
     {
       struct variable *dv = dict_get_var (d, i);
       struct variable *mv = dict_lookup_var (m, var_get_name (dv));
@@ -821,7 +821,7 @@ scan_table (struct comb_file *file, union value by[])
 static struct ccase *
 create_output_case (const struct comb_proc *proc)
 {
-  size_t n_vars = dict_get_var_cnt (proc->dict);
+  size_t n_vars = dict_get_n_vars (proc->dict);
   struct ccase *output;
   size_t i;
 

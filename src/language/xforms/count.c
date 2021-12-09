@@ -58,14 +58,14 @@ struct criteria
 
     /* Variables to count. */
     const struct variable **vars;
-    size_t var_cnt;
+    size_t n_vars;
 
     /* Count special values? */
     bool count_system_missing;  /* Count system missing? */
     bool count_user_missing;    /* Count user missing? */
 
     /* Criterion values. */
-    size_t value_cnt;
+    size_t n_values;
     union
       {
 	struct num_value *num;
@@ -142,7 +142,7 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
 	  crit->next = NULL;
 	  crit->vars = NULL;
 	  if (!parse_variables_const (lexer, dict, &crit->vars,
-				      &crit->var_cnt,
+				      &crit->n_vars,
                                       PV_DUPLICATE | PV_SAME_TYPE))
 	    goto fail;
           pool_register (trns->pool, free, crit->vars);
@@ -150,7 +150,7 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
 	  if (!lex_force_match (lexer, T_LPAREN))
 	    goto fail;
 
-          crit->value_cnt = 0;
+          crit->n_values = 0;
           if (var_is_numeric (crit->vars[0]))
             ok = parse_numeric_criteria (lexer, trns->pool, crit);
           else
@@ -214,11 +214,11 @@ parse_numeric_criteria (struct lexer *lexer, struct pool *pool, struct criteria 
         {
           struct num_value *cur;
 
-          if (crit->value_cnt >= allocated)
+          if (crit->n_values >= allocated)
             crit->values.num = pool_2nrealloc (pool, crit->values.num,
                                                &allocated,
                                                sizeof *crit->values.num);
-          cur = &crit->values.num[crit->value_cnt++];
+          cur = &crit->values.num[crit->n_values++];
           cur->type = low == high ? CNT_SINGLE : CNT_RANGE;
           cur->a = low;
           cur->b = high;
@@ -242,7 +242,7 @@ parse_string_criteria (struct lexer *lexer, struct pool *pool,
   size_t allocated = 0;
   size_t i;
 
-  for (i = 0; i < crit->var_cnt; i++)
+  for (i = 0; i < crit->n_vars; i++)
     if (var_get_width (crit->vars[i]) > len)
       len = var_get_width (crit->vars[i]);
 
@@ -252,7 +252,7 @@ parse_string_criteria (struct lexer *lexer, struct pool *pool,
       char **cur;
       char *s;
 
-      if (crit->value_cnt >= allocated)
+      if (crit->n_values >= allocated)
         crit->values.str = pool_2nrealloc (pool, crit->values.str,
                                            &allocated,
                                            sizeof *crit->values.str);
@@ -263,7 +263,7 @@ parse_string_criteria (struct lexer *lexer, struct pool *pool,
       s = recode_string (dict_encoding, "UTF-8", lex_tokcstr (lexer),
                          ss_length (lex_tokss (lexer)));
 
-      cur = &crit->values.str[crit->value_cnt++];
+      cur = &crit->values.str[crit->n_values++];
       *cur = pool_alloc (pool, len + 1);
       str_copy_rpad (*cur, len + 1, s);
       lex_get (lexer);
@@ -287,12 +287,12 @@ count_numeric (struct criteria *crit, const struct ccase *c)
   int counter = 0;
   size_t i;
 
-  for (i = 0; i < crit->var_cnt; i++)
+  for (i = 0; i < crit->n_vars; i++)
     {
       double x = case_num (c, crit->vars[i]);
       struct num_value *v;
 
-      for (v = crit->values.num; v < crit->values.num + crit->value_cnt;
+      for (v = crit->values.num; v < crit->values.num + crit->n_values;
            v++)
         if (v->type == CNT_SINGLE ? x == v->a : x >= v->a && x <= v->b)
           {
@@ -321,10 +321,10 @@ count_string (struct criteria *crit, const struct ccase *c)
   int counter = 0;
   size_t i;
 
-  for (i = 0; i < crit->var_cnt; i++)
+  for (i = 0; i < crit->n_vars; i++)
     {
       char **v;
-      for (v = crit->values.str; v < crit->values.str + crit->value_cnt; v++)
+      for (v = crit->values.str; v < crit->values.str + crit->n_values; v++)
         if (!memcmp (case_str (c, crit->vars[i]), *v,
                      var_get_width (crit->vars[i])))
           {

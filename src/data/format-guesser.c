@@ -70,7 +70,7 @@ struct date_syntax
   {
     enum fmt_type format;       /* Format type. */
 #define MAX_TOKENS 11
-    size_t token_cnt;           /* Number of tokens. */
+    size_t n_tokens;           /* Number of tokens. */
     enum date_token tokens[MAX_TOKENS]; /* Tokens. */
   };
 
@@ -491,27 +491,27 @@ add_date_time (struct fmt_guesser *g, struct substring s)
   enum date_token token;
   enum date_token tokens[MAX_TOKENS];
   enum date_token tokens_seen;
-  size_t token_cnt;
+  size_t n_tokens;
   int decimals;
   bool is_date;
   int i;
 
   /* Break S into tokens. */
-  token_cnt = 0;
+  n_tokens = 0;
   tokens_seen = 0;
   decimals = 0;
   while (!ss_is_empty (s))
     {
-      if (token_cnt >= MAX_TOKENS)
+      if (n_tokens >= MAX_TOKENS)
         return;
 
       token = parse_date_token (&s, tokens_seen, &decimals);
       if (token == 0)
         return;
-      tokens[token_cnt++] = token;
+      tokens[n_tokens++] = token;
       tokens_seen |= token;
     }
-  if (token_cnt == 0)
+  if (n_tokens == 0)
     return;
 
   /* Find matching date formats, if any, and increment the
@@ -520,7 +520,7 @@ add_date_time (struct fmt_guesser *g, struct substring s)
   for (i = 0; i < DATE_SYNTAX_CNT; i++)
     {
       struct date_syntax *s = &syntax[i];
-      if (match_date_syntax (tokens, token_cnt, s->tokens, s->token_cnt))
+      if (match_date_syntax (tokens, n_tokens, s->tokens, s->n_tokens))
         {
           is_date = true;
           g->date[i]++;
@@ -589,7 +589,7 @@ guess_date_time (struct fmt_guesser *g, struct fmt_spec *f)
     {
       for (i = 0; i < DATE_SYNTAX_CNT; i++)
         if (g->date[i]
-            && syntax[i].tokens[syntax[i].token_cnt - 1] == DT_SECOND)
+            && syntax[i].tokens[syntax[i].n_tokens - 1] == DT_SECOND)
           {
             f->d = g->decimals / g->count;
             f->w = MAX (f->w, fmt_min_input_width (f->type) + 3);
@@ -676,7 +676,7 @@ parse_date_number (struct substring *s, enum date_token tokens_seen,
                    int *decimals)
 {
   long int value;
-  size_t digit_cnt = ss_get_long (s, &value);
+  size_t n_digits = ss_get_long (s, &value);
   enum date_token token = 0;
 
   if (ss_match_byte (s, settings_get_fmt_settings ()->decimal)
@@ -703,13 +703,13 @@ parse_date_number (struct substring *s, enum date_token tokens_seen,
       else
         token = DT_DAY_COUNT;
 
-      if (digit_cnt == 2)
+      if (n_digits == 2)
         {
           token |= DT_YEAR;
           if (value <= 59)
             token |= DT_MINUTE | DT_SECOND;
         }
-      else if (digit_cnt == 4)
+      else if (n_digits == 4)
         token |= DT_YEAR;
     }
 

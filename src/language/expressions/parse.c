@@ -243,7 +243,7 @@ measure_stack (const union any_node *n,
       int i;
 
       args = *height;
-      for (i = 0; i < n->composite.arg_cnt; i++)
+      for (i = 0; i < n->composite.n_args; i++)
         measure_stack (n->composite.args[i], &args, max);
 
       return_height = atom_type_stack (operations[n->type].returns);
@@ -540,12 +540,12 @@ struct operator
    On failure, returns false and, if OPERATOR is non-null, sets
    *OPERATOR to a null pointer. */
 static bool
-match_operator (struct lexer *lexer, const struct operator ops[], size_t op_cnt,
+match_operator (struct lexer *lexer, const struct operator ops[], size_t n_ops,
                 const struct operator **operator)
 {
   const struct operator *op;
 
-  for (op = ops; op < ops + op_cnt; op++)
+  for (op = ops; op < ops + n_ops; op++)
     if (lex_token (lexer) == op->token)
       {
         if (op->token != T_NEG_NUM)
@@ -560,27 +560,27 @@ match_operator (struct lexer *lexer, const struct operator ops[], size_t op_cnt,
 }
 
 static bool
-check_operator (const struct operator *op, int arg_cnt, atom_type arg_type)
+check_operator (const struct operator *op, int n_args, atom_type arg_type)
 {
   const struct operation *o;
   size_t i;
 
   assert (op != NULL);
   o = &operations[op->type];
-  assert (o->arg_cnt == arg_cnt);
+  assert (o->n_args == n_args);
   assert ((o->flags & OPF_ARRAY_OPERAND) == 0);
-  for (i = 0; i < arg_cnt; i++)
+  for (i = 0; i < n_args; i++)
     assert (is_compatible (arg_type, o->args[i]));
   return true;
 }
 
 static bool
-check_binary_operators (const struct operator ops[], size_t op_cnt,
+check_binary_operators (const struct operator ops[], size_t n_ops,
                         atom_type arg_type)
 {
   size_t i;
 
-  for (i = 0; i < op_cnt; i++)
+  for (i = 0; i < n_ops; i++)
     check_operator (&ops[i], 2, arg_type);
   return true;
 }
@@ -599,7 +599,7 @@ get_operand_type (const struct operator *op)
    one operator/operand pair is parsed. */
 static union any_node *
 parse_binary_operators (struct lexer *lexer, struct expression *e, union any_node *node,
-                        const struct operator ops[], size_t op_cnt,
+                        const struct operator ops[], size_t n_ops,
                         parse_recursively_func *parse_next_level,
                         const char *chain_warning)
 {
@@ -607,11 +607,11 @@ parse_binary_operators (struct lexer *lexer, struct expression *e, union any_nod
   int op_count;
   const struct operator *operator;
 
-  assert (check_binary_operators (ops, op_cnt, operand_type));
+  assert (check_binary_operators (ops, n_ops, operand_type));
   if (node == NULL)
     return node;
 
-  for (op_count = 0; match_operator (lexer, ops, op_cnt, &operator); op_count++)
+  for (op_count = 0; match_operator (lexer, ops, n_ops, &operator); op_count++)
     {
       union any_node *rhs;
 
@@ -1009,7 +1009,7 @@ parse_vector_element (struct lexer *lexer, struct expression *e)
 
 /* Individual function parsing. */
 
-const struct operation operations[OP_first + OP_cnt] = {
+const struct operation operations[OP_first + n_OP] = {
 #include "parse.inc"
 };
 
@@ -1108,22 +1108,22 @@ extract_min_valid (const char *s)
 static atom_type
 function_arg_type (const struct operation *f, size_t arg_idx)
 {
-  assert (arg_idx < f->arg_cnt || (f->flags & OPF_ARRAY_OPERAND));
+  assert (arg_idx < f->n_args || (f->flags & OPF_ARRAY_OPERAND));
 
-  return f->args[arg_idx < f->arg_cnt ? arg_idx : f->arg_cnt - 1];
+  return f->args[arg_idx < f->n_args ? arg_idx : f->n_args - 1];
 }
 
 static bool
-match_function (union any_node **args, int arg_cnt, const struct operation *f)
+match_function (union any_node **args, int n_args, const struct operation *f)
 {
   size_t i;
 
-  if (arg_cnt < f->arg_cnt
-      || (arg_cnt > f->arg_cnt && (f->flags & OPF_ARRAY_OPERAND) == 0)
-      || arg_cnt - (f->arg_cnt - 1) < f->array_min_elems)
+  if (n_args < f->n_args
+      || (n_args > f->n_args && (f->flags & OPF_ARRAY_OPERAND) == 0)
+      || n_args - (f->n_args - 1) < f->array_min_elems)
     return false;
 
-  for (i = 0; i < arg_cnt; i++)
+  for (i = 0; i < n_args; i++)
     if (!is_coercible (function_arg_type (f, i), &args[i]))
       return false;
 
@@ -1132,31 +1132,31 @@ match_function (union any_node **args, int arg_cnt, const struct operation *f)
 
 static void
 coerce_function_args (struct expression *e, const struct operation *f,
-                      union any_node **args, size_t arg_cnt)
+                      union any_node **args, size_t n_args)
 {
   int i;
 
-  for (i = 0; i < arg_cnt; i++)
+  for (i = 0; i < n_args; i++)
     type_coercion_assert (e, function_arg_type (f, i), &args[i]);
 }
 
 static bool
-validate_function_args (const struct operation *f, int arg_cnt, int min_valid)
+validate_function_args (const struct operation *f, int n_args, int min_valid)
 {
   /* Count the function arguments that go into the trailing array (if any).  We
      know that there must be at least the minimum number because
      match_function() already checked. */
-  int array_arg_cnt = arg_cnt - (f->arg_cnt - 1);
-  assert (array_arg_cnt >= f->array_min_elems);
+  int array_n_args = n_args - (f->n_args - 1);
+  assert (array_n_args >= f->array_min_elems);
 
   if ((f->flags & OPF_ARRAY_OPERAND)
-      && array_arg_cnt % f->array_granularity != 0)
+      && array_n_args % f->array_granularity != 0)
     {
       /* RANGE is the only case we have so far.  It has paired arguments with
          one initial argument, and that's the only special case we deal with
          here. */
       assert (f->array_granularity == 2);
-      assert (arg_cnt % 2 == 0);
+      assert (n_args % 2 == 0);
       msg (SE, _("%s must have an odd number of arguments."), f->prototype);
       return false;
     }
@@ -1174,11 +1174,11 @@ validate_function_args (const struct operation *f, int arg_cnt, int min_valid)
       else
         {
           assert (f->flags & OPF_MIN_VALID);
-          if (min_valid > array_arg_cnt)
+          if (min_valid > array_n_args)
             {
               msg (SE, _("For %s with %d arguments, at most %d (not %d) may be "
                          "required to be valid."),
-                   f->prototype, arg_cnt, array_arg_cnt, min_valid);
+                   f->prototype, n_args, array_n_args, min_valid);
               return false;
             }
         }
@@ -1188,26 +1188,26 @@ validate_function_args (const struct operation *f, int arg_cnt, int min_valid)
 }
 
 static void
-add_arg (union any_node ***args, int *arg_cnt, int *arg_cap,
+add_arg (union any_node ***args, int *n_args, int *allocated_args,
          union any_node *arg)
 {
-  if (*arg_cnt >= *arg_cap)
+  if (*n_args >= *allocated_args)
     {
-      *arg_cap += 8;
-      *args = xrealloc (*args, sizeof **args * *arg_cap);
+      *allocated_args += 8;
+      *args = xrealloc (*args, sizeof **args * *allocated_args);
     }
 
-  (*args)[(*arg_cnt)++] = arg;
+  (*args)[(*n_args)++] = arg;
 }
 
 static void
 put_invocation (struct string *s,
-                const char *func_name, union any_node **args, size_t arg_cnt)
+                const char *func_name, union any_node **args, size_t n_args)
 {
   size_t i;
 
   ds_put_format (s, "%s(", func_name);
-  for (i = 0; i < arg_cnt; i++)
+  for (i = 0; i < n_args; i++)
     {
       if (i > 0)
         ds_put_cstr (s, ", ");
@@ -1218,7 +1218,7 @@ put_invocation (struct string *s,
 
 static void
 no_match (const char *func_name,
-          union any_node **args, size_t arg_cnt,
+          union any_node **args, size_t n_args,
           const struct operation *first, const struct operation *last)
 {
   struct string s;
@@ -1229,12 +1229,12 @@ no_match (const char *func_name,
   if (last - first == 1)
     {
       ds_put_format (&s, _("Type mismatch invoking %s as "), first->prototype);
-      put_invocation (&s, func_name, args, arg_cnt);
+      put_invocation (&s, func_name, args, n_args);
     }
   else
     {
       ds_put_cstr (&s, _("Function invocation "));
-      put_invocation (&s, func_name, args, arg_cnt);
+      put_invocation (&s, func_name, args, n_args);
       ds_put_cstr (&s, _(" does not match any known function.  Candidates are:"));
 
       for (f = first; f < last; f++)
@@ -1254,8 +1254,8 @@ parse_function (struct lexer *lexer, struct expression *e)
   const struct operation *f, *first, *last;
 
   union any_node **args = NULL;
-  int arg_cnt = 0;
-  int arg_cap = 0;
+  int n_args = 0;
+  int allocated_args = 0;
 
   struct string func_name;
 
@@ -1278,7 +1278,7 @@ parse_function (struct lexer *lexer, struct expression *e)
     }
 
   args = NULL;
-  arg_cnt = arg_cap = 0;
+  n_args = allocated_args = 0;
   if (lex_token (lexer) != T_RPAREN)
     for (;;)
       {
@@ -1286,13 +1286,13 @@ parse_function (struct lexer *lexer, struct expression *e)
             && lex_next_token (lexer, 1) == T_TO)
           {
             const struct variable **vars;
-            size_t var_cnt;
+            size_t n_vars;
             size_t i;
 
-            if (!parse_variables_const (lexer, dataset_dict (e->ds), &vars, &var_cnt, PV_SINGLE))
+            if (!parse_variables_const (lexer, dataset_dict (e->ds), &vars, &n_vars, PV_SINGLE))
               goto fail;
-            for (i = 0; i < var_cnt; i++)
-              add_arg (&args, &arg_cnt, &arg_cap,
+            for (i = 0; i < n_vars; i++)
+              add_arg (&args, &n_args, &allocated_args,
                        allocate_unary_variable (e, vars[i]));
             free (vars);
           }
@@ -1302,7 +1302,7 @@ parse_function (struct lexer *lexer, struct expression *e)
             if (arg == NULL)
               goto fail;
 
-            add_arg (&args, &arg_cnt, &arg_cap, arg);
+            add_arg (&args, &n_args, &allocated_args, arg);
           }
         if (lex_match (lexer, T_RPAREN))
           break;
@@ -1314,16 +1314,16 @@ parse_function (struct lexer *lexer, struct expression *e)
       }
 
   for (f = first; f < last; f++)
-    if (match_function (args, arg_cnt, f))
+    if (match_function (args, n_args, f))
       break;
   if (f >= last)
     {
-      no_match (ds_cstr (&func_name), args, arg_cnt, first, last);
+      no_match (ds_cstr (&func_name), args, n_args, first, last);
       goto fail;
     }
 
-  coerce_function_args (e, f, args, arg_cnt);
-  if (!validate_function_args (f, arg_cnt, min_valid))
+  coerce_function_args (e, f, args, n_args);
+  if (!validate_function_args (f, n_args, min_valid))
     goto fail;
 
   if ((f->flags & OPF_EXTENSION) && settings_get_syntax () == COMPATIBLE)
@@ -1341,7 +1341,7 @@ parse_function (struct lexer *lexer, struct expression *e)
       goto fail;
     }
 
-  n = expr_allocate_composite (e, f - operations, args, arg_cnt);
+  n = expr_allocate_composite (e, f - operations, args, n_args);
   n->composite.min_valid = min_valid != -1 ? min_valid : f->array_min_elems;
 
   if (n->type == OP_LAG_Vn || n->type == OP_LAG_Vs)
@@ -1349,7 +1349,7 @@ parse_function (struct lexer *lexer, struct expression *e)
   else if (n->type == OP_LAG_Vnn || n->type == OP_LAG_Vsn)
     {
       int n_before;
-      assert (n->composite.arg_cnt == 2);
+      assert (n->composite.n_args == 2);
       assert (n->composite.args[1]->type == OP_pos_int);
       n_before = n->composite.args[1]->integer.i;
       dataset_need_lag (e->ds, n_before);
@@ -1377,7 +1377,7 @@ expr_create (struct dataset *ds)
   e->eval_pool = pool_create_subpool (e->expr_pool);
   e->ops = NULL;
   e->op_types = NULL;
-  e->op_cnt = e->op_cap = 0;
+  e->n_ops = e->allocated_ops = 0;
   return e;
 }
 
@@ -1439,14 +1439,14 @@ is_valid_node (union any_node *n)
       struct composite_node *c = &n->composite;
 
       assert (is_composite (n->type));
-      assert (c->arg_cnt >= op->arg_cnt);
-      for (i = 0; i < op->arg_cnt; i++)
+      assert (c->n_args >= op->n_args);
+      for (i = 0; i < op->n_args; i++)
         assert (is_compatible (op->args[i], expr_node_returns (c->args[i])));
-      if (c->arg_cnt > op->arg_cnt && !is_operator (n->type))
+      if (c->n_args > op->n_args && !is_operator (n->type))
         {
           assert (op->flags & OPF_ARRAY_OPERAND);
-          for (i = 0; i < c->arg_cnt; i++)
-            assert (is_compatible (op->args[op->arg_cnt - 1],
+          for (i = 0; i < c->n_args; i++)
+            assert (is_compatible (op->args[op->n_args - 1],
                                    expr_node_returns (c->args[i])));
         }
     }
@@ -1456,23 +1456,23 @@ is_valid_node (union any_node *n)
 
 union any_node *
 expr_allocate_composite (struct expression *e, operation_type op,
-                         union any_node **args, size_t arg_cnt)
+                         union any_node **args, size_t n_args)
 {
   union any_node *n;
   size_t i;
 
   n = pool_alloc (e->expr_pool, sizeof n->composite);
   n->type = op;
-  n->composite.arg_cnt = arg_cnt;
+  n->composite.n_args = n_args;
   n->composite.args = pool_alloc (e->expr_pool,
-                                  sizeof *n->composite.args * arg_cnt);
-  for (i = 0; i < arg_cnt; i++)
+                                  sizeof *n->composite.args * n_args);
+  for (i = 0; i < n_args; i++)
     {
       if (args[i] == NULL)
         return NULL;
       n->composite.args[i] = args[i];
     }
-  memcpy (n->composite.args, args, sizeof *n->composite.args * arg_cnt);
+  memcpy (n->composite.args, args, sizeof *n->composite.args * n_args);
   n->composite.min_valid = 0;
   assert (is_valid_node (n));
   return n;
@@ -1569,15 +1569,15 @@ allocate_unary_variable (struct expression *e, const struct variable *v)
 const struct operation *
 expr_get_function (size_t idx)
 {
-  assert (idx < OP_function_cnt);
+  assert (idx < n_OP_function);
   return &operations[OP_function_first + idx];
 }
 
 /* Returns the number of expression functions. */
 size_t
-expr_get_function_cnt (void)
+expr_get_n_functions (void)
 {
-  return OP_function_cnt;
+  return n_OP_function;
 }
 
 /* Returns the name of operation OP. */
@@ -1596,7 +1596,7 @@ expr_operation_get_prototype (const struct operation *op)
 
 /* Returns the number of arguments for operation OP. */
 int
-expr_operation_get_arg_cnt (const struct operation *op)
+expr_operation_get_n_args (const struct operation *op)
 {
-  return op->arg_cnt;
+  return op->n_args;
 }

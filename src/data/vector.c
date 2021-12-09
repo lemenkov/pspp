@@ -33,7 +33,7 @@ struct vector
   {
     char *name;                         /* Name. */
     struct variable **vars;             /* Set of variables. */
-    size_t var_cnt;                     /* Number of variables. */
+    size_t n_vars;                      /* Number of variables. */
   };
 
 /* Checks that all the variables in VECTOR have consistent
@@ -44,24 +44,24 @@ check_widths (const struct vector *vector)
   int width = var_get_width (vector->vars[0]);
   size_t i;
 
-  for (i = 1; i < vector->var_cnt; i++)
+  for (i = 1; i < vector->n_vars; i++)
     assert (width == var_get_width (vector->vars[i]));
 }
 
 /* Creates and returns a new vector with the given UTF-8 encoded NAME
-   that contains the VAR_CNT variables in VARS.
+   that contains the N_VARS variables in VARS.
    All variables in VARS must have the same type and width. */
 struct vector *
-vector_create (const char *name, struct variable **vars, size_t var_cnt)
+vector_create (const char *name, struct variable **vars, size_t n_vars)
 {
   struct vector *vector = xmalloc (sizeof *vector);
 
-  assert (var_cnt > 0);
+  assert (n_vars > 0);
   assert (id_is_plausible (name, false));
 
   vector->name = xstrdup (name);
-  vector->vars = xmemdup (vars, var_cnt * sizeof *vector->vars);
-  vector->var_cnt = var_cnt;
+  vector->vars = xmemdup (vars, n_vars * sizeof *vector->vars);
+  vector->n_vars = n_vars;
   check_widths (vector);
 
   return vector;
@@ -81,9 +81,9 @@ vector_clone (const struct vector *old,
   size_t i;
 
   new->name = xstrdup (old->name);
-  new->vars = xnmalloc (old->var_cnt, sizeof *new->vars);
-  new->var_cnt = old->var_cnt;
-  for (i = 0; i < new->var_cnt; i++)
+  new->vars = xnmalloc (old->n_vars, sizeof *new->vars);
+  new->n_vars = old->n_vars;
+  for (i = 0; i < new->n_vars; i++)
     {
       assert (dict_contains_var (old_dict, old->vars[i]));
       new->vars[i] = dict_get_var (new_dict,
@@ -120,15 +120,15 @@ enum val_type vector_get_type (const struct vector *vector)
 struct variable *
 vector_get_var (const struct vector *vector, size_t index)
 {
-  assert (index < vector->var_cnt);
+  assert (index < vector->n_vars);
   return vector->vars[index];
 }
 
 /* Returns the number of variables in VECTOR. */
 size_t
-vector_get_var_cnt (const struct vector *vector)
+vector_get_n_vars (const struct vector *vector)
 {
-  return vector->var_cnt;
+  return vector->n_vars;
 }
 
 /* Compares two pointers to vectors represented by A and B and

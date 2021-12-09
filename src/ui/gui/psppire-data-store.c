@@ -98,7 +98,7 @@ __tree_model_get_n_columns (GtkTreeModel *tree_model)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
-  return psppire_dict_get_var_cnt (store->dict);
+  return psppire_dict_get_n_vars (store->dict);
 }
 
 
@@ -134,11 +134,11 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
 {
   PsppireDataStore *store = PSPPIRE_DATA_STORE (model);
 
-  while (col >= psppire_dict_get_var_cnt (store->dict))
+  while (col >= psppire_dict_get_n_vars (store->dict))
     {
       const struct variable *var =
 	psppire_dict_insert_variable (store->dict,
-				      psppire_dict_get_var_cnt (store->dict),
+				      psppire_dict_get_n_vars (store->dict),
 				      NULL);
       g_return_val_if_fail (var, FALSE);
     }
@@ -332,7 +332,7 @@ psppire_data_store_get_case_count (const PsppireDataStore *store)
 size_t
 psppire_data_store_get_value_count (const PsppireDataStore *store)
 {
-  return psppire_dict_get_value_cnt (store->dict);
+  return psppire_dict_get_n_values (store->dict);
 }
 
 const struct caseproto *

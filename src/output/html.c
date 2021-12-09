@@ -61,7 +61,7 @@ struct html_driver
     char *chart_file_name;
 
     FILE *file;
-    size_t chart_cnt;
+    size_t n_charts;
 
     bool bare;
     bool css;
@@ -192,7 +192,7 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
   html->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
                                                       fh_get_file_name (fh)));
   html->file = NULL;
-  html->chart_cnt = 1;
+  html->n_charts = 1;
   html->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
   html->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
   html->file = fn_open (html->handle, "w");
@@ -257,7 +257,7 @@ html_submit__ (struct output_driver *driver, const struct output_item *item,
         {
           char *file_name = xr_draw_png_chart (item->chart,
                                                html->chart_file_name,
-                                               html->chart_cnt++,
+                                               html->n_charts++,
                                                &html->fg, &html->bg);
           if (file_name != NULL)
             {
@@ -278,7 +278,7 @@ html_submit__ (struct output_driver *driver, const struct output_item *item,
       if (html->chart_file_name)
         {
           char *file_name = xr_write_png_image (
-            item->image, html->chart_file_name, ++html->chart_cnt);
+            item->image, html->chart_file_name, ++html->n_charts);
           if (file_name != NULL)
             {
               fprintf (html->file, "<img src=\"%s\">", file_name);

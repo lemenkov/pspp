@@ -132,7 +132,7 @@ command_match (struct substring command, struct substring string,
 
       // Try each possible command.
       command_matcher_init (&cm, string);
-      for (cmd = commands; cmd < &commands[command_cnt]; cmd++)
+      for (cmd = commands; cmd < &commands[n_commands]; cmd++)
         command_matcher_add (&cm, cmd->name, cmd);
 
       // Get the result.

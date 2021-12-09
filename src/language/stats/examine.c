@@ -1134,7 +1134,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       es[v].sorted_reader = casewriter_make_reader (es[v].sorted_writer);
       es[v].sorted_writer = NULL;
 
-      imax = casereader_get_case_cnt (es[v].sorted_reader);
+      imax = casereader_get_n_cases (es[v].sorted_reader);
 
       es[v].maxima = pool_calloc (examine->pool, examine->calc_extremes, sizeof (*es[v].maxima));
       es[v].minima = pool_calloc (examine->pool, examine->calc_extremes, sizeof (*es[v].minima));
@@ -1371,7 +1371,7 @@ run_examine (struct examine *cmd, struct casereader *input)
     {
       struct ccase *c = casereader_peek (input,  0);
 
-      cmd->id_idx = case_get_value_cnt (c);
+      cmd->id_idx = case_get_n_values (c);
       input = casereader_create_arithmetic_sequence (input, 1.0, 1.0);
 
       case_unref (c);

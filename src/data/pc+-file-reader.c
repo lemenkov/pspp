@@ -810,7 +810,7 @@ parse_header (struct pcp_reader *r, const struct pcp_main_header *header,
   info->integer_format = INTEGER_LSB_FIRST;
   info->float_format = FLOAT_IEEE_DOUBLE_LE;
   info->compression = r->compressed ? ANY_COMP_SIMPLE : ANY_COMP_NONE;
-  info->case_cnt = r->n_cases;
+  info->n_cases = r->n_cases;
 
   /* Convert file label to UTF-8 and put it into DICT. */
   label = recode_and_trim_string (r->pool, dict_encoding, header->file_label);
@@ -1200,11 +1200,11 @@ pcp_error (struct pcp_reader *r, off_t offset, const char *format, ...)
    an error. */
 static inline int
 read_bytes_internal (struct pcp_reader *r, bool eof_is_ok,
-                     void *buf, size_t byte_cnt)
+                     void *buf, size_t n_bytes)
 {
-  size_t bytes_read = fread (buf, 1, byte_cnt, r->file);
+  size_t bytes_read = fread (buf, 1, n_bytes, r->file);
   r->pos += bytes_read;
-  if (bytes_read == byte_cnt)
+  if (bytes_read == n_bytes)
     return 1;
   else if (ferror (r->file))
     {
@@ -1224,9 +1224,9 @@ read_bytes_internal (struct pcp_reader *r, bool eof_is_ok,
    Returns true if successful.
    Returns false upon I/O error or if end-of-file is encountered. */
 static bool
-read_bytes (struct pcp_reader *r, void *buf, size_t byte_cnt)
+read_bytes (struct pcp_reader *r, void *buf, size_t n_bytes)
 {
-  return read_bytes_internal (r, false, buf, byte_cnt) == 1;
+  return read_bytes_internal (r, false, buf, n_bytes) == 1;
 }
 
 /* Reads BYTE_CNT bytes into BUF.
@@ -1234,9 +1234,9 @@ read_bytes (struct pcp_reader *r, void *buf, size_t byte_cnt)
    Returns 0 if an immediate end-of-file is encountered.
    Returns -1 if an I/O error or a partial read occurs. */
 static int
-try_read_bytes (struct pcp_reader *r, void *buf, size_t byte_cnt)
+try_read_bytes (struct pcp_reader *r, void *buf, size_t n_bytes)
 {
-  return read_bytes_internal (r, true, buf, byte_cnt);
+  return read_bytes_internal (r, true, buf, n_bytes);
 }
 
 /* Reads a 16-bit signed integer from R and stores its value in host format in

@@ -307,7 +307,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
           vm.drop_vars = drop_vars;
           vm.n_drop = n_drop;
 
-          if (n_drop == dict_get_var_cnt (dataset_dict (ds)))
+          if (n_drop == dict_get_n_vars (dataset_dict (ds)))
             {
               msg (SE, _("%s may not be used to delete all variables "
                          "from the active dataset dictionary.  "

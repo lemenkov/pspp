@@ -159,7 +159,7 @@ function_list_populate (GtkTreeView *tv)
   GtkTreeIter iter;
   gint i;
 
-  const gint n_funcs = expr_get_function_cnt ();
+  const gint n_funcs = expr_get_n_functions ();
 
   liststore = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 
@@ -172,7 +172,7 @@ function_list_populate (GtkTreeView *tv)
       gtk_list_store_set (liststore, &iter,
 			  COMPUTE_COL_NAME, expr_operation_get_name (op),
 			  COMPUTE_COL_USAGE, expr_operation_get_prototype (op),
-			  COMPUTE_COL_ARITY, expr_operation_get_arg_cnt (op),
+			  COMPUTE_COL_ARITY, expr_operation_get_n_args (op),
 			  -1);
     }
 

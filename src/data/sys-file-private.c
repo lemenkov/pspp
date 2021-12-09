@@ -191,32 +191,32 @@ sfm_segment_effective_offset (int width, int segment)
    user.
 
    The array is allocated with malloc and stored in *SFM_VARS,
-   and its number of elements is stored in *SFM_VAR_CNT.  The
+   and its number of elements is stored in *SFM_N_VARS.  The
    caller is responsible for freeing it when it is no longer
    needed. */
 int
 sfm_dictionary_to_sfm_vars (const struct dictionary *dict,
-                            struct sfm_var **sfm_vars, size_t *sfm_var_cnt)
+                            struct sfm_var **sfm_vars, size_t *sfm_n_vars)
 {
-  size_t var_cnt = dict_get_var_cnt (dict);
-  size_t segment_cnt;
+  size_t n_vars = dict_get_n_vars (dict);
+  size_t n_segments;
   size_t i;
 
   /* Estimate the number of sfm_vars that will be needed.
      We might not need all of these, because very long string
      variables can have segments that are all padding, which do
      not need sfm_vars of their own. */
-  segment_cnt = 0;
-  for (i = 0; i < var_cnt; i++)
+  n_segments = 0;
+  for (i = 0; i < n_vars; i++)
     {
       const struct variable *v = dict_get_var (dict, i);
-      segment_cnt += sfm_width_to_segments (var_get_width (v));
+      n_segments += sfm_width_to_segments (var_get_width (v));
     }
 
   /* Compose the sfm_vars. */
-  *sfm_vars = xnmalloc (segment_cnt, sizeof **sfm_vars);
-  *sfm_var_cnt = 0;
-  for (i = 0; i < var_cnt; i++)
+  *sfm_vars = xnmalloc (n_segments, sizeof **sfm_vars);
+  *sfm_n_vars = 0;
+  for (i = 0; i < n_vars; i++)
     {
       const struct variable *dv = dict_get_var (dict, i);
       int width = var_get_width (dv);
@@ -229,7 +229,7 @@ sfm_dictionary_to_sfm_vars (const struct dictionary *dict,
           struct sfm_var *sv;
           if (used_bytes != 0)
             {
-              sv = &(*sfm_vars)[(*sfm_var_cnt)++];
+              sv = &(*sfm_vars)[(*sfm_n_vars)++];
               sv->var_width = width;
               sv->segment_width = width == 0 ? 0 : used_bytes;
               sv->case_index = var_get_case_index (dv);
@@ -240,14 +240,14 @@ sfm_dictionary_to_sfm_vars (const struct dictionary *dict,
             {
               /* Segment is all padding.  Just add it to the
                  previous segment. */
-              sv = &(*sfm_vars)[*sfm_var_cnt - 1];
+              sv = &(*sfm_vars)[*sfm_n_vars - 1];
               sv->padding += padding;
             }
           assert ((sv->segment_width + sv->padding) % 8 == 0);
         }
     }
 
-  return segment_cnt;
+  return n_segments;
 }
 
 /* Given the name of an encoding, returns the codepage number to use in the

@@ -167,22 +167,22 @@ float_identify (double expected_value, const void *number, size_t length,
       FLOAT_Z_SHORT,
       FLOAT_Z_LONG,
     };
-  const size_t candidate_cnt = sizeof candidates / sizeof *candidates;
+  const size_t n_candidates = sizeof candidates / sizeof *candidates;
 
   enum float_format *p;
-  int match_cnt;
+  int n_matches;
 
-  match_cnt = 0;
-  for (p = candidates; p < candidates + candidate_cnt; p++)
+  n_matches = 0;
+  for (p = candidates; p < candidates + n_candidates; p++)
     if (float_get_size (*p) == length)
       {
         char tmp[8];
         assert (sizeof tmp >= float_get_size (*p));
         float_convert (FLOAT_NATIVE_DOUBLE, &expected_value, *p, tmp);
-        if (!memcmp (tmp, number, length) && match_cnt++ == 0)
+        if (!memcmp (tmp, number, length) && n_matches++ == 0)
           *best_guess = *p;
       }
-  return match_cnt;
+  return n_matches;
 }
 
 /* Returns the double value that is just greater than -DBL_MAX,

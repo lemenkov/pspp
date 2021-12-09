@@ -94,11 +94,11 @@ struct recode_trns
     const struct variable **dst_vars;	/* Destination variables. */
     const struct dictionary *dst_dict;  /* Dictionary of dst_vars */
     char **dst_names;		/* Name of dest variables, if they're new. */
-    size_t var_cnt;             /* Number of variables. */
+    size_t n_vars;             /* Number of variables. */
 
     /* Mappings. */
     struct mapping *mappings;   /* Value mappings. */
-    size_t map_cnt;             /* Number of mappings. */
+    size_t n_maps;              /* Number of mappings. */
     int max_src_width;          /* Maximum width of src_vars[*]. */
     int max_dst_width;          /* Maximum width of any map_out in mappings. */
   };
@@ -182,13 +182,13 @@ cmd_recode (struct lexer *lexer, struct dataset *ds)
 }
 
 /* Parses a set of variables to recode into TRNS->src_vars and
-   TRNS->var_cnt.  Sets TRNS->src_type.  Returns true if
+   TRNS->n_vars.  Sets TRNS->src_type.  Returns true if
    successful, false on parse error. */
 static bool
 parse_src_vars (struct lexer *lexer,
 		struct recode_trns *trns, const struct dictionary *dict)
 {
-  if (!parse_variables_const (lexer, dict, &trns->src_vars, &trns->var_cnt,
+  if (!parse_variables_const (lexer, dict, &trns->src_vars, &trns->n_vars,
                         PV_SAME_TYPE))
     return false;
   pool_register (trns->pool, free, trns->src_vars);
@@ -197,7 +197,7 @@ parse_src_vars (struct lexer *lexer,
 }
 
 /* Parses a set of mappings, which take the form (input=output),
-   into TRNS->mappings and TRNS->map_cnt.  Sets TRNS->dst_type.
+   into TRNS->mappings and TRNS->n_maps.  Sets TRNS->dst_type.
    Returns true if successful, false on parse error. */
 static bool
 parse_mappings (struct lexer *lexer, struct recode_trns *trns,
@@ -209,7 +209,7 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
 
   /* Find length of longest source variable. */
   trns->max_src_width = var_get_width (trns->src_vars[0]);
-  for (i = 1; i < trns->var_cnt; i++)
+  for (i = 1; i < trns->n_vars; i++)
     {
       size_t var_width = var_get_width (trns->src_vars[i]);
       if (var_width > trns->max_src_width)
@@ -218,7 +218,7 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
 
   /* Parse the mappings in parentheses. */
   trns->mappings = NULL;
-  trns->map_cnt = 0;
+  trns->n_maps = 0;
   map_allocated = 0;
   have_dst_type = false;
   if (!lex_force_match (lexer, T_LPAREN))
@@ -233,7 +233,7 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
           size_t first_map_idx;
           size_t i;
 
-          first_map_idx = trns->map_cnt;
+          first_map_idx = trns->n_maps;
 
           /* Parse source specifications. */
           do
@@ -264,7 +264,7 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
               return false;
             }
 
-          for (i = first_map_idx; i < trns->map_cnt; i++)
+          for (i = first_map_idx; i < trns->n_maps; i++)
             trns->mappings[i].out = out;
         }
       else
@@ -273,7 +273,7 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
           struct map_in in;
           set_map_in_generic (&in, MAP_CONVERT);
           add_mapping (trns, &map_allocated, &in);
-          set_map_out_num (&trns->mappings[trns->map_cnt - 1].out, 0.0);
+          set_map_out_num (&trns->mappings[trns->n_maps - 1].out, 0.0);
 
           dst_type = VAL_NUMERIC;
           if (trns->src_type != VAL_STRING
@@ -353,11 +353,11 @@ add_mapping (struct recode_trns *trns,
              size_t *map_allocated, const struct map_in *in)
 {
   struct mapping *m;
-  if (trns->map_cnt >= *map_allocated)
+  if (trns->n_maps >= *map_allocated)
     trns->mappings = pool_2nrealloc (trns->pool, trns->mappings,
                                      map_allocated,
                                      sizeof *trns->mappings);
-  m = &trns->mappings[trns->map_cnt++];
+  m = &trns->mappings[trns->n_maps++];
   m->in = *in;
 }
 
@@ -466,26 +466,26 @@ parse_dst_vars (struct lexer *lexer, struct recode_trns *trns,
 
   if (lex_match_id (lexer, "INTO"))
     {
-      size_t name_cnt;
+      size_t n_names;
       size_t i;
 
       if (!parse_mixed_vars_pool (lexer, dict, trns->pool,
-				  &trns->dst_names, &name_cnt,
+				  &trns->dst_names, &n_names,
                                   PV_NONE))
         return false;
 
-      if (name_cnt != trns->var_cnt)
+      if (n_names != trns->n_vars)
         {
           msg (SE, _("%zu variable(s) cannot be recoded into "
                      "%zu variable(s).  Specify the same number "
                      "of variables as source and target variables."),
-               trns->var_cnt, name_cnt);
+               trns->n_vars, n_names);
           return false;
         }
 
       trns->dst_vars = pool_nalloc (trns->pool,
-                                    trns->var_cnt, sizeof *trns->dst_vars);
-      for (i = 0; i < trns->var_cnt; i++)
+                                    trns->n_vars, sizeof *trns->dst_vars);
+      for (i = 0; i < trns->n_vars; i++)
         {
           const struct variable *v;
           v = trns->dst_vars[i] = dict_lookup_var (dict, trns->dst_names[i]);
@@ -515,7 +515,7 @@ parse_dst_vars (struct lexer *lexer, struct recode_trns *trns,
         }
     }
 
-  for (i = 0; i < trns->var_cnt; i++)
+  for (i = 0; i < trns->n_vars; i++)
     {
       const struct variable *v = trns->dst_vars[i];
       if (v != NULL && var_get_type (v) != trns->dst_type)
@@ -542,7 +542,7 @@ enlarge_dst_widths (struct recode_trns *trns)
   int min_dst_width = INT_MAX;
   trns->max_dst_width = 0;
 
-  for (i = 0; i < trns->var_cnt; i++)
+  for (i = 0; i < trns->n_vars; i++)
     {
       const struct variable *v = trns->dst_vars[i];
       if (var_get_width (v) > trns->max_dst_width)
@@ -555,7 +555,7 @@ enlarge_dst_widths (struct recode_trns *trns)
 	}
     }
 
-  for (i = 0; i < trns->map_cnt; i++)
+  for (i = 0; i < trns->n_maps; i++)
     {
       struct map_out *out = &trns->mappings[i].out;
       if (!out->copy_input)
@@ -582,7 +582,7 @@ create_dst_vars (struct recode_trns *trns, struct dictionary *dict)
 {
   size_t i;
 
-  for (i = 0; i < trns->var_cnt; i++)
+  for (i = 0; i < trns->n_vars; i++)
     {
       const struct variable **var = &trns->dst_vars[i];
       const char *name = trns->dst_names[i];
@@ -603,7 +603,7 @@ find_src_numeric (struct recode_trns *trns, double value, const struct variable 
 {
   struct mapping *m;
 
-  for (m = trns->mappings; m < trns->mappings + trns->map_cnt; m++)
+  for (m = trns->mappings; m < trns->mappings + trns->n_maps; m++)
     {
       const struct map_in *in = &m->in;
       const struct map_out *out = &m->out;
@@ -647,7 +647,7 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
   int width = var_get_width (src_var);
   struct mapping *m;
 
-  for (m = trns->mappings; m < trns->mappings + trns->map_cnt; m++)
+  for (m = trns->mappings; m < trns->mappings + trns->n_maps; m++)
     {
       const struct map_in *in = &m->in;
       struct map_out *out = &m->out;
@@ -697,7 +697,7 @@ recode_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
   size_t i;
 
   *c = case_unshare (*c);
-  for (i = 0; i < trns->var_cnt; i++)
+  for (i = 0; i < trns->n_vars; i++)
     {
       const struct variable *src_var = trns->src_vars[i];
       const struct variable *dst_var = trns->dst_vars[i];

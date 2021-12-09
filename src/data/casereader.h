@@ -74,7 +74,7 @@ bool casereader_error (const struct casereader *);
 void casereader_force_error (struct casereader *);
 const struct taint *casereader_get_taint (const struct casereader *);
 
-casenumber casereader_get_case_cnt (struct casereader *);
+casenumber casereader_get_n_cases (struct casereader *);
 casenumber casereader_count_cases (const struct casereader *);
 void casereader_truncate (struct casereader *, casenumber);
 const struct caseproto *casereader_get_proto (const struct casereader *);
@@ -98,7 +98,7 @@ casereader_create_filter_weight (struct casereader *,
                                  struct casewriter *exclude);
 struct casereader *
 casereader_create_filter_missing (struct casereader *,
-                                  const struct variable *const*vars, size_t var_cnt,
+                                  const struct variable *const *vars, size_t n_vars,
                                   enum mv_class,
 				  casenumber *n_missing,
                                   struct casewriter *exclude);

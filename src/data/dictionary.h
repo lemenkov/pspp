@@ -40,15 +40,15 @@ struct variable *dict_lookup_var (const struct dictionary *, const char *);
 struct variable *dict_lookup_var_assert (const struct dictionary *,
                                          const char *);
 struct variable *dict_get_var (const struct dictionary *, size_t position);
-size_t dict_get_var_cnt (const struct dictionary *);
+size_t dict_get_n_vars (const struct dictionary *);
 
 /* Other access to variables. */
 bool dict_contains_var (const struct dictionary *, const struct variable *);
 void dict_get_vars (const struct dictionary *,
-                    const struct variable ***vars, size_t *cnt,
+                    const struct variable ***vars, size_t *n_vars,
                     enum dict_class exclude);
 void dict_get_vars_mutable (const struct dictionary *,
-                            struct variable ***vars, size_t *cnt,
+                            struct variable ***vars, size_t *n_vars,
                             enum dict_class exclude);
 
 /* Creating variables. */
@@ -125,9 +125,9 @@ struct caseproto *dict_get_compacted_proto (const struct dictionary *,
 
 /* SPLIT FILE variables. */
 const struct variable *const *dict_get_split_vars (const struct dictionary *);
-size_t dict_get_split_cnt (const struct dictionary *);
+size_t dict_get_n_splits (const struct dictionary *);
 void dict_set_split_vars (struct dictionary *,
-                          struct variable *const *, size_t cnt);
+                          struct variable *const *, size_t n);
 
 /* File label. */
 const char *dict_get_label (const struct dictionary *);
@@ -143,16 +143,16 @@ void dict_clear_documents (struct dictionary *);
 
 bool dict_add_document_line (struct dictionary *, const char *,
                              bool issue_warning);
-size_t dict_get_document_line_cnt (const struct dictionary *);
+size_t dict_get_document_n_lines (const struct dictionary *);
 const char *dict_get_document_line (const struct dictionary *, size_t);
 
 /* Vectors. */
 bool dict_create_vector (struct dictionary *, const char *name,
-                         struct variable **, size_t cnt);
+                         struct variable **, size_t n);
 void dict_create_vector_assert (struct dictionary *, const char *name,
-                                struct variable **, size_t cnt);
+                                struct variable **, size_t n);
 const struct vector *dict_get_vector (const struct dictionary *, size_t idx);
-size_t dict_get_vector_cnt (const struct dictionary *);
+size_t dict_get_n_vectors (const struct dictionary *);
 const struct vector *dict_lookup_vector (const struct dictionary *,
                                          const char *name);
 void dict_clear_vectors (struct dictionary *);

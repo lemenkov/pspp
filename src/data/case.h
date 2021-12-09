@@ -67,7 +67,7 @@ struct ccase *case_ref (const struct ccase *) WARN_UNUSED_RESULT;
 static inline void case_unref (struct ccase *);
 static inline bool case_is_shared (const struct ccase *);
 
-static inline size_t case_get_value_cnt (const struct ccase *);
+static inline size_t case_get_n_values (const struct ccase *);
 static inline const struct caseproto *case_get_proto (const struct ccase *);
 
 size_t case_get_cost (const struct caseproto *);
@@ -158,7 +158,7 @@ case_is_shared (const struct ccase *c)
 
 /* Returns the number of union values in C. */
 static inline size_t
-case_get_value_cnt (const struct ccase *c)
+case_get_n_values (const struct ccase *c)
 {
   return caseproto_get_n_widths (c->proto);
 }

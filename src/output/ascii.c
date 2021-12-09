@@ -310,8 +310,8 @@ struct ascii_driver
     bool error;                 /* Output error? */
     struct u8_line *lines;      /* Page content. */
     int allocated_lines;        /* Number of lines allocated. */
-    int chart_cnt;              /* Number of charts so far. */
-    int object_cnt;             /* Number of objects so far. */
+    int n_charts;               /* Number of charts so far. */
+    int n_objects;              /* Number of objects so far. */
     const struct pivot_table *pt;
     struct render_params params;
   };
@@ -403,8 +403,8 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->error = false;
   a->lines = NULL;
   a->allocated_lines = 0;
-  a->chart_cnt = 0;
-  a->object_cnt = 0;
+  a->n_charts = 0;
+  a->n_objects = 0;
 
   static const struct render_ops ascii_render_ops = {
     .draw_line = ascii_draw_line,
@@ -559,7 +559,7 @@ ascii_output_table_item (struct ascii_driver *a,
                                                     layer_indexes);
       for (int i = 0; render_pager_has_next (p); i++)
         {
-          if (a->object_cnt++)
+          if (a->n_objects++)
             putc ('\n', a->file);
 
           ascii_output_lines (a, render_pager_draw_next (p, INT_MAX));
@@ -595,7 +595,7 @@ ascii_submit (struct output_driver *driver, const struct output_item *item)
       if (a->chart_file_name != NULL)
         {
           char *file_name = xr_write_png_image (
-            item->image, a->chart_file_name, ++a->chart_cnt);
+            item->image, a->chart_file_name, ++a->n_charts);
           if (file_name != NULL)
             {
               struct output_item *text_item = text_item_create_nocopy (
@@ -614,7 +614,7 @@ ascii_submit (struct output_driver *driver, const struct output_item *item)
       if (a->chart_file_name != NULL)
         {
           char *file_name = xr_draw_png_chart (
-            item->chart, a->chart_file_name, ++a->chart_cnt, &a->fg, &a->bg);
+            item->chart, a->chart_file_name, ++a->n_charts, &a->fg, &a->bg);
           if (file_name != NULL)
             {
               struct output_item *text_item = text_item_create_nocopy (

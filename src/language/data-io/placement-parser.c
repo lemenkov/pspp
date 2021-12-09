@@ -43,7 +43,7 @@ enum
     PRS_TYPE_NEW_REC            /* Next record. */
   };
 
-static bool fixed_parse_columns (struct lexer *, struct pool *, size_t var_cnt,
+static bool fixed_parse_columns (struct lexer *, struct pool *, size_t n_vars,
                                  enum fmt_use, struct fmt_spec **, size_t *);
 static bool fixed_parse_fortran (struct lexer *l, struct pool *, enum fmt_use,
                                  struct fmt_spec **, size_t *);
@@ -60,42 +60,42 @@ static bool fixed_parse_fortran (struct lexer *l, struct pool *, enum fmt_use,
    in addition to regular formats.  If USE is FMT_FOR_OUTPUT, then
    T and X "formats" are parsed but not /.
 
-   If successful, formats for VAR_CNT variables are stored in
+   If successful, formats for N_VARS variables are stored in
    *FORMATS, and the number of formats required is stored in
-   *FORMAT_CNT.  *FORMAT_CNT may be greater than VAR_CNT because
+   *FORMAT_CNT.  *FORMAT_CNT may be greater than N_VARS because
    of T, X, and / "formats", but success guarantees that exactly
-   VAR_CNT variables will be placed by the output formats.  The
+   N_VARS variables will be placed by the output formats.  The
    caller should call execute_placement_format to process those
    "formats" in interpreting the output.
 
    Uses POOL for allocation.  When the caller is finished
    interpreting *FORMATS, POOL may be destroyed. */
 bool
-parse_var_placements (struct lexer *lexer, struct pool *pool, size_t var_cnt,
+parse_var_placements (struct lexer *lexer, struct pool *pool, size_t n_vars,
                       enum fmt_use use,
-                      struct fmt_spec **formats, size_t *format_cnt)
+                      struct fmt_spec **formats, size_t *n_formats)
 {
-  assert (var_cnt > 0);
+  assert (n_vars > 0);
   if (lex_is_number (lexer))
-    return fixed_parse_columns (lexer, pool, var_cnt, use,
-                                formats, format_cnt);
+    return fixed_parse_columns (lexer, pool, n_vars, use,
+                                formats, n_formats);
   else if (lex_match (lexer, T_LPAREN))
     {
-      size_t assignment_cnt;
+      size_t n_assignments;
       size_t i;
 
-      if (!fixed_parse_fortran (lexer, pool, use, formats, format_cnt))
+      if (!fixed_parse_fortran (lexer, pool, use, formats, n_formats))
         return false;
 
-      assignment_cnt = 0;
-      for (i = 0; i < *format_cnt; i++)
-        assignment_cnt += (*formats)[i].type < FMT_NUMBER_OF_FORMATS;
+      n_assignments = 0;
+      for (i = 0; i < *n_formats; i++)
+        n_assignments += (*formats)[i].type < FMT_NUMBER_OF_FORMATS;
 
-      if (assignment_cnt != var_cnt)
+      if (n_assignments != n_vars)
         {
           msg (SE, _("Number of variables specified (%zu) "
                      "differs from number of variable formats (%zu)."),
-               var_cnt, assignment_cnt);
+               n_vars, n_assignments);
           return false;
         }
 
@@ -111,9 +111,9 @@ parse_var_placements (struct lexer *lexer, struct pool *pool, size_t var_cnt,
 
 /* Implements parse_var_placements for column-based formats. */
 static bool
-fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
+fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
                      enum fmt_use use,
-                     struct fmt_spec **formats, size_t *format_cnt)
+                     struct fmt_spec **formats, size_t *n_formats)
 {
   struct fmt_spec format;
   int fc, lc;
@@ -123,12 +123,12 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
     return false;
 
   /* Divide columns evenly. */
-  format.w = (lc - fc + 1) / var_cnt;
-  if ((lc - fc + 1) % var_cnt)
+  format.w = (lc - fc + 1) / n_vars;
+  if ((lc - fc + 1) % n_vars)
     {
       msg (SE, _("The %d columns %d-%d "
 		 "can't be evenly divided into %zu fields."),
-	   lc - fc + 1, fc, lc, var_cnt);
+	   lc - fc + 1, fc, lc, n_vars);
       return false;
     }
 
@@ -165,11 +165,11 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
   if (!fmt_check (&format, use))
     return false;
 
-  *formats = pool_nalloc (pool, var_cnt + 1, sizeof **formats);
-  *format_cnt = var_cnt + 1;
+  *formats = pool_nalloc (pool, n_vars + 1, sizeof **formats);
+  *n_formats = n_vars + 1;
   (*formats)[0].type = (enum fmt_type) PRS_TYPE_T;
   (*formats)[0].w = fc;
-  for (i = 1; i <= var_cnt; i++)
+  for (i = 1; i <= n_vars; i++)
     (*formats)[i] = format;
   return true;
 }
@@ -177,7 +177,7 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
 /* Implements parse_var_placements for Fortran-like formats. */
 static bool
 fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
-                     struct fmt_spec **formats, size_t *format_cnt)
+                     struct fmt_spec **formats, size_t *n_formats)
 {
   size_t formats_allocated = 0;
   size_t formats_used = 0;
@@ -187,7 +187,7 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
     {
       struct fmt_spec f;
       struct fmt_spec *new_formats;
-      size_t new_format_cnt;
+      size_t n_new_formats;
       size_t count;
       size_t formats_needed;
 
@@ -205,13 +205,13 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
         {
           /* Call ourselves recursively to handle parentheses. */
           if (!fixed_parse_fortran (lexer, pool, use,
-                                    &new_formats, &new_format_cnt))
+                                    &new_formats, &n_new_formats))
             return false;
         }
       else
         {
           new_formats = &f;
-          new_format_cnt = 1;
+          n_new_formats = 1;
           if (use == FMT_FOR_INPUT && lex_match (lexer, T_SLASH))
             f.type = (enum fmt_type) PRS_TYPE_NEW_REC;
           else
@@ -244,12 +244,12 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
 
       /* Add COUNT copies of the NEW_FORMAT_CNT formats in
          NEW_FORMATS to FORMATS. */
-      if (new_format_cnt != 0
+      if (n_new_formats != 0
           && size_overflow_p (xtimes (xsum (formats_used,
-                                            xtimes (count, new_format_cnt)),
+                                            xtimes (count, n_new_formats)),
                                       sizeof *formats)))
         xalloc_die ();
-      formats_needed = count * new_format_cnt;
+      formats_needed = count * n_new_formats;
       if (formats_used + formats_needed > formats_allocated)
         {
           formats_allocated = formats_used + formats_needed;
@@ -259,14 +259,14 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
       for (; count > 0; count--)
         {
           memcpy (&(*formats)[formats_used], new_formats,
-                  sizeof **formats * new_format_cnt);
-          formats_used += new_format_cnt;
+                  sizeof **formats * n_new_formats);
+          formats_used += n_new_formats;
         }
 
       lex_match (lexer, T_COMMA);
     }
 
-  *format_cnt = formats_used;
+  *n_formats = formats_used;
   return true;
 }
 

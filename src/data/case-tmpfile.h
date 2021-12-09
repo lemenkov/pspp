@@ -42,12 +42,12 @@ const struct taint *case_tmpfile_get_taint (const struct case_tmpfile *);
 
 bool case_tmpfile_get_values (const struct case_tmpfile *,
                               casenumber, size_t start_value,
-                              union value[], size_t value_cnt);
+                              union value[], size_t n_values);
 struct ccase *case_tmpfile_get_case (const struct case_tmpfile *, casenumber);
 
 bool case_tmpfile_put_values (struct case_tmpfile *,
                               casenumber, size_t start_value,
-                              const union value[], size_t value_cnt);
+                              const union value[], size_t n_values);
 bool case_tmpfile_put_case (struct case_tmpfile *,
                             casenumber, struct ccase *);
 

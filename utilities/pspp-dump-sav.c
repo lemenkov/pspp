@@ -519,14 +519,14 @@ print_untyped_value (struct sfm_reader *r, char raw_value[8])
 static void
 read_value_label_record (struct sfm_reader *r)
 {
-  int label_cnt, var_cnt;
+  int n_labels, n_vars;
   int i;
 
   printf ("%08llx: value labels record\n", (long long int) ftello (r->file));
 
   /* Read number of labels. */
-  label_cnt = read_int (r);
-  for (i = 0; i < label_cnt; i++)
+  n_labels = read_int (r);
+  for (i = 0; i < n_labels; i++)
     {
       char raw_value[8];
       unsigned char label_len;
@@ -559,8 +559,8 @@ read_value_label_record (struct sfm_reader *r)
   /* Read number of variables associated with value label from type 4
      record. */
   printf ("\t%08llx: apply to variables", (long long int) ftello (r->file));
-  var_cnt = read_int (r);
-  for (i = 0; i < var_cnt; i++)
+  n_vars = read_int (r);
+  for (i = 0; i < n_vars; i++)
     printf (" #%d", read_int (r));
   putchar ('\n');
 }
@@ -1590,10 +1590,10 @@ sys_error (struct sfm_reader *r, const char *format, ...)
    too. */
 static inline bool
 read_bytes_internal (struct sfm_reader *r, bool eof_is_ok,
-                     void *buf, size_t byte_cnt)
+                     void *buf, size_t n_bytes)
 {
-  size_t bytes_read = fread (buf, 1, byte_cnt, r->file);
-  if (bytes_read == byte_cnt)
+  size_t bytes_read = fread (buf, 1, n_bytes, r->file);
+  if (bytes_read == n_bytes)
     return true;
   else if (ferror (r->file))
     sys_error (r, "System error: %s.", strerror (errno));
@@ -1606,9 +1606,9 @@ read_bytes_internal (struct sfm_reader *r, bool eof_is_ok,
 /* Reads BYTE_CNT into BUF.
    Aborts upon I/O error or if end-of-file is encountered. */
 static void
-read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+read_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
-  read_bytes_internal (r, false, buf, byte_cnt);
+  read_bytes_internal (r, false, buf, n_bytes);
 }
 
 /* Reads BYTE_CNT bytes into BUF.
@@ -1616,9 +1616,9 @@ read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
    Returns false if an immediate end-of-file is encountered.
    Aborts if an I/O error or a partial read occurs. */
 static bool
-try_read_bytes (struct sfm_reader *r, void *buf, size_t byte_cnt)
+try_read_bytes (struct sfm_reader *r, void *buf, size_t n_bytes)
 {
-  return read_bytes_internal (r, true, buf, byte_cnt);
+  return read_bytes_internal (r, true, buf, n_bytes);
 }
 
 /* Reads a 32-bit signed integer from R and returns its value in

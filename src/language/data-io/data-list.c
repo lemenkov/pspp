@@ -331,21 +331,21 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
   while (lex_token (lexer) != T_ENDCMD)
     {
       char **names;
-      size_t name_cnt, name_idx;
+      size_t n_names, name_idx;
       struct fmt_spec *formats, *f;
-      size_t format_cnt;
+      size_t n_formats;
 
       /* Parse everything. */
       if (!parse_record_placement (lexer, &record, &column)
           || !parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
-					 &names, &name_cnt, PV_NONE)
-          || !parse_var_placements (lexer, tmp_pool, name_cnt, FMT_FOR_INPUT,
-                                    &formats, &format_cnt))
+					 &names, &n_names, PV_NONE)
+          || !parse_var_placements (lexer, tmp_pool, n_names, FMT_FOR_INPUT,
+                                    &formats, &n_formats))
         return false;
 
       /* Create variables and var specs. */
       name_idx = 0;
-      for (f = formats; f < &formats[format_cnt]; f++)
+      for (f = formats; f < &formats[n_formats]; f++)
         if (!execute_placement_format (f, &record, &column))
           {
             char *name;
@@ -407,7 +407,7 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
 
             column += f->w;
           }
-      assert (name_idx == name_cnt);
+      assert (name_idx == n_names);
     }
 
   return true;
@@ -427,11 +427,11 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
     {
       struct fmt_spec input, output;
       char **name;
-      size_t name_cnt;
+      size_t n_names;
       size_t i;
 
       if (!parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
-				      &name, &name_cnt, PV_NONE))
+				      &name, &n_names, PV_NONE))
 	return false;
 
       if (lex_match (lexer, T_LPAREN))
@@ -475,7 +475,7 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
 	  output = *settings_get_format ();
 	}
 
-      for (i = 0; i < name_cnt; i++)
+      for (i = 0; i < n_names; i++)
 	{
 	  struct variable *v;
 

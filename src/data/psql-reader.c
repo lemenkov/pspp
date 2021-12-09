@@ -615,7 +615,7 @@ set_value (struct psql_reader *r)
 	case INTERVALOID:
 	case TIMESTAMPTZOID:
 	case TIMETZOID:
-	  if (i < r->vmapsize && var_get_dict_index(v) + 1 < dict_get_var_cnt (r->dict))
+	  if (i < r->vmapsize && var_get_dict_index(v) + 1 < dict_get_n_vars (r->dict))
 	    {
 	      const struct variable *v1 = NULL;
 	      v1 = dict_get_var (r->dict, var_get_dict_index (v) + 1);

@@ -123,7 +123,7 @@ static const struct command commands[] =
 #undef DEF_CMD
 #undef UNIMPL_CMD
 
-static const size_t command_cnt = sizeof commands / sizeof *commands;
+static const size_t n_commands = sizeof commands / sizeof *commands;
 
 static bool in_correct_state (const struct command *, enum cmd_state);
 static bool report_state_mismatch (const struct command *, enum cmd_state);
@@ -162,7 +162,7 @@ cmd_parse (struct lexer *lexer, struct dataset *ds)
   const struct dictionary *dict = dataset_dict (ds);
   return cmd_parse_in_state (lexer, ds,
 			     dataset_has_source (ds) &&
-			     dict_get_var_cnt (dict) > 0 ?
+			     dict_get_n_vars (dict) > 0 ?
 			     CMD_STATE_DATA : CMD_STATE_INITIAL);
 }
 
@@ -262,7 +262,7 @@ find_best_match (struct substring s, const struct command **matchp)
   int missing_words;
 
   command_matcher_init (&cm, s);
-  for (cmd = commands; cmd < &commands[command_cnt]; cmd++)
+  for (cmd = commands; cmd < &commands[n_commands]; cmd++)
     command_matcher_add (&cm, ss_cstr (cmd->name), CONST_CAST (void *, cmd));
 
   *matchp = command_matcher_get_match (&cm);
@@ -471,7 +471,7 @@ cmd_complete (const char *prefix, const struct command **cmd)
   if (*cmd == NULL)
     *cmd = commands;
 
-  for (; *cmd < commands + command_cnt; (*cmd)++)
+  for (; *cmd < commands + n_commands; (*cmd)++)
     if (!memcasecmp ((*cmd)->name, prefix, strlen (prefix))
         && (!((*cmd)->flags & F_TESTING) || settings_get_testing_mode ())
         && (!((*cmd)->flags & F_ENHANCED) || settings_get_syntax () == ENHANCED)

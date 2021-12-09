@@ -189,7 +189,7 @@ struct case_map *
 case_map_to_compact_dict (const struct dictionary *d,
                           unsigned int exclude_classes)
 {
-  size_t n_vars = dict_get_var_cnt (d);
+  size_t n_vars = dict_get_n_vars (d);
   struct caseproto *proto;
   struct case_map *map;
   size_t n_values;
@@ -234,7 +234,7 @@ struct case_map_stage
 struct case_map_stage *
 case_map_stage_create (const struct dictionary *dict)
 {
-  size_t n_vars = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
   struct case_map_stage *stage;
   size_t i;
 
@@ -305,7 +305,7 @@ struct case_map *
 case_map_stage_get_case_map (const struct case_map_stage *stage)
 {
   struct case_map *map;
-  size_t n_vars = dict_get_var_cnt (stage->dict);
+  size_t n_vars = dict_get_n_vars (stage->dict);
   size_t n_values;
   size_t i;
   bool identity_map = true;
@@ -343,12 +343,9 @@ struct case_map *
 case_map_by_name (const struct dictionary *old,
                   const struct dictionary *new)
 {
-  struct case_map *map;
-  size_t var_cnt = dict_get_var_cnt (new);
-  size_t i;
-
-  map = create_case_map (dict_get_proto (new));
-  for (i = 0; i < var_cnt; i++)
+  size_t n_vars = dict_get_n_vars (new);
+  struct case_map *map = create_case_map (dict_get_proto (new));
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *nv = dict_get_var (new, i);
       struct variable *ov = dict_lookup_var_assert (old, var_get_name (nv));

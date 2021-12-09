@@ -248,19 +248,19 @@ compare_expected_element (const void *a_, const void *b_)
    ELEMENTS[]. */
 static void
 check_range_map (struct range_map *rm,
-                 struct expected_element elements[], size_t elem_cnt)
+                 struct expected_element elements[], size_t n_elems)
 {
   struct expected_element *sorted;
   struct range_map_node *node;
   size_t i;
 
-  sorted = xnmalloc (elem_cnt, sizeof *sorted);
-  memcpy (sorted, elements, elem_cnt * sizeof *elements);
-  qsort (sorted, elem_cnt, sizeof *sorted, compare_expected_element);
+  sorted = xnmalloc (n_elems, sizeof *sorted);
+  memcpy (sorted, elements, n_elems * sizeof *elements);
+  qsort (sorted, n_elems, sizeof *sorted, compare_expected_element);
 
-  check (range_map_is_empty (rm) == (elem_cnt == 0));
+  check (range_map_is_empty (rm) == (n_elems == 0));
 
-  for (i = 0; i < elem_cnt; i++)
+  for (i = 0; i < n_elems; i++)
     {
       struct expected_element *e = &sorted[i];
       unsigned long int position;
@@ -282,7 +282,7 @@ check_range_map (struct range_map *rm,
          range_map_lookup doesn't find any there. */
       if (e->start > 0 && (i == 0 || e[-1].end < e->start))
         check (range_map_lookup (rm, e->start - 1) == NULL);
-      if (i == elem_cnt - 1 || e->end < e[1].start)
+      if (i == n_elems - 1 || e->end < e[1].start)
         check (range_map_lookup (rm, e->end) == NULL);
     }
 
@@ -294,7 +294,7 @@ check_range_map (struct range_map *rm,
       struct expected_element *e = &sorted[i];
       check (range_map_node_to_element (node)->x == e->x);
     }
-  check (i == elem_cnt);
+  check (i == n_elems);
 
   free (sorted);
 }
@@ -310,10 +310,10 @@ test_insert (void)
 
   for (cnt = 1; cnt <= max_range; cnt++)
     {
-      unsigned int composition_cnt;
+      unsigned int n_compositions;
       struct expected_element *expected;
       int *widths;
-      int elem_cnt;
+      int n_elems;
       int *order;
       struct element *elements;
 
@@ -322,25 +322,25 @@ test_insert (void)
       order = xnmalloc (cnt, sizeof *order);
       elements = xnmalloc (cnt, sizeof *elements);
 
-      elem_cnt = 0;
-      composition_cnt = 0;
-      while (next_composition (cnt, &elem_cnt, widths))
+      n_elems = 0;
+      n_compositions = 0;
+      while (next_composition (cnt, &n_elems, widths))
         {
           int i, j;
-          unsigned int permutation_cnt;
+          unsigned int n_permutations;
 
-          for (i = 0; i < elem_cnt; i++)
+          for (i = 0; i < n_elems; i++)
             order[i] = i;
 
-          permutation_cnt = 0;
-          while (permutation_cnt == 0 || next_permutation (order, elem_cnt))
+          n_permutations = 0;
+          while (n_permutations == 0 || next_permutation (order, n_elems))
             {
               struct range_map rm;
 
-              /* Inserts the elem_cnt elements with the given
+              /* Inserts the n_elems elements with the given
                  widths[] into T in the order given by order[]. */
               range_map_init (&rm);
-              for (i = 0; i < elem_cnt; i++)
+              for (i = 0; i < n_elems; i++)
                 {
                   unsigned long int start, end;
                   int idx;
@@ -364,13 +364,13 @@ test_insert (void)
                   expected[i].end = end;
                   check_range_map (&rm, expected, i + 1);
                 }
-              permutation_cnt++;
+              n_permutations++;
             }
-          check (permutation_cnt == factorial (elem_cnt));
+          check (n_permutations == factorial (n_elems));
 
-          composition_cnt++;
+          n_compositions++;
         }
-      check (composition_cnt == 1 << (cnt - 1));
+      check (n_compositions == 1 << (cnt - 1));
 
       free (expected);
       free (widths);
@@ -389,10 +389,10 @@ test_delete (int gap)
 
   for (cnt = 1; cnt <= max_range; cnt++)
     {
-      unsigned int composition_cnt;
+      unsigned int n_compositions;
       struct expected_element *expected;
       int *widths;
-      int elem_cnt;
+      int n_elems;
       int *order;
       struct element *elements;
 
@@ -401,18 +401,18 @@ test_delete (int gap)
       order = xnmalloc (cnt, sizeof *order);
       elements = xnmalloc (cnt, sizeof *elements);
 
-      elem_cnt = 0;
-      composition_cnt = 0;
-      while (next_composition (cnt, &elem_cnt, widths))
+      n_elems = 0;
+      n_compositions = 0;
+      while (next_composition (cnt, &n_elems, widths))
         {
           int i, j;
-          unsigned int permutation_cnt;
+          unsigned int n_permutations;
 
-          for (i = 0; i < elem_cnt; i++)
+          for (i = 0; i < n_elems; i++)
             order[i] = i;
 
-          permutation_cnt = 0;
-          while (permutation_cnt == 0 || next_permutation (order, elem_cnt))
+          n_permutations = 0;
+          while (n_permutations == 0 || next_permutation (order, n_elems))
             {
               struct range_map rm;
               unsigned long int start;
@@ -420,7 +420,7 @@ test_delete (int gap)
               /* Insert all the elements. */
               range_map_init (&rm);
               start = 0;
-              for (i = 0; i < elem_cnt; i++)
+              for (i = 0; i < n_elems; i++)
                 {
                   int width = widths[i] > gap ? widths[i] - gap : widths[i];
                   unsigned long int end = start + width;
@@ -431,7 +431,7 @@ test_delete (int gap)
 
                   for (j = 0; ; j++)
                     {
-                      assert (j < elem_cnt);
+                      assert (j < n_elems);
                       if (order[j] == i)
                         {
                           expected[j].x = i;
@@ -443,22 +443,22 @@ test_delete (int gap)
 
                   start += widths[i];
                 }
-              check_range_map (&rm, expected, elem_cnt);
+              check_range_map (&rm, expected, n_elems);
 
               /* Delete the elements in the specified order. */
-              for (i = 0; i < elem_cnt; i++)
+              for (i = 0; i < n_elems; i++)
                 {
                   range_map_delete (&rm, &elements[order[i]].node);
-                  check_range_map (&rm, expected + i + 1, elem_cnt - i - 1);
+                  check_range_map (&rm, expected + i + 1, n_elems - i - 1);
                 }
 
-              permutation_cnt++;
+              n_permutations++;
             }
-          check (permutation_cnt == factorial (elem_cnt));
+          check (n_permutations == factorial (n_elems));
 
-          composition_cnt++;
+          n_compositions++;
         }
-      check (composition_cnt == 1 << (cnt - 1));
+      check (n_compositions == 1 << (cnt - 1));
 
       free (expected);
       free (widths);

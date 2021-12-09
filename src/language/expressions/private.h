@@ -72,7 +72,7 @@ struct operation
     const char *prototype;
     enum operation_flags flags;
     atom_type returns;
-    int arg_cnt;
+    int n_args;
     atom_type args[EXPR_ARG_MAX];
     int array_min_elems;
     int array_granularity;
@@ -123,9 +123,9 @@ struct format_node
 struct composite_node
   {
     operation_type type;   /* One of OP_*. */
-    size_t arg_cnt;             /* Number of arguments. */
-    union any_node **args;	/* Arguments. */
-    size_t min_valid;           /* Min valid array args to get valid result. */
+    size_t n_args;         /* Number of arguments. */
+    union any_node **args; /* Arguments. */
+    size_t min_valid;      /* Min valid array args to get valid result. */
   };
 
 /* Any node. */
@@ -161,7 +161,7 @@ struct expression
 
     union operation_data *ops;  /* Expression data. */
     operation_type *op_types;   /* ops[] element types (for debugging). */
-    size_t op_cnt, op_cap;      /* Number of ops, amount of allocated space. */
+    size_t n_ops, allocated_ops; /* Number of ops, amount of allocated space. */
 
     double *number_stack;       /* Evaluation stack: numerics, Booleans. */
     struct substring *string_stack; /* Evaluation stack: strings. */

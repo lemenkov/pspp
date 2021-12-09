@@ -191,7 +191,7 @@ void var_set_leave (struct variable *, bool leave);
 bool var_must_leave (const struct variable *);
 
 /* Short names. */
-size_t var_get_short_name_cnt (const struct variable *);
+size_t var_get_n_short_names (const struct variable *);
 const char *var_get_short_name (const struct variable *, size_t idx);
 void var_set_short_name (struct variable *, size_t, const char *);
 void var_clear_short_names (struct variable *);

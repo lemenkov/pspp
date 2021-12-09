@@ -1032,11 +1032,11 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
       subcase_add_vars_always (&projection,
                                cmd->group_vars, cmd->n_group_vars);
       subcase_add_vars_always (&projection, dict_get_split_vars (d),
-                               dict_get_split_cnt (d));
+                               dict_get_n_splits (d));
       if (weight_var != NULL)
         {
           subcase_add_var_always (&projection, weight_var, SC_ASCEND);
-          weight_idx = 2 + cmd->n_group_vars + dict_get_split_cnt (d);
+          weight_idx = 2 + cmd->n_group_vars + dict_get_n_splits (d);
         }
       else
         weight_idx = -1;
@@ -1057,7 +1057,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
 
       /* Group by split variables */
       subcase_init_empty (&split_vars);
-      for (j = 0; j < dict_get_split_cnt (d); j++)
+      for (j = 0; j < dict_get_n_splits (d); j++)
         subcase_add_always (&split_vars, 2 + j + cmd->n_group_vars,
                             var_get_width (dict_get_split_vars (d)[j]),
                             SC_ASCEND);

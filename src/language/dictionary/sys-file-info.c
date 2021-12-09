@@ -215,12 +215,12 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds)
              : N_("Unknown")));
 
   add_row (table, N_("Variables"),
-           pivot_value_new_integer (dict_get_var_cnt (d)));
+           pivot_value_new_integer (dict_get_n_vars (d)));
 
   add_row (table, N_("Cases"),
-           (info.case_cnt == -1
+           (info.n_cases == -1
             ? pivot_value_new_text (N_("Unknown"))
-            : pivot_value_new_integer (info.case_cnt)));
+            : pivot_value_new_integer (info.n_cases)));
 
   add_row (table, N_("Type"),
            pivot_value_new_text (info.klass->name));
@@ -240,15 +240,15 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds)
   add_row (table, N_("Encoding"),
            pivot_value_new_user_text (dict_get_encoding (d), -1));
 
-  if (dict_get_document_line_cnt (d) > 0)
+  if (dict_get_document_n_lines (d) > 0)
     add_row (table, N_("Documents"),
              pivot_value_new_user_text_nocopy (get_documents_as_string (d)));
 
   pivot_table_submit (table);
 
-  size_t n_vars = dict_get_var_cnt (d);
+  size_t n_vars = dict_get_n_vars (d);
   const struct variable **vars = xnmalloc (n_vars, sizeof *vars);
-  for (size_t i = 0; i < dict_get_var_cnt (d); i++)
+  for (size_t i = 0; i < dict_get_n_vars (d); i++)
     vars[i] = dict_get_var (d, i);
   display_variables (vars, n_vars, DF_ALL_VARIABLE);
   display_value_labels (vars, n_vars);
@@ -715,7 +715,7 @@ display_attributes (const struct attrset *dict_attrset,
 static void
 display_vectors (const struct dictionary *dict, int sorted)
 {
-  size_t n_vectors = dict_get_vector_cnt (dict);
+  size_t n_vectors = dict_get_n_vectors (dict);
   if (n_vectors == 0)
     {
       msg (SW, _("No vectors defined."));
@@ -743,7 +743,7 @@ display_vectors (const struct dictionary *dict, int sorted)
         vector_dim->root, pivot_value_new_user_text (
           vector_get_name (vectors[i]), -1));
 
-      for (size_t j = 0; j < vector_get_var_cnt (vec); j++)
+      for (size_t j = 0; j < vector_get_n_vars (vec); j++)
         {
           struct variable *var = vector_get_var (vec, j);
 

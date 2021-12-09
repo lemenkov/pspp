@@ -67,7 +67,7 @@ struct dfm_reader
     enum dfm_reader_flags flags; /* Zero or more of DFM_*. */
     FILE *file;                 /* Associated file. */
     size_t pos;                 /* Offset in line of current character. */
-    unsigned eof_cnt;           /* # of attempts to advance past EOF. */
+    unsigned n_eofs;            /* # of attempts to advance past EOF. */
     struct lexer *lexer;        /* The lexer reading the file */
     char *encoding;             /* Current encoding. */
 
@@ -149,7 +149,7 @@ dfm_open_reader (struct file_handle *fh, struct lexer *lexer,
   ds_init_empty (&r->line);
   ds_init_empty (&r->scratch);
   r->flags = DFM_ADVANCE;
-  r->eof_cnt = 0;
+  r->n_eofs = 0;
   r->block_left = 0;
   if (fh_get_referent (fh) != FH_REF_INLINE)
     {
@@ -554,14 +554,14 @@ dfm_eof (struct dfm_reader *r)
     {
       r->flags &= ~DFM_ADVANCE;
 
-      if (r->eof_cnt == 0 && read_record (r))
+      if (r->n_eofs == 0 && read_record (r))
         {
           r->pos = 0;
           return 0;
         }
 
-      r->eof_cnt++;
-      if (r->eof_cnt == 2)
+      r->n_eofs++;
+      if (r->n_eofs == 2)
         {
           if (r->fh != fh_inline_file ())
             msg (ME, _("Attempt to read beyond end-of-file on file %s."),
@@ -571,7 +571,7 @@ dfm_eof (struct dfm_reader *r)
         }
     }
 
-  return r->eof_cnt;
+  return r->n_eofs;
 }
 
 /* Returns the current record in the file corresponding to
@@ -581,7 +581,7 @@ struct substring
 dfm_get_record (struct dfm_reader *r)
 {
   assert ((r->flags & DFM_ADVANCE) == 0);
-  assert (r->eof_cnt == 0);
+  assert (r->n_eofs == 0);
 
   return ds_substr (&r->line, r->pos, SIZE_MAX);
 }
@@ -596,7 +596,7 @@ dfm_expand_tabs (struct dfm_reader *r)
   size_t ofs, new_pos, tab_width;
 
   assert ((r->flags & DFM_ADVANCE) == 0);
-  assert (r->eof_cnt == 0);
+  assert (r->n_eofs == 0);
 
   if (r->flags & DFM_TABS_EXPANDED)
     return;

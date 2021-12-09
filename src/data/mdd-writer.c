@@ -122,7 +122,7 @@ all_variables (struct dictionary *dict);
 struct all_dict_variables
 all_variables (struct dictionary *dict)
 {
-  size_t n_vars = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
 
   /* Start with a set of all variable names. */
   struct string_set var_names = STRING_SET_INITIALIZER (var_names);
@@ -449,7 +449,7 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
            const char *sav_name)
 {
   struct mdd_writer *w = XZALLOC (struct mdd_writer);
-  size_t n_vars = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
 
   /* Open file handle as an exclusive writer. */
   /* TRANSLATORS: this fragment will be interpolated into
@@ -624,7 +624,7 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
 
   /* We reserve ids 1...N_VARS for variables and then start other ids after
      that. */
-  int id = dict_get_var_cnt (dict) + 1;
+  int id = dict_get_n_vars (dict) + 1;
 
   /* <definition/> */
   xmlTextWriterStartElement (w->writer, _xml ("definition"));

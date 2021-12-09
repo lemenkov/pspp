@@ -75,7 +75,7 @@ struct tex_driver
     char *chart_file_name;
 
     FILE *file;
-    size_t chart_cnt;
+    size_t n_charts;
 
     struct ll_list preamble_list;
     struct ll_list token_list;
@@ -131,7 +131,7 @@ tex_create (struct file_handle *fh, enum settings_output_devices device_type,
   tex->handle = fh;
   tex->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
                                                       fh_get_file_name (fh)));
-  tex->chart_cnt = 1;
+  tex->n_charts = 1;
   tex->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
   tex->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
 
@@ -323,7 +323,7 @@ tex_submit (struct output_driver *driver, const struct output_item *item)
         {
           char *file_name = xr_draw_png_chart (item->chart,
                                                tex->chart_file_name,
-                                               tex->chart_cnt++,
+                                               tex->n_charts++,
                                                &tex->fg, &tex->bg);
           if (file_name != NULL)
             {
@@ -343,7 +343,7 @@ tex_submit (struct output_driver *driver, const struct output_item *item)
     case OUTPUT_ITEM_IMAGE:
       {
         char *file_name = xr_write_png_image (
-          item->image, tex->chart_file_name, tex->chart_cnt++);
+          item->image, tex->chart_file_name, tex->n_charts++);
         if (file_name != NULL)
           {
             shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);

@@ -60,15 +60,15 @@ deque_expand (struct deque *deque, void *old_data_, size_t elem_size)
   size_t new_capacity = MAX (4, old_capacity * 2);
   char *old_data = old_data_;
   char *new_data = xnmalloc (new_capacity, elem_size);
-  size_t idx, copy_cnt;
-  for (idx = deque->back; idx != deque->front; idx += copy_cnt)
+  size_t idx, n_copy;
+  for (idx = deque->back; idx != deque->front; idx += n_copy)
     {
       size_t can_copy = old_capacity - (idx & (old_capacity - 1));
       size_t want_copy = deque->front - idx;
-      copy_cnt = MIN (can_copy, want_copy);
+      n_copy = MIN (can_copy, want_copy);
       memcpy (new_data + (idx & (new_capacity - 1)) * elem_size,
               old_data + (idx & (old_capacity - 1)) * elem_size,
-              copy_cnt * elem_size);
+              n_copy * elem_size);
     }
   deque->capacity = new_capacity;
   free (old_data);

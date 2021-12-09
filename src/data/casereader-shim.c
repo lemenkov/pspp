@@ -50,10 +50,10 @@ struct casereader_shim *
 casereader_shim_insert (struct casereader *reader)
 {
   const struct caseproto *proto = casereader_get_proto (reader);
-  casenumber case_cnt = casereader_get_case_cnt (reader);
+  casenumber n_cases = casereader_get_n_cases (reader);
   struct casereader_shim *s = xmalloc (sizeof *s);
   s->window = casewindow_create (proto, settings_get_workspace_cases (proto));
-  s->subreader = casereader_create_random (proto, case_cnt, &shim_class, s);
+  s->subreader = casereader_create_random (proto, n_cases, &shim_class, s);
   casereader_swap (reader, s->subreader);
   taint_propagate (casewindow_get_taint (s->window),
                    casereader_get_taint (reader));
@@ -107,7 +107,7 @@ casereader_shim_read (struct casereader *reader UNUSED, void *s_,
 {
   struct casereader_shim *s = s_;
 
-  while (casewindow_get_case_cnt (s->window) <= offset)
+  while (casewindow_get_n_cases (s->window) <= offset)
     if (!buffer_case (s))
       return false;
 
@@ -127,10 +127,10 @@ casereader_shim_destroy (struct casereader *reader UNUSED, void *s_)
 /* Discards CNT cases from the front of S's window. */
 static void
 casereader_shim_advance (struct casereader *reader UNUSED, void *s_,
-                         casenumber case_cnt)
+                         casenumber n_cases)
 {
   struct casereader_shim *s = s_;
-  casewindow_pop_tail (s->window, case_cnt);
+  casewindow_pop_tail (s->window, n_cases);
 }
 
 /* Class for the buffered reader. */

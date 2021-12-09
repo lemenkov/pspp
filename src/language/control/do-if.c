@@ -75,7 +75,7 @@ struct do_if_trns
   {
     struct dataset *ds;         /* The dataset */
     struct clause *clauses;     /* Clauses. */
-    size_t clause_cnt;          /* Number of clauses. */
+    size_t n_clauses;           /* Number of clauses. */
     int past_END_IF_index;      /* Transformation just past last clause. */
   };
 
@@ -99,7 +99,7 @@ cmd_do_if (struct lexer *lexer, struct dataset *ds)
 {
   struct do_if_trns *do_if = xmalloc (sizeof *do_if);
   do_if->clauses = NULL;
-  do_if->clause_cnt = 0;
+  do_if->n_clauses = 0;
   do_if->ds = ds;
 
   ctl_stack_push (&do_if_class, do_if);
@@ -189,8 +189,8 @@ must_not_have_else (struct do_if_trns *do_if)
 static bool
 has_else (struct do_if_trns *do_if)
 {
-  return (do_if->clause_cnt != 0
-          && do_if->clauses[do_if->clause_cnt - 1].condition == NULL);
+  return (do_if->n_clauses != 0
+          && do_if->clauses[do_if->n_clauses - 1].condition == NULL);
 }
 
 /* Parses a DO IF or ELSE IF expression and appends the
@@ -218,12 +218,12 @@ add_clause (struct do_if_trns *do_if, struct expression *condition)
 {
   struct clause *clause;
 
-  if (do_if->clause_cnt > 0)
+  if (do_if->n_clauses > 0)
     add_transformation (do_if->ds, break_trns_proc, NULL, do_if);
 
   do_if->clauses = xnrealloc (do_if->clauses,
-                              do_if->clause_cnt + 1, sizeof *do_if->clauses);
-  clause = &do_if->clauses[do_if->clause_cnt++];
+                              do_if->n_clauses + 1, sizeof *do_if->clauses);
+  clause = &do_if->clauses[do_if->n_clauses++];
   clause->condition = condition;
   clause->target_index = next_transformation (do_if->ds);
 }
@@ -248,7 +248,7 @@ do_if_trns_proc (void *do_if_, struct ccase **c, casenumber case_num UNUSED)
   struct do_if_trns *do_if = do_if_;
   struct clause *clause;
 
-  for (clause = do_if->clauses; clause < do_if->clauses + do_if->clause_cnt;
+  for (clause = do_if->clauses; clause < do_if->clauses + do_if->n_clauses;
        clause++)
     {
       if (clause->condition != NULL)
@@ -272,7 +272,7 @@ do_if_trns_free (void *do_if_)
   struct do_if_trns *do_if = do_if_;
   struct clause *clause;
 
-  for (clause = do_if->clauses; clause < do_if->clauses + do_if->clause_cnt;
+  for (clause = do_if->clauses; clause < do_if->clauses + do_if->n_clauses;
        clause++)
     expr_free (clause->condition);
   free (do_if->clauses);

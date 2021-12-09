@@ -156,7 +156,7 @@ compute_num_vec (void *compute_, struct ccase **c, casenumber case_num)
       index = expr_evaluate_num (compute->element, *c, case_num);
       rindx = floor (index + EPSILON);
       if (index == SYSMIS
-          || rindx < 1 || rindx > vector_get_var_cnt (compute->vector))
+          || rindx < 1 || rindx > vector_get_n_vars (compute->vector))
         {
           if (index == SYSMIS)
             msg (SW, _("When executing COMPUTE: SYSMIS is not a valid value "
@@ -219,7 +219,7 @@ compute_str_vec (void *compute_, struct ccase **c, casenumber case_num)
                vector_get_name (compute->vector));
           return TRNS_CONTINUE;
         }
-      else if (rindx < 1 || rindx > vector_get_var_cnt (compute->vector))
+      else if (rindx < 1 || rindx > vector_get_n_vars (compute->vector))
         {
           msg (SW, _("When executing COMPUTE: %.*g is not a valid value as "
                      "an index into vector %s."),

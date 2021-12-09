@@ -316,14 +316,14 @@ static const struct keyword keywords[] =
     { T_TO,   SS_LITERAL_INITIALIZER ("TO") },
     { T_WITH, SS_LITERAL_INITIALIZER ("WITH") },
   };
-static const size_t keyword_cnt = sizeof keywords / sizeof *keywords;
+static const size_t n_keywords = sizeof keywords / sizeof *keywords;
 
 /* Returns true if TOKEN is representable as a keyword. */
 bool
 lex_is_keyword (enum token_type token)
 {
   const struct keyword *kw;
-  for (kw = keywords; kw < &keywords[keyword_cnt]; kw++)
+  for (kw = keywords; kw < &keywords[n_keywords]; kw++)
     if (kw->token == token)
       return true;
   return false;
@@ -337,7 +337,7 @@ lex_id_to_token (struct substring id)
   if (ss_length (id) >= 2 && ss_length (id) <= 4)
     {
       const struct keyword *kw;
-      for (kw = keywords; kw < &keywords[keyword_cnt]; kw++)
+      for (kw = keywords; kw < &keywords[n_keywords]; kw++)
         if (ss_equals_case (kw->identifier, id))
           return kw->token;
     }

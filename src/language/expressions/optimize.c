@@ -44,8 +44,8 @@ static union any_node *optimize_tree (union any_node *, struct expression *);
 union any_node *
 expr_optimize (union any_node *node, struct expression *e)
 {
-  int nonconst_cnt = 0; /* Number of nonconstant children. */
-  int sysmis_cnt = 0;   /* Number of system-missing children. */
+  int n_nonconst = 0; /* Number of nonconstant children. */
+  int n_sysmis = 0;   /* Number of system-missing children. */
   const struct operation *op;
   struct composite_node *c;
   int i;
@@ -56,21 +56,21 @@ expr_optimize (union any_node *node, struct expression *e)
 
   /* Start by optimizing all the children. */
   c = &node->composite;
-  for (i = 0; i < c->arg_cnt; i++)
+  for (i = 0; i < c->n_args; i++)
     {
       c->args[i] = expr_optimize (c->args[i], e);
       if (c->args[i]->type == OP_number)
 	{
 	  if (c->args[i]->number.n == SYSMIS)
-	    sysmis_cnt++;
+	    n_sysmis++;
 	}
 
       if (!is_atom (c->args[i]->type))
-	nonconst_cnt++;
+	n_nonconst++;
     }
 
   op = &operations[c->type];
-  if (sysmis_cnt && (op->flags & OPF_ABSORB_MISS) == 0)
+  if (n_sysmis && (op->flags & OPF_ABSORB_MISS) == 0)
     {
       /* Most operations produce SYSMIS given any SYSMIS
          argument. */
@@ -80,7 +80,7 @@ expr_optimize (union any_node *node, struct expression *e)
       else
         return expr_allocate_boolean (e, SYSMIS);
     }
-  else if (!nonconst_cnt && (op->flags & OPF_NONOPTIMIZABLE) == 0)
+  else if (!n_nonconst && (op->flags & OPF_NONOPTIMIZABLE) == 0)
     {
       /* Evaluate constant expressions. */
       return evaluate_tree (&node->composite, e);
@@ -141,12 +141,12 @@ optimize_tree (union any_node *node, struct expression *e)
 
 static double get_number_arg (struct composite_node *, size_t arg_idx);
 static double *get_number_args (struct composite_node *,
-                                 size_t arg_idx, size_t arg_cnt,
+                                 size_t arg_idx, size_t n_args,
                                  struct expression *);
 static struct substring get_string_arg (struct composite_node *,
                                            size_t arg_idx);
 static struct substring *get_string_args (struct composite_node *,
-                                             size_t arg_idx, size_t arg_cnt,
+                                             size_t arg_idx, size_t n_args,
                                              struct expression *);
 static const struct fmt_spec *get_format_arg (struct composite_node *,
                                               size_t arg_idx);
@@ -168,21 +168,21 @@ evaluate_tree (struct composite_node *node, struct expression *e)
 static double
 get_number_arg (struct composite_node *c, size_t arg_idx)
 {
-  assert (arg_idx < c->arg_cnt);
+  assert (arg_idx < c->n_args);
   assert (c->args[arg_idx]->type == OP_number
           || c->args[arg_idx]->type == OP_boolean);
   return c->args[arg_idx]->number.n;
 }
 
 static double *
-get_number_args (struct composite_node *c, size_t arg_idx, size_t arg_cnt,
+get_number_args (struct composite_node *c, size_t arg_idx, size_t n_args,
                  struct expression *e)
 {
   double *d;
   size_t i;
 
-  d = pool_alloc (e->expr_pool, sizeof *d * arg_cnt);
-  for (i = 0; i < arg_cnt; i++)
+  d = pool_alloc (e->expr_pool, sizeof *d * n_args);
+  for (i = 0; i < n_args; i++)
     d[i] = get_number_arg (c, i + arg_idx);
   return d;
 }
@@ -190,20 +190,20 @@ get_number_args (struct composite_node *c, size_t arg_idx, size_t arg_cnt,
 static struct substring
 get_string_arg (struct composite_node *c, size_t arg_idx)
 {
-  assert (arg_idx < c->arg_cnt);
+  assert (arg_idx < c->n_args);
   assert (c->args[arg_idx]->type == OP_string);
   return c->args[arg_idx]->string.s;
 }
 
 static struct substring *
-get_string_args (struct composite_node *c, size_t arg_idx, size_t arg_cnt,
+get_string_args (struct composite_node *c, size_t arg_idx, size_t n_args,
                  struct expression *e)
 {
   struct substring *s;
   size_t i;
 
-  s = pool_alloc (e->expr_pool, sizeof *s * arg_cnt);
-  for (i = 0; i < arg_cnt; i++)
+  s = pool_alloc (e->expr_pool, sizeof *s * n_args);
+  for (i = 0; i < n_args; i++)
     s[i] = get_string_arg (c, i + arg_idx);
   return s;
 }
@@ -211,7 +211,7 @@ get_string_args (struct composite_node *c, size_t arg_idx, size_t arg_cnt,
 static const struct fmt_spec *
 get_format_arg (struct composite_node *c, size_t arg_idx)
 {
-  assert (arg_idx < c->arg_cnt);
+  assert (arg_idx < c->n_args);
   assert (c->args[arg_idx]->type == OP_ni_format
           || c->args[arg_idx]->type == OP_no_format);
   return &c->args[arg_idx]->format.f;
@@ -312,13 +312,13 @@ flatten_composite (union any_node *n, struct expression *e)
   const struct operation *op = &operations[n->type];
   size_t i;
 
-  for (i = 0; i < n->composite.arg_cnt; i++)
+  for (i = 0; i < n->composite.n_args; i++)
     flatten_node (n->composite.args[i], e);
 
   if (n->type != OP_BOOLEAN_TO_NUM)
     emit_operation (e, n->type);
 
-  for (i = 0; i < n->composite.arg_cnt; i++)
+  for (i = 0; i < n->composite.n_args; i++)
     {
       union any_node *arg = n->composite.args[i];
       switch (arg->type)
@@ -348,7 +348,7 @@ flatten_composite (union any_node *n, struct expression *e)
     }
 
   if (op->flags & OPF_ARRAY_OPERAND)
-    emit_integer (e, n->composite.arg_cnt - op->arg_cnt + 1);
+    emit_integer (e, n->composite.n_args - op->n_args + 1);
   if (op->flags & OPF_MIN_VALID)
     emit_integer (e, n->composite.min_valid);
 }
@@ -369,14 +369,15 @@ flatten_node (union any_node *n, struct expression *e)
 static union operation_data *
 allocate_aux (struct expression *e, operation_type type)
 {
-  if (e->op_cnt >= e->op_cap)
+  if (e->n_ops >= e->allocated_ops)
     {
-      e->op_cap = (e->op_cap + 8) * 3 / 2;
-      e->ops = pool_realloc (e->expr_pool, e->ops, sizeof *e->ops * e->op_cap);
+      e->allocated_ops = (e->allocated_ops + 8) * 3 / 2;
+      e->ops = pool_realloc (e->expr_pool, e->ops,
+                             sizeof *e->ops * e->allocated_ops);
       e->op_types = pool_realloc (e->expr_pool, e->op_types,
-                                  sizeof *e->op_types * e->op_cap);
+                                  sizeof *e->op_types * e->allocated_ops);
     }
 
-  e->op_types[e->op_cnt] = type;
-  return &e->ops[e->op_cnt++];
+  e->op_types[e->n_ops] = type;
+  return &e->ops[e->n_ops++];
 }

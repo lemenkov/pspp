@@ -68,7 +68,7 @@ void
 output_split_file_values (const struct dataset *ds, const struct ccase *c)
 {
   const struct dictionary *dict = dataset_dict (ds);
-  size_t n_vars = dict_get_split_cnt (dict);
+  size_t n_vars = dict_get_n_splits (dict);
   if (n_vars == 0)
     return;
 

@@ -60,7 +60,7 @@ read_lines (PsppireTextFile *tf)
 
       struct string input;
       ds_init_empty (&input);
-      for (tf->line_cnt = 0; tf->line_cnt < MAX_PREVIEW_LINES; tf->line_cnt++)
+      for (tf->n_lines = 0; tf->n_lines < MAX_PREVIEW_LINES; tf->n_lines++)
 	{
 	  ds_clear (&input);
 	  if (!line_reader_read (reader, &input, MAX_LINE_LEN + 1)
@@ -78,34 +78,34 @@ read_lines (PsppireTextFile *tf)
 			   "a text file."),
 		     tf->file_name, MAX_LINE_LEN);
 	      line_reader_close (reader);
-	      for (i = 0; i < tf->line_cnt; i++)
+	      for (i = 0; i < tf->n_lines; i++)
                 g_free (tf->lines[i].string);
-	      tf->line_cnt = 0;
+	      tf->n_lines = 0;
 	      ds_destroy (&input);
 	      return;
 	    }
 
-	  tf->lines[tf->line_cnt]
+	  tf->lines[tf->n_lines]
 	    = recode_substring_pool ("UTF-8",
 				     line_reader_get_encoding (reader),
 				     input.ss, NULL);
         }
       ds_destroy (&input);
 
-      if (tf->line_cnt == 0)
+      if (tf->n_lines == 0)
 	{
 	  int i;
 	  msg (ME, _("`%s' is empty."), tf->file_name);
 	  line_reader_close (reader);
-	  for (i = 0; i < tf->line_cnt; i++)
+	  for (i = 0; i < tf->n_lines; i++)
 	    g_free (tf->lines[i].string);
-	  tf->line_cnt = 0;
+	  tf->n_lines = 0;
 	  goto done;
 	}
 
-      if (tf->line_cnt < MAX_PREVIEW_LINES)
+      if (tf->n_lines < MAX_PREVIEW_LINES)
 	{
-	  tf->total_lines = tf->line_cnt;
+	  tf->total_lines = tf->n_lines;
 	  tf->total_is_exact = true;
 	}
       else
@@ -115,7 +115,7 @@ read_lines (PsppireTextFile *tf)
 	  off_t position = line_reader_tell (reader);
 	  if (fstat (line_reader_fileno (reader), &s) == 0 && position > 0)
 	    {
-	      tf->total_lines = (double) tf->line_cnt / position * s.st_size;
+	      tf->total_lines = (double) tf->n_lines / position * s.st_size;
 	      tf->total_is_exact = false;
 	    }
 	  else
@@ -172,7 +172,7 @@ psppire_text_file_get_property (GObject         *object,
       g_value_set_int (value, text_file->maximum_lines);
       break;
     case PROP_LINE_COUNT:
-      g_value_set_int (value, text_file->line_cnt);
+      g_value_set_int (value, text_file->n_lines);
       break;
     case PROP_FILE_NAME:
       g_value_set_string (value, text_file->file_name);
@@ -205,7 +205,7 @@ __tree_get_iter (GtkTreeModel *tree_model,
 
   gint n = *indices;
 
-  if (n >= file->line_cnt)
+  if (n >= file->n_lines)
     return FALSE;
 
   iter->user_data = GINT_TO_POINTER (n);
@@ -224,7 +224,7 @@ __tree_iter_next (GtkTreeModel *tree_model,
 
   gint n = GPOINTER_TO_INT (iter->user_data) + 1;
 
-  if (n >= file->line_cnt)
+  if (n >= file->n_lines)
     return FALSE;
 
   iter->user_data = GINT_TO_POINTER (n);
@@ -287,7 +287,7 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
 {
   PsppireTextFile *file  = PSPPIRE_TEXT_FILE (tree_model);
   g_assert (iter == NULL);
-  return file->line_cnt;
+  return file->n_lines;
 }
 
 static GtkTreeModelFlags
@@ -317,7 +317,7 @@ __iter_nth_child (GtkTreeModel *tree_model,
 
   g_return_val_if_fail (file, FALSE);
 
-  if (n >= file->line_cnt)
+  if (n >= file->n_lines)
     {
       iter->stamp = -1;
       iter->user_data = NULL;
@@ -343,7 +343,7 @@ __get_value (GtkTreeModel *tree_model,
 
   gint n = GPOINTER_TO_INT (iter->user_data);
 
-  g_return_if_fail (n < file->line_cnt);
+  g_return_if_fail (n < file->n_lines);
 
   if (column == 0)
     {
@@ -475,7 +475,7 @@ psppire_text_file_finalize (GObject *object)
 {
   PsppireTextFile *tf = PSPPIRE_TEXT_FILE (object);
 
-  for (int i = 0; i < tf->line_cnt; i++)
+  for (int i = 0; i < tf->n_lines; i++)
     g_free (tf->lines[i].string);
 
   g_free (tf->encoding);

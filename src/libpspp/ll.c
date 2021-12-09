@@ -434,7 +434,7 @@ void
 ll_sort (struct ll *r0, struct ll *r1, ll_compare_func *compare, void *aux)
 {
   struct ll *pre_r0;
-  size_t output_run_cnt;
+  size_t output_run_len;
 
   if (r0 == r1 || ll_next (r0) == r1)
     return;
@@ -443,7 +443,7 @@ ll_sort (struct ll *r0, struct ll *r1, ll_compare_func *compare, void *aux)
   do
     {
       struct ll *a0 = ll_next (pre_r0);
-      for (output_run_cnt = 1; ; output_run_cnt++)
+      for (output_run_len = 1; ; output_run_len++)
         {
           struct ll *a1 = ll_find_run (a0, r1, compare, aux);
           struct ll *a2 = ll_find_run (a1, r1, compare, aux);
@@ -453,7 +453,7 @@ ll_sort (struct ll *r0, struct ll *r1, ll_compare_func *compare, void *aux)
           a0 = ll_merge (a0, a1, a1, a2, compare, aux);
         }
     }
-  while (output_run_cnt > 1);
+  while (output_run_len > 1);
 }
 
 /* Finds the extent of a run of nodes of increasing value

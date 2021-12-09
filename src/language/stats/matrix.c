@@ -6148,7 +6148,7 @@ save_file_open (struct save_file *sf, gsl_matrix *m,
   struct stringi_set strings;
   stringi_set_clone (&strings, &sf->strings);
 
-  for (size_t i = 0; dict_get_var_cnt (dict) < m->size2; i++)
+  for (size_t i = 0; dict_get_n_vars (dict) < m->size2; i++)
     {
       char tmp_name[64];
       const char *name;
@@ -7431,7 +7431,7 @@ matrix_get_execute__ (struct matrix_command *cmd, struct casereader *reader,
     }
   else
     {
-      n_vars = dict_get_var_cnt (dict);
+      n_vars = dict_get_n_vars (dict);
       vars = xnmalloc (n_vars, sizeof *vars);
       for (size_t i = 0; i < n_vars; i++)
         {
@@ -7545,7 +7545,7 @@ matrix_open_casereader (const struct matrix_command *cmd,
     }
   else
     {
-      if (dict_get_var_cnt (dataset_dict (dataset)) == 0)
+      if (dict_get_n_vars (dataset_dict (dataset)) == 0)
         {
           msg_at (ME, cmd->location,
                   _("The %s command cannot read an empty active file."),
@@ -8286,13 +8286,13 @@ matrix_mget_execute__ (struct matrix_command *cmd, struct casereader *r,
               _("ROWTYPE_ must precede VARNAME_ in matrix data file."));
       return;
     }
-  if (var_get_dict_index (varname_) + 1 >= dict_get_var_cnt (d))
+  if (var_get_dict_index (varname_) + 1 >= dict_get_n_vars (d))
     {
       msg_at (SE, loc, _("Matrix data file contains no continuous variables."));
       return;
     }
 
-  for (size_t i = 0; i < dict_get_var_cnt (d); i++)
+  for (size_t i = 0; i < dict_get_n_vars (d); i++)
     {
       const struct variable *v = dict_get_var (d, i);
       if (v != rowtype_ && v != varname_ && var_get_width (v) != 0)
@@ -8318,7 +8318,7 @@ matrix_mget_execute__ (struct matrix_command *cmd, struct casereader *r,
 
   /* Continuous variables. */
   size_t cs = var_get_dict_index (varname_) + 1;
-  size_t cn = dict_get_var_cnt (d) - cs;
+  size_t cn = dict_get_n_vars (d) - cs;
   struct ccase *cc = NULL;
 
   /* Pivot table. */

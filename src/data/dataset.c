@@ -436,8 +436,8 @@ proc_open_filtering (struct dataset *ds, bool filter)
   if (!ds->discard_output)
     {
       struct dictionary *pd = ds->permanent_dict;
-      size_t compacted_value_cnt = dict_count_values (pd, 1u << DC_SCRATCH);
-      if (compacted_value_cnt < dict_get_next_value_idx (pd))
+      size_t compacted_n_values = dict_count_values (pd, 1u << DC_SCRATCH);
+      if (compacted_n_values < dict_get_next_value_idx (pd))
         {
           struct caseproto *compacted_proto;
           compacted_proto = dict_get_compacted_proto (pd, 1u << DC_SCRATCH);

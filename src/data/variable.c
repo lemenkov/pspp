@@ -109,7 +109,7 @@ struct variable
     /* Used only for system and portable file input and output.
        See short-names.h. */
     char **short_names;
-    size_t short_name_cnt;
+    size_t n_short_names;
 
     /* Custom attributes. */
     struct attrset attributes;
@@ -1122,9 +1122,9 @@ var_must_leave (const struct variable *v)
    all if it hasn't been saved to or read from a system or
    portable file. */
 size_t
-var_get_short_name_cnt (const struct variable *var)
+var_get_n_short_names (const struct variable *var)
 {
-  return var->short_name_cnt;
+  return var->n_short_names;
 }
 
 /* Returns VAR's short name with the given IDX, if it has one
@@ -1134,7 +1134,7 @@ var_get_short_name_cnt (const struct variable *var)
 const char *
 var_get_short_name (const struct variable *var, size_t idx)
 {
-  return idx < var->short_name_cnt ? var->short_names[idx] : NULL;
+  return idx < var->n_short_names ? var->short_names[idx] : NULL;
 }
 
 /* Sets VAR's short name with the given IDX to the UTF-8 string SHORT_NAME.
@@ -1149,7 +1149,7 @@ var_set_short_name (struct variable *var, size_t idx, const char *short_name)
   struct variable *ov = var_clone (var);
 
   /* Clear old short name numbered IDX, if any. */
-  if (idx < var->short_name_cnt)
+  if (idx < var->n_short_names)
     {
       free (var->short_names[idx]);
       var->short_names[idx] = NULL;
@@ -1158,14 +1158,14 @@ var_set_short_name (struct variable *var, size_t idx, const char *short_name)
   /* Install new short name for IDX. */
   if (short_name != NULL)
     {
-      if (idx >= var->short_name_cnt)
+      if (idx >= var->n_short_names)
         {
-          size_t old_cnt = var->short_name_cnt;
+          size_t n_old = var->n_short_names;
           size_t i;
-          var->short_name_cnt = MAX (idx * 2, 1);
-          var->short_names = xnrealloc (var->short_names, var->short_name_cnt,
+          var->n_short_names = MAX (idx * 2, 1);
+          var->short_names = xnrealloc (var->short_names, var->n_short_names,
                                         sizeof *var->short_names);
-          for (i = old_cnt; i < var->short_name_cnt; i++)
+          for (i = n_old; i < var->n_short_names; i++)
             var->short_names[i] = NULL;
         }
       var->short_names[idx] = utf8_to_upper (short_name);
@@ -1180,11 +1180,11 @@ var_clear_short_names (struct variable *v)
 {
   size_t i;
 
-  for (i = 0; i < v->short_name_cnt; i++)
+  for (i = 0; i < v->n_short_names; i++)
     free (v->short_names[i]);
   free (v->short_names);
   v->short_names = NULL;
-  v->short_name_cnt = 0;
+  v->n_short_names = 0;
 }
 
 /* Relationship with dictionary. */

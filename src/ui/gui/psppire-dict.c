@@ -74,7 +74,7 @@ gni (GListModel *list)
 {
   PsppireDict *dict = PSPPIRE_DICT (list);
 
-  return psppire_dict_get_var_cnt (dict);
+  return psppire_dict_get_n_vars (dict);
 }
 
 static GType
@@ -90,7 +90,7 @@ gi (GListModel *list, guint id)
 
   PsppireDict *dict = PSPPIRE_DICT (list);
 
-  if (id >= psppire_dict_get_var_cnt (dict))
+  if (id >= psppire_dict_get_n_vars (dict))
     {
       gtk_button_set_label (GTK_BUTTON (button),  _("Var"));
     }
@@ -345,8 +345,8 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 
   struct dictionary *old_dict = dict->dict;
 
-  guint old_n = dict_get_var_cnt (dict->dict);
-  guint new_n = dict_get_var_cnt (d);
+  guint old_n = dict_get_n_vars (dict->dict);
+  guint new_n = dict_get_n_vars (d);
 
   dict->dict = dict_ref (d);
   dict_unref (old_dict);
@@ -438,7 +438,7 @@ psppire_dict_delete_variables (PsppireDict *d, gint first, gint n)
   g_return_if_fail (d);
   g_return_if_fail (d->dict);
   g_return_if_fail (PSPPIRE_IS_DICT (d));
-  size_t varcnt = dict_get_var_cnt (d->dict);
+  size_t varcnt = dict_get_n_vars (d->dict);
   g_return_if_fail (first < varcnt);
   g_return_if_fail (first >= 0);
   g_return_if_fail (n > 0);
@@ -457,7 +457,7 @@ psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
   if (! dict_id_is_valid (d->dict, name, false))
     return FALSE;
 
-  if (idx < dict_get_var_cnt (d->dict))
+  if (idx < dict_get_n_vars (d->dict))
     {
       /* This is an existing variable? */
       struct variable * var = dict_get_var (d->dict, idx);
@@ -483,7 +483,7 @@ psppire_dict_get_variable (const PsppireDict *d, gint idx)
   g_return_val_if_fail (d, NULL);
   g_return_val_if_fail (d->dict, NULL);
 
-  if (dict_get_var_cnt (d->dict) <= idx)
+  if (dict_get_n_vars (d->dict) <= idx)
     return NULL;
 
   return dict_get_var (d->dict, idx);
@@ -492,18 +492,18 @@ psppire_dict_get_variable (const PsppireDict *d, gint idx)
 
 /* Return the number of variables in the dictionary */
 gint
-psppire_dict_get_var_cnt (const PsppireDict *d)
+psppire_dict_get_n_vars (const PsppireDict *d)
 {
   g_return_val_if_fail (d, -1);
   g_return_val_if_fail (d->dict, -1);
 
-  return dict_get_var_cnt (d->dict);
+  return dict_get_n_vars (d->dict);
 }
 
 
 /* Return the number of `union value's in the dictionary */
 size_t
-psppire_dict_get_value_cnt (const PsppireDict *d)
+psppire_dict_get_n_values (const PsppireDict *d)
 {
   g_return_val_if_fail (d, -1);
   g_return_val_if_fail (d->dict, -1);
@@ -714,7 +714,7 @@ tree_model_get_iter (GtkTreeModel *model, GtkTreeIter *iter, GtkTreePath *path)
 
   n = indices [0];
 
-  if (n < 0 || n >= psppire_dict_get_var_cnt (dict))
+  if (n < 0 || n >= psppire_dict_get_n_vars (dict))
     {
       iter->stamp = 0;
       iter->user_data = NULL;
@@ -748,7 +748,7 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
 
   idx = var_get_dict_index (var);
 
-  if (idx + 1 >= psppire_dict_get_var_cnt (dict))
+  if (idx + 1 >= psppire_dict_get_n_vars (dict))
     {
       iter->user_data = NULL;
       iter->stamp = 0;
@@ -856,7 +856,7 @@ tree_model_n_children (GtkTreeModel *model,
   PsppireDict *dict = PSPPIRE_DICT (model);
 
   if (iter == NULL)
-    return psppire_dict_get_var_cnt (dict);
+    return psppire_dict_get_n_vars (dict);
 
   return 0;
 }
@@ -874,7 +874,7 @@ tree_model_nth_child (GtkTreeModel *model, GtkTreeIter *iter,
   if (parent)
     return FALSE;
 
-  if (n >= psppire_dict_get_var_cnt (dict))
+  if (n >= psppire_dict_get_n_vars (dict))
     return FALSE;
 
   iter->stamp = dict->stamp;

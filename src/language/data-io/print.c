@@ -87,7 +87,7 @@ struct print_trns
     const char *encoding;       /* Encoding to use for output. */
     struct dfm_writer *writer;	/* Output file, NULL=listing file. */
     struct ll_list specs;       /* List of struct prt_out_specs. */
-    size_t record_cnt;          /* Number of records to write. */
+    size_t n_records;           /* Number of records to write. */
   };
 
 enum which_formats
@@ -144,7 +144,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
   trns = pool_create_container (struct print_trns, pool);
   trns->eject = eject;
   trns->writer = NULL;
-  trns->record_cnt = 0;
+  trns->n_records = 0;
   ll_init (&trns->specs);
 
   tmp_pool = pool_create_subpool (trns->pool);
@@ -177,7 +177,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 	  lex_match (lexer, T_LPAREN);
 	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
 	    goto error;
-	  trns->record_cnt = lex_integer (lexer);
+	  trns->n_records = lex_integer (lexer);
 	  lex_get (lexer);
 	  lex_match (lexer, T_RPAREN);
 	}
@@ -277,7 +277,7 @@ parse_specs (struct lexer *lexer, struct pool *tmp_pool, struct print_trns *trns
 
   if (lex_token (lexer) == T_ENDCMD)
     {
-      trns->record_cnt = 1;
+      trns->n_records = 1;
       return true;
     }
 
@@ -299,11 +299,11 @@ parse_specs (struct lexer *lexer, struct pool *tmp_pool, struct print_trns *trns
       lex_match (lexer, T_COMMA);
     }
 
-  if (trns->record_cnt != 0 && trns->record_cnt != record)
+  if (trns->n_records != 0 && trns->n_records != record)
     msg (SW, _("Output calls for %d records but %zu specified on RECORDS "
                "subcommand."),
-         record, trns->record_cnt);
-  trns->record_cnt = record;
+         record, trns->n_records);
+  trns->n_records = record;
 
   return true;
 }
@@ -354,19 +354,19 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
                          enum which_formats which_formats)
 {
   const struct variable **vars;
-  size_t var_cnt, var_idx;
+  size_t n_vars, var_idx;
   struct fmt_spec *formats, *f;
-  size_t format_cnt;
+  size_t n_formats;
   bool add_space;
 
   if (!parse_variables_const_pool (lexer, tmp_pool, dict,
-			     &vars, &var_cnt, PV_DUPLICATE))
+			     &vars, &n_vars, PV_DUPLICATE))
     return false;
 
   if (lex_is_number (lexer) || lex_token (lexer) == T_LPAREN)
     {
-      if (!parse_var_placements (lexer, tmp_pool, var_cnt, FMT_FOR_OUTPUT,
-                                 &formats, &format_cnt))
+      if (!parse_var_placements (lexer, tmp_pool, n_vars, FMT_FOR_OUTPUT,
+                                 &formats, &n_formats))
         return false;
       add_space = false;
     }
@@ -376,9 +376,9 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
 
       lex_match (lexer, T_ASTERISK);
 
-      formats = pool_nmalloc (tmp_pool, var_cnt, sizeof *formats);
-      format_cnt = var_cnt;
-      for (i = 0; i < var_cnt; i++)
+      formats = pool_nmalloc (tmp_pool, n_vars, sizeof *formats);
+      n_formats = n_vars;
+      for (i = 0; i < n_vars; i++)
         {
           const struct variable *v = vars[i];
           formats[i] = (which_formats == PRINT
@@ -389,7 +389,7 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
     }
 
   var_idx = 0;
-  for (f = formats; f < &formats[format_cnt]; f++)
+  for (f = formats; f < &formats[n_formats]; f++)
     if (!execute_placement_format (f, record, column))
       {
         const struct variable *var;
@@ -420,7 +420,7 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
 
         *column += f->w + add_space;
       }
-  assert (var_idx == var_cnt);
+  assert (var_idx == n_vars);
 
   return true;
 }
@@ -462,7 +462,7 @@ dump_table (struct print_trns *trns)
   int row = pivot_category_create_leaf (
     variables->root, pivot_value_new_text (N_("N of Records")));
   pivot_table_put2 (table, 0, row,
-                    pivot_value_new_integer (trns->record_cnt));
+                    pivot_value_new_integer (trns->n_records));
 
   pivot_table_submit (table);
 }
@@ -531,7 +531,7 @@ print_text_trns_proc (void *trns_, struct ccase **c,
                        ds_data (s), ds_length (s));
         }
     }
-  print_text_flush_records (trns, &line, trns->record_cnt + 1,
+  print_text_flush_records (trns, &line, trns->n_records + 1,
                             &eject, &record);
   u8_line_destroy (&line);
 
@@ -630,7 +630,7 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
             }
         }
     }
-  print_binary_flush_records (trns, &line, trns->record_cnt + 1,
+  print_binary_flush_records (trns, &line, trns->n_records + 1,
                               &eject, &record);
   ds_destroy (&line);
 

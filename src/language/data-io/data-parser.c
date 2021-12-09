@@ -48,7 +48,7 @@ struct data_parser
     int skip_records;           /* Records to skip before first real data. */
 
     struct field *fields;       /* Fields to parse. */
-    size_t field_cnt;           /* Number of fields. */
+    size_t n_fields;            /* Number of fields. */
     size_t field_allocated;     /* Number of fields spaced allocated for. */
 
     /* DP_DELIMITED parsers only. */
@@ -89,7 +89,7 @@ data_parser_create (struct dictionary *dict)
   parser->skip_records = 0;
 
   parser->fields = NULL;
-  parser->field_cnt = 0;
+  parser->n_fields = 0;
   parser->field_allocated = 0;
   parser->dict = dict_ref (dict);
 
@@ -117,7 +117,7 @@ data_parser_destroy (struct data_parser *parser)
       size_t i;
 
       dict_unref (parser->dict);
-      for (i = 0; i < parser->field_cnt; i++)
+      for (i = 0; i < parser->n_fields; i++)
         free (parser->fields[i].name);
       free (parser->fields);
       ss_dealloc (&parser->quotes);
@@ -140,7 +140,7 @@ data_parser_get_type (const struct data_parser *parser)
 void
 data_parser_set_type (struct data_parser *parser, enum data_parser_type type)
 {
-  assert (parser->field_cnt == 0);
+  assert (parser->n_fields == 0);
   assert (type == DP_FIXED || type == DP_DELIMITED);
   parser->type = type;
 }
@@ -291,9 +291,9 @@ add_field (struct data_parser *p, const struct fmt_spec *format, int case_idx,
 {
   struct field *field;
 
-  if (p->field_cnt == p->field_allocated)
+  if (p->n_fields == p->field_allocated)
     p->fields = x2nrealloc (p->fields, &p->field_allocated, sizeof *p->fields);
-  field = &p->fields[p->field_cnt++];
+  field = &p->fields[p->n_fields++];
   field->format = *format;
   field->case_idx = case_idx;
   field->name = xstrdup (name);
@@ -335,8 +335,8 @@ data_parser_add_fixed_field (struct data_parser *parser,
                              int record, int first_column)
 {
   assert (parser->type == DP_FIXED);
-  assert (parser->field_cnt == 0
-          || record >= parser->fields[parser->field_cnt - 1].record);
+  assert (parser->n_fields == 0
+          || record >= parser->fields[parser->n_fields - 1].record);
   if (record > parser->records_per_case)
     parser->records_per_case = record;
   add_field (parser, format, case_idx, name, record, first_column);
@@ -347,7 +347,7 @@ data_parser_add_fixed_field (struct data_parser *parser,
 bool
 data_parser_any_fields (const struct data_parser *parser)
 {
-  return parser->field_cnt > 0;
+  return parser->n_fields > 0;
 }
 
 static void
@@ -545,7 +545,7 @@ parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
       dfm_expand_tabs (reader);
       line = dfm_get_record (reader);
 
-      for (; f < &parser->fields[parser->field_cnt] && f->record == row; f++)
+      for (; f < &parser->fields[parser->n_fields] && f->record == row; f++)
         {
           struct substring s = ss_substr (line, f->first_column - 1,
                                           f->format.w);
@@ -581,7 +581,7 @@ parse_delimited_span (const struct data_parser *parser,
   struct string tmp = DS_EMPTY_INITIALIZER;
   struct field *f;
 
-  for (f = parser->fields; f < &parser->fields[parser->field_cnt]; f++)
+  for (f = parser->fields; f < &parser->fields[parser->n_fields]; f++)
     {
       struct substring s;
       int first_column, last_column;
@@ -630,7 +630,7 @@ parse_delimited_no_span (const struct data_parser *parser,
   if (dfm_eof (reader))
     return false;
 
-  end = &parser->fields[parser->field_cnt];
+  end = &parser->fields[parser->n_fields];
   for (f = parser->fields; f < end; f++)
     {
       int first_column, last_column;
@@ -691,7 +691,7 @@ dump_fixed_table (const struct data_parser *parser,
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variable"));
   variables->root->show_label = true;
-  for (size_t i = 0; i < parser->field_cnt; i++)
+  for (size_t i = 0; i < parser->n_fields; i++)
     {
       struct field *f = &parser->fields[i];
 
@@ -736,7 +736,7 @@ dump_delimited_table (const struct data_parser *parser,
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variable"));
   variables->root->show_label = true;
-  for (size_t i = 0; i < parser->field_cnt; i++)
+  for (size_t i = 0; i < parser->n_fields; i++)
     {
       struct field *f = &parser->fields[i];
 

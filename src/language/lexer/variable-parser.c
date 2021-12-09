@@ -138,7 +138,7 @@ parse_variables (struct lexer *lexer, const struct dictionary *d,
   assert (cnt != NULL);
 
   vs = var_set_create_from_dict (d);
-  if (var_set_get_cnt (vs) == 0)
+  if (var_set_get_n (vs) == 0)
     {
       *cnt = 0;
       var_set_destroy (vs);
@@ -151,13 +151,13 @@ parse_variables (struct lexer *lexer, const struct dictionary *d,
 
 /* Parses a set of variables from dictionary D given options
    OPTS.  Resulting list of variables stored in *VARS and the
-   number of variables into *VAR_CNT.  Returns true only if
+   number of variables into *N_VARS.  Returns true only if
    successful.  Same behavior as parse_variables, except that all
    allocations are taken from the given POOL. */
 bool
 parse_variables_pool (struct lexer *lexer, struct pool *pool,
 		const struct dictionary *dict,
-		struct variable ***vars, size_t *var_cnt, int opts)
+		struct variable ***vars, size_t *n_vars, int opts)
 {
   int retval;
 
@@ -167,7 +167,7 @@ parse_variables_pool (struct lexer *lexer, struct pool *pool,
      later. */
   assert (!(opts & PV_APPEND));
 
-  retval = parse_variables (lexer, dict, vars, var_cnt, opts);
+  retval = parse_variables (lexer, dict, vars, n_vars, opts);
   if (retval)
     pool_register (pool, free, *vars);
   return retval;
@@ -295,7 +295,7 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
     {
       size_t i;
 
-      included = xcalloc (var_set_get_cnt (vs), sizeof *included);
+      included = xcalloc (var_set_get_n (vs), sizeof *included);
       for (i = 0; i < *nv; i++)
         {
           size_t index;
@@ -311,7 +311,7 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
     {
       if (lex_match (lexer, T_ALL))
         add_variables (v, nv, &mv, included, pv_opts,
-                       vs, 0, var_set_get_cnt (vs) - 1, DC_ORDINARY);
+                       vs, 0, var_set_get_n (vs) - 1, DC_ORDINARY);
       else
         {
           enum dict_class class;
@@ -830,7 +830,7 @@ error:
 struct var_set
   {
     bool names_must_be_ids;
-    size_t (*get_cnt) (const struct var_set *);
+    size_t (*get_n) (const struct var_set *);
     struct variable *(*get_var) (const struct var_set *, size_t idx);
     bool (*lookup_var_idx) (const struct var_set *, const char *, size_t *);
     void (*destroy) (struct var_set *);
@@ -839,11 +839,11 @@ struct var_set
 
 /* Returns the number of variables in VS. */
 size_t
-var_set_get_cnt (const struct var_set *vs)
+var_set_get_n (const struct var_set *vs)
 {
   assert (vs != NULL);
 
-  return vs->get_cnt (vs);
+  return vs->get_n (vs);
 }
 
 /* Return variable with index IDX in VS.
@@ -852,7 +852,7 @@ static struct variable *
 var_set_get_var (const struct var_set *vs, size_t idx)
 {
   assert (vs != NULL);
-  assert (idx < var_set_get_cnt (vs));
+  assert (idx < var_set_get_n (vs));
 
   return vs->get_var (vs, idx);
 }
@@ -896,11 +896,11 @@ var_set_get_names_must_be_ids (const struct var_set *vs)
 
 /* Returns the number of variables in VS. */
 static size_t
-dict_var_set_get_cnt (const struct var_set *vs)
+dict_var_set_get_n (const struct var_set *vs)
 {
   struct dictionary *d = vs->aux;
 
-  return dict_get_var_cnt (d);
+  return dict_get_n_vars (d);
 }
 
 /* Return variable with index IDX in VS.
@@ -943,7 +943,7 @@ var_set_create_from_dict (const struct dictionary *d)
 {
   struct var_set *vs = xmalloc (sizeof *vs);
   vs->names_must_be_ids = dict_get_names_must_be_ids (d);
-  vs->get_cnt = dict_var_set_get_cnt;
+  vs->get_n = dict_var_set_get_n;
   vs->get_var = dict_var_set_get_var;
   vs->lookup_var_idx = dict_var_set_lookup_var_idx;
   vs->destroy = dict_var_set_destroy;
@@ -955,17 +955,17 @@ var_set_create_from_dict (const struct dictionary *d)
 struct array_var_set
   {
     struct variable *const *var;/* Array of variables. */
-    size_t var_cnt;             /* Number of elements in var. */
+    size_t n_vars;              /* Number of elements in var. */
     struct hmapx vars_by_name;  /* Variables hashed by name. */
   };
 
 /* Returns the number of variables in VS. */
 static size_t
-array_var_set_get_cnt (const struct var_set *vs)
+array_var_set_get_n (const struct var_set *vs)
 {
   struct array_var_set *avs = vs->aux;
 
-  return avs->var_cnt;
+  return avs->n_vars;
 }
 
 /* Return variable with index IDX in VS.
@@ -1010,9 +1010,9 @@ array_var_set_destroy (struct var_set *vs)
   free (vs);
 }
 
-/* Returns a variable set based on the VAR_CNT variables in VAR. */
+/* Returns a variable set based on the N_VARS variables in VAR. */
 struct var_set *
-var_set_create_from_array (struct variable *const *var, size_t var_cnt)
+var_set_create_from_array (struct variable *const *var, size_t n_vars)
 {
   struct var_set *vs;
   struct array_var_set *avs;
@@ -1020,15 +1020,15 @@ var_set_create_from_array (struct variable *const *var, size_t var_cnt)
 
   vs = xmalloc (sizeof *vs);
   vs->names_must_be_ids = true;
-  vs->get_cnt = array_var_set_get_cnt;
+  vs->get_n = array_var_set_get_n;
   vs->get_var = array_var_set_get_var;
   vs->lookup_var_idx = array_var_set_lookup_var_idx;
   vs->destroy = array_var_set_destroy;
   vs->aux = avs = xmalloc (sizeof *avs);
   avs->var = var;
-  avs->var_cnt = var_cnt;
+  avs->n_vars = n_vars;
   hmapx_init (&avs->vars_by_name);
-  for (i = 0; i < var_cnt; i++)
+  for (i = 0; i < n_vars; i++)
     {
       const char *name = var_get_name (var[i]);
       size_t idx;

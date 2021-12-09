@@ -43,7 +43,7 @@ struct merge
   {
     struct subcase ordering;
     struct merge_input inputs[MAX_MERGE_ORDER];
-    size_t input_cnt;
+    size_t n_inputs;
     struct caseproto *proto;
   };
 
@@ -54,7 +54,7 @@ merge_create (const struct subcase *ordering, const struct caseproto *proto)
 {
   struct merge *m = xmalloc (sizeof *m);
   subcase_clone (&m->ordering, ordering);
-  m->input_cnt = 0;
+  m->n_inputs = 0;
   m->proto = caseproto_ref (proto);
   return m;
 }
@@ -67,7 +67,7 @@ merge_destroy (struct merge *m)
       size_t i;
 
       subcase_destroy (&m->ordering);
-      for (i = 0; i < m->input_cnt; i++)
+      for (i = 0; i < m->n_inputs; i++)
         casereader_destroy (m->inputs[i].reader);
       caseproto_unref (m->proto);
       free (m);
@@ -78,8 +78,8 @@ void
 merge_append (struct merge *m, struct casereader *r)
 {
   r = casereader_rename (r);
-  m->inputs[m->input_cnt++].reader = r;
-  if (m->input_cnt >= MAX_MERGE_ORDER)
+  m->inputs[m->n_inputs++].reader = r;
+  if (m->n_inputs >= MAX_MERGE_ORDER)
     do_merge (m);
 }
 
@@ -88,15 +88,15 @@ merge_make_reader (struct merge *m)
 {
   struct casereader *r = NULL;
 
-  if (m->input_cnt > 1)
+  if (m->n_inputs > 1)
     do_merge (m);
 
-  if (m->input_cnt == 1)
+  if (m->n_inputs == 1)
     {
       r = m->inputs[0].reader;
-      m->input_cnt = 0;
+      m->n_inputs = 0;
     }
-  else if (m->input_cnt == 0)
+  else if (m->n_inputs == 0)
     {
       struct casewriter *writer = mem_writer_create (m->proto);
       r = casewriter_make_reader (writer);
@@ -118,8 +118,8 @@ read_input_case (struct merge *m, size_t idx)
   else
     {
       casereader_destroy (i->reader);
-      remove_element (m->inputs, m->input_cnt, sizeof *m->inputs, idx);
-      m->input_cnt--;
+      remove_element (m->inputs, m->n_inputs, sizeof *m->inputs, idx);
+      m->n_inputs--;
       return false;
     }
 }
@@ -130,22 +130,22 @@ do_merge (struct merge *m)
   struct casewriter *w;
   size_t i;
 
-  assert (m->input_cnt > 1);
+  assert (m->n_inputs > 1);
 
   w = tmpfile_writer_create (m->proto);
-  for (i = 0; i < m->input_cnt; i++)
+  for (i = 0; i < m->n_inputs; i++)
     taint_propagate (casereader_get_taint (m->inputs[i].reader),
                      casewriter_get_taint (w));
 
-  for (i = 0; i < m->input_cnt;)
+  for (i = 0; i < m->n_inputs;)
     if (read_input_case (m, i))
       i++;
-  while (m->input_cnt > 0)
+  while (m->n_inputs > 0)
     {
       size_t min;
 
       min = 0;
-      for (i = 1; i < m->input_cnt; i++)
+      for (i = 1; i < m->n_inputs; i++)
         if (subcase_compare_3way (&m->ordering, m->inputs[i].c,
                                   &m->ordering, m->inputs[min].c) < 0)
           min = i;
@@ -154,7 +154,7 @@ do_merge (struct merge *m)
       read_input_case (m, min);
     }
 
-  m->input_cnt = 1;
+  m->n_inputs = 1;
   m->inputs[0].reader = casewriter_make_reader (w);
 }
 

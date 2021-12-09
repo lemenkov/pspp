@@ -60,7 +60,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
 
   casereader_destroy (reader);
 
-  for (i = 0; i < dict_get_var_cnt (dict); i++)
+  for (i = 0; i < dict_get_n_vars (dict); i++)
     {
       const struct variable *s = dict_get_var (dict, i);
       struct variable *t = dict_lookup_var (dataset_dict (ds),

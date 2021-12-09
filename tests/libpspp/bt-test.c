@@ -243,10 +243,10 @@ calculate_h_alpha (size_t n)
       94906266, 134217728, 189812532, 268435456, 379625063, 536870912,
       759250125, 1073741824, 1518500250, 2147483648, 3037000500,
     };
-  size_t threshold_cnt = sizeof thresholds / sizeof *thresholds;
+  size_t n_thresholds = sizeof thresholds / sizeof *thresholds;
   size_t i;
 
-  for (i = 0; i < threshold_cnt; i++)
+  for (i = 0; i < n_thresholds; i++)
     if (thresholds[i] > n)
       break;
   return i - 1;
@@ -381,7 +381,7 @@ test_insert_any_remove_any (void)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *insertions, *deletions;
-      unsigned int ins_perm_cnt;
+      unsigned int ins_n_perms;
       int i;
 
       insertions = xnmalloc (cnt, sizeof *insertions);
@@ -389,24 +389,24 @@ test_insert_any_remove_any (void)
       for (i = 0; i < cnt; i++)
         insertions[i] = i;
 
-      for (ins_perm_cnt = 0;
-           ins_perm_cnt == 0 || next_permutation (insertions, cnt);
-           ins_perm_cnt++)
+      for (ins_n_perms = 0;
+           ins_n_perms == 0 || next_permutation (insertions, cnt);
+           ins_n_perms++)
         {
-          unsigned int del_perm_cnt;
+          unsigned int del_n_perms;
           int i;
 
           for (i = 0; i < cnt; i++)
             deletions[i] = i;
 
-          for (del_perm_cnt = 0;
-               del_perm_cnt == 0 || next_permutation (deletions, cnt);
-               del_perm_cnt++)
+          for (del_n_perms = 0;
+               del_n_perms == 0 || next_permutation (deletions, cnt);
+               del_n_perms++)
             test_insert_delete (insertions, deletions, cnt);
 
-          check (del_perm_cnt == factorial (cnt));
+          check (del_n_perms == factorial (cnt));
         }
-      check (ins_perm_cnt == factorial (cnt));
+      check (ins_n_perms == factorial (cnt));
 
       free (insertions);
       free (deletions);
@@ -425,18 +425,18 @@ test_insert_any_remove_same (void)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *values;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
       for (i = 0; i < cnt; i++)
         values[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (values, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations++)
         test_insert_delete (values, values, cnt);
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (values);
     }
@@ -454,7 +454,7 @@ test_insert_any_remove_reverse (void)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *insertions, *deletions;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       insertions = xnmalloc (cnt, sizeof *insertions);
@@ -462,16 +462,16 @@ test_insert_any_remove_reverse (void)
       for (i = 0; i < cnt; i++)
         insertions[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (insertions, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (insertions, cnt);
+           n_permutations++)
         {
           memcpy (deletions, insertions, sizeof *insertions * cnt);
           reverse (deletions, cnt);
 
           test_insert_delete (insertions, deletions, cnt);
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (insertions);
       free (deletions);
@@ -549,7 +549,7 @@ test_find_ge_le (void)
   for (inc_pat = 0; inc_pat < (1u << max_elems); inc_pat++)
     {
       struct bt bt;
-      int elem_cnt = 0;
+      int n_elems = 0;
       int i;
 
       /* Insert the values in the pattern into BT. */
@@ -557,11 +557,11 @@ test_find_ge_le (void)
       for (i = 0; i < max_elems; i++)
         if (inc_pat & (1u << i))
           {
-            values[elem_cnt] = elements[elem_cnt].data = i;
-            check (bt_insert (&bt, &elements[elem_cnt].node) == NULL);
-            elem_cnt++;
+            values[n_elems] = elements[n_elems].data = i;
+            check (bt_insert (&bt, &elements[n_elems].node) == NULL);
+            n_elems++;
           }
-      check_bt (&bt, values, elem_cnt);
+      check_bt (&bt, values, n_elems);
 
       /* Try find_ge and find_le for each possible element value. */
       for (i = -1; i <= max_elems; i++)
@@ -571,7 +571,7 @@ test_find_ge_le (void)
           int j;
 
           ge = le = NULL;
-          for (j = 0; j < elem_cnt; j++)
+          for (j = 0; j < n_elems; j++)
             {
               if (ge == NULL && values[j] >= i)
                 ge = &elements[j].node;
@@ -635,7 +635,7 @@ test_changed (void)
     {
       int *values, *changed_values;
       struct element *elements;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
@@ -644,9 +644,9 @@ test_changed (void)
       for (i = 0; i < cnt; i++)
         values[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (values, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations++)
         {
           for (i = 0; i < cnt; i++)
             {
@@ -689,7 +689,7 @@ test_changed (void)
                 }
             }
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (values);
       free (changed_values);

@@ -1094,7 +1094,7 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 		continue;
 	      if (r->spreadsheet.stop_col != -1 && idx > r->spreadsheet.stop_col - r->spreadsheet.start_col)
 		break;
-	      if (idx >= dict_get_var_cnt (r->spreadsheet.dict))
+	      if (idx >= dict_get_n_vars (r->spreadsheet.dict))
 		break;
 
               var = dict_get_var (r->spreadsheet.dict, idx);

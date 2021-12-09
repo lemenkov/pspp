@@ -420,8 +420,8 @@ intro_on_enter (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASSISTA
 				       "preview purposes in the following screens.  ",
 				       "Only the first %zu lines of the file will be shown for "
 				       "preview purposes in the following screens.  ",
-				       ia->text_file->line_cnt),
-			 ia->text_file->line_cnt);
+				       ia->text_file->n_lines),
+			 ia->text_file->n_lines);
 	}
     }
 
@@ -750,7 +750,7 @@ my_advance (struct casereader *reader, void *aux, casenumber cnt)
 static struct casereader *
 textfile_create_reader (PsppireImportAssistant *ia)
 {
-  int n_vars = dict_get_var_cnt (ia->dict);
+  int n_vars = dict_get_n_vars (ia->dict);
 
   int i;
 
@@ -824,7 +824,7 @@ ia_variable_changed_cb (GObject *obj, gint var_num, guint what,
   PsppireImportAssistant *ia  = PSPPIRE_IMPORT_ASSISTANT (data);
 
   struct caseproto *proto = caseproto_create();
-  for (int i = 0; i < dict_get_var_cnt (ia->dict); i++)
+  for (int i = 0; i < dict_get_n_vars (ia->dict); i++)
     {
       const struct variable *var = dict_get_var (ia->dict, i);
       int width = var_get_width (var);
@@ -881,9 +881,9 @@ first_line_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 static void
 apply_dict (const struct dictionary *dict, struct string *s)
 {
-  size_t var_cnt = dict_get_var_cnt (dict);
+  size_t n_vars = dict_get_n_vars (dict);
 
-  for (size_t i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *var = dict_get_var (dict, i);
       const char *name = var_get_name (var);
@@ -972,22 +972,19 @@ intro_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 static void
 formats_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
-  int i;
-  int var_cnt;
-
   g_return_if_fail (ia->dict);
 
   ds_put_cstr (s, "  /VARIABLES=\n");
 
-  var_cnt = dict_get_var_cnt (ia->dict);
-  for (i = 0; i < var_cnt; i++)
+  int n_vars = dict_get_n_vars (ia->dict);
+  for (int i = 0; i < n_vars; i++)
     {
       struct variable *var = dict_get_var (ia->dict, i);
       char format_string[FMT_STRING_LEN_MAX + 1];
       fmt_to_string (var_get_print_format (var), format_string);
       ds_put_format (s, "    %s %s%s\n",
 		     var_get_name (var), format_string,
-		     i == var_cnt - 1 ? "." : "");
+		     i == n_vars - 1 ? "." : "");
     }
 }
 

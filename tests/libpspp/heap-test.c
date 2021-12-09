@@ -179,17 +179,17 @@ static unsigned int
 expected_perms (int *values, size_t cnt)
 {
   size_t i, j;
-  unsigned int perm_cnt;
+  unsigned int n_perms;
 
-  perm_cnt = factorial (cnt);
+  n_perms = factorial (cnt);
   for (i = 0; i < cnt; i = j)
     {
       for (j = i + 1; j < cnt; j++)
         if (values[i] != values[j])
           break;
-      perm_cnt /= factorial (j - i);
+      n_perms /= factorial (j - i);
     }
-  return perm_cnt;
+  return n_perms;
 }
 
 /* Tests whether PARTS is a K-part integer composition of N.
@@ -281,7 +281,7 @@ test_insert_no_dups_delete_min (void)
       struct heap *h;
       struct element *elements;
       int *values;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
@@ -290,8 +290,8 @@ test_insert_no_dups_delete_min (void)
         values[i] = i;
 
       h = heap_create (compare_elements, &aux_data);
-      permutation_cnt = 0;
-      while (permutation_cnt == 0 || next_permutation (values, cnt))
+      n_permutations = 0;
+      while (n_permutations == 0 || next_permutation (values, cnt))
         {
           int i;
 
@@ -313,9 +313,9 @@ test_insert_no_dups_delete_min (void)
               heap_delete (h, heap_minimum (h));
             }
           check (heap_is_empty (h));
-          permutation_cnt++;
+          n_permutations++;
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
       heap_destroy (h);
       free (values);
       free (elements);
@@ -337,9 +337,9 @@ test_insert_with_dups_delete_min (void)
 
   for (cnt = 1; cnt <= max_elems; cnt++)
     {
-      unsigned int composition_cnt;
+      unsigned int n_compositions;
       int *dups;
-      int unique_cnt;
+      int n_uniques;
       int *values;
       int *sorted_values;
       struct element *elements;
@@ -350,16 +350,16 @@ test_insert_with_dups_delete_min (void)
       sorted_values = xnmalloc (cnt, sizeof *sorted_values);
       elements = xnmalloc (cnt, sizeof *elements);
 
-      unique_cnt = 0;
-      composition_cnt = 0;
-      while (next_composition (cnt, &unique_cnt, dups))
+      n_uniques = 0;
+      n_compositions = 0;
+      while (next_composition (cnt, &n_uniques, dups))
         {
           struct heap *h;
           int i, j, k;
-          unsigned int permutation_cnt;
+          unsigned int n_permutations;
 
           k = 0;
-          for (i = 0; i < unique_cnt; i++)
+          for (i = 0; i < n_uniques; i++)
             for (j = 0; j < dups[i]; j++)
               {
                 values[k] = i;
@@ -369,8 +369,8 @@ test_insert_with_dups_delete_min (void)
           check (k == cnt);
 
           h = heap_create (compare_elements, &aux_data);
-          permutation_cnt = 0;
-          while (permutation_cnt == 0 || next_permutation (values, cnt))
+          n_permutations = 0;
+          while (n_permutations == 0 || next_permutation (values, cnt))
             {
               int min = INT_MAX;
 
@@ -395,14 +395,14 @@ test_insert_with_dups_delete_min (void)
                   heap_delete (h, heap_minimum (h));
                 }
               check (heap_is_empty (h));
-              permutation_cnt++;
+              n_permutations++;
             }
-          check (permutation_cnt == expected_perms (values, cnt));
+          check (n_permutations == expected_perms (values, cnt));
           heap_destroy (h);
 
-          composition_cnt++;
+          n_compositions++;
         }
-      check (composition_cnt == 1 << (cnt - 1));
+      check (n_compositions == 1 << (cnt - 1));
 
       free (dups);
       free (values);
@@ -424,7 +424,7 @@ test_insert_no_dups_delete_random (void)
       struct heap *h;
       struct element *elements;
       int *insert, *delete;
-      unsigned int insert_perm_cnt;
+      unsigned int insert_n_perms;
       int i;
 
       insert = xnmalloc (cnt, sizeof *insert);
@@ -438,12 +438,12 @@ test_insert_no_dups_delete_random (void)
         }
 
       h = heap_create (compare_elements, &aux_data);
-      insert_perm_cnt = 0;
-      while (insert_perm_cnt == 0 || next_permutation (insert, cnt))
+      insert_n_perms = 0;
+      while (insert_n_perms == 0 || next_permutation (insert, cnt))
         {
-          unsigned int delete_perm_cnt = 0;
+          unsigned int delete_n_perms = 0;
 
-          while (delete_perm_cnt == 0 || next_permutation (delete, cnt))
+          while (delete_n_perms == 0 || next_permutation (delete, cnt))
             {
               int min;
               int i;
@@ -468,12 +468,12 @@ test_insert_no_dups_delete_random (void)
                     check (heap_node_to_element (heap_minimum (h))->x == new_min);
                 }
               check (heap_is_empty (h));
-              delete_perm_cnt++;
+              delete_n_perms++;
             }
-          check (delete_perm_cnt == factorial (cnt));
-          insert_perm_cnt++;
+          check (delete_n_perms == factorial (cnt));
+          insert_n_perms++;
         }
-      check (insert_perm_cnt == factorial (cnt));
+      check (insert_n_perms == factorial (cnt));
       heap_destroy (h);
       free (insert);
       free (delete);
@@ -495,7 +495,7 @@ test_inc_dec (void)
       struct heap *h;
       struct element *elements;
       int *insert, *delete;
-      unsigned int insert_perm_cnt;
+      unsigned int insert_n_perms;
       int i;
 
       insert = xnmalloc (cnt, sizeof *insert);
@@ -505,8 +505,8 @@ test_inc_dec (void)
         insert[i] = i;
 
       h = heap_create (compare_elements, &aux_data);
-      insert_perm_cnt = 0;
-      while (insert_perm_cnt == 0 || next_permutation (insert, cnt))
+      insert_n_perms = 0;
+      while (insert_n_perms == 0 || next_permutation (insert, cnt))
         {
           for (i = 0; i < cnt; i++)
             elements[i].x = insert[i];
@@ -539,9 +539,9 @@ test_inc_dec (void)
                 check (heap_node_to_element (heap_minimum (h))->x == new_min);
             }
           check (heap_is_empty (h));
-          insert_perm_cnt++;
+          insert_n_perms++;
         }
-      check (insert_perm_cnt == factorial (cnt));
+      check (insert_n_perms == factorial (cnt));
       heap_destroy (h);
       free (insert);
       free (delete);

@@ -96,7 +96,7 @@ size_t partition (void *array, size_t count, size_t size,
    for the first TRUE_CNT elements and zero for the remaining
    elements.  AUX is passed as auxiliary data to PREDICATE. */
 bool is_partitioned (const void *array, size_t count, size_t size,
-                    size_t true_cnt,
+                    size_t n_trues,
                     algo_predicate_func *predicate, const void *aux);
 
 /* Randomly reorders ARRAY, which contains COUNT elements of SIZE

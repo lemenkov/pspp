@@ -129,13 +129,13 @@ struct agr_proc
     /* Break variables. */
     struct subcase sort;                /* Sort criteria (break variables). */
     const struct variable **break_vars;       /* Break variables. */
-    size_t break_var_cnt;               /* Number of break variables. */
+    size_t break_n_vars;                /* Number of break variables. */
 
     enum missing_treatment missing;     /* How to treat missing values. */
     struct agr_var *agr_vars;           /* First aggregate variable. */
     struct dictionary *dict;            /* Aggregate dictionary. */
     const struct dictionary *src_dict;  /* Dict of the source */
-    int case_cnt;                       /* Counts aggregated cases. */
+    int n_cases;                        /* Counts aggregated cases. */
 
     bool add_variables;                 /* True iff the aggregated variables should
 					   be appended to the existing dictionary */
@@ -241,10 +241,10 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
           if (!parse_sort_criteria (lexer, dict, &agr.sort, &agr.break_vars,
                                     &saw_direction))
             goto error;
-          agr.break_var_cnt = subcase_get_n_fields (&agr.sort);
+          agr.break_n_vars = subcase_get_n_fields (&agr.sort);
 
 	  if  (! agr.add_variables)
-	    for (i = 0; i < agr.break_var_cnt; i++)
+	    for (i = 0; i < agr.break_n_vars; i++)
 	      dict_clone_var_assert (agr.dict, agr.break_vars[i]);
 
           /* BREAK must follow the options. */
@@ -272,7 +272,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
   dict_set_split_vars (agr.dict, NULL, 0);
 
   /* Initialize. */
-  agr.case_cnt = 0;
+  agr.n_cases = 0;
 
   if (out_file == NULL)
     {
@@ -297,7 +297,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
     }
 
   for (grouper = casegrouper_create_vars (input, agr.break_vars,
-                                          agr.break_var_cnt);
+                                          agr.break_n_vars);
        casegrouper_get_next_group (grouper, &group);
        casereader_destroy (group))
     {
@@ -935,14 +935,14 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 
   if (agr->add_variables)
     {
-      case_copy (c, 0, break_case, 0, dict_get_var_cnt (agr->src_dict));
+      case_copy (c, 0, break_case, 0, dict_get_n_vars (agr->src_dict));
     }
   else
     {
       int value_idx = 0;
       int i;
 
-      for (i = 0; i < agr->break_var_cnt; i++)
+      for (i = 0; i < agr->break_n_vars; i++)
 	{
 	  const struct variable *v = agr->break_vars[i];
 	  value_copy (case_data_rw_idx (c, value_idx),

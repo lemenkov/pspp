@@ -89,18 +89,17 @@ assign_short_name (struct variable *v, size_t i,
 void
 short_names_assign (struct dictionary *d)
 {
-  size_t var_cnt = dict_get_var_cnt (d);
+  size_t n_vars = dict_get_n_vars (d);
   struct stringi_set short_names;
-  size_t i, j;
 
   stringi_set_init (&short_names);
 
   /* Clear short names that conflict with a variable name. */
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
-      int segment_cnt = sfm_width_to_segments (var_get_width (v));
-      for (j = 0; j < segment_cnt; j++)
+      int n_segments = sfm_width_to_segments (var_get_width (v));
+      for (size_t j = 0; j < n_segments; j++)
         {
           const char *name = var_get_short_name (v, j);
           if (name != NULL)
@@ -114,7 +113,7 @@ short_names_assign (struct dictionary *d)
 
   /* Give variables whose names are short the corresponding short
      name. */
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
       const char *name = var_get_name (v);
@@ -128,31 +127,31 @@ short_names_assign (struct dictionary *d)
      conflict, the claimant earlier in dictionary order wins.
      Then similarly for additional segments of very long
      strings. */
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
       claim_short_name (v, 0, &short_names);
     }
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
-      int segment_cnt = sfm_width_to_segments (var_get_width (v));
-      for (j = 1; j < segment_cnt; j++)
+      int n_segments = sfm_width_to_segments (var_get_width (v));
+      for (size_t j = 1; j < n_segments; j++)
         claim_short_name (v, j, &short_names);
     }
 
   /* Assign short names to first segment of remaining variables,
      then similarly for additional segments. */
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
       assign_short_name (v, 0, &short_names);
     }
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
-      int segment_cnt = sfm_width_to_segments (var_get_width (v));
-      for (j = 1; j < segment_cnt; j++)
+      int n_segments = sfm_width_to_segments (var_get_width (v));
+      for (size_t j = 1; j < n_segments; j++)
         assign_short_name (v, j, &short_names);
     }
 

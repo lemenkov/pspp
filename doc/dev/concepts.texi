@@ -2015,7 +2015,7 @@ Returns the variable at the given @var{position} in @var{dict}.
 (see below).
 @end deftypefun
 
-@deftypefun size_t dict_get_var_cnt (const struct dictionary *@var{dict})
+@deftypefun size_t dict_get_n_vars (const struct dictionary *@var{dict})
 Returns the number of variables in @var{dict}.
 @end deftypefun
 
@@ -2298,7 +2298,7 @@ only if there are no split variables, returns a null pointer.  The
 caller must not modify or free the returned array.
 @end deftypefun
 
-@deftypefun size_t dict_get_split_cnt (const struct dictionary *@var{dict})
+@deftypefun size_t dict_get_n_splits (const struct dictionary *@var{dict})
 Returns the number of split variables.
 @end deftypefun
 
@@ -2393,7 +2393,7 @@ call to one of this function in a @func{msg_disable}/@func{msg_enable}
 pair.
 @end deftypefun
 
-@deftypefun size_t dict_get_document_line_cnt (const struct dictionary *@var{dict})
+@deftypefun size_t dict_get_document_n_lines (const struct dictionary *@var{dict})
 Returns the number of line of documents in @var{dict}.  If the
 dictionary contains no documents, returns 0.
 @end deftypefun

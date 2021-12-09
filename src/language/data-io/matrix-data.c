@@ -911,7 +911,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
   if (!dict)
     return CMD_FAILURE;
 
-  size_t n_input_vars = dict_get_var_cnt (dict);
+  size_t n_input_vars = dict_get_n_vars (dict);
   struct variable **input_vars = xnmalloc (n_input_vars, sizeof *input_vars);
   for (size_t i = 0; i < n_input_vars; i++)
     input_vars[i] = dict_get_var (dict, i);
@@ -1144,7 +1144,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
       goto error;
     }
 
-  struct variable **order = xnmalloc (dict_get_var_cnt (dict), sizeof *order);
+  struct variable **order = xnmalloc (dict_get_n_vars (dict), sizeof *order);
   size_t n_order = 0;
   for (size_t i = 0; i < mf.n_svars; i++)
     order[n_order++] = mf.svars[i];
@@ -1154,7 +1154,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
   order[n_order++] = mf.varname;
   for (size_t i = 0; i < mf.n_cvars; i++)
     order[n_order++] = mf.cvars[i];
-  assert (n_order == dict_get_var_cnt (dict));
+  assert (n_order == dict_get_n_vars (dict));
   dict_reorder_vars (dict, order, n_order);
   free (order);
 

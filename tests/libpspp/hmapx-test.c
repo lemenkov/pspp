@@ -383,7 +383,7 @@ test_insert_any_remove_any (hash_function *hash)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *insertions, *deletions;
-      unsigned int ins_perm_cnt;
+      unsigned int ins_n_perms;
       int i;
 
       insertions = xnmalloc (cnt, sizeof *insertions);
@@ -391,24 +391,24 @@ test_insert_any_remove_any (hash_function *hash)
       for (i = 0; i < cnt; i++)
         insertions[i] = i;
 
-      for (ins_perm_cnt = 0;
-           ins_perm_cnt == 0 || next_permutation (insertions, cnt);
-           ins_perm_cnt++)
+      for (ins_n_perms = 0;
+           ins_n_perms == 0 || next_permutation (insertions, cnt);
+           ins_n_perms++)
         {
-          unsigned int del_perm_cnt;
+          unsigned int del_n_perms;
           int i;
 
           for (i = 0; i < cnt; i++)
             deletions[i] = i;
 
-          for (del_perm_cnt = 0;
-               del_perm_cnt == 0 || next_permutation (deletions, cnt);
-               del_perm_cnt++)
+          for (del_n_perms = 0;
+               del_n_perms == 0 || next_permutation (deletions, cnt);
+               del_n_perms++)
             test_insert_delete (insertions, deletions, cnt, hash, 1);
 
-          check (del_perm_cnt == factorial (cnt));
+          check (del_n_perms == factorial (cnt));
         }
-      check (ins_perm_cnt == factorial (cnt));
+      check (ins_n_perms == factorial (cnt));
 
       free (insertions);
       free (deletions);
@@ -445,18 +445,18 @@ test_insert_any_remove_same (hash_function *hash)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *values;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
       for (i = 0; i < cnt; i++)
         values[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (values, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations++)
         test_insert_delete (values, values, cnt, hash, cnt / 2);
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (values);
     }
@@ -492,7 +492,7 @@ test_insert_any_remove_reverse (hash_function *hash)
   for (cnt = 0; cnt <= max_elems; cnt++)
     {
       int *insertions, *deletions;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       insertions = xnmalloc (cnt, sizeof *insertions);
@@ -500,16 +500,16 @@ test_insert_any_remove_reverse (hash_function *hash)
       for (i = 0; i < cnt; i++)
         insertions[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (insertions, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (insertions, cnt);
+           n_permutations++)
         {
           memcpy (deletions, insertions, sizeof *insertions * cnt);
           reverse (deletions, cnt);
 
           test_insert_delete (insertions, deletions, cnt, hash, cnt);
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (insertions);
       free (deletions);
@@ -732,7 +732,7 @@ test_changed (hash_function *hash)
       int *values, *changed_values;
       struct hmapx_node **nodes;
       struct element *elements;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
@@ -742,9 +742,9 @@ test_changed (hash_function *hash)
       for (i = 0; i < cnt; i++)
         values[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (values, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations++)
         {
           for (i = 0; i < cnt; i++)
             {
@@ -778,7 +778,7 @@ test_changed (hash_function *hash)
                 }
             }
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (values);
       free (changed_values);
@@ -819,7 +819,7 @@ test_change (hash_function *hash)
       struct hmapx_node **nodes;
       struct element *elements;
       struct element replacement;
-      unsigned int permutation_cnt;
+      unsigned int n_permutations;
       int i;
 
       values = xnmalloc (cnt, sizeof *values);
@@ -829,9 +829,9 @@ test_change (hash_function *hash)
       for (i = 0; i < cnt; i++)
         values[i] = i;
 
-      for (permutation_cnt = 0;
-           permutation_cnt == 0 || next_permutation (values, cnt);
-           permutation_cnt++)
+      for (n_permutations = 0;
+           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations++)
         {
           for (i = 0; i < cnt; i++)
             {
@@ -864,7 +864,7 @@ test_change (hash_function *hash)
                 }
             }
         }
-      check (permutation_cnt == factorial (cnt));
+      check (n_permutations == factorial (cnt));
 
       free (values);
       free (changed_values);

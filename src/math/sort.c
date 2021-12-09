@@ -197,9 +197,9 @@ struct pqueue
   {
     struct subcase ordering;
     struct pqueue_record *records;
-    size_t record_cnt;          /* Current number of records. */
-    size_t record_cap;          /* Space currently allocated for records. */
-    size_t record_max;          /* Max space we are willing to allocate. */
+    size_t n_records;           /* Current number of records. */
+    size_t allocated_records;   /* Space currently allocated for records. */
+    size_t max_records;         /* Max space we are willing to allocate. */
     casenumber idx;
   };
 
@@ -220,13 +220,13 @@ pqueue_create (const struct subcase *ordering, const struct caseproto *proto)
 
   pq = xmalloc (sizeof *pq);
   subcase_clone (&pq->ordering, ordering);
-  pq->record_max = settings_get_workspace_cases (proto);
-  if (pq->record_max > max_buffers)
-    pq->record_max = max_buffers;
-  else if (pq->record_max < min_buffers)
-    pq->record_max = min_buffers;
-  pq->record_cnt = 0;
-  pq->record_cap = 0;
+  pq->max_records = settings_get_workspace_cases (proto);
+  if (pq->max_records > max_buffers)
+    pq->max_records = max_buffers;
+  else if (pq->max_records < min_buffers)
+    pq->max_records = min_buffers;
+  pq->n_records = 0;
+  pq->allocated_records = 0;
   pq->records = NULL;
   pq->idx = 0;
 
@@ -253,13 +253,13 @@ pqueue_destroy (struct pqueue *pq)
 static bool
 pqueue_is_full (const struct pqueue *pq)
 {
-  return pq->record_cnt >= pq->record_max;
+  return pq->n_records >= pq->max_records;
 }
 
 static bool
 pqueue_is_empty (const struct pqueue *pq)
 {
-  return pq->record_cnt == 0;
+  return pq->n_records == 0;
 }
 
 static void
@@ -269,23 +269,23 @@ pqueue_push (struct pqueue *pq, struct ccase *c, casenumber id)
 
   assert (!pqueue_is_full (pq));
 
-  if (pq->record_cnt >= pq->record_cap)
+  if (pq->n_records >= pq->allocated_records)
     {
-      pq->record_cap = pq->record_cap * 2;
-      if (pq->record_cap < 16)
-        pq->record_cap = 16;
-      else if (pq->record_cap > pq->record_max)
-        pq->record_cap = pq->record_max;
+      pq->allocated_records = pq->allocated_records * 2;
+      if (pq->allocated_records < 16)
+        pq->allocated_records = 16;
+      else if (pq->allocated_records > pq->max_records)
+        pq->allocated_records = pq->max_records;
       pq->records = xrealloc (pq->records,
-                              pq->record_cap * sizeof *pq->records);
+                              pq->allocated_records * sizeof *pq->records);
     }
 
-  r = &pq->records[pq->record_cnt++];
+  r = &pq->records[pq->n_records++];
   r->id = id;
   r->c = c;
   r->idx = pq->idx++;
 
-  push_heap (pq->records, pq->record_cnt, sizeof *pq->records,
+  push_heap (pq->records, pq->n_records, sizeof *pq->records,
              compare_pqueue_records_minheap, pq);
 }
 
@@ -296,10 +296,10 @@ pqueue_pop (struct pqueue *pq, casenumber *id)
 
   assert (!pqueue_is_empty (pq));
 
-  pop_heap (pq->records, pq->record_cnt--, sizeof *pq->records,
+  pop_heap (pq->records, pq->n_records--, sizeof *pq->records,
             compare_pqueue_records_minheap, pq);
 
-  r = &pq->records[pq->record_cnt];
+  r = &pq->records[pq->n_records];
   *id = r->id;
   return r->c;
 }

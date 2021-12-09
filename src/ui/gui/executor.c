@@ -95,7 +95,7 @@ execute_syntax (PsppireDataWindow *window, struct lex_reader *lex_reader)
     {
       const struct caseproto *proto;
       struct casereader *reader;
-      casenumber case_cnt;
+      casenumber n_cases;
 
       /* When the user executes a number of snippets of syntax in a
          row, none of which read from the active dataset, the GUI becomes
@@ -111,8 +111,8 @@ execute_syntax (PsppireDataWindow *window, struct lex_reader *lex_reader)
          it is reused the next time syntax is run, without wrapping
          it in another layer. */
       proto = psppire_data_store_get_proto (pdw->data_store);
-      case_cnt = psppire_data_store_get_case_count (pdw->data_store);
-      reader = lazy_casereader_create (proto, case_cnt,
+      n_cases = psppire_data_store_get_case_count (pdw->data_store);
+      reader = lazy_casereader_create (proto, n_cases,
                                        create_casereader_from_data_store,
                                        pdw->data_store, &pdw->lazy_serial);
       dataset_set_source (pdw->dataset, reader);

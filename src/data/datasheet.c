@@ -625,37 +625,37 @@ datasheet_insert_rows (struct datasheet *ds,
   while (cnt > 0)
     {
       unsigned long first_phy;
-      unsigned long phy_cnt;
+      unsigned long n_phys;
       unsigned long i;
 
       /* Allocate physical rows from the pool of available
          rows. */
-      if (!axis_allocate (ds->rows, cnt, &first_phy, &phy_cnt))
+      if (!axis_allocate (ds->rows, cnt, &first_phy, &n_phys))
         {
           /* No rows were available.  Extend the row axis to make
              some new ones available. */
-          phy_cnt = cnt;
+          n_phys = cnt;
           first_phy = axis_extend (ds->rows, cnt);
         }
 
       /* Insert the new rows into the row mapping. */
-      axis_insert (ds->rows, before, first_phy, phy_cnt);
+      axis_insert (ds->rows, before, first_phy, n_phys);
 
       /* Initialize the new rows. */
-      for (i = 0; i < phy_cnt; i++)
+      for (i = 0; i < n_phys; i++)
         if (!datasheet_put_row (ds, before + i, c[i]))
           {
             while (++i < cnt)
               case_unref (c[i]);
-            datasheet_delete_rows (ds, before - added, phy_cnt + added);
+            datasheet_delete_rows (ds, before - added, n_phys + added);
             return false;
           }
 
       /* Advance. */
-      c += phy_cnt;
-      cnt -= phy_cnt;
-      before += phy_cnt;
-      added += phy_cnt;
+      c += n_phys;
+      cnt -= n_phys;
+      before += n_phys;
+      added += n_phys;
     }
   return true;
 }
@@ -734,10 +734,10 @@ datasheet_reader_destroy (struct casereader *reader UNUSED, void *ds_)
 /* "advance" function for the datasheet random casereader. */
 static void
 datasheet_reader_advance (struct casereader *reader UNUSED, void *ds_,
-                          casenumber case_cnt)
+                          casenumber n_cases)
 {
   struct datasheet *ds = ds_;
-  datasheet_delete_rows (ds, 0, case_cnt);
+  datasheet_delete_rows (ds, 0, n_cases);
 }
 
 /* Random casereader class for a datasheet. */

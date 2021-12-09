@@ -558,7 +558,7 @@ The value label record has the following format:
 int32               rec_type;
 int32               label_count;
 
-/* @r{Repeated @code{label_cnt} times}. */
+/* @r{Repeated @code{n_label} times}. */
 char                value[8];
 char                label_len;
 char                label[];

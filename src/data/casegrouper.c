@@ -168,19 +168,19 @@ static void casegrouper_vars_destroy (void *);
 
 /* Creates and returns a casegrouper that reads data from READER
    and breaks it into contiguous groups of cases that have equal
-   values for the VAR_CNT variables in VARS.  If VAR_CNT is 0,
+   values for the N_VARS variables in VARS.  If N_VARS is 0,
    then all the cases will be put in a single group.
 
    Takes ownerhip of READER. */
 struct casegrouper *
 casegrouper_create_vars (struct casereader *reader,
                          const struct variable *const *vars,
-                         size_t var_cnt)
+                         size_t n_vars)
 {
-  if (var_cnt > 0)
+  if (n_vars > 0)
     {
       struct subcase *sc = xmalloc (sizeof *sc);
-      subcase_init_vars (sc, vars, var_cnt);
+      subcase_init_vars (sc, vars, n_vars);
       return casegrouper_create_func (reader, casegrouper_vars_same_group,
                                       casegrouper_vars_destroy, sc);
     }
@@ -201,7 +201,7 @@ casegrouper_create_splits (struct casereader *reader,
 {
   return casegrouper_create_vars (reader,
                                   dict_get_split_vars (dict),
-                                  dict_get_split_cnt (dict));
+                                  dict_get_n_splits (dict));
 }
 
 /* Creates and returns a casegrouper that reads data from READER
