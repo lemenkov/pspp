@@ -96,13 +96,16 @@ enum which_formats
     WRITE
   };
 
+static const struct trns_class print_binary_trns_class;
+static const struct trns_class print_text_trns_class;
+
 static int internal_cmd_print (struct lexer *, struct dataset *ds,
 			       enum which_formats, bool eject);
-static trns_proc_func print_text_trns_proc, print_binary_trns_proc;
-static trns_free_func print_trns_free;
 static bool parse_specs (struct lexer *, struct pool *tmp_pool, struct print_trns *,
 			 struct dictionary *dict, enum which_formats);
 static void dump_table (struct print_trns *);
+
+static bool print_trns_free (void *trns_);
 
 /* Basic parsing. */
 
@@ -239,11 +242,9 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
     dump_table (trns);
 
   /* Put the transformation in the queue. */
-  add_transformation (ds,
-                      (binary
-                       ? print_binary_trns_proc
-                       : print_text_trns_proc),
-                      print_trns_free, trns);
+  add_transformation (ds, (binary
+                           ? &print_binary_trns_class
+                           : &print_text_trns_class), trns);
 
   pool_destroy (tmp_pool);
   fh_unref (fh);
@@ -474,7 +475,7 @@ static void print_text_flush_records (struct print_trns *, struct u8_line *,
                                       bool *eject, int *record);
 
 /* Performs the transformation inside print_trns T on case C. */
-static int
+static enum trns_result
 print_text_trns_proc (void *trns_, struct ccase **c,
                       casenumber case_num UNUSED)
 {
@@ -587,7 +588,7 @@ static void print_binary_flush_records (struct print_trns *,
                                         bool *eject, int *record);
 
 /* Performs the transformation inside print_trns T on case C. */
-static int
+static enum trns_result
 print_binary_trns_proc (void *trns_, struct ccase **c,
                         casenumber case_num UNUSED)
 {
@@ -684,4 +685,16 @@ print_trns_free (void *trns_)
 
   return ok;
 }
+
+static const struct trns_class print_binary_trns_class = {
+  .name = "PRINT",
+  .execute = print_binary_trns_proc,
+  .destroy = print_trns_free,
+};
+
+static const struct trns_class print_text_trns_class = {
+  .name = "PRINT",
+  .execute = print_text_trns_proc,
+  .destroy = print_trns_free,
+};
 

@@ -21,36 +21,53 @@
 #include <stddef.h>
 #include "data/case.h"
 
-/* trns_proc_func return values. */
+/* One transformation. */
+
 enum trns_result
   {
-    TRNS_CONTINUE = -1,         /* Continue to next transformation. */
-    TRNS_DROP_CASE = -2,        /* Drop this case. */
-    TRNS_ERROR = -3,            /* A serious error, so stop the procedure. */
-    TRNS_END_CASE = -4,         /* Skip to next case.  INPUT PROGRAM only. */
-    TRNS_END_FILE = -5          /* End of input.  INPUT PROGRAM only. */
+    TRNS_CONTINUE,              /* Continue to next transformation. */
+    TRNS_BREAK,                 /* Break out of LOOP. */
+    TRNS_DROP_CASE,             /* Drop this case. */
+    TRNS_ERROR,                 /* A serious error, so stop the procedure. */
+    TRNS_END_CASE,              /* Skip to next case.  INPUT PROGRAM only. */
+    TRNS_END_FILE               /* End of input.  INPUT PROGRAM only. */
   };
 
 struct ccase;
-typedef void trns_finalize_func (void *);
-typedef int trns_proc_func (void *, struct ccase **, casenumber);
-typedef bool trns_free_func (void *);
+
+struct trns_class
+  {
+    const char *name;           /* For debugging. */
+    enum trns_result (*execute) (void *aux, struct ccase **, casenumber);
+    bool (*destroy) (void *aux);
+  };
+
+struct transformation
+  {
+    const struct trns_class *class;
+    void *aux;
+  };
 
-/* Transformation chains. */
+/* A chain of transformations. */
 
-struct trns_chain *trns_chain_create (void);
-void trns_chain_finalize (struct trns_chain *);
-bool trns_chain_destroy (struct trns_chain *);
+struct trns_chain
+  {
+    struct transformation *xforms;
+    size_t n;
+    size_t allocated;
+  };
 
-bool trns_chain_is_empty (const struct trns_chain *);
+#define TRNS_CHAIN_INIT { .n = 0 }
 
-void trns_chain_append (struct trns_chain *, trns_finalize_func *,
-                        trns_proc_func *, trns_free_func *, void *);
-size_t trns_chain_next (struct trns_chain *);
-enum trns_result trns_chain_execute (const struct trns_chain *,
-                                     enum trns_result, struct ccase **,
-                                     casenumber case_nr);
+void trns_chain_init (struct trns_chain *);
+bool trns_chain_uninit (struct trns_chain *);
 
+bool trns_chain_clear (struct trns_chain *);
+
+void trns_chain_append (struct trns_chain *, const struct transformation *);
 void trns_chain_splice (struct trns_chain *, struct trns_chain *);
+
+enum trns_result trns_chain_execute (const struct trns_chain *,
+                                     casenumber case_num, struct ccase **);
 
 #endif /* transformations.h */

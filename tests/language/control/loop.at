@@ -260,3 +260,82 @@ AT_CHECK([cat pspp.csv], [0], [dnl
 --------
 ])
 AT_CLEANUP
+
+AT_SETUP([LOOP negative])
+AT_DATA([loop.sps], [dnl
+DATA LIST NOTABLE /x 1.
+BREAK.
+END LOOP.
+
+LOOP A=1 TO 5 B=1 TO 5.
+END LOOP.
+LOOP 5.
+END LOOP.
+LOOP B !.
+END LOOP.
+LOOP B=!.
+END LOOP.
+LOOP A=1 TO !.
+END LOOP.
+LOOP A=1 BY !.
+END LOOP.
+LOOP A=1 TO 5 BY 5 TO !.
+END LOOP.
+LOOP A=1 BY 5 TO 10 BY !.
+END LOOP.
+LOOP A=1.
+END LOOP.
+LOOP !.
+END LOOP.
+
+LOOP IF 1 IF 0.
+END LOOP.
+
+LOOP IF !.
+END LOOP.
+
+LOOP.
+END LOOP IF !.
+
+LOOP.
+END LOOP !.
+
+LOOP.
+])
+AT_CHECK([pspp loop.sps], 1, [dnl
+loop.sps:2: error: BREAK: This command cannot appear outside LOOP...END LOOP.
+
+loop.sps:3: error: END LOOP: This command cannot appear outside LOOP...END
+LOOP.
+
+loop.sps:5: error: LOOP: Only one index clause may be specified.
+
+loop.sps:7.6: error: LOOP: Syntax error at `5'.
+
+loop.sps:9.8: error: LOOP: Syntax error at `!': expecting `='.
+
+loop.sps:11.8: error: LOOP: Syntax error at `!'.
+
+loop.sps:13.13: error: LOOP: Syntax error at `!'.
+
+loop.sps:15.13: error: LOOP: Syntax error at `!'.
+
+loop.sps:17: error: LOOP: Subcommand TO may only be specified once.
+
+loop.sps:19: error: LOOP: Subcommand BY may only be specified once.
+
+loop.sps:21: error: LOOP: Required subcommand TO was not specified.
+
+loop.sps:23.6: error: LOOP: Syntax error at `!'.
+
+loop.sps:26: error: LOOP: Subcommand IF may only be specified once.
+
+loop.sps:29.9: error: LOOP: Syntax error at `!'.
+
+loop.sps:33.13: error: LOOP: Syntax error at `!'.
+
+loop.sps:36.10: error: LOOP: Syntax error at `!': expecting end of command.
+
+error: LOOP: Syntax error at end of input.
+])
+AT_CLEANUP

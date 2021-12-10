@@ -64,19 +64,21 @@ struct dataset {
      and are finally passed to the procedure. */
   struct casereader *source;
   struct caseinit *caseinit;
-  struct trns_chain *permanent_trns_chain;
+  struct trns_chain permanent_trns_chain;
   struct dictionary *permanent_dict;
   struct casewriter *sink;
-  struct trns_chain *temporary_trns_chain;
+  struct trns_chain temporary_trns_chain;
+  bool temporary;
   struct dictionary *dict;
+
+  /* Stack of transformation chains for DO IF and LOOP and INPUT PROGRAM. */
+  struct trns_chain *stack;
+  size_t n_stack;
+  size_t allocated_stack;
 
   /* If true, cases are discarded instead of being written to
      sink. */
   bool discard_output;
-
-  /* The transformation chain that the next transformation will be
-     added to. */
-  struct trns_chain *cur_trns_chain;
 
   /* The case map used to compact a case, if necessary;
      otherwise a null pointer. */
@@ -143,13 +145,13 @@ dataset_create_finish__ (struct dataset *ds, struct session *session)
 struct dataset *
 dataset_create (struct session *session, const char *name)
 {
-  struct dataset *ds = XZALLOC (struct dataset);
-  ds->name = xstrdup (name);
-  ds->display = DATASET_FRONT;
-  ds->dict = dict_create (get_default_encoding ());
-
-  ds->caseinit = caseinit_create ();
-
+  struct dataset *ds = XMALLOC (struct dataset);
+  *ds = (struct dataset) {
+    .name = xstrdup (name),
+    .display = DATASET_FRONT,
+    .dict = dict_create (get_default_encoding ()),
+    .caseinit = caseinit_create (),
+  };
   dataset_create_finish__ (ds, session);
 
   return ds;
@@ -170,10 +172,11 @@ dataset_clone (struct dataset *old, const char *name)
   struct dataset *new;
 
   assert (old->proc_state == PROC_COMMITTED);
-  assert (trns_chain_is_empty (old->permanent_trns_chain));
+  assert (!old->permanent_trns_chain.n);
   assert (old->permanent_dict == NULL);
   assert (old->sink == NULL);
-  assert (old->temporary_trns_chain == NULL);
+  assert (!old->temporary);
+  assert (!old->temporary_trns_chain.n);
 
   new = xzalloc (sizeof *new);
   new->name = xstrdup (name);
@@ -200,7 +203,10 @@ dataset_destroy (struct dataset *ds)
       dict_unref (ds->dict);
       dict_unref (ds->permanent_dict);
       caseinit_destroy (ds->caseinit);
-      trns_chain_destroy (ds->permanent_trns_chain);
+      trns_chain_uninit (&ds->permanent_trns_chain);
+      for (size_t i = 0; i < ds->n_stack; i++)
+        trns_chain_uninit (&ds->stack[i]);
+      free (ds->stack);
       dataset_transformations_changed__ (ds, false);
       free (ds->name);
       free (ds);
@@ -386,9 +392,8 @@ proc_execute (struct dataset *ds)
 {
   bool ok;
 
-  if ((ds->temporary_trns_chain == NULL
-       || trns_chain_is_empty (ds->temporary_trns_chain))
-      && trns_chain_is_empty (ds->permanent_trns_chain))
+  if ((!ds->temporary || !ds->temporary_trns_chain.n)
+      && !ds->permanent_trns_chain.n)
     {
       ds->n_lag = 0;
       ds->discard_output = false;
@@ -425,7 +430,6 @@ proc_open_filtering (struct dataset *ds, bool filter)
   add_case_limit_trns (ds);
   if (filter)
     add_filter_trns (ds);
-  trns_chain_finalize (ds->cur_trns_chain);
 
   /* Make permanent_dict refer to the dictionary right before
      data reaches the sink. */
@@ -509,8 +513,6 @@ proc_casereader_read (struct casereader *reader UNUSED, void *ds_)
   assert (ds->proc_state == PROC_OPEN);
   for (; ; case_unref (c))
     {
-      casenumber case_nr;
-
       assert (retval == TRNS_DROP_CASE || retval == TRNS_ERROR);
       if (retval == TRNS_ERROR)
         ds->ok = false;
@@ -525,9 +527,8 @@ proc_casereader_read (struct casereader *reader UNUSED, void *ds_)
       caseinit_init_vars (ds->caseinit, c);
 
       /* Execute permanent transformations.  */
-      case_nr = ds->cases_written + 1;
-      retval = trns_chain_execute (ds->permanent_trns_chain, TRNS_CONTINUE,
-                                   &c, case_nr);
+      casenumber case_nr = ds->cases_written + 1;
+      retval = trns_chain_execute (&ds->permanent_trns_chain, case_nr, &c);
       caseinit_update_left_vars (ds->caseinit, c);
       if (retval != TRNS_CONTINUE)
         continue;
@@ -547,10 +548,10 @@ proc_casereader_read (struct casereader *reader UNUSED, void *ds_)
                           case_map_execute (ds->compactor, case_ref (c)));
 
       /* Execute temporary transformations. */
-      if (ds->temporary_trns_chain != NULL)
+      if (ds->temporary_trns_chain.n)
         {
-          retval = trns_chain_execute (ds->temporary_trns_chain, TRNS_CONTINUE,
-                                       &c, ds->cases_written);
+          retval = trns_chain_execute (&ds->temporary_trns_chain,
+                                       ds->cases_written, &c);
           if (retval != TRNS_CONTINUE)
             continue;
         }
@@ -668,54 +669,17 @@ lagged_case (const struct dataset *ds, int n_before)
     return NULL;
 }
 
-/* Returns the current set of permanent transformations,
-   and clears the permanent transformations.
-   For use by INPUT PROGRAM. */
-struct trns_chain *
-proc_capture_transformations (struct dataset *ds)
-{
-  struct trns_chain *chain;
-
-  assert (ds->temporary_trns_chain == NULL);
-  chain = ds->permanent_trns_chain;
-  ds->cur_trns_chain = ds->permanent_trns_chain = trns_chain_create ();
-  dataset_transformations_changed__ (ds, false);
-
-  return chain;
-}
-
-/* Adds a transformation that processes a case with PROC and
-   frees itself with FREE to the current set of transformations.
-   The functions are passed AUX as auxiliary data. */
+/* Adds TRNS to the current set of transformations. */
 void
-add_transformation (struct dataset *ds, trns_proc_func *proc, trns_free_func *free, void *aux)
+add_transformation (struct dataset *ds,
+                    const struct trns_class *class, void *aux)
 {
-  trns_chain_append (ds->cur_trns_chain, NULL, proc, free, aux);
+  struct trns_chain *chain = (ds->n_stack > 0 ? &ds->stack[ds->n_stack - 1]
+                              : ds->temporary ? &ds->temporary_trns_chain
+                              : &ds->permanent_trns_chain);
+  struct transformation t = { .class = class, .aux = aux };
+  trns_chain_append (chain, &t);
   dataset_transformations_changed__ (ds, true);
-}
-
-/* Adds a transformation that processes a case with PROC and
-   frees itself with FREE to the current set of transformations.
-   When parsing of the block of transformations is complete,
-   FINALIZE will be called.
-   The functions are passed AUX as auxiliary data. */
-void
-add_transformation_with_finalizer (struct dataset *ds,
-				   trns_finalize_func *finalize,
-                                   trns_proc_func *proc,
-                                   trns_free_func *free, void *aux)
-{
-  trns_chain_append (ds->cur_trns_chain, finalize, proc, free, aux);
-  dataset_transformations_changed__ (ds, true);
-}
-
-/* Returns the index of the next transformation.
-   This value can be returned by a transformation procedure
-   function to indicate a "jump" to that transformation. */
-size_t
-next_transformation (const struct dataset *ds)
-{
-  return trns_chain_next (ds->cur_trns_chain);
 }
 
 /* Returns true if the next call to add_transformation() will add
@@ -724,7 +688,7 @@ next_transformation (const struct dataset *ds)
 bool
 proc_in_temporary_transformations (const struct dataset *ds)
 {
-  return ds->temporary_trns_chain != NULL;
+  return ds->temporary;
 }
 
 /* Marks the start of temporary transformations.
@@ -739,8 +703,7 @@ proc_start_temporary_transformations (struct dataset *ds)
 
       ds->permanent_dict = dict_clone (ds->dict);
 
-      trns_chain_finalize (ds->permanent_trns_chain);
-      ds->temporary_trns_chain = ds->cur_trns_chain = trns_chain_create ();
+      ds->temporary = true;
       dataset_transformations_changed__ (ds, true);
     }
 }
@@ -758,11 +721,9 @@ proc_make_temporary_transformations_permanent (struct dataset *ds)
 {
   if (proc_in_temporary_transformations (ds))
     {
-      trns_chain_finalize (ds->temporary_trns_chain);
-      trns_chain_splice (ds->permanent_trns_chain, ds->temporary_trns_chain);
-      ds->temporary_trns_chain = NULL;
+      trns_chain_splice (&ds->permanent_trns_chain, &ds->temporary_trns_chain);
 
-      ds->cur_trns_chain = ds->permanent_trns_chain;
+      ds->temporary = false;
 
       dict_unref (ds->permanent_dict);
       ds->permanent_dict = NULL;
@@ -785,10 +746,9 @@ proc_cancel_temporary_transformations (struct dataset *ds)
       ds->dict = ds->permanent_dict;
       ds->permanent_dict = NULL;
 
-      trns_chain_destroy (ds->temporary_trns_chain);
-      ds->temporary_trns_chain = NULL;
-      dataset_transformations_changed__ (
-        ds, !trns_chain_is_empty (ds->permanent_trns_chain));
+      trns_chain_clear (&ds->temporary_trns_chain);
+
+      dataset_transformations_changed__ (ds, ds->permanent_trns_chain.n != 0);
       return true;
     }
   else
@@ -802,16 +762,34 @@ proc_cancel_all_transformations (struct dataset *ds)
 {
   bool ok;
   assert (ds->proc_state == PROC_COMMITTED);
-  ok = trns_chain_destroy (ds->permanent_trns_chain);
-  ok = trns_chain_destroy (ds->temporary_trns_chain) && ok;
-  ds->permanent_trns_chain = ds->cur_trns_chain = trns_chain_create ();
-  ds->temporary_trns_chain = NULL;
+  ok = trns_chain_clear (&ds->permanent_trns_chain);
+  ok = trns_chain_clear (&ds->temporary_trns_chain) && ok;
+  ds->temporary = false;
+  for (size_t i = 0; i < ds->n_stack; i++)
+    ok = trns_chain_uninit (&ds->stack[i]) && ok;
+  ds->n_stack = 0;
   dataset_transformations_changed__ (ds, false);
 
   return ok;
 }
 
-static int
+void
+proc_push_transformations (struct dataset *ds)
+{
+  if (ds->n_stack >= ds->allocated_stack)
+    ds->stack = x2nrealloc (ds->stack, &ds->allocated_stack,
+                            sizeof *ds->stack);
+  trns_chain_init (&ds->stack[ds->n_stack++]);
+}
+
+void
+proc_pop_transformations (struct dataset *ds, struct trns_chain *chain)
+{
+  assert (ds->n_stack > 0);
+  *chain = ds->stack[--ds->n_stack];
+}
+
+static enum trns_result
 store_case_num (void *var_, struct ccase **cc, casenumber case_num)
 {
   struct variable *var = var_;
@@ -826,20 +804,18 @@ store_case_num (void *var_, struct ccase **cc, casenumber case_num)
 struct variable *
 add_permanent_ordering_transformation (struct dataset *ds)
 {
-  struct variable *temp_var;
+  struct variable *temp_var = dict_create_var_assert (ds->dict, "$ORDER", 0);
+  struct variable *order_var
+    = (proc_in_temporary_transformations (ds)
+       ? dict_clone_var_in_place_assert (ds->permanent_dict, temp_var)
+       : temp_var);
 
-  temp_var = dict_create_var_assert (ds->dict, "$ORDER", 0);
-  if (proc_in_temporary_transformations (ds))
-    {
-      struct variable *perm_var;
-
-      perm_var = dict_clone_var_in_place_assert (ds->permanent_dict, temp_var);
-      trns_chain_append (ds->permanent_trns_chain, NULL, store_case_num,
-                         NULL, perm_var);
-      trns_chain_finalize (ds->permanent_trns_chain);
-    }
-  else
-    add_transformation (ds, store_case_num, NULL, temp_var);
+  static const struct trns_class trns_class = {
+    .name = "ordering",
+    .execute = store_case_num
+  };
+  const struct transformation t = { .class = &trns_class, .aux = order_var };
+  trns_chain_append (&ds->permanent_trns_chain, &t);
 
   return temp_var;
 }
@@ -876,28 +852,9 @@ dataset_end_of_command (struct dataset *ds)
   return true;
 }
 
-static trns_proc_func case_limit_trns_proc;
-static trns_free_func case_limit_trns_free;
-
-/* Adds a transformation that limits the number of cases that may
-   pass through, if DS->DICT has a case limit. */
-static void
-add_case_limit_trns (struct dataset *ds)
-{
-  casenumber case_limit = dict_get_case_limit (ds->dict);
-  if (case_limit != 0)
-    {
-      casenumber *cases_remaining = xmalloc (sizeof *cases_remaining);
-      *cases_remaining = case_limit;
-      add_transformation (ds, case_limit_trns_proc, case_limit_trns_free,
-                          cases_remaining);
-      dict_set_case_limit (ds->dict, 0);
-    }
-}
-
 /* Limits the maximum number of cases processed to
    *CASES_REMAINING. */
-static int
+static enum trns_result
 case_limit_trns_proc (void *cases_remaining_,
                       struct ccase **c UNUSED, casenumber case_nr UNUSED)
 {
@@ -919,24 +876,32 @@ case_limit_trns_free (void *cases_remaining_)
   free (cases_remaining);
   return true;
 }
-
-static trns_proc_func filter_trns_proc;
 
-/* Adds a temporary transformation to filter data according to
-   the variable specified on FILTER, if any. */
+/* Adds a transformation that limits the number of cases that may
+   pass through, if DS->DICT has a case limit. */
 static void
-add_filter_trns (struct dataset *ds)
+add_case_limit_trns (struct dataset *ds)
 {
-  struct variable *filter_var = dict_get_filter (ds->dict);
-  if (filter_var != NULL)
+  casenumber case_limit = dict_get_case_limit (ds->dict);
+  if (case_limit != 0)
     {
-      proc_start_temporary_transformations (ds);
-      add_transformation (ds, filter_trns_proc, NULL, filter_var);
+      casenumber *cases_remaining = xmalloc (sizeof *cases_remaining);
+      *cases_remaining = case_limit;
+
+      static const struct trns_class trns_class = {
+        .name = "case limit",
+        .execute = case_limit_trns_proc,
+        .destroy = case_limit_trns_free,
+      };
+      add_transformation (ds, &trns_class, cases_remaining);
+
+      dict_set_case_limit (ds->dict, 0);
     }
 }
 
+
 /* FILTER transformation. */
-static int
+static enum trns_result
 filter_trns_proc (void *filter_var_,
                   struct ccase **c, casenumber case_nr UNUSED)
 
@@ -947,6 +912,23 @@ filter_trns_proc (void *filter_var_,
           ? TRNS_CONTINUE : TRNS_DROP_CASE);
 }
 
+/* Adds a temporary transformation to filter data according to
+   the variable specified on FILTER, if any. */
+static void
+add_filter_trns (struct dataset *ds)
+{
+  struct variable *filter_var = dict_get_filter (ds->dict);
+  if (filter_var != NULL)
+    {
+      proc_start_temporary_transformations (ds);
+
+      static const struct trns_class trns_class = {
+        .name = "FILTER",
+        .execute = filter_trns_proc,
+      };
+      add_transformation (ds, &trns_class, filter_var);
+    }
+}
 
 void
 dataset_need_lag (struct dataset *ds, int n_before)

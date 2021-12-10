@@ -65,34 +65,61 @@ AT_CHECK([pspp do-if.sps], [0], [ignore])
 AT_CHECK([cat do-if.out], [0], [expout])
 AT_CLEANUP
 
-AT_SETUP([unpaired END IF crash])
+AT_SETUP([DO IF - negative])
 AT_DATA([do-if.sps], [dnl
 DATA LIST LIST NOTABLE/a b c.
+BEGIN DATA.
+1 2 3
+END DATA.
+
 END IF.
+ELSE.
+ELSE IF 1.
+
+DO IF 0.
+ELSE.
+ELSE.
+END IF.
+
+DO IF 0.
+ELSE.
+ELSE IF 0.
+END IF.
+
+DO IF !.
+END IF.
+
+DO IF 0.
 ])
 AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
-do-if.sps:2: error: END IF: This command cannot appear outside DO IF...END IF.
-])
-AT_CLEANUP
+do-if.sps:6: error: END IF: This command cannot appear outside DO IF...END IF.
 
-
-
-AT_SETUP([ELSE without DO IF])
-AT_DATA([do-if.sps], [dnl
-DATA lIST NOTABLE LIST /QUA BRA *.
-BEGIN DATA
-4  1
-6  3
-END DATA
-
-ELSE QUA 'A string'.
-
-EXECUTE.
-])
-AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
 do-if.sps:7: error: ELSE: This command cannot appear outside DO IF...END IF.
 
-do-if.sps:9: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+do-if.sps:8: error: ELSE IF: This command cannot appear outside DO IF...END IF.
+
+do-if.sps:12: error: DO IF: Only one ELSE is allowed within DO IF...END IF.
+
+"do-if.sps:11.1-11.5: note: DO IF: This is the location of the previous ELSE clause.
+   11 | ELSE.
+      | ^~~~~"
+
+"do-if.sps:10.1-10.8: note: DO IF: This is the location of the DO IF command.
+   10 | DO IF 0.
+      | ^~~~~~~~"
+
+do-if.sps:17: error: DO IF: ELSE IF is not allowed following ELSE within DO IF...END IF.
+
+"do-if.sps:16.1-16.5: note: DO IF: This is the location of the previous ELSE clause.
+   16 | ELSE.
+      | ^~~~~"
+
+"do-if.sps:15.1-15.8: note: DO IF: This is the location of the DO IF command.
+   15 | DO IF 0.
+      | ^~~~~~~~"
+
+do-if.sps:20.7: error: DO IF: Syntax error at `!'.
+
+error: DO IF: Syntax error at end of input.
 ])
 AT_CLEANUP
-

@@ -24,12 +24,10 @@
 #include "language/command.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
-
-static int trns_fail (void *x, struct ccase **c, casenumber n);
 
 /* A transformation which is guaranteed to fail. */
 
-static int
+static enum trns_result
 trns_fail (void *x UNUSED, struct ccase **c UNUSED,
 	   casenumber n UNUSED)
 {
@@ -40,6 +38,10 @@ trns_fail (void *x UNUSED, struct ccase **c UNUSED,
 int
 cmd_debug_xform_fail (struct lexer *lexer UNUSED, struct dataset *ds)
 {
-  add_transformation (ds, trns_fail, NULL, NULL);
+  static const struct trns_class fail_trns_class = {
+    .name = "DEBUG XFORM FAIL",
+    .execute = trns_fail
+  };
+  add_transformation (ds, &fail_trns_class, NULL);
   return CMD_SUCCESS;
 }

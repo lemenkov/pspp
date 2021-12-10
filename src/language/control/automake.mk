@@ -18,8 +18,6 @@
 
 
 language_control_sources = \
-	src/language/control/control-stack.c \
-	src/language/control/control-stack.h \
 	src/language/control/define.c \
 	src/language/control/do-if.c \
 	src/language/control/loop.c \

@@ -40,8 +40,7 @@ struct select_if_trns
     struct expression *e;	/* Test expression. */
   };
 
-static trns_proc_func select_if_proc;
-static trns_free_func select_if_free;
+static const struct trns_class select_if_trns_class;
 
 /* Parses the SELECT IF transformation. */
 int
@@ -50,7 +49,7 @@ cmd_select_if (struct lexer *lexer, struct dataset *ds)
   struct expression *e;
   struct select_if_trns *t;
 
-  e = expr_parse_bool (lexer, NULL, ds);
+  e = expr_parse_bool (lexer, ds);
   if (!e)
     return CMD_CASCADING_FAILURE;
 
@@ -63,13 +62,13 @@ cmd_select_if (struct lexer *lexer, struct dataset *ds)
 
   t = xmalloc (sizeof *t);
   t->e = e;
-  add_transformation (ds, select_if_proc, select_if_free, t);
+  add_transformation (ds, &select_if_trns_class, t);
 
   return CMD_SUCCESS;
 }
 
 /* Performs the SELECT IF transformation T on case C. */
-static int
+static enum trns_result
 select_if_proc (void *t_, struct ccase **c,
                 casenumber case_num)
 {
@@ -87,6 +86,12 @@ select_if_free (void *t_)
   free (t);
   return true;
 }
+
+static const struct trns_class select_if_trns_class = {
+  .name = "SELECT IF",
+  .execute = select_if_proc,
+  .destroy = select_if_free,
+};
 
 /* Parses the FILTER command. */
 int

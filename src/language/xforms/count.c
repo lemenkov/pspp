@@ -88,13 +88,13 @@ struct count_trns
     struct pool *pool;
   };
 
-static trns_proc_func count_trns_proc;
-static trns_free_func count_trns_free;
+static const struct trns_class count_trns_class;
 
 static bool parse_numeric_criteria (struct lexer *, struct pool *, struct criteria *);
 static bool parse_string_criteria (struct lexer *, struct pool *,
                                    struct criteria *,
                                    const char *dict_encoding);
+static bool count_trns_free (void *trns_);
 
 int
 cmd_count (struct lexer *lexer, struct dataset *ds)
@@ -185,7 +185,7 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
           dv->var = dict_create_var_assert (dataset_dict (ds), dv->name, 0);
       }
 
-  add_transformation (ds, count_trns_proc, count_trns_free, trns);
+  add_transformation (ds, &count_trns_class, trns);
   return CMD_SUCCESS;
 
 fail:
@@ -337,7 +337,7 @@ count_string (struct criteria *crit, const struct ccase *c)
 }
 
 /* Performs the COUNT transformation T on case C. */
-static int
+static enum trns_result
 count_trns_proc (void *trns_, struct ccase **c,
                  casenumber case_num UNUSED)
 {
@@ -369,3 +369,9 @@ count_trns_free (void *trns_)
   pool_destroy (trns->pool);
   return true;
 }
+
+static const struct trns_class count_trns_class = {
+  .name = "COUNT",
+  .execute = count_trns_proc,
+  .destroy = count_trns_free,
+};

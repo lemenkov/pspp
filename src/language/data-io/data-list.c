@@ -67,8 +67,7 @@ static bool parse_fixed (struct lexer *, struct dictionary *,
 static bool parse_free (struct lexer *, struct dictionary *,
                         struct pool *, struct data_parser *);
 
-static trns_free_func data_list_trns_free;
-static trns_proc_func data_list_trns_proc;
+static const struct trns_class data_list_trns_class;
 
 int
 cmd_data_list (struct lexer *lexer, struct dataset *ds)
@@ -295,7 +294,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
       trns->parser = parser;
       trns->reader = reader;
       trns->end = end;
-      add_transformation (ds, data_list_trns_proc, data_list_trns_free, trns);
+      add_transformation (ds, &data_list_trns_class, trns);
     }
   else
     data_parser_make_active_file (parser, ds, reader, dict, NULL, NULL);
@@ -303,7 +302,9 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
   fh_unref (fh);
   free (encoding);
 
-  return CMD_DATA_LIST;
+  data_list_seen ();
+
+  return CMD_SUCCESS;
 
  error:
   data_parser_destroy (parser);
@@ -511,11 +512,11 @@ data_list_trns_free (void *trns_)
 }
 
 /* Handle DATA LIST transformation TRNS, parsing data into *C. */
-static int
+static enum trns_result
 data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
 {
   struct data_list_trns *trns = trns_;
-  int retval;
+  enum trns_result retval;
 
   *c = case_unshare (*c);
   if (data_parser_parse (trns->parser, trns->reader, *c))
@@ -544,4 +545,9 @@ data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
 
   return retval;
 }
-
+
+static const struct trns_class data_list_trns_class = {
+  .name = "DATA LIST",
+  .execute = data_list_trns_proc,
+  .destroy = data_list_trns_free,
+};

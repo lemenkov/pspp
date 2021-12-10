@@ -18,12 +18,10 @@
 
 #include <stdlib.h>
 
-#include "data/case.h"
 #include "data/dataset.h"
 #include "data/transformations.h"
-#include "data/value.h"
 #include "language/command.h"
-#include "language/control/control-stack.h"
+#include "language/data-io/inpt-pgm.h"
 #include "language/expressions/public.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/compiler.h"
@@ -35,265 +33,208 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* DO IF, ELSE IF, and ELSE are translated as a single
-   transformation that evaluates each condition and jumps to the
-   start of the appropriate block of transformations.  Each block
-   of transformations (except for the last) ends with a
-   transformation that jumps past the remaining blocks.
-
-   So, the following code:
-
-       DO IF a.
-       ...block 1...
-       ELSE IF b.
-       ...block 2...
-       ELSE.
-       ...block 3...
-       END IF.
-
-   is effectively translated like this:
-
-       IF a GOTO 1, IF b GOTO 2, ELSE GOTO 3.
-       1: ...block 1...
-          GOTO 4
-       2: ...block 2...
-          GOTO 4
-       3: ...block 3...
-       4:
-
-*/
-
 /* A conditional clause. */
 struct clause
   {
+    struct msg_location *location;
     struct expression *condition; /* Test expression; NULL for ELSE clause. */
-    int target_index;           /* Transformation to jump to if true. */
+    struct trns_chain xforms;
   };
 
 /* DO IF transformation. */
 struct do_if_trns
   {
-    struct dataset *ds;         /* The dataset */
     struct clause *clauses;     /* Clauses. */
     size_t n_clauses;           /* Number of clauses. */
-    int past_END_IF_index;      /* Transformation just past last clause. */
+
+    const struct trns_chain *resume;
+    size_t ofs;
   };
 
-static const struct ctl_class do_if_class;
+static const struct trns_class do_if_trns_class;
 
-static int parse_clause (struct lexer *, struct do_if_trns *, struct dataset *ds);
-static void add_clause (struct do_if_trns *, struct expression *condition);
-static void add_else (struct do_if_trns *);
+static void
+start_clause (struct lexer *lexer, struct dataset *ds,
+              bool condition, struct do_if_trns *do_if,
+              size_t *allocated_clauses, bool *ok)
+{
+  if (*ok && do_if->n_clauses > 0
+      && !do_if->clauses[do_if->n_clauses - 1].condition)
+    {
+      if (condition)
+        msg (SE, _("ELSE IF is not allowed following ELSE "
+                   "within DO IF...END IF."));
+      else
+        msg (SE, _("Only one ELSE is allowed within DO IF...END IF."));
 
-static bool has_else (struct do_if_trns *);
-static bool must_not_have_else (struct do_if_trns *);
-static void close_do_if (void *do_if);
+      msg_at (SN, do_if->clauses[do_if->n_clauses - 1].location,
+              _("This is the location of the previous ELSE clause."));
 
-static trns_finalize_func do_if_finalize_func;
-static trns_proc_func do_if_trns_proc, break_trns_proc;
-static trns_free_func do_if_trns_free;
+      msg_at (SN, do_if->clauses[0].location,
+              _("This is the location of the DO IF command."));
+
+      *ok = false;
+    }
+
+  if (do_if->n_clauses >= *allocated_clauses)
+    do_if->clauses = x2nrealloc (do_if->clauses, allocated_clauses,
+                                 sizeof *do_if->clauses);
+  struct clause *clause = &do_if->clauses[do_if->n_clauses++];
+
+  *clause = (struct clause) { .location = NULL };
+  if (condition)
+    {
+      clause->condition = expr_parse_bool (lexer, ds);
+      if (!clause->condition)
+        lex_discard_rest_of_command (lexer);
+    }
+  clause->location = lex_ofs_location (lexer, 0, lex_ofs (lexer));
+
+  lex_end_of_command (lexer);
+  lex_get (lexer);
+
+  proc_push_transformations (ds);
+}
+
+static void
+finish_clause (struct dataset *ds, struct do_if_trns *do_if)
+{
+  struct clause *clause = &do_if->clauses[do_if->n_clauses - 1];
+  proc_pop_transformations (ds, &clause->xforms);
+}
 
 /* Parse DO IF. */
 int
 cmd_do_if (struct lexer *lexer, struct dataset *ds)
 {
   struct do_if_trns *do_if = xmalloc (sizeof *do_if);
-  do_if->clauses = NULL;
-  do_if->n_clauses = 0;
-  do_if->ds = ds;
+  *do_if = (struct do_if_trns) { .n_clauses = 0 };
 
-  ctl_stack_push (&do_if_class, do_if);
-  add_transformation_with_finalizer (ds, do_if_finalize_func,
-                                     do_if_trns_proc, do_if_trns_free, do_if);
+  size_t allocated_clauses = 0;
+  bool ok = true;
 
-  return parse_clause (lexer, do_if, ds);
-}
-
-/* Parse ELSE IF. */
-int
-cmd_else_if (struct lexer *lexer, struct dataset *ds)
-{
-  struct do_if_trns *do_if = ctl_stack_top (&do_if_class);
-  if (do_if == NULL || !must_not_have_else (do_if))
-    return CMD_CASCADING_FAILURE;
-  return parse_clause (lexer, do_if, ds);
-}
-
-/* Parse ELSE. */
-int
-cmd_else (struct lexer *lexer UNUSED, struct dataset *ds)
-{
-  struct do_if_trns *do_if = ctl_stack_top (&do_if_class);
-
-  if (do_if == NULL || !must_not_have_else (do_if))
-    return CMD_CASCADING_FAILURE;
-
-  assert (ds == do_if->ds);
-
-  add_else (do_if);
-  return CMD_SUCCESS;
-}
-
-/* Parse END IF. */
-int
-cmd_end_if (struct lexer *lexer UNUSED, struct dataset *ds)
-{
-  struct do_if_trns *do_if = ctl_stack_top (&do_if_class);
-
-  if (do_if == NULL)
-    return CMD_CASCADING_FAILURE;
-
-  assert (ds == do_if->ds);
-  ctl_stack_pop (do_if);
-
-  return CMD_SUCCESS;
-}
-
-/* Closes out DO_IF, by adding a sentinel ELSE clause if
-   necessary and setting past_END_IF_index. */
-static void
-close_do_if (void *do_if_)
-{
-  struct do_if_trns *do_if = do_if_;
-
-  if (!has_else (do_if))
-    add_else (do_if);
-  do_if->past_END_IF_index = next_transformation (do_if->ds);
-}
-
-/* Adds an ELSE clause to DO_IF pointing to the next
-   transformation. */
-static void
-add_else (struct do_if_trns *do_if)
-{
-  assert (!has_else (do_if));
-  add_clause (do_if, NULL);
-}
-
-/* Returns true if DO_IF does not yet have an ELSE clause.
-   Reports an error and returns false if it does already. */
-static bool
-must_not_have_else (struct do_if_trns *do_if)
-{
-  if (has_else (do_if))
+  start_clause (lexer, ds, true, do_if, &allocated_clauses, &ok);
+  while (!lex_match_phrase (lexer, "END IF"))
     {
-      msg (SE, _("This command may not follow %s in %s ... %s."), "ELSE", "DO IF", "END IF");
-      return false;
-    }
-  else
-    return true;
-}
-
-/* Returns true if DO_IF already has an ELSE clause,
-   false otherwise. */
-static bool
-has_else (struct do_if_trns *do_if)
-{
-  return (do_if->n_clauses != 0
-          && do_if->clauses[do_if->n_clauses - 1].condition == NULL);
-}
-
-/* Parses a DO IF or ELSE IF expression and appends the
-   corresponding clause to DO_IF.  Checks for end of command and
-   returns a command return code. */
-static int
-parse_clause (struct lexer *lexer, struct do_if_trns *do_if, struct dataset *ds)
-{
-  struct expression *condition;
-
-  condition = expr_parse_bool (lexer, NULL, ds);
-  if (condition == NULL)
-    return CMD_CASCADING_FAILURE;
-
-  add_clause (do_if, condition);
-
-  return CMD_SUCCESS;
-}
-
-/* Adds a clause to DO_IF that tests for the given CONDITION and,
-   if true, jumps to the set of transformations produced by
-   following commands. */
-static void
-add_clause (struct do_if_trns *do_if, struct expression *condition)
-{
-  struct clause *clause;
-
-  if (do_if->n_clauses > 0)
-    add_transformation (do_if->ds, break_trns_proc, NULL, do_if);
-
-  do_if->clauses = xnrealloc (do_if->clauses,
-                              do_if->n_clauses + 1, sizeof *do_if->clauses);
-  clause = &do_if->clauses[do_if->n_clauses++];
-  clause->condition = condition;
-  clause->target_index = next_transformation (do_if->ds);
-}
-
-/* Finalizes DO IF by clearing the control stack, thus ensuring
-   that all open DO IFs are closed. */
-static void
-do_if_finalize_func (void *do_if_ UNUSED)
-{
-  /* This will be called multiple times if multiple DO IFs were
-     executed, which is slightly unclean, but at least it's
-     idempotent. */
-  ctl_stack_clear ();
-}
-
-/* DO IF transformation procedure.
-   Checks each clause and jumps to the appropriate
-   transformation. */
-static int
-do_if_trns_proc (void *do_if_, struct ccase **c, casenumber case_num UNUSED)
-{
-  struct do_if_trns *do_if = do_if_;
-  struct clause *clause;
-
-  for (clause = do_if->clauses; clause < do_if->clauses + do_if->n_clauses;
-       clause++)
-    {
-      if (clause->condition != NULL)
+      if (lex_token (lexer) == T_STOP)
         {
-          double boolean = expr_evaluate_num (clause->condition, *c, case_num);
-          if (boolean == 1.0)
-            return clause->target_index;
-          else if (boolean == SYSMIS)
-            return do_if->past_END_IF_index;
+          lex_error (lexer, NULL);
+          break;
+        }
+      else if (lex_match_phrase (lexer, "ELSE IF"))
+        {
+          finish_clause (ds, do_if);
+          start_clause (lexer, ds, true, do_if, &allocated_clauses, &ok);
+        }
+      else if (lex_match_id (lexer, "ELSE"))
+        {
+          finish_clause (ds, do_if);
+          start_clause (lexer, ds, false, do_if, &allocated_clauses, &ok);
         }
       else
-        return clause->target_index;
+        cmd_parse_in_state (lexer, ds,
+                            (in_input_program ()
+                             ? CMD_STATE_NESTED_INPUT_PROGRAM
+                             : CMD_STATE_NESTED_DATA));
     }
-  return do_if->past_END_IF_index;
+  finish_clause (ds, do_if);
+
+  add_transformation (ds, &do_if_trns_class, do_if);
+
+  return ok ? CMD_SUCCESS : CMD_FAILURE;
 }
 
-/* Frees a DO IF transformation. */
+int
+cmd_inside_do_if (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+{
+  msg (SE, _("This command cannot appear outside DO IF...END IF."));
+  return CMD_FAILURE;
+}
+
+static const struct trns_chain *
+do_if_find_clause (const struct do_if_trns *do_if,
+                   struct ccase *c, casenumber case_num)
+{
+  for (size_t i = 0; i < do_if->n_clauses; i++)
+    {
+      const struct clause *clause = &do_if->clauses[i];
+      if (!clause->condition)
+        return &clause->xforms;
+
+      double boolean = expr_evaluate_num (clause->condition, c, case_num);
+      if (boolean != 0.0)
+        return boolean == SYSMIS ? NULL : &clause->xforms;
+    }
+  return NULL;
+}
+
+static enum trns_result
+do_if_trns_proc (void *do_if_, struct ccase **c, casenumber case_num)
+{
+  struct do_if_trns *do_if = do_if_;
+
+  const struct trns_chain *chain;
+  size_t start;
+  if (do_if->resume)
+    {
+      chain = do_if->resume;
+      start = do_if->ofs;
+      do_if->resume = NULL;
+      do_if->ofs = 0;
+    }
+  else
+    {
+      chain = do_if_find_clause (do_if, *c, case_num);
+      if (!chain)
+        return TRNS_CONTINUE;
+      start = 0;
+    }
+
+  for (size_t i = start; i < chain->n; i++)
+    {
+      const struct transformation *trns = &chain->xforms[i];
+      enum trns_result r = trns->class->execute (trns->aux, c, case_num);
+      switch (r)
+        {
+        case TRNS_CONTINUE:
+          break;
+
+        case TRNS_BREAK:
+        case TRNS_DROP_CASE:
+        case TRNS_ERROR:
+        case TRNS_END_FILE:
+          return r;
+
+        case TRNS_END_CASE:
+          do_if->resume = chain;
+          do_if->ofs = i;
+          return r;
+        }
+    }
+  return TRNS_CONTINUE;
+}
+
 static bool
 do_if_trns_free (void *do_if_)
 {
   struct do_if_trns *do_if = do_if_;
-  struct clause *clause;
 
-  for (clause = do_if->clauses; clause < do_if->clauses + do_if->n_clauses;
-       clause++)
-    expr_free (clause->condition);
+  for (size_t i = 0; i < do_if->n_clauses; i++)
+    {
+      struct clause *clause = &do_if->clauses[i];
+
+      msg_location_destroy (clause->location);
+      expr_free (clause->condition);
+
+      trns_chain_uninit (&clause->xforms);
+    }
   free (do_if->clauses);
   free (do_if);
   return true;
 }
 
-/* Breaks out of a DO IF construct. */
-static int
-break_trns_proc (void *do_if_, struct ccase **c UNUSED,
-                 casenumber case_num UNUSED)
-{
-  struct do_if_trns *do_if = do_if_;
-
-  return do_if->past_END_IF_index;
-}
-
-/* DO IF control structure class definition. */
-static const struct ctl_class do_if_class =
-  {
-    "DO IF",
-    "END IF",
-    close_do_if,
-  };
+static const struct trns_class do_if_trns_class = {
+  .name = "DO IF",
+  .execute = do_if_trns_proc,
+  .destroy = do_if_trns_free,
+};

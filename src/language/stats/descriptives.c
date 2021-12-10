@@ -615,7 +615,7 @@ descriptives_set_all_sysmis_zscores (const struct dsc_trns *t, struct ccase *c)
    analyis. 4) any of the variables in the original analysis were missing
    (either system or user-missing values that weren't included).
 */
-static int
+static enum trns_result
 descriptives_trns_proc (void *trns_, struct ccase **c,
                         casenumber case_idx UNUSED)
 {
@@ -711,6 +711,12 @@ descriptives_trns_free (void *trns_)
   return ok;
 }
 
+static const struct trns_class descriptives_trns_class = {
+  .name = "DESCRIPTIVES (Z scores)",
+  .execute = descriptives_trns_proc,
+  .destroy = descriptives_trns_free,
+};
+
 /* Sets up a transformation to calculate Z scores. */
 static void
 setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
@@ -766,8 +772,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
 	}
     }
 
-  add_transformation (ds,
-		      descriptives_trns_proc, descriptives_trns_free, t);
+  add_transformation (ds, &descriptives_trns_class, t);
 }
 
 /* Statistical calculation. */

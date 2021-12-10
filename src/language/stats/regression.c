@@ -159,7 +159,7 @@ save_trans_free (void *aux)
   return true;
 }
 
-static int
+static enum trns_result
 save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 {
   struct save_trans_data *save_trans_data = aux;
@@ -190,7 +190,6 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 
   return TRNS_CONTINUE;
 }
-
 
 int
 cmd_regression (struct lexer *lexer, struct dataset *ds)
@@ -450,7 +449,12 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
       memcpy (save_trans_data->ws, &workspace, sizeof (workspace));
       save_trans_data->n_dep_vars = regression.n_dep_vars;
 
-      add_transformation (ds, save_trans_func, save_trans_free, save_trans_data);
+      static const struct trns_class trns_class = {
+        .name = "REGRESSION",
+        .execute = save_trans_func,
+        .destroy = save_trans_free,
+      };
+      add_transformation (ds, &trns_class, save_trans_data);
     }
 
 

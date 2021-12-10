@@ -85,8 +85,8 @@ static struct expression *parse_rvalue (struct lexer *lexer,
 					struct dataset *);
 
 static struct compute_trns *compute_trns_create (void);
-static trns_proc_func *get_proc_func (const struct lvalue *);
-static trns_free_func compute_trns_free;
+static bool compute_trns_free (void *compute_);
+static const struct trns_class *get_trns_class (const struct lvalue *);
 
 /* COMPUTE. */
 
@@ -109,7 +109,7 @@ cmd_compute (struct lexer *lexer, struct dataset *ds)
   if (compute->rvalue == NULL)
     goto fail;
 
-  add_transformation (ds, get_proc_func (lvalue), compute_trns_free, compute);
+  add_transformation (ds, get_trns_class (lvalue), compute);
 
   lvalue_finalize (lvalue, compute, dict);
 
@@ -124,7 +124,7 @@ cmd_compute (struct lexer *lexer, struct dataset *ds)
 /* Transformation functions. */
 
 /* Handle COMPUTE or IF with numeric target variable. */
-static int
+static enum trns_result
 compute_num (void *compute_, struct ccase **c, casenumber case_num)
 {
   struct compute_trns *compute = compute_;
@@ -142,7 +142,7 @@ compute_num (void *compute_, struct ccase **c, casenumber case_num)
 
 /* Handle COMPUTE or IF with numeric vector element target
    variable. */
-static int
+static enum trns_result
 compute_num_vec (void *compute_, struct ccase **c, casenumber case_num)
 {
   struct compute_trns *compute = compute_;
@@ -178,7 +178,7 @@ compute_num_vec (void *compute_, struct ccase **c, casenumber case_num)
 }
 
 /* Handle COMPUTE or IF with string target variable. */
-static int
+static enum trns_result
 compute_str (void *compute_, struct ccase **c, casenumber case_num)
 {
   struct compute_trns *compute = compute_;
@@ -198,7 +198,7 @@ compute_str (void *compute_, struct ccase **c, casenumber case_num)
 
 /* Handle COMPUTE or IF with string vector element target
    variable. */
-static int
+static enum trns_result
 compute_str_vec (void *compute_, struct ccase **c, casenumber case_num)
 {
   struct compute_trns *compute = compute_;
@@ -249,7 +249,7 @@ cmd_if (struct lexer *lexer, struct dataset *ds)
   compute = compute_trns_create ();
 
   /* Test expression. */
-  compute->test = expr_parse_bool (lexer, NULL, ds);
+  compute->test = expr_parse_bool (lexer, ds);
   if (compute->test == NULL)
     goto fail;
 
@@ -265,7 +265,7 @@ cmd_if (struct lexer *lexer, struct dataset *ds)
   if (compute->rvalue == NULL)
     goto fail;
 
-  add_transformation (ds, get_proc_func (lvalue), compute_trns_free, compute);
+  add_transformation (ds, get_trns_class (lvalue), compute);
 
   lvalue_finalize (lvalue, compute, dict);
 
@@ -279,15 +279,35 @@ cmd_if (struct lexer *lexer, struct dataset *ds)
 
 /* Code common to COMPUTE and IF. */
 
-static trns_proc_func *
-get_proc_func (const struct lvalue *lvalue)
+static const struct trns_class *
+get_trns_class (const struct lvalue *lvalue)
 {
+  static const struct trns_class classes[2][2] = {
+    [false][false] = {
+      .name = "COMPUTE",
+      .execute = compute_str,
+      .destroy = compute_trns_free
+    },
+    [false][true] = {
+      .name = "COMPUTE",
+      .execute = compute_str_vec,
+      .destroy = compute_trns_free
+    },
+    [true][false] = {
+      .name = "COMPUTE",
+      .execute = compute_num,
+      .destroy = compute_trns_free
+    },
+    [true][true] = {
+      .name = "COMPUTE",
+      .execute = compute_num_vec,
+      .destroy = compute_trns_free
+    },
+  };
+
   bool is_numeric = lvalue_get_type (lvalue) == VAL_NUMERIC;
   bool is_vector = lvalue_is_vector (lvalue);
-
-  return (is_numeric
-          ? (is_vector ? compute_num_vec : compute_num)
-          : (is_vector ? compute_str_vec : compute_str));
+  return &classes[is_numeric][is_vector];
 }
 
 /* Parses and returns an rvalue expression of the same type as
@@ -297,9 +317,9 @@ parse_rvalue (struct lexer *lexer,
 	      const struct lvalue *lvalue, struct dataset *ds)
 {
   if (lvalue->is_new_variable)
-    return expr_parse_new_variable (lexer, NULL, ds, var_get_name (lvalue->variable));
+    return expr_parse_new_variable (lexer, ds, var_get_name (lvalue->variable));
   else
-    return expr_parse (lexer, NULL, ds, lvalue_get_type (lvalue));
+    return expr_parse (lexer, ds, lvalue_get_type (lvalue));
 }
 
 /* Returns a new struct compute_trns after initializing its fields. */
@@ -362,7 +382,7 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
       lex_get (lexer);
       if (!lex_force_match (lexer, T_LPAREN))
 	goto lossage;
-      lvalue->element = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
+      lvalue->element = expr_parse (lexer, ds, VAL_NUMERIC);
       if (lvalue->element == NULL)
         goto lossage;
       if (!lex_force_match (lexer, T_RPAREN))

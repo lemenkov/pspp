@@ -128,8 +128,9 @@ static void set_map_out_str (struct map_out *, struct pool *,
 static bool enlarge_dst_widths (struct recode_trns *);
 static void create_dst_vars (struct recode_trns *, struct dictionary *);
 
-static trns_proc_func recode_trns_proc;
-static trns_free_func recode_trns_free;
+static bool recode_trns_free (void *trns_);
+
+static const struct trns_class recode_trns_class;
 
 /* Parser. */
 
@@ -173,8 +174,7 @@ cmd_recode (struct lexer *lexer, struct dataset *ds)
 	create_dst_vars (trns, dict);
 
       /* Done. */
-      add_transformation (ds,
-			  recode_trns_proc, recode_trns_free, trns);
+      add_transformation (ds, &recode_trns_class, trns);
     }
   while (lex_match (lexer, T_SLASH));
 
@@ -690,7 +690,7 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
 }
 
 /* Performs RECODE transformation. */
-static int
+static enum trns_result
 recode_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
 {
   struct recode_trns *trns = trns_;
@@ -747,3 +747,9 @@ recode_trns_free (void *trns_)
   pool_destroy (trns->pool);
   return true;
 }
+
+static const struct trns_class recode_trns_class = {
+  .name = "RECODE",
+  .execute = recode_trns_proc,
+  .destroy = recode_trns_free,
+};

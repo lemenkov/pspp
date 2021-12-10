@@ -68,12 +68,9 @@ static union any_node *allocate_unary_variable (struct expression *,
 /* Parses an expression of the given TYPE.  If DS is nonnull then variables and
    vectors within it may be referenced within the expression; otherwise, the
    expression must not reference any variables or vectors.  Returns the new
-   expression if successful or a null pointer otherwise.  If POOL is nonnull,
-   then destroying POOL will free the expression; otherwise, the caller must
-   eventually free it with expr_free(). */
+   expression if successful or a null pointer otherwise. */
 struct expression *
-expr_parse (struct lexer *lexer, struct pool *pool, struct dataset *ds,
-            enum val_type type)
+expr_parse (struct lexer *lexer, struct dataset *ds, enum val_type type)
 {
   assert (val_type_is_valid (type));
 
@@ -85,15 +82,12 @@ expr_parse (struct lexer *lexer, struct pool *pool, struct dataset *ds,
       return NULL;
     }
 
-  e = finish_expression (expr_optimize (n, e), e);
-  if (pool)
-    pool_add_subpool (pool, e->expr_pool);
-  return e;
+  return finish_expression (expr_optimize (n, e), e);
 }
 
 /* Parses a boolean expression, otherwise similar to expr_parse(). */
 struct expression *
-expr_parse_bool (struct lexer *lexer, struct pool *pool, struct dataset *ds)
+expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 {
   struct expression *e = expr_create (ds);
   union any_node *n = parse_or (lexer, e);
@@ -116,17 +110,14 @@ expr_parse_bool (struct lexer *lexer, struct pool *pool, struct dataset *ds)
       return NULL;
     }
 
-  e = finish_expression (expr_optimize (n, e), e);
-  if (pool)
-    pool_add_subpool (pool, e->expr_pool);
-  return e;
+  return finish_expression (expr_optimize (n, e), e);
 }
 
 /* Parses a numeric expression that is intended to be assigned to newly created
    variable NEW_VAR_NAME.  (This allows for a better error message if the
    expression is not numeric.)  Otherwise similar to expr_parse(). */
 struct expression *
-expr_parse_new_variable (struct lexer *lexer, struct pool *pool, struct dataset *ds,
+expr_parse_new_variable (struct lexer *lexer, struct dataset *ds,
                          const char *new_var_name)
 {
   struct expression *e = expr_create (ds);
@@ -149,10 +140,7 @@ expr_parse_new_variable (struct lexer *lexer, struct pool *pool, struct dataset 
       return NULL;
     }
 
-  e = finish_expression (expr_optimize (n, e), e);
-  if (pool)
-    pool_add_subpool (pool, e->expr_pool);
-  return e;
+  return finish_expression (expr_optimize (n, e), e);
 }
 
 /* Free expression E. */

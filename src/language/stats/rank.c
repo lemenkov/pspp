@@ -912,7 +912,7 @@ advance_ranking (struct rank_trns_input_var *iv)
   iv->current = casereader_read (iv->input);
 }
 
-static int
+static enum trns_result
 rank_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
 {
   struct rank_trns *trns = trns_;
@@ -960,6 +960,12 @@ rank_trns_free (void *trns_)
 
   return true;
 }
+
+static const struct trns_class rank_trns_class = {
+  .name = "RANK",
+  .execute = rank_trns_proc,
+  .destroy = rank_trns_free,
+};
 
 static bool
 rank_cmd (struct dataset *ds, const struct rank *cmd)
@@ -1116,7 +1122,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
     }
   free (outputs);
 
-  add_transformation (ds, rank_trns_proc, rank_trns_free, trns);
+  add_transformation (ds, &rank_trns_class, trns);
 
   /* Delete our sort key, which we don't need anymore. */
   dict_delete_var (d, order_var);

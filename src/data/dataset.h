@@ -26,6 +26,7 @@ struct casereader;
 struct dataset;
 struct dictionary;
 struct session;
+struct transformation;
 
 struct dataset *dataset_create (struct session *, const char *);
 struct dataset *dataset_clone (struct dataset *, const char *);
@@ -78,16 +79,11 @@ void dataset_set_display (struct dataset *, enum dataset_display);
 
 /* Transformations. */
 
-void add_transformation (struct dataset *ds,
-			 trns_proc_func *, trns_free_func *, void *);
-void add_transformation_with_finalizer (struct dataset *ds,
-					trns_finalize_func *,
-                                        trns_proc_func *,
-                                        trns_free_func *, void *);
-size_t next_transformation (const struct dataset *ds);
+void add_transformation (struct dataset *ds, const struct trns_class *, void *);
 
 bool proc_cancel_all_transformations (struct dataset *ds);
-struct trns_chain *proc_capture_transformations (struct dataset *ds);
+void proc_push_transformations (struct dataset *);
+void proc_pop_transformations (struct dataset *, struct trns_chain *);
 
 void proc_start_temporary_transformations (struct dataset *ds);
 bool proc_in_temporary_transformations (const struct dataset *ds);

@@ -41,8 +41,7 @@ struct print_space_trns
     struct expression *expr;	/* Number of lines; NULL means 1. */
   };
 
-static trns_proc_func print_space_trns_proc;
-static trns_free_func print_space_trns_free;
+static const struct trns_class print_space_class;
 
 int
 cmd_print_space (struct lexer *lexer, struct dataset *ds)
@@ -77,7 +76,7 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
 
   if (lex_token (lexer) != T_ENDCMD)
     {
-      expr = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
+      expr = expr_parse (lexer, ds, VAL_NUMERIC);
       if (lex_token (lexer) != T_ENDCMD)
 	{
           lex_error (lexer, _("expecting end of command"));
@@ -100,8 +99,7 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
   trns->writer = writer;
   trns->expr = expr;
 
-  add_transformation (ds,
-		      print_space_trns_proc, print_space_trns_free, trns);
+  add_transformation (ds, &print_space_class, trns);
   fh_unref (handle);
   return CMD_SUCCESS;
 
@@ -112,7 +110,7 @@ error:
 }
 
 /* Executes a PRINT SPACE transformation. */
-static int
+static enum trns_result
 print_space_trns_proc (void *t_, struct ccase **c,
                        casenumber case_num UNUSED)
 {
@@ -154,3 +152,9 @@ print_space_trns_free (void *trns_)
   free (trns);
   return ok;
 }
+
+static const struct trns_class print_space_class = {
+  .name = "PRINT SPACE",
+  .execute = print_space_trns_proc,
+  .destroy = print_space_trns_free,
+};

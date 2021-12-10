@@ -25,182 +25,74 @@
 
 #include "gl/xalloc.h"
 
-/* A single transformation. */
-struct transformation
-  {
-    /* Offset to add to EXECUTE's return value, if it returns a
-       transformation index.  Normally 0 but set to the starting
-       index of a spliced chain after splicing. */
-    int idx_ofs;
-    trns_finalize_func *finalize;       /* Finalize proc. */
-    trns_proc_func *execute;            /* Executes the transformation. */
-    trns_free_func *free;               /* Garbage collector proc. */
-    void *aux;                          /* Auxiliary data. */
-  };
-
-/* A chain of transformations. */
-struct trns_chain
-  {
-    struct transformation *trns;        /* Array of transformations. */
-    size_t n_trns;                      /* Number of transformations. */
-    size_t allocated_trns;              /* Allocated capacity. */
-    bool finalized;                     /* Finalize functions called? */
-  };
-
-/* Allocates and returns a new transformation chain. */
-struct trns_chain *
-trns_chain_create (void)
-{
-  struct trns_chain *chain = xmalloc (sizeof *chain);
-  chain->trns = NULL;
-  chain->n_trns = 0;
-  chain->allocated_trns = 0;
-  chain->finalized = false;
-  return chain;
-}
-
-/* Finalizes all the un-finalized transformations in CHAIN.
-   Any given transformation is only finalized once. */
 void
-trns_chain_finalize (struct trns_chain *chain)
+trns_chain_init (struct trns_chain *chain)
 {
-  while (!chain->finalized)
-    {
-      size_t i;
-
-      chain->finalized = true;
-      for (i = 0; i < chain->n_trns; i++)
-        {
-          struct transformation *trns = &chain->trns[i];
-          trns_finalize_func *finalize = trns->finalize;
-
-          trns->finalize = NULL;
-          if (finalize != NULL)
-            finalize (trns->aux);
-        }
-    }
+  *chain = (struct trns_chain) TRNS_CHAIN_INIT;
 }
 
-/* Destroys CHAIN, finalizing it in the process if it has not
-   already been finalized. */
 bool
-trns_chain_destroy (struct trns_chain *chain)
+trns_chain_uninit (struct trns_chain *chain)
 {
   bool ok = true;
-
-  if (chain != NULL)
+  for (size_t i = 0; i < chain->n; i++)
     {
-      size_t i;
-
-      /* Needed to ensure that the control stack gets cleared. */
-      trns_chain_finalize (chain);
-
-      for (i = 0; i < chain->n_trns; i++)
-        {
-          struct transformation *trns = &chain->trns[i];
-          if (trns->free != NULL)
-            ok = trns->free (trns->aux) && ok;
-        }
-      free (chain->trns);
-      free (chain);
+      struct transformation *xform = &chain->xforms[i];
+      if (xform->class->destroy)
+        ok = xform->class->destroy (xform->aux) && ok;
     }
-
+  free (chain->xforms);
   return ok;
 }
 
-/* Returns true if CHAIN contains any transformations,
-   false otherwise. */
 bool
-trns_chain_is_empty (const struct trns_chain *chain)
+trns_chain_clear (struct trns_chain *chain)
 {
-  return chain->n_trns == 0;
+  bool ok = trns_chain_uninit (chain);
+  trns_chain_init (chain);
+  return ok;
 }
 
-/* Adds a transformation to CHAIN with finalize function
-   FINALIZE, execute function EXECUTE, free function FREE, and
-   auxiliary data AUX. */
 void
-trns_chain_append (struct trns_chain *chain, trns_finalize_func *finalize,
-                   trns_proc_func *execute, trns_free_func *free,
-                   void *aux)
+trns_chain_append (struct trns_chain *chain, const struct transformation *t)
 {
-  struct transformation *trns;
+  if (chain->n >= chain->allocated)
+    chain->xforms = x2nrealloc (chain->xforms, &chain->allocated,
+                                sizeof *chain->xforms);
 
-  chain->finalized = false;
-
-  if (chain->n_trns == chain->allocated_trns)
-    chain->trns = x2nrealloc (chain->trns, &chain->allocated_trns,
-                              sizeof *chain->trns);
-
-  trns = &chain->trns[chain->n_trns++];
-  trns->idx_ofs = 0;
-  trns->finalize = finalize;
-  trns->execute = execute;
-  trns->free = free;
-  trns->aux = aux;
+  chain->xforms[chain->n++] = *t;
 }
 
-/* Appends the transformations in SRC to those in DST,
-   and destroys SRC.
-   Both DST and SRC must already be finalized. */
 void
 trns_chain_splice (struct trns_chain *dst, struct trns_chain *src)
 {
-  size_t i;
-
-  assert (dst->finalized);
-  assert (src->finalized);
-
-  if (dst->n_trns + src->n_trns > dst->allocated_trns)
+  if (dst->n + src->n >= dst->allocated)
     {
-      dst->allocated_trns = dst->n_trns + src->n_trns;
-      dst->trns = xnrealloc (dst->trns, dst->allocated_trns, sizeof *dst->trns);
+      dst->allocated = dst->n + src->n;
+      dst->xforms = xrealloc (dst->xforms,
+                              dst->allocated * sizeof *dst->xforms);
     }
 
-  for (i = 0; i < src->n_trns; i++)
-    {
-      struct transformation *d = &dst->trns[i + dst->n_trns];
-      const struct transformation *s = &src->trns[i];
-      *d = *s;
-      d->idx_ofs += src->n_trns;
-    }
-  dst->n_trns += src->n_trns;
-
-  src->n_trns = 0;
-  trns_chain_destroy (src);
+  memcpy (&dst->xforms[dst->n], src->xforms, src->n * sizeof *src->xforms);
+  dst->n += src->n;
+  src->n = 0;
 }
 
-/* Returns the index that a transformation execution function may
-   return to "jump" to the next transformation to be added. */
-size_t
-trns_chain_next (struct trns_chain *chain)
-{
-  return chain->n_trns;
-}
-
-/* Executes the given CHAIN of transformations on *C,
-   passing CASE_NR as the case number.
-   *C may be replaced by a new case.
-   Returns the result code that caused the transformations to
-   terminate, or TRNS_CONTINUE if the transformations finished
-   due to "falling off the end" of the set of transformations. */
+/* Executes the N transformations in XFORMS against case *C passing CASE_NR as
+   the case number.  The transformations may replace *C by a new case.  Returns
+   the result code that caused the transformations to terminate, or
+   TRNS_CONTINUE if the transformations finished due to "falling off the end"
+   of the set of transformations. */
 enum trns_result
-trns_chain_execute (const struct trns_chain *chain, enum trns_result start,
-                    struct ccase **c, casenumber case_nr)
+trns_chain_execute (const struct trns_chain *chain,
+                    casenumber case_nr, struct ccase **c)
 {
-  size_t i;
-
-  assert (chain->finalized);
-  for (i = start < 0 ? 0 : start; i < chain->n_trns;)
+  for (size_t i = 0; i < chain->n; i++)
     {
-      struct transformation *trns = &chain->trns[i];
-      int retval = trns->execute (trns->aux, c, case_nr);
-      if (retval == TRNS_CONTINUE)
-        i++;
-      else if (retval >= 0)
-        i = retval + trns->idx_ofs;
-      else
-        return retval == TRNS_END_CASE ? i + 1 : retval;
+      const struct transformation *trns = &chain->xforms[i];
+      int retval = trns->class->execute (trns->aux, c, case_nr);
+      if (retval != TRNS_CONTINUE)
+        return retval;
     }
 
   return TRNS_CONTINUE;

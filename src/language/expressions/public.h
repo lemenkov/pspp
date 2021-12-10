@@ -29,12 +29,9 @@ struct lexer;
 struct pool;
 union value;
 
-struct expression *expr_parse (struct lexer *lexer, struct pool *,
-                               struct dataset *, enum val_type);
-struct expression *expr_parse_bool (struct lexer *lexer, struct pool *,
-                                    struct dataset *);
-struct expression *expr_parse_new_variable (struct lexer *lexer, struct pool *,
-                                            struct dataset *,
+struct expression *expr_parse (struct lexer *, struct dataset *, enum val_type);
+struct expression *expr_parse_bool (struct lexer *, struct dataset *);
+struct expression *expr_parse_new_variable (struct lexer *, struct dataset *,
                                             const char *new_var_name);
 void expr_free (struct expression *);
 

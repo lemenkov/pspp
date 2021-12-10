@@ -27,12 +27,6 @@ enum cmd_result
     CMD_EOF = 2,                /* End of input. */
     CMD_FINISH = 3,             /* FINISH was executed. */
 
-    /* Successful return values returned by specific commands to let INPUT
-       PROGRAM function properly. */
-    CMD_DATA_LIST,
-    CMD_END_CASE,
-    CMD_END_FILE,
-
     /* Various kinds of failures. */
     CMD_FAILURE = -1,           /* Not executed at all. */
     CMD_NOT_IMPLEMENTED = -2,   /* Command not implemented. */
@@ -48,7 +42,11 @@ enum cmd_state
     CMD_STATE_INITIAL,          /* No active dataset yet defined. */
     CMD_STATE_DATA,             /* Active dataset has been defined. */
     CMD_STATE_INPUT_PROGRAM,    /* Inside INPUT PROGRAM. */
-    CMD_STATE_FILE_TYPE         /* Inside FILE TYPE. */
+    CMD_STATE_FILE_TYPE,        /* Inside FILE TYPE. */
+
+    /* Inside LOOP or DO IF... */
+    CMD_STATE_NESTED_DATA,      /* ...in CMD_STATE_DATA. */
+    CMD_STATE_NESTED_INPUT_PROGRAM, /* ...in CMD_STATE_INPUT_PROGRAM. */
   };
 
 struct dataset;

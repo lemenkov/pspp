@@ -20,6 +20,7 @@
 #include <stdbool.h>
 
 bool in_input_program (void);
-void cancel_input_program (void);
+
+void data_list_seen (void);
 
 #endif /* inpt-pgm.h */

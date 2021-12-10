@@ -99,8 +99,7 @@ struct output_trns
     struct casewriter *writer;          /* Writer. */
   };
 
-static trns_proc_func output_trns_proc;
-static trns_free_func output_trns_free;
+static const struct trns_class output_trns_class;
 static struct casewriter *parse_write_command (struct lexer *,
                                                struct dataset *,
                                                enum writer_type,
@@ -140,7 +139,7 @@ parse_output_trns (struct lexer *lexer, struct dataset *ds, enum writer_type wri
       return CMD_CASCADING_FAILURE;
     }
 
-  add_transformation (ds, output_trns_proc, output_trns_free, t);
+  add_transformation (ds, &output_trns_class, t);
   return CMD_SUCCESS;
 }
 
@@ -364,7 +363,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
 }
 
 /* Writes case *C to the system file specified on XSAVE or XEXPORT. */
-static int
+static enum trns_result
 output_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
 {
   struct output_trns *t = trns_;
@@ -382,3 +381,9 @@ output_trns_free (void *trns_)
   free (t);
   return ok;
 }
+
+static const struct trns_class output_trns_class = {
+  .name = "XSAVE/XEXPORT",
+  .execute = output_trns_proc,
+  .destroy = output_trns_free,
+};

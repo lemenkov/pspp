@@ -96,8 +96,7 @@ struct autorecode_pgm
   bool blank_valid;
 };
 
-static trns_proc_func autorecode_trns_proc;
-static trns_free_func autorecode_trns_free;
+static const struct trns_class autorecode_trns_class;
 
 static int compare_arc_items (const void *, const void *, const void *aux);
 static void arc_free (struct autorecode_pgm *);
@@ -450,7 +449,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       /* Free array. */
       free (items);
     }
-  add_transformation (ds, autorecode_trns_proc, autorecode_trns_free, arc);
+  add_transformation (ds, &autorecode_trns_class, arc);
 
   for (size_t i = 0; i < n_dsts; i++)
     free (dst_names[i]);
@@ -553,7 +552,7 @@ compare_arc_items (const void *a_, const void *b_, const void *direction_)
   return direction == ASCENDING ? cmp : -cmp;
 }
 
-static int
+static enum trns_result
 autorecode_trns_proc (void *arc_, struct ccase **c,
                       casenumber case_idx UNUSED)
 {
@@ -582,3 +581,9 @@ autorecode_trns_free (void *arc_)
   arc_free (arc);
   return true;
 }
+
+static const struct trns_class autorecode_trns_class = {
+  .name = "AUTORECODE",
+  .execute = autorecode_trns_proc,
+  .destroy = autorecode_trns_free,
+};

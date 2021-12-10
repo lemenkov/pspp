@@ -96,3 +96,249 @@ vec1,vec2,vec3,vec4,vec5
 1.00,2.00,3.00,4.00,5.00
 ])
 AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM taking shorter of two files])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+    DATA LIST NOTABLE FILE='a.txt'/X 1-10.
+    DATA LIST NOTABLE FILE='b.txt'/Y 1-10.
+END INPUT PROGRAM.
+LIST.
+])
+AT_DATA([short.txt], [dnl
+1
+2
+3
+])
+AT_DATA([long.txt], [dnl
+4
+5
+6
+7
+])
+
+cp short.txt a.txt
+cp long.txt b.txt
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X,Y
+1,4
+2,5
+3,6
+])
+
+cp short.txt b.txt
+cp long.txt a.txt
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X,Y
+4,1
+5,2
+6,3
+])
+AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM taking longer of two files])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+    NUMERIC #A #B.
+
+    DO IF NOT #A.
+        DATA LIST NOTABLE END=#A FILE='a.txt'/X 1-10.
+    END IF.
+    DO IF NOT #B.
+        DATA LIST NOTABLE END=#B FILE='b.txt'/Y 1-10.
+    END IF.
+    DO IF #A AND #B.
+        END FILE.
+    END IF.
+    END CASE.
+END INPUT PROGRAM.
+LIST.
+])
+AT_DATA([short.txt], [dnl
+1
+2
+3
+])
+AT_DATA([long.txt], [dnl
+4
+5
+6
+7
+8
+])
+
+cp short.txt a.txt
+cp long.txt b.txt
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X,Y
+1,4
+2,5
+3,6
+.,7
+.,8
+])
+
+cp short.txt b.txt
+cp long.txt a.txt
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X,Y
+4,1
+5,2
+6,3
+7,.
+8,.
+])
+AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM concatenating two files - version 1])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+    NUMERIC #A #B.
+
+    DO IF #A.
+        DATA LIST NOTABLE END=#B FILE='b.txt'/X 1-10.
+        DO IF #B.
+            END FILE.
+        ELSE.
+            END CASE.
+        END IF.
+    ELSE.
+        DATA LIST NOTABLE END=#A FILE='a.txt'/X 1-10.
+        DO IF NOT #A.
+            END CASE.
+        END IF.
+    END IF.
+END INPUT PROGRAM.
+LIST.
+])
+AT_DATA([a.txt], [dnl
+1
+2
+3
+])
+AT_DATA([b.txt], [dnl
+4
+5
+6
+7
+8
+])
+
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X
+1
+2
+3
+4
+5
+6
+7
+8
+])
+AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM concatenating two files - version 2])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+    NUMERIC #EOF.
+
+    LOOP IF NOT #EOF.
+        DATA LIST NOTABLE END=#EOF FILE='a.txt'/X 1-10.
+        DO IF NOT #EOF.
+            END CASE.
+        END IF.
+    END LOOP.
+
+    COMPUTE #EOF = 0.
+    LOOP IF NOT #EOF.
+        DATA LIST NOTABLE END=#EOF FILE='b.txt'/X 1-10.
+        DO IF NOT #EOF.
+            END CASE.
+        END IF.
+    END LOOP.
+
+    END FILE.
+END INPUT PROGRAM.
+LIST.
+])
+AT_DATA([a.txt], [dnl
+1
+2
+3
+])
+AT_DATA([b.txt], [dnl
+4
+5
+6
+7
+8
+])
+
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X
+1
+2
+3
+4
+5
+6
+7
+8
+])
+AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM generating data])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+    LOOP #I=1 TO 10.
+        COMPUTE X=#I.
+        END CASE.
+    END LOOP.
+    END FILE.
+END INPUT PROGRAM.
+FORMAT X(F2).
+LIST.
+])
+AT_CHECK([pspp -O format=csv input-program.sps], 0, [dnl
+Table: Data List
+X
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+])
+AT_CLEANUP
+
+AT_SETUP([INPUT PROGRAM unexpected end of file])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+])
+AT_CHECK([pspp input-program.sps], 1, [dnl
+error: INPUT PROGRAM: Unexpected end-of-file within INPUT PROGRAM.
+])
+AT_CLEANUP
+
+
+AT_SETUP([INPUT PROGRAM no variables])
+AT_DATA([input-program.sps], [dnl
+INPUT PROGRAM.
+END FILE.
+END INPUT PROGRAM.
+])
+AT_CHECK([pspp input-program.sps], 1, [dnl
+input-program.sps:3: error: INPUT PROGRAM: Input program did not create any
+variables.
+])
+AT_CLEANUP

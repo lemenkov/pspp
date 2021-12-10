@@ -55,9 +55,6 @@ cmd_result_is_valid (enum cmd_result result)
     case CMD_SUCCESS:
     case CMD_EOF:
     case CMD_FINISH:
-    case CMD_DATA_LIST:
-    case CMD_END_CASE:
-    case CMD_END_FILE:
     case CMD_FAILURE:
     case CMD_NOT_IMPLEMENTED:
     case CMD_CASCADING_FAILURE:
@@ -89,19 +86,23 @@ cmd_result_is_failure (enum cmd_result result)
 /* Command processing states. */
 enum states
   {
-    S_INITIAL = 0x01,         /* Allowed before active dataset defined. */
-    S_DATA = 0x02,            /* Allowed after active dataset defined. */
-    S_INPUT_PROGRAM = 0x04,   /* Allowed in INPUT PROGRAM. */
-    S_FILE_TYPE = 0x08,       /* Allowed in FILE TYPE. */
-    S_ANY = 0x0f              /* Allowed anywhere. */
+    S_INITIAL = 1 << CMD_STATE_INITIAL,
+    S_DATA = 1 << CMD_STATE_DATA,
+    S_INPUT_PROGRAM = 1 << CMD_STATE_INPUT_PROGRAM,
+    S_FILE_TYPE = 1 << CMD_STATE_FILE_TYPE,
+    S_NESTED_DATA = 1 << CMD_STATE_NESTED_DATA,
+    S_NESTED_INPUT_PROGRAM = 1 << CMD_STATE_NESTED_INPUT_PROGRAM,
+
+    S_NESTED_ANY = S_NESTED_DATA | S_NESTED_INPUT_PROGRAM,
+    S_ANY = S_INITIAL | S_DATA | S_INPUT_PROGRAM | S_FILE_TYPE | S_NESTED_ANY,
   };
 
 /* Other command requirements. */
 enum flags
   {
-    F_ENHANCED = 0x10,        /* Allowed only in enhanced syntax mode. */
-    F_TESTING = 0x20,         /* Allowed only in testing mode. */
-    F_ABBREV = 0x80           /* Not a candidate for name completion. */
+    F_ENHANCED = 1 << 0,        /* Allowed only in enhanced syntax mode. */
+    F_TESTING = 1 << 1,         /* Allowed only in testing mode. */
+    F_ABBREV = 1 << 2           /* Not a candidate for name completion. */
   };
 
 /* A single command. */
@@ -126,7 +127,7 @@ static const struct command commands[] =
 static const size_t n_commands = sizeof commands / sizeof *commands;
 
 static bool in_correct_state (const struct command *, enum cmd_state);
-static bool report_state_mismatch (const struct command *, enum cmd_state);
+static void report_state_mismatch (const struct command *, enum cmd_state);
 static void set_completion_state (enum cmd_state);
 
 /* Command parser. */
@@ -360,22 +361,22 @@ parse_command_name (struct lexer *lexer, int *n_tokens)
 static bool
 in_correct_state (const struct command *command, enum cmd_state state)
 {
-  return ((state == CMD_STATE_INITIAL && command->states & S_INITIAL)
-          || (state == CMD_STATE_DATA && command->states & S_DATA)
-          || (state == CMD_STATE_INPUT_PROGRAM
-              && command->states & S_INPUT_PROGRAM)
-          || (state == CMD_STATE_FILE_TYPE && command->states & S_FILE_TYPE));
+  return command->states & (1 << state);
 }
 
 /* Emits an appropriate error message for trying to invoke
    COMMAND in STATE. */
-static bool
+static void
 report_state_mismatch (const struct command *command, enum cmd_state state)
 {
   assert (!in_correct_state (command, state));
-  if (state == CMD_STATE_INITIAL || state == CMD_STATE_DATA)
+
+  switch (state)
     {
-      switch ((int) command->states)
+    case CMD_STATE_INITIAL:
+    case CMD_STATE_DATA:
+      switch ((int) command->states
+              & (S_INITIAL | S_DATA | S_INPUT_PROGRAM | S_FILE_TYPE))
         {
           /* One allowed state. */
         case S_INITIAL:
@@ -441,14 +442,35 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
         default:
           NOT_REACHED ();
         }
-    }
-  else if (state == CMD_STATE_INPUT_PROGRAM)
-    msg (SE, _("%s is not allowed inside %s."),
-	 command->name, "INPUT PROGRAM");
-  else if (state == CMD_STATE_FILE_TYPE)
-    msg (SE, _("%s is not allowed inside %s."), command->name, "FILE TYPE");
+      break;
 
-  return false;
+    case CMD_STATE_INPUT_PROGRAM:
+      msg (SE, _("%s is not allowed inside %s."),
+           command->name, "INPUT PROGRAM");
+      break;
+
+    case CMD_STATE_FILE_TYPE:
+      msg (SE, _("%s is not allowed inside %s."), command->name, "FILE TYPE");
+      break;
+
+    case CMD_STATE_NESTED_DATA:
+    case CMD_STATE_NESTED_INPUT_PROGRAM:
+      switch ((int) command->states & S_NESTED_ANY)
+        {
+        case 0:
+          msg (SE, _("%s is not allowed inside DO IF or LOOP."), command->name);
+          break;
+
+        case S_NESTED_DATA:
+          msg (SE, _("In INPUT PROGRAM, "
+                     "%s is not allowed inside DO IF or LOOP."), command->name);
+          break;
+
+        default:
+          NOT_REACHED ();
+        }
+      break;
+    }
 }
 
 /* Command name completion. */

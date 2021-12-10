@@ -24,7 +24,6 @@
 #include "data/value-labels.h"
 #include "data/variable.h"
 #include "language/command.h"
-#include "language/control/control-stack.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"

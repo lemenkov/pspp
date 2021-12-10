@@ -16,7 +16,7 @@
 
 #include <config.h>
 
-#include "language/control/control-stack.h"
+#include <limits.h>
 
 #include "data/case.h"
 #include "data/dataset.h"
@@ -25,8 +25,10 @@
 #include "data/transformations.h"
 #include "data/variable.h"
 #include "language/command.h"
+#include "language/data-io/inpt-pgm.h"
 #include "language/expressions/public.h"
 #include "language/lexer/lexer.h"
+#include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
@@ -38,59 +40,35 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* LOOP outputs a transformation that is executed only on the
-   first pass through the loop.  On this trip, it initializes for
-   the first pass by resetting the pass number, setting up the
-   indexing clause, and testing the LOOP IF clause.  If the loop
-   is not to be entered at all, it jumps forward just past the
-   END LOOP transformation; otherwise, it continues to the
-   transformation following LOOP.
-
-   END LOOP outputs a transformation that executes at the end of
-   each trip through the loop.  It checks the END LOOP IF clause,
-   then updates the pass number, increments the indexing clause,
-   and tests the LOOP IF clause.  If another pass through the
-   loop is due, it jumps backward to just after the LOOP
-   transformation; otherwise, it continues to the transformation
-   following END LOOP. */
-
 struct loop_trns
   {
-    struct pool *pool;
-    struct dataset *ds;
-
-    /* Iteration limit. */
-    int max_pass_count;         /* Maximum number of passes (-1=unlimited). */
-    int pass;			/* Number of passes through the loop so far. */
-
     /* a=a TO b [BY c]. */
-    struct variable *index_var; /* Index variable. */
+    struct variable *index_var;    /* Index variable. */
     struct expression *first_expr; /* Starting index. */
-    struct expression *by_expr;	/* Index increment (default 1.0 if null). */
-    struct expression *last_expr; /* Terminal index. */
-    double cur, by, last;       /* Current value, increment, last value. */
+    struct expression *by_expr;    /* Index increment (or NULL). */
+    struct expression *last_expr;  /* Terminal index. */
 
     /* IF condition for LOOP or END LOOP. */
     struct expression *loop_condition;
     struct expression *end_loop_condition;
 
-    /* Transformation indexes. */
-    int past_LOOP_index;        /* Just past LOOP transformation. */
-    int past_END_LOOP_index;    /* Just past END LOOP transformation. */
+    /* Inner transformations. */
+    struct trns_chain xforms;
+
+    /* State. */
+    double cur, by, last;       /* Index data. */
+    int iteration;              /* For MXLOOPS. */
+    size_t resume_idx;          /* For resuming after END CASE. */
   };
 
-static const struct ctl_class loop_class;
+static struct trns_class loop_trns_class;
 
-static trns_finalize_func loop_trns_finalize;
-static trns_proc_func loop_trns_proc, end_loop_trns_proc, break_trns_proc;
-static trns_free_func loop_trns_free;
+static int in_loop;
 
-static struct loop_trns *create_loop_trns (struct dataset *);
-static bool parse_if_clause (struct lexer *,
-                             struct loop_trns *, struct expression **);
+static bool parse_if_clause (struct lexer *, struct dataset *,
+                             struct expression **);
 static bool parse_index_clause (struct dataset *, struct lexer *,
-                                struct loop_trns *, bool *created_index_var);
-static void close_loop (void *);
+                                struct loop_trns *);
 
 /* LOOP. */
 
@@ -98,95 +76,90 @@ static void close_loop (void *);
 int
 cmd_loop (struct lexer *lexer, struct dataset *ds)
 {
-  struct loop_trns *loop;
-  bool created_index_var = false;
-  bool ok = true;
+  struct loop_trns *loop = xmalloc (sizeof *loop);
+  *loop = (struct loop_trns) { .resume_idx = SIZE_MAX };
 
-  loop = create_loop_trns (ds);
+  bool ok = true;
   while (lex_token (lexer) != T_ENDCMD && ok)
     {
       if (lex_match_id (lexer, "IF"))
-        ok = parse_if_clause (lexer, loop, &loop->loop_condition);
+        ok = parse_if_clause (lexer, ds, &loop->loop_condition);
       else
-        ok = parse_index_clause (ds, lexer, loop, &created_index_var);
+        ok = parse_index_clause (ds, lexer, loop);
     }
-
-  /* Clean up if necessary. */
-  if (!ok)
-    {
-      loop->max_pass_count = 0;
-      if (loop->index_var != NULL && created_index_var)
-        {
-          dict_delete_var (dataset_dict (ds), loop->index_var);
-          loop->index_var = NULL;
-        }
-    }
-
-  return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
-}
-
-/* Parses END LOOP. */
-int
-cmd_end_loop (struct lexer *lexer, struct dataset *ds)
-{
-  struct loop_trns *loop;
-  bool ok = true;
-
-  loop = ctl_stack_top (&loop_class);
-  if (loop == NULL)
-    return CMD_CASCADING_FAILURE;
-
-  assert (loop->ds == ds);
-
-  /* Parse syntax. */
-  if (lex_match_id (lexer, "IF"))
-    ok = parse_if_clause (lexer, loop, &loop->end_loop_condition);
   if (ok)
-    ok = lex_end_of_command (lexer) == CMD_SUCCESS;
+    lex_end_of_command (lexer);
+  lex_discard_rest_of_command (lexer);
 
-  if (!ok)
-    loop->max_pass_count = 0;
+  proc_push_transformations (ds);
+  in_loop++;
+  for (;;)
+    {
+      if (lex_token (lexer) == T_STOP)
+        {
+          lex_error (lexer, NULL);
+          ok = false;
+          break;
+        }
+      else if (lex_match_phrase (lexer, "END LOOP"))
+        {
+          if (lex_match_id (lexer, "IF"))
+            ok = parse_if_clause (lexer, ds, &loop->end_loop_condition) && ok;
+          break;
+        }
+      else
+        cmd_parse_in_state (lexer, ds,
+                            (in_input_program ()
+                             ? CMD_STATE_NESTED_INPUT_PROGRAM
+                             : CMD_STATE_NESTED_DATA));
+    }
+  in_loop--;
+  proc_pop_transformations (ds, &loop->xforms);
 
-  ctl_stack_pop (loop);
+  add_transformation (ds, &loop_trns_class, loop);
 
   return ok ? CMD_SUCCESS : CMD_FAILURE;
 }
 
-/* Parses BREAK. */
 int
-cmd_break (struct lexer *lexer UNUSED, struct dataset *ds)
+cmd_inside_loop (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
 {
-  struct ctl_stmt *loop = ctl_stack_search (&loop_class);
-  if (loop == NULL)
-    return CMD_CASCADING_FAILURE;
-
-  add_transformation (ds, break_trns_proc, NULL, loop);
-
-  return CMD_SUCCESS;
+  msg (SE, _("This command cannot appear outside LOOP...END LOOP."));
+  return CMD_FAILURE;
 }
 
-/* Closes a LOOP construct by emitting the END LOOP
-   transformation and finalizing its members appropriately. */
-static void
-close_loop (void *loop_)
+static enum trns_result
+break_trns_proc (void *aux UNUSED, struct ccase **c UNUSED,
+                 casenumber case_num UNUSED)
 {
-  struct loop_trns *loop = loop_;
+  return TRNS_BREAK;
+}
 
-  add_transformation (loop->ds, end_loop_trns_proc, NULL, loop);
-  loop->past_END_LOOP_index = next_transformation (loop->ds);
+/* Parses BREAK. */
+int
+cmd_break (struct lexer *lexer, struct dataset *ds)
+{
+  if (!in_loop)
+    {
+      cmd_inside_loop (lexer, ds);
+      return CMD_FAILURE;
+    }
 
-  /* If there's nothing else limiting the number of loops, use
-     MXLOOPS as a limit. */
-  if (loop->max_pass_count == -1 && loop->index_var == NULL)
-    loop->max_pass_count = settings_get_mxloops ();
+  static const struct trns_class trns_class = {
+    .name = "BREAK",
+    .execute = break_trns_proc
+  };
+  add_transformation (ds, &trns_class, NULL);
+
+  return CMD_SUCCESS;
 }
 
 /* Parses an IF clause for LOOP or END LOOP and stores the
    resulting expression to *CONDITION.
    Returns true if successful, false on failure. */
 static bool
-parse_if_clause (struct lexer *lexer,
-		 struct loop_trns *loop, struct expression **condition)
+parse_if_clause (struct lexer *lexer, struct dataset *ds,
+		 struct expression **condition)
 {
   if (*condition != NULL)
     {
@@ -194,17 +167,15 @@ parse_if_clause (struct lexer *lexer,
       return false;
     }
 
-  *condition = expr_parse_bool (lexer, loop->pool, loop->ds);
+  *condition = expr_parse_bool (lexer, ds);
   return *condition != NULL;
 }
 
-/* Parses an indexing clause into LOOP.
-   Stores true in *CREATED_INDEX_VAR if the index clause created
-   a new variable, false otherwise.
-   Returns true if successful, false on failure. */
+/* Parses an indexing clause into LOOP.  Returns true if successful, false on
+   failure. */
 static bool
 parse_index_clause (struct dataset *ds, struct lexer *lexer,
-                    struct loop_trns *loop, bool *created_index_var)
+                    struct loop_trns *loop)
 {
   if (loop->index_var != NULL)
     {
@@ -219,20 +190,15 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
     }
 
   loop->index_var = dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer));
-  if (loop->index_var != NULL)
-    *created_index_var = false;
-  else
-    {
-      loop->index_var = dict_create_var_assert (dataset_dict (ds),
-                                                lex_tokcstr (lexer), 0);
-      *created_index_var = true;
-    }
+  if (!loop->index_var)
+    loop->index_var = dict_create_var_assert (dataset_dict (ds),
+                                              lex_tokcstr (lexer), 0);
   lex_get (lexer);
 
   if (!lex_force_match (lexer, T_EQUALS))
     return false;
 
-  loop->first_expr = expr_parse (lexer, loop->pool, loop->ds, VAL_NUMERIC);
+  loop->first_expr = expr_parse (lexer, ds, VAL_NUMERIC);
   if (loop->first_expr == NULL)
     return false;
 
@@ -251,7 +217,7 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
           lex_sbc_only_once (e == &loop->last_expr ? "TO" : "BY");
           return false;
         }
-      *e = expr_parse (lexer, loop->pool, loop->ds, VAL_NUMERIC);
+      *e = expr_parse (lexer, ds, VAL_NUMERIC);
       if (*e == NULL)
         return false;
     }
@@ -260,56 +226,28 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
       lex_sbc_missing ("TO");
       return false;
     }
-  if (loop->by_expr == NULL)
-    loop->by = 1.0;
 
   return true;
 }
 
-/* Creates, initializes, and returns a new loop_trns. */
-static struct loop_trns *
-create_loop_trns (struct dataset *ds)
-{
-  struct loop_trns *loop = pool_create_container (struct loop_trns, pool);
-  loop->max_pass_count = -1;
-  loop->pass = 0;
-  loop->index_var = NULL;
-  loop->first_expr = loop->by_expr = loop->last_expr = NULL;
-  loop->loop_condition = loop->end_loop_condition = NULL;
-  loop->ds = ds;
-
-  add_transformation_with_finalizer (ds, loop_trns_finalize,
-                                     loop_trns_proc, loop_trns_free, loop);
-  loop->past_LOOP_index = next_transformation (ds);
-
-  ctl_stack_push (&loop_class, loop);
-
-  return loop;
-}
-
-/* Finalizes LOOP by clearing the control stack, thus ensuring
-   that all open LOOPs are closed. */
-static void
-loop_trns_finalize (void *do_if_ UNUSED)
-{
-  /* This will be called multiple times if multiple LOOPs were
-     executed, which is slightly unclean, but at least it's
-     idempotent. */
-  ctl_stack_clear ();
-}
-
 /* Sets up LOOP for the first pass. */
-static int
+static enum trns_result
 loop_trns_proc (void *loop_, struct ccase **c, casenumber case_num)
 {
   struct loop_trns *loop = loop_;
 
-  if (loop->index_var != NULL)
+  size_t start_idx = loop->resume_idx;
+  loop->resume_idx = SIZE_MAX;
+  if (start_idx != SIZE_MAX)
+    goto resume;
+
+  if (loop->index_var)
     {
       /* Evaluate loop index expressions. */
       loop->cur = expr_evaluate_num (loop->first_expr, *c, case_num);
-      if (loop->by_expr != NULL)
-	loop->by = expr_evaluate_num (loop->by_expr, *c, case_num);
+      loop->by = (loop->by_expr
+                  ? expr_evaluate_num (loop->by_expr, *c, case_num)
+                  : 1.0);
       loop->last = expr_evaluate_num (loop->last_expr, *c, case_num);
 
       /* Even if the loop is never entered, set the index
@@ -318,28 +256,65 @@ loop_trns_proc (void *loop_, struct ccase **c, casenumber case_num)
       *case_num_rw (*c, loop->index_var) = loop->cur;
 
       /* Throw out pathological cases. */
-      if (!isfinite (loop->cur) || !isfinite (loop->by)
+      if (!isfinite (loop->cur)
+          || !isfinite (loop->by)
           || !isfinite (loop->last)
           || loop->by == 0.0
           || (loop->by > 0.0 && loop->cur > loop->last)
           || (loop->by < 0.0 && loop->cur < loop->last))
-        goto zero_pass;
+        return TRNS_CONTINUE;
     }
 
-  /* Initialize pass count. */
-  loop->pass = 0;
-  if (loop->max_pass_count >= 0 && loop->pass >= loop->max_pass_count)
-    goto zero_pass;
+  for (loop->iteration = 0;
+       loop->index_var || loop->iteration < settings_get_mxloops ();
+       loop->iteration++)
+    {
+      if (loop->loop_condition
+          && expr_evaluate_num (loop->loop_condition, *c, case_num) != 1.0)
+        break;
 
-  /* Check condition. */
-  if (loop->loop_condition != NULL
-      && expr_evaluate_num (loop->loop_condition, *c, case_num) != 1.0)
-    goto zero_pass;
+      start_idx = 0;
+    resume:
+      for (size_t i = start_idx; i < loop->xforms.n; i++)
+        {
+          const struct transformation *trns = &loop->xforms.xforms[i];
+          enum trns_result r = trns->class->execute (trns->aux, c, case_num);
+          switch (r)
+            {
+            case TRNS_CONTINUE:
+              break;
 
-  return loop->past_LOOP_index;
+            case TRNS_BREAK:
+              return TRNS_CONTINUE;
 
- zero_pass:
-  return loop->past_END_LOOP_index;
+            case TRNS_END_CASE:
+              loop->resume_idx = i;
+              return TRNS_END_CASE;
+
+            case TRNS_ERROR:
+            case TRNS_END_FILE:
+              return r;
+
+            case TRNS_DROP_CASE:
+              NOT_REACHED ();
+            }
+        }
+
+      if (loop->end_loop_condition != NULL
+          && expr_evaluate_num (loop->end_loop_condition, *c, case_num) != 0.0)
+        break;
+
+      if (loop->index_var)
+        {
+          loop->cur += loop->by;
+          if (loop->by > 0.0 ? loop->cur > loop->last : loop->cur < loop->last)
+            break;
+
+          *c = case_unshare (*c);
+          *case_num_rw (*c, loop->index_var) = loop->cur;
+        }
+    }
+  return TRNS_CONTINUE;
 }
 
 /* Frees LOOP. */
@@ -348,59 +323,21 @@ loop_trns_free (void *loop_)
 {
   struct loop_trns *loop = loop_;
 
-  pool_destroy (loop->pool);
+  expr_free (loop->first_expr);
+  expr_free (loop->by_expr);
+  expr_free (loop->last_expr);
+
+  expr_free (loop->loop_condition);
+  expr_free (loop->end_loop_condition);
+
+  trns_chain_uninit (&loop->xforms);
+
+  free (loop);
   return true;
 }
 
-/* Finishes a pass through the loop and starts the next. */
-static int
-end_loop_trns_proc (void *loop_, struct ccase **c, casenumber case_num UNUSED)
-{
-  struct loop_trns *loop = loop_;
-
-  if (loop->end_loop_condition != NULL
-      && expr_evaluate_num (loop->end_loop_condition, *c, case_num) != 0.0)
-    goto break_out;
-
-  /* MXLOOPS limiter. */
-  if (loop->max_pass_count >= 0 && ++loop->pass >= loop->max_pass_count)
-    goto break_out;
-
-  /* Indexing clause limiter: counting downward. */
-  if (loop->index_var != NULL)
-    {
-      loop->cur += loop->by;
-      if ((loop->by > 0.0 && loop->cur > loop->last)
-          || (loop->by < 0.0 && loop->cur < loop->last))
-        goto break_out;
-      *c = case_unshare (*c);
-      *case_num_rw (*c, loop->index_var) = loop->cur;
-    }
-
-  if (loop->loop_condition != NULL
-      && expr_evaluate_num (loop->loop_condition, *c, case_num) != 1.0)
-    goto break_out;
-
-  return loop->past_LOOP_index;
-
- break_out:
-  return loop->past_END_LOOP_index;
-}
-
-/* Executes BREAK. */
-static int
-break_trns_proc (void *loop_, struct ccase **c UNUSED,
-                 casenumber case_num UNUSED)
-{
-  struct loop_trns *loop = loop_;
-
-  return loop->past_END_LOOP_index;
-}
-
-/* LOOP control structure class definition. */
-static const struct ctl_class loop_class =
-  {
-    "LOOP",
-    "END LOOP",
-    close_loop,
-  };
+static struct trns_class loop_trns_class = {
+  .name = "LOOP",
+  .execute = loop_trns_proc,
+  .destroy = loop_trns_free,
+};

@@ -49,8 +49,10 @@ struct input_program_pgm
   {
     struct session *session;
     struct dataset *ds;
-    struct trns_chain *trns_chain;
-    enum trns_result restart;
+
+    struct trns_chain xforms;
+    size_t idx;
+    bool eof;
 
     casenumber case_nr;             /* Incremented by END CASE transformation. */
 
@@ -59,14 +61,16 @@ struct input_program_pgm
   };
 
 static void destroy_input_program (struct input_program_pgm *);
-static trns_proc_func end_case_trns_proc;
-static trns_proc_func reread_trns_proc;
-static trns_proc_func end_file_trns_proc;
-static trns_free_func reread_trns_free;
+static const struct trns_class end_case_trns_class;
+static const struct trns_class reread_trns_class;
+static const struct trns_class end_file_trns_class;
 
 static const struct casereader_class input_program_casereader_class;
 
 static bool inside_input_program;
+static bool saw_END_CASE;
+static bool saw_END_FILE;
+static bool saw_DATA_LIST;
 
 /* Returns true if we're parsing the inside of a INPUT
    PROGRAM...END INPUT PROGRAM construct, false otherwise. */
@@ -76,70 +80,56 @@ in_input_program (void)
   return inside_input_program;
 }
 
+void
+data_list_seen (void)
+{
+  saw_DATA_LIST = true;
+}
+
 /* Emits an END CASE transformation for INP. */
 static void
-emit_END_CASE (struct dataset *ds, struct input_program_pgm *inp)
+emit_END_CASE (struct dataset *ds)
 {
-  add_transformation (ds, end_case_trns_proc, NULL, inp);
+  add_transformation (ds, &end_case_trns_class, xzalloc (sizeof (bool)));
 }
 
 int
 cmd_input_program (struct lexer *lexer, struct dataset *ds)
 {
-  struct input_program_pgm *inp;
-  bool saw_END_CASE = false;
-  bool saw_END_FILE = false;
-  bool saw_DATA_LIST = false;
-
   if (!lex_match (lexer, T_ENDCMD))
     return lex_end_of_command (lexer);
 
-  inp = xmalloc (sizeof *inp);
-  inp->session = session_create (dataset_session (ds));
-  inp->ds = dataset_create (inp->session, "INPUT PROGRAM");
-  inp->trns_chain = NULL;
-  inp->init = NULL;
-  inp->proto = NULL;
+  struct session *session = session_create (dataset_session (ds));
+  struct dataset *inp_ds = dataset_create (session, "INPUT PROGRAM");
 
+  struct input_program_pgm *inp = xmalloc (sizeof *inp);
+  *inp = (struct input_program_pgm) { .session = session, .ds = inp_ds };
+
+  proc_push_transformations (inp->ds);
   inside_input_program = true;
+  saw_END_CASE = saw_END_FILE = saw_DATA_LIST = false;
   while (!lex_match_phrase (lexer, "END INPUT PROGRAM"))
     {
       enum cmd_result result;
 
       result = cmd_parse_in_state (lexer, inp->ds, CMD_STATE_INPUT_PROGRAM);
-      switch (result)
+      if (result == CMD_EOF
+          || result == CMD_FINISH
+          || result == CMD_CASCADING_FAILURE)
         {
-        case CMD_DATA_LIST:
-          saw_DATA_LIST = true;
-          break;
+          proc_pop_transformations (inp->ds, &inp->xforms);
 
-        case CMD_END_CASE:
-          emit_END_CASE (inp->ds, inp);
-          saw_END_CASE = true;
-          break;
-
-        case CMD_END_FILE:
-          saw_END_FILE = true;
-          break;
-
-        case CMD_FAILURE:
-          break;
-
-        default:
-          if (cmd_result_is_failure (result)
-              && lex_get_error_mode (lexer) != LEX_ERROR_TERMINAL)
-            {
-              if (result == CMD_EOF)
-                msg (SE, _("Unexpected end-of-file within %s."), "INPUT PROGRAM");
-              inside_input_program = false;
-              destroy_input_program (inp);
-              return result;
-            }
+          if (result == CMD_EOF)
+            msg (SE, _("Unexpected end-of-file within %s."), "INPUT PROGRAM");
+          inside_input_program = false;
+          destroy_input_program (inp);
+          return result;
         }
     }
   if (!saw_END_CASE)
-    emit_END_CASE (inp->ds, inp);
+    emit_END_CASE (inp->ds);
   inside_input_program = false;
+  proc_pop_transformations (inp->ds, &inp->xforms);
 
   if (!saw_DATA_LIST && !saw_END_FILE)
     {
@@ -154,11 +144,6 @@ cmd_input_program (struct lexer *lexer, struct dataset *ds)
       return CMD_FAILURE;
     }
 
-  inp->trns_chain = proc_capture_transformations (inp->ds);
-  trns_chain_finalize (inp->trns_chain);
-
-  inp->restart = TRNS_CONTINUE;
-
   /* Figure out how to initialize each input case. */
   inp->init = caseinit_create ();
   caseinit_mark_for_init (inp->init, dataset_dict (inp->ds));
@@ -172,28 +157,6 @@ cmd_input_program (struct lexer *lexer, struct dataset *ds)
   return CMD_SUCCESS;
 }
 
-int
-cmd_end_input_program (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
-{
-  /* Inside INPUT PROGRAM, this should get caught at the top of the loop in
-     cmd_input_program().
-
-     Outside of INPUT PROGRAM, the command parser should reject this
-     command. */
-  NOT_REACHED ();
-}
-
-/* Returns true if STATE is valid given the transformations that
-   are allowed within INPUT PROGRAM. */
-static bool
-is_valid_state (enum trns_result state)
-{
-  return (state == TRNS_CONTINUE
-          || state == TRNS_ERROR
-          || state == TRNS_END_FILE
-          || state >= 0);
-}
-
 /* Reads and returns one case.
    Returns the case if successful, null at end of file or if an
    I/O error occurred. */
@@ -201,27 +164,46 @@ static struct ccase *
 input_program_casereader_read (struct casereader *reader UNUSED, void *inp_)
 {
   struct input_program_pgm *inp = inp_;
-  struct ccase *c = case_create (inp->proto);
 
-  do
+  if (inp->eof || !inp->xforms.n)
+    return NULL;
+
+  struct ccase *c = case_create (inp->proto);
+  caseinit_init_vars (inp->init, c);
+
+  for (size_t i = inp->idx < inp->xforms.n ? inp->idx : 0; ; i++)
     {
-      assert (is_valid_state (inp->restart));
-      if (inp->restart == TRNS_ERROR || inp->restart == TRNS_END_FILE)
+      if (i >= inp->xforms.n)
         {
-          case_unref (c);
-          return NULL;
+          i = 0;
+          c = case_unshare (c);
+          caseinit_update_left_vars (inp->init, c);
+          caseinit_init_vars (inp->init, c);
         }
 
-      c = case_unshare (c);
-      caseinit_init_vars (inp->init, c);
-      inp->restart = trns_chain_execute (inp->trns_chain, inp->restart,
-                                         &c, inp->case_nr);
-      assert (is_valid_state (inp->restart));
-      caseinit_update_left_vars (inp->init, c);
-    }
-  while (inp->restart < 0);
+      const struct transformation *trns = &inp->xforms.xforms[i];
+      switch (trns->class->execute (trns->aux, &c, inp->case_nr))
+        {
+        case TRNS_END_CASE:
+          inp->case_nr++;
+          inp->idx = i;
+          return c;
 
-  return c;
+        case TRNS_ERROR:
+          casereader_force_error (reader);
+          /* Fall through. */
+        case TRNS_END_FILE:
+          inp->eof = true;
+          case_unref (c);
+          return NULL;
+
+        case TRNS_CONTINUE:
+          break;
+
+        default:
+          NOT_REACHED ();
+        }
+    }
 }
 
 static void
@@ -230,7 +212,7 @@ destroy_input_program (struct input_program_pgm *pgm)
   if (pgm != NULL)
     {
       session_destroy (pgm->session);
-      trns_chain_destroy (pgm->trns_chain);
+      trns_chain_uninit (&pgm->xforms);
       caseinit_destroy (pgm->init);
       caseproto_unref (pgm->proto);
       free (pgm);
@@ -239,11 +221,9 @@ destroy_input_program (struct input_program_pgm *pgm)
 
 /* Destroys the casereader. */
 static void
-input_program_casereader_destroy (struct casereader *reader, void *inp_)
+input_program_casereader_destroy (struct casereader *reader UNUSED, void *inp_)
 {
   struct input_program_pgm *inp = inp_;
-  if (inp->restart == TRNS_ERROR)
-    casereader_force_error (reader);
   destroy_input_program (inp);
 }
 
@@ -256,23 +236,37 @@ static const struct casereader_class input_program_casereader_class =
   };
 
 int
-cmd_end_case (struct lexer *lexer, struct dataset *ds UNUSED)
+cmd_end_case (struct lexer *lexer UNUSED, struct dataset *ds)
 {
   assert (in_input_program ());
-  if (lex_token (lexer) == T_ENDCMD)
-    return CMD_END_CASE;
+  emit_END_CASE (ds);
+  saw_END_CASE = true;
   return CMD_SUCCESS;
 }
 
 /* Outputs the current case */
-int
-end_case_trns_proc (void *inp_, struct ccase **c UNUSED,
+static enum trns_result
+end_case_trns_proc (void *resume_, struct ccase **c UNUSED,
                     casenumber case_nr UNUSED)
 {
-  struct input_program_pgm *inp = inp_;
-  inp->case_nr++;
-  return TRNS_END_CASE;
+  bool *resume = resume_;
+  enum trns_result retval = *resume ? TRNS_CONTINUE : TRNS_END_CASE;
+  *resume = !*resume;
+  return retval;
 }
+
+static bool
+end_case_trns_free (void *resume)
+{
+  free (resume);
+  return true;
+}
+
+static const struct trns_class end_case_trns_class = {
+  .name = "END CASE",
+  .execute = end_case_trns_proc,
+  .destroy = end_case_trns_free,
+};
 
 /* REREAD transformation. */
 struct reread_trns
@@ -304,7 +298,7 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
               goto error;
 	    }
 
-	  e = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
+	  e = expr_parse (lexer, ds, VAL_NUMERIC);
 	  if (!e)
             goto error;
 	}
@@ -337,7 +331,7 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
   t = xmalloc (sizeof *t);
   t->reader = dfm_open_reader (fh, lexer, encoding);
   t->column = e;
-  add_transformation (ds, reread_trns_proc, reread_trns_free, t);
+  add_transformation (ds, &reread_trns_class, t);
 
   fh_unref (fh);
   free (encoding);
@@ -350,7 +344,7 @@ error:
 }
 
 /* Executes a REREAD transformation. */
-static int
+static enum trns_result
 reread_trns_proc (void *t_, struct ccase **c, casenumber case_num)
 {
   struct reread_trns *t = t_;
@@ -383,21 +377,33 @@ reread_trns_free (void *t_)
   return true;
 }
 
+static const struct trns_class reread_trns_class = {
+  .name = "REREAD",
+  .execute = reread_trns_proc,
+  .destroy = reread_trns_free,
+};
+
 /* Parses END FILE command. */
 int
 cmd_end_file (struct lexer *lexer UNUSED, struct dataset *ds)
 {
   assert (in_input_program ());
 
-  add_transformation (ds, end_file_trns_proc, NULL, NULL);
+  add_transformation (ds, &end_file_trns_class, NULL);
+  saw_END_FILE = true;
 
-  return CMD_END_FILE;
+  return CMD_SUCCESS;
 }
 
 /* Executes an END FILE transformation. */
-static int
+static enum trns_result
 end_file_trns_proc (void *trns_ UNUSED, struct ccase **c UNUSED,
                     casenumber case_num UNUSED)
 {
   return TRNS_END_FILE;
 }
+
+static const struct trns_class end_file_trns_class = {
+  .name = "END FILE",
+  .execute = end_file_trns_proc,
+};

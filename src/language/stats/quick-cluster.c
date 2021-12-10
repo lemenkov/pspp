@@ -610,7 +610,7 @@ quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc
 /* A transformation function which juxtaposes the dataset with the
    (pre-prepared) dataset containing membership and/or distance
    values.  */
-static int
+static enum trns_result
 save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 {
   const struct save_trans_data *std = aux;
@@ -1076,7 +1076,12 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	  std->distance = dict_create_var_assert (qc.dict, qc.var_distance, 0);
 	}
 
-      add_transformation (qc.dataset, save_trans_func, save_trans_destroy, std);
+      static const struct trns_class trns_class = {
+        .name = "QUICK CLUSTER",
+        .execute = save_trans_func,
+        .destroy = save_trans_destroy,
+      };
+      add_transformation (qc.dataset, &trns_class, std);
     }
 
   free (qc.var_distance);

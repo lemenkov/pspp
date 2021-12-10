@@ -810,117 +810,114 @@ structure.
 @cmd{INPUT PROGRAM} must contain at least one @cmd{DATA LIST} or
 @cmd{END FILE} command.
 
-All this is very confusing.  A few examples should help to clarify.
+@subheading Example 1: Read two files in parallel to the end of the shorter
 
-@c If you change this example, change the regression test1 in
-@c tests/command/input-program.sh to match.
+The following example reads variable X from file @file{a.txt} and
+variable Y from file @file{b.txt}.  If one file is shorter than the
+other then the extra data in the longer file is ignored.
+
 @example
 INPUT PROGRAM.
-        DATA LIST NOTABLE FILE='a.data'/X 1-10.
-        DATA LIST NOTABLE FILE='b.data'/Y 1-10.
+    DATA LIST NOTABLE FILE='a.txt'/X 1-10.
+    DATA LIST NOTABLE FILE='b.txt'/Y 1-10.
 END INPUT PROGRAM.
 LIST.
 @end example
 
-The example above reads variable X from file @file{a.data} and variable
-Y from file @file{b.data}.  If one file is shorter than the other then
-the extra data in the longer file is ignored.
+@subheading Example 2: Read two files in parallel, supplementing the shorter
 
-@c If you change this example, change the regression test2 in
-@c tests/command/input-program.sh to match.
+The following example also reads variable X from @file{a.txt} and
+variable Y from @file{b.txt}.  If one file is shorter than the other
+then it continues reading the longer to its end, setting the other
+variable to system-missing.
+
 @example
 INPUT PROGRAM.
-        NUMERIC #A #B.
+    NUMERIC #A #B.
 
-        DO IF NOT #A.
-                DATA LIST NOTABLE END=#A FILE='a.data'/X 1-10.
-        END IF.
-        DO IF NOT #B.
-                DATA LIST NOTABLE END=#B FILE='b.data'/Y 1-10.
-        END IF.
-        DO IF #A AND #B.
-                END FILE.
-        END IF.
-        END CASE.
+    DO IF NOT #A.
+        DATA LIST NOTABLE END=#A FILE='a.txt'/X 1-10.
+    END IF.
+    DO IF NOT #B.
+        DATA LIST NOTABLE END=#B FILE='b.txt'/Y 1-10.
+    END IF.
+    DO IF #A AND #B.
+        END FILE.
+    END IF.
+    END CASE.
 END INPUT PROGRAM.
 LIST.
 @end example
 
-The above example reads variable X from @file{a.data} and variable Y from
-@file{b.data}.  If one file is shorter than the other then the missing
-field is set to the system-missing value alongside the present value for
-the remaining length of the longer file.
+@subheading Example 3: Concatenate two files (version 1)
 
-@c If you change this example, change the regression test3 in
-@c tests/command/input-program.sh to match.
+The following example reads data from file @file{a.txt}, then from
+@file{b.txt}, and concatenates them into a single active dataset.
+
 @example
 INPUT PROGRAM.
-        NUMERIC #A #B.
+    NUMERIC #A #B.
 
-        DO IF #A.
-                DATA LIST NOTABLE END=#B FILE='b.data'/X 1-10.
-                DO IF #B.
-                        END FILE.
-                ELSE.
-                        END CASE.
-                END IF.
+    DO IF #A.
+        DATA LIST NOTABLE END=#B FILE='b.txt'/X 1-10.
+        DO IF #B.
+            END FILE.
         ELSE.
-                DATA LIST NOTABLE END=#A FILE='a.data'/X 1-10.
-                DO IF NOT #A.
-                        END CASE.
-                END IF.
+            END CASE.
         END IF.
+    ELSE.
+        DATA LIST NOTABLE END=#A FILE='a.txt'/X 1-10.
+        DO IF NOT #A.
+            END CASE.
+        END IF.
+    END IF.
 END INPUT PROGRAM.
 LIST.
 @end example
 
-The above example reads data from file @file{a.data}, then from
-@file{b.data}, and concatenates them into a single active dataset.
+@subheading Example 4: Concatenate two files (version 2)
 
-@c If you change this example, change the regression test4 in
-@c tests/command/input-program.sh to match.
+This is another way to do the same thing as Example 3.
+
 @example
 INPUT PROGRAM.
-        NUMERIC #EOF.
+    NUMERIC #EOF.
 
-        LOOP IF NOT #EOF.
-                DATA LIST NOTABLE END=#EOF FILE='a.data'/X 1-10.
-                DO IF NOT #EOF.
-                        END CASE.
-                END IF.
-        END LOOP.
+    LOOP IF NOT #EOF.
+        DATA LIST NOTABLE END=#EOF FILE='a.txt'/X 1-10.
+        DO IF NOT #EOF.
+            END CASE.
+        END IF.
+    END LOOP.
 
-        COMPUTE #EOF = 0.
-        LOOP IF NOT #EOF.
-                DATA LIST NOTABLE END=#EOF FILE='b.data'/X 1-10.
-                DO IF NOT #EOF.
-                        END CASE.
-                END IF.
-        END LOOP.
+    COMPUTE #EOF = 0.
+    LOOP IF NOT #EOF.
+        DATA LIST NOTABLE END=#EOF FILE='b.txt'/X 1-10.
+        DO IF NOT #EOF.
+            END CASE.
+        END IF.
+    END LOOP.
 
-        END FILE.
+    END FILE.
 END INPUT PROGRAM.
 LIST.
 @end example
 
-The above example does the same thing as the previous example, in a
-different way.
+@subheading Example 5: Generate random variates
 
-@c If you change this example, make similar changes to the regression
-@c test5 in tests/command/input-program.sh.
+The follows example creates a dataset that consists of 50 random
+variates between 0 and 10.
+
 @example
 INPUT PROGRAM.
-        LOOP #I=1 TO 50.
-                COMPUTE X=UNIFORM(10).
-                END CASE.
-        END LOOP.
-        END FILE.
+    LOOP #I=1 TO 50.
+        COMPUTE X=UNIFORM(10).
+        END CASE.
+    END LOOP.
+    END FILE.
 END INPUT PROGRAM.
-LIST/FORMAT=NUMBERED.
+LIST /FORMAT=NUMBERED.
 @end example
-
-The above example causes an active dataset to be created consisting of 50
-random variates between 0 and 10.
 
 @node LIST
 @section LIST

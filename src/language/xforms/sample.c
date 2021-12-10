@@ -51,8 +51,7 @@ struct sample_trns
     unsigned frac;              /* TYPE_FRACTION: a fraction of UINT_MAX. */
   };
 
-static trns_proc_func sample_trns_proc;
-static trns_free_func sample_trns_free;
+static const struct trns_class sample_trns_class;
 
 int
 cmd_sample (struct lexer *lexer, struct dataset *ds)
@@ -101,13 +100,13 @@ cmd_sample (struct lexer *lexer, struct dataset *ds)
   trns->N = b;
   trns->m = trns->t = 0;
   trns->frac = frac;
-  add_transformation (ds, sample_trns_proc, sample_trns_free, trns);
+  add_transformation (ds, &sample_trns_class, trns);
 
   return CMD_SUCCESS;
 }
 
 /* Executes a SAMPLE transformation. */
-static int
+static enum trns_result
 sample_trns_proc (void *t_, struct ccase **c UNUSED,
                   casenumber case_num UNUSED)
 {
@@ -146,3 +145,9 @@ sample_trns_free (void *t_)
   free (t);
   return true;
 }
+
+static const struct trns_class sample_trns_class = {
+  .name = "SAMPLE",
+  .execute = sample_trns_proc,
+  .destroy = sample_trns_free,
+};
