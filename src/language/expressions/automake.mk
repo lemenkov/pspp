@@ -35,13 +35,13 @@ expressions_built_sources = \
 BUILT_SOURCES += $(expressions_built_sources)
 CLEANFILES += $(expressions_built_sources)
 
-helpers = src/language/expressions/generate.pl \
+helpers = src/language/expressions/generate.py \
 	src/language/expressions/operations.def
 EXTRA_DIST += $(helpers)
 
 $(expressions_built_sources): $(helpers)
 	$(AV_V_GEN)$(MKDIR_P) `dirname $@` && \
-	$(PERL) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
+	$(PYTHON3) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
 
 AM_CPPFLAGS += -I"$(abs_top_builddir)/src/language/expressions" \
 	-I"$(top_srcdir)/src/language/expressions"
