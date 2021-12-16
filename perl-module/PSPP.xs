@@ -157,7 +157,7 @@ value_to_scalar (const union value *val, const struct variable *var)
   else
     {
       int width = var_get_width (var);
-      return newSVpvn (val->s, width);
+      return newSVpvn ((char *) val->s, width);
     }
 }
 
@@ -208,7 +208,8 @@ CODE:
  assert (0 == strncmp (ver, bare_version, strlen (ver)));
 
  i18n_init ();
- msg_set_handler (message_handler, NULL);
+const struct msg_handler mh = { .output_msg = message_handler };
+ msg_set_handler (&mh);
  settings_init ();
  fh_init ();
 
@@ -785,7 +786,7 @@ get_case_cnt (sfr)
  struct sysreader_info *sfr;
 CODE:
  SV *ret;
- casenumber n = casereader_get_case_cnt (sfr->reader);
+ casenumber n = casereader_get_n_cases (sfr->reader);
  if (n == CASENUMBER_MAX)
   ret = &PL_sv_undef;
  else
