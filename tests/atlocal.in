@@ -21,7 +21,7 @@
 # Variables used internally by the testsuite.
 EXEEXT='@EXEEXT@'
 PERL='@PERL@'
-PYTHON='@PYTHON@'
+PYTHON3='@PYTHON3@'
 TEX='@TEX@'
 GWC='@GWC@'
 WITH_PERL_MODULE='@WITH_PERL_MODULE@'

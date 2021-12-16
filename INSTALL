@@ -60,9 +60,8 @@ The following packages are required to install PSPP:
     * Perl (http://www.perl.org/), version 5.005_03 or later.  Perl is
       required during build but not after installation.
 
-    * Python (https://python.org/), version 2.7 or later (Python 3 is
-      fine).  Some tests require Python; if it is missing, those tests
-      will be skipped.  PSPP does not otherwise require Python.
+    * Python (https://python.org/), version 3.4 or later.  Python is
+      required during build but not after installation.
 
     * iconv, which should be installed as part of a Unix-like system.
       If you don't have a version already, you can install GNU
