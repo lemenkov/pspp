@@ -57,9 +57,6 @@ The following packages are required to install PSPP:
     * The GNU Scientific Library (http://www.gnu.org/software/gsl/),
       version 1.13 or later, including libgslcblas included with GSL.
 
-    * Perl (http://www.perl.org/), version 5.005_03 or later.  Perl is
-      required during build but not after installation.
-
     * Python (https://python.org/), version 3.4 or later.  Python is
       required during build but not after installation.
 
@@ -93,7 +90,16 @@ use the GUI, you must run `configure' with --without-gui.
     * GNU Spread Sheet Widget (http://www.gnu.org/software/ssw)
       version 0.7 or later.
 
-The following packages are optional:
+The following packages are only needed to build and test the Perl
+module:
+
+    * Perl (https://www.perl.org/), version 5.005_03 or later.
+
+    * The Config::Perl::V module for Perl (https://cpan.org).
+
+    * Optionally, the Text::Diff and Memory::Usage modules for Perl
+      (https://cpan.org).  These modules enable PSPP to test its Perl
+      module more thoroughly.
 
 Other optional packages:
 
@@ -110,10 +116,6 @@ Other optional packages:
       to read Postgresql databases.  The tests for the Postgresql
       interface, but not the Postgresql interface itself, requires the
       Postgresql server to be installed.
-
-    * The Text::Diff module for Perl (http://cpan.org).  This enables
-      PSPP to test the Perl module more thoroughly.  It is not needed
-      to build or use the Perl module.
 
 Basic Installation
 ==================

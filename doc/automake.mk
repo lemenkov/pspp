@@ -67,12 +67,12 @@ doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 dist_man_MANS += doc/pspp.1 \
                  doc/psppire.1
 
-EXTRA_DIST += doc/get-commands.pl \
+EXTRA_DIST += doc/get-commands.py \
               doc/help-pages-list \
               doc/prepdoc.sh
 
-$(srcdir)/doc/ni.texi: $(top_srcdir)/src/language/command.def doc/get-commands.pl
-	$(AM_V_GEN)$(PERL) $(top_srcdir)/doc/get-commands.pl $(top_srcdir)/src/language/command.def > $@
+$(srcdir)/doc/ni.texi: $(top_srcdir)/src/language/command.def doc/get-commands.py
+	$(AM_V_GEN)$(PYTHON3) $(top_srcdir)/doc/get-commands.py $(top_srcdir)/src/language/command.def > $@
 
 $(srcdir)/doc/tut.texi:
 	$(AM_V_GEN)echo "@set example-dir $(examplesdir)" > $@

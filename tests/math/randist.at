@@ -18,66 +18,78 @@ AT_BANNER([random distributions])
 
 m4_divert_push([PREPARE_TESTS])
 [randist_compare () {
-  cat > compare.pl <<'EOF'
-use strict;
-use warnings 'all';
+  cat > compare.py <<'EOF'
+#! /usr/bin/python3
 
-my ($epsilon) = 1;
+import itertools
+import sys
 
-open (EXPECTED, '<', $ARGV[0]) or die "$ARGV[0]: open: $!\n";
-open (ACTUAL, '<', $ARGV[1]) or die "$ARGV[1]: open: $!\n";
+def count_decimals(s):
+    if '.' not in s:
+        return 0
+    else:
+        return len(s) - s.index('.')
 
-my ($errors) = 0;
-LINE: for (;;) {
-    my $a = <EXPECTED>;
-    my $b = <ACTUAL>;
+def to_int(s):
+    return int(s.replace('.', ''))
 
-    last if !defined $a && !defined $b;
-    die "$ARGV[0]:$.: unexpected end of file\n" if !defined $a;
-    die "$ARGV[1]:$.: unexpected end of file\n" if !defined $b;
+EPSILON = 1
 
-    my (@a) = split (' ', $a);
-    my (@b) = split (' ', $b);
-    die "$ARGV[1]:$.: contains ". scalar (@b) . " fields but should "
-      . "contain " . scalar (@a) . "\n"
-	if $#a != $#b;
-    foreach my $i (0...$#a) {
-	die "$ARGV[1]:$.: unexpected number of decimals\n"
-	  if count_decimals ($a[$i]) != count_decimals ($b[$i]);
+errors = 0
+line_number = 0
+for a, b in itertools.zip_longest(open(sys.argv[1], 'r'),
+                                  open(sys.argv[2], 'r')):
+    line_number += 1
+    if not a:
+        sys.stderr.write("%s:%s: unexpected end of file\n"
+                         % (sys.argv[2], line_number))
+        sys.exit(1)
+    if not b:
+        sys.stderr.write("%s:%s: unexpected end of file\n"
+                         % (sys.argv[1], line_number))
+        sys.exit(1)
 
-	my ($an) = to_int ($a[$i]);
-	my ($bn) = to_int ($b[$i]);
-	if ($an ne $bn && ($bn < $an - $epsilon || $bn > $an + $epsilon)) {
-	    $errors++;
-	    if ($errors > 50) {
-		print "$ARGV[1]: Additional differences suppressed.\n";
-		last LINE;
-	    }
-	    print "$ARGV[1]:$.: Values differ from $ARGV[0]:$.\n";
-	    print "Expected:\n", $a;
-	    print "Calculated:\n", $b;
-	}
-    }
-}
-exit ($errors > 0);
+    af = a.split()
+    bf = b.split()
+    if len(af) != len(bf):
+        sys.stderr.write("%s:%s: contains %s fields but should contain %s\n"
+                         % (sys.argv[2], line_number, len(b), len(a)))
+        sys.exit(1)
 
-sub count_decimals {
-    my ($s) = @_;
-    return length (substr ($s, index ($s, '.')));
-}
+    for i in range(len(af)):
+        if count_decimals(af[i]) != count_decimals(bf[i]):
+            sys.stderr.write("%s:%s: unexpected number of decimals\n"
+                             % (sys.argv[2], line_number))
+            sys.exit(1)
 
-sub to_int {
-    local ($_) = @_;
-    s/\.//;
-    return $_;
-}
+        if af[i] == bf[i]:
+            continue
+
+        an = to_int(af[i])
+        bn = to_int(bf[i])
+        if an != bn and (bn < an - EPSILON or bn > an + EPSILON):
+            errors += 1
+            if errors > 50:
+                print("%s: Additional differences suppressed."
+                      % sys.argv[2])
+                break
+            print("%s:%s: Values differ from %s:%s"
+                  % (sys.argv[2], line_number,
+                     sys.argv[1], line_number))
+            print("Expected:\n%s" % a)
+            print("Calculated:\n%s" % b)
+
+    if errors > 50:
+        break
+sys.exit(1 if errors > 0 else 0)
+
 EOF
+  $PYTHON3 compare.py "$@"
 }]
 m4_divert_pop([PREPARE_TESTS])
 
 m4_define([RANDIST_CHECK],
   [AT_SETUP([random distributions -- $1])
-   randist_compare
    AT_DATA([$1.in], [$4])
    AT_DATA([$1.sps], [dnl
 DATA LIST LIST FILE='$1.in' NOTABLE SKIP=1
@@ -96,7 +108,7 @@ PRINT OUTFILE='$1.out'/P $2 x $3.
 EXECUTE.
 ])
    AT_CHECK([pspp -O format=csv $1.sps])
-   AT_CHECK([$PERL compare.pl $1.in $1.out])
+   AT_CHECK([randist_compare $1.in $1.out])
    AT_CLEANUP])
 
 RANDIST_CHECK([beta], [a b], [cdf pdf], [dnl

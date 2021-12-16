@@ -26,6 +26,12 @@ Changes from 1.4.1 to 1.5.3:
 
  * Build changes:
 
+   - Perl is no longer required to build.
+
+   - Build now requires Python 3.4 or later.  (Building PSPP 1.4.0
+     also required Python, but it wasn't properly documented at the
+     time.)
+
    - The Cairo and Pango libraries are now required.
 
    - gettext 0.20 or later is now required.

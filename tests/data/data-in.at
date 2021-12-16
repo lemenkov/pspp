@@ -16,9 +16,15 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([data input (data-in)])
 
-m4_divert_push([PREPARE_TESTS])
-[data_in_prng () {
-  cat > my-rand.pl <<'EOF'
+AT_SETUP([numeric input formats])
+AT_KEYWORDS([data-in slow])
+data_in_prng
+AT_DATA([num-in.py],
+[[#! /usr/bin/python3
+
+import math
+import re
+
 # This random number generator and the test for it below are drawn
 # from Park and Miller, "Random Number Generators: Good Ones are Hard
 # to Come By", Communications of the ACM 31:10 (October 1988).  It is
@@ -26,132 +32,85 @@ m4_divert_push([PREPARE_TESTS])
 # real significand, which includes systems that have 64-bit IEEE reals
 # (with 53-bit significand).  The test should catch any systems for
 # which this is not true, in any case.
+def my_rand(modulus):
+    global seed
+    a = 16807
+    m = 2147483647
+    tmp = a * seed
+    seed = tmp - m * (tmp // m)
+    return seed % modulus
 
-our ($seed) = 1;
-sub my_rand {
-  my ($modulo) = @_;
-  my ($a) = 16807;
-  my ($m) = 2147483647;
-  my ($tmp) = $a * $seed;
-  $seed = $tmp - $m * int ($tmp / $m);
-  return $seed % $modulo;
-}
-EOF
-  cat > test-my-rand.pl <<'EOF'
-#! /usr/bin/perl
-use strict;
-use warnings;
-do './my-rand.pl';
-my_rand (1) foreach 1...10000;
-our $seed;
-die $seed if $seed != 1043618065;
-EOF
-}
-]
-m4_divert_pop([PREPARE_TESTS])
+# Test the random number generator for reproducibility,
+# then reset the seed
+seed = 1
+for i in range(10000):
+    my_rand(1)
+assert seed == 1043618065
+seed = 1
 
-AT_SETUP([numeric input formats])
-AT_KEYWORDS([data-in slow])
-data_in_prng
-AT_CHECK([$PERL test-my-rand.pl])
-AT_DATA([num-in.pl],
-[[#! /usr/bin/perl
+def permute_zeros(fraction, exponent):
+    frac_rep = "%f" % fraction
+    leading_zeros = len(frac_rep) - len(frac_rep.lstrip('0'))
+    trailing_zeros = len(re.search(r'(\.?0*)$', frac_rep).group(1))
+    for i in range(leading_zeros + 1):
+        for j in range(trailing_zeros + 1):
+            trimmed = frac_rep[i:len(frac_rep) - j]
+            if trimmed == '.' or not trimmed:
+                continue
 
-use POSIX;
-use strict;
-use warnings;
+            permute_commas(trimmed, exponent)
 
-do './my-rand.pl';
+def permute_commas(frac_rep, exponent):
+    permute_dot_comma(frac_rep, exponent)
+    pos = my_rand(len(frac_rep) + 1)
+    frac_rep = "%s,%s" % (frac_rep[:pos], frac_rep[pos:])
+    permute_dot_comma(frac_rep, exponent)
 
-for my $number (0, 1, .5, .015625, 123) {
-    my ($base_exp) = floor ($number ? log10 ($number) : 0);
-    for my $offset (-3...3) {
-	my ($exponent) = $base_exp + $offset;
-	my ($fraction) = $number / 10**$offset;
+def permute_dot_comma(frac_rep, exponent):
+    permute_exponent_syntax(frac_rep, exponent)
+    if ',' in frac_rep or '.' in frac_rep:
+        frac_rep = frac_rep.translate(str.maketrans('.,', ',.'))
+        permute_exponent_syntax(frac_rep, exponent)
 
-	permute_zeros ($fraction, $exponent);
-    }
-}
+def permute_exponent_syntax(frac_rep, exponent):
+    if exponent == 0:
+        e = pick(('', 'e0', 'e-0', 'e+0', '-0', '+0'))
+    elif exponent > 0:
+        e = pick(("e%s" % exponent, "e+%s" % exponent, "+%s" % exponent))
+    else:
+        abs_exp = -exponent
+        e = pick(("e-%s" % abs_exp, "e-%s" % abs_exp, "-%s" % abs_exp))
+    permute_sign_and_affix(frac_rep, e)
 
-sub permute_zeros {
-    my ($fraction, $exponent) = @_;
+def permute_sign_and_affix(frac_rep, exp_rep):
+    for prefix in (pick(('', '$')),
+                   pick(('-', '-$', '$-', '$-$')),
+                   pick(('+', '+$', '$+', '$+$'))):
+        for suffix in ('', '%'):
+            permute_spaces(prefix + frac_rep + exp_rep + suffix)
 
-    my ($frac_rep) = sprintf ("%f", $fraction);
-    my ($leading_zeros) = length (($frac_rep =~ /^(0*)/)[0]);
-    my ($trailing_zeros) = length (($frac_rep =~ /(\.?0*)$/)[0]);
-    for my $i (0...$leading_zeros) {
-	for my $j (0...$trailing_zeros) {
-	    my ($trimmed) = substr ($frac_rep, $i,
-				    length ($frac_rep) - $i - $j);
-	    next if $trimmed eq '.' || $trimmed eq '';
+def permute_spaces(s):
+    fields = re.sub(r'([-+\$e%])', r' \1 ', s).split()
+    print(''.join(fields))
 
-	    permute_commas ($trimmed, $exponent);
-	}
-    }
-}
+    if len(fields) > 1:
+        pos = my_rand(len(fields) - 1) + 1
+        print("%s %s" % (''.join(fields[:pos]),
+                         ''.join(fields[pos:])))
 
-sub permute_commas {
-    my ($frac_rep, $exponent) = @_;
-    permute_dot_comma ($frac_rep, $exponent);
-    my ($pos) = int (my_rand (length ($frac_rep) + 1));
-    $frac_rep = substr ($frac_rep, 0, $pos) . "," . substr ($frac_rep, $pos);
-    permute_dot_comma ($frac_rep, $exponent);
-}
+def pick(choices):
+    return choices[my_rand(len(choices))]
 
-sub permute_dot_comma {
-    my ($frac_rep, $exponent) = @_;
-    permute_exponent_syntax ($frac_rep, $exponent);
-    if ($frac_rep =~ /[,.]/) {
-	$frac_rep =~ tr/.,/,./;
-	permute_exponent_syntax ($frac_rep, $exponent);
-    }
-}
+for number in (0, 1, .5, .015625, 123):
+    base_exp = math.floor(math.log10(number)) if number else 0
+    for offset in range(-3, 4):
+        exponent = base_exp + offset
+        fraction = number / 10**offset
 
-sub permute_exponent_syntax {
-    my ($frac_rep, $exponent) = @_;
-    my (@exp_reps);
-    if ($exponent == 0) {
-	@exp_reps = pick ('', 'e0', 'e-0', 'e+0', '-0', '+0');
-    } elsif ($exponent > 0) {
-	@exp_reps = pick ("e$exponent", "e+$exponent", "+$exponent");
-    } else {
-	my ($abs_exp) = -$exponent;
-	@exp_reps = pick ("e-$abs_exp", , "e-$abs_exp", "-$abs_exp");
-    }
-    permute_sign_and_affix ($frac_rep, $_) foreach @exp_reps;
-}
+        permute_zeros(fraction, exponent)
 
-sub permute_sign_and_affix {
-    my ($frac_rep, $exp_rep) = @_;
-    for my $prefix (pick ('', '$'),
-		    pick ('-', '-$', '$-', '$-$'),
-		    pick ('+', '+$', '$+', '$+$')) {
-	for my $suffix ('', '%') {
-	    permute_spaces ("$prefix$frac_rep$exp_rep$suffix");
-	}
-    }
-}
-
-sub permute_spaces {
-    my ($s) = @_;
-    $s =~ s/([-+\$e%])/ $1 /g;
-    my (@fields) = split (' ', $s);
-    print join ('', @fields), "\n";
-
-    if ($#fields > 0) {
-	my ($pos) = int (my_rand ($#fields)) + 1;
-	print join ('', @fields[0...$pos - 1]);
-	print " ";
-	print join ('', @fields[$pos...$#fields]);
-	print "\n";
-    }
-}
-
-sub pick {
-    return $_[int (my_rand ($#_ + 1))];
-}
 ]])
-AT_CHECK([$PERL num-in.pl > num-in.data])
+AT_CHECK([$PYTHON3 num-in.py > num-in.data])
 AT_DATA([num-in.sps], [dnl
 SET ERRORS=NONE.
 SET MXERRS=10000000.
@@ -359,9 +318,24 @@ AT_CHECK([pspp -O format=csv dtime.sps])
 AT_CHECK([cat dtime.output], [0], [expout])
 AT_CLEANUP
 
+m4_divert_push([PREPARE_TESTS])
+[number_lines_in_hex () {
+  $PYTHON3 -c '
+import sys
+for i, line in enumerate(sys.stdin):
+    sys.stdout.write(" %04X %s" % (i, line))
+'
+}]
+m4_divert_pop([PREPARE_TESTS])
+
+
 AT_SETUP([binary and hexadecimal input (IB, PIB, and PIBHEX formats)])
 AT_KEYWORDS([slow])
-AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > binhex-in.data])
+AT_CHECK([$PYTHON3 -c '
+import struct
+import sys
+for i in range(65536):
+    sys.stdout.buffer.write(struct.pack(">H", i))' > binhex-in.data])
 AT_CHECK([[wc -c < binhex-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
 AT_DATA([binhex-in.sps], [dnl
@@ -376,14 +350,18 @@ PRINT OUTFILE='binhex-in.out'/x (PIBHEX4) ' ' ib pib pibhex.
 EXECUTE.
 ])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/binhex-in.expected.cmp.gz | \
-            $PERL -pe "printf ' %04X ', $.-1" > expout])
+            number_lines_in_hex > expout])
 AT_CHECK([pspp -O format=csv binhex-in.sps], [0])
 AT_CHECK([cat binhex-in.out], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([BCD input (P and PK formats)])
 AT_KEYWORDS([slow])
-AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > bcd-in.data])
+AT_CHECK([$PYTHON3 -c '
+import struct
+import sys
+for i in range(65536):
+    sys.stdout.buffer.write(struct.pack(">H", i))' > bcd-in.data])
 AT_CHECK([[wc -c < bcd-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
 AT_DATA([bcd-in.sps], [dnl
@@ -397,14 +375,18 @@ PRINT OUTFILE='bcd-in.out'/x (PIBHEX4) ' ' P PK.
 EXECUTE.
 ])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/bcd-in.expected.cmp.gz | \
-            $PERL -pe "printf ' %04X ', $.-1" > expout])
+            number_lines_in_hex > expout])
 AT_CHECK([pspp -O format=csv bcd-in.sps])
 AT_CHECK([cat bcd-in.out], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([legacy input (N and Z formats)])
 AT_KEYWORDS([slow])
-AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > legacy-in.data])
+AT_CHECK([$PYTHON3 -c '
+import struct
+import sys
+for i in range(65536):
+    sys.stdout.buffer.write(struct.pack(">H", i))' > legacy-in.data])
 AT_CHECK([[wc -c < legacy-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
 AT_DATA([legacy-in.sps], [dnl
@@ -418,7 +400,7 @@ PRINT OUTFILE='legacy-in.out'/x (PIBHEX4) ' ' N Z.
 EXECUTE.
 ])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/legacy-in.expected.cmp.gz | \
-            $PERL -pe "printf ' %04X ', $.-1" > expout])
+            number_lines_in_hex > expout])
 AT_CHECK([pspp -O format=csv legacy-in.sps])
 AT_CHECK([cat legacy-in.out], [0], [expout])
 AT_CLEANUP

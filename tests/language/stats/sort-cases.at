@@ -18,38 +18,29 @@ AT_BANNER([SORT CASES])
 
 m4_divert_push([PREPARE_TESTS])
 [sort_cases_gen_data () {
-  cat > gen-data.pl <<'EOF'
-use strict;
-use warnings;
+  cat > gen-data.py <<'EOF'
+#! /usr/bin/python3
 
-# Generate shuffled data.
-my (@data);
-for my $i (0...$ARGV[0] - 1) {
-    push (@data, ($i) x $ARGV[1]);
-}
-fisher_yates_shuffle (\@data);
+import random
+import sys
 
-# Output shuffled data.
-my (@shuffled) = map ([$data[$_], $_], 0...$#data);
-open (SHUFFLED, ">data.txt");
-print SHUFFLED "$data[$_] $_\n" foreach 0...$#data;
+data = []
+for i in range(int(sys.argv[1])):
+    data += [i] * int(sys.argv[2])
+random.shuffle(data)
 
-# Output sorted data.
-my (@sorted) = sort { $a->[0] <=> $b->[0] || $a->[1] <=> $b->[1] } @shuffled;
-open (SORTED, ">expout");
-printf SORTED " %8d %8d \n", $_->[0], $_->[1] foreach @sorted;
+data_txt = open('data.txt', 'w')
+for i, item in enumerate(data):
+    data_txt.write('%s %s\n' % (item, i))
+data_txt.close()
 
-# From perlfaq4.
-sub fisher_yates_shuffle {
-    my $deck = shift;  # $deck is a reference to an array
-    my $i = @$deck;
-    while ($i--) {
-	my $j = int rand ($i+1);
-	@$deck[$i,$j] = @$deck[$j,$i];
-    }
-}
+shuffled = ((item, i) for i, item in enumerate(data))
+expout = open('expout', 'w')
+for item, i in sorted(shuffled):
+    expout.write(' %8d %8d \n' % (item, i))
+expout.close()
 EOF
-  $PERL gen-data.pl "$@"]
+  $PYTHON3 gen-data.py "$@"]
 }
 m4_divert_pop([PREPARE_TESTS])
 

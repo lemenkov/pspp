@@ -138,7 +138,7 @@ src_data_libdata_la_SOURCES = \
 
 nodist_src_data_libdata_la_SOURCES = src/data/sys-file-encoding.c
 src/data/sys-file-encoding.c: \
-	src/data/sys-file-encoding.pl \
+	src/data/sys-file-encoding.py \
 	src/data/convrtrs.txt
-	$(AM_V_GEN)$(PERL) $^ > $@.tmp && mv $@.tmp $@
-EXTRA_DIST += src/data/sys-file-encoding.pl src/data/convrtrs.txt
+	$(AM_V_GEN)$(PYTHON3) $^ > $@.tmp && mv $@.tmp $@
+EXTRA_DIST += src/data/sys-file-encoding.py src/data/convrtrs.txt

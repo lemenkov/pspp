@@ -32,7 +32,7 @@ AC_DEFUN([PSPP_PERL],
   AC_PATH_PROG([PERL], perl, no)
   AC_SUBST([PERL])dnl
   if test "$PERL" != no && $PERL -e 'require 5.005_03;'; then :; else
-    PSPP_REQUIRED_PREREQ([Perl 5.005_03 (or later)])
+    PSPP_OPTIONAL_PREREQ([Perl 5.005_03 (or later)])
   fi
 
   # The PSPP autobuilder appends a build number to the PSPP version number,
@@ -59,7 +59,7 @@ AC_DEFUN([PSPP_PERL_MODULE],
 	[yes|no], [],
 	[AC_MSG_FAILURE([--with-perl-module argument must be 'yes' or 'no'])])
       WITH_PERL_MODULE=$with_perl_module],
-     [if test x"$cross_compiling" != x"yes"; then
+     [if test "$PERL" != no && test x"$cross_compiling" != x"yes"; then
 	WITH_PERL_MODULE=yes
       else
 	WITH_PERL_MODULE=no
@@ -68,6 +68,9 @@ AC_DEFUN([PSPP_PERL_MODULE],
    AM_CONDITIONAL(WITH_PERL_MODULE, test $WITH_PERL_MODULE = yes)
 
    if test $WITH_PERL_MODULE = yes; then
+     if test "$PERL" = no; then
+       PSPP_REQUIRED_PREREQ([Perl 5.005_03 or later (or use --without-perl-module)])
+     fi
      CHECK_PERL_MODULE([Config::Perl::V], [],
        [PSPP_REQUIRED_PREREQ([Config::Perl::V Perl module (or use --without-perl-module)])])
      CHECK_PERL_MODULE([Text::Diff], [],

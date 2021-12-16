@@ -18,221 +18,233 @@ AT_BANNER([data output (data-out)])
 
 AT_SETUP([numeric format output])
 AT_KEYWORDS([data-out slow])
-AT_DATA([num-out.pl],
-[[use strict;
-use warnings 'all';
+AT_DATA([num-out.py],
+[[print("""\
+SET CCA=',,,'.
+SET CCB='-,[[[,]]],-'.
+SET CCC='((,[,],))'.
+SET CCD=',XXX,,-'.
+SET CCE=',,YYY,-'.
+INPUT PROGRAM.
+STRING EXPR(A16).""")
 
-my @values = qw(0 2 9.5 27 271 999.95 2718 9999.995 27182 271828
+values = """0 2 9.5 27 271 999.95 2718 9999.995 27182 271828
 2718281 2**39 2**333 2**-21 -2 -9.5 -27 -271 -999.95 -2718 -9999.995
 -27182 -271828 -2718281 -2**39 -2**333 -2**-21 -0 3.125 31.25 314.125
 3141.5 31415.875 314159.25 3141592.625 31415926.5 271828182.25
 3214567890.5 31415926535.875 -3.125 -31.375 -314.125 -3141.5
 -31415.875 -314159.25 -3141592.625 -31415926.5 -271828182.25
--3214567890.5 -31415926535.875);
+-3214567890.5 -31415926535.875""".split()
+for value in values:
+    print("""COMPUTE NUM=%s.
+COMPUTE EXPR='%s'.
+END CASE.""" % (value, value))
 
-print "SET CCA=',,,'.\n";
-print "SET CCB='-,[[[,]]],-'.\n";
-print "SET CCC='((,[,],))'.\n";
-print "SET CCD=',XXX,,-'.\n";
-print "SET CCE=',,YYY,-'.\n";
-print "INPUT PROGRAM.\n";
-print "STRING EXPR(A16).\n";
-print map ("COMPUTE NUM=$_.\nCOMPUTE EXPR='$_'.\nEND CASE.\n", @values);
-print "END FILE.\n";
-print "END INPUT PROGRAM.\n";
+print("""\
+END FILE.
+END INPUT PROGRAM.""")
 
-print "PRINT OUTFILE='output.txt'/EXPR.\n";
-for my $format (qw (F COMMA DOT DOLLAR PCT E CCA CCB CCC CCD CCE N Z)) {
-    for my $d (0...16) {
-	my ($min_w);
-	if ($format ne 'E') {
-	    $min_w = $d + 1;
-	    $min_w++ if $format eq 'DOLLAR' || $format eq 'PCT';
-	    $min_w = 2 if $min_w == 1 && ($format =~ /^CC/);
-	} else {
-	    $min_w = $d + 7;
-	}
-	for my $w ($min_w...40) {
-	    my ($f) = "$format$w.$d";
-	    print "PRINT OUTFILE='output.txt'/'$f: \"' NUM($f) '\"'.\n";
-	}
-    }
-    print "PRINT SPACE OUTFILE='output.txt'.\n";
-}
-print "EXECUTE.\n";
+print("PRINT OUTFILE='output.txt'/EXPR.")
+for format in 'F COMMA DOT DOLLAR PCT E CCA CCB CCC CCD CCE N Z'.split():
+    for d in range(17):
+        if format != 'E':
+            min_w = d + 1
+            if format in ('DOLLAR', 'PCT'):
+                min_w += 1 
+            if min_w == 1 and format.startswith('CC'):
+                min_w = 2
+        else:
+            min_w = d + 7
+
+        for w in range(min_w, 41):
+            f = "%s%s.%s" % (format, w, d)
+            print("PRINT OUTFILE='output.txt'/'%s: \"' NUM(%s) '\"'." % (f, f))
+    print("PRINT SPACE OUTFILE='output.txt'.")
+print("EXECUTE.")
 ]])
-AT_CHECK([$PERL num-out.pl > num-out.sps])
+AT_CHECK([$PYTHON3 num-out.py > num-out.sps])
 AT_CHECK([pspp -O format=csv num-out.sps])
 AT_CHECK([inexactify < output.txt > output.inexact])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/num-out.expected.cmp.gz > expout.cmp])
-AT_DATA([num-out-decmp.pl],
-[[use strict;
-use warnings 'all';
+AT_DATA([num-out-decmp.py],
+[[#! /usr/bin/python3
 
-my (@line);
-while (<>) {
-    if (my ($n) = /^\*(\d+)$/) {
-	for (1...$n) {
-	    $line[1]++;
-	    $line[3] = " $line[3]";
-	    print ' ', join ('', @line), "\n";
-	}
-    } elsif (my ($suffix) = /^\$(.*)$/) {
-	for my $c (split ('', $suffix)) {
-	    $line[1]++;
-	    $line[4] .= $c;
-	    print ' ', join ('', @line), "\n";
-	}
-    } elsif (my ($prefix) = /^\^(.*)$/) {
-	for my $c (split ('', $prefix)) {
-	    $line[1]++;
-	    $line[4] = "$c$line[4]";
-	    print ' ', join ('', @line), "\n";
-	}
-    } else {
-	@line = /^([A-Z]+)(\d+)([^"]+")( *)([^%"]*)(%?")$/;
-	print " $_";
-    }
-}
+import re
+import sys
+
+state = []
+for line in sys.stdin:
+    line = line.rstrip('\r\n')
+    if line.startswith('*'):
+        n = int(line[1:])
+        for i in range(n):
+            state[1] = "%s" % (int(state[1]) + 1)
+            state[3] = ' ' + state[3]
+            print(' ' + ''.join(state))
+    elif line.startswith('$'):
+        for c in line[1:]:
+            state[1] = "%s" % (int(state[1]) + 1)
+            state[4] += c
+            print(' ' + ''.join(state))
+    elif line.startswith('^'):
+        for c in line[1:]:
+            state[1] = "%s" % (int(state[1]) + 1)
+            state[4] = c + state[4]
+            print(' ' + ''.join(state))
+    else:
+        m = re.match(r'^([A-Z]+)(\d+)([^"]+")( *)([^%"]*)(%?")$', line)
+        if m:
+            state = list(m.groups())
+        print(' ' + line)
 ]])
-AT_CHECK([$PERL num-out-decmp.pl < expout.cmp > expout.exact])
+AT_CHECK([$PYTHON3 num-out-decmp.py < expout.cmp > expout.exact])
 AT_CHECK([[inexactify < expout.exact > expout.inexact]])
-AT_DATA([num-out-compare.pl],
-[[#! /usr/bin/perl -w
+AT_DATA([num-out-compare.py],
+[[#! /usr/bin/python3
 
-use strict;
-use warnings 'all';
-use Getopt::Long;
+import getopt
+import itertools
+import re
+import sys
 
-my $exact = 0;
-my $spss = 0;
-my $verbose = 0;
-Getopt::Long::Configure ("bundling");
-GetOptions ("e|exact!" => \$exact,
-	    "s|spss!" => \$spss,
-	    "v|verbose+" => \$verbose,
-	    "h|help" => sub { usage (0) })
-  or usage (1);
+def usage():
+    print("""\
+%s: compare expected and actual numeric formatting output
+usage: %s [OPTION...] EXPECTED ACTUAL
+where EXPECTED is the file containing expected output
+and ACTUAL is the file containing actual output.
+Options:
+  -e, --exact: Require numbers to be exactly equal.
+               (By default, small differences are permitted.)
+  -s, --spss: Ignore most SPSS formatting bugs in EXPECTED.
+              (A few differences are not compensated)
+  -v, --verbose: Use once to summarize errors and differences.
+                 Use twice for details of differences."""
+          % (sys.argv[0], sys.argv[0]))
+    sys.exit(0)
 
-sub usage {
-    print "$0: compare expected and actual numeric formatting output\n";
-    print "usage: $0 [OPTION...] EXPECTED ACTUAL\n";
-    print "where EXPECTED is the file containing expected output\n";
-    print "and ACTUAL is the file containing actual output.\n";
-    print "Options:\n";
-    print "  -e, --exact: Require numbers to be exactly equal.\n";
-    print "               (By default, small differences are permitted.)\n";
-    print "  -s, --spss: Ignore most SPSS formatting bugs in EXPECTED.\n";
-    print "              (A few differences are not compensated)\n";
-    print "  -v, --verbose: Use once to summarize errors and differences.\n";
-    print "                 Use twice for details of differences.\n";
-    exit (@_);
-}
+exact = 0
+spss = 0
+verbose = 0
 
-open (EXPECTED, '<', $ARGV[0]) or die "$ARGV[0]: open: $!\n";
-open (ACTUAL, '<', $ARGV[1]) or die "$ARGV[1]: open: $!\n";
-my ($expr);
-my ($bad_round) = 0;
-my ($approximate) = 0;
-my ($spss_wtf1) = 0;
-my ($spss_wtf2) = 0;
-my ($lost_sign) = 0;
-my ($errors) = 0;
-while (defined (my $a = <EXPECTED>) && defined (my $b = <ACTUAL>)) {
-    chomp $a;
-    chomp $b;
-    if ($a eq $b) {
-	if ($a !~ /^\s*$/ && $a !~ /:/) {
-	    $expr = $a;
-	    $expr =~ s/\s*$//;
-	    $expr =~ s/^\s*//;
-	}
-    } else {
-	my ($fmt, $a_out) = $a =~ /^ (.*): "(.*)"$/ or die;
-	my ($b_fmt, $b_out) = $b =~ /^ (.*): "(.*)"$/ or die;
-	die if $fmt ne $b_fmt;
-	die if $a_out eq $b_out;
+options, args = getopt.gnu_getopt(sys.argv[1:], 'esvh',
+                                  ['exact', 'spss', 'verbose', 'help'])
+for key, value in options:
+    if key in ['-e', '--exact']:
+        exact = True
+    elif key in ['-s', '--spss']:
+        spss = True
+    elif key in ['-v', '--verbose']:
+        verbose += 1
+    elif key in ['-h', '--help']:
+        usage()
+    else:
+        assert False
+if len(args) != 2:
+    sys.stderr.write("%s\n" % len(args))
+    sys.stderr.write("exactly two nonoption arguments are required "
+                     "(use --help for help)\n")
+    sys.exit(1)
 
-	if (!$exact) {
-	    if (increment ($a_out) eq $b_out || increment ($b_out) eq $a_out) {
-		$approximate++;
-		next;
-	    }
-	}
-	if ($spss) {
-	    if ($a_out =~ /0.*0/ && $a_out !~ /[1-9]/) {
-		$bad_round++;
-		next;
-	    } elsif ($a_out =~ /\*/ && $a_out !~ /^\*+$/) {
-		$spss_wtf1++;
-		next;
-	    } elsif ($expr =~ /^-/
-		     && $a_out =~ /^\*+$/
-		     && $b_out =~ /-\d(\.\d*#*)?E[-+]\d\d\d/
-		     && $fmt =~ /^E/) {
-		$spss_wtf2++;
-		next;
-	    } elsif ($expr =~ /^-/
-		     && (($a_out !~ /-/ && $a_out =~ /[1-9]/ && $b_out =~ /-/)
-			 || ($a_out =~ /^[0-9]+$/ && $b_out =~ /^\*+$/))) {
-		$lost_sign++;
-		next;
-	    }
-	}
-	print "$.: $expr in $fmt: expected \"$a_out\", got \"$b_out\"\n"
-	  if $verbose > 1;
-	$errors++;
-    }
-}
-while (<EXPECTED>) {
-    print "Extra lines in $ARGV[0]\n";
-    $errors++;
-    last;
-}
-while (<ACTUAL>) {
-    print "Extra lines in $ARGV[1]\n";
-    $errors++;
-    last;
-}
-if ($verbose) {
-    print "$errors errors\n";
-    if (!$exact) {
-	print "$approximate approximate matches\n";
-    }
-    if ($spss) {
-	print "$bad_round bad rounds\n";
-	print "$spss_wtf1 SPSS WTF 1\n";
-	print "$spss_wtf2 SPSS WTF 2\n";
-	print "$lost_sign lost signs\n";
-    }
-}
-exit ($errors > 0);
+def increment(n):
+    """Returns 'n' incremented by one unit in its final decimal place.
+    """
 
-# Returns the argument value incremented by one unit in its final
-# decimal place.
-sub increment {
-    local ($_) = @_;
-    my ($last_digit, $i);
-    for ($i = 0; $i < length $_; $i++) {
-	my ($c) = substr ($_, $i, 1);
-	last if ($c eq 'E');
-	$last_digit = $i if $c =~ /[0-9]/;
-    }
-    return $_ if !defined $last_digit;
-    for ($i = $last_digit; $i >= 0; $i--) {
-	my ($c) = substr ($_, $i, 1);
-	if ($c eq '9') {
-	    substr ($_, $i, 1) = '0';
-	} elsif ($c =~ /[0-8]/) {
-	    substr ($_, $i, 1) = chr (ord ($c) + 1);
-	    last;
-	}
-    }
-    $_ = "1$_" if $i < 0;
-    return $_;
-}
+    last_digit = None
+    for i, c in enumerate(n):
+        if c == 'E':
+            break
+        if c.isdigit():
+            last_digit = i
+    if last_digit is None:
+        return n
+
+    for i in range(last_digit, -1, -1):
+        c = n[i]
+        if c == '9':
+            n[i] = '0'
+        elif c in '012345678':
+            n[i] = chr(ord(c) + 1)
+            break
+    if i < 0:
+        n = '1' + n
+    return n
+
+n_exact = 0
+bad_round = 0
+approximate = 0
+spss_wtf1 = 0
+spss_wtf2 = 0
+lost_sign = 0
+errors = 0
+line_number = 0
+for a, b in itertools.zip_longest(open(args[0], 'r'),
+                                  open(args[1], 'r')):
+    line_number += 1
+    if not b:
+        print("Extra lines in %s" % args[0])
+        errors += 1
+        break
+    if not a:
+        print("Extra lines in %s" % args[1])
+        errors += 1
+        break
+
+    a = a.rstrip('\r\n')
+    b = b.rstrip('\r\n')
+    if a == b:
+        n_exact += 1
+        if not a.isspace() and ':' not in a:
+            expr = a.strip()
+    else:
+        fmt, a_out = re.match(r'^ (.*): "(.*)"$', a).groups()
+        b_fmt, b_out = re.match(r'^ (.*): "(.*)"$', b).groups()
+        assert fmt == b_fmt
+        assert a_out != b_out
+
+        if not exact:
+            if increment(a_out) == b_out or increment(b_out) == a_out:
+                approximate += 1
+                continue
+        if spss:
+            if re.search(r'0.*0', a_out) and not re.search(r'[1-9]', a_out):
+                bad_round += 1
+                continue
+            elif '*' in a_out and len(a_out.strip('*')):
+                spss_wtf1 += 1
+                continue
+            elif (expr.startswith('-')
+                  and re.fullmatch(r'\*+', a_out)
+                  and re.match(r'-\d(\.\d*#*)?E[-+]\d\d\d', b_out)
+                  and fmt.startswith('E')):
+                spss_wtf2 += 1
+                continue
+            elif (expr.startswith('-')
+                  and (('-' not in a_out
+                        and re.search(r'[1-9]', a_out)
+                        and '-' in b_out)
+                       or (a_out.isdigit()
+                           and re.fullmatch(r'\*+', b_out)))):
+                lost_sign += 1
+                continue
+
+        if verbose > 1:
+            print('%s: %s in %s: expected "%s", got "%s'
+                  % (line_number, expr, fmt, a_out, b_out))
+        errors += 1
+if verbose:
+    print("%s exact matches" % n_exact)
+    print("%s errors" % errors)
+    if not exact:
+        print('%s approximate matches' %approximate)
+    if spss:
+        print("%s bad rounds" % bad_round)
+        print("%s SPSS WTF 1" % spss_wtf1)
+        print("%s SPSS WTF 2" % spss_wtf2)
+        print("%s lost signs" % lost_sign)
+sys.exit(1 if errors else 0)
 ]])
-AT_CHECK([$PERL num-out-compare.pl $PSPP_NUM_OUT_COMPARE_FLAGS expout.inexact output.inexact])
+AT_CHECK([$PYTHON3 num-out-compare.py $PSPP_NUM_OUT_COMPARE_FLAGS expout.inexact output.inexact])
 AT_CLEANUP
 
 AT_SETUP([non-ASCII custom currency formats])

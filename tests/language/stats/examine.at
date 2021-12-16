@@ -678,11 +678,10 @@ dnl Another test that big input doesn't crash.
 dnl The actual bug that this checks for has been lost.
 AT_SETUP([EXAMINE -- big input doesn't crash 2])
 AT_KEYWORDS([categorical categoricals slow])
-AT_DATA([make-big-input.pl],
-  [for ($i=0; $i<100000; $i++) { print "AB12\n" };
-   for ($i=0; $i<100000; $i++) { print "AB04\n" };
-])
-AT_CHECK([$PERL make-big-input.pl > large.txt])
+AT_CHECK([$PYTHON3 -c '
+for i in range(100000): print("AB12")
+for i in range(100000): print("AB04")
+' > large.txt])
 AT_DATA([examine.sps], [dnl
 DATA LIST FILE='large.txt' /S 1-2 (A) X 3 .
 
@@ -694,10 +693,7 @@ EXAMINE /A BY X.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
-AT_DATA([more-big-input.pl],
-  [for ($i=0; $i<25000; $i++) { print "AB04\nAB12\n" };
-])
-AT_CHECK([$PERL more-big-input.pl >> large.txt])
+AT_CHECK([$PYTHON3 -c 'for i in range(25000): print("AB04\nAB12")' >> large.txt])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
