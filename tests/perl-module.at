@@ -23,7 +23,10 @@ asan_lib=$("$abs_top_builddir/libtool" --mode=execute ldd \
                "$abs_top_builddir/src/ui/terminal/pspp" 2>/dev/null \
 	   | grep asan \
 	   | awk '{print $3}')
-if test ! -e "$asan_lib"; then
+if test -e "$asan_lib"; then
+    USING_ASAN=:
+else
+    USING_ASAN=false
     asan_lib=
 fi
 
@@ -676,6 +679,9 @@ AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 AT_CHECK([perl -MText::Diff -e '' || exit 77])
 # Skip this test if Perl's Memory::Usage module is not installed.
 AT_CHECK([perl -MMemory::Usage -e '' || exit 77])
+# Skip this test if Address Sanitizer is in use because it will
+# screw up memory accounting and look like a leak.
+AT_SKIP_IF([$USING_ASAN])
 AT_CHECK([run_perl_module "$abs_top_builddir/perl-module/t/Pspp.t"], [0],
   [[1..38
 ok 1 - use PSPP;
