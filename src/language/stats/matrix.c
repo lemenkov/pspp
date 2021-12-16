@@ -1851,21 +1851,24 @@ matrix_eval_IDENT (double s1, double s2)
   return m;
 }
 
+/* Inverts X, storing the inverse into INVERSE.  As a side effect, replaces X
+   by its LU decomposition. */
 static void
-invert_matrix (gsl_matrix *x)
+invert_matrix (gsl_matrix *x, gsl_matrix *inverse)
 {
   gsl_permutation *p = gsl_permutation_alloc (x->size1);
   int signum;
   gsl_linalg_LU_decomp (x, p, &signum);
-  gsl_linalg_LU_invx (x, p);
+  gsl_linalg_LU_invert (x, p, inverse);
   gsl_permutation_free (p);
 }
 
 static gsl_matrix *
-matrix_eval_INV (gsl_matrix *m)
+matrix_eval_INV (gsl_matrix *src)
 {
-  invert_matrix (m);
-  return m;
+  gsl_matrix *dst = gsl_matrix_alloc (src->size1, src->size2);
+  invert_matrix (src, dst);
+  return dst;
 }
 
 static gsl_matrix *
@@ -3405,7 +3408,10 @@ matrix_expr_evaluate_exp_mat (const struct matrix_expr *e,
 
   mul_matrix (&y, x, y, &t);
   if (bf < 0)
-    invert_matrix (y);
+    {
+      invert_matrix (y, x);
+      swap_matrix (&x, &y);
+    }
 
   /* Garbage collection.
 
