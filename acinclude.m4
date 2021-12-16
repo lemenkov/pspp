@@ -43,6 +43,39 @@ AC_DEFUN([PSPP_PERL],
   AC_SUBST([VERSION_FOR_PERL])
 ])
 
+dnl CHECK_PERL_MODULE([MODULE], [RUN-IF-AVAILABLE], [RUN-IF-NOT-AVAILABLE])
+AC_DEFUN([CHECK_PERL_MODULE],
+  [echo "configure:__oline__: running $PERL -M$1 -e '' >&AS_MESSAGE_LOG_FD" >&AS_MESSAGE_LOG_FD
+   $PERL -M$1 -e '' >&AS_MESSAGE_LOG_FD 2>&1
+   retval=$?
+   echo "configure:__oline__: \$? = $retval" >&AS_MESSAGE_LOG_FD
+   AS_IF([test $retval = 0], [$2], [$3])])
+
+AC_DEFUN([PSPP_PERL_MODULE],
+  [AC_ARG_WITH(
+     [perl-module],
+     [AS_HELP_STRING([--without-perl-module], [do not build the Perl module])],
+     [AS_CASE([$with_perl_module],
+	[yes|no], [],
+	[AC_MSG_FAILURE([--with-perl-module argument must be 'yes' or 'no'])])
+      WITH_PERL_MODULE=$with_perl_module],
+     [if test x"$cross_compiling" != x"yes"; then
+	WITH_PERL_MODULE=yes
+      else
+	WITH_PERL_MODULE=no
+      fi])
+   AC_SUBST([WITH_PERL_MODULE])
+   AM_CONDITIONAL(WITH_PERL_MODULE, test $WITH_PERL_MODULE = yes)
+
+   if test $WITH_PERL_MODULE = yes; then
+     CHECK_PERL_MODULE([Config::Perl::V], [],
+       [PSPP_REQUIRED_PREREQ([Config::Perl::V Perl module (or use --without-perl-module)])])
+     CHECK_PERL_MODULE([Text::Diff], [],
+       [PSPP_OPTIONAL_PREREQ([Text::Diff Perl module for running Perl tests])])
+     CHECK_PERL_MODULE([Memory::Usage], [],
+       [PSPP_OPTIONAL_PREREQ([Memory::Usage Perl module for running Perl tests])])
+   fi])
+
 dnl Check that Python 3 is available.
 AC_DEFUN([PSPP_PYTHON3],
   [AC_ARG_VAR([PYTHON3], [Python 3 interpreter])

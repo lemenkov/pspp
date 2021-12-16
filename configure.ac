@@ -259,21 +259,7 @@ AC_DEFINE(
   [crc32], [gl_crc32],
   [Avoid making zlib call gnulib's crc32() instead of its own.])
 
-AC_ARG_WITH(
-  [perl-module],
-  [AS_HELP_STRING([--without-perl-module], [do not build the Perl module])],
-  [case $with_perl_module in # (
-     yes|no) ;; # (
-     *) AC_MSG_FAILURE([--with-perl-module argument must be 'yes' or 'no']) ;;
-   esac
-   WITH_PERL_MODULE=$with_perl_module],
-  [if test x"$cross_compiling" != x"yes"; then
-     WITH_PERL_MODULE=yes
-   else
-     WITH_PERL_MODULE=no
-   fi])
-AC_SUBST([WITH_PERL_MODULE])
-AM_CONDITIONAL(WITH_PERL_MODULE, test $WITH_PERL_MODULE = yes)
+PSPP_PERL_MODULE
 
 AC_SEARCH_LIBS([cblas_dsdot], [gslcblas],,[PSPP_REQUIRED_PREREQ([libgslcblas])])
 PKG_CHECK_MODULES([GSL], [gsl >= 1.13], [],
