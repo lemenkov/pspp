@@ -295,7 +295,6 @@ EXTRA_DIST += \
 	tests/data/hotel-encrypted.sav \
 	tests/data/legacy-in.expected.cmp.gz \
 	tests/data/num-in.expected.gz \
-	tests/data/num-out-cmp.pl \
 	tests/data/num-out.expected.cmp.gz \
 	tests/data/test-date-input.py \
 	tests/data/test-time-input.py \
