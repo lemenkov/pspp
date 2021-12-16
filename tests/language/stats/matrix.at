@@ -1794,7 +1794,7 @@ AT_CLEANUP
 AT_SETUP([MATRIX - EVAL EXP GINV GRADE GSCH])
 AT_DATA([matrix.sps], [dnl
 MATRIX.
-PRINT EVAL({2, 0, 0; 0, 3, 4; 0, 4, 9}).
+PRINT EVAL({2, 0, 0; 0, 3, 4; 0, 4, 9})/FORMAT=F5.2.
 
 PRINT EXP({2, 3; 4, 5})/FORMAT F5.2.
 
@@ -1820,9 +1820,9 @@ END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
 EVAL({2, 0, 0; 0, 3, 4; 0, 4, 9})
- 11.0000000000
-  2.0000000000
-  1.0000000000
+ 11.00
+  2.00
+  1.00
 
 EXP({2, 3; 4, 5})
   7.39 20.09
