@@ -71,7 +71,7 @@ struct operation
     const char *name;
     const char *prototype;
     enum operation_flags flags;
-    atom_type returns;
+    atom_type returns;       /* Usually OP_number, OP_string, or OP_boolean. */
     int n_args;
     atom_type args[EXPR_ARG_MAX];
     int array_min_elems;
@@ -80,65 +80,40 @@ struct operation
 
 extern const struct operation operations[];
 
-/* Tree structured expressions. */
-
-/* Atoms. */
-struct number_node
-  {
-    operation_type type;   /* OP_number. */
-    double n;
-  };
-
-struct string_node
-  {
-    operation_type type;   /* OP_string. */
-    struct substring s;
-  };
-
-struct variable_node
-  {
-    operation_type type;   /* OP_variable. */
-    const struct variable *v;
-  };
-
-struct integer_node
-  {
-    operation_type type;   /* OP_integer. */
-    int i;
-  };
-
-struct vector_node
-  {
-    operation_type type;   /* OP_vector. */
-    const struct vector *v;
-  };
-
-struct format_node
-  {
-    operation_type type;   /* OP_format. */
-    struct fmt_spec f;
-  };
-
-/* Any composite node. */
-struct composite_node
-  {
-    operation_type type;   /* One of OP_*. */
-    size_t n_args;         /* Number of arguments. */
-    union any_node **args; /* Arguments. */
-    size_t min_valid;      /* Min valid array args to get valid result. */
-  };
-
-/* Any node. */
-union any_node
+/* Expression parse tree. */
+struct expr_node
   {
     operation_type type;
-    struct number_node number;
-    struct string_node string;
-    struct variable_node variable;
-    struct integer_node integer;
-    struct vector_node vector;
-    struct format_node format;
-    struct composite_node composite;
+    struct msg_location *location;
+
+    union
+      {
+        /* OP_number. */
+        double number;
+
+        /* OP_string. */
+        struct substring string;
+
+        /* OP_variable. */
+        const struct variable *variable;
+
+        /* OP_integer. */
+        int integer;
+
+        /* OP_vector. */
+        const struct vector *vector;
+
+        /* OP_format. */
+        struct fmt_spec format;
+
+        /* All the other node types. */
+        struct
+          {
+            size_t n_args;         /* Number of arguments. */
+            struct expr_node **args; /* Arguments. */
+            size_t min_valid;   /* Min valid array args to get valid result. */
+          };
+      };
   };
 
 union operation_data
@@ -171,28 +146,28 @@ struct expression
 struct expression *expr_parse_any (struct lexer *lexer, struct dataset *,  bool optimize);
 void expr_debug_print_postfix (const struct expression *);
 
-union any_node *expr_optimize (union any_node *, struct expression *);
-void expr_flatten (union any_node *, struct expression *);
+struct expr_node *expr_optimize (struct expr_node *, struct expression *);
+void expr_flatten (struct expr_node *, struct expression *);
 
-atom_type expr_node_returns (const union any_node *);
+atom_type expr_node_returns (const struct expr_node *);
 
-union any_node *expr_allocate_nullary (struct expression *e, operation_type);
-union any_node *expr_allocate_unary (struct expression *e,
-                                     operation_type, union any_node *);
-union any_node *expr_allocate_binary (struct expression *e, operation_type,
-                                 union any_node *, union any_node *);
-union any_node *expr_allocate_composite (struct expression *e, operation_type,
-                                         union any_node **, size_t);
-union any_node *expr_allocate_number (struct expression *e, double);
-union any_node *expr_allocate_boolean (struct expression *e, double);
-union any_node *expr_allocate_integer (struct expression *e, int);
-union any_node *expr_allocate_pos_int (struct expression *e, int);
-union any_node *expr_allocate_string (struct expression *e, struct substring);
-union any_node *expr_allocate_variable (struct expression *e,
+struct expr_node *expr_allocate_nullary (struct expression *e, operation_type);
+struct expr_node *expr_allocate_unary (struct expression *e,
+                                     operation_type, struct expr_node *);
+struct expr_node *expr_allocate_binary (struct expression *e, operation_type,
+                                 struct expr_node *, struct expr_node *);
+struct expr_node *expr_allocate_composite (struct expression *e, operation_type,
+                                         struct expr_node **, size_t);
+struct expr_node *expr_allocate_number (struct expression *e, double);
+struct expr_node *expr_allocate_boolean (struct expression *e, double);
+struct expr_node *expr_allocate_integer (struct expression *e, int);
+struct expr_node *expr_allocate_pos_int (struct expression *e, int);
+struct expr_node *expr_allocate_string (struct expression *e, struct substring);
+struct expr_node *expr_allocate_variable (struct expression *e,
                                         const struct variable *);
-union any_node *expr_allocate_format (struct expression *e,
+struct expr_node *expr_allocate_format (struct expression *e,
                                  const struct fmt_spec *);
-union any_node *expr_allocate_vector (struct expression *e,
+struct expr_node *expr_allocate_vector (struct expression *e,
                                       const struct vector *);
 
 #endif /* expressions/private.h */

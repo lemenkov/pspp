@@ -40,12 +40,13 @@
 #include "libpspp/str.h"
 
 #include "gl/c-strcase.h"
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
 
 /* Declarations. */
 
 /* Recursive descent parser in order of increasing precedence. */
-typedef union any_node *parse_recursively_func (struct lexer *, struct expression *);
+typedef struct expr_node *parse_recursively_func (struct lexer *, struct expression *);
 static parse_recursively_func parse_or, parse_and, parse_not;
 static parse_recursively_func parse_rel, parse_add, parse_mul;
 static parse_recursively_func parse_neg, parse_exp;
@@ -54,13 +55,13 @@ static parse_recursively_func parse_vector_element, parse_function;
 
 /* Utility functions. */
 static struct expression *expr_create (struct dataset *ds);
-atom_type expr_node_returns (const union any_node *);
+atom_type expr_node_returns (const struct expr_node *);
 
 static const char *atom_type_name (atom_type);
-static struct expression *finish_expression (union any_node *,
+static struct expression *finish_expression (struct expr_node *,
                                              struct expression *);
-static bool type_check (const union any_node *, enum val_type expected_type);
-static union any_node *allocate_unary_variable (struct expression *,
+static bool type_check (const struct expr_node *, enum val_type expected_type);
+static struct expr_node *allocate_unary_variable (struct expression *,
                                                 const struct variable *);
 
 /* Public functions. */
@@ -75,7 +76,7 @@ expr_parse (struct lexer *lexer, struct dataset *ds, enum val_type type)
   assert (val_type_is_valid (type));
 
   struct expression *e = expr_create (ds);
-  union any_node *n = parse_or (lexer, e);
+  struct expr_node *n = parse_or (lexer, e);
   if (!n || !type_check (n, type))
     {
       expr_free (e);
@@ -90,7 +91,7 @@ struct expression *
 expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 {
   struct expression *e = expr_create (ds);
-  union any_node *n = parse_or (lexer, e);
+  struct expr_node *n = parse_or (lexer, e);
   if (!n)
     {
       expr_free (e);
@@ -99,8 +100,7 @@ expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 
   atom_type actual_type = expr_node_returns (n);
   if (actual_type == OP_number)
-    n = expr_allocate_binary (e, OP_NUM_TO_BOOLEAN, n,
-                              expr_allocate_string (e, ss_empty ()));
+    n = expr_allocate_unary (e, OP_NUM_TO_BOOLEAN, n);
   else if (actual_type != OP_boolean)
     {
       msg (SE, _("Type mismatch: expression has %s type, "
@@ -121,7 +121,7 @@ expr_parse_new_variable (struct lexer *lexer, struct dataset *ds,
                          const char *new_var_name)
 {
   struct expression *e = expr_create (ds);
-  union any_node *n = parse_or (lexer, e);
+  struct expr_node *n = parse_or (lexer, e);
   if (!n)
     {
       expr_free (e);
@@ -154,7 +154,7 @@ expr_free (struct expression *e)
 struct expression *
 expr_parse_any (struct lexer *lexer, struct dataset *ds, bool optimize)
 {
-  union any_node *n;
+  struct expr_node *n;
   struct expression *e;
 
   e = expr_create (ds);
@@ -220,7 +220,7 @@ atom_type_stack (atom_type type)
    the final stack height.  Updates *MAX, if necessary, to
    reflect the maximum intermediate or final height. */
 static void
-measure_stack (const union any_node *n,
+measure_stack (const struct expr_node *n,
                struct stack_heights *height, struct stack_heights *max)
 {
   const struct stack_heights *return_height;
@@ -231,8 +231,8 @@ measure_stack (const union any_node *n,
       int i;
 
       args = *height;
-      for (i = 0; i < n->composite.n_args; i++)
-        measure_stack (n->composite.args[i], &args, max);
+      for (i = 0; i < n->n_args; i++)
+        measure_stack (n->args[i], &args, max);
 
       return_height = atom_type_stack (operations[n->type].returns);
     }
@@ -250,7 +250,7 @@ measure_stack (const union any_node *n,
 
 /* Allocates stacks within E sufficient for evaluating node N. */
 static void
-allocate_stacks (union any_node *n, struct expression *e)
+allocate_stacks (struct expr_node *n, struct expression *e)
 {
   struct stack_heights initial = {0, 0};
   struct stack_heights max = {0, 0};
@@ -264,7 +264,7 @@ allocate_stacks (union any_node *n, struct expression *e)
 
 /* Finalizes expression E for evaluating node N. */
 static struct expression *
-finish_expression (union any_node *n, struct expression *e)
+finish_expression (struct expr_node *n, struct expression *e)
 {
   /* Allocate stacks. */
   allocate_stacks (n, e);
@@ -284,7 +284,7 @@ finish_expression (union any_node *n, struct expression *e)
    converted to type EXPECTED_TYPE, inserting a conversion at *N
    if necessary.  Returns true if successful, false on failure. */
 static bool
-type_check (const union any_node *n, enum val_type expected_type)
+type_check (const struct expr_node *n, enum val_type expected_type)
 {
   atom_type actual_type = expr_node_returns (n);
 
@@ -319,37 +319,101 @@ type_check (const union any_node *n, enum val_type expected_type)
 
 /* Recursive-descent expression parser. */
 
-/* Considers whether *NODE may be coerced to type REQUIRED_TYPE.
-   Returns true if possible, false if disallowed.
-
-   If DO_COERCION is false, then *NODE is not modified and there
-   are no side effects.
-
-   If DO_COERCION is true, we perform the coercion if possible,
-   modifying *NODE if necessary.  If the coercion is not possible
-   then we free *NODE and set *NODE to a null pointer.
-
-   This function's interface is somewhat awkward.  Use one of the
-   wrapper functions type_coercion(), type_coercion_assert(), or
-   is_coercible() instead. */
-static bool
-type_coercion_core (struct expression *e,
-                    atom_type required_type,
-                    union any_node **node,
-                    const char *operator_name,
-                    bool do_coercion)
+static void
+free_msg_location (void *loc_)
 {
-  atom_type actual_type;
+  struct msg_location *loc = loc_;
+  msg_location_destroy (loc);
+}
 
-  assert (!!do_coercion == (e != NULL));
-  if (*node == NULL)
+static void
+expr_location__ (struct expression *e,
+                 const struct expr_node *node,
+                 const struct msg_location **minp,
+                 const struct msg_location **maxp)
+{
+  struct msg_location *loc = node->location;
+  if (loc)
     {
-      /* Propagate error.  Whatever caused the original error
-         already emitted an error message. */
-      return false;
+      const struct msg_location *min = *minp;
+      if (loc->start.line
+          && (!min
+              || loc->start.line < min->start.line
+              || (loc->start.line == min->start.line
+                  && loc->start.column < min->start.column)))
+        *minp = loc;
+
+      const struct msg_location *max = *maxp;
+      if (loc->end.line
+          && (!max
+              || loc->end.line > max->end.line
+              || (loc->end.line == max->end.line
+                  && loc->end.column > max->end.column)))
+        *maxp = loc;
+
+      return;
     }
 
-  actual_type = expr_node_returns (*node);
+  if (is_composite (node->type))
+    for (size_t i = 0; i < node->n_args; i++)
+      expr_location__ (e, node->args[i], minp, maxp);
+}
+
+/* Returns the source code location corresponding to expression NODE, computing
+   it lazily if needed. */
+static const struct msg_location *
+expr_location (struct expression *e, const struct expr_node *node_)
+{
+  struct expr_node *node = CONST_CAST (struct expr_node *, node_);
+  if (!node)
+    return NULL;
+
+  if (!node->location)
+    {
+      const struct msg_location *min = NULL;
+      const struct msg_location *max = NULL;
+      expr_location__ (e, node, &min, &max);
+      if (min && max)
+        {
+          node->location = msg_location_dup (min);
+          node->location->end = max->end;
+          pool_register (e->expr_pool, free_msg_location, node->location);
+        }
+    }
+  return node->location;
+}
+
+/* Sets e->location to the tokens in S's lexer from offset START_OFS to the
+   token before the current one.  Has no effect if E already has a location or
+   if E is null. */
+static void
+expr_add_location (struct lexer *lexer, struct expression *e,
+                   int start_ofs, struct expr_node *node)
+{
+  if (node && !node->location)
+    {
+      node->location = lex_ofs_location (lexer, start_ofs, lex_ofs (lexer) - 1);
+      pool_register (e->expr_pool, free_msg_location, node->location);
+    }
+}
+
+static bool
+type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
+                 bool do_coercion)
+{
+  assert (!!do_coercion == (e != NULL));
+
+  if (!node)
+    return false;
+
+  struct expr_node **argp = &node->args[arg_idx];
+  struct expr_node *arg = *argp;
+  if (!arg)
+    return false;
+
+  const struct operation *op = &operations[node->type];
+  atom_type required_type = op->args[MIN (arg_idx, op->n_args - 1)];
+  atom_type actual_type = expr_node_returns (arg);
   if (actual_type == required_type)
     {
       /* Type match. */
@@ -365,7 +429,7 @@ type_coercion_core (struct expression *e,
              numeric "conversion".  This conversion is a no-op,
              so it will be removed later. */
           if (do_coercion)
-            *node = expr_allocate_unary (e, OP_BOOLEAN_TO_NUM, *node);
+            *argp = expr_allocate_unary (e, OP_BOOLEAN_TO_NUM, arg);
           return true;
         }
       break;
@@ -379,13 +443,7 @@ type_coercion_core (struct expression *e,
         {
           /* Convert numeric to boolean. */
           if (do_coercion)
-            {
-              union any_node *op_name;
-
-              op_name = expr_allocate_string (e, ss_cstr (operator_name));
-              *node = expr_allocate_binary (e, OP_NUM_TO_BOOLEAN, *node,
-                                            op_name);
-            }
+            *argp = expr_allocate_unary (e, OP_NUM_TO_BOOLEAN, arg);
           return true;
         }
       break;
@@ -395,13 +453,13 @@ type_coercion_core (struct expression *e,
 
     case OP_ni_format:
       msg_disable ();
-      if ((*node)->type == OP_format
-          && fmt_check_input (&(*node)->format.f)
-          && fmt_check_type_compat (&(*node)->format.f, VAL_NUMERIC))
+      if (arg->type == OP_format
+          && fmt_check_input (&arg->format)
+          && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
         {
           msg_enable ();
           if (do_coercion)
-            (*node)->type = OP_ni_format;
+            arg->type = OP_ni_format;
           return true;
         }
       msg_enable ();
@@ -409,52 +467,52 @@ type_coercion_core (struct expression *e,
 
     case OP_no_format:
       msg_disable ();
-      if ((*node)->type == OP_format
-          && fmt_check_output (&(*node)->format.f)
-          && fmt_check_type_compat (&(*node)->format.f, VAL_NUMERIC))
+      if (arg->type == OP_format
+          && fmt_check_output (&arg->format)
+          && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
         {
           msg_enable ();
           if (do_coercion)
-            (*node)->type = OP_no_format;
+            arg->type = OP_no_format;
           return true;
         }
       msg_enable ();
       break;
 
     case OP_num_var:
-      if ((*node)->type == OP_NUM_VAR)
+      if (arg->type == OP_NUM_VAR)
         {
           if (do_coercion)
-            *node = (*node)->composite.args[0];
+            *argp = arg->args[0];
           return true;
         }
       break;
 
     case OP_str_var:
-      if ((*node)->type == OP_STR_VAR)
+      if (arg->type == OP_STR_VAR)
         {
           if (do_coercion)
-            *node = (*node)->composite.args[0];
+            *argp = arg->args[0];
           return true;
         }
       break;
 
     case OP_var:
-      if ((*node)->type == OP_NUM_VAR || (*node)->type == OP_STR_VAR)
+      if (arg->type == OP_NUM_VAR || arg->type == OP_STR_VAR)
         {
           if (do_coercion)
-            *node = (*node)->composite.args[0];
+            *argp = arg->args[0];
           return true;
         }
       break;
 
     case OP_pos_int:
-      if ((*node)->type == OP_number
-          && floor ((*node)->number.n) == (*node)->number.n
-          && (*node)->number.n > 0 && (*node)->number.n < INT_MAX)
+      if (arg->type == OP_number
+          && floor (arg->number) == arg->number
+          && arg->number > 0 && arg->number < INT_MAX)
         {
           if (do_coercion)
-            *node = expr_allocate_pos_int (e, (*node)->number.n);
+            *argp = expr_allocate_pos_int (e, arg->number);
           return true;
         }
       break;
@@ -462,64 +520,27 @@ type_coercion_core (struct expression *e,
     default:
       NOT_REACHED ();
     }
-
-  if (do_coercion)
-    {
-      msg (SE, _("Type mismatch while applying %s operator: "
-                 "cannot convert %s to %s."),
-           operator_name,
-           atom_type_name (actual_type), atom_type_name (required_type));
-      *node = NULL;
-    }
   return false;
 }
 
-/* Coerces *NODE to type REQUIRED_TYPE, and returns success.  If
-   *NODE cannot be coerced to the desired type then we issue an
-   error message about operator OPERATOR_NAME and free *NODE. */
 static bool
-type_coercion (struct expression *e,
-               atom_type required_type, union any_node **node,
-               const char *operator_name)
+type_coercion (struct expression *e, struct expr_node *node, size_t arg_idx)
 {
-  return type_coercion_core (e, required_type, node, operator_name, true);
+  return type_coercion__ (e, node, arg_idx, true);
 }
 
-/* Coerces *NODE to type REQUIRED_TYPE.
-   Assert-fails if the coercion is disallowed. */
-static void
-type_coercion_assert (struct expression *e,
-                      atom_type required_type, union any_node **node)
-{
-  int success = type_coercion_core (e, required_type, node, NULL, true);
-  assert (success);
-}
-
-/* Returns true if *NODE may be coerced to type REQUIRED_TYPE,
-   false otherwise. */
 static bool
-is_coercible (atom_type required_type, union any_node *const *node)
+is_coercible (const struct expr_node *node_, size_t arg_idx)
 {
-  return type_coercion_core (NULL, required_type,
-                             (union any_node **) node, NULL, false);
-}
-
-/* Returns true if ACTUAL_TYPE is a kind of REQUIRED_TYPE, false
-   otherwise. */
-static bool
-is_compatible (atom_type required_type, atom_type actual_type)
-{
-  return (required_type == actual_type
-          || (required_type == OP_var
-              && (actual_type == OP_num_var || actual_type == OP_str_var)));
+  struct expr_node *node = CONST_CAST (struct expr_node *, node_);
+  return type_coercion__ (NULL, node, arg_idx, false);
 }
 
 /* How to parse an operator. */
 struct operator
   {
-    int token;                  /* Token representing operator. */
-    operation_type type;        /* Operation type representing operation. */
-    const char *name;           /* Name of operator. */
+    enum token_type token;      /* Operator token. */
+    operation_type type;        /* Operation. */
   };
 
 /* Attempts to match the current token against the tokens for the
@@ -527,155 +548,165 @@ struct operator
    and, if OPERATOR is non-null, sets *OPERATOR to the operator.
    On failure, returns false and, if OPERATOR is non-null, sets
    *OPERATOR to a null pointer. */
-static bool
+static const struct operator *
 match_operator (struct lexer *lexer, const struct operator ops[], size_t n_ops,
-                const struct operator **operator)
+                const struct expr_node *lhs)
 {
-  const struct operator *op;
-
-  for (op = ops; op < ops + n_ops; op++)
+  bool lhs_is_numeric = operations[lhs->type].returns != OP_string;
+  for (const struct operator *op = ops; op < ops + n_ops; op++)
     if (lex_token (lexer) == op->token)
       {
-        if (op->token != T_NEG_NUM)
-          lex_get (lexer);
-        if (operator != NULL)
-          *operator = op;
-        return true;
+        bool op_is_numeric = operations[op->type].args[0] != OP_string;
+        if (op_is_numeric == lhs_is_numeric)
+          {
+            if (op->token != T_NEG_NUM)
+              lex_get (lexer);
+            return op;
+          }
       }
-  if (operator != NULL)
-    *operator = NULL;
-  return false;
+  return NULL;
 }
 
-static bool
-check_operator (const struct operator *op, int n_args, atom_type arg_type)
+static const char *
+operator_name (const struct operator *op)
 {
-  const struct operation *o;
-  size_t i;
-
-  assert (op != NULL);
-  o = &operations[op->type];
-  assert (o->n_args == n_args);
-  assert ((o->flags & OPF_ARRAY_OPERAND) == 0);
-  for (i = 0; i < n_args; i++)
-    assert (is_compatible (arg_type, o->args[i]));
-  return true;
+  return op->token == T_NEG_NUM ? "-" : token_type_to_string (op->token);
 }
 
-static bool
-check_binary_operators (const struct operator ops[], size_t n_ops,
-                        atom_type arg_type)
+static struct expr_node *
+parse_binary_operators__ (struct lexer *lexer, struct expression *e,
+                          const struct operator ops[], size_t n_ops,
+                          parse_recursively_func *parse_next_level,
+                          const char *chain_warning, struct expr_node *lhs)
 {
-  size_t i;
+  for (int op_count = 0; ; op_count++)
+    {
+      const struct operator *operator = match_operator (lexer, ops, n_ops, lhs);
+      if (!operator)
+        {
+          if (op_count > 1 && chain_warning)
+            msg_at (SW, expr_location (e, lhs), "%s", chain_warning);
 
-  for (i = 0; i < n_ops; i++)
-    check_operator (&ops[i], 2, arg_type);
-  return true;
+          return lhs;
+        }
+
+      struct expr_node *rhs = parse_next_level (lexer, e);
+      if (!rhs)
+        return NULL;
+
+      struct expr_node *node = expr_allocate_binary (e, operator->type,
+                                                     lhs, rhs);
+      bool lhs_ok = type_coercion (e, node, 0);
+      bool rhs_ok = type_coercion (e, node, 1);
+
+      if (!lhs_ok || !rhs_ok)
+        {
+          int n_matches = 0;
+          for (size_t i = 0; i < n_ops; i++)
+            if (ops[i].token == operator->token)
+              n_matches++;
+
+          const char *name = operator_name (operator);
+          if (n_matches > 1)
+            msg_at (SE, expr_location (e, node),
+                    _("The operands of %s must have the same type."), name);
+          else if (operations[node->type].args[0] != OP_string)
+            msg_at (SE, expr_location (e, node),
+                    _("Both operands of %s must be numeric."), name);
+          else
+            msg_at (SE, expr_location (e, node),
+                    _("Both operands of %s must be strings."), name);
+
+          msg_at (SN, expr_location (e, node->args[0]),
+                  _("The left-hand operand of %s has type '%s'."),
+                  name, atom_type_name (expr_node_returns (node->args[0])));
+          msg_at (SN, expr_location (e, node->args[1]),
+                  _("The right-hand operand of %s has type '%s'."),
+                  name, atom_type_name (expr_node_returns (node->args[1])));
+
+          return NULL;
+        }
+
+      lhs = node;
+    }
 }
 
-static atom_type
-get_operand_type (const struct operator *op)
-{
-  return operations[op->type].args[0];
-}
-
-/* Parses a chain of left-associative operator/operand pairs.
-   There are OP_CNT operators, specified in OPS[].  The
-   operators' operands must all be the same type.  The next
-   higher level is parsed by PARSE_NEXT_LEVEL.  If CHAIN_WARNING
-   is non-null, then it will be issued as a warning if more than
-   one operator/operand pair is parsed. */
-static union any_node *
-parse_binary_operators (struct lexer *lexer, struct expression *e, union any_node *node,
+static struct expr_node *
+parse_binary_operators (struct lexer *lexer, struct expression *e,
                         const struct operator ops[], size_t n_ops,
                         parse_recursively_func *parse_next_level,
                         const char *chain_warning)
 {
-  atom_type operand_type = get_operand_type (&ops[0]);
-  int op_count;
-  const struct operator *operator;
+  struct expr_node *lhs = parse_next_level (lexer, e);
+  if (!lhs)
+    return NULL;
 
-  assert (check_binary_operators (ops, n_ops, operand_type));
-  if (node == NULL)
-    return node;
-
-  for (op_count = 0; match_operator (lexer, ops, n_ops, &operator); op_count++)
-    {
-      union any_node *rhs;
-
-      /* Convert the left-hand side to type OPERAND_TYPE. */
-      if (!type_coercion (e, operand_type, &node, operator->name))
-        return NULL;
-
-      /* Parse the right-hand side and coerce to type
-         OPERAND_TYPE. */
-      rhs = parse_next_level (lexer, e);
-      if (!type_coercion (e, operand_type, &rhs, operator->name))
-        return NULL;
-      node = expr_allocate_binary (e, operator->type, node, rhs);
-    }
-
-  if (op_count > 1 && chain_warning != NULL)
-    msg (SW, "%s", chain_warning);
-
-  return node;
+  return parse_binary_operators__ (lexer, e, ops, n_ops, parse_next_level,
+                                   chain_warning, lhs);
 }
 
-static union any_node *
+static struct expr_node *
 parse_inverting_unary_operator (struct lexer *lexer, struct expression *e,
                                 const struct operator *op,
                                 parse_recursively_func *parse_next_level)
 {
-  union any_node *node;
-  unsigned op_count;
-
-  check_operator (op, 1, get_operand_type (op));
-
-  op_count = 0;
-  while (match_operator (lexer, op, 1, NULL))
+  int start_ofs = lex_ofs (lexer);
+  unsigned int op_count = 0;
+  while (lex_match (lexer, op->token))
     op_count++;
 
-  node = parse_next_level (lexer, e);
-  if (op_count > 0
-      && type_coercion (e, get_operand_type (op), &node, op->name)
-      && op_count % 2 != 0)
-    return expr_allocate_unary (e, op->type, node);
-  else
-    return node;
+  struct expr_node *inner = parse_next_level (lexer, e);
+  if (!inner || !op_count)
+    return inner;
+
+  struct expr_node *outer = expr_allocate_unary (e, op->type, inner);
+  expr_add_location (lexer, e, start_ofs, outer);
+
+  if (!type_coercion (e, outer, 0))
+    {
+      assert (operations[outer->type].args[0] != OP_string);
+
+      const char *name = operator_name (op);
+      msg_at (SE, expr_location (e, outer),
+              _("The unary %s operator requires a numeric operand."), name);
+
+      msg_at (SN, expr_location (e, outer->args[0]),
+              _("The operand of %s has type '%s'."),
+              name, atom_type_name (expr_node_returns (outer->args[0])));
+
+      return NULL;
+    }
+
+  return op_count % 2 ? outer : outer->args[0];
 }
 
 /* Parses the OR level. */
-static union any_node *
+static struct expr_node *
 parse_or (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op =
-    { T_OR, OP_OR, "logical disjunction (`OR')" };
-
-  return parse_binary_operators (lexer, e, parse_and (lexer, e), &op, 1, parse_and, NULL);
+  static const struct operator op = { T_OR, OP_OR };
+  return parse_binary_operators (lexer, e, &op, 1, parse_and, NULL);
 }
 
 /* Parses the AND level. */
-static union any_node *
+static struct expr_node *
 parse_and (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op =
-    { T_AND, OP_AND, "logical conjunction (`AND')" };
+  static const struct operator op = { T_AND, OP_AND };
 
-  return parse_binary_operators (lexer, e, parse_not (lexer, e),
-				 &op, 1, parse_not, NULL);
+  return parse_binary_operators (lexer, e, &op, 1, parse_not, NULL);
 }
 
 /* Parses the NOT level. */
-static union any_node *
+static struct expr_node *
 parse_not (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op
-    = { T_NOT, OP_NOT, "logical negation (`NOT')" };
+  static const struct operator op = { T_NOT, OP_NOT };
   return parse_inverting_unary_operator (lexer, e, &op, parse_rel);
 }
 
 /* Parse relational operators. */
-static union any_node *
+static struct expr_node *
 parse_rel (struct lexer *lexer, struct expression *e)
 {
   const char *chain_warning =
@@ -686,99 +717,72 @@ parse_rel (struct lexer *lexer, struct expression *e)
       "If chaining is really intended, parentheses will disable "
       "this warning (e.g. `(a < b) < c'.)");
 
-  union any_node *node = parse_add (lexer, e);
-
-  if (node == NULL)
-    return NULL;
-
-  switch (expr_node_returns (node))
+  static const struct operator ops[] =
     {
-    case OP_number:
-    case OP_boolean:
-      {
-        static const struct operator ops[] =
-          {
-            { T_EQUALS, OP_EQ, "numeric equality (`=')" },
-            { T_EQ, OP_EQ, "numeric equality (`EQ')" },
-            { T_GE, OP_GE, "numeric greater-than-or-equal-to (`>=')" },
-            { T_GT, OP_GT, "numeric greater than (`>')" },
-            { T_LE, OP_LE, "numeric less-than-or-equal-to (`<=')" },
-            { T_LT, OP_LT, "numeric less than (`<')" },
-            { T_NE, OP_NE, "numeric inequality (`<>')" },
-          };
+      /* Numeric operators. */
+      { T_EQUALS, OP_EQ },
+      { T_EQ, OP_EQ },
+      { T_GE, OP_GE },
+      { T_GT, OP_GT },
+      { T_LE, OP_LE },
+      { T_LT, OP_LT },
+      { T_NE, OP_NE },
 
-        return parse_binary_operators (lexer, e, node, ops,
-				       sizeof ops / sizeof *ops,
-                                       parse_add, chain_warning);
-      }
+      /* String operators. */
+      { T_EQUALS, OP_EQ_STRING },
+      { T_EQ, OP_EQ_STRING },
+      { T_GE, OP_GE_STRING },
+      { T_GT, OP_GT_STRING },
+      { T_LE, OP_LE_STRING },
+      { T_LT, OP_LT_STRING },
+      { T_NE, OP_NE_STRING },
+    };
 
-    case OP_string:
-      {
-        static const struct operator ops[] =
-          {
-            { T_EQUALS, OP_EQ_STRING, "string equality (`=')" },
-            { T_EQ, OP_EQ_STRING, "string equality (`EQ')" },
-            { T_GE, OP_GE_STRING, "string greater-than-or-equal-to (`>=')" },
-            { T_GT, OP_GT_STRING, "string greater than (`>')" },
-            { T_LE, OP_LE_STRING, "string less-than-or-equal-to (`<=')" },
-            { T_LT, OP_LT_STRING, "string less than (`<')" },
-            { T_NE, OP_NE_STRING, "string inequality (`<>')" },
-          };
-
-        return parse_binary_operators (lexer, e, node, ops,
-				       sizeof ops / sizeof *ops,
-                                       parse_add, chain_warning);
-      }
-
-    default:
-      return node;
-    }
+  return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
+                                 parse_add, chain_warning);
 }
 
 /* Parses the addition and subtraction level. */
-static union any_node *
+static struct expr_node *
 parse_add (struct lexer *lexer, struct expression *e)
 {
   static const struct operator ops[] =
     {
-      { T_PLUS, OP_ADD, "addition (`+')" },
-      { T_DASH, OP_SUB, "subtraction (`-')" },
-      { T_NEG_NUM, OP_ADD, "subtraction (`-')" },
+      { T_PLUS, OP_ADD },
+      { T_DASH, OP_SUB },
+      { T_NEG_NUM, OP_ADD },
     };
 
-  return parse_binary_operators (lexer, e, parse_mul (lexer, e),
-                                 ops, sizeof ops / sizeof *ops,
+  return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
                                  parse_mul, NULL);
 }
 
 /* Parses the multiplication and division level. */
-static union any_node *
+static struct expr_node *
 parse_mul (struct lexer *lexer, struct expression *e)
 {
   static const struct operator ops[] =
     {
-      { T_ASTERISK, OP_MUL, "multiplication (`*')" },
-      { T_SLASH, OP_DIV, "division (`/')" },
+      { T_ASTERISK, OP_MUL },
+      { T_SLASH, OP_DIV },
     };
 
-  return parse_binary_operators (lexer, e, parse_neg (lexer, e),
-                                 ops, sizeof ops / sizeof *ops,
+  return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
                                  parse_neg, NULL);
 }
 
 /* Parses the unary minus level. */
-static union any_node *
+static struct expr_node *
 parse_neg (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_DASH, OP_NEG, "negation (`-')" };
+  static const struct operator op = { T_DASH, OP_NEG };
   return parse_inverting_unary_operator (lexer, e, &op, parse_exp);
 }
 
-static union any_node *
+static struct expr_node *
 parse_exp (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op =
-    { T_EXP, OP_POW, "exponentiation (`**')" };
+  static const struct operator op = { T_EXP, OP_POW };
 
   const char *chain_warning =
     _("The exponentiation operator (`**') is left-associative, "
@@ -786,25 +790,29 @@ parse_exp (struct lexer *lexer, struct expression *e)
       "That is, `a**b**c' equals `(a**b)**c', not as `a**(b**c)'.  "
       "To disable this warning, insert parentheses.");
 
-  union any_node *lhs, *node;
-  bool negative = false;
+  if (lex_token (lexer) != T_NEG_NUM || lex_next_token (lexer, 1) != T_EXP)
+    return parse_binary_operators (lexer, e, &op, 1,
+                                   parse_primary, chain_warning);
 
-  if (lex_token (lexer) == T_NEG_NUM)
-    {
-      lhs = expr_allocate_number (e, -lex_tokval (lexer));
-      negative = true;
-      lex_get (lexer);
-    }
-  else
-    lhs = parse_primary (lexer, e);
+  /* Special case for situations like "-5**6", which must be parsed as
+     -(5**6). */
 
-  node = parse_binary_operators (lexer, e, lhs, &op, 1,
-                                  parse_primary, chain_warning);
-  return negative ? expr_allocate_unary (e, OP_NEG, node) : node;
+  int start_ofs = lex_ofs (lexer);
+  struct expr_node *lhs = expr_allocate_number (e, -lex_tokval (lexer));
+  lex_get (lexer);
+
+  struct expr_node *node = parse_binary_operators__ (
+    lexer, e, &op, 1, parse_primary, chain_warning, lhs);
+  if (!node)
+    return NULL;
+
+  node = expr_allocate_unary (e, OP_NEG, node);
+  expr_add_location (lexer, e, start_ofs, node);
+  return node;
 }
 
 /* Parses system variables. */
-static union any_node *
+static struct expr_node *
 parse_sysvar (struct lexer *lexer, struct expression *e)
 {
   if (lex_match_id (lexer, "$CASENUM"))
@@ -867,8 +875,8 @@ parse_sysvar (struct lexer *lexer, struct expression *e)
 }
 
 /* Parses numbers, varnames, etc. */
-static union any_node *
-parse_primary (struct lexer *lexer, struct expression *e)
+static struct expr_node *
+parse_primary__ (struct lexer *lexer, struct expression *e)
 {
   switch (lex_token (lexer))
     {
@@ -917,7 +925,7 @@ parse_primary (struct lexer *lexer, struct expression *e)
     case T_POS_NUM:
     case T_NEG_NUM:
       {
-        union any_node *node = expr_allocate_number (e, lex_tokval (lexer));
+        struct expr_node *node = expr_allocate_number (e, lex_tokval (lexer));
         lex_get (lexer);
         return node;
       }
@@ -925,7 +933,7 @@ parse_primary (struct lexer *lexer, struct expression *e)
     case T_STRING:
       {
         const char *dict_encoding;
-        union any_node *node;
+        struct expr_node *node;
         char *s;
 
         dict_encoding = (e->ds != NULL
@@ -949,7 +957,7 @@ parse_primary (struct lexer *lexer, struct expression *e)
         while (lex_match (lexer, T_LPAREN))
           n++;
 
-        union any_node *node = parse_or (lexer, e);
+        struct expr_node *node = parse_or (lexer, e);
 	if (!node)
           return NULL;
 
@@ -966,16 +974,25 @@ parse_primary (struct lexer *lexer, struct expression *e)
     }
 }
 
-static union any_node *
+static struct expr_node *
+parse_primary (struct lexer *lexer, struct expression *e)
+{
+  int start_ofs = lex_ofs (lexer);
+  struct expr_node *node = parse_primary__ (lexer, e);
+  expr_add_location (lexer, e, start_ofs, node);
+  return node;
+}
+
+static struct expr_node *
 parse_vector_element (struct lexer *lexer, struct expression *e)
 {
-  const struct vector *vector;
-  union any_node *element;
+  int vector_start_ofs = lex_ofs (lexer);
 
   /* Find vector, skip token.
      The caller must already have verified that the current token
      is the name of a vector. */
-  vector = dict_lookup_vector (dataset_dict (e->ds), lex_tokcstr (lexer));
+  const struct vector *vector = dict_lookup_vector (dataset_dict (e->ds),
+                                                    lex_tokcstr (lexer));
   assert (vector != NULL);
   lex_get (lexer);
 
@@ -985,14 +1002,34 @@ parse_vector_element (struct lexer *lexer, struct expression *e)
   assert (lex_token (lexer) == T_LPAREN);
   lex_get (lexer);
 
-  element = parse_or (lexer, e);
-  if (!type_coercion (e, OP_number, &element, "vector indexing")
-      || !lex_match (lexer, T_RPAREN))
+  int element_start_ofs = lex_ofs (lexer);
+  struct expr_node *element = parse_or (lexer, e);
+  if (!element)
+    return NULL;
+  expr_add_location (lexer, e, element_start_ofs, element);
+
+  if (!lex_match (lexer, T_RPAREN))
     return NULL;
 
-  return expr_allocate_binary (e, (vector_get_type (vector) == VAL_NUMERIC
-                                   ? OP_VEC_ELEM_NUM : OP_VEC_ELEM_STR),
-                               element, expr_allocate_vector (e, vector));
+  operation_type type = (vector_get_type (vector) == VAL_NUMERIC
+                         ? OP_VEC_ELEM_NUM : OP_VEC_ELEM_STR);
+  struct expr_node *node = expr_allocate_binary (
+    e, type, element, expr_allocate_vector (e, vector));
+  expr_add_location (lexer, e, vector_start_ofs, node);
+
+  if (!type_coercion (e, node, 1))
+    {
+      msg_at (SE, expr_location (e, node),
+              _("A vector index must be numeric."));
+
+      msg_at (SN, expr_location (e, node->args[0]),
+              _("This vector index has type '%s'."),
+              atom_type_name (expr_node_returns (node->args[0])));
+
+      return NULL;
+    }
+
+  return node;
 }
 
 /* Individual function parsing. */
@@ -1093,39 +1130,29 @@ extract_min_valid (const char *s)
   return atoi (p + 1);
 }
 
-static atom_type
-function_arg_type (const struct operation *f, size_t arg_idx)
-{
-  assert (arg_idx < f->n_args || (f->flags & OPF_ARRAY_OPERAND));
-
-  return f->args[arg_idx < f->n_args ? arg_idx : f->n_args - 1];
-}
-
 static bool
-match_function (union any_node **args, int n_args, const struct operation *f)
+match_function__ (struct expr_node *node, const struct operation *f)
 {
-  size_t i;
-
-  if (n_args < f->n_args
-      || (n_args > f->n_args && (f->flags & OPF_ARRAY_OPERAND) == 0)
-      || n_args - (f->n_args - 1) < f->array_min_elems)
+  if (node->n_args < f->n_args
+      || (node->n_args > f->n_args && (f->flags & OPF_ARRAY_OPERAND) == 0)
+      || node->n_args - (f->n_args - 1) < f->array_min_elems)
     return false;
 
-  for (i = 0; i < n_args; i++)
-    if (!is_coercible (function_arg_type (f, i), &args[i]))
+  for (size_t i = 0; i < node->n_args; i++)
+    if (!is_coercible (node, i))
       return false;
 
   return true;
 }
 
-static void
-coerce_function_args (struct expression *e, const struct operation *f,
-                      union any_node **args, size_t n_args)
+static const struct operation *
+match_function (struct expr_node *node,
+                const struct operation *first, const struct operation *last)
 {
-  int i;
-
-  for (i = 0; i < n_args; i++)
-    type_coercion_assert (e, function_arg_type (f, i), &args[i]);
+  for (const struct operation *f = first; f < last; f++)
+    if (match_function__ (node, f))
+      return f;
+  return NULL;
 }
 
 static bool
@@ -1176,21 +1203,20 @@ validate_function_args (const struct operation *f, int n_args, int min_valid)
 }
 
 static void
-add_arg (union any_node ***args, int *n_args, int *allocated_args,
-         union any_node *arg)
+add_arg (struct expr_node ***args, size_t *n_args, size_t *allocated_args,
+         struct expr_node *arg,
+         struct expression *e, struct lexer *lexer, int arg_start_ofs)
 {
   if (*n_args >= *allocated_args)
-    {
-      *allocated_args += 8;
-      *args = xrealloc (*args, sizeof **args * *allocated_args);
-    }
+    *args = x2nrealloc (*args, allocated_args, sizeof **args);
 
+  expr_add_location (lexer, e, arg_start_ofs, arg);
   (*args)[(*n_args)++] = arg;
 }
 
 static void
 put_invocation (struct string *s,
-                const char *func_name, union any_node **args, size_t n_args)
+                const char *func_name, struct expr_node **args, size_t n_args)
 {
   size_t i;
 
@@ -1206,7 +1232,7 @@ put_invocation (struct string *s,
 
 static void
 no_match (const char *func_name,
-          union any_node **args, size_t n_args,
+          struct expr_node **args, size_t n_args,
           const struct operation *first, const struct operation *last)
 {
   struct string s;
@@ -1235,22 +1261,15 @@ no_match (const char *func_name,
   ds_destroy (&s);
 }
 
-static union any_node *
+static struct expr_node *
 parse_function (struct lexer *lexer, struct expression *e)
 {
-  int min_valid;
-  const struct operation *f, *first, *last;
-
-  union any_node **args = NULL;
-  int n_args = 0;
-  int allocated_args = 0;
-
   struct string func_name;
-
-  union any_node *n;
-
   ds_init_substring (&func_name, lex_tokss (lexer));
-  min_valid = extract_min_valid (lex_tokcstr (lexer));
+
+  int min_valid = extract_min_valid (lex_tokcstr (lexer));
+
+  const struct operation *first, *last;
   if (!lookup_function (lex_tokcstr (lexer), &first, &last))
     {
       msg (SE, _("No function or vector named %s."), lex_tokcstr (lexer));
@@ -1258,6 +1277,7 @@ parse_function (struct lexer *lexer, struct expression *e)
       return NULL;
     }
 
+  int func_start_ofs = lex_ofs (lexer);
   lex_get (lexer);
   if (!lex_force_match (lexer, T_LPAREN))
     {
@@ -1265,32 +1285,36 @@ parse_function (struct lexer *lexer, struct expression *e)
       return NULL;
     }
 
-  args = NULL;
-  n_args = allocated_args = 0;
+  struct expr_node **args = NULL;
+  size_t n_args = 0;
+  size_t allocated_args = 0;
   if (lex_token (lexer) != T_RPAREN)
     for (;;)
       {
+        int arg_start_ofs = lex_ofs (lexer);
         if (lex_token (lexer) == T_ID
             && lex_next_token (lexer, 1) == T_TO)
           {
             const struct variable **vars;
             size_t n_vars;
-            size_t i;
 
-            if (!parse_variables_const (lexer, dataset_dict (e->ds), &vars, &n_vars, PV_SINGLE))
+            if (!parse_variables_const (lexer, dataset_dict (e->ds),
+                                        &vars, &n_vars, PV_SINGLE))
               goto fail;
-            for (i = 0; i < n_vars; i++)
+            for (size_t i = 0; i < n_vars; i++)
               add_arg (&args, &n_args, &allocated_args,
-                       allocate_unary_variable (e, vars[i]));
+                       allocate_unary_variable (e, vars[i]),
+                       e, lexer, arg_start_ofs);
             free (vars);
           }
         else
           {
-            union any_node *arg = parse_or (lexer, e);
+            struct expr_node *arg = parse_or (lexer, e);
             if (arg == NULL)
               goto fail;
 
-            add_arg (&args, &n_args, &allocated_args, arg);
+            add_arg (&args, &n_args, &allocated_args, arg,
+                     e, lexer, arg_start_ofs);
           }
         if (lex_match (lexer, T_RPAREN))
           break;
@@ -1301,16 +1325,25 @@ parse_function (struct lexer *lexer, struct expression *e)
           }
       }
 
-  for (f = first; f < last; f++)
-    if (match_function (args, n_args, f))
-      break;
-  if (f >= last)
+  struct expr_node *n = expr_allocate_composite (e, first - operations,
+                                                 args, n_args);
+  expr_add_location (lexer, e, func_start_ofs, n);
+  const struct operation *f = match_function (n, first, last);
+  if (!f)
     {
       no_match (ds_cstr (&func_name), args, n_args, first, last);
       goto fail;
     }
+  n->type = f - operations;
+  n->min_valid = min_valid != -1 ? min_valid : f->array_min_elems;
 
-  coerce_function_args (e, f, args, n_args);
+  for (size_t i = 0; i < n_args; i++)
+    if (!type_coercion (e, n, i))
+      {
+        /* Unreachable because match_function already checked that the
+           arguments were coercible. */
+        NOT_REACHED ();
+      }
   if (!validate_function_args (f, n_args, min_valid))
     goto fail;
 
@@ -1329,18 +1362,13 @@ parse_function (struct lexer *lexer, struct expression *e)
       goto fail;
     }
 
-  n = expr_allocate_composite (e, f - operations, args, n_args);
-  n->composite.min_valid = min_valid != -1 ? min_valid : f->array_min_elems;
-
   if (n->type == OP_LAG_Vn || n->type == OP_LAG_Vs)
     dataset_need_lag (e->ds, 1);
   else if (n->type == OP_LAG_Vnn || n->type == OP_LAG_Vsn)
     {
-      int n_before;
-      assert (n->composite.n_args == 2);
-      assert (n->composite.args[1]->type == OP_pos_int);
-      n_before = n->composite.args[1]->integer.i;
-      dataset_need_lag (e->ds, n_before);
+      assert (n->n_args == 2);
+      assert (n->args[1]->type == OP_pos_int);
+      dataset_need_lag (e->ds, n->args[1]->integer);
     }
 
   free (args);
@@ -1360,17 +1388,16 @@ expr_create (struct dataset *ds)
 {
   struct pool *pool = pool_create ();
   struct expression *e = pool_alloc (pool, sizeof *e);
-  e->expr_pool = pool;
-  e->ds = ds;
-  e->eval_pool = pool_create_subpool (e->expr_pool);
-  e->ops = NULL;
-  e->op_types = NULL;
-  e->n_ops = e->allocated_ops = 0;
+  *e = (struct expression) {
+    .expr_pool = pool,
+    .ds = ds,
+    .eval_pool = pool_create_subpool (pool),
+  };
   return e;
 }
 
 atom_type
-expr_node_returns (const union any_node *n)
+expr_node_returns (const struct expr_node *n)
 {
   assert (n != NULL);
   assert (is_operation (n->type));
@@ -1389,160 +1416,120 @@ atom_type_name (atom_type type)
   return operations[type].name;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_nullary (struct expression *e, operation_type op)
 {
   return expr_allocate_composite (e, op, NULL, 0);
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_unary (struct expression *e, operation_type op,
-                     union any_node *arg0)
+                     struct expr_node *arg0)
 {
   return expr_allocate_composite (e, op, &arg0, 1);
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_binary (struct expression *e, operation_type op,
-                      union any_node *arg0, union any_node *arg1)
+                      struct expr_node *arg0, struct expr_node *arg1)
 {
-  union any_node *args[2];
+  struct expr_node *args[2];
   args[0] = arg0;
   args[1] = arg1;
   return expr_allocate_composite (e, op, args, 2);
 }
 
-static bool
-is_valid_node (union any_node *n)
-{
-  const struct operation *op;
-  size_t i;
-
-  assert (n != NULL);
-  assert (is_operation (n->type));
-  op = &operations[n->type];
-
-  if (!is_atom (n->type))
-    {
-      struct composite_node *c = &n->composite;
-
-      assert (is_composite (n->type));
-      assert (c->n_args >= op->n_args);
-      for (i = 0; i < op->n_args; i++)
-        assert (is_compatible (op->args[i], expr_node_returns (c->args[i])));
-      if (c->n_args > op->n_args && !is_operator (n->type))
-        {
-          assert (op->flags & OPF_ARRAY_OPERAND);
-          for (i = 0; i < c->n_args; i++)
-            assert (is_compatible (op->args[op->n_args - 1],
-                                   expr_node_returns (c->args[i])));
-        }
-    }
-
-  return true;
-}
-
-union any_node *
+struct expr_node *
 expr_allocate_composite (struct expression *e, operation_type op,
-                         union any_node **args, size_t n_args)
+                         struct expr_node **args, size_t n_args)
 {
-  union any_node *n;
-  size_t i;
+  for (size_t i = 0; i < n_args; i++)
+    if (!args[i])
+      return NULL;
 
-  n = pool_alloc (e->expr_pool, sizeof n->composite);
-  n->type = op;
-  n->composite.n_args = n_args;
-  n->composite.args = pool_alloc (e->expr_pool,
-                                  sizeof *n->composite.args * n_args);
-  for (i = 0; i < n_args; i++)
-    {
-      if (args[i] == NULL)
-        return NULL;
-      n->composite.args[i] = args[i];
-    }
-  memcpy (n->composite.args, args, sizeof *n->composite.args * n_args);
-  n->composite.min_valid = 0;
-  assert (is_valid_node (n));
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) {
+    .type = op,
+    .n_args = n_args,
+    .args = pool_clone (e->expr_pool, args, sizeof *n->args * n_args),
+  };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_number (struct expression *e, double d)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->number);
-  n->type = OP_number;
-  n->number.n = d;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_number, .number = d };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_boolean (struct expression *e, double b)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->number);
   assert (b == 0.0 || b == 1.0 || b == SYSMIS);
-  n->type = OP_boolean;
-  n->number.n = b;
+
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_boolean, .number = b };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_integer (struct expression *e, int i)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->integer);
-  n->type = OP_integer;
-  n->integer.i = i;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_integer, .integer = i };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_pos_int (struct expression *e, int i)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->integer);
   assert (i > 0);
-  n->type = OP_pos_int;
-  n->integer.i = i;
+
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_pos_int, .integer = i };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_vector (struct expression *e, const struct vector *vector)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->vector);
-  n->type = OP_vector;
-  n->vector.v = vector;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_vector, .vector = vector };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_string (struct expression *e, struct substring s)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->string);
-  n->type = OP_string;
-  n->string.s = s;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_string, .string = s };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_variable (struct expression *e, const struct variable *v)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->variable);
-  n->type = var_is_numeric (v) ? OP_num_var : OP_str_var;
-  n->variable.v = v;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) {
+    .type = var_is_numeric (v) ? OP_num_var : OP_str_var,
+    .variable = v
+  };
   return n;
 }
 
-union any_node *
+struct expr_node *
 expr_allocate_format (struct expression *e, const struct fmt_spec *format)
 {
-  union any_node *n = pool_alloc (e->expr_pool, sizeof n->format);
-  n->type = OP_format;
-  n->format.f = *format;
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_format, .format = *format };
   return n;
 }
 
 /* Allocates a unary composite node that represents the value of
    variable V in expression E. */
-static union any_node *
+static struct expr_node *
 allocate_unary_variable (struct expression *e, const struct variable *v)
 {
   assert (v != NULL);

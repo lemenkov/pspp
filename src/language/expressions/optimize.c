@@ -37,17 +37,15 @@
 
 #include "gl/xalloc.h"
 
-static union any_node *evaluate_tree (struct composite_node *,
-                                      struct expression *);
-static union any_node *optimize_tree (union any_node *, struct expression *);
+static struct expr_node *evaluate_tree (struct expr_node *, struct expression *);
+static struct expr_node *optimize_tree (struct expr_node *, struct expression *);
 
-union any_node *
-expr_optimize (union any_node *node, struct expression *e)
+struct expr_node *
+expr_optimize (struct expr_node *node, struct expression *e)
 {
   int n_nonconst = 0; /* Number of nonconstant children. */
   int n_sysmis = 0;   /* Number of system-missing children. */
   const struct operation *op;
-  struct composite_node *c;
   int i;
 
   /* We can't optimize an atom. */
@@ -55,21 +53,20 @@ expr_optimize (union any_node *node, struct expression *e)
     return node;
 
   /* Start by optimizing all the children. */
-  c = &node->composite;
-  for (i = 0; i < c->n_args; i++)
+  for (i = 0; i < node->n_args; i++)
     {
-      c->args[i] = expr_optimize (c->args[i], e);
-      if (c->args[i]->type == OP_number)
+      node->args[i] = expr_optimize (node->args[i], e);
+      if (node->args[i]->type == OP_number)
 	{
-	  if (c->args[i]->number.n == SYSMIS)
+	  if (node->args[i]->number == SYSMIS)
 	    n_sysmis++;
 	}
 
-      if (!is_atom (c->args[i]->type))
+      if (!is_atom (node->args[i]->type))
 	n_nonconst++;
     }
 
-  op = &operations[c->type];
+  op = &operations[node->type];
   if (n_sysmis && (op->flags & OPF_ABSORB_MISS) == 0)
     {
       /* Most operations produce SYSMIS given any SYSMIS
@@ -83,7 +80,7 @@ expr_optimize (union any_node *node, struct expression *e)
   else if (!n_nonconst && (op->flags & OPF_NONOPTIMIZABLE) == 0)
     {
       /* Evaluate constant expressions. */
-      return evaluate_tree (&node->composite, e);
+      return evaluate_tree (node, e);
     }
   else
     {
@@ -93,16 +90,15 @@ expr_optimize (union any_node *node, struct expression *e)
 }
 
 static int
-eq_double (union any_node *node, double n)
+eq_double (struct expr_node *node, double n)
 {
-  return node->type == OP_number && node->number.n == n;
+  return node->type == OP_number && node->number == n;
 }
 
-static union any_node *
-optimize_tree (union any_node *node, struct expression *e)
+static struct expr_node *
+optimize_tree (struct expr_node *n, struct expression *e)
 {
-  struct composite_node *n = &node->composite;
-  assert (is_composite (node->type));
+  assert (is_composite (n->type));
 
   /* If you add to these optimizations, please also add a
      correctness test in tests/expressions/expressions.sh. */
@@ -136,23 +132,23 @@ optimize_tree (union any_node *node, struct expression *e)
 
   /* Otherwise, nothing to do. */
   else
-    return node;
+    return n;
 }
 
-static double get_number_arg (struct composite_node *, size_t arg_idx);
-static double *get_number_args (struct composite_node *,
+static double get_number_arg (struct expr_node *, size_t arg_idx);
+static double *get_number_args (struct expr_node *,
                                  size_t arg_idx, size_t n_args,
                                  struct expression *);
-static struct substring get_string_arg (struct composite_node *,
+static struct substring get_string_arg (struct expr_node *,
                                            size_t arg_idx);
-static struct substring *get_string_args (struct composite_node *,
+static struct substring *get_string_args (struct expr_node *,
                                              size_t arg_idx, size_t n_args,
                                              struct expression *);
-static const struct fmt_spec *get_format_arg (struct composite_node *,
+static const struct fmt_spec *get_format_arg (struct expr_node *,
                                               size_t arg_idx);
 
-static union any_node *
-evaluate_tree (struct composite_node *node, struct expression *e)
+static struct expr_node *
+evaluate_tree (struct expr_node *node, struct expression *e)
 {
   switch (node->type)
     {
@@ -166,37 +162,34 @@ evaluate_tree (struct composite_node *node, struct expression *e)
 }
 
 static double
-get_number_arg (struct composite_node *c, size_t arg_idx)
+get_number_arg (struct expr_node *n, size_t arg_idx)
 {
-  assert (arg_idx < c->n_args);
-  assert (c->args[arg_idx]->type == OP_number
-          || c->args[arg_idx]->type == OP_boolean);
-  return c->args[arg_idx]->number.n;
+  assert (arg_idx < n->n_args);
+  assert (n->args[arg_idx]->type == OP_number
+          || n->args[arg_idx]->type == OP_boolean);
+  return n->args[arg_idx]->number;
 }
 
 static double *
-get_number_args (struct composite_node *c, size_t arg_idx, size_t n_args,
+get_number_args (struct expr_node *n, size_t arg_idx, size_t n_args,
                  struct expression *e)
 {
-  double *d;
-  size_t i;
-
-  d = pool_alloc (e->expr_pool, sizeof *d * n_args);
-  for (i = 0; i < n_args; i++)
-    d[i] = get_number_arg (c, i + arg_idx);
+  double *d = pool_alloc (e->expr_pool, sizeof *d * n_args);
+  for (size_t i = 0; i < n_args; i++)
+    d[i] = get_number_arg (n, i + arg_idx);
   return d;
 }
 
 static struct substring
-get_string_arg (struct composite_node *c, size_t arg_idx)
+get_string_arg (struct expr_node *n, size_t arg_idx)
 {
-  assert (arg_idx < c->n_args);
-  assert (c->args[arg_idx]->type == OP_string);
-  return c->args[arg_idx]->string.s;
+  assert (arg_idx < n->n_args);
+  assert (n->args[arg_idx]->type == OP_string);
+  return n->args[arg_idx]->string;
 }
 
 static struct substring *
-get_string_args (struct composite_node *c, size_t arg_idx, size_t n_args,
+get_string_args (struct expr_node *n, size_t arg_idx, size_t n_args,
                  struct expression *e)
 {
   struct substring *s;
@@ -204,24 +197,24 @@ get_string_args (struct composite_node *c, size_t arg_idx, size_t n_args,
 
   s = pool_alloc (e->expr_pool, sizeof *s * n_args);
   for (i = 0; i < n_args; i++)
-    s[i] = get_string_arg (c, i + arg_idx);
+    s[i] = get_string_arg (n, i + arg_idx);
   return s;
 }
 
 static const struct fmt_spec *
-get_format_arg (struct composite_node *c, size_t arg_idx)
+get_format_arg (struct expr_node *n, size_t arg_idx)
 {
-  assert (arg_idx < c->n_args);
-  assert (c->args[arg_idx]->type == OP_ni_format
-          || c->args[arg_idx]->type == OP_no_format);
-  return &c->args[arg_idx]->format.f;
+  assert (arg_idx < n->n_args);
+  assert (n->args[arg_idx]->type == OP_ni_format
+          || n->args[arg_idx]->type == OP_no_format);
+  return &n->args[arg_idx]->format;
 }
 
 /* Expression flattening. */
 
 static union operation_data *allocate_aux (struct expression *,
                                                 operation_type);
-static void flatten_node (union any_node *, struct expression *);
+static void flatten_node (struct expr_node *, struct expression *);
 
 static void
 emit_operation (struct expression *e, operation_type type)
@@ -267,7 +260,7 @@ emit_integer (struct expression *e, int i)
 }
 
 void
-expr_flatten (union any_node *n, struct expression *e)
+expr_flatten (struct expr_node *n, struct expression *e)
 {
   flatten_node (n, e);
   e->type = expr_node_returns (n);
@@ -276,19 +269,19 @@ expr_flatten (union any_node *n, struct expression *e)
 }
 
 static void
-flatten_atom (union any_node *n, struct expression *e)
+flatten_atom (struct expr_node *n, struct expression *e)
 {
   switch (n->type)
     {
     case OP_number:
     case OP_boolean:
       emit_operation (e, OP_number);
-      emit_number (e, n->number.n);
+      emit_number (e, n->number);
       break;
 
     case OP_string:
       emit_operation (e, OP_string);
-      emit_string (e, n->string.s);
+      emit_string (e, n->string);
       break;
 
     case OP_num_var:
@@ -307,38 +300,38 @@ flatten_atom (union any_node *n, struct expression *e)
 }
 
 static void
-flatten_composite (union any_node *n, struct expression *e)
+flatten_composite (struct expr_node *n, struct expression *e)
 {
   const struct operation *op = &operations[n->type];
   size_t i;
 
-  for (i = 0; i < n->composite.n_args; i++)
-    flatten_node (n->composite.args[i], e);
+  for (i = 0; i < n->n_args; i++)
+    flatten_node (n->args[i], e);
 
   if (n->type != OP_BOOLEAN_TO_NUM)
     emit_operation (e, n->type);
 
-  for (i = 0; i < n->composite.n_args; i++)
+  for (i = 0; i < n->n_args; i++)
     {
-      union any_node *arg = n->composite.args[i];
+      struct expr_node *arg = n->args[i];
       switch (arg->type)
         {
         case OP_num_var:
         case OP_str_var:
-          emit_variable (e, arg->variable.v);
+          emit_variable (e, arg->variable);
           break;
 
         case OP_vector:
-          emit_vector (e, arg->vector.v);
+          emit_vector (e, arg->vector);
           break;
 
         case OP_ni_format:
         case OP_no_format:
-          emit_format (e, &arg->format.f);
+          emit_format (e, &arg->format);
           break;
 
         case OP_pos_int:
-          emit_integer (e, arg->integer.i);
+          emit_integer (e, arg->integer);
           break;
 
         default:
@@ -348,13 +341,13 @@ flatten_composite (union any_node *n, struct expression *e)
     }
 
   if (op->flags & OPF_ARRAY_OPERAND)
-    emit_integer (e, n->composite.n_args - op->n_args + 1);
+    emit_integer (e, n->n_args - op->n_args + 1);
   if (op->flags & OPF_MIN_VALID)
-    emit_integer (e, n->composite.min_valid);
+    emit_integer (e, n->min_valid);
 }
 
 void
-flatten_node (union any_node *n, struct expression *e)
+flatten_node (struct expr_node *n, struct expression *e)
 {
   assert (is_operation (n->type));
 
