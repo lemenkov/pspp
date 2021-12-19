@@ -537,7 +537,12 @@ shuffled around.
 @cindex @code{$DATE}
 @item $DATE
 Date the @pspp{} process was started, in format A9, following the
-pattern @code{DD MMM YY}.
+pattern @code{DD-MMM-YY}.
+
+@cindex @code{$DATE11}
+@item $DATE11
+Date the @pspp{} process was started, in format A11, following the
+pattern @code{DD-MMM-YYYY}.
 
 @cindex @code{$JDATE}
 @item $JDATE

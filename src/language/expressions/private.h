@@ -33,36 +33,40 @@ enum operation_flags
        missing input values (although it is not obliged to do
        so).  Unless this bit is set, the operation's evaluation
        function will never be passed a missing argument. */
-    OPF_ABSORB_MISS = 004,
+    OPF_ABSORB_MISS = 1 << 0,
 
     /* If set, this operation's final operand is an array of one
        or more elements. */
-    OPF_ARRAY_OPERAND = 001,
+    OPF_ARRAY_OPERAND = 1 << 1,
 
     /* If set, the user can specify the minimum number of array
        elements that must be non-missing for the function result
        to be non-missing.  The operation must have an array
        operand and the array must contain `double's.  Both
        OPF_ABSORB_MISS and OPF_ARRAY_OPERAND must also be set. */
-    OPF_MIN_VALID = 002,
+    OPF_MIN_VALID = 1 << 2,
 
     /* If set, operation is non-optimizable in general.  Unless
        combined with OPF_ABSORB_MISS, missing input values are
        still assumed to yield missing results. */
-    OPF_NONOPTIMIZABLE = 010,
+    OPF_NONOPTIMIZABLE = 1 << 3,
 
     /* If set, this operation is not implemented. */
-    OPF_UNIMPLEMENTED = 020,
+    OPF_UNIMPLEMENTED = 1 << 4,
 
     /* If set, this operation is a PSPP extension. */
-    OPF_EXTENSION = 040,
+    OPF_EXTENSION = 1 << 5,
 
     /* If set, this operation may not occur after TEMPORARY.
        (Currently this applies only to LAG.) */
-    OPF_PERM_ONLY = 0100,
+    OPF_PERM_ONLY = 1 << 6,
 
     /* If set, this operation's name may not be abbreviated. */
-    OPF_NO_ABBREV = 0200
+    OPF_NO_ABBREV = 1 << 7,
+
+    /* If set, this operation needs the "struct expr_node *", for message
+       locations. */
+    OPF_EXPR_NODE = 1 << 8,
   };
 
 #define EXPR_ARG_MAX 4
@@ -113,6 +117,9 @@ struct expr_node
             struct expr_node **args; /* Arguments. */
             size_t min_valid;   /* Min valid array args to get valid result. */
           };
+
+        /* OP_exprnode. */
+        const struct expr_node *expr_node;
       };
   };
 
@@ -124,6 +131,7 @@ union operation_data
     const struct variable *variable;
     const struct vector *vector;
     struct fmt_spec *format;
+    const struct expr_node *expr_node;
     int integer;
   };
 
@@ -167,7 +175,12 @@ struct expr_node *expr_allocate_variable (struct expression *e,
                                         const struct variable *);
 struct expr_node *expr_allocate_format (struct expression *e,
                                  const struct fmt_spec *);
+struct expr_node *expr_allocate_expr_node (struct expression *,
+                                           const struct expr_node *);
 struct expr_node *expr_allocate_vector (struct expression *e,
                                       const struct vector *);
+
+const struct msg_location *expr_location (const struct expression *,
+                                          const struct expr_node *);
 
 #endif /* expressions/private.h */

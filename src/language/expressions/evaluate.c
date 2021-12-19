@@ -16,6 +16,7 @@
 
 #include <config.h>
 
+#include "language/expressions/private.h"
 #include "evaluate.h"
 
 #include <ctype.h>
@@ -23,7 +24,6 @@
 #include "libpspp/assertion.h"
 #include "libpspp/message.h"
 #include "language/expressions/helpers.h"
-#include "language/expressions/private.h"
 #include "language/lexer/value-parser.h"
 #include "libpspp/pool.h"
 #include "output/driver.h"
@@ -108,32 +108,40 @@ expr_evaluate_str (struct expression *e, const struct ccase *c, int case_idx,
 #include "language/lexer/lexer.h"
 #include "language/command.h"
 
+static bool default_optimize = true;
+
 int
 cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
 {
-  bool optimize = true;
+  bool optimize = default_optimize;
   int retval = CMD_FAILURE;
   bool dump_postfix = false;
+  bool set_defaults = false;
 
   struct ccase *c = NULL;
 
   struct dataset *ds = NULL;
 
   char *name = NULL;
+  char *title = NULL;
 
   struct expression *expr;
 
+  struct dictionary *d = NULL;
+
   for (;;)
     {
-      struct dictionary *d = NULL;
       if (lex_match_id (lexer, "NOOPTIMIZE"))
-        optimize = 0;
+        optimize = false;
+      else if (lex_match_id (lexer, "OPTIMIZE"))
+        optimize = true;
       else if (lex_match_id (lexer, "POSTFIX"))
         dump_postfix = 1;
+      else if (lex_match_id (lexer, "SET"))
+        set_defaults = true;
       else if (lex_match (lexer, T_LPAREN))
         {
           struct variable *v;
-          int width;
 
           if (!lex_force_id (lexer))
             goto done;
@@ -143,10 +151,25 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           if (!lex_force_match (lexer, T_EQUALS))
             goto done;
 
+          union value value;
+          int width;
           if (lex_is_number (lexer))
-            width = 0;
+            {
+              width = 0;
+              value.f = lex_number (lexer);
+              lex_get (lexer);
+            }
+          else if (lex_match_id (lexer, "SYSMIS"))
+            {
+              width = 0;
+              value.f = SYSMIS;
+            }
           else if (lex_is_string (lexer))
-            width = ss_length (lex_tokss (lexer));
+            {
+              width = ss_length (lex_tokss (lexer));
+              value.s = CHAR_CAST (uint8_t *, ss_xstrdup (lex_tokss (lexer)));
+              lex_get (lexer);
+            }
           else
             {
               lex_error (lexer, _("expecting number or string"));
@@ -163,35 +186,66 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           if (v == NULL)
             {
               msg (SE, _("Duplicate variable name %s."), name);
+              value_destroy (&value, width);
               goto done;
             }
           free (name);
           name = NULL;
 
+          if (lex_match_id (lexer, "MISSING"))
+            {
+              struct missing_values mv;
+              mv_init (&mv, width);
+              mv_add_value (&mv, &value);
+              var_set_missing_values (v, &mv);
+              mv_destroy (&mv);
+            }
+
           if (c == NULL)
             c = case_create (dict_get_proto (d));
           else
             c = case_unshare_and_resize (c, dict_get_proto (d));
-
-          if (!parse_value (lexer, case_data_rw (c, v), v))
-            NOT_REACHED ();
+          value_swap (case_data_rw (c, v), &value);
+          value_destroy (&value, width);
 
           if (!lex_force_match (lexer, T_RPAREN))
             goto done;
+        }
+      else if (lex_match_id (lexer, "VECTOR"))
+        {
+          struct variable **vars;
+          size_t n;
+          dict_get_vars_mutable (d, &vars, &n, 0);
+          dict_create_vector_assert (d, "V", vars, n);
+          free (vars);
         }
       else
         break;
     }
 
-  if (!lex_force_match (lexer, T_SLASH))
+  if (set_defaults)
+    {
+      retval = CMD_SUCCESS;
+      default_optimize = optimize;
       goto done;
+    }
+
+  if (!lex_force_match (lexer, T_SLASH))
+    goto done;
+
+  for (size_t i = 1; ; i++)
+    if (lex_next_token (lexer, i) == T_ENDCMD)
+      {
+        title = lex_next_representation (lexer, 0, i - 1);
+        break;
+      }
 
   expr = expr_parse_any (lexer, ds, optimize);
   if (!expr || lex_end_of_command (lexer) != CMD_SUCCESS)
     {
       if (expr != NULL)
         expr_free (expr);
-      output_log ("error");
+      output_log ("%s => error", title);
       goto done;
     }
 
@@ -201,19 +255,20 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
     switch (expr->type)
       {
       case OP_number:
+      case OP_num_vec_elem:
         {
           double d = expr_evaluate_num (expr, c, 0);
           if (d == SYSMIS)
-            output_log ("sysmis");
+            output_log ("%s => sysmis", title);
           else
-            output_log ("%.2f", d);
+            output_log ("%s => %.2f", title, d);
         }
         break;
 
       case OP_boolean:
         {
           double b = expr_evaluate_num (expr, c, 0);
-          output_log ("%s",
+          output_log ("%s => %s", title,
                       b == SYSMIS ? "sysmis" : b == 0.0 ? "false" : "true");
         }
         break;
@@ -222,7 +277,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
         {
           struct substring out;
           expr_evaluate (expr, c, 0, &out);
-          output_log ("\"%.*s\"", (int) out.length, out.string);
+          output_log ("%s => \"%.*s\"", title, (int) out.length, out.string);
           break;
         }
 
@@ -239,6 +294,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
   case_unref (c);
 
   free (name);
+  free (title);
 
   return retval;
 }
@@ -293,6 +349,9 @@ expr_debug_print_postfix (const struct expression *e)
           break;
         case OP_integer:
           ds_put_format (&s, "i<%d>", op->integer);
+          break;
+        case OP_expr_node:
+          ds_put_cstr (&s, "expr_node");
           break;
         default:
           NOT_REACHED ();

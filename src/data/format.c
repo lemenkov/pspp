@@ -334,10 +334,11 @@ fmt_default_for_width (int width)
           : fmt_for_output (FMT_A, width, 0));
 }
 
-/* Checks whether SPEC is valid for USE and returns nonzero if so.
-   Otherwise, emits an error message and returns zero. */
-bool
-fmt_check (const struct fmt_spec *spec, enum fmt_use use)
+/* Checks whether SPEC is valid for USE and returns NULL if so.  Otherwise,
+   returns a malloc()'d string that describes the error.  The caller must
+   eventually free() the string. */
+char *
+fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
 {
   char str[FMT_STRING_LEN_MAX + 1];
   int min_w, max_w, max_d;
@@ -346,107 +347,115 @@ fmt_check (const struct fmt_spec *spec, enum fmt_use use)
   fmt_to_string (spec, str);
 
   if (use == FMT_FOR_INPUT && !fmt_usable_for_input (spec->type))
-    {
-      msg (SE, _("Format %s may not be used for input."), str);
-      return false;
-    }
+    return xasprintf (_("Format %s may not be used for input."), str);
 
   if (spec->w % fmt_step_width (spec->type))
     {
       assert (fmt_step_width (spec->type) == 2);
-      if (use == FMT_FOR_INPUT)
-        msg (SE, _("Input format %s specifies width %d, "
-                   "but %s requires an even width."),
-             str, spec->w, fmt_name (spec->type));
-      else
-        msg (SE, _("Output format %s specifies width %d, "
-                   "but %s requires an even width."),
-             str, spec->w, fmt_name (spec->type));
-      return false;
+      return (use == FMT_FOR_INPUT
+              ? xasprintf (_("Input format %s specifies width %d, "
+                             "but %s requires an even width."),
+                           str, spec->w, fmt_name (spec->type))
+              : xasprintf (_("Output format %s specifies width %d, "
+                             "but %s requires an even width."),
+                           str, spec->w, fmt_name (spec->type)));
     }
 
   min_w = fmt_min_width (spec->type, use);
   max_w = fmt_max_width (spec->type, use);
   if (spec->w < min_w || spec->w > max_w)
-    {
-      if (use == FMT_FOR_INPUT)
-        msg (SE, _("Input format %s specifies width %d, but "
-                   "%s requires a width between %d and %d."),
-             str, spec->w, fmt_name (spec->type), min_w, max_w);
-      else
-        msg (SE, _("Output format %s specifies width %d, but "
-                   "%s requires a width between %d and %d."),
-             str, spec->w, fmt_name (spec->type), min_w, max_w);
-      return false;
-    }
+    return (use == FMT_FOR_INPUT
+            ? xasprintf (_("Input format %s specifies width %d, but "
+                           "%s requires a width between %d and %d."),
+                         str, spec->w, fmt_name (spec->type), min_w, max_w)
+            : xasprintf (_("Output format %s specifies width %d, but "
+                           "%s requires a width between %d and %d."),
+                         str, spec->w, fmt_name (spec->type), min_w, max_w));
 
   max_d = fmt_max_decimals (spec->type, spec->w, use);
   if (!fmt_takes_decimals (spec->type) && spec->d != 0)
-    {
-      if (use == FMT_FOR_INPUT)
-        msg (SE, ngettext ("Input format %s specifies %d decimal place, but "
-                           "%s does not allow any decimals.",
-                           "Input format %s specifies %d decimal places, but "
-                           "%s does not allow any decimals.",
+    return (use == FMT_FOR_INPUT
+            ? xasprintf (ngettext (
+                           "Input format %s specifies %d decimal "
+                           "place, but %s does not allow any decimals.",
+                           "Input format %s specifies %d decimal "
+                           "places, but %s does not allow any "
+                           "decimals.",
                            spec->d),
-             str, spec->d, fmt_name (spec->type));
-      else
-        msg (SE, ngettext ("Output format %s specifies %d decimal place, but "
-                           "%s does not allow any decimals.",
+                         str, spec->d, fmt_name (spec->type))
+            : xasprintf (ngettext (
+                           "Output format %s specifies %d decimal "
+                           "place, but %s does not allow any decimals.",
                            "Output format %s specifies %d decimal places, but "
                            "%s does not allow any decimals.",
                            spec->d),
-             str, spec->d, fmt_name (spec->type));
-      return false;
-    }
+                         str, spec->d, fmt_name (spec->type)));
   else if (spec->d > max_d)
     {
       if (max_d > 0)
-        {
-          if (use == FMT_FOR_INPUT)
-            msg (SE, ngettext ("Input format %s specifies %d decimal place, "
+        return (use == FMT_FOR_INPUT
+                ? xasprintf (ngettext (
+                               "Input format %s specifies %d decimal place, "
                                "but the given width allows at most "
                                "%d decimals.",
                                "Input format %s specifies %d decimal places, "
                                "but the given width allows at most "
                                "%d decimals.",
                                spec->d),
-                 str, spec->d, max_d);
-          else
-            msg (SE, ngettext ("Output format %s specifies %d decimal place, "
+                             str, spec->d, max_d)
+                : xasprintf (ngettext (
+                               "Output format %s specifies %d decimal place, "
                                "but the given width allows at most "
                                "%d decimals.",
                                "Output format %s specifies %d decimal places, "
                                "but the given width allows at most "
                                "%d decimals.",
                                spec->d),
-                 str, spec->d, max_d);
-        }
+                             str, spec->d, max_d));
       else
-        {
-          if (use == FMT_FOR_INPUT)
-            msg (SE, ngettext ("Input format %s specifies %d decimal place, "
+        return (use == FMT_FOR_INPUT
+                ? xasprintf (ngettext (
+                               "Input format %s specifies %d decimal place, "
                                "but the given width does not allow "
                                "for any decimals.",
                                "Input format %s specifies %d decimal places, "
                                "but the given width does not allow "
                                "for any decimals.",
                                spec->d),
-                 str, spec->d);
-          else
-            msg (SE, ngettext ("Output format %s specifies %d decimal place, "
+                             str, spec->d)
+                : xasprintf (ngettext (
+                               "Output format %s specifies %d decimal place, "
                                "but the given width does not allow "
                                "for any decimals.",
                                "Output format %s specifies %d decimal places, "
                                "but the given width does not allow "
                                "for any decimals.",
                                spec->d),
-                 str, spec->d);
-        }
-      return false;
+                             str, spec->d));
     }
 
-  return true;
+  return NULL;
+}
+
+static bool
+fmt_emit_and_free_error (char *error)
+{
+  if (error)
+    {
+      msg (SE, "%s", error);
+      free (error);
+      return false;
+    }
+  else
+    return true;
+}
+
+/* Checks whether SPEC is valid for USE and returns nonzero if so.  Otherwise,
+   emits an error message for the current source location and returns zero. */
+bool
+fmt_check (const struct fmt_spec *spec, enum fmt_use use)
+{
+  return fmt_emit_and_free_error (fmt_check__ (spec, use));
 }
 
 /* Checks whether SPEC is valid as an input format and returns
@@ -466,23 +475,52 @@ fmt_check_output (const struct fmt_spec *spec)
   return fmt_check (spec, FMT_FOR_OUTPUT);
 }
 
+/* Checks that FORMAT is appropriate for a variable of the given VAR_TYPE and
+   returns NULL if so.  Otherwise returns a malloc()'d error message that the
+   calelr must eventually free(). */
+char *
+fmt_check_type_compat__ (const struct fmt_spec *format, enum val_type var_type)
+{
+  assert (val_type_is_valid (var_type));
+  if ((var_type == VAL_STRING) != (fmt_is_string (format->type) != 0))
+    {
+      char str[FMT_STRING_LEN_MAX + 1];
+      return xasprintf (_("%s variables are not compatible with %s format %s."),
+                        var_type == VAL_STRING ? _("String") : _("Numeric"),
+                        var_type == VAL_STRING ? _("numeric") : _("string"),
+                        fmt_to_string (format, str));
+    }
+  return NULL;
+}
+
 /* Checks that FORMAT is appropriate for a variable of the given
    VAR_TYPE and returns true if so.  Otherwise returns false and
    emits an error message. */
 bool
 fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
 {
-  assert (val_type_is_valid (var_type));
-  if ((var_type == VAL_STRING) != (fmt_is_string (format->type) != 0))
+  return fmt_emit_and_free_error (fmt_check_type_compat__ (format, var_type));
+}
+
+/* Checks that FORMAT is appropriate for a variable of the given WIDTH and
+   returns NULL if so.  Otherwise returns a malloc()'d error message that the
+   calelr must eventually free(). */
+char *
+fmt_check_width_compat__ (const struct fmt_spec *format, int width)
+{
+  char *error = fmt_check_type_compat__ (format, val_type_from_width (width));
+  if (error)
+    return error;
+
+  if (fmt_var_width (format) != width)
     {
       char str[FMT_STRING_LEN_MAX + 1];
-      msg (SE, _("%s variables are not compatible with %s format %s."),
-           var_type == VAL_STRING ? _("String") : _("Numeric"),
-           var_type == VAL_STRING ? _("numeric") : _("string"),
-           fmt_to_string (format, str));
-      return false;
+      return xasprintf (_("String variable with width %d is not compatible "
+                          "with format %s."),
+                        width, fmt_to_string (format, str));
     }
-  return true;
+
+  return NULL;
 }
 
 /* Checks that FORMAT is appropriate for a variable of the given
@@ -491,17 +529,7 @@ fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
 bool
 fmt_check_width_compat (const struct fmt_spec *format, int width)
 {
-  if (!fmt_check_type_compat (format, val_type_from_width (width)))
-    return false;
-  if (fmt_var_width (format) != width)
-    {
-      char str[FMT_STRING_LEN_MAX + 1];
-      msg (SE, _("String variable with width %d is not compatible with "
-                 "format %s."),
-           width, fmt_to_string (format, str));
-      return false;
-    }
-  return true;
+  return fmt_emit_and_free_error (fmt_check_width_compat__ (format, width));
 }
 
 /* Returns the width corresponding to FORMAT.  The return value

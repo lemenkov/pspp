@@ -103,18 +103,18 @@ absorb_miss function MOD (n, d)
 }
 
 // N-ary numeric functions.
-absorb_miss boolean function ANY (x != SYSMIS, a[n])
+absorb_miss boolean function ANY (x, a[n])
 {
-  int sysmis = 0;
-  size_t i;
-
-  for (i = 0; i < n; i++)
-    if (a[i] == x)
-      return 1.;
-    else if (a[i] == SYSMIS)
-      sysmis = 1;
-
-  return sysmis ? SYSMIS : 0.;
+  double retval = SYSMIS;
+  if (x != SYSMIS)
+    {
+      for (size_t i = 0; i < n; i++)
+        if (a[i] == x)
+          return 1.;
+        else if (a[i] != SYSMIS)
+          retval = 0.;
+    }
+  return retval;
 }
 
 boolean function ANY (string x, string a[n])
@@ -217,36 +217,38 @@ absorb_miss function NVALID (a[n])
 
 absorb_miss boolean function RANGE (x != SYSMIS, a[n*2])
 {
-  size_t i;
-  int sysmis = 0;
-
-  for (i = 0; i < n; i++)
+  bool found = false;
+  bool valid = false;
+  for (size_t i = 0; i < n; i++)
     {
       double w = a[2 * i];
       double y = a[2 * i + 1];
       if (w != SYSMIS && y != SYSMIS)
         {
           if (w <= x && x <= y)
-            return 1.0;
+            found = true;
+          else if (w <= y)
+            valid = true;
+          else
+            return SYSMIS;
         }
-      else
-        sysmis = 1;
     }
-  return sysmis ? SYSMIS : 0.;
+  return found ? true : valid ? false : SYSMIS;
 }
 
 boolean function RANGE (string x, string a[n*2])
 {
-  int i;
-
-  for (i = 0; i < n; i++)
+  bool found = false;
+  for (size_t i = 0; i < n; i++)
     {
       struct substring *w = &a[2 * i];
       struct substring *y = &a[2 * i + 1];
       if (compare_string_3way (w, &x) <= 0 && compare_string_3way (&x, y) <= 0)
-        return 1.;
+        found = true;
+      else if (compare_string_3way (w, y) > 0)
+        return SYSMIS;
     }
-  return 0.;
+  return found;
 }
 
 function SD.2 (a[n])
@@ -277,10 +279,22 @@ function VARIANCE.2 (a[n])
 
 // Time construction & extraction functions.
 function TIME.HMS (h, m, s)
+  expression e;
+  expr_node n;
 {
   if ((h > 0. || m > 0. || s > 0.) && (h < 0. || m < 0. || s < 0.))
     {
-      msg (SW, _("TIME.HMS cannot mix positive and negative arguments."));
+      msg_at (SW, expr_location (e, n),
+              _("TIME.HMS cannot accept a mix of positive and negative "
+                "arguments."));
+      double args[] = { h, m, s };
+      for (size_t i = 0; i < 3; i++)
+        if (args[i] > 0)
+          msg_at (SN, expr_location (e, n->args[i]),
+                  _("This argument has positive value %g."), args[i]);
+        else if (args[i] < 0)
+          msg_at (SN, expr_location (e, n->args[i]),
+                  _("This argument has negative value %g."), args[i]);
       return SYSMIS;
     }
   else
@@ -293,21 +307,93 @@ function CTIME.MINUTES (time) = time / MIN_S;
 function CTIME.SECONDS (time) = time;
 
 // Date construction functions.
-function DATE.DMY (d, m, y) = expr_ymd_to_date (y, m, d);
-function DATE.MDY (m, d, y) = expr_ymd_to_date (y, m, d);
-function DATE.MOYR (m, y) = expr_ymd_to_date (y, m, 1);
-function DATE.QYR (q, y)
+function DATE.DMY (integer d, integer m, integer y)
+  expression e;
+  expr_node n;
+= expr_ymd_to_date (y, m, d, e, n, 3, 2, 1);
+
+function DATE.MDY (integer m, integer d, integer y)
+  expression e;
+  expr_node n;
+= expr_ymd_to_date (y, m, d, e, n, 3, 1, 2);
+
+function DATE.MOYR (integer m, integer y)
+  expression e;
+  expr_node n;
+= expr_ymd_to_date (y, m, 1, e, n, 2, 1, 0);
+
+function DATE.QYR (integer q, integer y)
+  expression e;
+  expr_node n;
 {
-  if (q < 1.0 || q > 4.0 || q != (int) q)
+  if (q < 1 || q > 4)
     {
-      msg (SW, _("The first argument to DATE.QYR must be 1, 2, 3, or 4."));
+      msg_at (SW, expr_location (e, n->args[0]),
+              _("Argument 1 to DATE.QYR must be 1, 2, 3, or 4 (not %d)."), q);
       return SYSMIS;
     }
-   return expr_ymd_to_date (y, q * 3 - 2, 1);
+  return expr_ymd_to_date (y, q * 3 - 2, 1, e, n, 2, 0, 0);
 }
-function DATE.WKYR (w, y) = expr_wkyr_to_date (w, y);
-function DATE.YRDAY (y, yday) = expr_yrday_to_date (y, yday);
-function YRMODA (y, m, d) = expr_yrmoda (y, m, d);
+
+function DATE.WKYR (integer w, integer y)
+  expression e;
+  expr_node n;
+{
+  if (w < 1 || w > 53)
+    {
+      msg_at (SE, expr_location (e, n->args[0]),
+              _("The week argument to DATE.WKYR is outside the acceptable "
+                "range of 1 to 53.  The result will be system-missing."));
+      return SYSMIS;
+    }
+  else
+    {
+      double yr_1_1 = expr_ymd_to_ofs (y, 1, 1, e, n, 2, 0, 0);
+      if (yr_1_1 != SYSMIS)
+        return DAY_S * (yr_1_1 + WEEK_DAY * (w - 1));
+      else
+        return SYSMIS;
+    }
+}
+
+function DATE.YRDAY (integer y, integer yd)
+  expression e;
+  expr_node n;
+{
+  if (yd < 1 || yd > 366)
+    {
+      msg_at (SE, expr_location (e, n->args[1]),
+              _("The value %d as day argument to DATE.YRDAY is outside the "
+                "acceptable range of 1 to 366.  "
+                "The result will be system-missing."), yd);
+      return SYSMIS;
+    }
+  else
+    {
+      double yr_1_1 = expr_ymd_to_ofs (y, 1, 1, e, n, 1, 0, 0);
+      if (yr_1_1 != SYSMIS)
+        return DAY_S * (yr_1_1 + yd - 1.);
+      else
+        return SYSMIS;
+    }
+}
+
+function YRMODA (integer y, integer m, integer d)
+  expression e;
+  expr_node n;
+{
+  if (y >= 0 && y <= 99)
+    y += 1900;
+  else if (y > 47516)
+    {
+      msg_at (SE, expr_location (e, n->args[0]),
+              _("The year argument to YRMODA is greater than 47516.  "
+                "The result will be system-missing."));
+      return SYSMIS;
+    }
+
+  return expr_ymd_to_ofs (y, m, d, e, n, 1, 2, 3);
+}
 
 // Date extraction functions.
 function XDATE.TDAY (date) = floor (date / DAY_S);
@@ -330,11 +416,18 @@ function XDATE.YEAR (date >= DAY_S) = calendar_offset_to_year (date / DAY_S);
 
 // Date arithmetic functions.
 no_abbrev function DATEDIFF (date2 >= DAY_S, date1 >= DAY_S, string unit)
-     = expr_date_difference (date1, date2, unit);
+  expression e;
+  expr_node n;
+= expr_date_difference (date1, date2, unit, e, n);
+
 no_abbrev function DATESUM (date, quantity, string unit)
-     = expr_date_sum (date, quantity, unit, ss_cstr ("closest"));
+  expression e;
+  expr_node n;
+= expr_date_sum_closest (date, quantity, unit, e, n);
 no_abbrev function DATESUM (date, quantity, string unit, string method)
-     = expr_date_sum (date, quantity, unit, method);
+  expression e;
+  expr_node n;
+= expr_date_sum (date, quantity, unit, method, e, n);
 
 
 // String functions.
@@ -363,84 +456,83 @@ string function CONCAT (string a[n])
 
 function INDEX (string haystack, string needle)
 {
-  if (needle.length == 0)
-    return SYSMIS;
-  else
+  if (haystack.length >= needle.length)
     {
-      int limit = haystack.length - needle.length + 1;
-      int i;
-      for (i = 1; i <= limit; i++)
+      size_t limit = haystack.length - needle.length + 1;
+      for (size_t i = 1; i <= limit; i++)
         if (!memcmp (&haystack.string[i - 1], needle.string, needle.length))
           return i;
-      return 0;
     }
+  return 0;
 }
 
-function INDEX (string haystack, string needles, needle_len_d)
+function INDEX (string haystack, string needles, integer needle_len)
+  expression e;
+  expr_node n;
 {
-  if (needle_len_d <= INT_MIN || needle_len_d >= INT_MAX
-      || (int) needle_len_d != needle_len_d
-      || needles.length == 0)
-    return SYSMIS;
-  else
+  if (needle_len <= 0 || needles.length % needle_len != 0)
     {
-      int needle_len = needle_len_d;
-      if (needle_len < 0 || needle_len > needles.length
-          || needles.length % needle_len != 0)
-        return SYSMIS;
-      else
-        {
-          int limit = haystack.length - needle_len + 1;
-          int i, j;
-          for (i = 1; i <= limit; i++)
-            for (j = 0; j < needles.length; j += needle_len)
-              if (!memcmp (&haystack.string[i - 1], &needles.string[j],
-                           needle_len))
-                return i;
-          return 0;
-        }
+      msg_at (SE, expr_location (e, n),
+              _("INDEX needle length argument must evenly divide the "
+                "length of the needles argument."));
+      msg_at (SN, expr_location (e, n->args[1]),
+              _("The needles argument has length %zu."), needles.length);
+      msg_at (SN, expr_location (e, n->args[2]),
+              _("The needle length argument has value %d."), needle_len);
+      return SYSMIS;
     }
+
+  if (haystack.length >= needle_len)
+    {
+      size_t limit = haystack.length - needle_len + 1;
+      for (size_t i = 1; i <= limit; i++)
+        for (size_t j = 0; j < needles.length; j += needle_len)
+          if (!memcmp (&haystack.string[i - 1], &needles.string[j], needle_len))
+            return i;
+    }
+
+  return 0;
 }
 
 function RINDEX (string haystack, string needle)
 {
-  if (needle.length == 0)
-    return SYSMIS;
-  else
+  if (haystack.length >= needle.length)
     {
-      int limit = haystack.length - needle.length + 1;
-      int i;
-      for (i = limit; i >= 1; i--)
+      size_t limit = haystack.length - needle.length + 1;
+      for (size_t i = limit; i >= 1; i--)
         if (!memcmp (&haystack.string[i - 1], needle.string, needle.length))
           return i;
-      return 0;
     }
+
+  return 0;
 }
 
-function RINDEX (string haystack, string needles, needle_len_d)
+function RINDEX (string haystack, string needles, integer needle_len)
+  expression e;
+  expr_node n;
 {
-  if (needle_len_d <= 0 || needle_len_d >= INT_MAX
-      || (int) needle_len_d != needle_len_d
-      || needles.length == 0)
-    return SYSMIS;
-  else
+  if (needle_len <= 0 || needles.length % needle_len != 0)
     {
-      int needle_len = needle_len_d;
-      if (needle_len < 0 || needle_len > needles.length
-          || needles.length % needle_len != 0)
-        return SYSMIS;
-      else
-        {
-          int limit = haystack.length - needle_len + 1;
-          int i, j;
-          for (i = limit; i >= 1; i--)
-            for (j = 0; j < needles.length; j += needle_len)
-              if (!memcmp (&haystack.string[i - 1],
-                           &needles.string[j], needle_len))
-                return i;
-          return 0;
-        }
+      msg_at (SE, expr_location (e, n),
+              _("RINDEX needle length argument must evenly divide the "
+                "length of the needles argument."));
+      msg_at (SN, expr_location (e, n->args[1]),
+              _("The needles argument has length %zu."), needles.length);
+      msg_at (SN, expr_location (e, n->args[2]),
+              _("The needle length argument has value %d."), needle_len);
+      return SYSMIS;
     }
+
+  if (haystack.length >= needle_len)
+    {
+      size_t limit = haystack.length - needle_len + 1;
+      for (size_t i = limit; i >= 1; i--)
+        for (size_t j = 0; j < needles.length; j += needle_len)
+          if (!memcmp (&haystack.string[i - 1], &needles.string[j], needle_len))
+            return i;
+    }
+
+  return 0;
 }
 
 function LENGTH (string s)
@@ -474,75 +566,156 @@ string function UPCASE (string s)
   return s;
 }
 
-absorb_miss string function LPAD (string s, n)
+absorb_miss string function LPAD (string s, integer n)
      expression e;
+     expr_node node;
 {
-  if (n < 0 || n > MAX_STRING || (int) n != n)
-    return empty_string;
+  if (n < 0 || n > MAX_STRING)
+    {
+      if (n != INT_MIN)
+        {
+          msg_at (SE, expr_location (e, node),
+                  _("The length argument to LPAD must be between 0 and %d."),
+                  MAX_STRING);
+          msg_at (SN, expr_location (e, node->args[1]),
+                  _("The length argument is %d."), n);
+        }
+
+      return s;
+    }
   else if (s.length >= n)
     return s;
   else
     {
       struct substring t = alloc_string (e, n);
-      memset (t.string, ' ', n - s.length);
-      memcpy (&t.string[(int) n - s.length], s.string, s.length);
+      size_t pad = n - s.length;
+      memset (t.string, ' ', pad);
+      memcpy (&t.string[pad], s.string, s.length);
       return t;
     }
 }
 
-absorb_miss string function LPAD (string s, n, string c)
+absorb_miss string function LPAD (string s, integer n, string c)
      expression e;
+     expr_node node;
 {
-  if (n < 0 || n > MAX_STRING || (int) n != n || c.length != 1)
-    return empty_string;
+  if (n < 0 || n > MAX_STRING)
+    {
+      if (n != INT_MIN)
+        {
+          msg_at (SE, expr_location (e, node),
+                  _("The length argument to LPAD must be between 0 and %d."),
+                  MAX_STRING);
+          msg_at (SN, expr_location (e, node->args[1]),
+                  _("The length argument is %d."), n);
+        }
+
+      return s;
+    }
   else if (s.length >= n)
     return s;
+  else if (c.length == 0)
+    {
+      msg_at (SE, expr_location (e, node),
+              _("The padding argument to LPAD must not be an empty string."));
+      return s;
+    }
   else
     {
+      size_t n_pad = (n - s.length) / c.length;
+      if (!n_pad)
+        return s;
+
       struct substring t = alloc_string (e, n);
-      memset (t.string, c.string[0], n - s.length);
-      memcpy (&t.string[(int) n - s.length], s.string, s.length);
+      t.length = 0;
+      for (size_t i = 0; i < n_pad; i++)
+        {
+          memcpy (t.string + t.length, c.string, c.length);
+          t.length += c.length;
+        }
+      memcpy (t.string + t.length, s.string, s.length);
+      t.length += s.length;
       return t;
     }
 }
 
 string function REPLACE (string haystack, string needle, string replacement)
     expression e;
-  = replace_string (e, haystack, needle, replacement, DBL_MAX);
+  = replace_string (e, haystack, needle, replacement, INT_MAX);
 
 absorb_miss string function REPLACE (string haystack, string needle,
-                                     string replacement, n)
+                         string replacement, integer n)
     expression e;
   = replace_string (e, haystack, needle, replacement, n);
 
-absorb_miss string function RPAD (string s, n)
+absorb_miss string function RPAD (string s, integer n)
      expression e;
+     expr_node node;
 {
-  if (n < 0 || n > MAX_STRING || (int) n != n)
-    return empty_string;
+  if (n < 0 || n > MAX_STRING)
+    {
+      if (n != INT_MIN)
+        {
+          msg_at (SE, expr_location (e, node),
+                  _("The length argument to RPAD must be between 0 and %d."),
+                  MAX_STRING);
+          msg_at (SN, expr_location (e, node->args[1]),
+                  _("The length argument is %d."), n);
+        }
+
+      return s;
+    }
   else if (s.length >= n)
     return s;
   else
     {
       struct substring t = alloc_string (e, n);
+      size_t pad = n - s.length;
       memcpy (t.string, s.string, s.length);
-      memset (&t.string[s.length], ' ', n - s.length);
+      memset (t.string + s.length, ' ', pad);
       return t;
     }
 }
 
-absorb_miss string function RPAD (string s, n, string c)
+absorb_miss string function RPAD (string s, integer n, string c)
      expression e;
+     expr_node node;
 {
-  if (n < 0 || n > MAX_STRING || (int) n != n || c.length != 1)
-    return empty_string;
+  if (n < 0 || n > MAX_STRING)
+    {
+      if (n != INT_MIN)
+        {
+          msg_at (SE, expr_location (e, node),
+                  _("The length argument to RPAD must be between 0 and %d."),
+                  MAX_STRING);
+          msg_at (SN, expr_location (e, node->args[1]),
+                  _("The length argument is %d."), n);
+        }
+
+      return s;
+    }
   else if (s.length >= n)
     return s;
+  else if (c.length == 0)
+    {
+      msg_at (SE, expr_location (e, node),
+              _("The padding argument to RPAD must not be an empty string."));
+      return s;
+    }
   else
     {
+      size_t n_pad = (n - s.length) / c.length;
+      if (!n_pad)
+        return s;
+
       struct substring t = alloc_string (e, n);
       memcpy (t.string, s.string, s.length);
-      memset (&t.string[s.length], c.string[0], n - s.length);
+      t.length = s.length;
+      for (size_t i = 0; i < n_pad; i++)
+        {
+          memcpy (t.string + t.length, c.string, c.length);
+          t.length += c.length;
+        }
       return t;
     }
 }
@@ -559,17 +732,13 @@ string function LTRIM (string s)
 
 string function LTRIM (string s, string c)
 {
-  if (c.length == 1)
-    {
-      while (s.length > 0 && s.string[0] == c.string[0])
-        {
-          s.length--;
-          s.string++;
-        }
-      return s;
-    }
-  else
-    return empty_string;
+  if (c.length > 0)
+    while (s.length >= c.length && !memcmp (s.string, c.string, c.length))
+      {
+        s.length -= c.length;
+        s.string += c.length;
+      }
+  return s;
 }
 
 string function RTRIM (string s)
@@ -581,32 +750,31 @@ string function RTRIM (string s)
 
 string function RTRIM (string s, string c)
 {
-  if (c.length == 1)
-    {
-      while (s.length > 0 && s.string[s.length - 1] == c.string[0])
-        s.length--;
-      return s;
-    }
-  else
-    return empty_string;
+  if (c.length > 0)
+    while (s.length >= c.length
+           && !memcmp (&s.string[s.length - c.length], c.string, c.length))
+      s.length -= c.length;
+  return s;
 }
 
 function NUMBER (string s, ni_format f)
+  expression e;
+  expr_node n;
 {
-  union value out;
-  char *error;
-
   if (s.length > f->w)
     s.length = f->w;
-  error = data_in (s, C_ENCODING, f->type, settings_get_fmt_settings (),
-                   &out, 0, NULL);
+
+  union value out;
+  char *error = data_in (s, C_ENCODING, f->type, settings_get_fmt_settings (),
+                         &out, 0, NULL);
   if (error == NULL)
     data_in_imply_decimals (s, C_ENCODING, f->type, f->d,
                             settings_get_fmt_settings (), &out);
   else
     {
-      msg (SE, "Cannot parse `%.*s' as format %s: %s",
-           (int) s.length, s.string, fmt_name (f->type), error);
+      msg_at (SE, expr_location (e, n->args[0]),
+              _("Cannot parse \"%.*s\" as format %s: %s"),
+              (int) s.length, s.string, fmt_name (f->type), error);
       free (error);
     }
   return out.f;
@@ -629,10 +797,10 @@ absorb_miss string function STRING (x, no_format f)
   return dst;
 }
 
-absorb_miss string function STRUNC (string s, n)
+absorb_miss string function STRUNC (string s, integer n)
 {
-  if (n < 1 || n == SYSMIS)
-    return empty_string;
+  if (n < 1)
+    return n == INT_MIN ? s : empty_string;
 
   if (n < s.length)
     s.length = n;
@@ -641,27 +809,18 @@ absorb_miss string function STRUNC (string s, n)
   return s;
 }
 
-absorb_miss string function SUBSTR (string s, ofs)
-     expression e;
+absorb_miss string function SUBSTR (string s, integer ofs)
 {
-  if (ofs >= 1 && ofs <= s.length && (int) ofs == ofs)
-    return copy_string (e, &s.string[(int) ofs - 1], s.length - ofs + 1);
-  else
-    return empty_string;
+  return (ofs >= 1 && ofs <= s.length
+          ? ss_substr (s, ofs - 1, SIZE_MAX)
+          : empty_string);
 }
 
-absorb_miss string function SUBSTR (string s, ofs, cnt)
-     expression e;
+absorb_miss string function SUBSTR (string s, integer ofs, integer cnt)
 {
-  if (ofs >= 1 && ofs <= s.length && (int) ofs == ofs
-      && cnt >= 1 && cnt <= INT_MAX && (int) cnt == cnt)
-    {
-      int cnt_max = s.length - (int) ofs + 1;
-      return copy_string (e, &s.string[(int) ofs - 1],
-                          cnt <= cnt_max ? cnt : cnt_max);
-    }
-  else
-    return empty_string;
+  return (ofs >= 1 && cnt >= 1
+          ? ss_substr (s, ofs - 1, cnt)
+          : empty_string);
 }
 
 absorb_miss no_opt no_abbrev string function VALUELABEL (var v)
@@ -677,15 +836,61 @@ absorb_miss no_opt no_abbrev string function VALUELABEL (var v)
 
 // Artificial.
 operator SQUARE (x) = x * x;
-boolean operator NUM_TO_BOOLEAN (x)
+
+absorb_miss boolean operator OPERAND_TO_BOOLEAN (x, expr_node parent)
+  expression e;
+  expr_node n;
 {
   if (x == 0. || x == 1. || x == SYSMIS)
     return x;
 
-  msg (SE, _("A logical expression was found to have a value other than 0 "
-             "(false), 1 (true), or the system-missing value.  The result "
-             "was forced to 0."));
+  switch (parent->n_args)
+    {
+    case 2:
+      msg_at (SE, expr_location (e, parent),
+              /* TRANSLATORS: There are exactly two operands. */
+              _("The operands of %s must have value 0 or 1."),
+              operations[parent->type].name);
+      break;
+
+    case 1:
+      msg_at (SE, expr_location (e, parent),
+              _("The operand of %s must have value 0 or 1."),
+              operations[parent->type].name);
+      break;
+
+    default:
+      NOT_REACHED ();
+    }
+
+  msg_at (SN, expr_location (e, n),
+          _("This operand with unexpected value %g will be treated as 0."), x);
   return 0.;
+}
+
+absorb_miss boolean operator EXPR_TO_BOOLEAN (x)
+  expression e;
+  expr_node n;
+{
+  if (x == 0. || x == 1. || x == SYSMIS)
+    return x;
+
+  msg_at (SE, expr_location (e, n),
+          _("This expression, which must be 0 or 1, evaluated to %g.  "
+            "It will be treated as 0."), x);
+  return 0.;
+}
+
+operator NUM_TO_INTEGER (x)
+  expression e;
+  expr_node n;
+{
+  if (x == floor (x) && x > INT_MIN && x <= INT_MAX)
+    return x;
+
+  msg_at (SE, expr_location (e, n),
+          _("Treating unexpected non-integer value %g as missing."), x);
+  return SYSMIS;
 }
 
 operator BOOLEAN_TO_NUM (boolean x) = x;
@@ -959,59 +1164,60 @@ no_opt boolean function SYSMIS (num_var v)
 {
   return case_num (c, v) == SYSMIS;
 }
-no_opt boolean function VALUE (num_var v)
+no_opt function VALUE (num_var v)
      case c;
 {
   return case_num (c, v);
 }
+no_opt function VALUE (num_vec_elem v)
+{
+  return v;
+}
 
-no_opt operator VEC_ELEM_NUM (idx)
+// A numeric vector element used in a "normal" context, in which a user-missing
+// value becomes system-missing.
+absorb_miss no_opt operator VEC_ELEM_NUM (idx)
      vector v;
      case c;
+     expression e;
+     expr_node n;
 {
-  if (idx >= 1 && idx <= vector_get_n_vars (v))
+  const struct variable *var = expr_index_vector (e, n, v, idx);
+  if (var)
     {
-      const struct variable *var = vector_get_var (v, (size_t) idx - 1);
-      double value = case_num (c, var);
-      return !var_is_num_missing (var, value, MV_USER) ? value : SYSMIS;
+      double d = case_num (c, var);
+      if (!var_is_num_missing (var, d, MV_USER))
+        return d;
     }
-  else
-    {
-      if (idx == SYSMIS)
-        msg (SE, _("SYSMIS is not a valid index value for vector "
-                   "%s.  The result will be set to SYSMIS."),
-             vector_get_name (v));
-      else
-        msg (SE, _("%g is not a valid index value for vector %s.  "
-                   "The result will be set to SYSMIS."),
-             idx, vector_get_name (v));
-      return SYSMIS;
-    }
+  return SYSMIS;
+}
+
+// A numeric vector element used as the argument to the VALUE() function, in
+// which a user-missing value retains its value.
+//
+// All numeric vector elements are initially parsed this way.  In most contexts
+// they then get coerced into numbers.
+absorb_miss no_opt num_vec_elem operator VEC_ELEM_NUM_RAW (idx)
+     vector v;
+     case c;
+     expression e;
+     expr_node n;
+{
+  const struct variable *var = expr_index_vector (e, n, v, idx);
+  return var ? case_num (c, var) : SYSMIS;
 }
 
 absorb_miss no_opt string operator VEC_ELEM_STR (idx)
      expression e;
      vector v;
      case c;
+     expr_node n;
 {
-  if (idx >= 1 && idx <= vector_get_n_vars (v))
-    {
-      struct variable *var = vector_get_var (v, (size_t) idx - 1);
-      return copy_string (e, CHAR_CAST_BUG (char *, case_str (c, var)),
-                          var_get_width (var));
-    }
-  else
-    {
-      if (idx == SYSMIS)
-        msg (SE, _("SYSMIS is not a valid index value for vector "
-                   "%s.  The result will be set to the empty string."),
-             vector_get_name (v));
-      else
-        msg (SE, _("%g is not a valid index value for vector %s.  "
-                   "The result will be set to the empty string."),
-             idx, vector_get_name (v));
-      return empty_string;
-    }
+  const struct variable *var = expr_index_vector (e, n, v, idx);
+  return (var
+          ? copy_string (e, CHAR_CAST_BUG (char *, case_str (c, var)),
+                         var_get_width (var))
+          : empty_string);
 }
 
 // Terminals.

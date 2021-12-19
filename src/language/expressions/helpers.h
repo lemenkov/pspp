@@ -39,6 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "data/variable.h"
 #include "data/vector.h"
 #include "language/expressions/public.h"
+#include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
@@ -50,6 +51,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+
+struct expr_node;
 
 static inline double check_errno (double x)
 {
@@ -70,15 +73,22 @@ extern const struct substring empty_string;
 
 int compare_string_3way (const struct substring *, const struct substring *);
 
-double expr_ymd_to_date (double year, double month, double day);
-double expr_ymd_to_ofs (double year, double month, double day);
-double expr_wkyr_to_date (double wk, double yr);
-double expr_yrday_to_date (double yr, double day);
-double expr_yrmoda (double year, double month, double day);
+double expr_ymd_to_date (int year, int month, int day,
+                         const struct expression *, const struct expr_node *,
+                         int ya, int ma, int da);
+double expr_ymd_to_ofs (int y, int m, int d,
+                        const struct expression *, const struct expr_node *,
+                        int ya, int ma, int da);
 double expr_date_difference (double date1, double date2,
-                             struct substring unit);
+                             struct substring unit, const struct expression *,
+                             const struct expr_node *);
 double expr_date_sum (double date, double quantity, struct substring unit_name,
-                      struct substring method_name);
+                      struct substring method_name,
+                      const struct expression *, const struct expr_node *);
+double expr_date_sum_closest (double date, double quantity,
+                              struct substring unit_name,
+                              const struct expression *,
+                              const struct expr_node *);
 
 struct substring alloc_string (struct expression *, size_t length);
 struct substring copy_string (struct expression *,
@@ -99,8 +109,12 @@ struct substring replace_string (struct expression *,
                                  struct substring haystack,
                                  struct substring needle,
                                  struct substring replacement,
-                                 double n);
+                                 int n);
 
 double median (double *, size_t n);
+
+const struct variable *expr_index_vector (const struct expression *,
+                                          const struct expr_node *,
+                                          const struct vector *, double idx);
 
 #endif /* expressions/helpers.h */

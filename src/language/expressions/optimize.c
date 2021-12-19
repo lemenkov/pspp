@@ -67,26 +67,34 @@ expr_optimize (struct expr_node *node, struct expression *e)
     }
 
   op = &operations[node->type];
+
+  struct expr_node *new;
   if (n_sysmis && (op->flags & OPF_ABSORB_MISS) == 0)
     {
       /* Most operations produce SYSMIS given any SYSMIS
          argument. */
       assert (op->returns == OP_number || op->returns == OP_boolean);
-      if (op->returns == OP_number)
-        return expr_allocate_number (e, SYSMIS);
-      else
-        return expr_allocate_boolean (e, SYSMIS);
+      new = (op->returns == OP_number
+             ? expr_allocate_number (e, SYSMIS)
+             : expr_allocate_boolean (e, SYSMIS));
     }
   else if (!n_nonconst && (op->flags & OPF_NONOPTIMIZABLE) == 0)
     {
       /* Evaluate constant expressions. */
-      return evaluate_tree (node, e);
+      new = evaluate_tree (node, e);
     }
   else
     {
       /* A few optimization possibilities are still left. */
-      return optimize_tree (node, e);
+      new = optimize_tree (node, e);
     }
+
+  if (new != node && !new->location)
+    {
+      const struct msg_location *loc = expr_location (e, node);
+      new->location = CONST_CAST (struct msg_location *, loc);
+    }
+  return new;
 }
 
 static int
@@ -135,38 +143,13 @@ optimize_tree (struct expr_node *n, struct expression *e)
     return n;
 }
 
-static double get_number_arg (struct expr_node *, size_t arg_idx);
-static double *get_number_args (struct expr_node *,
-                                 size_t arg_idx, size_t n_args,
-                                 struct expression *);
-static struct substring get_string_arg (struct expr_node *,
-                                           size_t arg_idx);
-static struct substring *get_string_args (struct expr_node *,
-                                             size_t arg_idx, size_t n_args,
-                                             struct expression *);
-static const struct fmt_spec *get_format_arg (struct expr_node *,
-                                              size_t arg_idx);
-
-static struct expr_node *
-evaluate_tree (struct expr_node *node, struct expression *e)
-{
-  switch (node->type)
-    {
-#include "optimize.inc"
-
-    default:
-      NOT_REACHED ();
-    }
-
-  NOT_REACHED ();
-}
-
 static double
 get_number_arg (struct expr_node *n, size_t arg_idx)
 {
   assert (arg_idx < n->n_args);
   assert (n->args[arg_idx]->type == OP_number
-          || n->args[arg_idx]->type == OP_boolean);
+          || n->args[arg_idx]->type == OP_boolean
+          || n->args[arg_idx]->type == OP_integer);
   return n->args[arg_idx]->number;
 }
 
@@ -208,6 +191,28 @@ get_format_arg (struct expr_node *n, size_t arg_idx)
   assert (n->args[arg_idx]->type == OP_ni_format
           || n->args[arg_idx]->type == OP_no_format);
   return &n->args[arg_idx]->format;
+}
+
+static const struct expr_node *
+get_expr_node_arg (struct expr_node *n, size_t arg_idx)
+{
+  assert (arg_idx < n->n_args);
+  assert (n->args[arg_idx]->type == OP_expr_node);
+  return n->args[arg_idx]->expr_node;
+}
+
+static struct expr_node *
+evaluate_tree (struct expr_node *node, struct expression *e)
+{
+  switch (node->type)
+    {
+#include "optimize.inc"
+
+    default:
+      NOT_REACHED ();
+    }
+
+  NOT_REACHED ();
 }
 
 /* Expression flattening. */
@@ -290,6 +295,7 @@ flatten_atom (struct expr_node *n, struct expression *e)
     case OP_no_format:
     case OP_ni_format:
     case OP_pos_int:
+    case OP_expr_node:
       /* These are passed as aux data following the
          operation. */
       break;
@@ -334,6 +340,10 @@ flatten_composite (struct expr_node *n, struct expression *e)
           emit_integer (e, arg->integer);
           break;
 
+        case OP_expr_node:
+          allocate_aux (e, OP_expr_node)->expr_node = arg->expr_node;
+          break;
+
         default:
           /* Nothing to do. */
           break;
@@ -344,6 +354,8 @@ flatten_composite (struct expr_node *n, struct expression *e)
     emit_integer (e, n->n_args - op->n_args + 1);
   if (op->flags & OPF_MIN_VALID)
     emit_integer (e, n->min_valid);
+  if (op->flags & OPF_EXPR_NODE)
+    allocate_aux (e, OP_expr_node)->expr_node = n;
 }
 
 void

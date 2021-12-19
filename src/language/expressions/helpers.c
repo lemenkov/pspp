@@ -30,107 +30,41 @@
 const struct substring empty_string = {NULL, 0};
 
 double
-expr_ymd_to_ofs (double year, double month, double day)
+expr_ymd_to_ofs (int y, int m, int d,
+                 const struct expression *e, const struct expr_node *node,
+                 int ya, int ma, int da)
 {
-  int y = year;
-  int m = month;
-  int d = day;
-  char *error;
-  double ofs;
-
-  if (y != year || m != month || d != day)
+  int *error = calendar_gregorian_adjust (&y, &m, &d,
+                                          settings_get_fmt_settings ());
+  if (!error)
+    return calendar_raw_gregorian_to_offset (y, m, d);
+  else
     {
-      msg (SE, _("One of the arguments to a DATE function is not an integer.  "
-                 "The result will be system-missing."));
+      msg_at (SE, expr_location (e, node),
+              _("Invalid arguments to %s function."),
+              operations[node->type].name);
+
+      if (error == &y && ya > 0)
+        msg_at (SN, expr_location (e, y < 1582 ? node->args[ya - 1] : node),
+                _("Date %04d-%d-%d is before the earliest supported date "
+                  "1582-10-15."), y, m, d);
+      else if (error == &m && ma > 0)
+        msg_at (SN, expr_location (e, node->args[ma - 1]),
+                _("Month %d is not in the acceptable range of 0 to 13."), m);
+      else if (error == &d && da > 0)
+        msg_at (SN, expr_location (e, node->args[da - 1]),
+                _("Day %d is not in the acceptable range of 0 to 31."), d);
       return SYSMIS;
     }
-
-  ofs = calendar_gregorian_to_offset (y, m, d, settings_get_fmt_settings (),
-                                      &error);
-  if (error != NULL)
-    {
-      msg (SE, "%s", error);
-      free (error);
-    }
-  return ofs;
 }
 
 double
-expr_ymd_to_date (double year, double month, double day)
+expr_ymd_to_date (int y, int m, int d,
+                  const struct expression *e, const struct expr_node *n,
+                  int ya, int ma, int da)
 {
-  double ofs = expr_ymd_to_ofs (year, month, day);
+  double ofs = expr_ymd_to_ofs (y, m, d, e, n, ya, ma, da);
   return ofs != SYSMIS ? ofs * DAY_S : SYSMIS;
-}
-
-double
-expr_wkyr_to_date (double week, double year)
-{
-  int w = week;
-
-  if (w != week)
-    {
-      msg (SE, _("The week argument to DATE.WKYR is not an integer.  "
-                 "The result will be system-missing."));
-      return SYSMIS;
-    }
-  else if (w < 1 || w > 53)
-    {
-      msg (SE, _("The week argument to DATE.WKYR is outside the acceptable "
-                 "range of 1 to 53.  "
-                 "The result will be system-missing."));
-      return SYSMIS;
-    }
-  else
-    {
-      double yr_1_1 = expr_ymd_to_ofs (year, 1, 1);
-      if (yr_1_1 != SYSMIS)
-        return DAY_S * (yr_1_1 + WEEK_DAY * (w - 1));
-      else
-        return SYSMIS;
-    }
-}
-
-double
-expr_yrday_to_date (double year, double yday)
-{
-  int yd = yday;
-
-  if (yd != yday)
-    {
-      msg (SE, _("The day argument to DATE.YRDAY is not an integer.  "
-                 "The result will be system-missing."));
-      return SYSMIS;
-    }
-  else if (yd < 1 || yd > 366)
-    {
-      msg (SE, _("The day argument to DATE.YRDAY is outside the acceptable "
-                 "range of 1 to 366.  "
-                 "The result will be system-missing."));
-      return SYSMIS;
-    }
-  else
-    {
-      double yr_1_1 = expr_ymd_to_ofs (year, 1, 1);
-      if (yr_1_1 != SYSMIS)
-        return DAY_S * (yr_1_1 + yd - 1.);
-      else
-        return SYSMIS;
-    }
-}
-
-double
-expr_yrmoda (double year, double month, double day)
-{
-  if (year >= 0 && year <= 99)
-    year += 1900;
-  else if (year != (int) year && year > 47516)
-    {
-      msg (SE, _("The year argument to YRMODA is greater than 47516.  "
-                 "The result will be system-missing."));
-      return SYSMIS;
-    }
-
-  return expr_ymd_to_ofs (year, month, day);
 }
 
 /* A date unit. */
@@ -149,7 +83,8 @@ enum date_unit
 /* Stores in *UNIT the unit whose name is NAME.
    Return success. */
 static enum date_unit
-recognize_unit (struct substring name, enum date_unit *unit)
+recognize_unit (struct substring name, const struct expression *e,
+                const struct expr_node *n, enum date_unit *unit)
 {
   struct unit_name
     {
@@ -178,12 +113,13 @@ recognize_unit (struct substring name, enum date_unit *unit)
         return true;
       }
 
-  msg (SE, _("Unrecognized date unit `%.*s'.  "
-             "Valid date units are `%s', `%s', `%s', "
-             "`%s', `%s', `%s', `%s', and `%s'."),
-       (int) ss_length (name), ss_data (name),
-       "years", "quarters", "months",
-       "weeks", "days", "hours", "minutes", "seconds");
+  msg_at (SE, expr_location (e, n),
+          _("Unrecognized date unit `%.*s'.  "
+            "Valid date units are `%s', `%s', `%s', "
+            "`%s', `%s', `%s', `%s', and `%s'."),
+          (int) ss_length (name), ss_data (name),
+          "years", "quarters", "months",
+          "weeks", "days", "hours", "minutes", "seconds");
 
   return false;
 }
@@ -272,11 +208,11 @@ date_unit_duration (enum date_unit unit)
 
 /* Returns the span from DATE1 to DATE2 in terms of UNIT_NAME. */
 double
-expr_date_difference (double date1, double date2, struct substring unit_name)
+expr_date_difference (double date1, double date2, struct substring unit_name,
+                      const struct expression *e, const struct expr_node *n)
 {
   enum date_unit unit;
-
-  if (!recognize_unit (unit_name, &unit))
+  if (!recognize_unit (unit_name, e, n->args[2], &unit))
     return SYSMIS;
 
   switch (unit)
@@ -317,7 +253,9 @@ enum date_sum_method
 /* Stores in *METHOD the method whose name is NAME.
    Return success. */
 static bool
-recognize_method (struct substring method_name, enum date_sum_method *method)
+recognize_method (struct substring method_name,
+                  const struct expression *e, const struct expr_node *n,
+                  enum date_sum_method *method)
 {
   if (ss_equals_case (method_name, ss_cstr ("closest")))
     {
@@ -331,8 +269,9 @@ recognize_method (struct substring method_name, enum date_sum_method *method)
     }
   else
     {
-      msg (SE, _("Invalid DATESUM method.  "
-                 "Valid choices are `%s' and `%s'."), "closest", "rollover");
+      msg_at (SE, expr_location (e, n),
+              _("Invalid DATESUM method.  "
+                "Valid choices are `%s' and `%s'."), "closest", "rollover");
       return false;
     }
 }
@@ -340,7 +279,8 @@ recognize_method (struct substring method_name, enum date_sum_method *method)
 /* Returns DATE advanced by the given number of MONTHS, with
    day-of-month overflow resolved using METHOD. */
 static double
-add_months (double date, int months, enum date_sum_method method)
+add_months (double date, int months, enum date_sum_method method,
+            const struct expression *e, const struct expr_node *n)
 {
   int y, m, d, yd;
   double output;
@@ -370,7 +310,7 @@ add_months (double date, int months, enum date_sum_method method)
     output = (output * DAY_S) + fmod (date, DAY_S);
   else
     {
-      msg (SE, "%s", error);
+      msg_at (SE, expr_location (e, n), "%s", error);
       free (error);
     }
   return output;
@@ -379,27 +319,25 @@ add_months (double date, int months, enum date_sum_method method)
 /* Returns DATE advanced by the given QUANTITY of units given in
    UNIT_NAME, with day-of-month overflow resolved using
    METHOD_NAME. */
-double
-expr_date_sum (double date, double quantity, struct substring unit_name,
-               struct substring method_name)
+static double
+expr_date_sum__ (double date, double quantity, struct substring unit_name,
+                 enum date_sum_method method,
+                 const struct expression *e, const struct expr_node *n)
 {
   enum date_unit unit;
-  enum date_sum_method method;
-
-  if (!recognize_unit (unit_name, &unit)
-      || !recognize_method (method_name, &method))
+  if (!recognize_unit (unit_name, e, n->args[2], &unit))
     return SYSMIS;
 
   switch (unit)
     {
     case DATE_YEARS:
-      return add_months (date, trunc (quantity) * 12, method);
+      return add_months (date, trunc (quantity) * 12, method, e, n);
 
     case DATE_QUARTERS:
-      return add_months (date, trunc (quantity) * 3, method);
+      return add_months (date, trunc (quantity) * 3, method, e, n);
 
     case DATE_MONTHS:
-      return add_months (date, trunc (quantity), method);
+      return add_months (date, trunc (quantity), method, e, n);
 
     case DATE_WEEKS:
     case DATE_DAYS:
@@ -410,6 +348,31 @@ expr_date_sum (double date, double quantity, struct substring unit_name,
     }
 
   NOT_REACHED ();
+}
+
+/* Returns DATE advanced by the given QUANTITY of units given in
+   UNIT_NAME, with day-of-month overflow resolved using
+   METHOD_NAME. */
+double
+expr_date_sum (double date, double quantity, struct substring unit_name,
+               struct substring method_name,
+               const struct expression *e, const struct expr_node *n)
+{
+  enum date_sum_method method;
+  if (!recognize_method (method_name, e, n->args[3], &method))
+    return SYSMIS;
+
+  return expr_date_sum__ (date, quantity, unit_name, method, e, n);
+}
+
+/* Returns DATE advanced by the given QUANTITY of units given in
+   UNIT_NAME, with day-of-month overflow resolved using
+   METHOD_NAME. */
+double
+expr_date_sum_closest (double date, double quantity, struct substring unit_name,
+                       const struct expression *e, const struct expr_node *n)
+{
+  return expr_date_sum__ (date, quantity, unit_name, SUM_CLOSEST, e, n);
 }
 
 int
@@ -484,12 +447,9 @@ replace_string (struct expression *e,
                 struct substring haystack,
                 struct substring needle,
                 struct substring replacement,
-                double n)
+                int n)
 {
-  if (!needle.length
-      || haystack.length < needle.length
-      || n <= 0
-      || n == SYSMIS)
+  if (!needle.length || haystack.length < needle.length || n <= 0)
     return haystack;
 
   struct substring result = alloc_string (e, MAX_STRING);
@@ -546,4 +506,24 @@ median (double *a, size_t n)
   return (!n ? SYSMIS
           : n % 2 ? a[n / 2]
           : (a[n / 2 - 1] + a[n / 2]) / 2.0);
+}
+
+const struct variable *
+expr_index_vector (const struct expression *e, const struct expr_node *n,
+                   const struct vector *v, double idx)
+{
+  if (idx >= 1 && idx <= vector_get_n_vars (v))
+    return vector_get_var (v, idx - 1);
+
+  msg_at (SE, expr_location (e, n),
+          _("Index outside valid range 1 to %zu, inclusive, for vector %s.  "
+            "The value will be treated as system-missing."),
+          vector_get_n_vars (v), vector_get_name (v));
+  if (idx == SYSMIS)
+    msg_at (SN, expr_location (e, n->args[0]),
+            _("The index is system-missing."));
+  else
+    msg_at (SN, expr_location (e, n->args[0]),
+            _("The index has value %g."), idx);
+  return NULL;
 }

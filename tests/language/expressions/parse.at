@@ -17,6 +17,7 @@ dnl
 AT_BANNER([expression parsing])
 
 AT_SETUP([parse expression with unknown variable crash])
+AT_KEYWORDS([expression expressions parse])
 AT_DATA([parse.sps], [dnl
 INPUT PROGRAM.
 LOOP c=1 to 10.
@@ -39,94 +40,114 @@ parse.sps:11: error: Stopping syntax file processing here to avoid a cascade of 
 AT_CLEANUP
 
 AT_SETUP([parsing boolean expression with type mismatch])
+AT_KEYWORDS([expression expressions parse])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1(A).
 IF 'foo'.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:2: error: IF: Type mismatch: expression has string type, but a boolean value is required here."
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:2.4-2.8: error: IF: Type mismatch: expression has string type, but a
+boolean value is required here.
+    2 | IF 'foo'.
+      |    ^~~~~
 ])
 AT_CLEANUP
 
 AT_SETUP([parsing numeric expression with type mismatch])
+AT_KEYWORDS([expression expressions parse])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1.
 COMPUTE x='foo'.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:2: error: COMPUTE: Type mismatch: expression has string type, but a numeric value is required here."
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:2.11-2.15: error: COMPUTE: Type mismatch: expression has type
+'string', but a numeric value is required.
+    2 | COMPUTE x='foo'.
+      |           ^~~~~
 ])
 AT_CLEANUP
 
 AT_SETUP([parsing string expression with type mismatch])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1(A).
 COMPUTE x=1.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:2: error: COMPUTE: Type mismatch: expression has number type, but a string value is required here."
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:2.11: error: COMPUTE: Type mismatch: expression has type 'number',
+but a string value is required.
+    2 | COMPUTE x=1.
+      |           ^
 ])
 AT_CLEANUP
 
 AT_SETUP([assigning string expression to new variable])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1(A).
 COMPUTE y='a'.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:2: error: COMPUTE: This command tries to create a new variable y by assigning a string value to it, but this is not supported.  Use the STRING command to create the new variable with the correct width before assigning to it, e.g. STRING y(A20)."
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:2: error: COMPUTE: This command tries to create a new variable y by
+assigning a string value to it, but this is not supported.  Use the STRING
+command to create the new variable with the correct width before assigning to
+it, e.g. STRING y(A20).
 ])
 AT_CLEANUP
 
 AT_SETUP([parse expression with unknown system variable])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1.
 COMPUTE x=$nonexistent.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+AT_CHECK([pspp parse.sps], [1], [dnl
 parse.sps:2: error: COMPUTE: Unknown system variable $nonexistent.
 ])
 AT_CLEANUP
 
 AT_SETUP([parse expression with unknown identifier])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1.
 COMPUTE x=y.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+AT_CHECK([pspp parse.sps], [1], [dnl
 parse.sps:2: error: COMPUTE: Unknown identifier y.
 ])
 AT_CLEANUP
 
 AT_SETUP([parse expression with extension function in compatibility mode])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DEBUG EVALUATE/ACOS(0)*0.
 ])
-AT_CHECK([pspp --testing-mode --syntax=compatible -O format=csv parse.sps], [0], [dnl
-parse.sps:1: warning: DEBUG EVALUATE: ACOS(number) is a PSPP extension.
+AT_CHECK([pspp --testing-mode --syntax=compatible parse.sps], [0], [dnl
+parse.sps:1.16-1.22: warning: DEBUG EVALUATE: ACOS(number) is a PSPP extension.
+    1 | DEBUG EVALUATE/ACOS(0)*0.
+      |                ^~~~~~~
 
-0.00
+ACOS(0)*0 => 0.00
 ])
 AT_CLEANUP
 
 AT_SETUP([LAG expression following TEMPORARY])
-AT_KEYWORDS([expression negative])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1.
 TEMPORARY
 COMPUTE y=LAG(x).
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-parse.sps:3: error: COMPUTE: LAG(num_variable) may not appear after TEMPORARY.
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:3.11-3.16: error: COMPUTE: LAG(num_variable) may not appear after
+TEMPORARY.
+    3 | COMPUTE y=LAG(x).
+      |           ^~~~~~
 ])
 AT_CLEANUP
 
 AT_SETUP([parse expression with invalid logical expression])
+AT_KEYWORDS([expression expressions parse negative])
 AT_DATA([parse.sps], [dnl
 INPUT PROGRAM.
 LOOP c=1 to 10.
@@ -138,7 +159,359 @@ END INPUT PROGRAM.
 
 SELECT IF 2.
 ])
-AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:9: error: SELECT IF: A logical expression was found to have a value other than 0 (false), 1 (true), or the system-missing value.  The result was forced to 0."
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:9.11: error: SELECT IF: This expression, which must be 0 or 1,
+evaluated to 2.  It will be treated as 0.
+    9 | SELECT IF 2.
+      |           ^
 ])
+AT_CLEANUP
+
+AT_SETUP([chaining operators that shouldn't be])
+AT_KEYWORDS([expression expressions parse negative])
+AT_DATA([parse.sps], [dnl
+INPUT PROGRAM.
+* These should provoke warnings.
+COMPUTE a = 1 < 2 < 3.
+COMPUTE b = 1 > 2 < 0.
+COMPUTE c = 2**3**4.
+
+* These should not provoke warnings.
+COMPUTE d = (1 < 2) < 3.
+COMPUTE e = (2**3)**4.
+END INPUT PROGRAM.
+])
+AT_CHECK([pspp parse.sps], [1], [dnl
+parse.sps:3.13-3.21: warning: COMPUTE: Chaining relational operators (e.g. `a <
+b < c') will not produce the mathematically expected result.  Use the AND
+logical operator to fix the problem (e.g. `a < b AND b < c').  To disable this
+warning, insert parentheses.
+    3 | COMPUTE a = 1 < 2 < 3.
+      |             ^~~~~~~~~
+
+parse.sps:4.13-4.21: warning: COMPUTE: Chaining relational operators (e.g. `a <
+b < c') will not produce the mathematically expected result.  Use the AND
+logical operator to fix the problem (e.g. `a < b AND b < c').  To disable this
+warning, insert parentheses.
+    4 | COMPUTE b = 1 > 2 < 0.
+      |             ^~~~~~~~~
+
+parse.sps:5.13-5.19: warning: COMPUTE: The exponentiation operator (`**') is
+left-associative: `a**b**c' equals `(a**b)**c', not `a**(b**c)'.  To disable
+this warning, insert parentheses.
+    5 | COMPUTE c = 2**3**4.
+      |             ^~~~~~~
+
+parse.sps:10: error: INPUT PROGRAM: Input program must contain DATA LIST or END
+FILE.
+])
+AT_CLEANUP
+
+AT_SETUP([binary operator type mismatch])
+AT_KEYWORDS([expression expressions parse negative])
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE /1 + 'a'.
+DEBUG EVALUATE /'a' + 1.
+DEBUG EVALUATE /'a' + 'a'.
+DEBUG EVALUATE /'a' + ('a').
+
+DEBUG EVALUATE /1 < 'a'.
+DEBUG EVALUATE /'a' < 1.
+DEBUG EVALUATE /'a' < 'b' < 'c'.
+])
+AT_CHECK([pspp --testing-mode parse.sps], [1], [dnl
+parse.sps:1.17-1.23: error: DEBUG EVALUATE: Both operands of + must be numeric.
+    1 | DEBUG EVALUATE /1 + 'a'.
+      |                 ^~~~~~~
+
+parse.sps:1.17: note: DEBUG EVALUATE: This operand has type 'number'.
+    1 | DEBUG EVALUATE /1 + 'a'.
+      |                 ^
+
+parse.sps:1.21-1.23: note: DEBUG EVALUATE: This operand has type 'string'.
+    1 | DEBUG EVALUATE /1 + 'a'.
+      |                     ^~~
+
+1 + 'a' => error
+
+parse.sps:2.17-2.23: error: DEBUG EVALUATE: Both operands of + must be numeric.
+    2 | DEBUG EVALUATE /'a' + 1.
+      |                 ^~~~~~~
+
+parse.sps:2.17-2.19: note: DEBUG EVALUATE: This operand has type 'string'.
+    2 | DEBUG EVALUATE /'a' + 1.
+      |                 ^~~
+
+parse.sps:2.23: note: DEBUG EVALUATE: This operand has type 'number'.
+    2 | DEBUG EVALUATE /'a' + 1.
+      |                       ^
+
+'a' + 1 => error
+
+'a' + 'a' => "aa"
+
+parse.sps:4.17-4.26: error: DEBUG EVALUATE: Both operands of + must be numeric.
+    4 | DEBUG EVALUATE /'a' + ('a').
+      |                 ^~~~~~~~~~
+
+parse.sps:4.17-4.19: note: DEBUG EVALUATE: This operand has type 'string'.
+    4 | DEBUG EVALUATE /'a' + ('a').
+      |                 ^~~
+
+parse.sps:4.24-4.26: note: DEBUG EVALUATE: This operand has type 'string'.
+    4 | DEBUG EVALUATE /'a' + ('a').
+      |                        ^~~
+
+'a' + ('a') => error
+
+parse.sps:6.17-6.23: error: DEBUG EVALUATE: Both operands of < must have the
+same type.
+    6 | DEBUG EVALUATE /1 < 'a'.
+      |                 ^~~~~~~
+
+parse.sps:6.17: note: DEBUG EVALUATE: This operand has type 'number'.
+    6 | DEBUG EVALUATE /1 < 'a'.
+      |                 ^
+
+parse.sps:6.21-6.23: note: DEBUG EVALUATE: This operand has type 'string'.
+    6 | DEBUG EVALUATE /1 < 'a'.
+      |                     ^~~
+
+1 < 'a' => error
+
+parse.sps:7.17-7.23: error: DEBUG EVALUATE: Both operands of < must have the
+same type.
+    7 | DEBUG EVALUATE /'a' < 1.
+      |                 ^~~~~~~
+
+parse.sps:7.17-7.19: note: DEBUG EVALUATE: This operand has type 'string'.
+    7 | DEBUG EVALUATE /'a' < 1.
+      |                 ^~~
+
+parse.sps:7.23: note: DEBUG EVALUATE: This operand has type 'number'.
+    7 | DEBUG EVALUATE /'a' < 1.
+      |                       ^
+
+'a' < 1 => error
+
+parse.sps:8.17-8.31: error: DEBUG EVALUATE: Both operands of < must have the
+same type.
+    8 | DEBUG EVALUATE /'a' < 'b' < 'c'.
+      |                 ^~~~~~~~~~~~~~~
+
+parse.sps:8.17-8.25: note: DEBUG EVALUATE: This operand has type 'number'.
+    8 | DEBUG EVALUATE /'a' < 'b' < 'c'.
+      |                 ^~~~~~~~~
+
+parse.sps:8.29-8.31: note: DEBUG EVALUATE: This operand has type 'string'.
+    8 | DEBUG EVALUATE /'a' < 'b' < 'c'.
+      |                             ^~~
+
+'a' < 'b' < 'c' => error
+])
+AT_CLEANUP
+
+AT_SETUP([unary operator type mismatch])
+AT_KEYWORDS([expression expressions parse negative])
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE /-'a'.
+DEBUG EVALUATE /----'a'.
+DEBUG EVALUATE /NOT 'a'.
+DEBUG EVALUATE /NOT NOT NOT 'a'.
+DEBUG EVALUATE /NOT F5.2.
+])
+AT_CHECK([pspp --testing-mode parse.sps], [1], [dnl
+parse.sps:1.17-1.20: error: DEBUG EVALUATE: The unary - operator requires a
+numeric operand.
+    1 | DEBUG EVALUATE /-'a'.
+      |                 ^~~~
+
+parse.sps:1.18-1.20: note: DEBUG EVALUATE: The operand of - has type 'string'.
+    1 | DEBUG EVALUATE /-'a'.
+      |                  ^~~
+
+-'a' => error
+
+parse.sps:2.17-2.23: error: DEBUG EVALUATE: The unary - operator requires a
+numeric operand.
+    2 | DEBUG EVALUATE /----'a'.
+      |                 ^~~~~~~
+
+parse.sps:2.21-2.23: note: DEBUG EVALUATE: The operand of - has type 'string'.
+    2 | DEBUG EVALUATE /----'a'.
+      |                     ^~~
+
+----'a' => error
+
+parse.sps:3.17-3.23: error: DEBUG EVALUATE: The unary NOT operator requires a
+numeric operand.
+    3 | DEBUG EVALUATE /NOT 'a'.
+      |                 ^~~~~~~
+
+parse.sps:3.21-3.23: note: DEBUG EVALUATE: The operand of NOT has type
+'string'.
+    3 | DEBUG EVALUATE /NOT 'a'.
+      |                     ^~~
+
+NOT 'a' => error
+
+parse.sps:4.17-4.31: error: DEBUG EVALUATE: The unary NOT operator requires a
+numeric operand.
+    4 | DEBUG EVALUATE /NOT NOT NOT 'a'.
+      |                 ^~~~~~~~~~~~~~~
+
+parse.sps:4.29-4.31: note: DEBUG EVALUATE: The operand of NOT has type
+'string'.
+    4 | DEBUG EVALUATE /NOT NOT NOT 'a'.
+      |                             ^~~
+
+NOT NOT NOT 'a' => error
+
+parse.sps:5.17-5.24: error: DEBUG EVALUATE: The unary NOT operator requires a
+numeric operand.
+    5 | DEBUG EVALUATE /NOT F5.2.
+      |                 ^~~~~~~~
+
+parse.sps:5.21-5.24: note: DEBUG EVALUATE: The operand of NOT has type
+'format'.
+    5 | DEBUG EVALUATE /NOT F5.2.
+      |                     ^~~~
+
+NOT F5.2 => error
+])
+AT_CLEANUP
+
+AT_SETUP([parsing with negative numbers])
+AT_KEYWORDS([expression expressions parse])
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE NOOPT POSTFIX /-2**3.
+DEBUG EVALUATE NOOPT POSTFIX /-2**-3**-4.
+DEBUG EVALUATE/1 - 2.
+])
+AT_CHECK([pspp --testing-mode parse.sps], [0], [dnl
+number: n<2> number: n<3> POW NEG return_number
+
+parse.sps:2.31-2.40: warning: DEBUG EVALUATE: The exponentiation operator
+(`**') is left-associative: `a**b**c' equals `(a**b)**c', not `a**(b**c)'.  To
+disable this warning, insert parentheses.
+    2 | DEBUG EVALUATE NOOPT POSTFIX /-2**-3**-4.
+      |                               ^~~~~~~~~~
+
+number: n<2> number: n<-3> POW number: n<-4> POW NEG return_number
+
+1 - 2 => -1.00
+])
+AT_CLEANUP
+
+AT_SETUP([system variables])
+AT_KEYWORDS([expression expressions parse])
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE /$WIDTH.
+DEBUG EVALUATE /$LENGTH.
+DEBUG EVALUATE /$SYSMIS.
+])
+AT_CHECK([pspp --testing-mode parse.sps], [0], [dnl
+$WIDTH => 79.00
+
+$LENGTH => 24.00
+
+$SYSMIS => sysmis
+])
+AT_CLEANUP
+
+# This test will fail if the current date changes during the test.
+AT_SETUP([system variables - $DATE $DATE11])
+AT_KEYWORDS([expression expressions parse])
+# Get the date in the formats that $DATE and $DATE11 support.
+date=$(date +%d-%^b-%y)
+date11=$(date +%d-%^b-%Y)
+echo "date=$date"		# Should be date=DD-MMM-YY.
+echo "date11=$date11"	# Should be date11=DD-MMM-YYYY.
+
+# Maybe we don't have the 'date' program or it doesn't work as we
+# expect.  Check by trying to see if $date and $date11 are in the
+# expected format.  If not, skip the test.
+AS_CASE([$date],
+  [[[0-9][0-9]-[A-Z][A-Z][A-Z]-[0-9][0-9]]], [],
+  [AT_SKIP_IF([:])])
+AS_CASE([$date11],
+  [[[0-9][0-9]-[A-Z][A-Z][A-Z]-[0-9][0-9][0-9][0-9]]], [],
+  [AT_SKIP_IF([:])])
+
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE /$DATE.
+DEBUG EVALUATE /$DATE11.
+])
+AT_CHECK_UNQUOTED([pspp --testing-mode parse.sps], [0], [dnl
+\$DATE => "$date"
+
+\$DATE11 => "$date11"
+])
+AT_CLEANUP
+
+AT_SETUP([expressions - negative checks])
+AT_KEYWORDS([expression expressions parse])
+AT_DATA([evaluate-base.sps], [dnl
+SET EPOCH 1940.
+DEBUG EVALUATE SET opt.
+DEBUG EVALUATE /$nonexistent.
+DEBUG EVALUATE /RANGE(1, 2).
+DEBUG EVALUATE /CONCAT.1('a', 'b').
+DEBUG EVALUATE /foobar(x).
+DEBUG EVALUATE /CONCAT.1('a' b).
+DEBUG EVALUATE /NCDF.CHISQ(1, 2, 3).
+DEBUG EVALUATE (a=1)(b=2) VECTOR/v('abc').
+])
+
+for opt in OPT NOOPT; do
+    AS_BOX([$opt])
+    sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
+    AT_CHECK([pspp --testing-mode evaluate.sps], [1],
+[[evaluate.sps:3: error: DEBUG EVALUATE: Unknown system variable $nonexistent.
+
+$nonexistent => error
+
+evaluate.sps:4.17-4.27: error: DEBUG EVALUATE: RANGE(number, number, number[,
+number, number]...) must have an odd number of arguments.
+    4 | DEBUG EVALUATE /RANGE(1, 2).
+      |                 ^~~~~~~~~~~
+
+RANGE(1, 2) => error
+
+evaluate.sps:5.17-5.34: error: DEBUG EVALUATE: CONCAT(string[, string]...)
+function cannot accept suffix .1 to specify the minimum number of valid
+arguments.
+    5 | DEBUG EVALUATE /CONCAT.1('a', 'b').
+      |                 ^~~~~~~~~~~~~~~~~~
+
+CONCAT.1('a', 'b') => error
+
+evaluate.sps:6: error: DEBUG EVALUATE: No function or vector named foobar.
+
+foobar(x) => error
+
+evaluate.sps:7.30: error: DEBUG EVALUATE: Syntax error at `b': expecting `,' or
+`)'.
+
+CONCAT.1('a' b) => error
+
+evaluate.sps:8.17-8.35: error: DEBUG EVALUATE: NCDF.CHISQ(number, number,
+number) is not available in this version of PSPP.
+    8 | DEBUG EVALUATE /NCDF.CHISQ(1, 2, 3).
+      |                 ^~~~~~~~~~~~~~~~~~~
+
+NCDF.CHISQ(1, 2, 3) => error
+
+evaluate.sps:9.34-9.41: error: DEBUG EVALUATE: A vector index must be numeric.
+    9 | DEBUG EVALUATE (a=1)(b=2) VECTOR/v('abc').
+      |                                  ^~~~~~~~
+
+evaluate.sps:9.36-9.40: note: DEBUG EVALUATE: This vector index has type
+'string'.
+    9 | DEBUG EVALUATE (a=1)(b=2) VECTOR/v('abc').
+      |                                    ^~~~~
+
+v('abc') => error
+]])
+done
 AT_CLEANUP

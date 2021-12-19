@@ -376,6 +376,8 @@ dataset_set_display (struct dataset *ds, enum dataset_display display)
 time_t
 time_of_last_procedure (struct dataset *ds)
 {
+  if (!ds)
+    return time (NULL);
   if (ds->last_proc_invocation == 0)
     update_last_proc_invocation (ds);
   return ds->last_proc_invocation;

@@ -25,6 +25,7 @@
 #include "libpspp/str.h"
 
 struct fmt_settings;
+struct msg_location;
 
 /* How a format is going to be used. */
 enum fmt_use
@@ -95,6 +96,10 @@ bool fmt_check_input (const struct fmt_spec *);
 bool fmt_check_output (const struct fmt_spec *);
 bool fmt_check_type_compat (const struct fmt_spec *, enum val_type);
 bool fmt_check_width_compat (const struct fmt_spec *, int var_width);
+
+char *fmt_check__ (const struct fmt_spec *, enum fmt_use);
+char *fmt_check_type_compat__ (const struct fmt_spec *, enum val_type);
+char *fmt_check_width_compat__ (const struct fmt_spec *, int var_width);
 
 /* Working with formats. */
 int fmt_var_width (const struct fmt_spec *);

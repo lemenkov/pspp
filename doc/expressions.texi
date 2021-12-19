@@ -447,9 +447,10 @@ Returns 1 if @var{expr} has the system-missing value, 0 otherwise.
 @end deftypefn
 
 @deftypefn {Function} {} VALUE (@var{variable})
-Prevents the user-missing values of @var{variable} from being
-transformed into system-missing values, and always results in the
-actual value of @var{variable}, whether it is valid, user-missing, or
+@deftypefnx {Function} {} VALUE (@var{vector}(@var{index}))
+Prevents the user-missing values of the variable or vector element
+from being transformed into system-missing values, and always results
+in its actual value, whether it is valid, user-missing, or
 system-missing.
 @end deftypefn
 
@@ -463,23 +464,25 @@ They take a set of numeric arguments or a set of string arguments, and
 produce Boolean results.
 
 String comparisons are performed according to the rules given in
-@ref{Relational Operators}.
+@ref{Relational Operators}.  User-missing string values are treated as
+valid values.
 
 @deftypefn {Function} {} ANY (@var{value}, @var{set} [, @var{set}]@dots{})
-Results in true if @var{value} is equal to any of the @var{set}
-values.  Otherwise, results in false.  If @var{value} is
-system-missing, returns system-missing.  System-missing values in
-@var{set} do not cause @func{ANY} to return system-missing.
+Returns true if @var{value} is equal to any of the @var{set} values,
+and false otherwise.  For numeric arguments, returns system-missing if
+@var{value} is system-missing or if all the values in @var{set} are
+system-missing.  If @var{value}
 @end deftypefn
 
 @deftypefn {Function} {} RANGE (@var{value}, @var{low}, @var{high} [, @var{low}, @var{high}]@dots{})
-Results in true if @var{value} is in any of the intervals bounded by
-@var{low} and @var{high} inclusive.  Otherwise, results in false.
-Each @var{low} must be less than or equal to its corresponding
-@var{high} value.  @var{low} and @var{high} must be given in pairs.
-If @var{value} is system-missing, returns system-missing.
-System-missing values in @var{set} do not cause @func{RANGE} to return
-system-missing.
+Returns true if @var{value} is in any of the intervals bounded by
+@var{low} and @var{high} inclusive, and false otherwise.  @var{low}
+and @var{high} must be given in pairs.  Returns system-missing if any
+@var{high} is less than its @var{low} or, for numeric arguments, if
+@var{value} is system-missing or if all the @var{low}-@var{high} pairs
+contain one (or two) system-missing values.  A pair does not match
+@var{value} if either @var{low} or @var{high} is missing, even if
+@var{value} equals the non-missing endpoint.
 @end deftypefn
 
 @node Statistical Functions
@@ -567,30 +570,33 @@ String functions take various arguments and return various results.
 @deftypefn {Function} {} CONCAT (@var{string}, @var{string}[, @dots{}])
 Returns a string consisting of each @var{string} in sequence.
 @code{CONCAT("abc", "def", "ghi")} has a value of @code{"abcdefghi"}.
-The resultant string is truncated to a maximum of 255 characters.
+The resultant string is truncated to a maximum of 32767 bytes.
 @end deftypefn
 
 @cindex searching strings
 @deftypefn {Function} {} INDEX (@var{haystack}, @var{needle})
-Returns a positive integer indicating the position of the first
-occurrence of @var{needle} in @var{haystack}.  Returns 0 if @var{haystack}
-does not contain @var{needle}.  Returns system-missing if @var{needle}
-is an empty string.
+@deftypefnx {Function} {} RINDEX (@var{haystack}, @var{needle})
+Returns a positive integer indicating the position of the first (for
+@code{INDEX}) or last (for @code{RINDEX}) occurrence of @var{needle}
+in @var{haystack}.  Returns 0 if @var{haystack} does not contain
+@var{needle}.  Returns 1 if @var{needle} is the empty string.
 @end deftypefn
 
 @deftypefn {Function} {} INDEX (@var{haystack}, @var{needles}, @var{needle_len})
-Divides @var{needles} into one or more needles, each with length
-@var{needle_len}.
-Searches @var{haystack} for the first occurrence of each needle, and
-returns the smallest value.  Returns 0 if @var{haystack} does not
-contain any part in @var{needle}.  It is an error if @var{needle_len}
-does not evenly divide the length of @var{needles}.  Returns
-system-missing if @var{needles} is an empty string.
+@deftypefnx {Function} {} RINDEX (@var{haystack}, @var{needle}, @var{needle_len})
+Divides @var{needles} into multiple needles, each with length
+@var{needle_len}, which must be a positive integer that evenly divides
+the length of @var{needles}.  Searches @var{haystack} for the
+occurrences of each needle and returns a positive integer indicating
+the byte index of the beginning of the first (for @code{INDEX}) or
+last (for @code{RINDEX}) needle it finds.  Returns 0 if @var{haystack}
+does not contain any of the needles, or if @var{needles} is the empty
+string.
 @end deftypefn
 
 @cindex strings, finding length of
 @deftypefn {Function} {} LENGTH (@var{string})
-Returns the number of characters in @var{string}.
+Returns the number of bytes in @var{string}.
 @end deftypefn
 
 @cindex strings, case of
@@ -601,33 +607,30 @@ letters are changed to lowercase letters.  The definitions of
 @end deftypefn
 
 @cindex strings, padding
-@deftypefn {Function} {} LPAD (@var{string}, @var{length})
-If @var{string} is at least @var{length} characters in length, returns
-@var{string} unchanged.  Otherwise, returns @var{string} padded with
-spaces on the left side to length @var{length}.  Returns an empty string
-if @var{length} is system-missing, negative, or greater than 255.
-@end deftypefn
+@deftypefn {Function} {} LPAD (@var{string}, @var{length}[, @var{padding}])
+@deftypefnx {Function} {} RPAD (@var{string}, @var{length}[, @var{padding}])
+If @var{string} is at least @var{length} bytes long, these functions
+return @var{string} unchanged.  Otherwise, they return @var{string}
+padded with @var{padding} on the left side (for @code{LPAD}) or right
+side (for @code{RPAD}) to @var{length} bytes.  These functions report
+an error and return @var{string} unchanged if @var{length} is missing
+or bigger than 32767.
 
-@deftypefn {Function} {} LPAD (@var{string}, @var{length}, @var{padding})
-If @var{string} is at least @var{length} characters in length, returns
-@var{string} unchanged.  Otherwise, returns @var{string} padded with
-@var{padding} on the left side to length @var{length}.  Returns an empty
-string if @var{length} is system-missing, negative, or greater than 255, or
-if @var{padding} does not contain exactly one character.
+The @var{padding} argument must not be an empty string and defaults to
+a space if not specified.  If its length does not evenly fit the
+amount of space needed for padding, the returned string will be
+shorter than @var{length}.
 @end deftypefn
 
 @cindex strings, trimming
 @cindex white space, trimming
-@deftypefn {Function} {} LTRIM (@var{string})
-Returns @var{string}, after removing leading spaces.  Other white space,
-such as tabs, carriage returns, line feeds, and vertical tabs, is not
-removed.
-@end deftypefn
-
-@deftypefn {Function} {} LTRIM (@var{string}, @var{padding})
-Returns @var{string}, after removing leading @var{padding} characters.
-If @var{padding} does not contain exactly one character, returns an
-empty string.
+@deftypefn {Function} {} LTRIM (@var{string}[, @var{padding}])
+@deftypefnx {Function} {} RTRIM (@var{string}[, @var{padding}])
+These functions return @var{string}, after removing leading (for
+@code{LTRIM}) or trailing (for @code{RTRIM}) copies of @var{padding}.
+If @var{padding} is omitted, these functions remove spaces (but not
+tabs or other white space).  These functions return @var{string}
+unchanged if @var{padding} is the empty string.
 @end deftypefn
 
 @cindex numbers, converting from strings
@@ -635,9 +638,9 @@ empty string.
 @deftypefn {Function} {} NUMBER (@var{string}, @var{format})
 Returns the number produced when @var{string} is interpreted according
 to format specifier @var{format}.  If the format width @var{w} is less
-than the length of @var{string}, then only the first @var{w}
-characters in @var{string} are used, @i{e.g.}@: @code{NUMBER("123", F3.0)}
-and @code{NUMBER("1234", F3.0)} both have value 123.  If @var{w} is
+than the length of @var{string}, then only the first @var{w} bytes in
+@var{string} are used, @i{e.g.}@: @code{NUMBER("123", F3.0)} and
+@code{NUMBER("1234", F3.0)} both have value 123.  If @var{w} is
 greater than @var{string}'s length, then it is treated as if it were
 right-padded with spaces.  If @var{string} is not in the correct
 format for @var{format}, system-missing is returned.
@@ -650,53 +653,6 @@ Returns string @var{haystack} with instances of @var{needle} replaced
 by @var{replacement}.  If nonnegative integer @var{n} is specified, it
 limits the maximum number of replacements; otherwise, all instances of
 @var{needle} are replaced.
-@end deftypefn
-
-@cindex strings, searching backwards
-@deftypefn {Function} {} RINDEX (@var{haystack}, @var{needle})
-Returns a positive integer indicating the position of the last
-occurrence of @var{needle} in @var{haystack}.  Returns 0 if
-@var{haystack} does not contain @var{needle}.  Returns system-missing if
-@var{needle} is an empty string.
-@end deftypefn
-
-@deftypefn {Function} {} RINDEX (@var{haystack}, @var{needle}, @var{needle_len})
-Divides @var{needle} into parts, each with length @var{needle_len}.
-Searches @var{haystack} for the last occurrence of each part, and
-returns the largest value.  Returns 0 if @var{haystack} does not contain
-any part in @var{needle}.  It is an error if @var{needle_len} does not
-evenly divide the length of @var{needle}.  Returns system-missing
-if @var{needle} is an empty string or if needle_len is less than 1.
-@end deftypefn
-
-@cindex padding strings
-@cindex strings, padding
-@deftypefn {Function} {} RPAD (@var{string}, @var{length})
-If @var{string} is at least @var{length} characters in length, returns
-@var{string} unchanged.  Otherwise, returns @var{string} padded with
-spaces on the right to length @var{length}.  Returns an empty string if
-@var{length} is system-missing, negative, or greater than 255.
-@end deftypefn
-
-@deftypefn {Function} {} RPAD (@var{string}, @var{length}, @var{padding})
-If @var{string} is at least @var{length} characters in length, returns
-@var{string} unchanged.  Otherwise, returns @var{string} padded with
-@var{padding} on the right to length @var{length}.  Returns an empty
-string if @var{length} is system-missing, negative, or greater than 255,
-or if @var{padding} does not contain exactly one character.
-@end deftypefn
-
-@cindex strings, trimming
-@cindex white space, trimming
-@deftypefn {Function} {} RTRIM (@var{string})
-Returns @var{string}, after removing trailing spaces.  Other types of
-white space are not removed.
-@end deftypefn
-
-@deftypefn {Function} {} RTRIM (@var{string}, @var{padding})
-Returns @var{string}, after removing trailing @var{padding} characters.
-If @var{padding} does not contain exactly one character, returns an
-empty string.
 @end deftypefn
 
 @cindex strings, converting from numbers
@@ -712,8 +668,9 @@ has the value @code{"123.6"}.
 @cindex white space, trimming
 @deftypefn {Function} {} STRUNC (@var{string}, @var{n})
 Returns @var{string}, first trimming it to at most @var{n} bytes, then
-removing trailing spaces.  Returns an empty string if @var{n} is
-missing or negative.
+removing trailing spaces (but not tabs or other white space).  Returns
+an empty string if @var{n} is zero or negative, or @var{string}
+unchanged if @var{n} is missing.
 @end deftypefn
 
 @cindex substrings
@@ -725,15 +682,15 @@ less than 1, or greater than the length of @var{string}.
 @end deftypefn
 
 @deftypefn {Function} {} SUBSTR (@var{string}, @var{start}, @var{count})
-Returns a string consisting of the first @var{count} characters from
-@var{string} beginning at position @var{start}.  Returns an empty string
-if @var{start} or @var{count} is system-missing, if @var{start} is less
-than 1 or greater than the number of characters in @var{string}, or if
-@var{count} is less than 1.  Returns a string shorter than @var{count}
-characters if @var{start} + @var{count} - 1 is greater than the number
-of characters in @var{string}.  Examples: @code{SUBSTR("abcdefg", 3, 2)}
-has value @code{"cd"}; @code{SUBSTR("nonsense", 4, 10)} has the value
-@code{"sense"}.
+Returns a string consisting of the first @var{count} bytes from
+@var{string} beginning at position @var{start}.  Returns an empty
+string if @var{start} or @var{count} is system-missing, if @var{start}
+is less than 1 or greater than the number of bytes in @var{string}, or
+if @var{count} is less than 1.  Returns a string shorter than
+@var{count} bytes if @var{start} + @var{count} - 1 is greater than the
+number of bytes in @var{string}.  Examples: @code{SUBSTR("abcdefg", 3,
+2)} has value @code{"cd"}; @code{SUBSTR("nonsense", 4, 10)} has the
+value @code{"sense"}.
 @end deftypefn
 
 @cindex case conversion

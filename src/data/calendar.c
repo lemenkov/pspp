@@ -54,8 +54,8 @@ is_leap_year (int y)
   return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
 }
 
-static int
-raw_gregorian_to_offset (int y, int m, int d)
+int
+calendar_raw_gregorian_to_offset (int y, int m, int d)
 {
   return (EPOCH - 1
           + 365 * (y - 1)
@@ -67,6 +67,46 @@ raw_gregorian_to_offset (int y, int m, int d)
           + d);
 }
 
+int *
+calendar_gregorian_adjust (int *y, int *m, int *d,
+                           const struct fmt_settings *settings)
+{
+  /* Normalize year. */
+  if (*y >= 0 && *y < 100)
+    {
+      int epoch = fmt_settings_get_epoch (settings);
+      int century = epoch / 100 + (*y < epoch % 100);
+      *y += century * 100;
+    }
+
+  /* Normalize month. */
+  if (*m < 1 || *m > 12)
+    {
+      if (*m == 0)
+        {
+          *y -= 1;
+          *m = 12;
+        }
+      else if (*m == 13)
+        {
+          *y += 1;
+          *m = 1;
+        }
+      else
+        return m;
+    }
+
+  /* Normalize day. */
+  if (*d < 0 || *d > 31)
+    return d;
+
+  /* Validate date. */
+  if (*y < 1582 || (*y == 1582 && (*m < 10 || (*m == 10 && *d < 15))))
+    return y;
+
+  return NULL;
+}
+
 /* Returns the number of days from 14 Oct 1582 to (Y,M,D) in the
    Gregorian calendar.  Returns SYSMIS for dates before 14 Oct
    1582. */
@@ -75,58 +115,29 @@ calendar_gregorian_to_offset (int y, int m, int d,
                               const struct fmt_settings *settings,
                               char **errorp)
 {
-  /* Normalize year. */
-  if (y >= 0 && y < 100)
+  int *bad_value = calendar_gregorian_adjust (&y, &m, &d, settings);
+  if (!bad_value)
     {
-      int epoch = fmt_settings_get_epoch (settings);
-      int century = epoch / 100 + (y < epoch % 100);
-      y += century * 100;
+      if (errorp)
+        *errorp = NULL;
+      return calendar_raw_gregorian_to_offset (y, m, d);
     }
-
-  /* Normalize month. */
-  if (m < 1 || m > 12)
+  else
     {
-      if (m == 0)
+      if (errorp)
         {
-          y--;
-          m = 12;
-        }
-      else if (m == 13)
-        {
-          y++;
-          m = 1;
-        }
-      else
-        {
-          if (errorp != NULL)
-            *errorp = xasprintf (_("Month %d is not in acceptable range of "
+          if (bad_value == &y)
+            *errorp = xasprintf (_("Date %04d-%d-%d is before the earliest "
+                                   "supported date 1582-10-15."), y, m, d);
+          else if (bad_value == &m)
+            *errorp = xasprintf (_("Month %d is not in the acceptable range of "
                                    "0 to 13."), m);
-          return SYSMIS;
+          else
+            *errorp = xasprintf (_("Day %d is not in the acceptable range of "
+                                   "0 to 31."), d);
         }
-    }
-
-  /* Normalize day. */
-  if (d < 0 || d > 31)
-    {
-      if (errorp != NULL)
-        *errorp = xasprintf (_("Day %d is not in acceptable range of "
-                               "0 to 31."), d);
       return SYSMIS;
     }
-
-  /* Validate date. */
-  if (y < 1582 || (y == 1582 && (m < 10 || (m == 10 && d < 15))))
-    {
-      if (errorp != NULL)
-        *errorp = xasprintf (_("Date %04d-%d-%d is before the earliest "
-                               "acceptable date of 1582-10-15."), y, m, d);
-      return SYSMIS;
-    }
-
-  /* Calculate offset. */
-  if (errorp != NULL)
-    *errorp = NULL;
-  return raw_gregorian_to_offset (y, m, d);
 }
 
 /* Returns the number of days in the given YEAR from January 1 up
@@ -187,7 +198,7 @@ void
 calendar_offset_to_gregorian (int ofs, int *y, int *m, int *d, int *yd)
 {
   int year = *y = calendar_offset_to_year (ofs);
-  int january1 = raw_gregorian_to_offset (year, 1, 1);
+  int january1 = calendar_raw_gregorian_to_offset (year, 1, 1);
   int yday = *yd = ofs - january1 + 1;
   int march1 = january1 + cum_month_days (year, 3);
   int correction = ofs < march1 ? 0 : (is_leap_year (year) ? 1 : 2);
@@ -202,7 +213,7 @@ int
 calendar_offset_to_yday (int ofs)
 {
   int year = calendar_offset_to_year (ofs);
-  int january1 = raw_gregorian_to_offset (year, 1, 1);
+  int january1 = calendar_raw_gregorian_to_offset (year, 1, 1);
   int yday = ofs - january1 + 1;
   return yday;
 }

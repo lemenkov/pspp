@@ -21,9 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct fmt_settings;
 
+int *calendar_gregorian_adjust (int *y, int *m, int *d,
+                                const struct fmt_settings *);
+int calendar_raw_gregorian_to_offset (int y, int m, int d);
+
 double calendar_gregorian_to_offset (int y, int m, int d,
                                      const struct fmt_settings *,
                                      char **errorp);
+
 void calendar_offset_to_gregorian (int ofs, int *y, int *m, int *d, int *yd);
 int calendar_offset_to_year (int ofs);
 int calendar_offset_to_month (int ofs);

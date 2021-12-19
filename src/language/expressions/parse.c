@@ -60,11 +60,21 @@ atom_type expr_node_returns (const struct expr_node *);
 static const char *atom_type_name (atom_type);
 static struct expression *finish_expression (struct expr_node *,
                                              struct expression *);
-static bool type_check (const struct expr_node *, enum val_type expected_type);
+static bool type_check (const struct expression *, const struct expr_node *,
+                        enum val_type expected_type);
 static struct expr_node *allocate_unary_variable (struct expression *,
                                                 const struct variable *);
 
 /* Public functions. */
+
+static struct expr_node *
+parse_expr (struct lexer *lexer, struct expression *e)
+{
+  struct expr_node *n = parse_or (lexer, e);
+  if (n && n->type == OP_VEC_ELEM_NUM_RAW)
+    n->type = OP_VEC_ELEM_NUM;
+  return n;
+}
 
 /* Parses an expression of the given TYPE.  If DS is nonnull then variables and
    vectors within it may be referenced within the expression; otherwise, the
@@ -76,8 +86,8 @@ expr_parse (struct lexer *lexer, struct dataset *ds, enum val_type type)
   assert (val_type_is_valid (type));
 
   struct expression *e = expr_create (ds);
-  struct expr_node *n = parse_or (lexer, e);
-  if (!n || !type_check (n, type))
+  struct expr_node *n = parse_expr (lexer, e);
+  if (!n || !type_check (e, n, type))
     {
       expr_free (e);
       return NULL;
@@ -91,7 +101,7 @@ struct expression *
 expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 {
   struct expression *e = expr_create (ds);
-  struct expr_node *n = parse_or (lexer, e);
+  struct expr_node *n = parse_expr (lexer, e);
   if (!n)
     {
       expr_free (e);
@@ -100,10 +110,11 @@ expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 
   atom_type actual_type = expr_node_returns (n);
   if (actual_type == OP_number)
-    n = expr_allocate_unary (e, OP_NUM_TO_BOOLEAN, n);
+    n = expr_allocate_unary (e, OP_EXPR_TO_BOOLEAN, n);
   else if (actual_type != OP_boolean)
     {
-      msg (SE, _("Type mismatch: expression has %s type, "
+      msg_at (SE, expr_location (e, n),
+              _("Type mismatch: expression has %s type, "
                  "but a boolean value is required here."),
            atom_type_name (actual_type));
       expr_free (e);
@@ -121,7 +132,7 @@ expr_parse_new_variable (struct lexer *lexer, struct dataset *ds,
                          const char *new_var_name)
 {
   struct expression *e = expr_create (ds);
-  struct expr_node *n = parse_or (lexer, e);
+  struct expr_node *n = parse_expr (lexer, e);
   if (!n)
     {
       expr_free (e);
@@ -158,7 +169,7 @@ expr_parse_any (struct lexer *lexer, struct dataset *ds, bool optimize)
   struct expression *e;
 
   e = expr_create (ds);
-  n = parse_or (lexer, e);
+  n = parse_expr (lexer, e);
   if (n == NULL)
     {
       expr_free (e);
@@ -195,6 +206,7 @@ atom_type_stack (atom_type type)
     {
     case OP_number:
     case OP_boolean:
+    case OP_num_vec_elem:
       return &on_number_stack;
 
     case OP_string:
@@ -208,6 +220,7 @@ atom_type_stack (atom_type type)
     case OP_integer:
     case OP_pos_int:
     case OP_vector:
+    case OP_expr_node:
       return &not_on_stack;
 
     default:
@@ -284,7 +297,8 @@ finish_expression (struct expr_node *n, struct expression *e)
    converted to type EXPECTED_TYPE, inserting a conversion at *N
    if necessary.  Returns true if successful, false on failure. */
 static bool
-type_check (const struct expr_node *n, enum val_type expected_type)
+type_check (const struct expression *e, const struct expr_node *n,
+            enum val_type expected_type)
 {
   atom_type actual_type = expr_node_returns (n);
 
@@ -293,8 +307,9 @@ type_check (const struct expr_node *n, enum val_type expected_type)
     case VAL_NUMERIC:
       if (actual_type != OP_number && actual_type != OP_boolean)
 	{
-	  msg (SE, _("Type mismatch: expression has %s type, "
-                     "but a numeric value is required here."),
+	  msg_at (SE, expr_location (e, n),
+                  _("Type mismatch: expression has type '%s', "
+                     "but a numeric value is required."),
                atom_type_name (actual_type));
 	  return false;
 	}
@@ -303,8 +318,9 @@ type_check (const struct expr_node *n, enum val_type expected_type)
     case VAL_STRING:
       if (actual_type != OP_string)
         {
-          msg (SE, _("Type mismatch: expression has %s type, "
-                     "but a string value is required here."),
+          msg_at (SE, expr_location (e, n),
+                  _("Type mismatch: expression has type '%s', "
+                     "but a string value is required."),
                atom_type_name (actual_type));
           return false;
         }
@@ -361,8 +377,8 @@ expr_location__ (struct expression *e,
 
 /* Returns the source code location corresponding to expression NODE, computing
    it lazily if needed. */
-static const struct msg_location *
-expr_location (struct expression *e, const struct expr_node *node_)
+const struct msg_location *
+expr_location (const struct expression *e_, const struct expr_node *node_)
 {
   struct expr_node *node = CONST_CAST (struct expr_node *, node_);
   if (!node)
@@ -370,6 +386,7 @@ expr_location (struct expression *e, const struct expr_node *node_)
 
   if (!node->location)
     {
+      struct expression *e = CONST_CAST (struct expression *, e_);
       const struct msg_location *min = NULL;
       const struct msg_location *max = NULL;
       expr_location__ (e, node, &min, &max);
@@ -432,6 +449,12 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
             *argp = expr_allocate_unary (e, OP_BOOLEAN_TO_NUM, arg);
           return true;
         }
+      else if (actual_type == OP_num_vec_elem)
+        {
+          if (do_coercion)
+            arg->type = OP_VEC_ELEM_NUM;
+          return true;
+        }
       break;
 
     case OP_string:
@@ -443,12 +466,24 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
         {
           /* Convert numeric to boolean. */
           if (do_coercion)
-            *argp = expr_allocate_unary (e, OP_NUM_TO_BOOLEAN, arg);
+            *argp = expr_allocate_binary (e, OP_OPERAND_TO_BOOLEAN, arg,
+                                          expr_allocate_expr_node (e, node));
+          return true;
+        }
+      break;
+
+    case OP_integer:
+      if (actual_type == OP_number)
+        {
+          /* Convert number to integer. */
+          if (do_coercion)
+            *argp = expr_allocate_unary (e, OP_NUM_TO_INTEGER, arg);
           return true;
         }
       break;
 
     case OP_format:
+      /* We never coerce to OP_format, only to OP_ni_format or OP_no_format. */
       NOT_REACHED ();
 
     case OP_ni_format:
@@ -536,19 +571,19 @@ is_coercible (const struct expr_node *node_, size_t arg_idx)
   return type_coercion__ (NULL, node, arg_idx, false);
 }
 
-/* How to parse an operator. */
+/* How to parse an operator.
+
+   Some operators support both numeric and string operators.  For those,
+   'num_op' and 'str_op' are both nonzero.  Otherwise, only one 'num_op' is
+   nonzero.  (PSPP doesn't have any string-only operators.) */
 struct operator
   {
     enum token_type token;      /* Operator token. */
-    operation_type type;        /* Operation. */
+    operation_type num_op;      /* Operation for numeric operands (or 0). */
+    operation_type str_op;      /* Operation for string operands (or 0). */
   };
 
-/* Attempts to match the current token against the tokens for the
-   OP_CNT operators in OPS[].  If successful, returns true
-   and, if OPERATOR is non-null, sets *OPERATOR to the operator.
-   On failure, returns false and, if OPERATOR is non-null, sets
-   *OPERATOR to a null pointer. */
-static const struct operator *
+static operation_type
 match_operator (struct lexer *lexer, const struct operator ops[], size_t n_ops,
                 const struct expr_node *lhs)
 {
@@ -556,21 +591,18 @@ match_operator (struct lexer *lexer, const struct operator ops[], size_t n_ops,
   for (const struct operator *op = ops; op < ops + n_ops; op++)
     if (lex_token (lexer) == op->token)
       {
-        bool op_is_numeric = operations[op->type].args[0] != OP_string;
-        if (op_is_numeric == lhs_is_numeric)
-          {
-            if (op->token != T_NEG_NUM)
-              lex_get (lexer);
-            return op;
-          }
+        if (op->token != T_NEG_NUM)
+          lex_get (lexer);
+
+        return op->str_op && !lhs_is_numeric ? op->str_op : op->num_op;
       }
-  return NULL;
+  return 0;
 }
 
 static const char *
-operator_name (const struct operator *op)
+operator_name (enum token_type token)
 {
-  return op->token == T_NEG_NUM ? "-" : token_type_to_string (op->token);
+  return token == T_NEG_NUM ? "-" : token_type_to_string (token);
 }
 
 static struct expr_node *
@@ -581,8 +613,9 @@ parse_binary_operators__ (struct lexer *lexer, struct expression *e,
 {
   for (int op_count = 0; ; op_count++)
     {
-      const struct operator *operator = match_operator (lexer, ops, n_ops, lhs);
-      if (!operator)
+      enum token_type token = lex_token (lexer);
+      operation_type optype = match_operator (lexer, ops, n_ops, lhs);
+      if (!optype)
         {
           if (op_count > 1 && chain_warning)
             msg_at (SW, expr_location (e, lhs), "%s", chain_warning);
@@ -594,38 +627,36 @@ parse_binary_operators__ (struct lexer *lexer, struct expression *e,
       if (!rhs)
         return NULL;
 
-      struct expr_node *node = expr_allocate_binary (e, operator->type,
-                                                     lhs, rhs);
-      bool lhs_ok = type_coercion (e, node, 0);
-      bool rhs_ok = type_coercion (e, node, 1);
-
-      if (!lhs_ok || !rhs_ok)
+      struct expr_node *node = expr_allocate_binary (e, optype, lhs, rhs);
+      if (!is_coercible (node, 0) || !is_coercible (node, 1))
         {
-          int n_matches = 0;
+          bool both = false;
           for (size_t i = 0; i < n_ops; i++)
-            if (ops[i].token == operator->token)
-              n_matches++;
+            if (ops[i].token == token)
+              both = ops[i].num_op && ops[i].str_op;
 
-          const char *name = operator_name (operator);
-          if (n_matches > 1)
+          const char *name = operator_name (token);
+          if (both)
             msg_at (SE, expr_location (e, node),
-                    _("The operands of %s must have the same type."), name);
+                    _("Both operands of %s must have the same type."), name);
           else if (operations[node->type].args[0] != OP_string)
             msg_at (SE, expr_location (e, node),
                     _("Both operands of %s must be numeric."), name);
           else
-            msg_at (SE, expr_location (e, node),
-                    _("Both operands of %s must be strings."), name);
+            NOT_REACHED ();
 
           msg_at (SN, expr_location (e, node->args[0]),
-                  _("The left-hand operand of %s has type '%s'."),
-                  name, atom_type_name (expr_node_returns (node->args[0])));
+                  _("This operand has type '%s'."),
+                  atom_type_name (expr_node_returns (node->args[0])));
           msg_at (SN, expr_location (e, node->args[1]),
-                  _("The right-hand operand of %s has type '%s'."),
-                  name, atom_type_name (expr_node_returns (node->args[1])));
+                  _("This operand has type '%s'."),
+                  atom_type_name (expr_node_returns (node->args[1])));
 
           return NULL;
         }
+
+      if (!type_coercion (e, node, 0) || !type_coercion (e, node, 1))
+        NOT_REACHED ();
 
       lhs = node;
     }
@@ -659,14 +690,14 @@ parse_inverting_unary_operator (struct lexer *lexer, struct expression *e,
   if (!inner || !op_count)
     return inner;
 
-  struct expr_node *outer = expr_allocate_unary (e, op->type, inner);
+  struct expr_node *outer = expr_allocate_unary (e, op->num_op, inner);
   expr_add_location (lexer, e, start_ofs, outer);
 
   if (!type_coercion (e, outer, 0))
     {
       assert (operations[outer->type].args[0] != OP_string);
 
-      const char *name = operator_name (op);
+      const char *name = operator_name (op->token);
       msg_at (SE, expr_location (e, outer),
               _("The unary %s operator requires a numeric operand."), name);
 
@@ -684,7 +715,7 @@ parse_inverting_unary_operator (struct lexer *lexer, struct expression *e,
 static struct expr_node *
 parse_or (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_OR, OP_OR };
+  static const struct operator op = { .token = T_OR, .num_op = OP_OR };
   return parse_binary_operators (lexer, e, &op, 1, parse_and, NULL);
 }
 
@@ -692,7 +723,7 @@ parse_or (struct lexer *lexer, struct expression *e)
 static struct expr_node *
 parse_and (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_AND, OP_AND };
+  static const struct operator op = { .token = T_AND, .num_op = OP_AND };
 
   return parse_binary_operators (lexer, e, &op, 1, parse_not, NULL);
 }
@@ -701,7 +732,7 @@ parse_and (struct lexer *lexer, struct expression *e)
 static struct expr_node *
 parse_not (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_NOT, OP_NOT };
+  static const struct operator op = { .token = T_NOT, .num_op = OP_NOT };
   return parse_inverting_unary_operator (lexer, e, &op, parse_rel);
 }
 
@@ -714,28 +745,17 @@ parse_rel (struct lexer *lexer, struct expression *e)
       "not produce the mathematically expected result.  "
       "Use the AND logical operator to fix the problem "
       "(e.g. `a < b AND b < c').  "
-      "If chaining is really intended, parentheses will disable "
-      "this warning (e.g. `(a < b) < c'.)");
+      "To disable this warning, insert parentheses.");
 
   static const struct operator ops[] =
     {
-      /* Numeric operators. */
-      { T_EQUALS, OP_EQ },
-      { T_EQ, OP_EQ },
-      { T_GE, OP_GE },
-      { T_GT, OP_GT },
-      { T_LE, OP_LE },
-      { T_LT, OP_LT },
-      { T_NE, OP_NE },
-
-      /* String operators. */
-      { T_EQUALS, OP_EQ_STRING },
-      { T_EQ, OP_EQ_STRING },
-      { T_GE, OP_GE_STRING },
-      { T_GT, OP_GT_STRING },
-      { T_LE, OP_LE_STRING },
-      { T_LT, OP_LT_STRING },
-      { T_NE, OP_NE_STRING },
+      { .token = T_EQUALS, .num_op = OP_EQ, .str_op = OP_EQ_STRING },
+      { .token = T_EQ, .num_op = OP_EQ, .str_op = OP_EQ_STRING },
+      { .token = T_GE, .num_op = OP_GE, .str_op = OP_GE_STRING },
+      { .token = T_GT, .num_op = OP_GT, .str_op = OP_GT_STRING },
+      { .token = T_LE, .num_op = OP_LE, .str_op = OP_LE_STRING },
+      { .token = T_LT, .num_op = OP_LT, .str_op = OP_LT_STRING },
+      { .token = T_NE, .num_op = OP_NE, .str_op = OP_NE_STRING },
     };
 
   return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
@@ -748,9 +768,9 @@ parse_add (struct lexer *lexer, struct expression *e)
 {
   static const struct operator ops[] =
     {
-      { T_PLUS, OP_ADD },
-      { T_DASH, OP_SUB },
-      { T_NEG_NUM, OP_ADD },
+      { .token = T_PLUS, .num_op = OP_ADD },
+      { .token = T_DASH, .num_op = OP_SUB },
+      { .token = T_NEG_NUM, .num_op = OP_ADD },
     };
 
   return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
@@ -763,8 +783,8 @@ parse_mul (struct lexer *lexer, struct expression *e)
 {
   static const struct operator ops[] =
     {
-      { T_ASTERISK, OP_MUL },
-      { T_SLASH, OP_DIV },
+      { .token = T_ASTERISK, .num_op = OP_MUL },
+      { .token = T_SLASH, .num_op = OP_DIV },
     };
 
   return parse_binary_operators (lexer, e, ops, sizeof ops / sizeof *ops,
@@ -775,19 +795,18 @@ parse_mul (struct lexer *lexer, struct expression *e)
 static struct expr_node *
 parse_neg (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_DASH, OP_NEG };
+  static const struct operator op = { .token = T_DASH, .num_op = OP_NEG };
   return parse_inverting_unary_operator (lexer, e, &op, parse_exp);
 }
 
 static struct expr_node *
 parse_exp (struct lexer *lexer, struct expression *e)
 {
-  static const struct operator op = { T_EXP, OP_POW };
+  static const struct operator op = { .token = T_EXP, .num_op = OP_POW };
 
   const char *chain_warning =
-    _("The exponentiation operator (`**') is left-associative, "
-      "even though right-associative semantics are more useful.  "
-      "That is, `a**b**c' equals `(a**b)**c', not as `a**(b**c)'.  "
+    _("The exponentiation operator (`**') is left-associative: "
+      "`a**b**c' equals `(a**b)**c', not `a**(b**c)'.  "
       "To disable this warning, insert parentheses.");
 
   if (lex_token (lexer) != T_NEG_NUM || lex_next_token (lexer, 1) != T_EXP)
@@ -800,6 +819,7 @@ parse_exp (struct lexer *lexer, struct expression *e)
   int start_ofs = lex_ofs (lexer);
   struct expr_node *lhs = expr_allocate_number (e, -lex_tokval (lexer));
   lex_get (lexer);
+  expr_add_location (lexer, e, start_ofs, lhs);
 
   struct expr_node *node = parse_binary_operators__ (
     lexer, e, &op, 1, parse_primary, chain_warning, lhs);
@@ -811,6 +831,46 @@ parse_exp (struct lexer *lexer, struct expression *e)
   return node;
 }
 
+static double
+ymd_to_offset (int y, int m, int d)
+{
+  char *error;
+  double retval = calendar_gregorian_to_offset (
+    y, m, d, settings_get_fmt_settings (), &error);
+  if (error)
+    {
+      msg (SE, "%s", error);
+      free (error);
+    }
+  return retval;
+}
+
+static struct expr_node *
+expr_date (struct expression *e, int year_digits)
+{
+  static const char *months[12] =
+    {
+      "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+    };
+
+  time_t last_proc_time = time_of_last_procedure (e->ds);
+  struct tm *time = localtime (&last_proc_time);
+
+  char *tmp = (year_digits == 2
+               ? xasprintf ("%02d-%s-%02d", time->tm_mday, months[time->tm_mon],
+                            time->tm_year % 100)
+               : xasprintf ("%02d-%s-%04d", time->tm_mday, months[time->tm_mon],
+                            time->tm_year + 1900));
+
+  struct substring s;
+  ss_alloc_substring_pool (&s, ss_cstr (tmp), e->expr_pool);
+
+  free (tmp);
+
+  return expr_allocate_string (e, s);
+}
+
 /* Parses system variables. */
 static struct expr_node *
 parse_sysvar (struct lexer *lexer, struct expression *e)
@@ -818,25 +878,9 @@ parse_sysvar (struct lexer *lexer, struct expression *e)
   if (lex_match_id (lexer, "$CASENUM"))
     return expr_allocate_nullary (e, OP_CASENUM);
   else if (lex_match_id (lexer, "$DATE"))
-    {
-      static const char *months[12] =
-        {
-          "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-          "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
-        };
-
-      time_t last_proc_time = time_of_last_procedure (e->ds);
-      struct tm *time;
-      char temp_buf[10];
-      struct substring s;
-
-      time = localtime (&last_proc_time);
-      sprintf (temp_buf, "%02d %s %02d", abs (time->tm_mday) % 100,
-               months[abs (time->tm_mon) % 12], abs (time->tm_year) % 100);
-
-      ss_alloc_substring (&s, ss_cstr (temp_buf));
-      return expr_allocate_string (e, s);
-    }
+    return expr_date (e, 2);
+  else if (lex_match_id (lexer, "$DATE11"))
+    return expr_date (e, 4);
   else if (lex_match_id (lexer, "$TRUE"))
     return expr_allocate_boolean (e, 1.0);
   else if (lex_match_id (lexer, "$FALSE"))
@@ -847,16 +891,15 @@ parse_sysvar (struct lexer *lexer, struct expression *e)
     {
       time_t time = time_of_last_procedure (e->ds);
       struct tm *tm = localtime (&time);
-      return expr_allocate_number (e, expr_ymd_to_ofs (tm->tm_year + 1900,
-                                                       tm->tm_mon + 1,
-                                                       tm->tm_mday));
+      return expr_allocate_number (e, ymd_to_offset (tm->tm_year + 1900,
+                                                     tm->tm_mon + 1,
+                                                     tm->tm_mday));
     }
   else if (lex_match_id (lexer, "$TIME"))
     {
       time_t time = time_of_last_procedure (e->ds);
       struct tm *tm = localtime (&time);
-      return expr_allocate_number (e,
-                                   expr_ymd_to_date (tm->tm_year + 1900,
+      return expr_allocate_number (e, ymd_to_offset (tm->tm_year + 1900,
                                                      tm->tm_mon + 1,
                                                      tm->tm_mday)
                                    + tm->tm_hour * 60 * 60.
@@ -949,23 +992,9 @@ parse_primary__ (struct lexer *lexer, struct expression *e)
 
     case T_LPAREN:
       {
-        /* Count number of left parentheses so that we can match them against
-           an equal number of right parentheses.  This defeats trivial attempts
-           to exhaust the stack with a lot of left parentheses.  (More
-           sophisticated attacks will still succeed.) */
-        size_t n = 0;
-        while (lex_match (lexer, T_LPAREN))
-          n++;
-
+        lex_get (lexer);
         struct expr_node *node = parse_or (lexer, e);
-	if (!node)
-          return NULL;
-
-        for (size_t i = 0; i < n; i++)
-          if (!lex_force_match (lexer, T_RPAREN))
-            return NULL;
-
-        return node;
+	return !node || !lex_force_match (lexer, T_RPAREN) ? NULL : node;
       }
 
     default:
@@ -1012,12 +1041,12 @@ parse_vector_element (struct lexer *lexer, struct expression *e)
     return NULL;
 
   operation_type type = (vector_get_type (vector) == VAL_NUMERIC
-                         ? OP_VEC_ELEM_NUM : OP_VEC_ELEM_STR);
+                         ? OP_VEC_ELEM_NUM_RAW : OP_VEC_ELEM_STR);
   struct expr_node *node = expr_allocate_binary (
     e, type, element, expr_allocate_vector (e, vector));
   expr_add_location (lexer, e, vector_start_ofs, node);
 
-  if (!type_coercion (e, node, 1))
+  if (!type_coercion (e, node, 0))
     {
       msg_at (SE, expr_location (e, node),
               _("A vector index must be numeric."));
@@ -1138,6 +1167,7 @@ match_function__ (struct expr_node *node, const struct operation *f)
       || node->n_args - (f->n_args - 1) < f->array_min_elems)
     return false;
 
+  node->type = f - operations;
   for (size_t i = 0; i < node->n_args; i++)
     if (!is_coercible (node, i))
       return false;
@@ -1156,7 +1186,8 @@ match_function (struct expr_node *node,
 }
 
 static bool
-validate_function_args (const struct operation *f, int n_args, int min_valid)
+validate_function_args (const struct expression *e, const struct expr_node *n,
+                        const struct operation *f, int n_args, int min_valid)
 {
   /* Count the function arguments that go into the trailing array (if any).  We
      know that there must be at least the minimum number because
@@ -1172,7 +1203,8 @@ validate_function_args (const struct operation *f, int n_args, int min_valid)
          here. */
       assert (f->array_granularity == 2);
       assert (n_args % 2 == 0);
-      msg (SE, _("%s must have an odd number of arguments."), f->prototype);
+      msg_at (SE, expr_location (e, n),
+              _("%s must have an odd number of arguments."), f->prototype);
       return false;
     }
 
@@ -1181,9 +1213,10 @@ validate_function_args (const struct operation *f, int n_args, int min_valid)
       if (f->array_min_elems == 0)
         {
           assert ((f->flags & OPF_MIN_VALID) == 0);
-          msg (SE, _("%s function cannot accept suffix .%d to specify the "
-                     "minimum number of valid arguments."),
-               f->prototype, min_valid);
+          msg_at (SE, expr_location (e, n),
+                  _("%s function cannot accept suffix .%d to specify the "
+                    "minimum number of valid arguments."),
+                  f->prototype, min_valid);
           return false;
         }
       else
@@ -1191,9 +1224,10 @@ validate_function_args (const struct operation *f, int n_args, int min_valid)
           assert (f->flags & OPF_MIN_VALID);
           if (min_valid > array_n_args)
             {
-              msg (SE, _("For %s with %d arguments, at most %d (not %d) may be "
-                         "required to be valid."),
-                   f->prototype, n_args, array_n_args, min_valid);
+              msg_at (SE, expr_location (e, n),
+                      _("For %s with %d arguments, at most %d (not %d) may be "
+                        "required to be valid."),
+                      f->prototype, n_args, array_n_args, min_valid);
               return false;
             }
         }
@@ -1216,47 +1250,73 @@ add_arg (struct expr_node ***args, size_t *n_args, size_t *allocated_args,
 
 static void
 put_invocation (struct string *s,
-                const char *func_name, struct expr_node **args, size_t n_args)
+                const char *func_name, struct expr_node *node)
 {
   size_t i;
 
   ds_put_format (s, "%s(", func_name);
-  for (i = 0; i < n_args; i++)
+  for (i = 0; i < node->n_args; i++)
     {
       if (i > 0)
         ds_put_cstr (s, ", ");
-      ds_put_cstr (s, operations[expr_node_returns (args[i])].prototype);
+      ds_put_cstr (s, operations[expr_node_returns (node->args[i])].prototype);
     }
   ds_put_byte (s, ')');
 }
 
 static void
-no_match (const char *func_name,
-          struct expr_node **args, size_t n_args,
-          const struct operation *first, const struct operation *last)
+no_match (struct expression *e, const char *func_name, struct expr_node *node,
+          const struct operation *ops, size_t n)
 {
   struct string s;
-  const struct operation *f;
 
   ds_init_empty (&s);
 
-  if (last - first == 1)
+  if (n == 1)
     {
-      ds_put_format (&s, _("Type mismatch invoking %s as "), first->prototype);
-      put_invocation (&s, func_name, args, n_args);
+      ds_put_format (&s, _("Type mismatch invoking %s as "), ops->prototype);
+      put_invocation (&s, func_name, node);
     }
   else
     {
       ds_put_cstr (&s, _("Function invocation "));
-      put_invocation (&s, func_name, args, n_args);
+      put_invocation (&s, func_name, node);
       ds_put_cstr (&s, _(" does not match any known function.  Candidates are:"));
 
-      for (f = first; f < last; f++)
-        ds_put_format (&s, "\n%s", f->prototype);
+      for (size_t i = 0; i < n; i++)
+        ds_put_format (&s, "\n%s", ops[i].prototype);
     }
   ds_put_byte (&s, '.');
 
-  msg (SE, "%s", ds_cstr (&s));
+  msg_at (SE, expr_location (e, node), "%s", ds_cstr (&s));
+
+  if (n == 1 && ops->n_args == node->n_args)
+    {
+      for (size_t i = 0; i < node->n_args; i++)
+        if (!is_coercible (node, i))
+          {
+            atom_type expected = ops->args[i];
+            atom_type actual = expr_node_returns (node->args[i]);
+            if ((expected == OP_ni_format || expected == OP_no_format)
+                && actual == OP_format)
+              {
+                const struct fmt_spec *f = &node->args[i]->format;
+                char *error = fmt_check__ (f, (ops->args[i] == OP_ni_format
+                                               ? FMT_FOR_INPUT : FMT_FOR_OUTPUT));
+                if (!error)
+                  error = fmt_check_type_compat__ (f, VAL_NUMERIC);
+                if (error)
+                  {
+                    msg_at (SN, expr_location (e, node->args[i]), "%s", error);
+                    free (error);
+                  }
+              }
+            else
+              msg_at (SN, expr_location (e, node->args[i]),
+                      _("This argument has type '%s' but '%s' is required."),
+                      atom_type_name (actual), atom_type_name (expected));
+          }
+      }
 
   ds_destroy (&s);
 }
@@ -1331,7 +1391,7 @@ parse_function (struct lexer *lexer, struct expression *e)
   const struct operation *f = match_function (n, first, last);
   if (!f)
     {
-      no_match (ds_cstr (&func_name), args, n_args, first, last);
+      no_match (e, ds_cstr (&func_name), n, first, last - first);
       goto fail;
     }
   n->type = f - operations;
@@ -1344,21 +1404,23 @@ parse_function (struct lexer *lexer, struct expression *e)
            arguments were coercible. */
         NOT_REACHED ();
       }
-  if (!validate_function_args (f, n_args, min_valid))
+  if (!validate_function_args (e, n, f, n_args, min_valid))
     goto fail;
 
   if ((f->flags & OPF_EXTENSION) && settings_get_syntax () == COMPATIBLE)
-    msg (SW, _("%s is a PSPP extension."), f->prototype);
+    msg_at (SW, expr_location (e, n),
+            _("%s is a PSPP extension."), f->prototype);
   if (f->flags & OPF_UNIMPLEMENTED)
     {
-      msg (SE, _("%s is not available in this version of PSPP."),
-           f->prototype);
+      msg_at (SE, expr_location (e, n),
+              _("%s is not available in this version of PSPP."), f->prototype);
       goto fail;
     }
   if ((f->flags & OPF_PERM_ONLY) &&
       proc_in_temporary_transformations (e->ds))
     {
-      msg (SE, _("%s may not appear after %s."), f->prototype, "TEMPORARY");
+      msg_at (SE, expr_location (e, n),
+              _("%s may not appear after %s."), f->prototype, "TEMPORARY");
       goto fail;
     }
 
@@ -1413,7 +1475,11 @@ static const char *
 atom_type_name (atom_type type)
 {
   assert (is_atom (type));
-  return operations[type].name;
+
+  /* The Boolean type is purely an internal concept that the documentation
+     doesn't mention, so it might confuse users if we talked about them in
+     diagnostics. */
+  return type == OP_boolean ? "number" : operations[type].name;
 }
 
 struct expr_node *
@@ -1524,6 +1590,15 @@ expr_allocate_format (struct expression *e, const struct fmt_spec *format)
 {
   struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
   *n = (struct expr_node) { .type = OP_format, .format = *format };
+  return n;
+}
+
+struct expr_node *
+expr_allocate_expr_node (struct expression *e,
+                         const struct expr_node *expr_node)
+{
+  struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
+  *n = (struct expr_node) { .type = OP_expr_node, .expr_node = expr_node };
   return n;
 }
 
