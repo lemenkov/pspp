@@ -32,7 +32,6 @@ expressions_built_sources = \
 	src/language/expressions/optimize.inc \
 	src/language/expressions/parse.inc
 
-BUILT_SOURCES += $(expressions_built_sources)
 CLEANFILES += $(expressions_built_sources)
 
 helpers = src/language/expressions/generate.py \
@@ -40,14 +39,16 @@ helpers = src/language/expressions/generate.py \
 EXTRA_DIST += $(helpers)
 
 $(expressions_built_sources): $(helpers)
-	$(AV_V_GEN)$(MKDIR_P) `dirname $@` && \
-	$(PYTHON3) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
+	$(AM_V_GEN)$(MKDIR_P) `dirname $@`
+	$(AM_V_at)$(PYTHON3) $< -o `basename $@` \
+	  -i $(top_srcdir)/src/language/expressions/operations.def > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
 
 AM_CPPFLAGS += -I"$(abs_top_builddir)/src/language/expressions" \
 	-I"$(top_srcdir)/src/language/expressions"
 
 EXTRA_DIST += src/language/expressions/TODO
 
-# This seems to be necessary in order to prevent issues building the native
-# build when cross compiling
-src/language/expressions/evaluate.lo: $(expressions_built_sources)
+src/language/expressions/evaluate.lo src/language/expressions/helpers.lo \
+src/language/expressions/optimize.lo src/language/expressions/parse.lo: \
+$(expressions_built_sources)
