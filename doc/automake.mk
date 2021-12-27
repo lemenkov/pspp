@@ -117,6 +117,42 @@ FIGURE_SYNTAX = \
  doc/pspp-figures/chisquare.sps \
  doc/pspp-figures/compute.sps \
  doc/pspp-figures/count.sps \
+ doc/pspp-figures/ctables1.sps \
+ doc/pspp-figures/ctables2.sps \
+ doc/pspp-figures/ctables3.sps \
+ doc/pspp-figures/ctables4.sps \
+ doc/pspp-figures/ctables5.sps \
+ doc/pspp-figures/ctables6.sps \
+ doc/pspp-figures/ctables7.sps \
+ doc/pspp-figures/ctables8.sps \
+ doc/pspp-figures/ctables9.sps \
+ doc/pspp-figures/ctables10.sps \
+ doc/pspp-figures/ctables11.sps \
+ doc/pspp-figures/ctables12.sps \
+ doc/pspp-figures/ctables13.sps \
+ doc/pspp-figures/ctables14.sps \
+ doc/pspp-figures/ctables15.sps \
+ doc/pspp-figures/ctables16.sps \
+ doc/pspp-figures/ctables17.sps \
+ doc/pspp-figures/ctables18.sps \
+ doc/pspp-figures/ctables19.sps \
+ doc/pspp-figures/ctables20.sps \
+ doc/pspp-figures/ctables21.sps \
+ doc/pspp-figures/ctables22.sps \
+ doc/pspp-figures/ctables23.sps \
+ doc/pspp-figures/ctables24.sps \
+ doc/pspp-figures/ctables25.sps \
+ doc/pspp-figures/ctables26.sps \
+ doc/pspp-figures/ctables27.sps \
+ doc/pspp-figures/ctables28.sps \
+ doc/pspp-figures/ctables29.sps \
+ doc/pspp-figures/ctables30.sps \
+ doc/pspp-figures/ctables31.sps \
+ doc/pspp-figures/ctables32.sps \
+ doc/pspp-figures/ctables33.sps \
+ doc/pspp-figures/ctables34.sps \
+ doc/pspp-figures/ctables35.sps \
+ doc/pspp-figures/ctables36.sps \
  doc/pspp-figures/crosstabs.sps \
  doc/pspp-figures/descriptives.sps \
  doc/pspp-figures/flip.sps \
@@ -245,6 +281,13 @@ $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 EXTRA_DIST += doc/tutorial.stt
 .spv.html:
 	$(convert) -O format=html -O bare=true
+
+# Make sure that tutorial.stt outputs all layers, because a few of the
+# examples in the manual rely on that and it would be easy to replace
+# it with a style that didn't.
+ALL_LOCAL += tutorial-stt-must-print-all-layers
+tutorial-stt-must-print-all-layers:
+	$(AM_V_GEN)grep 'printAllLayers="true"' $(srcdir)/doc/tutorial.stt >/dev/null 2>&1 && touch $@
 
 # Convert a text file into a Texinfo file.
 .txt.texi:

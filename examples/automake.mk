@@ -25,10 +25,14 @@ examples_DATA = \
 	examples/grid.sps \
 	examples/hotel.sav \
 	examples/horticulture.sav \
+	examples/nhtsa.sav \
 	examples/personnel.sav \
 	examples/physiology.sav \
 	examples/repairs.sav \
 	examples/regress.sps \
 	examples/regress_categorical.sps
 
-EXTRA_DIST += $(examples_DATA)
+EXTRA_DIST += \
+	$(examples_DATA) \
+	examples/nhtsa-drinking-2008.sav \
+	examples/nhtsa-drinking-2008.sps

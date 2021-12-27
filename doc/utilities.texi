@@ -861,6 +861,7 @@ If the value has no label, then the literal value is used for display.
 If @subcmd{TNUMBERS} is set to @subcmd{BOTH}, then values are displayed with both their label
 (if any) and their literal value in parentheses.
 @item TVARS
+@anchor{SET TVARS}
 The @subcmd{TVARS} option sets the way in which variables are displayed in output tables.
 The valid settings are @subcmd{NAMES}, @subcmd{LABELS} and @subcmd{BOTH}.
 If @subcmd{TVARS} is set to @subcmd{NAMES}, then all variables are displayed using their names.

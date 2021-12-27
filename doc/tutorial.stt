@@ -49,5 +49,5 @@
         <horizontalCategoryBorderColumns borderStyleType="solid" color="#000000"/>
         <verticalCategoryBorderColumns borderStyleType="solid" color="#000000"/>
     </borderProperties>
-    <printingProperties printAllLayers="false" rescaleLongTableToFitPage="false" rescaleWideTableToFitPage="false" windowOrphanLines="0"/>
+    <printingProperties printAllLayers="true" rescaleLongTableToFitPage="false" rescaleWideTableToFitPage="false" windowOrphanLines="0"/>
 </tableProperties>

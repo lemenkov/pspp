@@ -398,6 +398,7 @@ TESTSUITE_AT = \
 	tests/language/stats/autorecode.at \
 	tests/language/stats/correlations.at \
 	tests/language/stats/crosstabs.at \
+	tests/language/stats/ctables.at \
 	tests/language/stats/descriptives.at \
 	tests/language/stats/examine.at \
 	tests/language/stats/graph.at \
@@ -487,8 +488,16 @@ $(srcdir)/tests/testsuite.at: tests/testsuite.in tests/automake.mk
 
 EXTRA_DIST += tests/testsuite.at
 
+# Generate a TableLook that prints all layers of pivot tables.
+check_DATA = tests/all-layers.stt
+tests/all-layers.stt: utilities/pspp-output
+	$(AM_V_GEN)$< get-table-look - $@.tmp
+	$(AM_V_at)if grep 'printAllLayers="false"' $@.tmp >/dev/null; then :; else \
+		echo >&2 "$<: expected printAllLayers=\"false\""; exit 1; fi
+	$(AM_v_at)sed 's/printAllLayers="false"/printAllLayers="true"/' < $@.tmp > $@
+
 CHECK_LOCAL += tests_check
-tests_check: tests/atconfig tests/atlocal $(TESTSUITE) $(check_PROGRAMS)
+tests_check: tests/atconfig tests/atlocal $(TESTSUITE) $(check_PROGRAMS) $(check_DATA)
 	XTERM_LOCALE='' $(SHELL) '$(TESTSUITE)' -C tests AUTOTEST_PATH=$(AUTOTEST_PATH) RUNNER='$(RUNNER)' $(TESTSUITEFLAGS)
 
 CLEAN_LOCAL += tests_clean

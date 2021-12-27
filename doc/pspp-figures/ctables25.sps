@@ -1,0 +1,4 @@
+GET FILE='nhtsa.sav'.
+CTABLES /TABLE (qn105ba + qn105bb) [COLPCT].
+CTABLES /TABLE (qn105ba + qn105bb) [ROWPCT]
+  /CLABELS ROW=OPPOSITE.

@@ -20,6 +20,7 @@ far.
 * GRAPH::                       Plot data.
 * CORRELATIONS::                Correlation tables.
 * CROSSTABS::                   Crosstabulation tables.
+* CTABLES::                     Custom tables.
 * FACTOR::                      Factor analysis and Principal Components analysis.
 * GLM::                         Univariate Linear Models.
 * LOGISTIC REGRESSION::         Bivariate Logistic Regression.
@@ -897,6 +898,1334 @@ person's occupation.
 @caption {The results of a test of independence between @exvar{sex} and @exvar{occupation}}
 @end float
 
+@node CTABLES
+@section CTABLES
+
+@vindex CTABLES
+@cindex custom tables
+@cindex tables, custom
+
+@code{CTABLES} has the following overall syntax.  At least one
+@code{TABLE} subcommand is required:
+
+@display
+@t{CTABLES}
+  @dots{}@i{global subcommands}@dots{}
+  [@t{/TABLE} @i{axis} [@t{BY} @i{axis} [@t{BY} @i{axis}]]
+   @dots{}@i{per-table subcommands}@dots{}]@dots{}
+@end display
+
+@noindent
+where each @i{axis} may be empty or take one of the following forms:
+
+@display
+@i{variable}
+@i{variable} @t{[}@{@t{C} @math{|} @t{S}@}@t{]}
+@i{axis} + @i{axis}
+@i{axis} > @i{axis}
+(@i{axis})
+@i{axis} @t{[}@i{summary} [@i{string}] [@i{format}]@t{]}
+@end display
+
+The following subcommands precede the first @code{TABLE} subcommand
+and apply to all of the output tables.  All of these subcommands are
+optional:
+
+@display
+@t{/FORMAT}
+    [@t{MINCOLWIDTH=}@{@t{DEFAULT} @math{|} @i{width}@}]
+    [@t{MAXCOLWIDTH=}@{@t{DEFAULT} @math{|} @i{width}@}]
+    [@t{UNITS=}@{@t{POINTS} @math{|} @t{INCHES} @math{|} @t{CM}@}]
+    [@t{EMPTY=}@{@t{ZERO} @math{|} @t{BLANK} @math{|} @i{string}@}]
+    [@t{MISSING=}@i{string}]
+@t{/VLABELS}
+    @t{VARIABLES=}@i{variables}
+    @t{DISPLAY}=@{@t{DEFAULT} @math{|} @t{NAME} @math{|} @t{LABEL} @math{|} @t{BOTH} @math{|} @t{NONE}@}
+@ignore @c not yet implemented
+@t{/MRSETS COUNTDUPLICATES=}@{@t{YES} @math{|} @t{NO}@}
+@end ignore
+@t{/SMISSING} @{@t{VARIABLE} @math{|} @t{LISTWISE}@}
+@t{/PCOMPUTE} @t{&}@i{postcompute}@t{=EXPR(}@i{expression}@t{)}
+@t{/PPROPERTIES} @t{&}@i{postcompute}@dots{}
+    [@t{LABEL=}@i{string}]
+    [@t{FORMAT=}[@i{summary} @i{format}]@dots{}]
+    [@t{HIDESOURCECATS=}@{@t{NO} @math{|} @t{YES}@}
+@t{/WEIGHT VARIABLE=}@i{variable}
+@t{/HIDESMALLCOUNTS COUNT=@i{count}}
+@end display
+
+The following subcommands follow @code{TABLE} and apply only to the
+previous @code{TABLE}.  All of these subcommands are optional:
+
+@display
+@t{/SLABELS}
+    [@t{POSITION=}@{@t{COLUMN} @math{|} @t{ROW} @math{|} @t{LAYER}@}]
+    [@t{VISIBLE=}@{@t{YES} @math{|} @t{NO}@}]
+@t{/CLABELS} @{@t{AUTO} @math{|} @{@t{ROWLABELS}@math{|}@t{COLLABELS}@}@t{=}@{@t{OPPOSITE}@math{|}@t{LAYER}@}@}
+@t{/CATEGORIES} @t{VARIABLES=}@i{variables}
+    @{@t{[}@i{value}@t{,} @i{value}@dots{}@t{]}
+   @math{|} [@t{ORDER=}@{@t{A} @math{|} @t{D}@}]
+     [@t{KEY=}@{@t{VALUE} @math{|} @t{LABEL} @math{|} @i{summary}@t{(}@i{variable}@t{)}@}]
+     [@t{MISSING=}@{@t{EXCLUDE} @math{|} @t{INCLUDE}@}]@}
+    [@t{TOTAL=}@{@t{NO} @math{|} @t{YES}@} [@t{LABEL=}@i{string}] [@t{POSITION=}@{@t{AFTER} @math{|} @t{BEFORE}@}]]
+    [@t{EMPTY=}@{@t{INCLUDE} @math{|} @t{EXCLUDE}@}]
+@t{/TITLES}
+    [@t{TITLE=}@i{string}@dots{}]
+    [@t{CAPTION=}@i{string}@dots{}]
+    [@t{CORNER=}@i{string}@dots{}]
+@ignore  @c not yet implemented
+@t{/CRITERIA CILEVEL=}@i{percentage}
+@t{/SIGTEST TYPE=CHISQUARE}
+    [@t{ALPHA=}@i{siglevel}]
+    [@t{INCLUDEMRSETS=}@{@t{YES} @math{|} @t{NO}@}]
+    [@t{CATEGORIES=}@{@t{ALLVISIBLE} @math{|} @t{SUBTOTALS}@}]
+@t{/COMPARETEST TYPE=}@{@t{PROP} @math{|} @t{MEAN}@}
+    [@t{ALPHA=}@i{value}[@t{,} @i{value}]]
+    [@t{ADJUST=}@{@t{BONFERRONI} @math{|} @t{BH} @math{|} @t{NONE}@}]
+    [@t{INCLUDEMRSETS=}@{@t{YES} @math{|} @t{NO}@}]
+    [@t{MEANSVARIANCE=}@{@t{ALLCATS} @math{|} @t{TESTEDCATS}@}]
+    [@t{CATEGORIES=}@{@t{ALLVISIBLE} @math{|} @t{SUBTOTALS}@}]
+    [@t{MERGE=}@{@t{NO} @math{|} @t{YES}@}]
+    [@t{STYLE=}@{@t{APA} @math{|} @t{SIMPLE}@}]
+    [@t{SHOWSIG=}@{@t{NO} @math{|} @t{YES}@}]
+@end ignore
+@end display
+
+The @code{CTABLES} (aka ``custom tables'') command produces
+multi-dimensional tables from categorical and scale data.  It offers
+many options for data summarization and formatting.
+
+This section's examples use data from the 2008 (USA) National Survey
+of Drinking and Driving Attitudes and Behaviors, a public domain data
+set from the (USA) National Highway Traffic Administration and
+available at @url{https://data.transportation.gov}.  @pspp{} includes
+this data set, with a slightly modified dictionary, as
+@file{examples/nhtsa.sav}.
+
+@node CTABLES Basics
+@subsection Basics
+
+The only required subcommand is @code{TABLE}, which specifies the
+variables to include along each axis:
+@display
+@t{/TABLE} @i{rows} [@t{BY} @i{columns} [@t{BY} @i{layers}]]
+@end display
+@noindent
+In @code{TABLE}, each of @var{rows}, @var{columns}, and @var{layers}
+is either empty or an axis expression that specifies one or more
+variables.  At least one must specify an axis expression.
+
+@node CTABLES Categorical Variable Basics
+@subsubsection Categorical Variables
+
+An axis expression that names a categorical variable divides the data
+into cells according to the values of that variable.  When all the
+variables named on @code{TABLE} are categorical, by default each cell
+displays the number of cases that it contains, so specifying a single
+variable yields a frequency table, much like the output of the
+@code{FREQUENCIES} command (@pxref{FREQUENCIES}):
+
+@example
+CTABLES /TABLE=AgeGroup.
+@end example
+@psppoutput {ctables1}
+
+@noindent
+Specifying a row and a column categorical variable yields a
+crosstabulation, much like the output of the @code{CROSSTABS} command
+(@pxref{CROSSTABS}):
+
+@example
+CTABLES /TABLE=AgeGroup BY qns3a.
+@end example
+@psppoutput {ctables2}
+
+@noindent
+The @samp{>} ``nesting'' operator nests multiple variables on a single
+axis, e.g.:
+
+@example
+CTABLES /TABLE qn105ba BY AgeGroup > qns3a.
+@end example
+@psppoutput {ctables3}
+
+@noindent
+The @samp{+} ``stacking'' operator allows a single output table to
+include multiple data analyses.  With @samp{+}, @code{CTABLES} divides
+the output table into multiple @dfn{sections}, each of which includes
+an analysis of the full data set.  For example, the following command
+separately tabulates age group and driving frequency by gender:
+
+@example
+CTABLES /TABLE AgeGroup + qn1 BY qns3a.
+@end example
+@psppoutput {ctables4}
+
+@noindent
+When @samp{+} and @samp{>} are used together, @samp{>} binds more
+tightly.  Use parentheses to override operator precedence.  Thus:
+
+@example
+CTABLES /TABLE qn26 + qn27 > qns3a.
+CTABLES /TABLE (qn26 + qn27) > qns3a.
+@end example
+@psppoutput {ctables5}
+
+@node CTABLES Scalar Variable Basics
+@subsubsection Scalar Variables
+
+For a categorical variable, @code{CTABLES} divides the table into a
+cell per category.  For a scalar variable, @code{CTABLES} instead
+calculates a summary measure, by default the mean, of the values that
+fall into a cell.  For example, if the only variable specified is a
+scalar variable, then the output is a single cell that holds the mean
+of all of the data:
+
+@example
+CTABLES /TABLE qnd1.
+@end example
+@psppoutput {ctables6}
+
+A scalar variable may nest with categorical variables.  The following
+example shows the mean age of survey respondents across gender and
+language groups:
+
+@example
+CTABLES /TABLE qns3a > qnd1 BY region.
+@end example
+@psppoutput {ctables7}
+
+The order of nesting of scalar and categorical variables affects table
+labeling, but it does not affect the data displayed in the table.  The
+following example shows how the output changes when the nesting order
+of the scalar and categorical variable are interchanged:
+
+@example
+CTABLES /TABLE qnd1 > qns3a BY region.
+@end example
+@psppoutput {ctables8}
+
+Only a single scalar variable may appear in each section; that is, a
+scalar variable may not nest inside a scalar variable directly or
+indirectly.  Scalar variables may only appear on one axis within
+@code{TABLE}.
+
+@node CTABLES Overriding Measurement Level
+@subsubsection Overriding Measurement Level
+
+By default, @code{CTABLES} uses a variable's measurement level to
+decide whether to treat it as categorical or scalar.  Variables
+assigned the nominal or ordinal measurement level are treated as
+categorical, and scalar variables are treated as scalar.
+
+When @pspp{} reads data from a file in an external format, such as a
+text file, variables' measurement levels are often unknown.  If
+@code{CTABLES} runs when a variable has an unknown measurement level,
+it makes an initial pass through the data to guess measurement levels
+using the rules described in an earlier section (@pxref{Measurement
+Level}).  Use the @code{VARIABLE LEVEL} command to set or change a
+variable's measurement level (@pxref{VARIABLE LEVEL}).
+
+To treat a variable as categorical or scalar only for one use on
+@code{CTABLES}, add @samp{[C]} or @samp{[S]}, respectively, after the
+variable name.  The following example shows the output when variable
+@code{qn20} is analyzed as scalar (the default for its measurement
+level) and as categorical:
+
+@example
+CTABLES
+    /TABLE qn20 BY qns3a
+    /TABLE qn20 [C] BY qns3a.
+@end example
+@psppoutput {ctables9}
+
+@ignore
+@node CTABLES Multiple Response Sets
+@subsubheading Multiple Response Sets
+
+The @code{CTABLES} command does not yet support multiple response
+sets.
+@end ignore
+
+@node CTABLES Data Summarization
+@subsection Data Summarization
+
+The @code{CTABLES} command allows the user to control how the data are
+summarized with @dfn{summary specifications}, syntax that lists one or
+more summary function names, optionally separated by commas, and which
+are enclosed in square brackets following a variable name on the
+@code{TABLE} subcommand.  When all the variables are categorical,
+summary specifications can be given for the innermost nested variables
+on any one axis.  When a scalar variable is present, only the scalar
+variable may have summary specifications.
+
+The following example includes a summary specification for column and
+row percentages for categorical variables, and mean and median for a
+scalar variable:
+
+@example
+CTABLES
+    /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a
+    /TABLE=AgeGroup [COLPCT, ROWPCT] BY qns3a.
+@end example
+@psppoutput {ctables10}
+
+A summary specification may override the default label and format by
+appending a string or format specification or both (in that order) to
+the summary function name.  For example:
+
+@example
+CTABLES /TABLE=AgeGroup [COLPCT 'Gender %' PCT5.0,
+                         ROWPCT 'Age Group %' PCT5.0]
+               BY qns3a.
+@end example
+@psppoutput {ctables11}
+
+In addition to the standard formats, @code{CTABLES} allows the user to
+specify the following special formats:
+
+@multitable {@code{NEGPAREN@i{w}.@i{d}}} {Encloses all numbers in parentheses.} {@t{(42.96%)}} {@t{(-42.96%)}}
+@item @code{NEGPAREN@i{w}.@i{d}}
+@tab Encloses negative numbers in parentheses.
+@tab @t{@w{    }42.96}
+@tab @t{@w{  }(42.96)}
+
+@item @code{NEQUAL@i{w}.@i{d}}
+@tab Adds a @code{N=} prefix.
+@tab @t{@w{  }N=42.96}
+@tab @t{@w{ }N=-42.96}
+
+@item @code{@code{PAREN@i{w}.@i{d}}}
+@tab Encloses all numbers in parentheses.
+@tab @t{@w{  }(42.96)}
+@tab @t{@w{ }(-42.96)}
+
+@item @code{PCTPAREN@i{w}.@i{d}}
+@tab Encloses all numbers in parentheses with a @samp{%} suffix.
+@tab @t{@w{ }(42.96%)}
+@tab @t{(-42.96%)}
+@end multitable
+
+Parentheses provide a shorthand to apply summary specifications to
+multiple variables.  For example, both of these commands:
+
+@example
+CTABLES /TABLE=AgeGroup[COLPCT] + qns1[COLPCT] BY qns3a.
+CTABLES /TABLE=(AgeGroup + qns1)[COLPCT] BY qns3a.
+@end example
+
+@noindent
+produce the same output shown below:
+
+@psppoutput {ctables12}
+
+The following sections list the available summary functions.  After
+each function's name is given its default label and format.  If no
+format is listed, then the default format is the print format for the
+variable being summarized.
+
+@node CTABLES Summary Functions for Individual Cells
+@subsubsection Summary Functions for Individual Cells
+
+This section lists the summary functions that consider only an
+individual cell in @code{CTABLES}.  Only one such summary function,
+@code{COUNT}, may be applied to both categorical and scale variables:
+
+@table @asis
+@item @code{COUNT} (``Count'', F40.0)
+The sum of weights in a cell.
+
+If @code{CATEGORIES} for one or more of the variables in a table
+include missing values (@pxref{CTABLES Per-Variable Category
+Options}), then some or all of the categories for a cell might be
+missing values.  @code{COUNT} counts data included in a cell
+regardless of whether its categories are missing.
+@end table
+
+The following summary functions apply only to scale variables or
+totals and subtotals for categorical variables.  Be cautious about
+interpreting the summary value in the latter case, because it is not
+necessarily meaningful; however, the mean of a Likert scale, etc.@:
+may have a straightforward interpreation.
+
+@table @asis
+@item @code{MAXIMUM} (``Maximum'')
+The largest value.
+
+@item @code{MEAN} (``Mean'')
+The mean.
+
+@item @code{MEDIAN} (``Median'')
+The median value.
+
+@item @code{MINIMUM} (``Minimum'')
+The smallest value.
+
+@item @code{MISSING} (``Missing'')
+Sum of weights of user- and system-missing values.
+
+@item @code{MODE} (``Mode'')
+The highest-frequency value.  Ties are broken by taking the smallest mode.
+
+@item @code{PTILE} @i{n} (``Percentile @i{n}'')
+The @var{n}th percentile, where @math{0 @leq{} @var{n} @leq{} 100}.
+
+@item @code{RANGE} (``Range'')
+The maximum minus the minimum.
+
+@item @code{SEMEAN} (``Std Error of Mean'')
+The standard error of the mean.
+
+@item @code{STDDEV} (``Std Deviation'')
+The standard deviation.
+
+@item @code{SUM} (``Sum'')
+The sum.
+
+@item @code{TOTALN} (``Total N'', F40.0)
+The sum of weights in a cell.
+
+For scale data, @code{COUNT} and @code{TOTALN} are the same.
+
+For categorical data, @code{TOTALN} counts missing values in excluded
+categories, that is, user-missing values not in an explicit category
+list on @code{CATEGORIES} (@pxref{CTABLES Per-Variable Category
+Options}), or user-missing values excluded because
+@code{MISSING=EXCLUDE} is in effect on @code{CATEGORIES}, or
+system-missing values.  @code{COUNT} does not count these.
+
+@xref{CTABLES Missing Values for Summary Variables}, for details of
+how @code{CTABLES} summarizes missing values.
+
+@item @code{VALIDN} (``Valid N'', F40.0)
+The sum of valid count weights in included categories.
+
+For categorical variables, @code{VALIDN} does not count missing values
+regardless of whether they are in included categories via
+@code{CATEGORIES}.  @code{VALIDN} does not count valid values that are
+in excluded categories.  @xref{CTABLES Missing Values for Summary
+Variables}, for details.
+
+@item @code{VARIANCE} (``Variance'')
+The variance.
+@end table
+
+@node CTABLES Summary Functions for Groups of Cells
+@subsubsection Summary Functions for Groups of Cells
+
+These summary functions summarize over multiple cells within an area
+of the output chosen by the user and specified as part of the function
+name.  The following basic @var{area}s are supported, in decreasing
+order of size:
+
+@table @code
+@item TABLE
+A @dfn{section}.  Stacked variables divide sections of the output from
+each other.  sections may span multiple layers.
+
+@item LAYER
+A section within a single layer.
+
+@item SUBTABLE
+A @dfn{subtable}, whose contents are the cells that pair an innermost
+row variable and an innermost column variable within a single layer.
+@end table
+
+The following shows how the output for the table expression @code{qn61
+> qn57 BY qnd7a > qn86 + qn64b BY qns3a}@footnote{This is not
+necessarily a meaningful table, so for clarity variable labels are
+omitted.} is divided up into @code{TABLE}, @code{LAYER}, and
+@code{SUBTABLE} areas.  Each unique value for Table ID is one section,
+and similarly for Layer ID and Subtable ID.  Thus, this output has two
+@code{TABLE} areas (one for @code{qnd7a} and one for @code{qn64b}),
+four @code{LAYER} areas (for those two variables, per layer), and 12
+@code{SUBTABLE} areas.
+@psppoutput {ctables22}
+
+@code{CTABLES} also supports the following @var{area}s that further
+divide a subtable or a layer within a section:
+
+@table @code
+@item LAYERROW
+@itemx LAYERCOL
+A row or column, respectively, in one layer of a section.
+
+@item ROW
+@itemx COL
+A row or column, respectively, in a subtable.
+@end table
+
+The following summary functions for groups of cells are available for
+each @var{area} described above, for both categorical and scale
+variables:
+
+@table @asis
+@item @code{@i{area}PCT} or @code{@i{area}PCT.COUNT} (``@i{Area} %'', PCT40.1)
+A percentage of total counts within @var{area}.
+
+@item @code{@i{area}PCT.VALIDN} (``@i{Area} Valid N %'', PCT40.1)
+A percentage of total counts for valid values within @var{area}.
+
+@item @code{@i{area}PCT.TOTALN} (``@i{Area} Total N %'', PCT40.1)
+A percentage of total counts for all values within @var{area}.
+@end table
+
+Scale variables and totals and subtotals for categorical variables may
+use the following additional group cell summary function:
+
+@table @asis
+@item @code{@i{area}PCT.SUM} (``@i{Area} Sum %'', PCT40.1)
+Percentage of the sum of the values within @var{area}.
+@end table
+
+@node CTABLES Summary Functions for Adjusted Weights
+@subsubsection Summary Functions for Adjusted Weights
+
+If the @code{WEIGHT} subcommand specified an effective weight variable
+(@pxref{CTABLES Effective Weight}), then the following summary functions
+use its value instead of the dictionary weight variable.  Otherwise,
+they are equivalent to the summary function without the
+@samp{E}-prefix:
+
+@itemize @bullet
+@item
+@code{ECOUNT} (``Adjusted Count'', F40.0)
+
+@item
+@code{ETOTALN} (``Adjusted Total N'', F40.0)
+
+@item
+@code{EVALIDN} (``Adjusted Valid N'', F40.0)
+@end itemize
+
+@node CTABLES Unweighted Summary Functions
+@subsubsection Unweighted Summary Functions
+
+The following summary functions with a @samp{U}-prefix are equivalent
+to the same ones without the prefix, except that they use unweighted
+counts:
+
+@itemize @bullet
+@item
+@code{UCOUNT} (``Unweighted Count'', F40.0)
+
+@item
+@code{U@i{area}PCT} or @code{U@i{area}PCT.COUNT} (``Unweighted @i{Area} %'', PCT40.1)
+
+@item
+@code{U@i{area}PCT.VALIDN} (``Unweighted @i{Area} Valid N %'', PCT40.1)
+
+@item
+@code{U@i{area}PCT.TOTALN} (``Unweighted @i{Area} Total N %'', PCT40.1)
+
+@item
+@code{UMEAN} (``Unweighted Mean'')
+
+@item
+@code{UMEDIAN} (``Unweighted Median'')
+
+@item
+@code{UMISSING} (``Unweighted Missing'')
+
+@item
+@code{UMODE} (``Unweighted Mode'')
+
+@item
+@code{U@i{area}PCT.SUM} (``Unweighted @i{Area} Sum %'', PCT40.1)
+
+@item
+@code{UPTILE} @i{n} (``Unweighted Percentile @i{n}'') 
+
+@item
+@code{USEMEAN} (``Unweighted Std Error of Mean'')
+
+@item
+@code{USTDDEV} (``Unweighted Std Deviation'')
+
+@item
+@code{USUM} (``Unweighted Sum'')
+
+@item
+@code{UTOTALN} (``Unweighted Total N'', F40.0)
+
+@item
+@code{UVALIDN} (``Unweighted Valid N'', F40.0)
+
+@item
+@code{UVARIANCE} (``Unweighted Variance'', F40.0)
+@end itemize
+
+@node CTABLES Statistics Positions and Labels
+@subsection Statistics Positions and Labels
+
+@display
+@t{/SLABELS}
+    [@t{POSITION=}@{@t{COLUMN} @math{|} @t{ROW} @math{|} @t{LAYER}@}]
+    [@t{VISIBLE=}@{@t{YES} @math{|} @t{NO}@}]
+@end display
+
+The @code{SLABELS} subcommand controls the position and visibility of
+summary statistics for the @code{TABLE} subcommand that it follows.
+
+@code{POSITION} sets the axis on which summary statistics appear.
+With @t{POSITION=COLUMN}, which is the default, each summary statistic
+appears in a column.  For example:
+
+@example
+CTABLES /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a.
+@end example
+@psppoutput {ctables13}
+
+@noindent
+With @t{POSITION=ROW}, each summary statistic appears in a row, as
+shown below:
+
+@example
+CTABLES /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a /SLABELS POSITION=ROW.
+@end example
+@psppoutput {ctables14}
+
+@noindent
+@t{POSITION=LAYER} is also available to place each summary statistic in
+a separate layer.
+
+Labels for summary statistics are shown by default.  Use
+@t{VISIBLE=NO} to suppress them.  Because unlabeled data can cause
+confusion, it should only be considered if the meaning of the data is
+evident, as in a simple case like this:
+
+@example
+CTABLES /TABLE=AgeGroup [TABLEPCT] /SLABELS VISIBLE=NO.
+@end example
+@psppoutput {ctables15}
+
+@node CTABLES Category Label Positions
+@subsection Category Label Positions
+
+@display
+@t{/CLABELS} @{@t{AUTO} @math{|} @{@t{ROWLABELS}@math{|}@t{COLLABELS}@}@t{=}@{@t{OPPOSITE}@math{|}@t{LAYER}@}@}
+@end display
+
+The @code{CLABELS} subcommand controls the position of category labels
+for the @code{TABLE} subcommand that it follows.  By default, or if
+@t{AUTO} is specified, category labels for a given variable nest
+inside the variable's label on the same axis.  For example, the
+command below results in age categories nesting within the age group
+variable on the rows axis and gender categories within the gender
+variable on the columns axis:
+
+@example
+CTABLES /TABLE AgeGroup BY qns3a.
+@end example
+@psppoutput {ctables16}
+
+@t{ROWLABELS=OPPOSITE} or @t{COLLABELS=OPPOSITE} move row or column
+variable category labels, respectively, to the opposite axis.  The
+setting affects only the innermost variable or variables, which must
+be categorical, on the given axis.  For example:
+
+@example
+CTABLES /TABLE AgeGroup BY qns3a /CLABELS ROWLABELS=OPPOSITE.
+CTABLES /TABLE AgeGroup BY qns3a /CLABELS COLLABELS=OPPOSITE.
+@end example
+@psppoutput {ctables17}
+
+@t{ROWLABELS=LAYER} or @t{COLLABELS=LAYER} move the innermost row or
+column variable category labels, respectively, to the layer axis.
+
+Only one axis's labels may be moved, whether to the opposite axis or
+to the layer axis.
+
+@subsubheading Effect on Summary Statistics
+
+@code{CLABELS} primarily affects the appearance of tables, not the
+data displayed in them.  However, @code{CTABLES} can affect the values
+displayed for statistics that summarize areas of a table, since it can
+change the definitions of these areas.
+
+For example, consider the following syntax and output:
+
+@example
+CTABLES /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT].
+@end example
+@psppoutput {ctables23}
+
+@noindent
+Using @code{COLLABELS=OPPOSITE} changes the definitions of rows and
+columns, so that column percentages display what were previously row
+percentages and the new row percentages become meaningless (because
+there is only one cell per row):
+
+@example
+CTABLES
+    /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT]
+    /CLABELS COLLABELS=OPPOSITE.
+@end example
+@psppoutput {ctables24}
+
+@subsubheading Moving Categories for Stacked Variables
+
+If @code{CLABELS} moves category labels from an axis with stacked
+variables, the variables that are moved must have the same category
+specifications (@pxref{CTABLES Per-Variable Category Options}) and the
+same value labels.
+
+The following shows both moving stacked category variables and
+adapting to the changing definitions of rows and columns:
+
+@example
+CTABLES /TABLE (qn105ba + qn105bb) [COLPCT].
+CTABLES /TABLE (qn105ba + qn105bb) [ROWPCT]
+  /CLABELS ROW=OPPOSITE.
+@end example
+@psppoutput {ctables25}
+
+@node CTABLES Per-Variable Category Options
+@subsection Per-Variable Category Options
+
+@display
+@t{/CATEGORIES} @t{VARIABLES=}@i{variables}
+    @{@t{[}@i{value}@t{,} @i{value}@dots{}@t{]}
+   @math{|} [@t{ORDER=}@{@t{A} @math{|} @t{D}@}]
+     [@t{KEY=}@{@t{VALUE} @math{|} @t{LABEL} @math{|} @i{summary}@t{(}@i{variable}@t{)}@}]
+     [@t{MISSING=}@{@t{EXCLUDE} @math{|} @t{INCLUDE}@}]@}
+    [@t{TOTAL=}@{@t{NO} @math{|} @t{YES}@} [@t{LABEL=}@i{string}] [@t{POSITION=}@{@t{AFTER} @math{|} @t{BEFORE}@}]]
+    [@t{EMPTY=}@{@t{INCLUDE} @math{|} @t{EXCLUDE}@}]
+@end display
+
+The @code{CATEGORIES} subcommand specifies, for one or more
+categorical variables, the categories to include and exclude, the sort
+order for included categories, and treatment of missing values.  It
+also controls the totals and subtotals to display.  It may be
+specified any number of times, each time for a different set of
+variables.  @code{CATEGORIES} applies to the table produced by the
+@code{TABLE} subcommand that it follows.
+
+@code{CATEGORIES} does not apply to scalar variables.
+
+@t{VARIABLES} is required and must list the variables for the subcommand
+to affect.
+
+The syntax may specify the categories to include and their sort order
+either explicitly or implicitly.  The following sections give the
+details of each form of syntax, followed by information on totals and
+subtotals and the @code{EMPTY} setting.
+
+@node CTABLES Explicit Categories
+@subsubsection Explicit Categories
+
+@anchor{CTABLES Explicit Category List}
+
+To use @code{CTABLES} to explicitly specify categories to include,
+list the categories within square brackets in the desired sort order.
+Use spaces or commas to separate values.  Categories not covered by
+the list are excluded from analysis.
+
+Each element of the list takes one of the following forms:
+
+@table @t
+@item @i{number}
+@itemx '@i{string}'
+A numeric or string category value, for variables that have the
+corresponding type.
+
+@item '@i{date}'
+@itemx '@i{time}'
+A date or time category value, for variables that have a date or time
+print format.
+
+@item @i{min} THRU @i{max}
+@itemx LO THRU @i{max}
+@itemx @i{min} THRU HI
+A range of category values, where @var{min} and @var{max} each takes
+one of the forms above, in increasing order.
+
+@item MISSING
+All user-missing values.  (To match individual user-missing values,
+specify their category values.)
+
+@item OTHERNM
+Any non-missing value not covered by any other element of the list
+(regardless of where @t{OTHERNM} is placed in the list).
+
+@item &@i{postcompute}
+A computed category name (@pxref{CTABLES Computed Categories}).
+
+@item SUBTOTAL
+@itemx HSUBTOTAL
+A subtotal (@pxref{CTABLES Totals and Subtotals}).
+@end table
+
+If multiple elements of the list cover a given category, the last one
+in the list takes precedence.
+
+The following example syntax and output show how an explicit category
+can limit the displayed categories:
+
+@example
+CTABLES /TABLE qn1.
+CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [1, 2, 3].
+@end example
+@psppoutput {ctables27}
+
+@node CTABLES Implicit Categories
+@subsubsection Implicit Categories
+
+In the absence of an explicit list of categories, @code{CATEGORIES}
+allows @code{KEY}, @code{ORDER}, and @code{MISSING} to specify how to
+select and sort categories.
+
+The @code{KEY} setting specifies the sort key.  By default, or with
+@code{KEY=VALUE}, categories are sorted by default.  Categories may
+also be sorted by value label, with @code{KEY=LABEL}, or by the value
+of a summary function, e.g.@: @code{KEY=COUNT}.
+@ignore  @c Not yet implemented
+For summary functions, a variable name may be specified in
+parentheses, e.g.@: @code{KEY=MAXIUM(qnd1)}, and this is required for
+functions that apply only to scalar variables.  The @code{PTILE}
+function also requires a percentage argument, e.g.@:
+@code{KEY=PTILE(qnd1, 90)}.  Only summary functions used in the table
+may be used, except that @code{COUNT} is always allowed.
+@end ignore
+
+By default, or with @code{ORDER=A}, categories are sorted in ascending
+order.  Specify @code{ORDER=D} to sort in descending order.
+
+User-missing values are excluded by default, or with
+@code{MISSING=EXCLUDE}.  Specify @code{MISSING=INCLUDE} to include
+user-missing values.  The system-missing value is always excluded.
+
+The following example syntax and output show how
+@code{MISSING=INCLUDE} causes missing values to be included in a
+category list.
+
+@example
+CTABLES /TABLE qn1.
+CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 MISSING=INCLUDE.
+@end example
+@psppoutput {ctables28}
+
+@node CTABLES Totals and Subtotals
+@subsubsection Totals and Subtotals
+
+@code{CATEGORIES} also controls display of totals and subtotals.  By
+default, or with @code{TOTAL=NO}, totals are not displayed.  Use
+@code{TOTAL=YES} to display a total.  By default, the total is labeled
+``Total''; use @code{LABEL="@i{label}"} to override it.
+
+Subtotals are also not displayed by default.  To add one or more
+subtotals, use an explicit category list and insert @code{SUBTOTAL} or
+@code{HSUBTOTAL} in the position or positions where the subtotal
+should appear.  The subtotal becomes an extra row or column or layer.
+@code{HSUBTOTAL} additionally hides the categories that make up the
+subtotal.  Either way, the default label is ``Subtotal'', use
+@code{SUBTOTAL="@i{label}"} or @code{HSUBTOTAL="@i{label}"} to specify
+a custom label.
+
+The following example syntax and output show how to use
+@code{TOTAL=YES} and @code{SUBTOTAL}:
+
+@example
+CTABLES
+    /TABLE qn1
+    /CATEGORIES VARIABLES=qn1 [OTHERNM, SUBTOTAL='Valid Total',
+                               MISSING, SUBTOTAL='Missing Total']
+			      TOTAL=YES LABEL='Overall Total'.
+@end example
+@psppoutput {ctables29}
+
+By default, or with @code{POSITION=AFTER}, totals are displayed in the
+output after the last category and subtotals apply to categories that
+precede them.  With @code{POSITION=BEFORE}, totals come before the
+first category and subtotals apply to categories that follow them.
+
+Only categorical variables may have totals and subtotals.  Scalar
+variables may be ``totaled'' indirectly by enabling totals and
+subtotals on a categorical variable within which the scalar variable
+is summarized.  For example, the following syntax produces a mean,
+count, and valid count across all data by adding a total on the
+categorical @code{region} variable, as shown:
+
+@example
+CTABLES /TABLE=region > qn20 [MEAN, VALIDN]
+    /CATEGORIES VARIABLES=region TOTAL=YES LABEL='All regions'.
+@end example
+@psppoutput {ctables30}
+
+By default, @pspp{} uses the same summary functions for totals and
+subtotals as other categories.  To summarize totals and subtotals
+differently, specify the summary functions for totals and subtotals
+after the ordinary summary functions inside a nested set of @code{[]}
+following @code{TOTALS}.  For example, the following syntax displays
+@code{COUNT} for individual categories and totals and @code{VALIDN}
+for totals, as shown:
+
+@example
+CTABLES
+    /TABLE qnd7a [COUNT, TOTALS[COUNT, VALIDN]]
+    /CATEGORIES VARIABLES=qnd7a TOTAL=YES MISSING=INCLUDE.
+@end example
+@psppoutput {ctables26}
+
+@node CTABLES Categories Without Values
+@subsubsection Categories Without Values
+
+Some categories might not be included in the data set being analyzed.
+For example, our example data set has no cases in the ``15 or
+younger'' age group.  By default, or with @code{EMPTY=INCLUDE},
+@pspp{} includes these empty categories in output tables.  To exclude
+them, specify @code{EMPTY=EXCLUDE}.
+
+For implicit categories, empty categories potentially include all the
+values with value labels for a given variable; for explicit
+categories, they include all the values listed individually and all
+values with value labels that are covered by ranges or @code{MISSING}
+or @code{OTHERNM}.
+
+The following example syntax and output show the effect of
+@code{EMPTY=EXCLUDE} for the @code{qns1} variable, in which 0 is labeled
+``None'' but no cases exist with that value:
+
+@example
+CTABLES /TABLE=qns1.
+CTABLES /TABLE=qns1 /CATEGORIES VARIABLES=qns1 EMPTY=EXCLUDE.
+@end example
+@psppoutput {ctables31}
+
+@node CTABLES Titles
+@subsection Titles
+
+@display
+@t{/TITLES}
+    [@t{TITLE=}@i{string}@dots{}]
+    [@t{CAPTION=}@i{string}@dots{}]
+    [@t{CORNER=}@i{string}@dots{}]
+@end display
+
+The @code{TITLES} subcommand sets the title, caption, and corner text
+for the table output for the previous @code{TABLE} subcommand.  Any
+number of strings may be specified for each kind of text, with each
+string appearing on a separate line in the output.  The title appears
+above the table, the caption below the table, and the corner text
+appears in the table's upper left corner.  By default, the title is
+``Custom Tables'' and the caption and corner text are empty.  With
+some table output styles, the corner text is not displayed.
+
+The strings provided in this subcommand may contain the following
+macro-like keywords that @pspp{} substitutes at the time that it runs
+the command:
+
+@table @code @c (
+@item )DATE
+The current date, e.g.@: MM/DD/YY.  The format is locale-dependent.
+
+@c (
+@item )TIME
+The current time, e.g.@: HH:MM:SS.  The format is locale-dependent.
+
+@c (
+@item )TABLE
+The expression specified on the @code{TABLE} command.  Summary
+and measurement level specifications are omitted, and variable labels are used in place of variable names.
+@end table
+
+@node CTABLES Table Formatting
+@subsection Table Formatting
+
+@display
+@t{/FORMAT}
+    [@t{MINCOLWIDTH=}@{@t{DEFAULT} @math{|} @i{width}@}]
+    [@t{MAXCOLWIDTH=}@{@t{DEFAULT} @math{|} @i{width}@}]
+    [@t{UNITS=}@{@t{POINTS} @math{|} @t{INCHES} @math{|} @t{CM}@}]
+    [@t{EMPTY=}@{@t{ZERO} @math{|} @t{BLANK} @math{|} @i{string}@}]
+    [@t{MISSING=}@i{string}]
+@end display
+
+The @code{FORMAT} subcommand, which must precede the first
+@code{TABLE} subcommand, controls formatting for all the output
+tables.  @code{FORMAT} and all of its settings are optional.
+
+Use @code{MINCOLWIDTH} and @code{MAXCOLWIDTH} to control the minimum
+or maximum width of columns in output tables.  By default, with
+@code{DEFAULT}, column width varies based on content.  Otherwise,
+specify a number for either or both of these settings.  If both are
+specified, @code{MAXCOLWIDTH} must be greater than or equal to
+@code{MINCOLWIDTH}.  The default unit, or with @code{UNITS=POINTS}, is
+points (1/72 inch), or specify @code{UNITS=INCHES} to use inches or
+@code{UNITS=CM} for centimeters.  @pspp{} does not currently honor any
+of these settings.
+
+By default, or with @code{EMPTY=ZERO}, zero values are displayed in
+their usual format.  Use @code{EMPTY=BLANK} to use an empty cell
+instead, or @code{EMPTY="@i{string}"} to use the specified string.
+
+By default, missing values are displayed as @samp{.}, the same as in
+other tables.  Specify @code{MISSING="@i{string}"} to instead use a
+custom string.
+
+@node CTABLES Display of Variable Labels
+@subsection Display of Variable Labels
+
+@display
+@t{/VLABELS}
+    @t{VARIABLES=}@i{variables}
+    @t{DISPLAY}=@{@t{DEFAULT} @math{|} @t{NAME} @math{|} @t{LABEL} @math{|} @t{BOTH} @math{|} @t{NONE}@}
+@end display
+
+The @code{VLABELS} subcommand, which must precede the first
+@code{TABLE} subcommand, controls display of variable labels in all
+the output tables.  @code{VLABELS} is optional.  It may appear
+multiple times to adjust settings for different variables.
+
+@code{VARIABLES} and @code{DISPLAY} are required.  The value of
+@code{DISPLAY} controls how variable labels are displayed for the
+variables listed on @code{VARIABLES}.  The supported values are:
+
+@table @code
+@item DEFAULT
+Use the setting from @code{SET TVARS} (@pxref{SET TVARS}).
+
+@item NAME
+Show only a variable name.
+
+@item LABEL
+Show only a variable label.
+
+@item BOTH
+Show variable name and label.
+
+@item NONE
+Show nothing.
+@end table
+
+@node CTABLES Missing Value Treatment
+@subsection Missing Value Treatment
+
+The @code{TABLE} subcommand on @code{CTABLES} specifies two different
+kinds of variables: variables that divide tables into cells (which are
+always categorical) and variables being summarized (which may be
+categorical or scale).  @pspp{} treats missing values differently in
+each kind of variable, as described in the sections below.
+
+@node CTABLES Missing Values for Cell-Defining Variables
+@subsubsection Missing Values for Cell-Defining Variables
+
+For variables that divide tables into cells, per-variable category
+options, as described in @ref{CTABLES Per-Variable Category Options},
+determine which data is analyzed.  If any of the categories for such a
+variable would exclude a case, then that case is not included.
+
+As an example, consider the following entirely artificial dataset, in
+which @samp{x} and @samp{y} are categorical variables with missing
+value 9, and @samp{z} is scale:
+
+@psppoutput{ctables32}
+
+Using @samp{x} and @samp{y} to define cells, and summarizing @samp{z},
+by default @pspp{} omits all the cases that have @samp{x} or @samp{y} (or both)
+missing:
+
+@example
+CTABLES /TABLE x > y > z [SUM].
+@end example
+@psppoutput{ctables33}
+
+If, however, we add @code{CATEGORIES} specifications to include
+missing values for @samp{y} or for @samp{x} and @samp{y}, the output
+table includes them, like so:
+
+@example
+CTABLES /TABLE x > y > z [SUM] /CATEGORIES VARIABLES=y MISSING=INCLUDE.
+CTABLES /TABLE x > y > z [SUM] /CATEGORIES VARIABLES=x y MISSING=INCLUDE.
+@end example
+@psppoutput{ctables34}
+
+@node CTABLES Missing Values for Summary Variables
+@subsubsection Missing Values for Summary Variables
+
+For summary variables, values that are valid and in included
+categories are analyzed, and values that are missing or in excluded
+categories are not analyzed, with the following exceptions:
+
+@itemize @bullet
+@item
+The ``@t{VALIDN}'' summary functions (@code{VALIDN}, @code{EVALIDN},
+@code{UVALIDN}, @code{@i{area}PCT.VALIDN}, and
+@code{U@i{area}PCT.VALIDN}) only count valid values in included
+categories (not missing values in included categories).
+
+@item
+The ``@t{TOTALN}'' summary functions (@code{TOTALN}, @code{ETOTALN},
+@code{UTOTALN}, @code{@i{area}PCT.TOTALN}), and
+@code{U@i{area}PCT.TOTALN} count all values (valid and missing) in
+included categories and missing (but not valid) values in excluded
+categories.
+@end itemize
+
+@noindent
+For categorical variables, system-missing values are never in included
+categories.  For scale variables, there is no notion of included and
+excluded categories, so all values are effectively included.
+
+The following table provides another view of the above rules:
+
+@multitable {@w{ }@w{ }@w{ }@w{ }Missing values in excluded categories} {@t{VALIDN}} {other} {@t{TOTALN}}
+@headitem @tab @t{VALIDN} @tab other @tab @t{TOTALN}
+@item @headitemfont{Categorical variables:}
+@item @w{ }@w{ }@w{ }@w{ }Valid values in included categories   @tab yes @tab yes @tab yes
+@item @w{ }@w{ }@w{ }@w{ }Missing values in included categories @tab --- @tab yes @tab yes
+@item @w{ }@w{ }@w{ }@w{ }Missing values in excluded categories @tab --- @tab --- @tab yes
+@item @w{ }@w{ }@w{ }@w{ }Valid values in excluded categories   @tab --- @tab --- @tab ---
+@item @headitemfont{Scale variables:}
+@item @w{ }@w{ }@w{ }@w{ }Valid values                          @tab yes @tab yes @tab yes
+@item @w{ }@w{ }@w{ }@w{ }User- or system-missing values        @tab --- @tab yes @tab yes
+@end multitable
+
+@node CTABLES Scale Missing Values
+@subsubsection Scale Missing Values
+
+@display
+@t{/SMISSING} @{@t{VARIABLE} @math{|} @t{LISTWISE}@}
+@end display
+
+The @code{SMISSING} subcommand, which must precede the first
+@code{TABLE} subcommand, controls treatment of missing values for
+scalar variables in producing all the output tables.  @code{SMISSING}
+is optional.
+
+With @code{SMISSING=VARIABLE}, which is the default, missing values
+are excluded on a variable-by-variable basis.  With
+@code{SMISSING=LISTWISE}, when stacked scalar variables are nested
+together with a categorical variable, a missing value for any of the
+scalar variables causes the case to be excluded for all of them.
+
+As an example, consider the following dataset, in which @samp{x} is a
+categorical variable and @samp{y} and @samp{z} are scale:
+
+@psppoutput{ctables18}
+
+@noindent
+With the default missing-value treatment, @samp{x}'s mean is 20, based
+on the values 10, 20, and 30, and @samp{y}'s mean is 50, based on 40,
+50, and 60:
+
+@example
+CTABLES /TABLE (y + z) > x.
+@end example
+@psppoutput{ctables19}
+
+@noindent
+By adding @code{SMISSING=LISTWISE}, only cases where @samp{y} and
+@samp{z} are both non-missing are considered, so @samp{x}'s mean
+becomes 15, as the average of 10 and 20, and @samp{y}'s mean becomes
+55, the average of 50 and 60:
+
+@example
+CTABLES /SMISSING LISTWISE /TABLE (y + z) > x.
+@end example
+@psppoutput{ctables20}
+
+@noindent
+Even with @code{SMISSING=LISTWISE}, if @samp{y} and @samp{z} are
+separately nested with @samp{x}, instead of using a single @samp{>}
+operator, missing values revert to being considered on a
+variable-by-variable basis:
+
+@example
+CTABLES /SMISSING LISTWISE /TABLE (y > x) + (z > x).
+@end example
+@psppoutput{ctables21}
+
+@node CTABLES Computed Categories
+@subsection Computed Categories
+
+@display
+@t{/PCOMPUTE} @t{&}@i{postcompute}@t{=EXPR(}@i{expression}@t{)}
+@t{/PPROPERTIES} @t{&}@i{postcompute}@dots{}
+    [@t{LABEL=}@i{string}]
+    [@t{FORMAT=}[@i{summary} @i{format}]@dots{}]
+    [@t{HIDESOURCECATS=}@{@t{NO} @math{|} @t{YES}@}
+@end display
+
+@dfn{Computed categories}, also called @dfn{postcomputes}, are
+categories created using arithmetic on categories obtained from the
+data.  The @code{PCOMPUTE} subcommand creates a postcompute, which may
+then be used on @code{CATEGORIES} within an explicit category list
+(@pxref{CTABLES Explicit Category List}).  Optionally,
+@code{PPROPERTIES} refines how a postcompute is displayed.  The
+following sections provide the details.
+
+@node CTABLES PCOMPUTE
+@subsubsection PCOMPUTE
+
+@display
+@t{/PCOMPUTE} @t{&}@i{postcompute}@t{=EXPR(}@i{expression}@t{)}
+@end display
+
+The @code{PCOMPUTE} subcommand, which must precede the first
+@code{TABLE} command, defines computed categories.  It is optional and
+may be used any number of times to define multiple postcomputes.
+
+Each @code{PCOMPUTE} defines one postcompute.  Its syntax consists of
+a name to identify the postcompute as a @pspp{} identifier prefixed by
+@samp{&}, followed by @samp{=} and a postcompute expression enclosed
+in @code{EXPR(@dots{})}.  A postcompute expression consists of:
+
+@table @t
+@item [@i{category}]
+This form evaluates to the summary statistic for @i{category}, e.g.@:
+@code{[1]} evaluates to the value of the summary statistic associated
+with category 1.  The @i{category} may be a number, a quoted string,
+or a quoted time or date value.  All of the categories for a given
+postcompute must have the same form.  The category must appear in all
+the @code{CATEGORIES} list in which the postcompute is used.
+
+@item [@i{min} THRU @i{max}]
+@itemx [LO THRU @i{max}]
+@itemx [@i{min} THRU HI]
+@itemx MISSING
+@itemx OTHERNM
+These forms evaluate to the summary statistics for a category
+specified with the same syntax, as described in previous section
+(@pxref{CTABLES Explicit Category List}).  The category must appear in
+all the @code{CATEGORIES} list in which the postcompute is used.
+
+@item SUBTOTAL
+The summary statistic for the subtotal category.  This form is allowed
+only if the @code{CATEGORIES} lists that include this postcompute have
+exactly one subtotal.
+
+@item SUBTOTAL[@i{index}]
+The summary statistic for subtotal category @i{index}, where 1 is the
+first subtotal, 2 is the second, and so on.  This form may be used for
+@code{CATEGORIES} lists with any number of subtotals.
+
+@item TOTAL
+The summary statistic for the total.  The @code{CATEGORIES} lsits that
+include this postcompute must have a total enabled.
+
+@item @i{a} + @i{b}
+@itemx @i{a} - @i{b}
+@itemx @i{a} * @i{b}
+@itemx @i{a} / @i{b}
+@itemx @i{a} ** @i{b}
+These forms perform arithmetic on the values of postcompute
+expressions @i{a} and @i{b}.  The usual operator precedence rules
+apply.
+
+@item @i{number}
+Numeric constants may be used in postcompute expressions.
+
+@item (@i{a})
+Parentheses override operator precedence.
+@end table
+
+A postcompute is not associated with any particular variable.
+Instead, it may be referenced within @code{CATEGORIES} for any
+suitable variable (e.g.@: only a string variable is suitable for a
+postcompute expression that refers to a string category, only a
+variable with subtotals for an expression that refers to subtotals,
+@dots{}).
+
+Normally a named postcompute is defined only once, but if a later
+@code{PCOMPUTE} redefines a postcompute with the same name as an
+earlier one, the later one take precedence.
+
+The following syntax and output shows how @code{PCOMPUTE} can compute
+a total over subtotals, summing the ``Frequent Drivers'' and
+``Infrequent Drivers'' subtotals to form an ``All Drivers''
+postcompute.  It also shows how to calculate and display a percentage,
+in this case the percentage of valid responses that report never
+driving.  It uses @code{PPROPERTIES} (@pxref{CTABLES PPROPERTIES}) to
+display the latter in @code{PCT} format.
+
+@example
+CTABLES
+    /PCOMPUTE &all_drivers=EXPR([1 THRU 2] + [3 THRU 4])
+    /PPROPERTIES &all_drivers LABEL='All Drivers'
+    /PCOMPUTE &pct_never=EXPR([5] / ([1 THRU 2] + [3 THRU 4] + [5]) * 100)
+    /PPROPERTIES &pct_never LABEL='% Not Drivers' FORMAT=COUNT PCT40.1
+    /TABLE=qn1 BY qns3a
+    /CATEGORIES VARIABLES=qn1 [1 THRU 2, SUBTOTAL='Frequent Drivers',
+                               3 THRU 4, SUBTOTAL='Infrequent Drivers',
+			       &all_drivers, 5, &pct_never,
+			       MISSING, SUBTOTAL='Not Drivers or Missing'].
+@end example
+@psppoutput{ctables35}
+
+@node CTABLES PPROPERTIES
+@subsubsection PPROPERTIES
+
+@display
+@t{/PPROPERTIES} @t{&}@i{postcompute}@dots{}
+    [@t{LABEL=}@i{string}]
+    [@t{FORMAT=}[@i{summary} @i{format}]@dots{}]
+    [@t{HIDESOURCECATS=}@{@t{NO} @math{|} @t{YES}@}
+@end display
+
+The @code{PPROPERTIES} subcommand, which must appear before
+@code{TABLE}, sets properties for one or more postcomputes defined on
+prior @code{PCOMPUTE} subcommands.  The subcommand syntax begins with
+the list of postcomputes, each prefixed with @samp{&} as specified on
+@code{PCOMPUTE}.
+
+All of the settings on @code{PPROPERTIES} are optional.  Use
+@code{LABEL} to set the label shown for the postcomputes in table
+output.  The default label for a postcompute is the expression used to
+define it.
+
+A postcompute always uses same summary functions as the variable whose
+categories contain it, but @code{FORMAT} allows control over the
+format used to display their values.  It takes a list of summary
+function names and format specifiers.
+
+By default, or with @code{HIDESOURCECATS=NO}, categories referred to
+by computed categories are displayed like other categories.  Use
+@code{HIDESOURCECATS=YES} to hide them.
+
+The previous section provides an example for @code{PPROPERTIES}.
+
+@node CTABLES Effective Weight
+@subsection Effective Weight
+
+@display
+@t{/WEIGHT VARIABLE=}@i{variable}
+@end display
+
+The @code{WEIGHT} subcommand is optional and must appear before
+@code{TABLE}.  If it appears, it must name a numeric variable, known
+as the @dfn{effective weight} or @dfn{adjustment weight}.  The
+effective weight variable stands in for the dictionary's weight
+variable (@pxref{WEIGHT}), if any, in most calculations in
+@code{CTABLES}.  The only exceptions are the @code{COUNT},
+@code{TOTALN}, and @code{VALIDN} summary functions, which use the
+dictionary weight instead.
+
+Weights obtained from the @pspp{} dictionary are rounded to the
+nearest integer at the case level.  Effective weights are not rounded.
+Regardless of the weighting source, @pspp{} does not analyze cases
+with zero, missing, or negative effective weights.
+
+@node CTABLES Hiding Small Counts
+@subsection Hiding Small Counts
+
+@display
+@t{/HIDESMALLCOUNTS COUNT=@i{count}}
+@end display
+
+The @code{HIDESMALLCOUNTS} subcommand is optional.  If it specified,
+then @code{COUNT}, @code{ECOUNT}, and @code{UCOUNT} values in output
+tables less than the value of @i{count} are shown as @code{<@i{count}}
+instead of their true values.  The value of @i{count} must be an
+integer and must be at least 2.
+
+The following syntax and example shows how to use
+@code{HIDESMALLCOUNTS}:
+
+@example
+CTABLES /HIDESMALLCOUNTS COUNT=10 /TABLE qn37.
+@end example
+@psppoutput{ctables36}
 
 @node FACTOR
 @section FACTOR

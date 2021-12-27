@@ -31,6 +31,8 @@ language_stats_sources = \
 	src/language/stats/cochran.h \
 	src/language/stats/correlations.c \
 	src/language/stats/crosstabs.c \
+	src/language/stats/ctables.c \
+	src/language/stats/ctables.inc \
 	src/language/stats/descriptives.c \
 	src/language/stats/examine.c \
 	src/language/stats/factor.c \

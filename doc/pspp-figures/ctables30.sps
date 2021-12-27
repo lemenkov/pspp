@@ -1,0 +1,3 @@
+GET FILE='nhtsa.sav'.
+CTABLES /TABLE=qn20 [MEAN F8.1, COUNT, VALIDN] > region
+    /CATEGORIES VARIABLES=region TOTAL=YES LABEL='All regions'.

@@ -600,18 +600,12 @@ purposes.   It does not affect the display of variables in the @pspp{} output.
 @section VARIABLE LEVEL
 @vindex VARIABLE LEVEL
 @display
-VARIABLE LEVEL
-        @var{var_list} ( SCALE | NOMINAL | ORDINAL )
-        [ /@var{var_list} ( SCALE | NOMINAL | ORDINAL ) ]
-        .
-        .
-        .
-        [ /@var{var_list} ( SCALE | NOMINAL | ORDINAL ) ]
+@t{VARIABLE LEVEL} @i{variables} @t{(}@{@t{SCALE} @math{|} @t{NOMINAL} @math{|} @t{ORDINAL}@}@t{)}@dots{}
 @end display
 
-@cmd{VARIABLE LEVEL} sets the measurement level of  variables.
-Currently, this has no effect except for certain third party software.
-
+@cmd{VARIABLE LEVEL} sets the measurement level of @var{variables} as
+specified.  @xref{Attributes}, for the definitions of the available
+measurement levels.
 
 @node VARIABLE ROLE
 @section VARIABLE ROLE

@@ -7,6 +7,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes after 1.6.2:
 
+ * The CTABLES command is now implemented.
+
  * FREQUENCIES now honors the LAYERED setting on SPLIT FILE.
 
  * Building from a Git repository, which previously required GIMP, now
