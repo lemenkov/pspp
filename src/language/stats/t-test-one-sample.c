@@ -175,7 +175,7 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
           const struct per_var_stats *per_var_stats = &os.stats[i];
 	  const struct variable *var = per_var_stats->var;
 	  const union value *val = case_data (c, var);
-	  if (var_is_value_missing (var, val, tt->exclude))
+	  if (var_is_value_missing (var, val) & tt->exclude)
 	    continue;
 
 	  moments_pass_one (per_var_stats->mom, val->f, w);
@@ -192,7 +192,7 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
           struct per_var_stats *per_var_stats = &os.stats[i];
 	  const struct variable *var = per_var_stats->var;
 	  const union value *val = case_data (c, var);
-	  if (var_is_value_missing (var, val, tt->exclude))
+	  if (var_is_value_missing (var, val) & tt->exclude)
 	    continue;
 
 	  moments_pass_two (per_var_stats->mom, val->f, w);

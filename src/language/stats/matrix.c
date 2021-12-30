@@ -7505,7 +7505,7 @@ matrix_get_execute__ (struct matrix_command *cmd, struct casereader *reader,
                   error = true;
                 }
             }
-          else if (var_is_num_missing (var, d, MV_USER))
+          else if (var_is_num_missing (var, d) == MV_USER)
             {
               if (get->user.treatment == MGET_RECODE)
                 d = get->user.substitute;
@@ -8228,7 +8228,7 @@ matrix_mget_commit_var (struct ccase **rows, size_t n_rows,
         {
           struct variable *var = dict_get_var (d, cs + x);
           double value = case_num (rows[y], var);
-          if (var_is_num_missing (var, value, MV_ANY))
+          if (var_is_num_missing (var, value))
             {
               n_missing++;
               value = 0.0;

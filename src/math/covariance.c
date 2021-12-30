@@ -262,7 +262,7 @@ is_missing (const struct covariance *cov, int i, const struct ccase *c)
 
   const union value *val = case_data (c, var);
 
-  return var_is_value_missing (var, val, cov->exclude);
+  return (var_is_value_missing (var, val) & cov->exclude) != 0;
 }
 
 

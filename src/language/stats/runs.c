@@ -145,7 +145,7 @@ runs_execute (const struct dataset *ds,
 		  {
 		    const double w = weight ? case_num (c, weight) : 1.0;
 		    const union value *val = case_data (c, var);
-		    if (var_is_value_missing (var, val, exclude))
+		    if (var_is_value_missing (var, val) & exclude)
 		      continue;
 		    x = val->f;
 		    cc += w;
@@ -192,7 +192,7 @@ runs_execute (const struct dataset *ds,
 	      {
 		const union value *val = case_data (c, var);
 		const double w = weight ? case_num (c, weight) : 1.0;
-		if (var_is_value_missing (var, val, exclude))
+		if (var_is_value_missing (var, val) & exclude)
 		  {
 		    case_unref (c);
 		    continue;
@@ -232,7 +232,7 @@ runs_execute (const struct dataset *ds,
 		const double x = val->f;
 		struct run_state *run = &rs[v];
 
-		if (var_is_value_missing (var, val, exclude))
+		if (var_is_value_missing (var, val) & exclude)
 		  continue;
 
 		run->cutpoint += x * w;
@@ -271,7 +271,7 @@ runs_execute (const struct dataset *ds,
 	  double d = x - run->cutpoint;
 	  short sign = 0;
 
-	  if (var_is_value_missing (var, val, exclude))
+	  if (var_is_value_missing (var, val) & exclude)
 	    continue;
 
 	  if (d >= 0)

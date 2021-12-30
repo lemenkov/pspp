@@ -159,7 +159,7 @@ median_execute (const struct dataset *ds,
 
 	  for (; (c = casereader_read (rr)) != NULL;)
 	    {
-	      if (var_is_value_missing (var, case_data (c, var), exclude))
+	      if (var_is_value_missing (var, case_data (c, var)) & exclude)
 		{
 		  case_unref (c);
 		  continue;
@@ -196,7 +196,7 @@ median_execute (const struct dataset *ds,
 	  const union value *val = case_data (c, var);
 	  const union value *indep_val = case_data (c, nst->indep_var);
 
-	  if (var_is_value_missing (var, case_data (c, var), exclude))
+	  if (var_is_value_missing (var, case_data (c, var)) & exclude)
 	    {
 	      continue;
 	    }

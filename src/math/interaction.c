@@ -199,8 +199,8 @@ interaction_case_is_missing (const struct interaction *iact,
                              const struct ccase *c, enum mv_class exclude)
 {
   for (size_t i = 0; i < iact->n_vars; ++i)
-    if (var_is_value_missing (iact->vars[i], case_data (c, iact->vars[i]),
-                              exclude))
+    if (var_is_value_missing (iact->vars[i], case_data (c, iact->vars[i]))
+        & exclude)
       return true;
 
   return false;

@@ -311,8 +311,8 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         struct arc_item *item = xmalloc (sizeof *item);
         item->width = width;
         value_clone (&item->from, value, width);
-        item->missing = mv_is_value_missing_varwidth (&spec->mv, value, spec->width,
-                                                      MV_ANY);
+        item->missing = mv_is_value_missing_varwidth (&spec->mv, value,
+                                                      spec->width);
         item->value_label = ds_steal_cstr (&value_label);
         hmap_insert (&spec->items->ht, &item->hmap_node, hash);
 

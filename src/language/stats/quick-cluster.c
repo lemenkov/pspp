@@ -247,7 +247,7 @@ dist_from_case (const struct Kmeans *kmeans, const struct ccase *c,
   for (j = 0; j < qc->n_vars; j++)
     {
       const union value *val = case_data (c, qc->vars[j]);
-      if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+      if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 	NOT_REACHED ();
 
       dist += pow2 (gsl_matrix_get (kmeans->centers, which, j) - val->f);
@@ -302,7 +302,7 @@ kmeans_initial_centers (struct Kmeans *kmeans,
       for (j = 0; j < qc->n_vars; ++j)
 	{
 	  const union value *val = case_data (c, qc->vars[j]);
-	  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+	  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 	    {
 	      missing = true;
 	      break;
@@ -385,7 +385,7 @@ kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c,
       for (j = 0; j < qc->n_vars; j++)
 	{
 	  const union value *val = case_data (c, qc->vars[j]);
-	  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+	  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 	    continue;
 
 	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
@@ -462,7 +462,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	      for (j = 0; j < qc->n_vars; j++)
 		{
 		  const union value *val = case_data (c, qc->vars[j]);
-		  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+		  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 		    missing = true;
 		}
 
@@ -488,7 +488,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	      for (j = 0; j < qc->n_vars; ++j)
 		{
 		  const union value *val = case_data (c, qc->vars[j]);
-		  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+		  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 		    continue;
 		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
 		  *x += val->f * (qc->wv ? case_num (c, qc->wv) : 1.0);
@@ -529,7 +529,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	    for (j = 0; j < qc->n_vars; ++j)
 	      {
 		const union value *val = case_data (c, qc->vars[j]);
-		if (var_is_value_missing (qc->vars[j], val, qc->exclude))
+		if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
 		  continue;
 
 		double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);

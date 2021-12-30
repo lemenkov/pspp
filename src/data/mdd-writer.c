@@ -405,10 +405,9 @@ write_variable_section (xmlTextWriter *writer, const struct variable *var, int i
 
              XXX only checking "user" here because not sure of correct other
              cases. */
-          if (var_is_value_missing (var, value, MV_USER))
-            write_attr (writer, "missing", "user");
-          else if (var_is_value_missing (var, value, MV_SYSTEM))
-            write_attr (writer, "missing", "system");
+          enum mv_class miss = var_is_value_missing (var, value);
+          if (miss)
+            write_attr (writer, "missing", miss == MV_USER ? "user" : "system");
 
           /* <properties/> */
           xmlTextWriterStartElement (writer, _xml ("properties"));

@@ -112,7 +112,7 @@ indep_run (struct tt *tt, const struct variable *gvar,
       for (v = 0; v < tt->n_vars; ++v)
 	{
 	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val, tt->exclude))
+	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
 	    continue;
 
 	  moments_pass_one (ps[v].mom[grp], val->f, w);
@@ -135,7 +135,7 @@ indep_run (struct tt *tt, const struct variable *gvar,
       for (v = 0; v < tt->n_vars; ++v)
 	{
 	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val, tt->exclude))
+	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
 	    continue;
 
 	  moments_pass_two (ps[v].mom[grp], val->f, w);
@@ -158,7 +158,7 @@ indep_run (struct tt *tt, const struct variable *gvar,
       for (v = 0; v < tt->n_vars; ++v)
 	{
 	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val, tt->exclude))
+	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
 	    continue;
 
 	  levene_pass_three (ps[v].nl, val->f, w, gv);

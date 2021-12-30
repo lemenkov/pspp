@@ -754,7 +754,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 	const union value *v = case_data (input, iter->src);
         int src_width = var_get_width (iter->src);
 
-        if (var_is_value_missing (iter->src, v, iter->exclude))
+        if (var_is_value_missing (iter->src, v) & iter->exclude)
 	  {
 	    switch (iter->function)
 	      {

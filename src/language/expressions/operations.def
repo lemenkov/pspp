@@ -1186,7 +1186,7 @@ absorb_miss no_opt operator VEC_ELEM_NUM (idx)
   if (var)
     {
       double d = case_num (c, var);
-      if (!var_is_num_missing (var, d, MV_USER))
+      if (var_is_num_missing (var, d) != MV_USER)
         return d;
     }
   return SYSMIS;
@@ -1227,7 +1227,7 @@ no_opt operator NUM_VAR ()
      num_var v;
 {
   double d = case_num (c, v);
-  return !var_is_num_missing (v, d, MV_USER) ? d : SYSMIS;
+  return var_is_num_missing (v, d) ? SYSMIS : d;
 }
 
 no_opt string operator STR_VAR ()
@@ -1247,7 +1247,7 @@ no_opt perm_only function LAG (num_var v, pos_int n_before)
   if (c != NULL)
     {
       double x = case_num (c, v);
-      return !var_is_num_missing (v, x, MV_USER) ? x : SYSMIS;
+      return var_is_num_missing (v, x) ? SYSMIS : x;
     }
   else
     return SYSMIS;
@@ -1260,7 +1260,7 @@ no_opt perm_only function LAG (num_var v)
   if (c != NULL)
     {
       double x = case_num (c, v);
-      return !var_is_num_missing (v, x, MV_USER) ? x : SYSMIS;
+      return var_is_num_missing (v, x) ? SYSMIS : x;
     }
   else
     return SYSMIS;

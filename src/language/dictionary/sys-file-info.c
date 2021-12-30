@@ -596,7 +596,7 @@ display_value_labels (const struct variable **vars, size_t n_vars)
             value->numeric.show = SETTINGS_VALUE_SHOW_VALUE;
           else
             value->string.show = SETTINGS_VALUE_SHOW_VALUE;
-          if (var_is_value_missing (vars[i], &vl->value, MV_USER))
+          if (var_is_value_missing (vars[i], &vl->value) == MV_USER)
             pivot_value_add_footnote (value, missing_footnote);
           int row = pivot_category_create_leaf (group, value);
 

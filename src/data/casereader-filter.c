@@ -212,7 +212,7 @@ casereader_filter_weight_include (const struct ccase *c, void *cfw_)
 {
   struct casereader_filter_weight *cfw = cfw_;
   double value = case_num (c, cfw->weight_var);
-  if (value >= 0.0 && !var_is_num_missing (cfw->weight_var, value, MV_ANY))
+  if (value >= 0.0 && !var_is_num_missing (cfw->weight_var, value))
     return true;
   else
     {
@@ -278,7 +278,7 @@ casereader_create_filter_missing (struct casereader *reader,
 				  casenumber *n_missing,
                                   struct casewriter *exclude)
 {
-  if (n_vars > 0 && class != MV_NEVER)
+  if (n_vars > 0 && class)
     {
       struct casereader_filter_missing *cfm = xmalloc (sizeof *cfm);
       cfm->vars = xmemdup (vars, sizeof *vars * n_vars);
@@ -308,7 +308,7 @@ casereader_filter_missing_include (const struct ccase *c, void *cfm_)
     {
       struct variable *var = cfm->vars[i];
       const union value *value = case_data (c, var);
-      if (var_is_value_missing (var, value, cfm->class))
+      if (var_is_value_missing (var, value) & cfm->class)
 	{
 	  if (cfm->n_missing)
 	    (*cfm->n_missing)++;

@@ -368,7 +368,7 @@ static void
 csv_write_var (struct csv_writer *w, const struct csv_var *cv,
                const union value *value)
 {
-  if (mv_is_value_missing (&cv->missing, value, MV_USER))
+  if (mv_is_value_missing (&cv->missing, value) == MV_USER)
     {
       union value missing;
 

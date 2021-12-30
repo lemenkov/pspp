@@ -873,7 +873,7 @@ apply_nonmissing_case (const struct comb_file *file, struct ccase *output)
         = case_data_idx (file->data, src_field->case_index);
       int width = src_field->width;
 
-      if (!mv_is_value_missing (file->mv[i], src_value, MV_ANY)
+      if (!mv_is_value_missing (file->mv[i], src_value)
           && !(width > 0 && value_is_spaces (src_value, width)))
         value_copy (case_data_rw_idx (output, dst_field->case_index),
                     src_value, width);

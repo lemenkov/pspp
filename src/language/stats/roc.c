@@ -674,7 +674,8 @@ prepare_cutpoints (struct cmd_roc *roc, struct roc_state *rs, struct casereader 
 	  const union value *v = case_data (c, roc->vars[i]);
 	  const double result = v->f;
 
-	  if (mv_is_value_missing (var_get_missing_values (roc->vars[i]), v, roc->exclude))
+	  if (mv_is_value_missing (var_get_missing_values (roc->vars[i]), v)
+              & roc->exclude)
 	    continue;
 
 	  minimize (&rs[i].min, result);

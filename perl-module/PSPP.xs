@@ -149,7 +149,7 @@ value_to_scalar (const union value *val, const struct variable *var)
 {
   if ( var_is_numeric (var))
     {
-      if ( var_is_value_missing (var, val, MV_SYSTEM))
+      if (var_is_value_missing (var, val) == MV_SYSTEM)
 	return newSVpvn ("", 0);
 
       return newSVnv (val->f);
@@ -240,7 +240,7 @@ CODE:
  union value uv;
  int ret;
  make_value_from_scalar (&uv, val, var);
- ret = var_is_value_missing (var, &uv, MV_ANY);
+ ret = var_is_value_missing (var, &uv) != 0;
  value_destroy (&uv, var_get_width (var));
  RETVAL = ret;
  OUTPUT:

@@ -772,7 +772,7 @@ run_oneway (const struct oneway_spec *cmd,
 
 	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if (var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val) & cmd->exclude)
 		continue;
 	    }
 
@@ -795,7 +795,7 @@ run_oneway (const struct oneway_spec *cmd,
 
 	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if (var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val) & cmd->exclude)
 		continue;
 	    }
 
@@ -819,7 +819,7 @@ run_oneway (const struct oneway_spec *cmd,
 
 	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if (var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val) & cmd->exclude)
 		continue;
 	    }
 

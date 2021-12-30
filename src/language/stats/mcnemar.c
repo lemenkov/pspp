@@ -100,10 +100,10 @@ mcnemar_execute (const struct dataset *ds,
 	  const union value *value0 = case_data (c, (*vp)[0]);
 	  const union value *value1 = case_data (c, (*vp)[1]);
 
-	  if (var_is_value_missing ((*vp)[0], value0, exclude))
+	  if (var_is_value_missing ((*vp)[0], value0) & exclude)
 	    continue;
 
-	  if (var_is_value_missing ((*vp)[1], value1, exclude))
+	  if (var_is_value_missing ((*vp)[1], value1) & exclude)
 	    continue;
 
 

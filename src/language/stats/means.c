@@ -868,7 +868,7 @@ control_var_missing (const struct means *means,
       const struct variable *var = layer->factor_vars[ws->control_idx[l]];
       const union value *vv = case_data (c, var);
 
-      miss = var_is_value_missing (var, vv, means->ctrl_exclude);
+      miss = (var_is_value_missing (var, vv) & means->ctrl_exclude) != 0;
       if (miss)
 	break;
     }
@@ -930,7 +930,7 @@ service_cell_map (const struct means *means, const struct mtable *mt,
             {
               const struct variable *dep_var = mt->dep_vars[v];
 	      const union value *vv = case_data (c, dep_var);
-	      if (var_is_value_missing (dep_var, vv, means->dep_exclude))
+	      if (var_is_value_missing (dep_var, vv) & means->dep_exclude)
 		continue;
 
               for (int stat = 0; stat < means->n_statistics; ++stat)
@@ -1047,7 +1047,7 @@ update_summaries (const struct means *means, struct mtable *mt,
 	  const struct variable *var = mt->dep_vars[dv];
 	  const union value *vv = case_data (c, var);
 	  /* First check if the dependent variable is missing.  */
-	  if (var_is_value_missing (var, vv, means->dep_exclude))
+	  if (var_is_value_missing (var, vv) & means->dep_exclude)
 	    summ->n_missing += weight;
 	  /* If the dep var is not missing, then check each
 	     control variable.  */
@@ -1058,7 +1058,7 @@ update_summaries (const struct means *means, struct mtable *mt,
 		const struct variable *var
 		  = layer->factor_vars[ws->control_idx[l]];
 		const union value *vv = case_data (c, var);
-		if (var_is_value_missing (var, vv, means->ctrl_exclude))
+		if (var_is_value_missing (var, vv) & means->ctrl_exclude)
 		  {
 		    summ->n_missing += weight;
 		    break;

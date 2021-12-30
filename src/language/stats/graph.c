@@ -430,8 +430,8 @@ run_barchart (struct graph *cmd, struct casereader *input)
       for (v = 0; v < cmd->n_by_vars; ++v)
 	{
 	  if (var_is_value_missing (cmd->by_var[v],
-				    case_data (c, cmd->by_var[v]),
-				    cmd->fctr_excl))
+				    case_data (c, cmd->by_var[v]))
+              & cmd->fctr_excl)
 	    break;
 	}
 
@@ -619,7 +619,7 @@ run_graph (struct graph *cmd, struct casereader *input)
 	  const struct variable *var = cmd->dep_vars[v];
 	  const double x = case_num (c, var);
 
-	  if (var_is_value_missing (var, case_data (c, var), cmd->dep_excl))
+	  if (var_is_value_missing (var, case_data (c, var)) & cmd->dep_excl)
 	    {
 	      cmd->es[v].missing += weight;
 	      continue;
@@ -908,7 +908,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
                 }
               else if (lex_match_id (lexer, "REPORT"))
                 {
-                  graph.fctr_excl = MV_NEVER;
+                  graph.fctr_excl = 0;
                 }
               else if (lex_match_id (lexer, "NOREPORT"))
                 {

@@ -408,7 +408,7 @@ not_missing (const void *f_, const void *v_)
   const struct freq *f = f_;
   const struct variable *v = v_;
 
-  return !var_is_value_missing (v, f->values, MV_ANY);
+  return !var_is_value_missing (v, f->values);
 }
 
 
@@ -1288,7 +1288,7 @@ chart_includes_value (const struct frq_chart *chart,
                       const struct variable *var,
                       const union value *value)
 {
-  if (!chart->include_missing && var_is_value_missing (var, value, MV_ANY))
+  if (!chart->include_missing && var_is_value_missing (var, value))
     return false;
 
   if (var_is_numeric (var)

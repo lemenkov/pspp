@@ -167,7 +167,7 @@ ks_one_sample_execute (const struct dataset *ds,
 	  const struct variable *var = ost->vars[v];
 	  const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val, exclude))
+	  if (var_is_value_missing (var, val) & exclude)
 	    continue;
 
 	  minimize (&ks[v].test_min, val->f);
@@ -230,7 +230,7 @@ ks_one_sample_execute (const struct dataset *ds,
 	  const double weight = dict_get_case_weight (dict, c, &warn);
 	  const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val, exclude))
+	  if (var_is_value_missing (var, val) & exclude)
 	    continue;
 
 	  cc += weight;

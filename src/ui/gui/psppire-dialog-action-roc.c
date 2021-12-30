@@ -63,7 +63,7 @@ dialog_state_valid (gpointer data)
 
   result = psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (rd->state_value), &val, width);
 
-  if (var_is_value_missing (var, &val, MV_SYSTEM))
+  if (var_is_value_missing (var, &val) == MV_SYSTEM)
       result = FALSE;
 
   value_destroy (&val, width);

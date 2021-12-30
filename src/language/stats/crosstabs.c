@@ -321,7 +321,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
           else if (lex_match_id (lexer, "INCLUDE"))
             proc.exclude = MV_SYSTEM;
           else if (lex_match_id (lexer, "REPORT"))
-            proc.exclude = MV_NEVER;
+            proc.exclude = 0;
           else
             {
               lex_error (lexer, NULL);
@@ -470,7 +470,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   assert (proc.n_cells < CRS_N_CELLS);
 
   /* Missing values. */
-  if (proc.mode == GENERAL && proc.exclude == MV_NEVER)
+  if (proc.mode == GENERAL && !proc.exclude)
     {
       msg (SE, _("Missing mode %s not allowed in general mode.  "
 		 "Assuming %s."), "REPORT", "MISSING=TABLE");
@@ -745,7 +745,7 @@ should_tabulate_case (const struct crosstabulation *xt, const struct ccase *c,
       const struct variable *var = xt->vars[j].var;
       const struct var_range *range = get_var_range (xt->proc, var);
 
-      if (var_is_value_missing (var, case_data (c, var), exclude))
+      if (var_is_value_missing (var, case_data (c, var)) & exclude)
         return false;
 
       if (range != NULL)
@@ -1191,7 +1191,7 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       if (table)
         display_crosstabulation (proc, &x, table, crs_leaves);
 
-      if (proc->exclude == MV_NEVER)
+      if (proc->exclude == 0)
 	delete_missing (&x);
 
       if (chisq)
@@ -1335,7 +1335,7 @@ add_var_dimension (struct pivot_table *table, const struct xtab_var *var,
     {
       struct pivot_value *value = pivot_value_new_var_value (
         var->var, &var->values[j]);
-      if (var_is_value_missing (var->var, &var->values[j], MV_ANY))
+      if (var_is_value_missing (var->var, &var->values[j]))
         pivot_value_add_footnote (value, missing_footnote);
       pivot_category_create_leaf (group, value);
     }
@@ -1562,7 +1562,7 @@ delete_missing (struct crosstabulation *xt)
 
   for (r = 0; r < n_rows; r++)
     if (var_is_num_missing (xt->vars[ROW_VAR].var,
-                            xt->vars[ROW_VAR].values[r].f, MV_USER))
+                            xt->vars[ROW_VAR].values[r].f) == MV_USER)
       {
         for (c = 0; c < n_cols; c++)
           xt->mat[c + r * n_cols] = 0.;
@@ -1572,7 +1572,7 @@ delete_missing (struct crosstabulation *xt)
 
   for (c = 0; c < n_cols; c++)
     if (var_is_num_missing (xt->vars[COL_VAR].var,
-                            xt->vars[COL_VAR].values[c].f, MV_USER))
+                            xt->vars[COL_VAR].values[c].f) == MV_USER)
       {
         for (r = 0; r < n_rows; r++)
           xt->mat[c + r * n_cols] = 0.;

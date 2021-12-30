@@ -910,7 +910,7 @@ filter_trns_proc (void *filter_var_,
 {
   struct variable *filter_var = filter_var_;
   double f = case_num (*c, filter_var);
-  return (f != 0.0 && !var_is_num_missing (filter_var, f, MV_ANY)
+  return (f != 0.0 && !var_is_num_missing (filter_var, f)
           ? TRNS_CONTINUE : TRNS_DROP_CASE);
 }
 

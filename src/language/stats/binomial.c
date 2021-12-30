@@ -108,7 +108,7 @@ do_binomial (const struct dictionary *dict,
 	  const struct variable *var = ost->vars[v];
 	  double value = case_num (c, var);
 
-	  if (var_is_num_missing (var, value, exclude))
+	  if (var_is_num_missing (var, value) & exclude)
 	    continue;
 
 	  if (bst->cutpoint != SYSMIS)

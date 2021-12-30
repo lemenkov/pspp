@@ -439,32 +439,28 @@ var_has_missing_values (const struct variable *v)
   return !mv_is_empty (&v->miss);
 }
 
-/* Returns true if VALUE is in the given CLASS of missing values
-   in V, false otherwise. */
-bool
-var_is_value_missing (const struct variable *v, const union value *value,
-                      enum mv_class class)
+/* Returns MV_SYSTEM if VALUE is system-missing, MV_USER if VALUE is
+   user-missing for V, and otherwise 0. */
+enum mv_class
+var_is_value_missing (const struct variable *v, const union value *value)
 {
-  return mv_is_value_missing (&v->miss, value, class);
+  return mv_is_value_missing (&v->miss, value);
 }
 
-/* Returns true if D is in the given CLASS of missing values in
-   V, false otherwise.
-   V must be a numeric variable. */
-bool
-var_is_num_missing (const struct variable *v, double d, enum mv_class class)
+/* Returns MV_SYSTEM if VALUE is system-missing, MV_USER if VALUE is
+   user-missing for V, and otherwise 0.  V must be a numeric variable. */
+enum mv_class
+var_is_num_missing (const struct variable *v, double d)
 {
-  return mv_is_num_missing (&v->miss, d, class);
+  return mv_is_num_missing (&v->miss, d);
 }
 
-/* Returns true if S[] is a missing value for V, false otherwise.
-   S[] must contain exactly as many characters as V's width.
-   V must be a string variable. */
-bool
-var_is_str_missing (const struct variable *v, const uint8_t s[],
-                    enum mv_class class)
+/* Returns MV_USER if VALUE is user-missing for V and otherwise 0.  V must be
+   a string variable. */
+enum mv_class
+var_is_str_missing (const struct variable *v, const uint8_t s[])
 {
-  return mv_is_str_missing (&v->miss, s, class);
+  return mv_is_str_missing (&v->miss, s);
 }
 
 /* Returns variable V's value labels,
@@ -1330,7 +1326,7 @@ var_clear_vardict (struct variable *v)
 double
 var_force_valid_weight (const struct variable *wv, double w, bool *warn_on_invalid)
 {
-  if (w < 0.0 || (wv && var_is_num_missing (wv, w, MV_ANY)))
+  if (w < 0.0 || (wv && var_is_num_missing (wv, w)))
     w = 0.0;
 
   if (w == 0.0 && warn_on_invalid != NULL && *warn_on_invalid)

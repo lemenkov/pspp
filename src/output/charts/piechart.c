@@ -50,7 +50,7 @@ piechart_create (const struct variable *var, const struct freq *slices, int n_sl
 
       ds_init_empty (&dst->label);
 
-      if (var_is_value_missing (var, &src->values[0], MV_ANY))
+      if (var_is_value_missing (var, &src->values[0]))
 	ds_assign_cstr (&dst->label, _("*MISSING*"));
       else
 	var_append_value_name (var, &src->values[0], &dst->label);

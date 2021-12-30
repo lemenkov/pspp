@@ -300,7 +300,7 @@ count_numeric (struct criteria *crit, const struct ccase *c)
             break;
           }
 
-      if (var_is_num_missing (crit->vars[i], x, MV_ANY)
+      if (var_is_num_missing (crit->vars[i], x)
           && (x == SYSMIS
               ? crit->count_system_missing
               : crit->count_user_missing))

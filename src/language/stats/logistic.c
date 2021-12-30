@@ -478,7 +478,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
       double weight = dict_get_case_weight (cmd->dict, c, &res->warn_bad_weight);
       const union value *depval = case_data (c, cmd->dep_var);
 
-      if (var_is_value_missing (cmd->dep_var, depval, cmd->exclude))
+      if (var_is_value_missing (cmd->dep_var, depval) & cmd->exclude)
 	{
 	  missing = true;
 	}
@@ -486,7 +486,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
       for (v = 0; v < cmd->n_indep_vars; ++v)
 	{
 	  const union value *val = case_data (c, cmd->indep_vars[v]);
-	  if (var_is_value_missing (cmd->indep_vars[v], val, cmd->exclude))
+	  if (var_is_value_missing (cmd->indep_vars[v], val) & cmd->exclude)
 	    {
 	      missing = true;
 	      break;

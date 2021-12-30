@@ -71,7 +71,7 @@ static void
 append_value_name (const struct variable *var, const union value *val, struct string *str)
 {
   var_append_value_name (var, val, str);
-  if (var_is_value_missing (var, val, MV_ANY))
+  if (var_is_value_missing (var, val))
     ds_put_cstr (str, _(" (missing)"));
 }
 
@@ -551,7 +551,7 @@ new_value_with_missing_footnote (const struct variable *var,
                                  struct pivot_footnote *missing_footnote)
 {
   struct pivot_value *pv = pivot_value_new_var_value (var, value);
-  if (var_is_value_missing (var, value, MV_USER))
+  if (var_is_value_missing (var, value) == MV_USER)
     pivot_value_add_footnote (pv, missing_footnote);
   return pv;
 }
@@ -1053,7 +1053,8 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
 	{
 	  const struct variable *var = examine->dep_vars[v];
 
-	  if (var_is_value_missing (var, case_data (c, var), examine->dep_excl))
+	  if (var_is_value_missing (var, case_data (c, var))
+              & examine->dep_excl)
 	    {
 	      es[v].missing += weight;
 	      this_case_is_missing = true;
@@ -1070,7 +1071,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
       const struct variable *var = examine->dep_vars[v];
       const double x = case_num (c, var);
 
-      if (var_is_value_missing (var, case_data (c, var), examine->dep_excl))
+      if (var_is_value_missing (var, case_data (c, var)) & examine->dep_excl)
         {
           es[v].missing += weight;
           continue;
@@ -1660,7 +1661,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 }
               else if (lex_match_id (lexer, "REPORT"))
                 {
-                  examine.fctr_excl = MV_NEVER;
+                  examine.fctr_excl = 0;
                 }
               else if (lex_match_id (lexer, "NOREPORT"))
                 {

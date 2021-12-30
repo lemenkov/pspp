@@ -439,67 +439,63 @@ is_str_user_missing (const struct missing_values *mv, const uint8_t s[])
   NOT_REACHED ();
 }
 
-/* Returns true if V is a missing value in the given CLASS in MV,
-   false otherwise. */
-bool
-mv_is_value_missing (const struct missing_values *mv, const union value *v,
-                     enum mv_class class)
+/* Returns MV_USER if V is a user-missing value in MV, MV_SYSTEM if V is
+   system-missing (and MV is numeric), or 0 if V is not missing. */
+enum mv_class
+mv_is_value_missing (const struct missing_values *mv, const union value *v)
 {
   return (mv->width == 0
-          ? mv_is_num_missing (mv, v->f, class)
-          : mv_is_str_missing (mv, v->s, class));
+          ? mv_is_num_missing (mv, v->f)
+          : mv_is_str_missing (mv, v->s));
 }
 
-/* Returns true if D is a missing value in the given CLASS in MV,
-   false otherwise.
-   MV must be a set of numeric missing values. */
-bool
-mv_is_num_missing (const struct missing_values *mv, double d,
-                   enum mv_class class)
+/* Returns MV_USER if V is a user-missing value in MV, MV_SYSTEM if V is
+   system-missing, or 0 if V is not missing.  MV must be a set of numeric
+   missing values. */
+enum mv_class
+mv_is_num_missing (const struct missing_values *mv, double d)
 {
   assert (mv->width == 0);
-  return ((class & MV_SYSTEM && d == SYSMIS)
-          || (class & MV_USER && is_num_user_missing (mv, d)));
+  return (d == SYSMIS ? MV_SYSTEM
+          : is_num_user_missing (mv, d) ? MV_USER
+          : 0);
 }
 
-/* Returns true if S[] is a missing value in the given CLASS in
-   MV, false otherwise.
-   MV must be a set of string missing values.
-   S[] must contain exactly as many characters as MV's width. */
-bool
-mv_is_str_missing (const struct missing_values *mv, const uint8_t s[],
-                   enum mv_class class)
+/* Returns MV_USER if S[] is a user-missing value in MV, or 0 if V is not
+   missing.  MV must be a set of string missing values.  S[] must contain
+   exactly as many characters as MV's width. */
+enum mv_class
+mv_is_str_missing (const struct missing_values *mv, const uint8_t s[])
 {
   assert (mv->width > 0);
-  return class & MV_USER && is_str_user_missing (mv, s);
+  return is_str_user_missing (mv, s) ? MV_USER : 0;
 }
 
-/* Like mv_is_value_missing(), this tests whether V is a missing value
-   in the given CLASS in MV.  It supports the uncommon case where V
-   and MV might have different widths: the caller must specify VW, the
-   width of V.  MV and VW must be both numeric or both string.
+/* Like mv_is_value_missing(), this tests whether V is a missing value in MV.
+   It supports the uncommon case where V and MV might have different widths:
+   the caller must specify VW, the width of V.  MV and VW must be both numeric
+   or both string.
 
-   Comparison of strings of different width is done by conceptually
-   extending both strings to infinite width by appending spaces. */
-bool
+   Comparison of strings of different width is done by conceptually extending
+   both strings to infinite width by appending spaces. */
+enum mv_class
 mv_is_value_missing_varwidth (const struct missing_values *mv,
-                              const union value *v, int vw,
-                              enum mv_class class)
+                              const union value *v, int vw)
 {
   int mvw = mv->width;
   if (mvw == vw)
-    return mv_is_value_missing (mv, v, class);
+    return mv_is_value_missing (mv, v);
 
   /* Make sure they're both strings. */
   assert (mvw && vw);
-  if (!(class & MV_USER) || mv->type == MVT_NONE)
+  if (mv->type == MVT_NONE)
     return false;
 
   for (int i = 0; i < mv->type; i++)
     if (!buf_compare_rpad (CHAR_CAST_BUG (const char *, mv->values[i].s), mvw,
                            CHAR_CAST_BUG (const char *, v->s), vw))
-      return true;
-  return false;
+      return MV_USER;
+  return 0;
 }
 
 char *

@@ -72,7 +72,7 @@ xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
 		{
 		  struct string label;
 		  ds_init_empty (&label);
-		  if (var_is_value_missing (spc->byvar,val,MV_ANY))
+		  if (var_is_value_missing (spc->byvar,val))
 		    ds_put_cstr (&label,"missing");
 		  else
 		    var_append_value_name (spc->byvar,val,&label);

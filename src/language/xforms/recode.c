@@ -615,7 +615,7 @@ find_src_numeric (struct recode_trns *trns, double value, const struct variable 
           match = value == in->x.f;
           break;
         case MAP_MISSING:
-          match = var_is_num_missing (v, value, MV_ANY);
+          match = var_is_num_missing (v, value) != 0;
           break;
         case MAP_RANGE:
           match = value >= in->x.f && value <= in->y.f;
@@ -676,7 +676,7 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
             break;
           }
 	case MAP_MISSING:
-	  match = var_is_str_missing (src_var, value, MV_ANY);
+	  match = var_is_str_missing (src_var, value) != 0;
 	  break;
         default:
           NOT_REACHED ();

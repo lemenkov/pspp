@@ -628,7 +628,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
   if (t->filter)
     {
       double f = case_num (*c, t->filter);
-      if (f == 0.0 || var_is_num_missing (t->filter, f, MV_ANY))
+      if (f == 0.0 || var_is_num_missing (t->filter, f))
         {
           descriptives_set_all_sysmis_zscores (t, *c);
           return TRNS_CONTINUE;
@@ -673,7 +673,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
       for (vars = t->vars; vars < t->vars + t->n_vars; vars++)
 	{
 	  double score = case_num (*c, *vars);
-	  if (var_is_num_missing (*vars, score, t->exclude))
+	  if (var_is_num_missing (*vars, score) & t->exclude)
 	    {
               descriptives_set_all_sysmis_zscores (t, *c);
 	      return TRNS_CONTINUE;
@@ -687,7 +687,7 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
       double *output = case_num_rw (*c, z->z_var);
 
       if (z->mean == SYSMIS || z->std_dev == SYSMIS
-          || var_is_num_missing (z->src_var, input, t->exclude))
+          || var_is_num_missing (z->src_var, input) & t->exclude)
 	*output = SYSMIS;
       else
 	*output = (input - z->mean) / z->std_dev;
@@ -829,7 +829,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
       if (filter)
         {
           double f = case_num (c, filter);
-          if (f == 0.0 || var_is_num_missing (filter, f, MV_ANY))
+          if (f == 0.0 || var_is_num_missing (filter, f))
             continue;
         }
 
@@ -847,7 +847,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
           struct dsc_var *dv = &dsc->vars[i];
           double x = case_num (c, dv->v);
 
-          if (var_is_num_missing (dv->v, x, dsc->exclude))
+          if (var_is_num_missing (dv->v, x) & dsc->exclude)
             {
               dv->missing += weight;
               continue;
@@ -880,7 +880,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
           if (filter)
             {
               double f = case_num (c, filter);
-              if (f == 0.0 || var_is_num_missing (filter, f, MV_ANY))
+              if (f == 0.0 || var_is_num_missing (filter, f))
                 continue;
             }
 
@@ -893,7 +893,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
               struct dsc_var *dv = &dsc->vars[i];
               double x = case_num (c, dv->v);
 
-              if (var_is_num_missing (dv->v, x, dsc->exclude))
+              if (var_is_num_missing (dv->v, x) & dsc->exclude)
                 continue;
 
               if (dv->moments != NULL)
@@ -974,7 +974,7 @@ listwise_missing (struct dsc_proc *dsc, const struct ccase *c)
       struct dsc_var *dv = &dsc->vars[i];
       double x = case_num (c, dv->v);
 
-      if (var_is_num_missing (dv->v, x, dsc->exclude))
+      if (var_is_num_missing (dv->v, x) & dsc->exclude)
         return true;
     }
   return false;

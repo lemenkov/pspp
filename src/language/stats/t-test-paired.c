@@ -87,10 +87,10 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
           struct pair_stats *pp = &ps.ps[i];
 	  const union value *val0 = case_data (c, pp->var0);
 	  const union value *val1 = case_data (c, pp->var1);
-          if (var_is_value_missing (pp->var0, val0, tt->exclude))
+          if (var_is_value_missing (pp->var0, val0) & tt->exclude)
 	    continue;
 
-          if (var_is_value_missing (pp->var1, val1, tt->exclude))
+          if (var_is_value_missing (pp->var1, val1) & tt->exclude)
 	    continue;
 
 	  moments_pass_one (pp->mom0, val0->f, w);
@@ -110,10 +110,10 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
           struct pair_stats *pp = &ps.ps[i];
 	  const union value *val0 = case_data (c, pp->var0);
 	  const union value *val1 = case_data (c, pp->var1);
-          if (var_is_value_missing (pp->var0, val0, tt->exclude))
+          if (var_is_value_missing (pp->var0, val0) & tt->exclude)
 	    continue;
 
-          if (var_is_value_missing (pp->var1, val1, tt->exclude))
+          if (var_is_value_missing (pp->var1, val1) & tt->exclude)
 	    continue;
 
 	  moments_pass_two (pp->mom0, val0->f, w);

@@ -105,7 +105,7 @@ value_entry_contains_invalid (PsppireValueEntry *ve, const struct variable *var)
 
       if (psppire_value_entry_get_value (ve, &val, width))
 	{
-	  if (var_is_value_missing (var, &val, MV_SYSTEM))
+	  if (var_is_value_missing (var, &val) == MV_SYSTEM)
 	    {
 	      result = TRUE;
 	    }

@@ -181,7 +181,7 @@ static char *
 unlabeled_value (PsppireDataStore *store, const struct variable *variable, const union value *val)
 {
   if (var_is_numeric (variable) &&
-      var_is_value_missing (variable, val, MV_SYSTEM))
+      var_is_value_missing (variable, val) == MV_SYSTEM)
     return g_strdup ("");
 
   const struct fmt_spec *fmt = var_get_print_format (variable);

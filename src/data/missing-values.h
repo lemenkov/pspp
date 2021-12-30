@@ -51,24 +51,26 @@ struct missing_values
     union value values[3];      /* Missing values.  [1], [2] are the range. */
   };
 
-/* Classes of missing values. */
+/* Classes of missing values.
+
+   These are useful as individual values and as masks, and they are used both
+   ways. */
 enum mv_class
   {
-    MV_NEVER = 0,               /* Never considered missing. */
-    MV_USER = 1,                /* Missing if value is user-missing. */
-    MV_SYSTEM = 2,              /* Missing if value is system-missing. */
-    MV_ANY = MV_USER | MV_SYSTEM /* Missing if it is user or system-missing. */
+    MV_USER = 1,                /* User-missing. */
+    MV_SYSTEM = 2               /* System-missing. */
+#define MV_ANY (MV_USER | MV_SYSTEM)
   };
 
 /* Is a value missing? */
-bool mv_is_value_missing (const struct missing_values *, const union value *,
-                          enum mv_class);
-bool mv_is_num_missing (const struct missing_values *, double, enum mv_class);
-bool mv_is_str_missing (const struct missing_values *, const uint8_t[],
-                        enum mv_class);
-bool mv_is_value_missing_varwidth (const struct missing_values *,
-                                   const union value *, int value_width,
-                                   enum mv_class);
+enum mv_class mv_is_value_missing (const struct missing_values *,
+                                   const union value *);
+enum mv_class mv_is_num_missing (const struct missing_values *, double);
+enum mv_class mv_is_str_missing (const struct missing_values *,
+                                 const uint8_t[]);
+enum mv_class mv_is_value_missing_varwidth (const struct missing_values *,
+                                            const union value *,
+                                            int value_width);
 
 /* Initializing missing value sets. */
 void mv_init (struct missing_values *, int width);

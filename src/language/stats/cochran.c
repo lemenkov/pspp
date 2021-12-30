@@ -86,7 +86,7 @@ cochran_execute (const struct dataset *ds,
 	  const struct variable *var = ct->vars[v];
 	  const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val, exclude))
+	  if (var_is_value_missing (var, val) & exclude)
 	    continue;
 
 	  if (ch.success == SYSMIS)
