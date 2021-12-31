@@ -457,9 +457,9 @@ moments1_destroy (struct moments1 *m)
 
 
 double
-calc_semean (double var, double W)
+calc_semean (double variance, double W)
 {
-  return sqrt (var / W);
+  return sqrt (variance / W);
 }
 
 /* Returns the standard error of the skewness for the given total
