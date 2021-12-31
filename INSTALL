@@ -222,6 +222,43 @@ will need not only the dependent libraries for your target, but also for the
 build machine.   This is because the native version is used to create
 examples for the user manual.
 
+To do a windows cross compilation on a debian build machine, the mingw64
+cross build system can be used. First you have to install the build
+dependencies with
+
+sudo apt install -y build-essential python3 perl texinfo texlive \
+        libgsl-dev libgtk-3-dev libgtksourceview-3.0-dev \
+        pkg-config gperf git zip curl autoconf libtool \
+        gettext libreadline-dev appstream \
+        mingw-w64 meson ninja-build \
+        imagemagick wget nsis texlive-plain-generic
+
+To build windows 64bit installers from the latest nightly do the following steps
+
+mkdir sandbox
+sandboxdir=`pwd`/sandbox
+curl -o pspp.tgz https://benpfaff.org/~blp/pspp-master/latest-source.tar.gz
+tar -xzf pspp.tgz
+./pspp-<version>/Windows/build-dependencies --arch=x86_64-w64-mingw32 --sandbox=$sandboxdir
+mkdir build
+cd build
+../pspp-<version>/configure --host="x86_64-w64-mingw32" \
+  CPPFLAGS="-I$sandboxdir/Install/include" \
+  LDFLAGS="-L$sandboxdir/Install/lib" \
+  PKG_CONFIG_LIBDIR="$sandboxdir/Install/lib/pkgconfig" \
+  --prefix=$sandboxdir/psppinst \
+  --enable-relocatable
+make -j4
+make install
+make install-html
+make install-pdf
+make Windows/installers
+
+The windows installers are then available in the build/Windows directory. Note that
+building via mingw64-configure/make does not work because some example outputs for the
+documentation are created during the build process. That requires a native version also
+during the cross compile build which does not work with mingw64-configure.
+
 See "Defining Variables", below, for more details.
 
 Installation Names
