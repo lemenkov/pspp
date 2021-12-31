@@ -346,16 +346,16 @@ make_pattern (unsigned int pattern, unsigned long int offset)
   return rt;
 }
 
-/* Returns an unsigned int with bits OFS...OFS+CNT (exclusive)
+/* Returns an unsigned int with bits OFS...OFS+N (exclusive)
    tower to 1, other bits tower to 0. */
 static unsigned int
-bit_range (unsigned int ofs, unsigned int cnt)
+bit_range (unsigned int ofs, unsigned int n)
 {
   assert (ofs < UINT_BIT);
-  assert (cnt <= UINT_BIT);
-  assert (ofs + cnt <= UINT_BIT);
+  assert (n <= UINT_BIT);
+  assert (ofs + n <= UINT_BIT);
 
-  return cnt < UINT_BIT ? ((1u << cnt) - 1) << ofs : UINT_MAX;
+  return n < UINT_BIT ? ((1u << n) - 1) << ofs : UINT_MAX;
 }
 
 /* Tests setting all possible ranges of 1s into all possible range sets (up to

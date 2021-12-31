@@ -62,15 +62,15 @@ bool parse_var_set_vars (struct lexer *, const struct var_set *, struct variable
 
 char *parse_DATA_LIST_var (struct lexer *, const struct dictionary *);
 bool parse_DATA_LIST_vars (struct lexer *, const struct dictionary *,
-                           char ***names, size_t *cnt, int opts);
+                           char ***names, size_t *n, int opts);
 bool parse_DATA_LIST_vars_pool (struct lexer *, const struct dictionary *,
                                 struct pool *,
-                                char ***names, size_t *cnt, int opts);
+                                char ***names, size_t *n, int opts);
 bool parse_mixed_vars (struct lexer *, const struct dictionary *dict,
-		       char ***names, size_t *cnt, int opts);
+		       char ***names, size_t *n, int opts);
 bool parse_mixed_vars_pool (struct lexer *, const struct dictionary *dict,
 			    struct pool *,
-                           char ***names, size_t *cnt, int opts);
+                           char ***names, size_t *n, int opts);
 
 /* This variable parser supports the unusual situation where set of variables
    has to be parsed before the associated dictionary is available.  Thus,

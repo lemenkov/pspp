@@ -150,13 +150,13 @@ struct casereader_random_class
 
     /* Mandatory.
 
-       A call to this function tells the callee that the CNT
+       A call to this function tells the callee that the N
        cases at the beginning of READER will never be read again.
        The casereader implementation should free any resources
        associated with those cases.  After this function returns,
        the IDX argument in future calls to the "read" function
        will be relative to remaining cases. */
-    void (*advance) (struct casereader *reader, void *aux, casenumber cnt);
+    void (*advance) (struct casereader *reader, void *aux, casenumber n);
   };
 
 struct casereader *

@@ -152,18 +152,18 @@ swap (int *a, int *b)
   *b = t;
 }
 
-/* Reverses the order of the CNT integers starting at VALUES. */
+/* Reverses the order of the N integers starting at VALUES. */
 static void
-reverse (int *values, size_t cnt)
+reverse (int *values, size_t n)
 {
   size_t i = 0;
-  size_t j = cnt;
+  size_t j = n;
 
   while (j > i)
     swap (&values[i++], &values[--j]);
 }
 
-/* Arranges the CNT elements in VALUES into the lexicographically
+/* Arranges the N elements in VALUES into the lexicographically
    next greater permutation.  Returns true if successful.
    If VALUES is already the lexicographically greatest
    permutation of its elements (i.e. ordered from greatest to
@@ -171,26 +171,26 @@ reverse (int *values, size_t cnt)
    permutation (i.e. ordered from smallest to largest) and
    returns false. */
 static bool
-next_permutation (int *values, size_t cnt)
+next_permutation (int *values, size_t n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      size_t i = cnt - 1;
+      size_t i = n - 1;
       while (i != 0)
         {
           i--;
           if (values[i] < values[i + 1])
             {
               size_t j;
-              for (j = cnt - 1; values[i] >= values[j]; j--)
+              for (j = n - 1; values[i] >= values[j]; j--)
                 continue;
               swap (values + i, values + j);
-              reverse (values + (i + 1), cnt - (i + 1));
+              reverse (values + (i + 1), n - (i + 1));
               return true;
             }
         }
 
-      reverse (values, cnt);
+      reverse (values, n);
     }
 
   return false;
@@ -206,18 +206,18 @@ factorial (unsigned int n)
   return value;
 }
 
-/* Randomly shuffles the CNT elements in ARRAY, each of which is
+/* Randomly shuffles the N elements in ARRAY, each of which is
    SIZE bytes in size. */
 static void
-random_shuffle (void *array_, size_t cnt, size_t size)
+random_shuffle (void *array_, size_t n, size_t size)
 {
   char *array = array_;
   char *tmp = xmalloc (size);
   size_t i;
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
-      size_t j = rand () % (cnt - i) + i;
+      size_t j = rand () % (n - i) + i;
       if (i != j)
         {
           memcpy (tmp, array + j * size, size);
@@ -281,20 +281,20 @@ check_balance (struct bt *bt)
   check (height <= max_height);
 }
 
-/* Checks that BT contains the CNT ints in DATA, that its
+/* Checks that BT contains the N ints in DATA, that its
    structure is correct, and that certain operations on BT
    produce the expected results. */
 static void
-check_bt (struct bt *bt, const int data[], size_t cnt)
+check_bt (struct bt *bt, const int data[], size_t n)
 {
   struct element e;
   size_t i;
   int *order;
 
-  order = xmemdup (data, cnt * sizeof *data);
-  qsort (order, cnt, sizeof *order, compare_ints_noaux);
+  order = xmemdup (data, n * sizeof *data);
+  qsort (order, n, sizeof *order, compare_ints_noaux);
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       struct bt_node *p;
 
@@ -313,7 +313,7 @@ check_bt (struct bt *bt, const int data[], size_t cnt)
 
   check_balance (bt);
 
-  if (cnt == 0)
+  if (n == 0)
     {
       check (bt_first (bt) == NULL);
       check (bt_last (bt) == NULL);
@@ -324,46 +324,46 @@ check_bt (struct bt *bt, const int data[], size_t cnt)
     {
       struct bt_node *p;
 
-      for (p = bt_first (bt), i = 0; i < cnt; p = bt_next (bt, p), i++)
+      for (p = bt_first (bt), i = 0; i < n; p = bt_next (bt, p), i++)
         check (bt_node_to_element (p)->data == order[i]);
       check (p == NULL);
 
-      for (p = bt_last (bt), i = 0; i < cnt; p = bt_prev (bt, p), i++)
-        check (bt_node_to_element (p)->data == order[cnt - i - 1]);
+      for (p = bt_last (bt), i = 0; i < n; p = bt_prev (bt, p), i++)
+        check (bt_node_to_element (p)->data == order[n - i - 1]);
       check (p == NULL);
     }
 
   free (order);
 }
 
-/* Inserts the CNT values from 0 to CNT - 1 (inclusive) into an
+/* Inserts the N values from 0 to N - 1 (inclusive) into an
    BT in the order specified by INSERTIONS, then deletes them in
    the order specified by DELETIONS, checking the BT's contents
    for correctness after each operation. */
 static void
 test_insert_delete (const int insertions[],
                     const int deletions[],
-                    size_t cnt)
+                    size_t n)
 {
   struct element *elements;
   struct bt bt;
   size_t i;
 
-  elements = xnmalloc (cnt, sizeof *elements);
-  for (i = 0; i < cnt; i++)
+  elements = xnmalloc (n, sizeof *elements);
+  for (i = 0; i < n; i++)
     elements[i].data = i;
 
   bt_init (&bt, compare_elements, &aux_data);
   check_bt (&bt, NULL, 0);
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       check (bt_insert (&bt, &elements[insertions[i]].node) == NULL);
       check_bt (&bt, insertions, i + 1);
     }
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       bt_delete (&bt, &elements[deletions[i]].node);
-      check_bt (&bt, deletions + i + 1, cnt - i - 1);
+      check_bt (&bt, deletions + i + 1, n - i - 1);
     }
 
   free (elements);
@@ -376,37 +376,37 @@ static void
 test_insert_any_remove_any (void)
 {
   const int max_elems = 5;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int ins_n_perms;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (ins_n_perms = 0;
-           ins_n_perms == 0 || next_permutation (insertions, cnt);
+           ins_n_perms == 0 || next_permutation (insertions, n);
            ins_n_perms++)
         {
           unsigned int del_n_perms;
           int i;
 
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             deletions[i] = i;
 
           for (del_n_perms = 0;
-               del_n_perms == 0 || next_permutation (deletions, cnt);
+               del_n_perms == 0 || next_permutation (deletions, n);
                del_n_perms++)
-            test_insert_delete (insertions, deletions, cnt);
+            test_insert_delete (insertions, deletions, n);
 
-          check (del_n_perms == factorial (cnt));
+          check (del_n_perms == factorial (n));
         }
-      check (ins_n_perms == factorial (cnt));
+      check (ins_n_perms == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -420,23 +420,23 @@ static void
 test_insert_any_remove_same (void)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values;
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
-        test_insert_delete (values, values, cnt);
-      check (n_permutations == factorial (cnt));
+        test_insert_delete (values, values, n);
+      check (n_permutations == factorial (n));
 
       free (values);
     }
@@ -449,29 +449,29 @@ static void
 test_insert_any_remove_reverse (void)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int n_permutations;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (insertions, cnt);
+           n_permutations == 0 || next_permutation (insertions, n);
            n_permutations++)
         {
-          memcpy (deletions, insertions, sizeof *insertions * cnt);
-          reverse (deletions, cnt);
+          memcpy (deletions, insertions, sizeof *insertions * n);
+          reverse (deletions, n);
 
-          test_insert_delete (insertions, deletions, cnt);
+          test_insert_delete (insertions, deletions, n);
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -484,27 +484,27 @@ test_random_sequence (void)
 {
   const int max_elems = 128;
   const int max_trials = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt += 2)
+  for (n = 0; n <= max_elems; n += 2)
     {
       int *insertions, *deletions;
       int trial;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         deletions[i] = i;
 
       for (trial = 0; trial < max_trials; trial++)
         {
-          random_shuffle (insertions, cnt, sizeof *insertions);
-          random_shuffle (deletions, cnt, sizeof *deletions);
+          random_shuffle (insertions, n, sizeof *insertions);
+          random_shuffle (deletions, n, sizeof *deletions);
 
-          test_insert_delete (insertions, deletions, cnt);
+          test_insert_delete (insertions, deletions, n);
         }
 
       free (insertions);
@@ -629,29 +629,29 @@ static void
 test_changed (void)
 {
   const int max_elems = 6;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values, *changed_values;
       struct element *elements;
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      changed_values = xnmalloc (cnt, sizeof *changed_values);
-      elements = xnmalloc (cnt, sizeof *elements);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      changed_values = xnmalloc (n, sizeof *changed_values);
+      elements = xnmalloc (n, sizeof *elements);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
         {
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             {
               int j, k;
-              for (j = 0; j <= cnt; j++)
+              for (j = 0; j <= n; j++)
                 {
                   struct bt bt;
                   struct bt_node *changed_retval;
@@ -659,37 +659,37 @@ test_changed (void)
                   bt_init (&bt, compare_elements, &aux_data);
 
                   /* Add to BT in order. */
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     {
                       int n = values[k];
                       elements[n].data = n;
                       check (bt_insert (&bt, &elements[n].node) == NULL);
                     }
-                  check_bt (&bt, values, cnt);
+                  check_bt (&bt, values, n);
 
                   /* Change value i to j. */
                   elements[i].data = j;
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     changed_values[k] = k;
                   changed_retval = bt_changed (&bt, &elements[i].node);
-                  if (i != j && j < cnt)
+                  if (i != j && j < n)
                     {
                       /* Will cause duplicate. */
                       check (changed_retval == &elements[j].node);
-                      changed_values[i] = changed_values[cnt - 1];
-                      check_bt (&bt, changed_values, cnt - 1);
+                      changed_values[i] = changed_values[n - 1];
+                      check_bt (&bt, changed_values, n - 1);
                     }
                   else
                     {
                       /* Succeeds. */
                       check (changed_retval == NULL);
                       changed_values[i] = j;
-                      check_bt (&bt, changed_values, cnt);
+                      check_bt (&bt, changed_values, n);
                     }
                 }
             }
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (values);
       free (changed_values);

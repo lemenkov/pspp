@@ -89,18 +89,18 @@ swap (int *a, int *b)
   *b = t;
 }
 
-/* Reverses the order of the CNT integers starting at VALUES. */
+/* Reverses the order of the N integers starting at VALUES. */
 static void
-reverse (int *values, size_t cnt)
+reverse (int *values, size_t n)
 {
   size_t i = 0;
-  size_t j = cnt;
+  size_t j = n;
 
   while (j > i)
     swap (&values[i++], &values[--j]);
 }
 
-/* Arranges the CNT blocks in VALUES into the lexicographically
+/* Arranges the N blocks in VALUES into the lexicographically
    next greater permutation.  Returns true if successful.
    If VALUES is already the lexicographically greatest
    permutation of its blocks (i.e. ordered from greatest to
@@ -108,26 +108,26 @@ reverse (int *values, size_t cnt)
    permutation (i.e. ordered from smallest to largest) and
    returns false. */
 static bool
-next_permutation (int *values, size_t cnt)
+next_permutation (int *values, size_t n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      size_t i = cnt - 1;
+      size_t i = n - 1;
       while (i != 0)
         {
           i--;
           if (values[i] < values[i + 1])
             {
               size_t j;
-              for (j = cnt - 1; values[i] >= values[j]; j--)
+              for (j = n - 1; values[i] >= values[j]; j--)
                 continue;
               swap (values + i, values + j);
-              reverse (values + (i + 1), cnt - (i + 1));
+              reverse (values + (i + 1), n - (i + 1));
               return true;
             }
         }
 
-      reverse (values, cnt);
+      reverse (values, n);
     }
 
   return false;
@@ -245,7 +245,7 @@ struct expected_block
     int x;              /* Expected value for `x' member. */
   };
 
-/* Checks that tower T contains the BLOCK_CNT blocks described by
+/* Checks that tower T contains the BLOCK_N blocks described by
    BLOCKS[]. */
 static void
 check_tower (struct tower *t,
@@ -306,9 +306,9 @@ static void
 test_insert (void)
 {
   const int max_height = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_height; cnt++)
+  for (n = 1; n <= max_height; n++)
     {
       unsigned int n_compositions;
       struct expected_block *expected;
@@ -317,14 +317,14 @@ test_insert (void)
       int *order;
       struct block *blocks;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      sizes = xnmalloc (cnt, sizeof *sizes);
-      order = xnmalloc (cnt, sizeof *order);
-      blocks = xnmalloc (cnt, sizeof *blocks);
+      expected = xnmalloc (n, sizeof *expected);
+      sizes = xnmalloc (n, sizeof *sizes);
+      order = xnmalloc (n, sizeof *order);
+      blocks = xnmalloc (n, sizeof *blocks);
 
       n_blocks = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_blocks, sizes))
+      while (next_composition (n, &n_blocks, sizes))
         {
           int i, j;
           unsigned int n_permutations;
@@ -372,7 +372,7 @@ test_insert (void)
 
           n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (sizes);
@@ -388,9 +388,9 @@ static void
 test_delete (void)
 {
   const int max_height = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_height; cnt++)
+  for (n = 1; n <= max_height; n++)
     {
       unsigned int n_compositions;
       struct expected_block *expected;
@@ -399,14 +399,14 @@ test_delete (void)
       int *order;
       struct block *blocks;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      sizes = xnmalloc (cnt, sizeof *sizes);
-      order = xnmalloc (cnt, sizeof *order);
-      blocks = xnmalloc (cnt, sizeof *blocks);
+      expected = xnmalloc (n, sizeof *expected);
+      sizes = xnmalloc (n, sizeof *sizes);
+      order = xnmalloc (n, sizeof *order);
+      blocks = xnmalloc (n, sizeof *blocks);
 
       n_blocks = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_blocks, sizes))
+      while (next_composition (n, &n_blocks, sizes))
         {
           int i;
           unsigned int n_permutations;
@@ -456,7 +456,7 @@ test_delete (void)
 
           n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (sizes);
@@ -472,9 +472,9 @@ static void
 test_resize (void)
 {
   const int max_height = 9;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_height; cnt++)
+  for (n = 1; n <= max_height; n++)
     {
       unsigned int n_compositions;
       struct expected_block *expected;
@@ -483,22 +483,22 @@ test_resize (void)
       int *order;
       struct block *blocks;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      sizes = xnmalloc (cnt, sizeof *sizes);
-      new_sizes = xnmalloc (cnt, sizeof *new_sizes);
-      order = xnmalloc (cnt, sizeof *order);
-      blocks = xnmalloc (cnt, sizeof *blocks);
+      expected = xnmalloc (n, sizeof *expected);
+      sizes = xnmalloc (n, sizeof *sizes);
+      new_sizes = xnmalloc (n, sizeof *new_sizes);
+      order = xnmalloc (n, sizeof *order);
+      blocks = xnmalloc (n, sizeof *blocks);
 
       n_blocks = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_blocks, sizes))
+      while (next_composition (n, &n_blocks, sizes))
         {
           int i;
           unsigned int resizes = 0;
 
-          for (resizes = 0, first_k_composition (cnt, n_blocks, new_sizes);
+          for (resizes = 0, first_k_composition (n, n_blocks, new_sizes);
                (resizes == 0
-                || next_k_composition (cnt, n_blocks, new_sizes));
+                || next_k_composition (n, n_blocks, new_sizes));
                resizes++)
             {
               struct tower t;
@@ -523,11 +523,11 @@ test_resize (void)
                 }
               check_tower (&t, expected, n_blocks);
             }
-          check (resizes == binomial_cofficient (cnt - 1, n_blocks - 1));
+          check (resizes == binomial_cofficient (n - 1, n_blocks - 1));
 
           n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (new_sizes);
@@ -543,9 +543,9 @@ static void
 test_splice_out (void)
 {
   const int max_height = 9;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_height; cnt++)
+  for (n = 1; n <= max_height; n++)
     {
       unsigned int n_compositions;
       struct expected_block *expected;
@@ -554,15 +554,15 @@ test_splice_out (void)
       int *order;
       struct block *blocks;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      sizes = xnmalloc (cnt, sizeof *sizes);
-      new_sizes = xnmalloc (cnt, sizeof *new_sizes);
-      order = xnmalloc (cnt, sizeof *order);
-      blocks = xnmalloc (cnt, sizeof *blocks);
+      expected = xnmalloc (n, sizeof *expected);
+      sizes = xnmalloc (n, sizeof *sizes);
+      new_sizes = xnmalloc (n, sizeof *new_sizes);
+      order = xnmalloc (n, sizeof *order);
+      blocks = xnmalloc (n, sizeof *blocks);
 
       n_blocks = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_blocks, sizes))
+      while (next_composition (n, &n_blocks, sizes))
         {
           int i, j;
 
@@ -595,7 +595,7 @@ test_splice_out (void)
               }
            n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (new_sizes);
@@ -611,9 +611,9 @@ static void
 test_splice_in (void)
 {
   const int max_height = 9;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_height; cnt++)
+  for (n = 1; n <= max_height; n++)
     {
       unsigned int n_compositions;
       struct expected_block *expected;
@@ -622,15 +622,15 @@ test_splice_in (void)
       int *order;
       struct block *blocks;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      sizes = xnmalloc (cnt, sizeof *sizes);
-      new_sizes = xnmalloc (cnt, sizeof *new_sizes);
-      order = xnmalloc (cnt, sizeof *order);
-      blocks = xnmalloc (cnt, sizeof *blocks);
+      expected = xnmalloc (n, sizeof *expected);
+      sizes = xnmalloc (n, sizeof *sizes);
+      new_sizes = xnmalloc (n, sizeof *new_sizes);
+      order = xnmalloc (n, sizeof *order);
+      blocks = xnmalloc (n, sizeof *blocks);
 
       n_blocks = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_blocks, sizes))
+      while (next_composition (n, &n_blocks, sizes))
         {
           int i, j;
 
@@ -660,7 +660,7 @@ test_splice_in (void)
               }
            n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (new_sizes);

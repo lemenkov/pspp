@@ -32,9 +32,9 @@ struct heap
     const void *aux;
 
     /* Contents. */
-    struct heap_node **nodes;   /* Element 0 unused, 1...CNT are the heap. */
-    size_t cnt;                 /* Number of elements in heap. */
-    size_t cap;                 /* Max CNT without allocating more memory. */
+    struct heap_node **nodes;   /* Element 0 unused, 1...N are the heap. */
+    size_t n;                   /* Number of elements in heap. */
+    size_t allocated;           /* Max N without allocating more memory. */
   };
 
 static inline void set_node (struct heap *, size_t idx, struct heap_node *);
@@ -55,8 +55,8 @@ heap_create (heap_compare_func *compare, const void *aux)
   h->compare = compare;
   h->aux = aux;
   h->nodes = NULL;
-  h->cap = 0;
-  h->cnt = 0;
+  h->allocated = 0;
+  h->n = 0;
   return h;
 }
 
@@ -98,14 +98,14 @@ heap_destroy (struct heap *h)
 bool
 heap_is_empty (const struct heap *h)
 {
-  return h->cnt == 0;
+  return h->n == 0;
 }
 
 /* Returns the number of elements in H. */
 size_t
 heap_count (const struct heap *h)
 {
-  return h->cnt;
+  return h->n;
 }
 
 /* Heap nodes may be moved around in memory as necessary, e.g. as
@@ -116,7 +116,7 @@ heap_count (const struct heap *h)
 void
 heap_moved (struct heap *h, struct heap_node *node)
 {
-  assert (node->idx <= h->cnt);
+  assert (node->idx <= h->n);
   h->nodes[node->idx] = node;
 }
 
@@ -133,15 +133,15 @@ heap_minimum (const struct heap *h)
 void
 heap_insert (struct heap *h, struct heap_node *node)
 {
-  if (h->cnt >= h->cap)
+  if (h->n >= h->allocated)
     {
-      h->cap = 2 * (h->cap + 8);
-      h->nodes = xnrealloc (h->nodes, h->cap + 1, sizeof *h->nodes);
+      h->allocated = 2 * (h->allocated + 8);
+      h->nodes = xnrealloc (h->nodes, h->allocated + 1, sizeof *h->nodes);
     }
 
-  h->cnt++;
-  set_node (h, h->cnt, node);
-  propagate_up (h, h->cnt);
+  h->n++;
+  set_node (h, h->n, node);
+  propagate_up (h, h->n);
 
   expensive_assert (is_heap (h));
 }
@@ -150,16 +150,16 @@ heap_insert (struct heap *h, struct heap_node *node)
 void
 heap_delete (struct heap *h, struct heap_node *node)
 {
-  assert (node->idx <= h->cnt);
+  assert (node->idx <= h->n);
   assert (h->nodes[node->idx] == node);
 
-  if (node->idx < h->cnt)
+  if (node->idx < h->n)
     {
-      set_node (h, node->idx, h->nodes[h->cnt--]);
+      set_node (h, node->idx, h->nodes[h->n--]);
       heap_changed (h, h->nodes[node->idx]);
     }
   else
-    h->cnt--;
+    h->n--;
 }
 
 /* After client code changes the value represented by a heap
@@ -176,7 +176,7 @@ heap_delete (struct heap *h, struct heap_node *node)
 void
 heap_changed (struct heap *h, struct heap_node *node)
 {
-  assert (node->idx <= h->cnt);
+  assert (node->idx <= h->n);
   assert (h->nodes[node->idx] == node);
 
   if (!propagate_up (h, node->idx))
@@ -244,8 +244,8 @@ less (const struct heap *h, size_t a, size_t b)
 static size_t
 lesser_node (const struct heap *h, size_t a, size_t b)
 {
-  assert (a <= h->cnt);
-  return b > h->cnt || less (h, a, b) ? a : b;
+  assert (a <= h->n);
+  return b > h->n || less (h, a, b) ? a : b;
 }
 
 /* Swaps, in H, the nodes with indexes A and B. */
@@ -254,8 +254,8 @@ swap_nodes (struct heap *h, size_t a, size_t b)
 {
   struct heap_node *t;
 
-  assert (a <= h->cnt);
-  assert (b <= h->cnt);
+  assert (a <= h->n);
+  assert (b <= h->n);
 
   t = h->nodes[a];
   set_node (h, a, h->nodes[b]);
@@ -269,11 +269,11 @@ is_heap (const struct heap *h)
 {
   size_t i;
 
-  for (i = 2; i <= h->cnt; i++)
+  for (i = 2; i <= h->n; i++)
     if (less (h, i, i / 2))
       return false;
 
-  for (i = 1; i <= h->cnt; i++)
+  for (i = 1; i <= h->n; i++)
     if (h->nodes[i]->idx != i)
       return false;
 

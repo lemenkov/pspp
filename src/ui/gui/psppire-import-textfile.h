@@ -40,7 +40,7 @@ static const struct separator separators[] =
     {"slash",     '/'},
   };
 
-#define SEPARATOR_CNT (sizeof separators / sizeof *separators)
+#define N_SEPARATORS (sizeof separators / sizeof *separators)
 
 /* Initializes IA's intro substructure. */
 void intro_page_create (PsppireImportAssistant *ia);

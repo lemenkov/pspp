@@ -75,8 +75,8 @@ choose_likely_separators (PsppireImportAssistant *ia)
   gboolean valid;
   GtkTreeIter iter;
 
-  struct hmap count_map[SEPARATOR_CNT];
-  for (int j = 0; j < SEPARATOR_CNT; ++j)
+  struct hmap count_map[N_SEPARATORS];
+  for (int j = 0; j < N_SEPARATORS; ++j)
     hmap_init (count_map + j);
 
   GtkTreePath *p = gtk_tree_path_new_from_indices (first_line, -1);
@@ -88,7 +88,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
       gchar *line_text = NULL;
       gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
 
-      gint *counts = XCALLOC (SEPARATOR_CNT, gint);
+      gint *counts = XCALLOC (N_SEPARATORS, gint);
 
       struct substring cs = ss_cstr (line_text);
       for (;
@@ -98,7 +98,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
 	  ucs4_t character = ss_first_mb (cs);
 
 	  int s;
-	  for (s = 0; s < SEPARATOR_CNT; ++s)
+	  for (s = 0; s < N_SEPARATORS; ++s)
 	    {
 	      if (character == separators[s].c)
 		counts[s]++;
@@ -106,7 +106,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
 	}
 
       int j;
-      for (j = 0; j < SEPARATOR_CNT; ++j)
+      for (j = 0; j < N_SEPARATORS; ++j)
 	{
 	  if (counts[j] > 0)
 	    {
@@ -139,7 +139,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
     {
       int most_frequent = -1;
       int largest = 0;
-      for (int j = 0; j < SEPARATOR_CNT; ++j)
+      for (int j = 0; j < N_SEPARATORS; ++j)
         {
           struct separator_count_node *cn;
           struct separator_count_node *next;
@@ -535,7 +535,7 @@ on_separator_toggle (GtkToggleButton *toggle UNUSED,
 {
   int i;
   GSList *delimiters = NULL;
-  for (i = 0; i < SEPARATOR_CNT; i++)
+  for (i = 0; i < N_SEPARATORS; i++)
     {
       const struct separator *s = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
@@ -599,7 +599,7 @@ reset_separators_page (PsppireImportAssistant *ia)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), FALSE);
   gtk_entry_set_text (GTK_ENTRY (ia->custom_entry), "");
 
-  for (gint i = 0; i < SEPARATOR_CNT; i++)
+  for (gint i = 0; i < N_SEPARATORS; i++)
     {
       const struct separator *s = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
@@ -673,7 +673,7 @@ separators_page_create (PsppireImportAssistant *ia)
                     G_CALLBACK (on_separators_custom_entry_notify), ia);
   g_signal_connect (ia->custom_cb, "toggled",
                     G_CALLBACK (on_separators_custom_cb_toggle), ia);
-  for (i = 0; i < SEPARATOR_CNT; i++)
+  for (i = 0; i < N_SEPARATORS; i++)
     g_signal_connect (get_widget_assert (builder, separators[i].name),
                       "toggled", G_CALLBACK (on_separator_toggle), ia);
 
@@ -742,7 +742,7 @@ my_destroy (struct casereader *reader, void *aux)
 }
 
 static void
-my_advance (struct casereader *reader, void *aux, casenumber cnt)
+my_advance (struct casereader *reader, void *aux, casenumber n)
 {
   g_print ("%s:%d\n", __FILE__, __LINE__);
 }
@@ -997,7 +997,7 @@ separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->text_builder, "tab"))))
     ds_put_cstr (s, "\\t");
-  for (i = 0; i < SEPARATOR_CNT; i++)
+  for (i = 0; i < N_SEPARATORS; i++)
     {
       const struct separator *seps = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, seps->name);

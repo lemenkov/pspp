@@ -119,49 +119,49 @@ compare_unsigned_longs_noaux (const void *a_, const void *b_)
   return *a < *b ? -1 : *a > *b;
 }
 
-/* Checks that SPAR contains the CNT ints in DATA, that its
+/* Checks that SPAR contains the N ints in DATA, that its
    structure is correct, and that certain operations on SPAR
    produce the expected results. */
 static void
 check_sparse_array (struct sparse_array *spar,
-                    const unsigned long data[], size_t cnt)
+                    const unsigned long data[], size_t n)
 {
   unsigned long idx;
   unsigned long *order;
   unsigned long *p;
   size_t i;
 
-  check (sparse_array_count (spar) == cnt);
+  check (sparse_array_count (spar) == n);
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       p = sparse_array_get (spar, data[i]);
       check (p != NULL);
       check (*p == data[i]);
     }
 
-  order = xmemdup (data, cnt * sizeof *data);
-  qsort (order, cnt, sizeof *order, compare_unsigned_longs_noaux);
+  order = xmemdup (data, n * sizeof *data);
+  qsort (order, n, sizeof *order, compare_unsigned_longs_noaux);
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       p = sparse_array_get (spar, order[i]);
       check (p != NULL);
       check (*p == order[i]);
     }
 
-  if (cnt > 0 && order[0] - 1 != order[cnt - 1])
+  if (n > 0 && order[0] - 1 != order[n - 1])
     {
       check (sparse_array_get (spar, order[0] - 1) == NULL);
       check (!sparse_array_remove (spar, order[0] - 1));
     }
-  if (cnt > 0 && order[0] != order[cnt - 1] + 1)
+  if (n > 0 && order[0] != order[n - 1] + 1)
     {
-      check (sparse_array_get (spar, order[cnt - 1] + 1) == NULL);
-      check (!sparse_array_remove (spar, order[cnt - 1] + 1));
+      check (sparse_array_get (spar, order[n - 1] + 1) == NULL);
+      check (!sparse_array_remove (spar, order[n - 1] + 1));
     }
 
-  for (i = 0, p = sparse_array_first (spar, &idx); i < cnt;
+  for (i = 0, p = sparse_array_first (spar, &idx); i < n;
        i++, p = sparse_array_next (spar, idx, &idx))
     {
       check (p != NULL);
@@ -170,59 +170,59 @@ check_sparse_array (struct sparse_array *spar,
     }
   check (p == NULL);
 
-  for (i = 0, p = sparse_array_last (spar, &idx); i < cnt;
+  for (i = 0, p = sparse_array_last (spar, &idx); i < n;
        i++, p = sparse_array_prev (spar, idx, &idx))
     {
       check (p != NULL);
-      check (idx == order[cnt - i - 1]);
-      check (*p == order[cnt - i - 1]);
+      check (idx == order[n - i - 1]);
+      check (*p == order[n - i - 1]);
     }
   check (p == NULL);
 
   free (order);
 }
 
-/* Inserts the CNT values from 0 to CNT - 1 (inclusive) into a
+/* Inserts the N values from 0 to N - 1 (inclusive) into a
    sparse array in the order specified by INSERTIONS, then
    deletes them in the order specified by DELETIONS, checking the
    array's contents for correctness after each operation. */
 static void
 test_insert_delete (const unsigned long insertions[],
                     const unsigned long deletions[],
-                    size_t cnt)
+                    size_t n)
 {
   struct sparse_array *spar;
   size_t i;
 
   spar = sparse_array_create (sizeof *insertions);
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       unsigned long *p = sparse_array_insert (spar, insertions[i]);
       *p = insertions[i];
       check_sparse_array (spar, insertions, i + 1);
     }
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       bool deleted = sparse_array_remove (spar, deletions[i]);
       check (deleted);
-      check_sparse_array (spar, deletions + i + 1, cnt - (i + 1));
+      check_sparse_array (spar, deletions + i + 1, n - (i + 1));
     }
   check_sparse_array (spar, NULL, 0);
   sparse_array_destroy (spar);
 }
 
-/* Inserts the CNT values from 0 to CNT - 1 (inclusive) into a
+/* Inserts the N values from 0 to N - 1 (inclusive) into a
    sparse array in the order specified by INSERTIONS, then
    destroys the sparse array, to check that sparse_cases_destroy
    properly frees all the nodes. */
 static void
-test_destroy (const unsigned long insertions[], size_t cnt)
+test_destroy (const unsigned long insertions[], size_t n)
 {
   struct sparse_array *spar;
   size_t i;
 
   spar = sparse_array_create (sizeof *insertions);
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       unsigned long *p = sparse_array_insert (spar, insertions[i]);
       *p = insertions[i];
@@ -231,18 +231,18 @@ test_destroy (const unsigned long insertions[], size_t cnt)
   sparse_array_destroy (spar);
 }
 
-/* Randomly shuffles the CNT elements in ARRAY, each of which is
+/* Randomly shuffles the N elements in ARRAY, each of which is
    SIZE bytes in size. */
 static void
-random_shuffle (void *array_, size_t cnt, size_t size)
+random_shuffle (void *array_, size_t n, size_t size)
 {
   char *array = array_;
   char *tmp = xmalloc (size);
   size_t i;
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
-      size_t j = rand () % (cnt - i) + i;
+      size_t j = rand () % (n - i) + i;
       if (i != j)
         {
           memcpy (tmp, array + j * size, size);
@@ -276,12 +276,12 @@ test_insert_delete_strides (void)
     };
   const size_t n_offsets = sizeof offsets / sizeof *offsets;
 
-  int cnt = 100;
+  int n = 100;
   unsigned long *insertions, *deletions;
   const unsigned long *stride, *offset;
 
-  insertions = xnmalloc (cnt, sizeof *insertions);
-  deletions = xnmalloc (cnt, sizeof *deletions);
+  insertions = xnmalloc (n, sizeof *insertions);
+  deletions = xnmalloc (n, sizeof *deletions);
   for (stride = strides; stride < strides + n_strides; stride++)
     {
       printf ("%lu\n", *stride);
@@ -289,34 +289,34 @@ test_insert_delete_strides (void)
         {
           int k;
 
-          for (k = 0; k < cnt; k++)
+          for (k = 0; k < n; k++)
             insertions[k] = *stride * k + *offset;
 
-          test_insert_delete (insertions, insertions, cnt);
-          test_destroy (insertions, cnt);
+          test_insert_delete (insertions, insertions, n);
+          test_destroy (insertions, n);
 
-          for (k = 0; k < cnt; k++)
-            deletions[k] = insertions[cnt - k - 1];
-          test_insert_delete (insertions, deletions, cnt);
+          for (k = 0; k < n; k++)
+            deletions[k] = insertions[n - k - 1];
+          test_insert_delete (insertions, deletions, n);
 
-          random_shuffle (insertions, cnt, sizeof *insertions);
-          test_insert_delete (insertions, insertions, cnt);
-          test_insert_delete (insertions, deletions, cnt);
+          random_shuffle (insertions, n, sizeof *insertions);
+          test_insert_delete (insertions, insertions, n);
+          test_insert_delete (insertions, deletions, n);
         }
     }
   free (insertions);
   free (deletions);
 }
 
-/* Returns the index in ARRAY of the (CNT+1)th element that has
+/* Returns the index in ARRAY of the (N+1)th element that has
    the TARGET value. */
 static int
-scan_bools (bool target, bool array[], size_t cnt)
+scan_bools (bool target, bool array[], size_t n)
 {
   size_t i;
 
   for (i = 0; ; i++)
-    if (array[i] == target && cnt-- == 0)
+    if (array[i] == target && n-- == 0)
       return i;
 }
 
@@ -342,14 +342,14 @@ test_random_insert_delete (void)
   const int num_actions = 250000;
   struct sparse_array *spar;
   bool *has_values;
-  int cnt;
+  int n;
   int insert_chance;
   int i;
 
   has_values = xnmalloc (max_values, sizeof *has_values);
   memset (has_values, 0, max_values * sizeof *has_values);
 
-  cnt = 0;
+  n = 0;
   insert_chance = 5;
 
   spar = sparse_array_create (sizeof *values);
@@ -359,13 +359,13 @@ test_random_insert_delete (void)
       unsigned long *p;
       int j;
 
-      if (cnt == 0)
+      if (n == 0)
         {
           action = INSERT;
           if (insert_chance < 9)
             insert_chance++;
         }
-      else if (cnt == max_values)
+      else if (n == max_values)
         {
           action = DELETE;
           if (insert_chance > 0)
@@ -379,7 +379,7 @@ test_random_insert_delete (void)
           int ins_index;
 
           ins_index = scan_bools (false, has_values,
-                                  rand () % (max_values - cnt));
+                                  rand () % (max_values - n));
           assert (has_values[ins_index] == false);
           has_values[ins_index] = true;
 
@@ -387,23 +387,23 @@ test_random_insert_delete (void)
           check (p != NULL);
           *p = values[ins_index];
 
-          cnt++;
+          n++;
         }
       else if (action == DELETE)
         {
           int del_index;
 
-          del_index = scan_bools (true, has_values, rand () % cnt);
+          del_index = scan_bools (true, has_values, rand () % n);
           assert (has_values[del_index] == true);
           has_values[del_index] = false;
 
           check (sparse_array_remove (spar, values[del_index]));
-          cnt--;
+          n--;
         }
       else
         abort ();
 
-      check (sparse_array_count (spar) == cnt);
+      check (sparse_array_count (spar) == n);
       for (j = 0; j < max_values; j++)
         {
           p = sparse_array_get (spar, values[j]);

@@ -346,32 +346,32 @@ mempset (void *block, int c, size_t size)
 
 /* Substrings. */
 
-/* Returns a substring whose contents are the CNT bytes
+/* Returns a substring whose contents are the N bytes
    starting at the (0-based) position START in SS. */
 struct substring
-ss_substr (struct substring ss, size_t start, size_t cnt)
+ss_substr (struct substring ss, size_t start, size_t n)
 {
   if (start < ss.length)
-    return ss_buffer (ss.string + start, MIN (cnt, ss.length - start));
+    return ss_buffer (ss.string + start, MIN (n, ss.length - start));
   else
     return ss_buffer (ss.string + ss.length, 0);
 }
 
-/* Returns a substring whose contents are the first CNT
+/* Returns a substring whose contents are the first N
    bytes in SS. */
 struct substring
-ss_head (struct substring ss, size_t cnt)
+ss_head (struct substring ss, size_t n)
 {
-  return ss_buffer (ss.string, MIN (cnt, ss.length));
+  return ss_buffer (ss.string, MIN (n, ss.length));
 }
 
-/* Returns a substring whose contents are the last CNT bytes
+/* Returns a substring whose contents are the last N bytes
    in SS. */
 struct substring
-ss_tail (struct substring ss, size_t cnt)
+ss_tail (struct substring ss, size_t n)
 {
-  if (cnt < ss.length)
-    return ss_buffer (ss.string + (ss.length - cnt), cnt);
+  if (n < ss.length)
+    return ss_buffer (ss.string + (ss.length - n), n);
   else
     return ss;
 }
@@ -385,12 +385,12 @@ ss_alloc_substring (struct substring *new, struct substring old)
   new->length = old.length;
 }
 
-/* Allocates room for a CNT-byte string in NEW. */
+/* Allocates room for a N-byte string in NEW. */
 void
-ss_alloc_uninit (struct substring *new, size_t cnt)
+ss_alloc_uninit (struct substring *new, size_t n)
 {
-  new->string = xmalloc (cnt);
-  new->length = cnt;
+  new->string = xmalloc (n);
+  new->length = n;
 }
 
 void
@@ -411,12 +411,12 @@ ss_alloc_substring_pool (struct substring *new, struct substring old,
   new->string[old.length] = '\0';
 }
 
-/* Allocates room for a CNT-byte string in NEW in POOL. */
+/* Allocates room for a N-byte string in NEW in POOL. */
 void
-ss_alloc_uninit_pool (struct substring *new, size_t cnt, struct pool *pool)
+ss_alloc_uninit_pool (struct substring *new, size_t n, struct pool *pool)
 {
-  new->string = pool_alloc_unaligned (pool, cnt);
-  new->length = cnt;
+  new->string = pool_alloc_unaligned (pool, n);
+  new->length = n;
 }
 
 /* Frees the string that SS points to. */
@@ -435,12 +435,12 @@ ss_swap (struct substring *a, struct substring *b)
   *b = tmp;
 }
 
-/* Truncates SS to at most CNT bytes in length. */
+/* Truncates SS to at most N bytes in length. */
 void
-ss_truncate (struct substring *ss, size_t cnt)
+ss_truncate (struct substring *ss, size_t n)
 {
-  if (ss->length > cnt)
-    ss->length = cnt;
+  if (ss->length > n)
+    ss->length = n;
 }
 
 /* Removes trailing bytes in TRIM_SET from SS.
@@ -448,13 +448,13 @@ ss_truncate (struct substring *ss, size_t cnt)
 size_t
 ss_rtrim (struct substring *ss, struct substring trim_set)
 {
-  size_t cnt = 0;
-  while (cnt < ss->length
+  size_t n = 0;
+  while (n < ss->length
          && ss_find_byte (trim_set,
-                          ss->string[ss->length - cnt - 1]) != SIZE_MAX)
-    cnt++;
-  ss->length -= cnt;
-  return cnt;
+                          ss->string[ss->length - n - 1]) != SIZE_MAX)
+    n++;
+  ss->length -= n;
+  return n;
 }
 
 /* Removes leading bytes in TRIM_SET from SS.
@@ -462,9 +462,9 @@ ss_rtrim (struct substring *ss, struct substring trim_set)
 size_t
 ss_ltrim (struct substring *ss, struct substring trim_set)
 {
-  size_t cnt = ss_span (*ss, trim_set);
-  ss_advance (ss, cnt);
-  return cnt;
+  size_t n = ss_span (*ss, trim_set);
+  ss_advance (ss, n);
+  return n;
 }
 
 /* Trims leading and trailing bytes in TRIM_SET from SS. */
@@ -558,14 +558,14 @@ ss_tokenize (struct substring ss, struct substring delimiters,
   return found_token;
 }
 
-/* Removes the first CNT bytes from SS. */
+/* Removes the first N bytes from SS. */
 void
-ss_advance (struct substring *ss, size_t cnt)
+ss_advance (struct substring *ss, size_t n)
 {
-  if (cnt > ss->length)
-    cnt = ss->length;
-  ss->string += cnt;
-  ss->length -= cnt;
+  if (n > ss->length)
+    n = ss->length;
+  ss->string += n;
+  ss->length -= n;
 }
 
 /* If the first byte in SS is C, removes it and returns true.
@@ -640,15 +640,15 @@ ss_get_until (struct substring *ss, char delimiter, struct substring *out)
   return ss_match_byte (ss, delimiter);
 }
 
-/* Stores the first CNT bytes in SS in OUT (or fewer, if SS
-   is shorter than CNT bytes).  Trims the same bytes
-   from the beginning of SS.  Returns CNT. */
+/* Stores the first N bytes in SS in OUT (or fewer, if SS
+   is shorter than N bytes).  Trims the same bytes
+   from the beginning of SS.  Returns N. */
 size_t
-ss_get_bytes (struct substring *ss, size_t cnt, struct substring *out)
+ss_get_bytes (struct substring *ss, size_t n, struct substring *out)
 {
-  *out = ss_head (*ss, cnt);
-  ss_advance (ss, cnt);
-  return cnt;
+  *out = ss_head (*ss, n);
+  ss_advance (ss, n);
+  return n;
 }
 
 /* Parses and removes an optionally signed decimal integer from
@@ -1064,35 +1064,35 @@ ds_ss (const struct string *st)
   return st->ss;
 }
 
-/* Returns a substring that contains CNT bytes from ST
+/* Returns a substring that contains N bytes from ST
    starting at position START.
 
    If START is greater than or equal to the length of ST, then
-   the substring will be the empty string.  If START + CNT
+   the substring will be the empty string.  If START + N
    exceeds the length of ST, then the substring will only be
    ds_length(ST) - START bytes long. */
 struct substring
-ds_substr (const struct string *st, size_t start, size_t cnt)
+ds_substr (const struct string *st, size_t start, size_t n)
 {
-  return ss_substr (ds_ss (st), start, cnt);
+  return ss_substr (ds_ss (st), start, n);
 }
 
-/* Returns a substring that contains the first CNT bytes in
-   ST.  If CNT exceeds the length of ST, then the substring will
+/* Returns a substring that contains the first N bytes in
+   ST.  If N exceeds the length of ST, then the substring will
    contain all of ST. */
 struct substring
-ds_head (const struct string *st, size_t cnt)
+ds_head (const struct string *st, size_t n)
 {
-  return ss_head (ds_ss (st), cnt);
+  return ss_head (ds_ss (st), n);
 }
 
-/* Returns a substring that contains the last CNT bytes in
-   ST.  If CNT exceeds the length of ST, then the substring will
+/* Returns a substring that contains the last N bytes in
+   ST.  If N exceeds the length of ST, then the substring will
    contain all of ST. */
 struct substring
-ds_tail (const struct string *st, size_t cnt)
+ds_tail (const struct string *st, size_t n)
 {
-  return ss_tail (ds_ss (st), cnt);
+  return ss_tail (ds_ss (st), n);
 }
 
 /* Ensures that ST can hold at least MIN_CAPACITY bytes plus a null
@@ -1141,10 +1141,10 @@ ds_rtrim (struct string *st, struct substring trim_set)
 size_t
 ds_ltrim (struct string *st, struct substring trim_set)
 {
-  size_t cnt = ds_span (st, trim_set);
-  if (cnt > 0)
-    ds_assign_substring (st, ds_substr (st, cnt, SIZE_MAX));
-  return cnt;
+  size_t n = ds_span (st, trim_set);
+  if (n > 0)
+    ds_assign_substring (st, ds_substr (st, n, SIZE_MAX));
+  return n;
 }
 
 /* Trims leading and trailing bytes in TRIM_SET from ST.
@@ -1152,8 +1152,8 @@ ds_ltrim (struct string *st, struct substring trim_set)
 size_t
 ds_trim (struct string *st, struct substring trim_set)
 {
-  size_t cnt = ds_rtrim (st, trim_set);
-  return cnt + ds_ltrim (st, trim_set);
+  size_t n = ds_rtrim (st, trim_set);
+  return n + ds_ltrim (st, trim_set);
 }
 
 /* If the last byte in ST is C, removes it and returns true.
@@ -1502,15 +1502,15 @@ ds_read_config_line (struct string *st, int *line_number, FILE *stream)
   return true;
 }
 
-/* Attempts to read SIZE * CNT bytes from STREAM and append them
+/* Attempts to read SIZE * N bytes from STREAM and append them
    to ST.
    Returns true if all the requested data was read, false otherwise. */
 bool
-ds_read_stream (struct string *st, size_t size, size_t cnt, FILE *stream)
+ds_read_stream (struct string *st, size_t size, size_t n, FILE *stream)
 {
   if (size != 0)
     {
-      size_t try_bytes = xtimes (cnt, size);
+      size_t try_bytes = xtimes (n, size);
       if (size_in_bounds_p (xsum (ds_length (st), try_bytes)))
         {
           char *buffer = ds_put_uninit (st, try_bytes);
@@ -1662,11 +1662,11 @@ ds_put_byte (struct string *st, int ch)
   ds_put_uninit (st, 1)[0] = ch;
 }
 
-/* Appends CNT copies of byte CH to ST. */
+/* Appends N copies of byte CH to ST. */
 void
-ds_put_byte_multiple (struct string *st, int ch, size_t cnt)
+ds_put_byte_multiple (struct string *st, int ch, size_t n)
 {
-  memset (ds_put_uninit (st, cnt), ch, cnt);
+  memset (ds_put_uninit (st, n), ch, n);
 }
 
 /* Appends Unicode code point UC to ST in UTF-8 encoding. */

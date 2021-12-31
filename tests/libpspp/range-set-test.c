@@ -257,16 +257,16 @@ make_pattern (unsigned int pattern)
   return rs;
 }
 
-/* Returns an unsigned int with bits OFS...OFS+CNT (exclusive)
+/* Returns an unsigned int with bits OFS...OFS+N (exclusive)
    set to 1, other bits set to 0. */
 static unsigned int
-bit_range (unsigned int ofs, unsigned int cnt)
+bit_range (unsigned int ofs, unsigned int n)
 {
   assert (ofs < UINT_BIT);
-  assert (cnt <= UINT_BIT);
-  assert (ofs + cnt <= UINT_BIT);
+  assert (n <= UINT_BIT);
+  assert (ofs + n <= UINT_BIT);
 
-  return cnt < UINT_BIT ? ((1u << cnt) - 1) << ofs : UINT_MAX;
+  return n < UINT_BIT ? ((1u << n) - 1) << ofs : UINT_MAX;
 }
 
 /* Tests inserting all possible patterns into all possible range

@@ -61,13 +61,13 @@ static unsigned long axis_get_size (const struct axis *);
 static void axis_insert (struct axis *,
                          unsigned long int log_start,
                          unsigned long int phy_start,
-                         unsigned long int cnt);
+                         unsigned long int n);
 static void axis_remove (struct axis *,
-                         unsigned long int start, unsigned long int cnt);
+                         unsigned long int start, unsigned long int n);
 static void axis_move (struct axis *,
                        unsigned long int old_start,
                        unsigned long int new_start,
-                       unsigned long int cnt);
+                       unsigned long int n);
 
 static struct source *source_create_empty (size_t n_bytes);
 static struct source *source_create_casereader (struct casereader *);
@@ -610,7 +610,7 @@ datasheet_put_value (struct datasheet *ds, casenumber row,
   return rw_case (ds, OP_WRITE, row, column, 1, (union value *) value);
 }
 
-/* Inserts the CNT cases at C into datasheet DS just before row
+/* Inserts the N cases at C into datasheet DS just before row
    BEFORE.  Returns true if successful, false on I/O error.  On
    failure, datasheet DS is not modified.
 
@@ -619,10 +619,10 @@ datasheet_put_value (struct datasheet *ds, casenumber row,
 bool
 datasheet_insert_rows (struct datasheet *ds,
                        casenumber before, struct ccase *c[],
-                       casenumber cnt)
+                       casenumber n)
 {
   casenumber added = 0;
-  while (cnt > 0)
+  while (n > 0)
     {
       unsigned long first_phy;
       unsigned long n_phys;
@@ -630,12 +630,12 @@ datasheet_insert_rows (struct datasheet *ds,
 
       /* Allocate physical rows from the pool of available
          rows. */
-      if (!axis_allocate (ds->rows, cnt, &first_phy, &n_phys))
+      if (!axis_allocate (ds->rows, n, &first_phy, &n_phys))
         {
           /* No rows were available.  Extend the row axis to make
              some new ones available. */
-          n_phys = cnt;
-          first_phy = axis_extend (ds->rows, cnt);
+          n_phys = n;
+          first_phy = axis_extend (ds->rows, n);
         }
 
       /* Insert the new rows into the row mapping. */
@@ -645,7 +645,7 @@ datasheet_insert_rows (struct datasheet *ds,
       for (i = 0; i < n_phys; i++)
         if (!datasheet_put_row (ds, before + i, c[i]))
           {
-            while (++i < cnt)
+            while (++i < n)
               case_unref (c[i]);
             datasheet_delete_rows (ds, before - added, n_phys + added);
             return false;
@@ -653,39 +653,39 @@ datasheet_insert_rows (struct datasheet *ds,
 
       /* Advance. */
       c += n_phys;
-      cnt -= n_phys;
+      n -= n_phys;
       before += n_phys;
       added += n_phys;
     }
   return true;
 }
 
-/* Deletes the CNT rows in DS starting from row FIRST. */
+/* Deletes the N rows in DS starting from row FIRST. */
 void
 datasheet_delete_rows (struct datasheet *ds,
-                       casenumber first, casenumber cnt)
+                       casenumber first, casenumber n)
 {
   size_t lrow;
 
   /* Free up rows for reuse.
      FIXME: optimize. */
-  for (lrow = first; lrow < first + cnt; lrow++)
+  for (lrow = first; lrow < first + n; lrow++)
     axis_make_available (ds->rows, axis_map (ds->rows, lrow), 1);
 
   /* Remove rows from logical-to-physical mapping. */
-  axis_remove (ds->rows, first, cnt);
+  axis_remove (ds->rows, first, n);
 }
 
-/* Moves the CNT rows in DS starting at position OLD_START so
+/* Moves the N rows in DS starting at position OLD_START so
    that they then start at position NEW_START.  Equivalent to
    deleting the given rows, then inserting them at what becomes
    position NEW_START after the deletion. */
 void
 datasheet_move_rows (struct datasheet *ds,
                      size_t old_start, size_t new_start,
-                     size_t cnt)
+                     size_t n)
 {
-  axis_move (ds->rows, old_start, new_start, cnt);
+  axis_move (ds->rows, old_start, new_start, n);
 }
 
 static const struct casereader_random_class datasheet_reader_class;
@@ -1028,30 +1028,30 @@ axis_get_size (const struct axis *axis)
   return tower_height (&axis->log_to_phy);
 }
 
-/* Inserts the CNT contiguous physical ordinates starting at
+/* Inserts the N contiguous physical ordinates starting at
    PHY_START into AXIS's logical-to-physical mapping, starting at
    logical position LOG_START. */
 static void
 axis_insert (struct axis *axis,
              unsigned long int log_start, unsigned long int phy_start,
-             unsigned long int cnt)
+             unsigned long int n)
 {
   struct tower_node *before = split_axis (axis, log_start);
   struct tower_node *new = make_axis_group (phy_start);
-  tower_insert (&axis->log_to_phy, cnt, new, before);
+  tower_insert (&axis->log_to_phy, n, new, before);
   merge_axis_nodes (axis, new, NULL);
   check_axis_merged (axis);
 }
 
-/* Removes CNT ordinates from AXIS's logical-to-physical mapping
+/* Removes N ordinates from AXIS's logical-to-physical mapping
    starting at logical position START. */
 static void
 axis_remove (struct axis *axis,
-             unsigned long int start, unsigned long int cnt)
+             unsigned long int start, unsigned long int n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      struct tower_node *last = split_axis (axis, start + cnt);
+      struct tower_node *last = split_axis (axis, start + n);
       struct tower_node *cur, *next;
       for (cur = split_axis (axis, start); cur != last; cur = next)
         {
@@ -1063,24 +1063,24 @@ axis_remove (struct axis *axis,
     }
 }
 
-/* Moves the CNT ordinates in AXIS's logical-to-mapping starting
+/* Moves the N ordinates in AXIS's logical-to-mapping starting
    at logical position OLD_START so that they then start at
    position NEW_START. */
 static void
 axis_move (struct axis *axis,
            unsigned long int old_start, unsigned long int new_start,
-           unsigned long int cnt)
+           unsigned long int n)
 {
-  if (cnt > 0 && old_start != new_start)
+  if (n > 0 && old_start != new_start)
     {
       struct tower_node *old_first, *old_last, *new_first;
       struct tower_node *merge1, *merge2;
       struct tower tmp_array;
 
-      /* Move ordinates OLD_START...(OLD_START + CNT) into new,
+      /* Move ordinates OLD_START...(OLD_START + N) into new,
          separate TMP_ARRAY. */
       old_first = split_axis (axis, old_start);
-      old_last = split_axis (axis, old_start + cnt);
+      old_last = split_axis (axis, old_start + n);
       tower_init (&tmp_array);
       tower_splice (&tmp_array, NULL,
                     &axis->log_to_phy, old_first, old_last);
@@ -1454,16 +1454,6 @@ source_write (const struct column columns[], casenumber row,
   return true;
 }
 
-/* Within SOURCE, which must not have a backing casereader,
-   writes the VALUE_CNT values in VALUES_CNT to the VALUE_CNT
-   columns starting from START_COLUMN, in every row, even in rows
-   not yet otherwise initialized.  Returns true if successful,
-   false if an I/O error occurs.
-
-   We don't support backing != NULL because (1) it's harder and
-   (2) this function is only called by
-   datasheet_insert_column, which doesn't reuse columns from
-   sources that are backed by casereaders. */
 static bool
 source_write_column (struct column *column, const union value *value)
 {

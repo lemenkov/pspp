@@ -124,7 +124,7 @@ casereader_shim_destroy (struct casereader *reader UNUSED, void *s_)
   free (s);
 }
 
-/* Discards CNT cases from the front of S's window. */
+/* Discards N_CASES cases from the front of S's window. */
 static void
 casereader_shim_advance (struct casereader *reader UNUSED, void *s_,
                          casenumber n_cases)

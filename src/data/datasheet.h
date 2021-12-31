@@ -45,10 +45,10 @@ struct casereader *datasheet_make_reader (struct datasheet *);
 size_t datasheet_get_n_columns (const struct datasheet *);
 bool datasheet_insert_column (struct datasheet *,
                               const union value *, int width, size_t before);
-void datasheet_delete_columns (struct datasheet *, size_t start, size_t cnt);
+void datasheet_delete_columns (struct datasheet *, size_t start, size_t n);
 void datasheet_move_columns (struct datasheet *,
                              size_t old_start, size_t new_start,
-                             size_t cnt);
+                             size_t n);
 bool datasheet_resize_column (struct datasheet *, size_t column, int new_width,
                               void (*resize_cb) (const union value *,
                                                  union value *, const void *aux),
@@ -58,12 +58,12 @@ bool datasheet_resize_column (struct datasheet *, size_t column, int new_width,
 casenumber datasheet_get_n_rows (const struct datasheet *);
 bool datasheet_insert_rows (struct datasheet *,
                             casenumber before, struct ccase *[],
-                            casenumber cnt);
+                            casenumber n);
 void datasheet_delete_rows (struct datasheet *,
-                            casenumber first, casenumber cnt);
+                            casenumber first, casenumber n);
 void datasheet_move_rows (struct datasheet *,
                           size_t old_start, size_t new_start,
-                          size_t cnt);
+                          size_t n);
 
 /* Data. */
 struct ccase *datasheet_get_row (const struct datasheet *, casenumber);

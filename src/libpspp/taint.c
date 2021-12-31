@@ -37,7 +37,7 @@
 /* A list of pointers to taint structures. */
 struct taint_list
   {
-    size_t cnt;
+    size_t n;
     struct taint **taints;
   };
 
@@ -103,14 +103,14 @@ taint_destroy (struct taint *taint)
 	{
 	  size_t i, j;
 
-	  for (i = 0; i < taint->predecessors.cnt; i++)
-	    for (j = 0; j < taint->successors.cnt; j++)
+	  for (i = 0; i < taint->predecessors.n; i++)
+	    for (j = 0; j < taint->successors.n; j++)
 	      taint_propagate (taint->predecessors.taints[i],
 			       taint->successors.taints[j]);
 
-	  for (i = 0; i < taint->predecessors.cnt; i++)
+	  for (i = 0; i < taint->predecessors.n; i++)
 	    taint_list_remove (&taint->predecessors.taints[i]->successors, taint);
-	  for (i = 0; i < taint->successors.cnt; i++)
+	  for (i = 0; i < taint->successors.n; i++)
 	    taint_list_remove (&taint->successors.taints[i]->predecessors, taint);
 
 	  taint_list_destroy (&taint->successors);
@@ -193,7 +193,7 @@ taint_reset_successor_taint (const struct taint *taint_)
     {
       size_t i;
 
-      for (i = 0; i < taint->successors.cnt; i++)
+      for (i = 0; i < taint->successors.n; i++)
         if (taint->successors.taints[i]->tainted_successor)
           return;
 
@@ -205,7 +205,7 @@ taint_reset_successor_taint (const struct taint *taint_)
 static void
 taint_list_init (struct taint_list *list)
 {
-  list->cnt = 0;
+  list->n = 0;
   list->taints = NULL;
 }
 
@@ -222,7 +222,7 @@ taint_list_contains (const struct taint_list *list, const struct taint *taint)
 {
   size_t i;
 
-  for (i = 0; i < list->cnt; i++)
+  for (i = 0; i < list->n; i++)
     if (list->taints[i] == taint)
       return true;
 
@@ -247,11 +247,11 @@ taint_list_add (struct taint_list *list, struct taint *taint)
          list capacity is always zero or a power of 2.  Thus, if
          the list count is one of these threshold values, we need
          to allocate more memory. */
-      if (is_zero_or_power_of_2 (list->cnt))
+      if (is_zero_or_power_of_2 (list->n))
         list->taints = xnrealloc (list->taints,
-                                  list->cnt == 0 ? 1 : 2 * list->cnt,
+                                  list->n == 0 ? 1 : 2 * list->n,
                                   sizeof *list->taints);
-      list->taints[list->cnt++] = taint;
+      list->taints[list->n++] = taint;
     }
 }
 
@@ -261,11 +261,11 @@ taint_list_remove (struct taint_list *list, const struct taint *taint)
 {
   size_t i;
 
-  for (i = 0; i < list->cnt; i++)
+  for (i = 0; i < list->n; i++)
     if (list->taints[i] == taint)
       {
-        remove_element (list->taints, list->cnt, sizeof *list->taints, i);
-        list->cnt--;
+        remove_element (list->taints, list->n, sizeof *list->taints, i);
+        list->n--;
         return;
       }
 
@@ -281,13 +281,13 @@ recursively_set_taint (struct taint *taint)
   size_t i;
 
   taint->tainted = taint->tainted_successor = true;
-   for (i = 0; i < taint->successors.cnt; i++)
+   for (i = 0; i < taint->successors.n; i++)
     {
       struct taint *s = taint->successors.taints[i];
       if (!s->tainted)
         recursively_set_taint (s);
     }
-  for (i = 0; i < taint->predecessors.cnt; i++)
+  for (i = 0; i < taint->predecessors.n; i++)
     {
       struct taint *p = taint->predecessors.taints[i];
       if (!p->tainted_successor)
@@ -303,7 +303,7 @@ recursively_set_tainted_successor (struct taint *taint)
   size_t i;
 
   taint->tainted_successor = true;
-  for (i = 0; i < taint->predecessors.cnt; i++)
+  for (i = 0; i < taint->predecessors.n; i++)
     {
       struct taint *p = taint->predecessors.taints[i];
       if (!p->tainted_successor)

@@ -123,18 +123,18 @@ swap (int *a, int *b)
   *b = t;
 }
 
-/* Reverses the order of the CNT integers starting at VALUES. */
+/* Reverses the order of the N integers starting at VALUES. */
 static void
-reverse (int *values, size_t cnt)
+reverse (int *values, size_t n)
 {
   size_t i = 0;
-  size_t j = cnt;
+  size_t j = n;
 
   while (j > i)
     swap (&values[i++], &values[--j]);
 }
 
-/* Arranges the CNT elements in VALUES into the lexicographically
+/* Arranges the N elements in VALUES into the lexicographically
    next greater permutation.  Returns true if successful.
    If VALUES is already the lexicographically greatest
    permutation of its elements (i.e. ordered from greatest to
@@ -142,26 +142,26 @@ reverse (int *values, size_t cnt)
    permutation (i.e. ordered from smallest to largest) and
    returns false. */
 static bool
-next_permutation (int *values, size_t cnt)
+next_permutation (int *values, size_t n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      size_t i = cnt - 1;
+      size_t i = n - 1;
       while (i != 0)
         {
           i--;
           if (values[i] < values[i + 1])
             {
               size_t j;
-              for (j = cnt - 1; values[i] >= values[j]; j--)
+              for (j = n - 1; values[i] >= values[j]; j--)
                 continue;
               swap (values + i, values + j);
-              reverse (values + (i + 1), cnt - (i + 1));
+              reverse (values + (i + 1), n - (i + 1));
               return true;
             }
         }
 
-      reverse (values, cnt);
+      reverse (values, n);
     }
 
   return false;
@@ -177,18 +177,18 @@ factorial (unsigned int n)
   return value;
 }
 
-/* Randomly shuffles the CNT elements in ARRAY, each of which is
+/* Randomly shuffles the N elements in ARRAY, each of which is
    SIZE bytes in size. */
 static void
-random_shuffle (void *array_, size_t cnt, size_t size)
+random_shuffle (void *array_, size_t n, size_t size)
 {
   char *array = array_;
   char *tmp = xmalloc (size);
   size_t i;
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
-      size_t j = rand () % (cnt - i) + i;
+      size_t j = rand () % (n - i) + i;
       if (i != j)
         {
           memcpy (tmp, array + j * size, size);
@@ -247,30 +247,30 @@ find_element (struct hmapx *hmapx, int data, hash_function *hash)
   return node;
 }
 
-/* Checks that HMAPX contains the CNT ints in DATA, that its
+/* Checks that HMAPX contains the N ints in DATA, that its
    structure is correct, and that certain operations on HMAPX
    produce the expected results. */
 static void
-check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
+check_hmapx (struct hmapx *hmapx, const int data[], size_t n,
             hash_function *hash)
 {
   size_t i, j;
   int *order;
 
-  check (hmapx_is_empty (hmapx) == (cnt == 0));
-  check (hmapx_count (hmapx) == cnt);
-  check (cnt <= hmapx_capacity (hmapx));
+  check (hmapx_is_empty (hmapx) == (n == 0));
+  check (hmapx_count (hmapx) == n);
+  check (n <= hmapx_capacity (hmapx));
 
-  order = xmemdup (data, cnt * sizeof *data);
-  qsort (order, cnt, sizeof *order, compare_ints);
+  order = xmemdup (data, n * sizeof *data);
+  qsort (order, n, sizeof *order, compare_ints);
 
-  for (i = 0; i < cnt; i = j)
+  for (i = 0; i < n; i = j)
     {
       struct hmapx_node *node;
       struct element *e;
       int count;
 
-      for (j = i + 1; j < cnt; j++)
+      for (j = i + 1; j < n; j++)
         if (order[i] != order[j])
           break;
 
@@ -284,15 +284,15 @@ check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
 
   check (find_element (hmapx, -1, hash) == NULL);
 
-  if (cnt == 0)
+  if (n == 0)
     check (hmapx_first (hmapx) == NULL);
   else
     {
       struct hmapx_node *p;
       int left;
 
-      left = cnt;
-      for (p = hmapx_first (hmapx), i = 0; i < cnt;
+      left = n;
+      for (p = hmapx_first (hmapx), i = 0; i < n;
            p = hmapx_next (hmapx, p), i++)
         {
           struct element *e = hmapx_node_data (p);
@@ -315,7 +315,7 @@ check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
   free (order);
 }
 
-/* Inserts the CNT values from 0 to CNT - 1 (inclusive) into an
+/* Inserts the N values from 0 to N - 1 (inclusive) into an
    HMAPX in the order specified by INSERTIONS, then deletes them in
    the order specified by DELETIONS, checking the HMAPX's contents
    for correctness after each operation.  Uses HASH as the hash
@@ -323,7 +323,7 @@ check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
 static void
 test_insert_delete (const int insertions[],
                     const int deletions[],
-                    size_t cnt,
+                    size_t n,
                     hash_function *hash,
                     size_t reserve)
 {
@@ -332,15 +332,15 @@ test_insert_delete (const int insertions[],
   struct hmapx hmapx;
   size_t i;
 
-  elements = xnmalloc (cnt, sizeof *elements);
-  nodes = xnmalloc (cnt, sizeof *nodes);
-  for (i = 0; i < cnt; i++)
+  elements = xnmalloc (n, sizeof *elements);
+  nodes = xnmalloc (n, sizeof *nodes);
+  for (i = 0; i < n; i++)
     elements[i].data = i;
 
   hmapx_init (&hmapx);
   hmapx_reserve (&hmapx, reserve);
   check_hmapx (&hmapx, NULL, 0, hash);
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       struct hmapx_node *(*insert) (struct hmapx *, void *, size_t hash);
       size_t capacity;
@@ -360,10 +360,10 @@ test_insert_delete (const int insertions[],
           check (capacity == hmapx_capacity (&hmapx));
         }
     }
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       hmapx_delete (&hmapx, nodes[deletions[i]]);
-      check_hmapx (&hmapx, deletions + i + 1, cnt - i - 1, hash);
+      check_hmapx (&hmapx, deletions + i + 1, n - i - 1, hash);
     }
   hmapx_destroy (&hmapx);
 
@@ -378,37 +378,37 @@ static void
 test_insert_any_remove_any (hash_function *hash)
 {
   const int max_elems = 5;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int ins_n_perms;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (ins_n_perms = 0;
-           ins_n_perms == 0 || next_permutation (insertions, cnt);
+           ins_n_perms == 0 || next_permutation (insertions, n);
            ins_n_perms++)
         {
           unsigned int del_n_perms;
           int i;
 
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             deletions[i] = i;
 
           for (del_n_perms = 0;
-               del_n_perms == 0 || next_permutation (deletions, cnt);
+               del_n_perms == 0 || next_permutation (deletions, n);
                del_n_perms++)
-            test_insert_delete (insertions, deletions, cnt, hash, 1);
+            test_insert_delete (insertions, deletions, n, hash, 1);
 
-          check (del_n_perms == factorial (cnt));
+          check (del_n_perms == factorial (n));
         }
-      check (ins_n_perms == factorial (cnt));
+      check (ins_n_perms == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -440,23 +440,23 @@ static void
 test_insert_any_remove_same (hash_function *hash)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values;
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
-        test_insert_delete (values, values, cnt, hash, cnt / 2);
-      check (n_permutations == factorial (cnt));
+        test_insert_delete (values, values, n, hash, n / 2);
+      check (n_permutations == factorial (n));
 
       free (values);
     }
@@ -487,29 +487,29 @@ static void
 test_insert_any_remove_reverse (hash_function *hash)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int n_permutations;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (insertions, cnt);
+           n_permutations == 0 || next_permutation (insertions, n);
            n_permutations++)
         {
-          memcpy (deletions, insertions, sizeof *insertions * cnt);
-          reverse (deletions, cnt);
+          memcpy (deletions, insertions, sizeof *insertions * n);
+          reverse (deletions, n);
 
-          test_insert_delete (insertions, deletions, cnt, hash, cnt);
+          test_insert_delete (insertions, deletions, n, hash, n);
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -540,27 +540,27 @@ static void
 test_random_sequence (int max_elems, hash_function *hash)
 {
   const int max_trials = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt += 2)
+  for (n = 0; n <= max_elems; n += 2)
     {
       int *insertions, *deletions;
       int trial;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         deletions[i] = i;
 
       for (trial = 0; trial < max_trials; trial++)
         {
-          random_shuffle (insertions, cnt, sizeof *insertions);
-          random_shuffle (deletions, cnt, sizeof *deletions);
+          random_shuffle (insertions, n, sizeof *insertions);
+          random_shuffle (deletions, n, sizeof *deletions);
 
-          test_insert_delete (insertions, deletions, cnt, hash, 0);
+          test_insert_delete (insertions, deletions, n, hash, 0);
         }
 
       free (insertions);
@@ -725,9 +725,9 @@ static void
 test_changed (hash_function *hash)
 {
   const int max_elems = 6;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values, *changed_values;
       struct hmapx_node **nodes;
@@ -735,50 +735,50 @@ test_changed (hash_function *hash)
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      changed_values = xnmalloc (cnt, sizeof *changed_values);
-      elements = xnmalloc (cnt, sizeof *elements);
-      nodes = xnmalloc (cnt, sizeof *nodes);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      changed_values = xnmalloc (n, sizeof *changed_values);
+      elements = xnmalloc (n, sizeof *elements);
+      nodes = xnmalloc (n, sizeof *nodes);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
         {
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             {
               int j, k;
-              for (j = 0; j <= cnt; j++)
+              for (j = 0; j <= n; j++)
                 {
                   struct hmapx hmapx;
 
                   hmapx_init (&hmapx);
 
                   /* Add to HMAPX in order. */
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     {
                       int n = values[k];
                       elements[n].data = n;
                       nodes[n] = hmapx_insert (&hmapx, &elements[n],
                                                hash (elements[n].data));
                     }
-                  check_hmapx (&hmapx, values, cnt, hash);
+                  check_hmapx (&hmapx, values, n, hash);
 
                   /* Change value i to j. */
                   elements[i].data = j;
                   hmapx_changed (&hmapx, nodes[i],
                                  hash (elements[i].data));
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     changed_values[k] = k;
                   changed_values[i] = j;
-                  check_hmapx (&hmapx, changed_values, cnt, hash);
+                  check_hmapx (&hmapx, changed_values, n, hash);
 
                   hmapx_destroy (&hmapx);
                 }
             }
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (values);
       free (changed_values);
@@ -811,9 +811,9 @@ static void
 test_change (hash_function *hash)
 {
   const int max_elems = 6;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values, *changed_values;
       struct hmapx_node **nodes;
@@ -822,49 +822,49 @@ test_change (hash_function *hash)
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      changed_values = xnmalloc (cnt, sizeof *changed_values);
-      elements = xnmalloc (cnt, sizeof *elements);
-      nodes = xnmalloc (cnt, sizeof *nodes);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      changed_values = xnmalloc (n, sizeof *changed_values);
+      elements = xnmalloc (n, sizeof *elements);
+      nodes = xnmalloc (n, sizeof *nodes);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
         {
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             {
               int j, k;
-              for (j = 0; j <= cnt; j++)
+              for (j = 0; j <= n; j++)
                 {
                   struct hmapx hmapx;
 
                   hmapx_init (&hmapx);
 
                   /* Add to HMAPX in order. */
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     {
                       int n = values[k];
                       elements[n].data = n;
                       nodes[n] = hmapx_insert (&hmapx, &elements[n],
                                                hash (elements[n].data));
                     }
-                  check_hmapx (&hmapx, values, cnt, hash);
+                  check_hmapx (&hmapx, values, n, hash);
 
                   /* Change value i to j. */
                   replacement.data = j;
                   hmapx_change (&hmapx, nodes[i], &replacement, hash (j));
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     changed_values[k] = k;
                   changed_values[i] = j;
-                  check_hmapx (&hmapx, changed_values, cnt, hash);
+                  check_hmapx (&hmapx, changed_values, n, hash);
 
                   hmapx_destroy (&hmapx);
                 }
             }
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (values);
       free (changed_values);
@@ -940,18 +940,18 @@ test_clear (void)
   struct hmapx_node **nodes;
   int *values;
   struct hmapx hmapx;
-  int cnt;
+  int n;
 
   elements = xnmalloc (max_elems, sizeof *elements);
   nodes = xnmalloc (max_elems, sizeof *nodes);
   values = xnmalloc (max_elems, sizeof *values);
 
   hmapx_init (&hmapx);
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int i;
 
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         {
           values[i] = elements[i].data = i;
           nodes[i] = hmapx_insert (&hmapx, &elements[i],

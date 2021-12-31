@@ -149,14 +149,14 @@ print_pred (struct ll_list *list,
   printf ("\n");
 }
 
-/* Prints the CNT numbers in VALUES. */
+/* Prints the N numbers in VALUES. */
 static void UNUSED
-print_array (int values[], size_t cnt)
+print_array (int values[], size_t n)
 {
   size_t i;
 
   printf ("arry:");
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     printf (" %d", values[i]);
   printf ("\n");
 }
@@ -253,13 +253,13 @@ allocate_elements (size_t n,
     *values = xnmalloc (n, sizeof *values);
 }
 
-/* Copies the CNT values of `x' from LIST into VALUES[]. */
+/* Copies the N values of `x' from LIST into VALUES[]. */
 static void
-extract_values (struct ll_list *list, int values[], size_t cnt)
+extract_values (struct ll_list *list, int values[], size_t n)
 {
   struct ll *x;
 
-  check (ll_count (list) == cnt);
+  check (ll_count (list) == n);
   for (x = ll_head (list); x != ll_null (list); x = ll_next (x))
     {
       struct element *e = ll_to_element (x);
@@ -308,18 +308,18 @@ allocate_pattern (size_t n,
     extract_values (list, *values, n);
 }
 
-/* Randomly shuffles the CNT elements in ARRAY, each of which is
+/* Randomly shuffles the N elements in ARRAY, each of which is
    SIZE bytes in size. */
 static void
-random_shuffle (void *array_, size_t cnt, size_t size)
+random_shuffle (void *array_, size_t n, size_t size)
 {
   char *array = array_;
   char *tmp = xmalloc (size);
   size_t i;
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
-      size_t j = rand () % (cnt - i) + i;
+      size_t j = rand () % (n - i) + i;
       if (i != j)
         {
           memcpy (tmp, array + j * size, size);
@@ -386,17 +386,17 @@ compare_ints_noaux (const void *a_, const void *b_)
   return *a < *b ? -1 : *a > *b;
 }
 
-/* Checks that LIST contains the CNT values in ELEMENTS. */
+/* Checks that LIST contains the N values in ELEMENTS. */
 static void
-check_list_contents (struct ll_list *list, int elements[], size_t cnt)
+check_list_contents (struct ll_list *list, int elements[], size_t n)
 {
   struct ll *ll;
   size_t i;
 
-  check ((cnt == 0) == ll_is_empty (list));
+  check ((n == 0) == ll_is_empty (list));
 
   /* Iterate in forward order. */
-  for (ll = ll_head (list), i = 0; i < cnt; ll = ll_next (ll), i++)
+  for (ll = ll_head (list), i = 0; i < n; ll = ll_next (ll), i++)
     {
       struct element *e = ll_to_element (ll);
       check (elements[i] == e->x);
@@ -405,15 +405,15 @@ check_list_contents (struct ll_list *list, int elements[], size_t cnt)
   check (ll == ll_null (list));
 
   /* Iterate in reverse order. */
-  for (ll = ll_tail (list), i = 0; i < cnt; ll = ll_prev (ll), i++)
+  for (ll = ll_tail (list), i = 0; i < n; ll = ll_prev (ll), i++)
     {
       struct element *e = ll_to_element (ll);
-      check (elements[cnt - i - 1] == e->x);
+      check (elements[n - i - 1] == e->x);
       check (ll != ll_null (list));
     }
   check (ll == ll_null (list));
 
-  check (ll_count (list) == cnt);
+  check (ll_count (list) == n);
 }
 
 /* Lexicographically compares ARRAY1, which contains COUNT1
@@ -506,21 +506,21 @@ static void
 test_insert_remove (void)
 {
   const int max_elems = 16;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt < max_elems; cnt++)
+  for (n = 0; n < max_elems; n++)
     {
       struct element **elems;
       struct ll **elemp;
-      int *values = xnmalloc (cnt + 1, sizeof *values);
+      int *values = xnmalloc (n + 1, sizeof *values);
 
       struct ll_list list;
       struct element extra;
       int pos;
 
-      allocate_ascending (cnt, &list, &elems, &elemp, NULL);
+      allocate_ascending (n, &list, &elems, &elemp, NULL);
       extra.x = -1;
-      for (pos = 0; pos <= cnt; pos++)
+      for (pos = 0; pos <= n; pos++)
         {
           int i, j;
 
@@ -530,15 +530,15 @@ test_insert_remove (void)
           for (i = 0; i < pos; i++)
             values[j++] = i;
           values[j++] = -1;
-          for (; i < cnt; i++)
+          for (; i < n; i++)
             values[j++] = i;
-          check_list_contents (&list, values, cnt + 1);
+          check_list_contents (&list, values, n + 1);
 
           ll_remove (&extra.ll);
         }
-      check_list_contents (&list, values, cnt);
+      check_list_contents (&list, values, n);
 
-      free_elements (cnt, elems, elemp, values);
+      free_elements (n, elems, elemp, values);
     }
 }
 
@@ -547,9 +547,9 @@ static void
 test_swap (void)
 {
   const int max_elems = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
@@ -557,11 +557,11 @@ test_swap (void)
 
       int i, j, k;
 
-      allocate_ascending (cnt, &list, &elems, NULL, &values);
-      check_list_contents (&list, values, cnt);
+      allocate_ascending (n, &list, &elems, NULL, &values);
+      check_list_contents (&list, values, n);
 
-      for (i = 0; i < cnt; i++)
-        for (j = 0; j < cnt; j++)
+      for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
           for (k = 0; k < 2; k++)
             {
               int t;
@@ -570,10 +570,10 @@ test_swap (void)
               t = values[i];
               values[i] = values[j];
               values[j] = t;
-              check_list_contents (&list, values, cnt);
+              check_list_contents (&list, values, n);
             }
 
-      free_elements (cnt, elems, NULL, values);
+      free_elements (n, elems, NULL, values);
     }
 }
 
@@ -582,13 +582,13 @@ static void
 test_swap_range (void)
 {
   const int max_elems = 8;
-  int cnt, a0, a1, b0, b1, r;
+  int n, a0, a1, b0, b1, r;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (a0 = 0; a0 <= cnt; a0++)
-      for (a1 = a0; a1 <= cnt; a1++)
-        for (b0 = a1; b0 <= cnt; b0++)
-          for (b1 = b0; b1 <= cnt; b1++)
+  for (n = 0; n <= max_elems; n++)
+    for (a0 = 0; a0 <= n; a0++)
+      for (a1 = a0; a1 <= n; a1++)
+        for (b0 = a1; b0 <= n; b0++)
+          for (b1 = b0; b1 <= n; b1++)
             for (r = 0; r < 2; r++)
               {
                 struct ll_list list;
@@ -598,8 +598,8 @@ test_swap_range (void)
 
                 int i, j;
 
-                allocate_ascending (cnt, &list, &elems, &elemp, &values);
-                check_list_contents (&list, values, cnt);
+                allocate_ascending (n, &list, &elems, &elemp, &values);
+                check_list_contents (&list, values, n);
 
                 j = 0;
                 for (i = 0; i < a0; i++)
@@ -610,17 +610,17 @@ test_swap_range (void)
                   values[j++] = i;
                 for (i = a0; i < a1; i++)
                   values[j++] = i;
-                for (i = b1; i < cnt; i++)
+                for (i = b1; i < n; i++)
                   values[j++] = i;
-                check (j == cnt);
+                check (j == n);
 
                 if (r == 0)
                   ll_swap_range (elemp[a0], elemp[a1], elemp[b0], elemp[b1]);
                 else
                   ll_swap_range (elemp[b0], elemp[b1], elemp[a0], elemp[a1]);
-                check_list_contents (&list, values, cnt);
+                check_list_contents (&list, values, n);
 
-                free_elements (cnt, elems, elemp, values);
+                free_elements (n, elems, elemp, values);
               }
 }
 
@@ -630,11 +630,11 @@ test_remove_range (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1;
+  int n, r0, r1;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
+  for (n = 0; n <= max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
         {
           struct ll_list list;
           struct element **elems;
@@ -643,19 +643,19 @@ test_remove_range (void)
 
           int i, j;
 
-          allocate_ascending (cnt, &list, &elems, &elemp, &values);
-          check_list_contents (&list, values, cnt);
+          allocate_ascending (n, &list, &elems, &elemp, &values);
+          check_list_contents (&list, values, n);
 
           j = 0;
           for (i = 0; i < r0; i++)
             values[j++] = i;
-          for (i = r1; i < cnt; i++)
+          for (i = r1; i < n; i++)
             values[j++] = i;
 
           ll_remove_range (elemp[r0], elemp[r1]);
           check_list_contents (&list, values, j);
 
-          free_elements (cnt, elems, elemp, values);
+          free_elements (n, elems, elemp, values);
         }
 }
 
@@ -665,12 +665,12 @@ test_remove_equal (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1, eq_pat;
+  int n, r0, r1, eq_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
-        for (eq_pat = 0; eq_pat <= 1 << cnt; eq_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
+        for (eq_pat = 0; eq_pat <= 1 << n; eq_pat++)
           {
             struct ll_list list;
             struct element **elems;
@@ -681,10 +681,10 @@ test_remove_equal (void)
             int remaining;
             int i;
 
-            allocate_elements (cnt, &list, &elems, &elemp, &values);
+            allocate_elements (n, &list, &elems, &elemp, &values);
 
             remaining = 0;
-            for (i = 0; i < cnt; i++)
+            for (i = 0; i < n; i++)
               {
                 int x = eq_pat & (1 << i) ? -1 : i;
                 bool delete = x == -1 && r0 <= i && i < r1;
@@ -696,10 +696,10 @@ test_remove_equal (void)
             to_remove.x = -1;
             check ((int) ll_remove_equal (elemp[r0], elemp[r1], &to_remove.ll,
                                           compare_elements, &aux_data)
-                   == cnt - remaining);
+                   == n - remaining);
             check_list_contents (&list, values, remaining);
 
-            free_elements (cnt, elems, elemp, values);
+            free_elements (n, elems, elemp, values);
           }
 }
 
@@ -709,12 +709,12 @@ test_remove_if (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1, pattern;
+  int n, r0, r1, pattern;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
-        for (pattern = 0; pattern <= 1 << cnt; pattern++)
+  for (n = 0; n <= max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
+        for (pattern = 0; pattern <= 1 << n; pattern++)
           {
             struct ll_list list;
             struct element **elems;
@@ -724,10 +724,10 @@ test_remove_if (void)
             int remaining;
             int i;
 
-            allocate_elements (cnt, &list, &elems, &elemp, &values);
+            allocate_elements (n, &list, &elems, &elemp, &values);
 
             remaining = 0;
-            for (i = 0; i < cnt; i++)
+            for (i = 0; i < n; i++)
               {
                 bool delete = (pattern & (1 << i)) && r0 <= i && i < r1;
                 elems[i]->x = i;
@@ -737,10 +737,10 @@ test_remove_if (void)
 
             check ((int) ll_remove_if (elemp[r0], elemp[r1],
                                        pattern_pred, &pattern)
-                   == cnt - remaining);
+                   == n - remaining);
             check_list_contents (&list, values, remaining);
 
-            free_elements (cnt, elems, elemp, values);
+            free_elements (n, elems, elemp, values);
           }
 }
 
@@ -750,9 +750,9 @@ test_moved (void)
 {
   const int max_elems = 8;
 
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
@@ -761,19 +761,19 @@ test_moved (void)
 
       int i;
 
-      allocate_ascending (cnt, &list, &elems, NULL, &values);
-      allocate_elements (cnt, NULL, &new_elems, NULL, NULL);
-      check_list_contents (&list, values, cnt);
+      allocate_ascending (n, &list, &elems, NULL, &values);
+      allocate_elements (n, NULL, &new_elems, NULL, NULL);
+      check_list_contents (&list, values, n);
 
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         {
           *new_elems[i] = *elems[i];
           ll_moved (&new_elems[i]->ll);
-          check_list_contents (&list, values, cnt);
+          check_list_contents (&list, values, n);
         }
 
-      free_elements (cnt, elems, NULL, values);
-      free_elements (cnt, new_elems, NULL, NULL);
+      free_elements (n, elems, NULL, values);
+      free_elements (n, new_elems, NULL, NULL);
     }
 }
 
@@ -786,10 +786,10 @@ test_examine_equal_range (void (*helper) (int r0, int r1, int eq_pat,
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1, eq_pat;
+  int n, r0, r1, eq_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (eq_pat = 0; eq_pat <= 1 << cnt; eq_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (eq_pat = 0; eq_pat <= 1 << n; eq_pat++)
       {
         struct ll_list list;
         struct element **elems;
@@ -800,20 +800,20 @@ test_examine_equal_range (void (*helper) (int r0, int r1, int eq_pat,
 
         int i;
 
-        allocate_ascending (cnt, &list, &elems, &elemp, &values);
+        allocate_ascending (n, &list, &elems, &elemp, &values);
 
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < n; i++)
           if (eq_pat & (1 << i))
             values[i] = elems[i]->x = -1;
 
         to_find.x = -1;
-        for (r0 = 0; r0 <= cnt; r0++)
-          for (r1 = r0; r1 <= cnt; r1++)
+        for (r0 = 0; r0 <= n; r0++)
+          for (r1 = r0; r1 <= n; r1++)
             helper (r0, r1, eq_pat, &to_find.ll, elemp);
 
-        check_list_contents (&list, values, cnt);
+        check_list_contents (&list, values, n);
 
-        free_elements (cnt, elems, elemp, values);
+        free_elements (n, elems, elemp, values);
       }
 }
 
@@ -825,25 +825,25 @@ test_examine_if_range (void (*helper) (int r0, int r1, int eq_pat,
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1, eq_pat;
+  int n, r0, r1, eq_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (eq_pat = 0; eq_pat <= 1 << cnt; eq_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (eq_pat = 0; eq_pat <= 1 << n; eq_pat++)
       {
         struct ll_list list;
         struct element **elems;
         struct ll **elemp;
         int *values;
 
-        allocate_ascending (cnt, &list, &elems, &elemp, &values);
+        allocate_ascending (n, &list, &elems, &elemp, &values);
 
-        for (r0 = 0; r0 <= cnt; r0++)
-          for (r1 = r0; r1 <= cnt; r1++)
+        for (r0 = 0; r0 <= n; r0++)
+          for (r1 = r0; r1 <= n; r1++)
             helper (r0, r1, eq_pat, elemp);
 
-        check_list_contents (&list, values, cnt);
+        check_list_contents (&list, values, n);
 
-        free_elements (cnt, elems, elemp, values);
+        free_elements (n, elems, elemp, values);
       }
 }
 
@@ -899,10 +899,10 @@ test_find_adjacent_equal (void)
 {
   const int max_elems = 8;
 
-  int cnt, eq_pat;
+  int n, eq_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (eq_pat = 0; eq_pat <= 1 << cnt; eq_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (eq_pat = 0; eq_pat <= 1 << n; eq_pat++)
       {
         struct ll_list list;
         struct element **elems;
@@ -912,10 +912,10 @@ test_find_adjacent_equal (void)
 
         int i;
 
-        allocate_ascending (cnt, &list, &elems, &elemp, &values);
+        allocate_ascending (n, &list, &elems, &elemp, &values);
 
         match = -1;
-        for (i = 0; i < cnt - 1; i++)
+        for (i = 0; i < n - 1; i++)
           {
             elems[i]->y = i;
             if (eq_pat & (1 << i))
@@ -927,7 +927,7 @@ test_find_adjacent_equal (void)
               match--;
           }
 
-        for (i = 0; i <= cnt; i++)
+        for (i = 0; i <= n; i++)
           {
             struct ll *ll1 = ll_find_adjacent_equal (elemp[i], ll_null (&list),
                                                      compare_elements,
@@ -936,7 +936,7 @@ test_find_adjacent_equal (void)
             int j;
 
             ll2 = ll_null (&list);
-            for (j = i; j < cnt - 1; j++)
+            for (j = i; j < n - 1; j++)
               if (eq_pat & (1 << j))
                 {
                   ll2 = elemp[j];
@@ -944,9 +944,9 @@ test_find_adjacent_equal (void)
                 }
             check (ll1 == ll2);
           }
-        check_list_contents (&list, values, cnt);
+        check_list_contents (&list, values, n);
 
-        free_elements (cnt, elems, elemp, values);
+        free_elements (n, elems, elemp, values);
       }
 }
 
@@ -1024,19 +1024,19 @@ factorial (unsigned int n)
   return value;
 }
 
-/* Returns the number of permutations of the CNT values in
+/* Returns the number of permutations of the N values in
    VALUES.  If VALUES contains duplicates, they must be
    adjacent. */
 static unsigned int
-expected_perms (int *values, size_t cnt)
+expected_perms (int *values, size_t n)
 {
   size_t i, j;
   unsigned int n_perms;
 
-  n_perms = factorial (cnt);
-  for (i = 0; i < cnt; i = j)
+  n_perms = factorial (n);
+  for (i = 0; i < n; i = j)
     {
-      for (j = i + 1; j < cnt; j++)
+      for (j = i + 1; j < n; j++)
         if (values[i] != values[j])
           break;
       n_perms /= factorial (j - i);
@@ -1049,19 +1049,19 @@ static void
 test_min_max (void)
 {
   const int max_elems = 6;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
       struct ll **elemp;
       int *values;
-      int *new_values = xnmalloc (cnt, sizeof *values);
+      int *new_values = xnmalloc (n, sizeof *values);
 
       size_t n_perms;
 
-      allocate_ascending (cnt, &list, &elems, &elemp, &values);
+      allocate_ascending (n, &list, &elems, &elemp, &values);
 
       n_perms = 1;
       while (ll_next_permutation (ll_head (&list), ll_null (&list),
@@ -1078,8 +1078,8 @@ test_min_max (void)
               elemp[i] = x;
               new_values[i] = e->x;
             }
-          for (r0 = 0; r0 <= cnt; r0++)
-            for (r1 = r0; r1 <= cnt; r1++)
+          for (r0 = 0; r0 <= n; r0++)
+            for (r1 = r0; r1 <= n; r1++)
               {
                 struct ll *min = ll_min (elemp[r0], elemp[r1],
                                          compare_elements, &aux_data);
@@ -1112,10 +1112,10 @@ test_min_max (void)
               }
           n_perms++;
         }
-      check (n_perms == factorial (cnt));
-      check_list_contents (&list, values, cnt);
+      check (n_perms == factorial (n));
+      check_list_contents (&list, values, n);
 
-      free_elements (cnt, elems, elemp, values);
+      free_elements (n, elems, elemp, values);
       free (new_values);
     }
 }
@@ -1126,12 +1126,12 @@ test_lexicographical_compare_3way (void)
 {
   const int max_elems = 4;
 
-  int cnt_a, pat_a, cnt_b, pat_b;
+  int n_a, pat_a, n_b, pat_b;
 
-  for (cnt_a = 0; cnt_a <= max_elems; cnt_a++)
-    for (pat_a = 0; pat_a <= 1 << cnt_a; pat_a++)
-      for (cnt_b = 0; cnt_b <= max_elems; cnt_b++)
-        for (pat_b = 0; pat_b <= 1 << cnt_b; pat_b++)
+  for (n_a = 0; n_a <= max_elems; n_a++)
+    for (pat_a = 0; pat_a <= 1 << n_a; pat_a++)
+      for (n_b = 0; n_b <= max_elems; n_b++)
+        for (pat_b = 0; pat_b <= 1 << n_b; pat_b++)
           {
             struct ll_list list_a, list_b;
             struct element **elems_a, **elems_b;
@@ -1140,15 +1140,15 @@ test_lexicographical_compare_3way (void)
 
             int a0, a1, b0, b1;
 
-            allocate_pattern (cnt_a, pat_a,
+            allocate_pattern (n_a, pat_a,
                               &list_a, &elems_a, &elemp_a, &values_a);
-            allocate_pattern (cnt_b, pat_b,
+            allocate_pattern (n_b, pat_b,
                               &list_b, &elems_b, &elemp_b, &values_b);
 
-            for (a0 = 0; a0 <= cnt_a; a0++)
-              for (a1 = a0; a1 <= cnt_a; a1++)
-                for (b0 = 0; b0 <= cnt_b; b0++)
-                  for (b1 = b0; b1 <= cnt_b; b1++)
+            for (a0 = 0; a0 <= n_a; a0++)
+              for (a1 = a0; a1 <= n_a; a1++)
+                for (b0 = 0; b0 <= n_b; b0++)
+                  for (b1 = b0; b1 <= n_b; b1++)
                     {
                       int a_ordering = lexicographical_compare_3way (
                         values_a + a0, a1 - a0,
@@ -1164,8 +1164,8 @@ test_lexicographical_compare_3way (void)
                       check (a_ordering == b_ordering);
                     }
 
-            free_elements (cnt_a, elems_a, elemp_a, values_a);
-            free_elements (cnt_b, elems_b, elemp_b, values_b);
+            free_elements (n_a, elems_a, elemp_a, values_a);
+            free_elements (n_b, elems_b, elemp_b, values_b);
           }
 }
 
@@ -1186,11 +1186,11 @@ test_apply (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1;
+  int n, r0, r1;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
+  for (n = 0; n <= max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
         {
           struct ll_list list;
           struct element **elems;
@@ -1202,18 +1202,18 @@ test_apply (void)
 
           int i;
 
-          allocate_ascending (cnt, &list, &elems, &elemp, &values);
-          check_list_contents (&list, values, cnt);
+          allocate_ascending (n, &list, &elems, &elemp, &values);
+          check_list_contents (&list, values, n);
 
-          output = next_output = xnmalloc (cnt, sizeof *output);
+          output = next_output = xnmalloc (n, sizeof *output);
           ll_apply (elemp[r0], elemp[r1], apply_func, &next_output);
-          check_list_contents (&list, values, cnt);
+          check_list_contents (&list, values, n);
 
           check (r1 - r0 == next_output - output);
           for (i = 0; i < r1 - r0; i++)
             check (output[i] == r0 + i);
 
-          free_elements (cnt, elems, elemp, values);
+          free_elements (n, elems, elemp, values);
           free (output);
         }
 }
@@ -1224,11 +1224,11 @@ test_reverse (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1;
+  int n, r0, r1;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
+  for (n = 0; n <= max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
         {
           struct ll_list list;
           struct element **elems;
@@ -1237,21 +1237,21 @@ test_reverse (void)
 
           int i, j;
 
-          allocate_ascending (cnt, &list, &elems, &elemp, &values);
-          check_list_contents (&list, values, cnt);
+          allocate_ascending (n, &list, &elems, &elemp, &values);
+          check_list_contents (&list, values, n);
 
           j = 0;
           for (i = 0; i < r0; i++)
             values[j++] = i;
           for (i = r1 - 1; i >= r0; i--)
             values[j++] = i;
-          for (i = r1; i < cnt; i++)
+          for (i = r1; i < n; i++)
             values[j++] = i;
 
           ll_reverse (elemp[r0], elemp[r1]);
-          check_list_contents (&list, values, cnt);
+          check_list_contents (&list, values, n);
 
-          free_elements (cnt, elems, elemp, values);
+          free_elements (n, elems, elemp, values);
         }
 }
 
@@ -1261,55 +1261,55 @@ static void
 test_permutations_no_dups (void)
 {
   const int max_elems = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
       int *values;
-      int *old_values = xnmalloc (cnt, sizeof *values);
-      int *new_values = xnmalloc (cnt, sizeof *values);
+      int *old_values = xnmalloc (n, sizeof *values);
+      int *new_values = xnmalloc (n, sizeof *values);
 
       size_t n_perms;
 
-      allocate_ascending (cnt, &list, &elems, NULL, &values);
+      allocate_ascending (n, &list, &elems, NULL, &values);
 
       n_perms = 1;
-      extract_values (&list, old_values, cnt);
+      extract_values (&list, old_values, n);
       while (ll_next_permutation (ll_head (&list), ll_null (&list),
                                   compare_elements, &aux_data))
         {
-          extract_values (&list, new_values, cnt);
-          check (lexicographical_compare_3way (new_values, cnt,
-                                               old_values, cnt,
+          extract_values (&list, new_values, n);
+          check (lexicographical_compare_3way (new_values, n,
+                                               old_values, n,
                                                sizeof *new_values,
                                                compare_ints, NULL) > 0);
-          memcpy (old_values, new_values, (cnt) * sizeof *old_values);
+          memcpy (old_values, new_values, (n) * sizeof *old_values);
           n_perms++;
         }
-      check (n_perms == factorial (cnt));
-      check_list_contents (&list, values, cnt);
+      check (n_perms == factorial (n));
+      check_list_contents (&list, values, n);
 
       n_perms = 1;
       ll_reverse (ll_head (&list), ll_null (&list));
-      extract_values (&list, old_values, cnt);
+      extract_values (&list, old_values, n);
       while (ll_prev_permutation (ll_head (&list), ll_null (&list),
                                   compare_elements, &aux_data))
         {
-          extract_values (&list, new_values, cnt);
-          check (lexicographical_compare_3way (new_values, cnt,
-                                               old_values, cnt,
+          extract_values (&list, new_values, n);
+          check (lexicographical_compare_3way (new_values, n,
+                                               old_values, n,
                                                sizeof *new_values,
                                                compare_ints, NULL) < 0);
-          memcpy (old_values, new_values, (cnt) * sizeof *old_values);
+          memcpy (old_values, new_values, (n) * sizeof *old_values);
           n_perms++;
         }
-      check (n_perms == factorial (cnt));
+      check (n_perms == factorial (n));
       ll_reverse (ll_head (&list), ll_null (&list));
-      check_list_contents (&list, values, cnt);
+      check_list_contents (&list, values, n);
 
-      free_elements (cnt, elems, NULL, values);
+      free_elements (n, elems, NULL, values);
       free (old_values);
       free (new_values);
     }
@@ -1324,10 +1324,8 @@ test_permutations_with_dups (void)
   const int max_dup = 3;
   const int repetitions = 1024;
 
-  int cnt, repeat;
-
-  for (repeat = 0; repeat < repetitions; repeat++)
-    for (cnt = 0; cnt < max_elems; cnt++)
+  for (int repeat = 0; repeat < repetitions; repeat++)
+    for (int n_elems = 0; n_elems < max_elems; n_elems++)
       {
         struct ll_list list;
         struct element **elems;
@@ -1336,10 +1334,10 @@ test_permutations_with_dups (void)
         int *new_values = xnmalloc (max_elems, sizeof *values);
 
         unsigned int n_permutations;
-        int left = cnt;
+        int left = n_elems;
         int value = 0;
 
-        allocate_elements (cnt, &list, &elems, NULL, &values);
+        allocate_elements (n_elems, &list, &elems, NULL, &values);
 
         value = 0;
         while (left > 0)
@@ -1348,46 +1346,46 @@ test_permutations_with_dups (void)
             int n = rand () % max + 1;
             while (n-- > 0)
               {
-                int idx = cnt - left--;
+                int idx = n_elems - left--;
                 values[idx] = elems[idx]->x = value;
               }
             value++;
           }
 
         n_permutations = 1;
-        extract_values (&list, old_values, cnt);
+        extract_values (&list, old_values, n_elems);
         while (ll_next_permutation (ll_head (&list), ll_null (&list),
                                     compare_elements, &aux_data))
           {
-            extract_values (&list, new_values, cnt);
-            check (lexicographical_compare_3way (new_values, cnt,
-                                                 old_values, cnt,
+            extract_values (&list, new_values, n_elems);
+            check (lexicographical_compare_3way (new_values, n_elems,
+                                                 old_values, n_elems,
                                                  sizeof *new_values,
                                                  compare_ints, NULL) > 0);
-            memcpy (old_values, new_values, cnt * sizeof *old_values);
+            memcpy (old_values, new_values, n_elems * sizeof *old_values);
             n_permutations++;
           }
-        check (n_permutations == expected_perms (values, cnt));
-        check_list_contents (&list, values, cnt);
+        check (n_permutations == expected_perms (values, n_elems));
+        check_list_contents (&list, values, n_elems);
 
         n_permutations = 1;
         ll_reverse (ll_head (&list), ll_null (&list));
-        extract_values (&list, old_values, cnt);
+        extract_values (&list, old_values, n_elems);
         while (ll_prev_permutation (ll_head (&list), ll_null (&list),
                                     compare_elements, &aux_data))
           {
-            extract_values (&list, new_values, cnt);
-            check (lexicographical_compare_3way (new_values, cnt,
-                                                 old_values, cnt,
+            extract_values (&list, new_values, n_elems);
+            check (lexicographical_compare_3way (new_values, n_elems,
+                                                 old_values, n_elems,
                                                  sizeof *new_values,
                                                  compare_ints, NULL) < 0);
             n_permutations++;
           }
         ll_reverse (ll_head (&list), ll_null (&list));
-        check (n_permutations == expected_perms (values, cnt));
-        check_list_contents (&list, values, cnt);
+        check (n_permutations == expected_perms (values, n_elems));
+        check_list_contents (&list, values, n_elems);
 
-        free_elements (cnt, elems, NULL, values);
+        free_elements (n_elems, elems, NULL, values);
         free (old_values);
         free (new_values);
       }
@@ -1474,11 +1472,11 @@ test_merge_with_dups (void)
 {
   const int max_elems = 8;
 
-  int cnt, merge_pat, inc_pat, order;
+  int n, merge_pat, inc_pat, order;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (merge_pat = 0; merge_pat <= (1 << cnt); merge_pat++)
-      for (inc_pat = 0; inc_pat <= (1 << cnt); inc_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (merge_pat = 0; merge_pat <= (1 << n); merge_pat++)
+      for (inc_pat = 0; inc_pat <= (1 << n); inc_pat++)
         for (order = 0; order < 2; order++)
           {
             struct ll_list list;
@@ -1489,10 +1487,10 @@ test_merge_with_dups (void)
             int mid;
             int i, j, k;
 
-            allocate_elements (cnt, &list, &elems, &elemp, &values);
+            allocate_elements (n, &list, &elems, &elemp, &values);
 
             j = 0;
-            for (i = k = 0; i < cnt; i++)
+            for (i = k = 0; i < n; i++)
               {
                 if (merge_pat & (1u << i))
                   elems[j++]->x = k;
@@ -1500,49 +1498,49 @@ test_merge_with_dups (void)
                   k++;
               }
             mid = j;
-            for (i = k = 0; i < cnt; i++)
+            for (i = k = 0; i < n; i++)
               {
                 if (!(merge_pat & (1u << i)))
                   elems[j++]->x = k;
                 if (inc_pat & (1u << i))
                   k++;
               }
-            check (cnt == j);
+            check (n == j);
 
             if (order == 0)
               {
-                for (i = 0; i < cnt; i++)
+                for (i = 0; i < n; i++)
                   elems[i]->y = i;
               }
             else
               {
                 for (i = 0; i < mid; i++)
                   elems[i]->y = 100 + i;
-                for (i = mid; i < cnt; i++)
+                for (i = mid; i < n; i++)
                   elems[i]->y = i;
               }
 
             j = 0;
-            for (i = k = 0; i < cnt; i++)
+            for (i = k = 0; i < n; i++)
               {
                 values[j++] = k;
                 if (inc_pat & (1u << i))
                   k++;
               }
-            check (cnt == j);
+            check (n == j);
 
             if (order == 0)
-              ll_merge (elemp[0], elemp[mid], elemp[mid], elemp[cnt],
+              ll_merge (elemp[0], elemp[mid], elemp[mid], elemp[n],
                         compare_elements, &aux_data);
             else
-              ll_merge (elemp[mid], elemp[cnt], elemp[0], elemp[mid],
+              ll_merge (elemp[mid], elemp[n], elemp[0], elemp[mid],
                         compare_elements, &aux_data);
 
-            check_list_contents (&list, values, cnt);
+            check_list_contents (&list, values, n);
             check (ll_is_sorted (ll_head (&list), ll_null (&list),
                                  compare_elements_x_y, &aux_data));
 
-            free_elements (cnt, elems, elemp, values);
+            free_elements (n, elems, elemp, values);
           }
 }
 
@@ -1552,9 +1550,9 @@ static void
 test_sort_exhaustive (void)
 {
   const int max_elems = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
@@ -1565,8 +1563,8 @@ test_sort_exhaustive (void)
 
       size_t n_perms;
 
-      allocate_ascending (cnt, &list, &elems, NULL, &values);
-      allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
+      allocate_ascending (n, &list, &elems, NULL, &values);
+      allocate_elements (n, NULL, &perm_elems, NULL, &perm_values);
 
       n_perms = 1;
       while (ll_next_permutation (ll_head (&list), ll_null (&list),
@@ -1575,24 +1573,24 @@ test_sort_exhaustive (void)
           struct ll_list perm_list;
           int j;
 
-          extract_values (&list, perm_values, cnt);
+          extract_values (&list, perm_values, n);
           ll_init (&perm_list);
-          for (j = 0; j < cnt; j++)
+          for (j = 0; j < n; j++)
             {
               perm_elems[j]->x = perm_values[j];
               ll_push_tail (&perm_list, &perm_elems[j]->ll);
             }
           ll_sort (ll_head (&perm_list), ll_null (&perm_list),
                    compare_elements, &aux_data);
-          check_list_contents (&perm_list, values, cnt);
+          check_list_contents (&perm_list, values, n);
           check (ll_is_sorted (ll_head (&perm_list), ll_null (&perm_list),
                                compare_elements, &aux_data));
           n_perms++;
         }
-      check (n_perms == factorial (cnt));
+      check (n_perms == factorial (n));
 
-      free_elements (cnt, elems, NULL, values);
-      free_elements (cnt, perm_elems, NULL, perm_values);
+      free_elements (n, elems, NULL, values);
+      free_elements (n, perm_elems, NULL, perm_values);
     }
 }
 
@@ -1602,10 +1600,10 @@ static void
 test_sort_stable (void)
 {
   const int max_elems = 6;
-  int cnt, inc_pat;
+  int n, inc_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (inc_pat = 0; inc_pat <= 1 << cnt; inc_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (inc_pat = 0; inc_pat <= 1 << n; inc_pat++)
       {
         struct ll_list list;
         struct element **elems;
@@ -1617,11 +1615,11 @@ test_sort_stable (void)
         size_t n_perms;
         int i, j;
 
-        allocate_elements (cnt, &list, &elems, NULL, &values);
-        allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
+        allocate_elements (n, &list, &elems, NULL, &values);
+        allocate_elements (n, NULL, &perm_elems, NULL, &perm_values);
 
         j = 0;
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < n; i++)
           {
             elems[i]->x = values[i] = j;
             if (inc_pat & (1 << i))
@@ -1635,9 +1633,9 @@ test_sort_stable (void)
           {
             struct ll_list perm_list;
 
-            extract_values (&list, perm_values, cnt);
+            extract_values (&list, perm_values, n);
             ll_init (&perm_list);
-            for (i = 0; i < cnt; i++)
+            for (i = 0; i < n; i++)
               {
                 perm_elems[i]->x = perm_values[i];
                 perm_elems[i]->y = i;
@@ -1645,15 +1643,15 @@ test_sort_stable (void)
               }
             ll_sort (ll_head (&perm_list), ll_null (&perm_list),
                      compare_elements, &aux_data);
-            check_list_contents (&perm_list, values, cnt);
+            check_list_contents (&perm_list, values, n);
             check (ll_is_sorted (ll_head (&perm_list), ll_null (&perm_list),
                                  compare_elements_x_y, &aux_data));
             n_perms++;
           }
-        check (n_perms == factorial (cnt));
+        check (n_perms == factorial (n));
 
-        free_elements (cnt, elems, NULL, values);
-        free_elements (cnt, perm_elems, NULL, perm_values);
+        free_elements (n, elems, NULL, values);
+        free_elements (n, perm_elems, NULL, perm_values);
       }
 }
 
@@ -1664,25 +1662,25 @@ test_sort_subset (void)
 {
   const int max_elems = 8;
 
-  int cnt, r0, r1, repeat;
+  int n, r0, r1, repeat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     for (repeat = 0; repeat < 100; repeat++)
-      for (r0 = 0; r0 <= cnt; r0++)
-        for (r1 = r0; r1 <= cnt; r1++)
+      for (r0 = 0; r0 <= n; r0++)
+        for (r1 = r0; r1 <= n; r1++)
           {
             struct ll_list list;
             struct element **elems;
             struct ll **elemp;
             int *values;
 
-            allocate_random (cnt, &list, &elems, &elemp, &values);
+            allocate_random (n, &list, &elems, &elemp, &values);
 
             qsort (&values[r0], r1 - r0, sizeof *values, compare_ints_noaux);
             ll_sort (elemp[r0], elemp[r1], compare_elements, &aux_data);
-            check_list_contents (&list, values, cnt);
+            check_list_contents (&list, values, n);
 
-            free_elements (cnt, elems, elemp, values);
+            free_elements (n, elems, elemp, values);
           }
 }
 
@@ -1692,21 +1690,21 @@ test_sort_big (void)
 {
   const int max_elems = 1024;
 
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt < max_elems; cnt++)
+  for (n = 0; n < max_elems; n++)
     {
       struct ll_list list;
       struct element **elems;
       int *values;
 
-      allocate_random (cnt, &list, &elems, NULL, &values);
+      allocate_random (n, &list, &elems, NULL, &values);
 
-      qsort (values, cnt, sizeof *values, compare_ints_noaux);
+      qsort (values, n, sizeof *values, compare_ints_noaux);
       ll_sort (ll_head (&list), ll_null (&list), compare_elements, &aux_data);
-      check_list_contents (&list, values, cnt);
+      check_list_contents (&list, values, n);
 
-      free_elements (cnt, elems, NULL, values);
+      free_elements (n, elems, NULL, values);
     }
 }
 
@@ -1718,29 +1716,29 @@ test_unique (void)
 
   int *ascending = xnmalloc (max_elems, sizeof *ascending);
 
-  int cnt, inc_pat, i, j, unique_values;
+  int n, inc_pat, i, j, unique_values;
 
   for (i = 0; i < max_elems; i++)
     ascending[i] = i;
 
-  for (cnt = 0; cnt < max_elems; cnt++)
-    for (inc_pat = 0; inc_pat < (1 << cnt); inc_pat++)
+  for (n = 0; n < max_elems; n++)
+    for (inc_pat = 0; inc_pat < (1 << n); inc_pat++)
       {
         struct ll_list list, dups;
         struct element **elems;
         int *values;
 
-        allocate_elements (cnt, &list, &elems, NULL, &values);
+        allocate_elements (n, &list, &elems, NULL, &values);
 
         j = unique_values = 0;
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < n; i++)
           {
             unique_values = j + 1;
             elems[i]->x = values[i] = j;
             if (inc_pat & (1 << i))
               j++;
           }
-        check_list_contents (&list, values, cnt);
+        check_list_contents (&list, values, n);
 
         ll_init (&dups);
         check (ll_unique (ll_head (&list), ll_null (&list), ll_null (&dups),
@@ -1750,9 +1748,9 @@ test_unique (void)
 
         ll_splice (ll_null (&list), ll_head (&dups), ll_null (&dups));
         ll_sort (ll_head (&list), ll_null (&list), compare_elements, &aux_data);
-        check_list_contents (&list, values, cnt);
+        check_list_contents (&list, values, n);
 
-        free_elements (cnt, elems, NULL, values);
+        free_elements (n, elems, NULL, values);
       }
 
   free (ascending);
@@ -1763,10 +1761,10 @@ static void
 test_sort_unique (void)
 {
   const int max_elems = 7;
-  int cnt, inc_pat;
+  int n, inc_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (inc_pat = 0; inc_pat <= 1 << cnt; inc_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (inc_pat = 0; inc_pat <= 1 << n; inc_pat++)
       {
         struct ll_list list;
         struct element **elems;
@@ -1781,11 +1779,11 @@ test_sort_unique (void)
         size_t n_perms;
         int i, j;
 
-        allocate_elements (cnt, &list, &elems, NULL, &values);
-        allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
+        allocate_elements (n, &list, &elems, NULL, &values);
+        allocate_elements (n, NULL, &perm_elems, NULL, &perm_values);
 
         j = n_uniques = 0;
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < n; i++)
           {
             elems[i]->x = values[i] = j;
             n_uniques = j + 1;
@@ -1803,9 +1801,9 @@ test_sort_unique (void)
           {
             struct ll_list perm_list;
 
-            extract_values (&list, perm_values, cnt);
+            extract_values (&list, perm_values, n);
             ll_init (&perm_list);
-            for (i = 0; i < cnt; i++)
+            for (i = 0; i < n; i++)
               {
                 perm_elems[i]->x = perm_values[i];
                 perm_elems[i]->y = i;
@@ -1818,10 +1816,10 @@ test_sort_unique (void)
                                  compare_elements_x_y, &aux_data));
             n_perms++;
           }
-        check (n_perms == expected_perms (values, cnt));
+        check (n_perms == expected_perms (values, n));
 
-        free_elements (cnt, elems, NULL, values);
-        free_elements (cnt, perm_elems, NULL, perm_values);
+        free_elements (n, elems, NULL, values);
+        free_elements (n, perm_elems, NULL, perm_values);
         free (unique_values);
       }
 }
@@ -1831,10 +1829,10 @@ static void
 test_insert_ordered (void)
 {
   const int max_elems = 6;
-  int cnt, inc_pat;
+  int n, inc_pat;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
-    for (inc_pat = 0; inc_pat <= 1 << cnt; inc_pat++)
+  for (n = 0; n <= max_elems; n++)
+    for (inc_pat = 0; inc_pat <= 1 << n; inc_pat++)
       {
         struct ll_list list;
         struct element **elems;
@@ -1846,11 +1844,11 @@ test_insert_ordered (void)
         size_t n_perms;
         int i, j;
 
-        allocate_elements (cnt, &list, &elems, NULL, &values);
-        allocate_elements (cnt, NULL, &perm_elems, NULL, &perm_values);
+        allocate_elements (n, &list, &elems, NULL, &values);
+        allocate_elements (n, NULL, &perm_elems, NULL, &perm_values);
 
         j = 0;
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < n; i++)
           {
             elems[i]->x = values[i] = j;
             if (inc_pat & (1 << i))
@@ -1864,9 +1862,9 @@ test_insert_ordered (void)
           {
             struct ll_list perm_list;
 
-            extract_values (&list, perm_values, cnt);
+            extract_values (&list, perm_values, n);
             ll_init (&perm_list);
-            for (i = 0; i < cnt; i++)
+            for (i = 0; i < n; i++)
               {
                 perm_elems[i]->x = perm_values[i];
                 perm_elems[i]->y = i;
@@ -1878,10 +1876,10 @@ test_insert_ordered (void)
                                  compare_elements_x_y, &aux_data));
             n_perms++;
           }
-        check (n_perms == factorial (cnt));
+        check (n_perms == factorial (n));
 
-        free_elements (cnt, elems, NULL, values);
-        free_elements (cnt, perm_elems, NULL, perm_values);
+        free_elements (n, elems, NULL, values);
+        free_elements (n, perm_elems, NULL, perm_values);
       }
 }
 
@@ -1891,13 +1889,13 @@ test_partition (void)
 {
   const int max_elems = 10;
 
-  int cnt;
+  int n;
   unsigned int pbase;
   int r0, r1;
 
-  for (cnt = 0; cnt < max_elems; cnt++)
-    for (r0 = 0; r0 <= cnt; r0++)
-      for (r1 = r0; r1 <= cnt; r1++)
+  for (n = 0; n < max_elems; n++)
+    for (r0 = 0; r0 <= n; r0++)
+      for (r1 = r0; r1 <= n; r1++)
         for (pbase = 0; pbase <= (1u << (r1 - r0)); pbase++)
           {
             struct ll_list list;
@@ -1910,7 +1908,7 @@ test_partition (void)
             int first_false;
             struct ll *part_ll;
 
-            allocate_ascending (cnt, &list, &elems, &elemp, &values);
+            allocate_ascending (n, &list, &elems, &elemp, &values);
 
             /* Check that ll_find_partition works okay in every
                case.  We use it after partitioning, too, but that
@@ -1947,9 +1945,9 @@ test_partition (void)
                 }
             if (first_false == -1)
               first_false = r1;
-            for (i = r1; i < cnt; i++)
+            for (i = r1; i < n; i++)
               values[j++] = i;
-            check (j == cnt);
+            check (j == n);
 
             /* Partition and check for expected results. */
             check (ll_partition (elemp[r0], elemp[r1],
@@ -1958,10 +1956,10 @@ test_partition (void)
             check (ll_find_partition (elemp[r0], elemp[r1],
                                       pattern_pred, &pattern)
                    == elemp[first_false]);
-            check_list_contents (&list, values, cnt);
-            check ((int) ll_count (&list) == cnt);
+            check_list_contents (&list, values, n);
+            check ((int) ll_count (&list) == n);
 
-            free_elements (cnt, elems, elemp, values);
+            free_elements (n, elems, elemp, values);
           }
 }
 

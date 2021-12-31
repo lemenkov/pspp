@@ -47,7 +47,7 @@ struct init_value
 struct init_list
   {
     struct init_value *values;
-    size_t cnt;
+    size_t n;
   };
 
 /* A bitmap of the "left" status of variables. */
@@ -62,7 +62,7 @@ static void
 init_list_create (struct init_list *list)
 {
   list->values = NULL;
-  list->cnt = 0;
+  list->n = 0;
 }
 
 /* Initializes NEW as a copy of OLD. */
@@ -71,10 +71,10 @@ init_list_clone (struct init_list *new, const struct init_list *old)
 {
   size_t i;
 
-  new->values = xmemdup (old->values, old->cnt * sizeof *old->values);
-  new->cnt = old->cnt;
+  new->values = xmemdup (old->values, old->n * sizeof *old->values);
+  new->n = old->n;
 
-  for (i = 0; i < new->cnt; i++)
+  for (i = 0; i < new->n; i++)
     {
       struct init_value *iv = &new->values[i];
       value_clone (&iv->value, &iv->value, iv->width);
@@ -87,7 +87,7 @@ init_list_destroy (struct init_list *list)
 {
   struct init_value *iv;
 
-  for (iv = &list->values[0]; iv < &list->values[list->cnt]; iv++)
+  for (iv = &list->values[0]; iv < &list->values[list->n]; iv++)
     value_destroy (&iv->value, iv->width);
   free (list->values);
 }
@@ -117,7 +117,7 @@ init_list_includes (const struct init_list *list, size_t case_index)
 {
   struct init_value value;
   value.case_index = case_index;
-  return binary_search (list->values, list->cnt, sizeof *list->values,
+  return binary_search (list->values, list->n, sizeof *list->values,
                         &value, compare_init_values, NULL) != NULL;
 }
 
@@ -131,7 +131,7 @@ init_list_mark (struct init_list *list, const struct init_list *exclude,
   size_t n_vars = dict_get_n_vars (d);
 
   assert (list != exclude);
-  list->values = xnrealloc (list->values, list->cnt + dict_get_n_vars (d),
+  list->values = xnrealloc (list->values, list->n + dict_get_n_vars (d),
                             sizeof *list->values);
   for (size_t i = 0; i < n_vars; i++)
     {
@@ -147,7 +147,7 @@ init_list_mark (struct init_list *list, const struct init_list *exclude,
       if (exclude != NULL && init_list_includes (exclude, case_index))
         continue;
 
-      iv = &list->values[list->cnt++];
+      iv = &list->values[list->n++];
       iv->case_index = case_index;
       iv->width = var_get_width (v);
       value_init (&iv->value, iv->width);
@@ -158,8 +158,8 @@ init_list_mark (struct init_list *list, const struct init_list *exclude,
     }
 
   /* Drop duplicates. */
-  list->cnt = sort_unique (list->values, list->cnt, sizeof *list->values,
-                           compare_init_values, NULL);
+  list->n = sort_unique (list->values, list->n, sizeof *list->values,
+                         compare_init_values, NULL);
 }
 
 /* Initializes data in case C to the values in the initializer
@@ -169,7 +169,7 @@ init_list_init (const struct init_list *list, struct ccase *c)
 {
   const struct init_value *iv;
 
-  for (iv = &list->values[0]; iv < &list->values[list->cnt]; iv++)
+  for (iv = &list->values[0]; iv < &list->values[list->n]; iv++)
     value_copy (case_data_rw_idx (c, iv->case_index), &iv->value, iv->width);
 }
 
@@ -180,7 +180,7 @@ init_list_update (const struct init_list *list, const struct ccase *c)
 {
   struct init_value *iv;
 
-  for (iv = &list->values[0]; iv < &list->values[list->cnt]; iv++)
+  for (iv = &list->values[0]; iv < &list->values[list->n]; iv++)
     value_copy (&iv->value, case_data_idx (c, iv->case_index), iv->width);
 }
 

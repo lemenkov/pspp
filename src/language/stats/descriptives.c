@@ -722,15 +722,15 @@ static void
 setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
 {
   struct dsc_trns *t;
-  size_t cnt, i;
+  size_t n, i;
 
-  for (cnt = i = 0; i < dsc->n_vars; i++)
+  for (n = i = 0; i < dsc->n_vars; i++)
     if (dsc->vars[i].z_name != NULL)
-      cnt++;
+      n++;
 
   t = xmalloc (sizeof *t);
-  t->z_scores = xnmalloc (cnt, sizeof *t->z_scores);
-  t->n_z_scores = cnt;
+  t->z_scores = xnmalloc (n, sizeof *t->z_scores);
+  t->n_z_scores = n;
   t->missing_type = dsc->missing_type;
   t->exclude = dsc->exclude;
   if (t->missing_type == DSC_LISTWISE)
@@ -751,7 +751,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
   t->ok = true;
   dsc->z_writer = NULL;
 
-  for (cnt = i = 0; i < dsc->n_vars; i++)
+  for (n = i = 0; i < dsc->n_vars; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
       if (dv->z_name != NULL)
@@ -766,7 +766,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
           var_set_label (dst_var, label);
           free (label);
 
-          z = &t->z_scores[cnt++];
+          z = &t->z_scores[n++];
           z->src_var = dv->v;
           z->z_var = dst_var;
 	}

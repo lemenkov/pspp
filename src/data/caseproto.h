@@ -99,11 +99,11 @@ struct caseproto *caseproto_insert_width (struct caseproto *,
                                           size_t before, int width)
   WARN_UNUSED_RESULT;
 struct caseproto *caseproto_remove_widths (struct caseproto *,
-                                           size_t idx, size_t cnt)
+                                           size_t idx, size_t n)
   WARN_UNUSED_RESULT;
 struct caseproto *caseproto_move_widths (struct caseproto *,
                                          size_t old_start, size_t new_start,
-                                         size_t cnt)
+                                         size_t n)
   WARN_UNUSED_RESULT;
 
 /* Working with "union value" arrays. */

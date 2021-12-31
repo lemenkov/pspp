@@ -82,7 +82,7 @@ void case_set_missing (struct ccase *);
 
 void case_copy (struct ccase *dst, size_t dst_idx,
                 const struct ccase *src, size_t src_idx,
-                size_t cnt);
+                size_t n_values);
 void case_copy_out (const struct ccase *,
                     size_t start_idx, union value *, size_t n_values);
 void case_copy_in (struct ccase *,

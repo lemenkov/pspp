@@ -45,11 +45,11 @@ void moments_calculate (const struct moments *,
 void moments_destroy (struct moments *);
 
 /* Convenience functions for two-pass moments. */
-void moments_of_doubles (const double *array, size_t cnt,
+void moments_of_doubles (const double *array, size_t n,
                          double *weight,
                          double *mean, double *variance,
                          double *skewness, double *kurtosis);
-void moments_of_values (const union value *array, size_t cnt,
+void moments_of_values (const union value *array, size_t n,
                         double *weight,
                         double *mean, double *variance,
                         double *skewness, double *kurtosis);

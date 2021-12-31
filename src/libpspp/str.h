@@ -119,7 +119,7 @@ bool ss_match_byte (struct substring *, char);
 int ss_match_byte_in (struct substring *, struct substring);
 bool ss_match_string (struct substring *, const struct substring);
 int ss_get_byte (struct substring *);
-size_t ss_get_bytes (struct substring *, size_t cnt, struct substring *);
+size_t ss_get_bytes (struct substring *, size_t n, struct substring *);
 bool ss_get_until (struct substring *, char delimiter, struct substring *);
 size_t ss_get_long (struct substring *, long *);
 
@@ -232,7 +232,7 @@ char *ds_steal_cstr (struct string *);
 /* File input. */
 bool ds_read_line (struct string *, FILE *, size_t max_length);
 bool ds_read_config_line (struct string *, int *line_number, FILE *);
-bool ds_read_stream (struct string *, size_t size, size_t cnt, FILE *stream);
+bool ds_read_stream (struct string *, size_t size, size_t n, FILE *stream);
 
 /* Append. */
 void ds_put_byte (struct string *, int ch);
@@ -281,14 +281,14 @@ ss_cstr (const char *cstr)
   return ss_buffer (cstr, strlen (cstr));
 }
 
-/* Returns a substring whose contents are the CNT characters in
+/* Returns a substring whose contents are the N characters in
    BUFFER. */
 static inline struct substring
-ss_buffer (const char *buffer, size_t cnt)
+ss_buffer (const char *buffer, size_t n)
 {
   struct substring ss;
   ss.string = (char *) buffer;
-  ss.length = cnt;
+  ss.length = n;
   return ss;
 }
 

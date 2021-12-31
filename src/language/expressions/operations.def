@@ -816,10 +816,10 @@ absorb_miss string function SUBSTR (string s, integer ofs)
           : empty_string);
 }
 
-absorb_miss string function SUBSTR (string s, integer ofs, integer cnt)
+absorb_miss string function SUBSTR (string s, integer ofs, integer len)
 {
-  return (ofs >= 1 && cnt >= 1
-          ? ss_substr (s, ofs - 1, cnt)
+  return (ofs >= 1 && len >= 1
+          ? ss_substr (s, ofs - 1, len)
           : empty_string);
 }
 

@@ -73,18 +73,18 @@ swap (int *a, int *b)
   *b = t;
 }
 
-/* Reverses the order of the CNT integers starting at VALUES. */
+/* Reverses the order of the N integers starting at VALUES. */
 static void
-reverse (int *values, size_t cnt)
+reverse (int *values, size_t n)
 {
   size_t i = 0;
-  size_t j = cnt;
+  size_t j = n;
 
   while (j > i)
     swap (&values[i++], &values[--j]);
 }
 
-/* Arranges the CNT blocks in VALUES into the lexicographically
+/* Arranges the N blocks in VALUES into the lexicographically
    next greater permutation.  Returns true if successful.
    If VALUES is already the lexicographically greatest
    permutation of its blocks (i.e. ordered from greatest to
@@ -92,26 +92,26 @@ reverse (int *values, size_t cnt)
    permutation (i.e. ordered from smallest to largest) and
    returns false. */
 static bool
-next_permutation (int *values, size_t cnt)
+next_permutation (int *values, size_t n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      size_t i = cnt - 1;
+      size_t i = n - 1;
       while (i != 0)
         {
           i--;
           if (values[i] < values[i + 1])
             {
               size_t j;
-              for (j = cnt - 1; values[i] >= values[j]; j--)
+              for (j = n - 1; values[i] >= values[j]; j--)
                 continue;
               swap (values + i, values + j);
-              reverse (values + (i + 1), cnt - (i + 1));
+              reverse (values + (i + 1), n - (i + 1));
               return true;
             }
         }
 
-      reverse (values, cnt);
+      reverse (values, n);
     }
 
   return false;
@@ -244,7 +244,7 @@ compare_expected_element (const void *a_, const void *b_)
   return a->start < b->start ? -1 : a->start > b->start;
 }
 
-/* Checks that RM contains the ELEM_CNT elements described by
+/* Checks that RM contains the ELEM_N elements described by
    ELEMENTS[]. */
 static void
 check_range_map (struct range_map *rm,
@@ -306,9 +306,9 @@ static void
 test_insert (void)
 {
   const int max_range = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_range; cnt++)
+  for (n = 1; n <= max_range; n++)
     {
       unsigned int n_compositions;
       struct expected_element *expected;
@@ -317,14 +317,14 @@ test_insert (void)
       int *order;
       struct element *elements;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      widths = xnmalloc (cnt, sizeof *widths);
-      order = xnmalloc (cnt, sizeof *order);
-      elements = xnmalloc (cnt, sizeof *elements);
+      expected = xnmalloc (n, sizeof *expected);
+      widths = xnmalloc (n, sizeof *widths);
+      order = xnmalloc (n, sizeof *order);
+      elements = xnmalloc (n, sizeof *elements);
 
       n_elems = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_elems, widths))
+      while (next_composition (n, &n_elems, widths))
         {
           int i, j;
           unsigned int n_permutations;
@@ -370,7 +370,7 @@ test_insert (void)
 
           n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (widths);
@@ -385,9 +385,9 @@ static void
 test_delete (int gap)
 {
   const int max_range = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 1; cnt <= max_range; cnt++)
+  for (n = 1; n <= max_range; n++)
     {
       unsigned int n_compositions;
       struct expected_element *expected;
@@ -396,14 +396,14 @@ test_delete (int gap)
       int *order;
       struct element *elements;
 
-      expected = xnmalloc (cnt, sizeof *expected);
-      widths = xnmalloc (cnt, sizeof *widths);
-      order = xnmalloc (cnt, sizeof *order);
-      elements = xnmalloc (cnt, sizeof *elements);
+      expected = xnmalloc (n, sizeof *expected);
+      widths = xnmalloc (n, sizeof *widths);
+      order = xnmalloc (n, sizeof *order);
+      elements = xnmalloc (n, sizeof *elements);
 
       n_elems = 0;
       n_compositions = 0;
-      while (next_composition (cnt, &n_elems, widths))
+      while (next_composition (n, &n_elems, widths))
         {
           int i, j;
           unsigned int n_permutations;
@@ -458,7 +458,7 @@ test_delete (int gap)
 
           n_compositions++;
         }
-      check (n_compositions == 1 << (cnt - 1));
+      check (n_compositions == 1 << (n - 1));
 
       free (expected);
       free (widths);

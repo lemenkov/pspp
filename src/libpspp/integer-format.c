@@ -29,89 +29,89 @@ is_integer_format (enum integer_format format)
           || format == INTEGER_VAX);
 }
 
-/* Converts the CNT bytes in INTEGER from SRC integer_format to DST
+/* Converts the N bytes in INTEGER from SRC integer_format to DST
    integer_format. */
 void
 integer_convert (enum integer_format src, const void *from,
                  enum integer_format dst, void *to,
-                 size_t cnt)
+                 size_t n)
 {
   if (src != dst)
-    integer_put (integer_get (src, from, cnt), dst, to, cnt);
+    integer_put (integer_get (src, from, n), dst, to, n);
   else if (from != to)
-    memcpy (to, from, cnt);
+    memcpy (to, from, n);
 }
 
-/* Returns the value of the CNT-byte integer at FROM, which is in
+/* Returns the value of the N-byte integer at FROM, which is in
    the given FORMAT. */
 uint64_t
-integer_get (enum integer_format format, const void *from_, size_t cnt)
+integer_get (enum integer_format format, const void *from_, size_t n)
 {
   const uint8_t *from = from_;
   uint64_t value = 0;
   size_t i;
 
   assert (is_integer_format (format));
-  assert (cnt <= 8);
+  assert (n <= 8);
 
   switch (format)
     {
     case INTEGER_MSB_FIRST:
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         value = (value << 8) | from[i];
       break;
     case INTEGER_LSB_FIRST:
-      for (i = 0; i < cnt; i++)
-        value = (value << 8) | from[cnt - i - 1];
+      for (i = 0; i < n; i++)
+        value = (value << 8) | from[n - i - 1];
       break;
     case INTEGER_VAX:
-      for (i = 0; i < (cnt & ~1); i++)
+      for (i = 0; i < (n & ~1); i++)
         value = (value << 8) | from[i ^ 1];
-      if (cnt & 1)
-        value = (value << 8) | from[cnt - 1];
+      if (n & 1)
+        value = (value << 8) | from[n - 1];
       break;
     }
 
   return value;
 }
 
-/* Stores VALUE as a CNT-byte integer at TO, in the given
+/* Stores VALUE as a N-byte integer at TO, in the given
    FORMAT. */
 void
-integer_put (uint64_t value, enum integer_format format, void *to_, size_t cnt)
+integer_put (uint64_t value, enum integer_format format, void *to_, size_t n)
 {
   uint8_t *to = to_;
   size_t i;
 
   assert (is_integer_format (format));
-  assert (cnt <= 8);
+  assert (n <= 8);
 
-  value <<= 8 * (8 - cnt);
+  value <<= 8 * (8 - n);
 
   switch (format)
     {
     case INTEGER_MSB_FIRST:
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         {
           to[i] = value >> 56;
           value <<= 8;
         }
       break;
     case INTEGER_LSB_FIRST:
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         {
-          to[cnt - i - 1] = value >> 56;
+          to[n - i - 1] = value >> 56;
           value <<= 8;
         }
       break;
     case INTEGER_VAX:
-      for (i = 0; i < (cnt & ~1); i++)
+      for (i = 0; i < (n & ~1); i++)
         {
           to[i ^ 1] = value >> 56;
           value <<= 8;
         }
-      if (cnt & 1)
-        to[cnt - 1] = value >> 56;
+      if (n & 1)
+        to[n - 1] = value >> 56;
       break;
     }
 }

@@ -142,35 +142,35 @@ caseproto_insert_width (struct caseproto *proto, size_t before, int width)
   return proto;
 }
 
-/* Returns a replacement for PROTO with CNT widths removed
+/* Returns a replacement for PROTO with N widths removed
    starting at index IDX. */
 struct caseproto *
-caseproto_remove_widths (struct caseproto *proto, size_t idx, size_t cnt)
+caseproto_remove_widths (struct caseproto *proto, size_t idx, size_t n)
 {
-  assert (caseproto_range_is_valid (proto, idx, cnt));
+  assert (caseproto_range_is_valid (proto, idx, n));
 
   proto = caseproto_unshare (proto);
-  proto->n_strings -= count_strings (proto, idx, cnt);
+  proto->n_strings -= count_strings (proto, idx, n);
   remove_range (proto->widths, proto->n_widths, sizeof *proto->widths,
-                idx, cnt);
-  proto->n_widths -= cnt;
+                idx, n);
+  proto->n_widths -= n;
   return proto;
 }
 
-/* Returns a replacement for PROTO in which the CNT widths
+/* Returns a replacement for PROTO in which the N widths
    starting at index OLD_WIDTH now start at index NEW_WIDTH, with
    other widths shifting out of the way to make room. */
 struct caseproto *
 caseproto_move_widths (struct caseproto *proto,
                        size_t old_start, size_t new_start,
-                       size_t cnt)
+                       size_t n)
 {
-  assert (caseproto_range_is_valid (proto, old_start, cnt));
-  assert (caseproto_range_is_valid (proto, new_start, cnt));
+  assert (caseproto_range_is_valid (proto, old_start, n));
+  assert (caseproto_range_is_valid (proto, new_start, n));
 
   proto = caseproto_unshare (proto);
   move_range (proto->widths, proto->n_widths, sizeof *proto->widths,
-              old_start, new_start, cnt);
+              old_start, new_start, n);
   return proto;
 }
 

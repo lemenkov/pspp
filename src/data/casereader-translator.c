@@ -202,10 +202,10 @@ casereader_stateless_translator_destroy (struct casereader *reader UNUSED,
 
 static void
 casereader_stateless_translator_advance (struct casereader *reader UNUSED,
-                                         void *cst_, casenumber cnt)
+                                         void *cst_, casenumber n)
 {
   struct casereader_stateless_translator *cst = cst_;
-  cst->case_offset += casereader_advance (cst->subreader, cnt);
+  cst->case_offset += casereader_advance (cst->subreader, n);
 }
 
 /* Casereader class for stateless translating casereader. */

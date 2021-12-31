@@ -37,7 +37,7 @@ struct casewindow *casewindow_create (const struct caseproto *,
 bool casewindow_destroy (struct casewindow *);
 
 void casewindow_push_head (struct casewindow *, struct ccase *);
-void casewindow_pop_tail (struct casewindow *, casenumber cnt);
+void casewindow_pop_tail (struct casewindow *, casenumber n);
 struct ccase *casewindow_get_case (const struct casewindow *,
                                    casenumber case_idx);
 const struct caseproto *casewindow_get_proto (const struct casewindow *);

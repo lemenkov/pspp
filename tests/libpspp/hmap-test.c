@@ -204,18 +204,18 @@ swap (int *a, int *b)
   *b = t;
 }
 
-/* Reverses the order of the CNT integers starting at VALUES. */
+/* Reverses the order of the N integers starting at VALUES. */
 static void
-reverse (int *values, size_t cnt)
+reverse (int *values, size_t n)
 {
   size_t i = 0;
-  size_t j = cnt;
+  size_t j = n;
 
   while (j > i)
     swap (&values[i++], &values[--j]);
 }
 
-/* Arranges the CNT elements in VALUES into the lexicographically
+/* Arranges the N elements in VALUES into the lexicographically
    next greater permutation.  Returns true if successful.
    If VALUES is already the lexicographically greatest
    permutation of its elements (i.e. ordered from greatest to
@@ -223,26 +223,26 @@ reverse (int *values, size_t cnt)
    permutation (i.e. ordered from smallest to largest) and
    returns false. */
 static bool
-next_permutation (int *values, size_t cnt)
+next_permutation (int *values, size_t n)
 {
-  if (cnt > 0)
+  if (n > 0)
     {
-      size_t i = cnt - 1;
+      size_t i = n - 1;
       while (i != 0)
         {
           i--;
           if (values[i] < values[i + 1])
             {
               size_t j;
-              for (j = cnt - 1; values[i] >= values[j]; j--)
+              for (j = n - 1; values[i] >= values[j]; j--)
                 continue;
               swap (values + i, values + j);
-              reverse (values + (i + 1), cnt - (i + 1));
+              reverse (values + (i + 1), n - (i + 1));
               return true;
             }
         }
 
-      reverse (values, cnt);
+      reverse (values, n);
     }
 
   return false;
@@ -258,18 +258,18 @@ factorial (unsigned int n)
   return value;
 }
 
-/* Randomly shuffles the CNT elements in ARRAY, each of which is
+/* Randomly shuffles the N elements in ARRAY, each of which is
    SIZE bytes in size. */
 static void
-random_shuffle (void *array_, size_t cnt, size_t size)
+random_shuffle (void *array_, size_t n, size_t size)
 {
   char *array = array_;
   char *tmp = xmalloc (size);
   size_t i;
 
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
-      size_t j = rand () % (cnt - i) + i;
+      size_t j = rand () % (n - i) + i;
       if (i != j)
         {
           memcpy (tmp, array + j * size, size);
@@ -327,29 +327,29 @@ find_element (struct hmap *hmap, int data, hash_function *hash)
   return &e->node;
 }
 
-/* Checks that HMAP contains the CNT ints in DATA, that its
+/* Checks that HMAP contains the N ints in DATA, that its
    structure is correct, and that certain operations on HMAP
    produce the expected results. */
 static void
-check_hmap (struct hmap *hmap, const int data[], size_t cnt,
+check_hmap (struct hmap *hmap, const int data[], size_t n,
             hash_function *hash)
 {
   size_t i, j;
   int *order;
 
-  check (hmap_is_empty (hmap) == (cnt == 0));
-  check (hmap_count (hmap) == cnt);
-  check (cnt <= hmap_capacity (hmap));
+  check (hmap_is_empty (hmap) == (n == 0));
+  check (hmap_count (hmap) == n);
+  check (n <= hmap_capacity (hmap));
 
-  order = xmemdup (data, cnt * sizeof *data);
-  qsort (order, cnt, sizeof *order, compare_ints);
+  order = xmemdup (data, n * sizeof *data);
+  qsort (order, n, sizeof *order, compare_ints);
 
-  for (i = 0; i < cnt; i = j)
+  for (i = 0; i < n; i = j)
     {
       struct element *e;
       int count;
 
-      for (j = i + 1; j < cnt; j++)
+      for (j = i + 1; j < n; j++)
         if (order[i] != order[j])
           break;
 
@@ -363,15 +363,15 @@ check_hmap (struct hmap *hmap, const int data[], size_t cnt,
 
   check (find_element (hmap, -1, hash) == NULL);
 
-  if (cnt == 0)
+  if (n == 0)
     check (hmap_first (hmap) == NULL);
   else
     {
       struct hmap_node *p;
       int left;
 
-      left = cnt;
-      for (p = hmap_first (hmap), i = 0; i < cnt; p = hmap_next (hmap, p), i++)
+      left = n;
+      for (p = hmap_first (hmap), i = 0; i < n; p = hmap_next (hmap, p), i++)
         {
           struct element *e = hmap_node_to_element (p);
 
@@ -392,7 +392,7 @@ check_hmap (struct hmap *hmap, const int data[], size_t cnt,
   free (order);
 }
 
-/* Inserts the CNT values from 0 to CNT - 1 (inclusive) into an
+/* Inserts the N values from 0 to N - 1 (inclusive) into an
    HMAP in the order specified by INSERTIONS, then deletes them in
    the order specified by DELETIONS, checking the HMAP's contents
    for correctness after each operation.  Uses HASH as the hash
@@ -400,21 +400,21 @@ check_hmap (struct hmap *hmap, const int data[], size_t cnt,
 static void
 test_insert_delete (const int insertions[],
                     const int deletions[],
-                    size_t cnt,
+                    size_t n,
                     hash_function *hash)
 {
   struct element *elements;
   struct hmap hmap;
   size_t i;
 
-  elements = xnmalloc (cnt, sizeof *elements);
-  for (i = 0; i < cnt; i++)
+  elements = xnmalloc (n, sizeof *elements);
+  for (i = 0; i < n; i++)
     elements[i].data = i;
 
   hmap_init (&hmap);
   hmap_reserve (&hmap, 1);
   check_hmap (&hmap, NULL, 0, hash);
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       size_t capacity;
       hmap_insert (&hmap, &elements[insertions[i]].node, hash (insertions[i]));
@@ -425,10 +425,10 @@ test_insert_delete (const int insertions[],
       hmap_shrink (&hmap);
       check (capacity == hmap_capacity (&hmap));
     }
-  for (i = 0; i < cnt; i++)
+  for (i = 0; i < n; i++)
     {
       hmap_delete (&hmap, &elements[deletions[i]].node);
-      check_hmap (&hmap, deletions + i + 1, cnt - i - 1, hash);
+      check_hmap (&hmap, deletions + i + 1, n - i - 1, hash);
     }
   hmap_destroy (&hmap);
 
@@ -442,37 +442,37 @@ static void
 test_insert_any_remove_any (hash_function *hash)
 {
   const int max_elems = 5;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int ins_n_perms;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (ins_n_perms = 0;
-           ins_n_perms == 0 || next_permutation (insertions, cnt);
+           ins_n_perms == 0 || next_permutation (insertions, n);
            ins_n_perms++)
         {
           unsigned int del_n_perms;
           int i;
 
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             deletions[i] = i;
 
           for (del_n_perms = 0;
-               del_n_perms == 0 || next_permutation (deletions, cnt);
+               del_n_perms == 0 || next_permutation (deletions, n);
                del_n_perms++)
-            test_insert_delete (insertions, deletions, cnt, hash);
+            test_insert_delete (insertions, deletions, n, hash);
 
-          check (del_n_perms == factorial (cnt));
+          check (del_n_perms == factorial (n));
         }
-      check (ins_n_perms == factorial (cnt));
+      check (ins_n_perms == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -504,23 +504,23 @@ static void
 test_insert_any_remove_same (hash_function *hash)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values;
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
-        test_insert_delete (values, values, cnt, hash);
-      check (n_permutations == factorial (cnt));
+        test_insert_delete (values, values, n, hash);
+      check (n_permutations == factorial (n));
 
       free (values);
     }
@@ -551,29 +551,29 @@ static void
 test_insert_any_remove_reverse (hash_function *hash)
 {
   const int max_elems = 7;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *insertions, *deletions;
       unsigned int n_permutations;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (insertions, cnt);
+           n_permutations == 0 || next_permutation (insertions, n);
            n_permutations++)
         {
-          memcpy (deletions, insertions, sizeof *insertions * cnt);
-          reverse (deletions, cnt);
+          memcpy (deletions, insertions, sizeof *insertions * n);
+          reverse (deletions, n);
 
-          test_insert_delete (insertions, deletions, cnt, hash);
+          test_insert_delete (insertions, deletions, n, hash);
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (insertions);
       free (deletions);
@@ -604,27 +604,27 @@ static void
 test_random_sequence (int max_elems, hash_function *hash)
 {
   const int max_trials = 8;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt += 2)
+  for (n = 0; n <= max_elems; n += 2)
     {
       int *insertions, *deletions;
       int trial;
       int i;
 
-      insertions = xnmalloc (cnt, sizeof *insertions);
-      deletions = xnmalloc (cnt, sizeof *deletions);
-      for (i = 0; i < cnt; i++)
+      insertions = xnmalloc (n, sizeof *insertions);
+      deletions = xnmalloc (n, sizeof *deletions);
+      for (i = 0; i < n; i++)
         insertions[i] = i;
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         deletions[i] = i;
 
       for (trial = 0; trial < max_trials; trial++)
         {
-          random_shuffle (insertions, cnt, sizeof *insertions);
-          random_shuffle (deletions, cnt, sizeof *deletions);
+          random_shuffle (insertions, n, sizeof *insertions);
+          random_shuffle (deletions, n, sizeof *deletions);
 
-          test_insert_delete (insertions, deletions, cnt, hash);
+          test_insert_delete (insertions, deletions, n, hash);
         }
 
       free (insertions);
@@ -792,58 +792,58 @@ static void
 test_changed (hash_function *hash)
 {
   const int max_elems = 6;
-  int cnt;
+  int n;
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int *values, *changed_values;
       struct element *elements;
       unsigned int n_permutations;
       int i;
 
-      values = xnmalloc (cnt, sizeof *values);
-      changed_values = xnmalloc (cnt, sizeof *changed_values);
-      elements = xnmalloc (cnt, sizeof *elements);
-      for (i = 0; i < cnt; i++)
+      values = xnmalloc (n, sizeof *values);
+      changed_values = xnmalloc (n, sizeof *changed_values);
+      elements = xnmalloc (n, sizeof *elements);
+      for (i = 0; i < n; i++)
         values[i] = i;
 
       for (n_permutations = 0;
-           n_permutations == 0 || next_permutation (values, cnt);
+           n_permutations == 0 || next_permutation (values, n);
            n_permutations++)
         {
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             {
               int j, k;
-              for (j = 0; j <= cnt; j++)
+              for (j = 0; j <= n; j++)
                 {
                   struct hmap hmap;
 
                   hmap_init (&hmap);
 
                   /* Add to HMAP in order. */
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     {
                       int n = values[k];
                       elements[n].data = n;
                       hmap_insert (&hmap, &elements[n].node,
                                    hash (elements[n].data));
                     }
-                  check_hmap (&hmap, values, cnt, hash);
+                  check_hmap (&hmap, values, n, hash);
 
                   /* Change value i to j. */
                   elements[i].data = j;
                   hmap_changed (&hmap, &elements[i].node,
                                 hash (elements[i].data));
-                  for (k = 0; k < cnt; k++)
+                  for (k = 0; k < n; k++)
                     changed_values[k] = k;
                   changed_values[i] = j;
-                  check_hmap (&hmap, changed_values, cnt, hash);
+                  check_hmap (&hmap, changed_values, n, hash);
 
                   hmap_destroy (&hmap);
                 }
             }
         }
-      check (n_permutations == factorial (cnt));
+      check (n_permutations == factorial (n));
 
       free (values);
       free (changed_values);
@@ -922,7 +922,7 @@ test_clear (void)
   struct element *elements;
   int *values;
   struct hmap hmap;
-  int cnt;
+  int n;
 
 #if __GNUC__ == 4 && __GNUC_MINOR__ == 3
   /* This tells the Autotest framework that the test was skipped. */
@@ -932,12 +932,12 @@ test_clear (void)
   elements = xnmalloc (max_elems, sizeof *elements);
   values = xnmalloc (max_elems, sizeof *values);
 
-  for (cnt = 0; cnt <= max_elems; cnt++)
+  for (n = 0; n <= max_elems; n++)
     {
       int i;
 
       hmap_init (&hmap);
-      for (i = 0; i < cnt; i++)
+      for (i = 0; i < n; i++)
         {
           values[i] = elements[i].data = i;
           hmap_insert (&hmap, &elements[i].node,

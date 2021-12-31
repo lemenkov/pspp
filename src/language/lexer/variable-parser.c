@@ -122,29 +122,29 @@ parse_variable (struct lexer *lexer, const struct dictionary *d)
 
 /* Parses a set of variables from dictionary D given options
    OPTS.  Resulting list of variables stored in *VAR and the
-   number of variables into *CNT.  Returns true only if
+   number of variables into *N.  Returns true only if
    successful.  The dictionary D must contain at least one
    variable.  */
 bool
 parse_variables (struct lexer *lexer, const struct dictionary *d,
-			struct variable ***var,
-			size_t *cnt, int opts)
+                 struct variable ***var,
+                 size_t *n, int opts)
 {
   struct var_set *vs;
   int success;
 
   assert (d != NULL);
   assert (var != NULL);
-  assert (cnt != NULL);
+  assert (n != NULL);
 
   vs = var_set_create_from_dict (d);
   if (var_set_get_n (vs) == 0)
     {
-      *cnt = 0;
+      *n = 0;
       var_set_destroy (vs);
       return false;
     }
-  success = parse_var_set_vars (lexer, vs, var, cnt, opts);
+  success = parse_var_set_vars (lexer, vs, var, n, opts);
   var_set_destroy (vs);
   return success;
 }

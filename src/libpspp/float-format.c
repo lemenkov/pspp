@@ -203,14 +203,14 @@ float_get_lowest (void)
   return x;
 }
 
-/* Returns CNT bits in X starting from the given bit OFS. */
+/* Returns N bits in X starting from the given bit OFS. */
 static inline uint64_t
-get_bits (uint64_t x, int ofs, int cnt)
+get_bits (uint64_t x, int ofs, int n)
 {
   assert (ofs >= 0 && ofs < 64);
-  assert (cnt > 0 && cnt < 64);
-  assert (ofs + cnt <= 64);
-  return (x >> ofs) & ((UINT64_C(1) << cnt) - 1);
+  assert (n > 0 && n < 64);
+  assert (ofs + n <= 64);
+  return (x >> ofs) & ((UINT64_C(1) << n) - 1);
 }
 
 /* Returns NATIVE converted to a form that, when stored in

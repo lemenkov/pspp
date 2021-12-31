@@ -244,14 +244,14 @@ moments_destroy (struct moments *m)
   free (m);
 }
 
-/* Calculates the requested moments on the CNT values in ARRAY.
+/* Calculates the requested moments on the N values in ARRAY.
    Each value is given a weight of 1.  The total weight is stored
    into *WEIGHT (trivially) and the mean, variance, skewness, and
    kurtosis are stored into *MEAN, *VARIANCE, *SKEWNESS, and
    *KURTOSIS, respectively.  Any of the result pointers may be
    null, in which case no value is stored. */
 void
-moments_of_doubles (const double *array, size_t cnt,
+moments_of_doubles (const double *array, size_t n,
                     double *weight,
                     double *mean, double *variance,
                     double *skewness, double *kurtosis)
@@ -270,21 +270,21 @@ moments_of_doubles (const double *array, size_t cnt,
     max_moment = MOMENT_MEAN;
 
   init_moments (&m, max_moment);
-  for (idx = 0; idx < cnt; idx++)
+  for (idx = 0; idx < n; idx++)
     moments_pass_one (&m, array[idx], 1.);
-  for (idx = 0; idx < cnt; idx++)
+  for (idx = 0; idx < n; idx++)
     moments_pass_two (&m, array[idx], 1.);
   moments_calculate (&m, weight, mean, variance, skewness, kurtosis);
 }
 
-/* Calculates the requested moments on the CNT numeric values in
+/* Calculates the requested moments on the N numeric values in
    ARRAY.  Each value is given a weight of 1.  The total weight
    is stored into *WEIGHT (trivially) and the mean, variance,
    skewness, and kurtosis are stored into *MEAN, *VARIANCE,
    *SKEWNESS, and *KURTOSIS, respectively.  Any of the result
    pointers may be null, in which case no value is stored. */
 void
-moments_of_values (const union value *array, size_t cnt,
+moments_of_values (const union value *array, size_t n,
                    double *weight,
                    double *mean, double *variance,
                    double *skewness, double *kurtosis)
@@ -303,9 +303,9 @@ moments_of_values (const union value *array, size_t cnt,
     max_moment = MOMENT_MEAN;
 
   init_moments (&m, max_moment);
-  for (idx = 0; idx < cnt; idx++)
+  for (idx = 0; idx < n; idx++)
     moments_pass_one (&m, array[idx].f, 1.);
-  for (idx = 0; idx < cnt; idx++)
+  for (idx = 0; idx < n; idx++)
     moments_pass_two (&m, array[idx].f, 1.);
   moments_calculate (&m, weight, mean, variance, skewness, kurtosis);
 }

@@ -51,7 +51,7 @@ struct casewindow_class
     void *(*create) (struct taint *, const struct caseproto *);
     void (*destroy) (void *aux);
     void (*push_head) (void *aux, struct ccase *);
-    void (*pop_tail) (void *aux, casenumber cnt);
+    void (*pop_tail) (void *aux, casenumber n);
     struct ccase *(*get_case) (void *aux, casenumber ofs);
     casenumber (*get_n_cases) (const void *aux);
   };
@@ -153,7 +153,7 @@ casewindow_push_head (struct casewindow *cw, struct ccase *c)
     case_unref (c);
 }
 
-/* Deletes CASE_CNT cases at the tail of casewindow CW. */
+/* Deletes N_CASES cases at the tail of casewindow CW. */
 void
 casewindow_pop_tail (struct casewindow *cw, casenumber n_cases)
 {
@@ -316,11 +316,11 @@ casewindow_file_push_head (void *cwf_, struct ccase *c)
 }
 
 static void
-casewindow_file_pop_tail (void *cwf_, casenumber cnt)
+casewindow_file_pop_tail (void *cwf_, casenumber n)
 {
   struct casewindow_file *cwf = cwf_;
-  assert (cnt <= cwf->head - cwf->tail);
-  cwf->tail += cnt;
+  assert (n <= cwf->head - cwf->tail);
+  cwf->tail += n;
   if (cwf->head == cwf->tail)
     cwf->head = cwf->tail = 0;
 }

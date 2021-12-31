@@ -504,7 +504,7 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
   const struct caseproto *oproto = datasheet_get_proto (ods);
   size_t n_columns = datasheet_get_n_columns (ods);
   size_t n_rows = datasheet_get_n_rows (ods);
-  size_t pos, new_pos, cnt, width_idx;
+  size_t pos, new_pos, n, width_idx;
 
   extract_data (ods, odata);
 
@@ -589,7 +589,7 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
   /* Delete all possible numbers of columns from all possible
      positions. */
   for (pos = 0; pos < n_columns; pos++)
-    for (cnt = 1; cnt < n_columns - pos; cnt++)
+    for (n = 1; n < n_columns - pos; n++)
       if (mc_include_state (mc))
         {
           struct caseproto *proto;
@@ -598,17 +598,17 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
 
           mc_name_operation (mc, "delete %zu columns at %zu "
                              "(from %zu to %zu columns)",
-                             cnt, pos, n_columns, n_columns - cnt);
+                             n, pos, n_columns, n_columns - n);
           clone_model (ods, odata, &ds, data);
 
-          datasheet_delete_columns (ds, pos, cnt);
-          proto = caseproto_remove_widths (caseproto_ref (oproto), pos, cnt);
+          datasheet_delete_columns (ds, pos, n);
+          proto = caseproto_remove_widths (caseproto_ref (oproto), pos, n);
 
           for (i = 0; i < n_rows; i++)
             {
-              for (j = pos; j < pos + cnt; j++)
+              for (j = pos; j < pos + n; j++)
                 value_destroy (&data[i][j], caseproto_get_width (oproto, j));
-              remove_range (&data[i], n_columns, sizeof *data[i], pos, cnt);
+              remove_range (&data[i], n_columns, sizeof *data[i], pos, n);
             }
 
           check_datasheet (mc, ds, data, n_rows, proto);
@@ -619,8 +619,8 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
   /* Move all possible numbers of columns from all possible
      existing positions to all possible new positions. */
   for (pos = 0; pos < n_columns; pos++)
-    for (cnt = 1; cnt < n_columns - pos; cnt++)
-      for (new_pos = 0; new_pos < n_columns - cnt; new_pos++)
+    for (n = 1; n < n_columns - pos; n++)
+      for (new_pos = 0; new_pos < n_columns - n; new_pos++)
         if (mc_include_state (mc))
           {
             struct caseproto *proto;
@@ -629,15 +629,15 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
 
             clone_model (ods, odata, &ds, data);
             mc_name_operation (mc, "move %zu columns (of %zu) from %zu to %zu",
-                               cnt, n_columns, pos, new_pos);
+                               n, n_columns, pos, new_pos);
 
-            datasheet_move_columns (ds, pos, new_pos, cnt);
+            datasheet_move_columns (ds, pos, new_pos, n);
 
             for (i = 0; i < n_rows; i++)
               move_range (&data[i], n_columns, sizeof data[i][0],
-                          pos, new_pos, cnt);
+                          pos, new_pos, n);
             proto = caseproto_move_widths (caseproto_ref (oproto),
-                                           pos, new_pos, cnt);
+                                           pos, new_pos, n);
 
             check_datasheet (mc, ds, data, n_rows, proto);
             release_data (n_rows, proto, data);
@@ -647,7 +647,7 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
   /* Insert all possible numbers of rows in all possible
      positions. */
   for (pos = 0; pos <= n_rows; pos++)
-    for (cnt = 1; cnt <= params->max_rows - n_rows; cnt++)
+    for (n = 1; n <= params->max_rows - n_rows; n++)
       if (mc_include_state (mc))
         {
           struct datasheet *ds;
@@ -657,9 +657,9 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
           clone_model (ods, odata, &ds, data);
           mc_name_operation (mc, "insert %zu rows at %zu "
                              "(from %zu to %zu rows)",
-                             cnt, pos, n_rows, n_rows + cnt);
+                             n, pos, n_rows, n_rows + n);
 
-          for (i = 0; i < cnt; i++)
+          for (i = 0; i < n; i++)
             {
               c[i] = case_create (oproto);
               for (j = 0; j < n_columns; j++)
@@ -668,8 +668,8 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
                                   params->next_value++);
             }
 
-          insert_range (data, n_rows, sizeof data[pos], pos, cnt);
-          for (i = 0; i < cnt; i++)
+          insert_range (data, n_rows, sizeof data[pos], pos, n);
+          for (i = 0; i < n; i++)
             for (j = 0; j < n_columns; j++)
               {
                 int width = caseproto_get_width (oproto, j);
@@ -677,17 +677,17 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
                 value_copy (&data[i + pos][j], case_data_idx (c[i], j), width);
               }
 
-          if (!datasheet_insert_rows (ds, pos, c, cnt))
+          if (!datasheet_insert_rows (ds, pos, c, n))
             mc_error (mc, "datasheet_insert_rows failed");
 
-          check_datasheet (mc, ds, data, n_rows + cnt, oproto);
-          release_data (n_rows + cnt, oproto, data);
+          check_datasheet (mc, ds, data, n_rows + n, oproto);
+          release_data (n_rows + n, oproto, data);
         }
 
   /* Delete all possible numbers of rows from all possible
      positions. */
   for (pos = 0; pos < n_rows; pos++)
-    for (cnt = 1; cnt < n_rows - pos; cnt++)
+    for (n = 1; n < n_rows - pos; n++)
       if (mc_include_state (mc))
         {
           struct datasheet *ds;
@@ -695,34 +695,34 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
           clone_model (ods, odata, &ds, data);
           mc_name_operation (mc, "delete %zu rows at %zu "
                              "(from %zu to %zu rows)",
-                             cnt, pos, n_rows, n_rows - cnt);
+                             n, pos, n_rows, n_rows - n);
 
-          datasheet_delete_rows (ds, pos, cnt);
+          datasheet_delete_rows (ds, pos, n);
 
-          release_data (cnt, oproto, &data[pos]);
-          remove_range (&data[0], n_rows, sizeof data[0], pos, cnt);
+          release_data (n, oproto, &data[pos]);
+          remove_range (&data[0], n_rows, sizeof data[0], pos, n);
 
-          check_datasheet (mc, ds, data, n_rows - cnt, oproto);
-          release_data (n_rows - cnt, oproto, data);
+          check_datasheet (mc, ds, data, n_rows - n, oproto);
+          release_data (n_rows - n, oproto, data);
         }
 
   /* Move all possible numbers of rows from all possible existing
      positions to all possible new positions. */
   for (pos = 0; pos < n_rows; pos++)
-    for (cnt = 1; cnt < n_rows - pos; cnt++)
-      for (new_pos = 0; new_pos < n_rows - cnt; new_pos++)
+    for (n = 1; n < n_rows - pos; n++)
+      for (new_pos = 0; new_pos < n_rows - n; new_pos++)
         if (mc_include_state (mc))
           {
             struct datasheet *ds;
 
             clone_model (ods, odata, &ds, data);
             mc_name_operation (mc, "move %zu rows (of %zu) from %zu to %zu",
-                               cnt, n_rows, pos, new_pos);
+                               n, n_rows, pos, new_pos);
 
-            datasheet_move_rows (ds, pos, new_pos, cnt);
+            datasheet_move_rows (ds, pos, new_pos, n);
 
             move_range (&data[0], n_rows, sizeof data[0],
-                        pos, new_pos, cnt);
+                        pos, new_pos, n);
 
             check_datasheet (mc, ds, data, n_rows, oproto);
             release_data (n_rows, oproto, data);
