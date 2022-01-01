@@ -190,10 +190,6 @@ struct var_freqs
     /* Freqency table. */
     struct freq_tab tab;	/* Frequencies table to use. */
 
-    /* Percentiles. */
-    int n_groups;		/* Number of groups. */
-    double *groups;		/* Groups. */
-
     /* Statistics. */
     double stat[FRQ_ST_count];
 
