@@ -364,9 +364,12 @@ output_item_dump (const struct output_item *item, int indentation)
       break;
 
     case OUTPUT_ITEM_TEXT:
-      printf ("text %s \"%s\"\n",
-              text_item_subtype_to_string (item->text.subtype),
-              pivot_value_to_string_defaults (item->text.content));
+      {
+        char *s = pivot_value_to_string_defaults (item->text.content);
+        printf ("text %s \"%s\"\n",
+                text_item_subtype_to_string (item->text.subtype), s);
+        free (s);
+      }
       break;
     }
 }
