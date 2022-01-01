@@ -99,10 +99,9 @@ parse_abstract_format_specifier (struct lexer *lexer,
   return ok;
 }
 
-/* Parses a format specifier from the token stream and returns
-   true only if successful.  Emits an error message on
-   failure.  The caller should call check_input_specifier() or
-   check_output_specifier() on the parsed format as
+/* Parses a format specifier from the token stream and returns true only if
+   successful.  Emits an error message on failure.  The caller should call
+   fmt_check_input() or fmt_check_output() on the parsed format as
    necessary.  */
 bool
 parse_format_specifier (struct lexer *lexer, struct fmt_spec *format)
