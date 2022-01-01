@@ -288,34 +288,34 @@ AT_CLEANUP
 
 m4_define([FREQUENCIES_NTILES_OUTPUT], [dnl
 Table: Statistics
-,,x
-N,Valid,5
-,Missing,0
-Mean,,3.00
-Std Dev,,1.58
-Minimum,,1.00
-Maximum,,5.00
-Percentiles,0,1.00
-,25,2.00
-,33,2.33
-,50,3.00
-,67,3.67
-,75,4.00
-,100,5.00
+,,x,y
+N,Valid,5,5
+,Missing,0,0
+Mean,,3.00,30.00
+Std Dev,,1.58,15.81
+Minimum,,1.00,10.00
+Maximum,,5.00,50.00
+Percentiles,0,1.00,10.00
+,25,2.00,20.00
+,33,2.33,23.33
+,50,3.00,30.00
+,67,3.67,36.67
+,75,4.00,40.00
+,100,5.00,50.00
 ])
 AT_SETUP([FREQUENCIES basic percentiles])
 AT_DATA([frequencies.sps],
-  [DATA LIST LIST notable /x * .
+  [DATA LIST LIST notable /x y.
 BEGIN DATA.
-1
-2
-3
-4
-5
+1 10
+2 20
+3 30
+4 40
+5 50
 END DATA.
 
 FREQUENCIES
-	VAR=x
+	VAR=x y
 	/FORMAT=NOTABLE
 	/PERCENTILES = 0 25 33.333 50 66.666 75 100.
 ])
@@ -325,17 +325,17 @@ AT_CLEANUP
 
 AT_SETUP([FREQUENCIES basic n-tiles])
 AT_DATA([frequencies.sps],
-  [DATA LIST LIST notable /x * .
+  [DATA LIST LIST notable /x y.
 BEGIN DATA.
-1
-2
-3
-4
-5
+1 10
+2 20
+3 30
+4 40
+5 50
 END DATA.
 
 FREQUENCIES
-	VAR=x
+	VAR=x y
 	/FORMAT=NOTABLE
 	/NTILES = 3
 	/NTILES = 4.

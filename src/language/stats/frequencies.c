@@ -68,7 +68,6 @@
 struct percentile
 {
   double p;        /* the %ile to be calculated */
-  double value;    /* the %ile's value */
   bool show;       /* True to show this percentile in the statistics box. */
 };
 
@@ -191,6 +190,7 @@ struct var_freqs
 
     /* Statistics. */
     double stat[FRQ_ST_count];
+    double *percentiles;
 
     /* Variable attributes. */
     int width;
@@ -198,15 +198,13 @@ struct var_freqs
 
 struct frq_proc
   {
-    struct pool *pool;
-
     struct var_freqs *vars;
     size_t n_vars;
 
     /* Percentiles to calculate and possibly display. */
     struct percentile *percentiles;
-    const struct percentile *median;
-    int n_percentiles;
+    size_t median_idx;
+    size_t n_percentiles;
 
     /* Frequency table display. */
     long int max_categories;         /* Maximum categories to show. */
@@ -267,9 +265,8 @@ compare_freq (const void *a_, const void *b_, const void *aux_)
 }
 
 /* Create a gsl_histogram from a freq_tab */
-static struct histogram *
-freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
-                  const struct variable *var);
+static struct histogram *freq_tab_to_hist (const struct frq_proc *,
+                                           const struct var_freqs *);
 
 static void
 put_freq_row (struct pivot_table *table, int var_idx,
@@ -357,20 +354,24 @@ calc_percentile (double p, double valid_cases, double x1, double x2)
 
 /* Calculates all of the percentiles for VF within FRQ. */
 static void
-calc_percentiles (const struct frq_proc *frq, const struct var_freqs *vf)
+calc_percentiles (const struct frq_proc *frq, struct var_freqs *vf)
 {
-  const struct freq_tab *ft = &vf->tab;
-  double W = ft->valid_cases;
-  const struct freq *f;
-  int percentile_idx = 0;
-  double  rank = 0;
+  if (!frq->n_percentiles)
+    return;
 
-  for (f = ft->valid; f < ft->missing; f++)
+  vf->percentiles = xnmalloc (frq->n_percentiles, sizeof *vf->percentiles);
+
+  const struct freq_tab *ft = &vf->tab;
+  const double W = ft->valid_cases;
+  size_t idx = 0;
+
+  double rank = 0;
+  for (const struct freq *f = ft->valid; f < ft->missing; f++)
     {
       rank += f->count;
-      for (; percentile_idx < frq->n_percentiles; percentile_idx++)
+      for (; idx < frq->n_percentiles; idx++)
         {
-          struct percentile *pc = &frq->percentiles[percentile_idx];
+          struct percentile *pc = &frq->percentiles[idx];
           double tp;
 
           tp = (settings_get_algorithm () == ENHANCED
@@ -381,18 +382,16 @@ calc_percentiles (const struct frq_proc *frq, const struct var_freqs *vf)
             break;
 
           if (tp + 1 < rank || f + 1 >= ft->missing)
-            pc->value = f->values[0].f;
+            vf->percentiles[idx] = f->values[0].f;
           else
-            pc->value = calc_percentile (pc->p, W, f->values[0].f, f[1].values[0].f);
+            vf->percentiles[idx] = calc_percentile (pc->p, W, f->values[0].f,
+                                                    f[1].values[0].f);
         }
     }
-  for (; percentile_idx < frq->n_percentiles; percentile_idx++)
-    {
-      struct percentile *pc = &frq->percentiles[percentile_idx];
-      pc->value = (ft->n_valid > 0
-                   ? ft->valid[ft->n_valid - 1].values[0].f
-                   : SYSMIS);
-    }
+  for (; idx < frq->n_percentiles; idx++)
+    vf->percentiles[idx] = (ft->n_valid > 0
+                            ? ft->valid[ft->n_valid - 1].values[0].f
+                            : SYSMIS);
 }
 
 /* Returns true iff the value in struct freq F is non-missing
@@ -537,7 +536,7 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
 
 	  calc_stats (frq, vf, d);
 
-	  histogram = freq_tab_to_hist (frq, &vf->tab, vf->var);
+	  histogram = freq_tab_to_hist (frq, vf);
 
 	  if (histogram)
 	    {
@@ -1202,11 +1201,11 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
     frq.n_percentiles = o;
 
-    frq.median = NULL;
+    frq.median_idx = SIZE_MAX;
     for (i = 0; i < frq.n_percentiles; i++)
       if (frq.percentiles[i].p == 0.5)
         {
-          frq.median = &frq.percentiles[i];
+          frq.median_idx = i;
           break;
         }
   }
@@ -1231,8 +1230,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
     ok = proc_commit (ds) && ok;
   }
 
-
   free (vars);
+  for (size_t i = 0; i < frq.n_vars; i++)
+    free (frq.vars[i].percentiles);
   free (frq.vars);
   free (frq.bar);
   free (frq.pie);
@@ -1245,6 +1245,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
   free (vars);
   free (frq.vars);
+  for (size_t i = 0; i < frq.n_vars; i++)
+    free (frq.vars[i].percentiles);
   free (frq.bar);
   free (frq.pie);
   free (frq.hist);
@@ -1254,7 +1256,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 }
 
 static double
-calculate_iqr (const struct frq_proc *frq)
+calculate_iqr (const struct frq_proc *frq, const struct var_freqs *vf)
 {
   double q1 = SYSMIS;
   double q3 = SYSMIS;
@@ -1267,9 +1269,9 @@ calculate_iqr (const struct frq_proc *frq)
       struct percentile *pc = &frq->percentiles[i];
 
       if (fabs (0.25 - pc->p) < DBL_EPSILON)
-        q1 = pc->value;
+        q1 = vf->percentiles[i];
       else if (fabs (0.75 - pc->p) < DBL_EPSILON)
-        q3 = pc->value;
+        q3 = vf->percentiles[i];
     }
 
   return q1 == SYSMIS || q3 == SYSMIS ? SYSMIS : q3 - q1;
@@ -1293,24 +1295,17 @@ chart_includes_value (const struct frq_chart *chart,
 
 /* Create a gsl_histogram from a freq_tab */
 static struct histogram *
-freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
-                  const struct variable *var)
+freq_tab_to_hist (const struct frq_proc *frq, const struct var_freqs *vf)
 {
-  double x_min, x_max, valid_freq;
-  int i;
-  double bin_width;
-  struct histogram *histogram;
-  double iqr;
-
   /* Find out the extremes of the x value, within the range to be included in
      the histogram, and sum the total frequency of those values. */
-  x_min = DBL_MAX;
-  x_max = -DBL_MAX;
-  valid_freq = 0;
-  for (i = 0; i < ft->n_valid; i++)
+  double x_min = DBL_MAX;
+  double x_max = -DBL_MAX;
+  double valid_freq = 0;
+  for (int i = 0; i < vf->tab.n_valid; i++)
     {
-      const struct freq *f = &ft->valid[i];
-      if (chart_includes_value (frq->hist, var, f->values))
+      const struct freq *f = &vf->tab.valid[i];
+      if (chart_includes_value (frq->hist, vf->var, f->values))
         {
           x_min = MIN (x_min, f->values[0].f);
           x_max = MAX (x_max, f->values[0].f);
@@ -1321,25 +1316,21 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
   if (valid_freq <= 0)
     return NULL;
 
-  iqr = calculate_iqr (frq);
+  double iqr = calculate_iqr (frq, vf);
 
-  if (iqr > 0)
-    /* Freedman-Diaconis' choice of bin width. */
-    bin_width = 2 * iqr / pow (valid_freq, 1.0 / 3.0);
+  double bin_width =
+    (iqr > 0
+     ? 2 * iqr / pow (valid_freq, 1.0 / 3.0)       /* Freedman-Diaconis. */
+     : (x_max - x_min) / (1 + log2 (valid_freq))); /* Sturges */
 
-  else
-    /* Sturges Rule */
-    bin_width = (x_max - x_min) / (1 + log2 (valid_freq));
-
-  histogram = histogram_create (bin_width, x_min, x_max);
-
+  struct histogram *histogram = histogram_create (bin_width, x_min, x_max);
   if (histogram == NULL)
     return NULL;
 
-  for (i = 0; i < ft->n_valid; i++)
+  for (int i = 0; i < vf->tab.n_valid; i++)
     {
-      const struct freq *f = &ft->valid[i];
-      if (chart_includes_value (frq->hist, var, f->values))
+      const struct freq *f = &vf->tab.valid[i];
+      if (chart_includes_value (frq->hist, vf->var, f->values))
         histogram_add (histogram, f->values[0].f, f->count);
     }
 
@@ -1541,7 +1532,9 @@ calc_stats (const struct frq_proc *frq, const struct var_freqs *vf,
   d[FRQ_ST_SEMEAN] = d[FRQ_ST_STDDEV] / sqrt (W);
   d[FRQ_ST_SESKEWNESS] = calc_seskew (W);
   d[FRQ_ST_SEKURTOSIS] = calc_sekurt (W);
-  d[FRQ_ST_MEDIAN] = frq->median ? frq->median->value : SYSMIS;
+  d[FRQ_ST_MEDIAN] = (frq->median_idx != SIZE_MAX
+                      ? vf->percentiles[frq->median_idx]
+                      : SYSMIS);
 }
 
 static bool
@@ -1632,7 +1625,9 @@ dump_statistics (const struct frq_proc *frq, const struct variable *wv)
           if (!pc->show)
             continue;
 
-          union value v = { .f = vf->tab.n_valid ? pc->value : SYSMIS };
+          union value v = {
+            .f = vf->tab.n_valid ? vf->percentiles[j] : SYSMIS
+          };
           pivot_table_put2 (table, var_idx, row++,
                             pivot_value_new_var_value (vf->var, &v));
         }
