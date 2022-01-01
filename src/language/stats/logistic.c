@@ -982,18 +982,11 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 		{
 		  if (lex_force_match (lexer, T_LPAREN))
 		    {
-		      if (! lex_force_num (lexer))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
+                      if (!lex_force_num_range_closed (lexer, "CUT", 0, 1))
+                        goto error;
+
 		      cp = lex_number (lexer);
 
-		      if (cp < 0 || cp > 1.0)
-			{
-			  msg (ME, _("Cut point value must be in the range [0,1]"));
-			  goto error;
-			}
 		      lex_get (lexer);
 		      if (! lex_force_match (lexer, T_RPAREN))
 			{

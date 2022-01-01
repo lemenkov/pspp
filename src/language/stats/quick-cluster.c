@@ -931,14 +931,9 @@ quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 	      else if (lex_match_id (lexer, "CONVERGE"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN) &&
-		      lex_force_num (lexer))
+		      lex_force_num_range_open (lexer, "CONVERGE", 0, DBL_MAX))
 		    {
 		      qc->epsilon = lex_number (lexer);
-		      if (qc->epsilon <= 0)
-			{
-			  lex_error (lexer, _("The convergence criterion must be positive"));
-			  return false;
-			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
 			return false;

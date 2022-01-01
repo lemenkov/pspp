@@ -1568,14 +1568,9 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
             {
               while (lex_is_number (lexer))
                 {
+                  if (!lex_force_num_range_open (lexer, "PERCENTILES", 0, 100))
+                    goto error;
                   double p = lex_number (lexer);
-
-                  if (p <= 0 || p >= 100.0)
-                    {
-                      lex_error (lexer,
-                                 _("Percentiles must lie in the range (0, 100)"));
-                      goto error;
-                    }
 
                   examine.n_percentiles++;
                   examine.ptiles =

@@ -966,6 +966,236 @@ lex_force_num (struct lexer *lexer)
   return false;
 }
 
+/* If the current token is an number in the closed range [MIN,MAX], does
+   nothing and returns true.  Otherwise, reports an error and returns false.
+   If NAME is nonnull, then it is used in the error message. */
+bool
+lex_force_num_range_closed (struct lexer *lexer, const char *name,
+                            double min, double max)
+{
+  bool is_number = lex_is_number (lexer);
+  bool too_small = is_number && lex_number (lexer) < min;
+  bool too_big = is_number && lex_number (lexer) > max;
+  if (is_number && !too_small && !too_big)
+    return true;
+
+  if (min > max)
+    {
+      /* Weird, maybe a bug in the caller.  Just report that we needed an
+         number. */
+      if (name)
+        lex_error (lexer, _("Number expected for %s."), name);
+      else
+        lex_error (lexer, _("Number expected."));
+    }
+  else if (min == max)
+    {
+      if (name)
+        lex_error (lexer, _("Expected %g for %s."), min, name);
+      else
+        lex_error (lexer, _("Expected %g."), min);
+    }
+  else
+    {
+      bool report_lower_bound = min > -DBL_MAX || too_small;
+      bool report_upper_bound = max < DBL_MAX || too_big;
+
+      if (report_lower_bound && report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer,
+                       _("Expected number between %g and %g for %s."),
+                       min, max, name);
+          else
+            lex_error (lexer, _("Expected number between %g and %g."),
+                       min, max);
+        }
+      else if (report_lower_bound)
+        {
+          if (min == 0)
+            {
+              if (name)
+                lex_error (lexer, _("Expected non-negative number for %s."),
+                           name);
+              else
+                lex_error (lexer, _("Expected non-negative number."));
+            }
+          else
+            {
+              if (name)
+                lex_error (lexer, _("Expected number %g or greater for %s."),
+                           min, name);
+              else
+                lex_error (lexer, _("Expected number %g or greater."), min);
+            }
+        }
+      else if (report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer,
+                       _("Expected number less than or equal to %g for %s."),
+                       max, name);
+          else
+            lex_error (lexer, _("Expected number less than or equal to %g."),
+                       max);
+        }
+      else
+        {
+          if (name)
+            lex_error (lexer, _("Number expected for %s."), name);
+          else
+            lex_error (lexer, _("Number expected."));
+        }
+    }
+  return false;
+}
+
+/* If the current token is an number in the half-open range [MIN,MAX), does
+   nothing and returns true.  Otherwise, reports an error and returns false.
+   If NAME is nonnull, then it is used in the error message. */
+bool
+lex_force_num_range_halfopen (struct lexer *lexer, const char *name,
+                              double min, double max)
+{
+  bool is_number = lex_is_number (lexer);
+  bool too_small = is_number && lex_number (lexer) < min;
+  bool too_big = is_number && lex_number (lexer) >= max;
+  if (is_number && !too_small && !too_big)
+    return true;
+
+  if (min >= max)
+    {
+      /* Weird, maybe a bug in the caller.  Just report that we needed an
+         number. */
+      if (name)
+        lex_error (lexer, _("Number expected for %s."), name);
+      else
+        lex_error (lexer, _("Number expected."));
+    }
+  else
+    {
+      bool report_lower_bound = min > -DBL_MAX || too_small;
+      bool report_upper_bound = max < DBL_MAX || too_big;
+
+      if (report_lower_bound && report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer, _("Expected number in [%g,%g) for %s."),
+                       min, max, name);
+          else
+            lex_error (lexer, _("Expected number in [%g,%g)."),
+                       min, max);
+        }
+      else if (report_lower_bound)
+        {
+          if (min == 0)
+            {
+              if (name)
+                lex_error (lexer, _("Expected non-negative number for %s."),
+                           name);
+              else
+                lex_error (lexer, _("Expected non-negative number."));
+            }
+          else
+            {
+              if (name)
+                lex_error (lexer, _("Expected number %g or greater for %s."),
+                           min, name);
+              else
+                lex_error (lexer, _("Expected number %g or greater."), min);
+            }
+        }
+      else if (report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer,
+                       _("Expected number less than %g for %s."), max, name);
+          else
+            lex_error (lexer, _("Expected number less than %g."), max);
+        }
+      else
+        {
+          if (name)
+            lex_error (lexer, _("Number expected for %s."), name);
+          else
+            lex_error (lexer, _("Number expected."));
+        }
+    }
+  return false;
+}
+
+/* If the current token is an number in the open range (MIN,MAX], does
+   nothing and returns true.  Otherwise, reports an error and returns false.
+   If NAME is nonnull, then it is used in the error message. */
+bool
+lex_force_num_range_open (struct lexer *lexer, const char *name,
+                          double min, double max)
+{
+  bool is_number = lex_is_number (lexer);
+  bool too_small = is_number && lex_number (lexer) <= min;
+  bool too_big = is_number && lex_number (lexer) >= max;
+  if (is_number && !too_small && !too_big)
+    return true;
+
+  if (min >= max)
+    {
+      /* Weird, maybe a bug in the caller.  Just report that we needed an
+         number. */
+      if (name)
+        lex_error (lexer, _("Number expected for %s."), name);
+      else
+        lex_error (lexer, _("Number expected."));
+    }
+  else
+    {
+      bool report_lower_bound = min > -DBL_MAX || too_small;
+      bool report_upper_bound = max < DBL_MAX || too_big;
+
+      if (report_lower_bound && report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer, _("Expected number in (%g,%g) for %s."),
+                       min, max, name);
+          else
+            lex_error (lexer, _("Expected number in (%g,%g)."), min, max);
+        }
+      else if (report_lower_bound)
+        {
+          if (min == 0)
+            {
+              if (name)
+                lex_error (lexer, _("Expected positive number for %s."), name);
+              else
+                lex_error (lexer, _("Expected positive number."));
+            }
+          else
+            {
+              if (name)
+                lex_error (lexer, _("Expected number greater than %g for %s."),
+                           min, name);
+              else
+                lex_error (lexer, _("Expected number greater than %g."), min);
+            }
+        }
+      else if (report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer, _("Expected number less than %g for %s."),
+                       max, name);
+          else
+            lex_error (lexer, _("Expected number less than %g."), max);
+        }
+      else
+        {
+          if (name)
+            lex_error (lexer, _("Number expected for %s."), name);
+          else
+            lex_error (lexer, _("Number expected."));
+        }
+    }
+  return false;
+}
+
 /* If the current token is an identifier, does nothing and returns true.
    Otherwise, reports an error and returns false. */
 bool
