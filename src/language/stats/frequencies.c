@@ -45,7 +45,6 @@
 #include "libpspp/hmap.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "libpspp/pool.h"
 
 #include "math/histogram.h"
 #include "math/moments.h"
@@ -589,7 +588,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   int hi_pcnt = INT_MIN;
   int hi_norm = FRQ_NONORMAL;
 
-  frq.pool = pool_create ();
   frq.sort = FRQ_AVALUE;
 
   frq.vars = NULL;
@@ -1240,7 +1238,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   free (frq.pie);
   free (frq.hist);
   free (frq.percentiles);
-  pool_destroy (frq.pool);
 
   return CMD_SUCCESS;
 
@@ -1252,7 +1249,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   free (frq.pie);
   free (frq.hist);
   free (frq.percentiles);
-  pool_destroy (frq.pool);
 
   return CMD_FAILURE;
 }
