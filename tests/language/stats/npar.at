@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2022 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -755,6 +755,44 @@ npar tests
 ])
 
 AT_CHECK([pspp -o pspp2.csv kw-missing-group.sps])
+
+dnl The result should be the same as before
+AT_CHECK([diff pspp.csv pspp2.csv], [0])
+
+dnl Reverse the order of the group values
+AT_DATA([kw-reverse-group.sps], [dnl
+set format = F9.3.
+
+data list notable list /gv * xscore *.
+begin data
+1 96
+1 128
+1 83
+1 61
+1 101
+2 82
+2 124
+2 132
+2 135
+2 109
+3 115
+3 149
+3 166
+3 147
+end data.
+
+value label /gv
+       1 "timed out"
+       2 "hit wicket"
+       3 "handled the ball".
+
+npar tests
+	/kruskal-wallis xscore by gv (3, 1)
+	/missing=exclude
+	.
+])
+
+AT_CHECK([pspp -o pspp2.csv kw-reverse-group.sps])
 
 dnl The result should be the same as before
 AT_CHECK([diff pspp.csv pspp2.csv], [0])

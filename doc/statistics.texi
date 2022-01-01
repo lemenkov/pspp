@@ -1634,9 +1634,10 @@ arbitrary number of populations.  It does not assume normality.
 The data to be compared are specified by @var{var_list}.
 The categorical variable determining the groups to which the
 data belongs is given by @var{var}. The limits @var{lower} and
-@var{upper} specify the valid range of @var{var}. Any cases for
-which @var{var} falls outside [@var{lower}, @var{upper}] are
-ignored.
+@var{upper} specify the valid range of @var{var}.
+If @var{upper} is smaller than @var{lower}, the PSPP will assume their values
+to be reversed. Any cases for which @var{var} falls outside
+[@var{lower}, @var{upper}] are ignored.
 
 The mean rank of each group as well as the chi-squared value and
 significance of the test are printed.

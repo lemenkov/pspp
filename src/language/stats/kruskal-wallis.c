@@ -1,5 +1,5 @@
 /* Pspp - a program for statistical analysis.
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,16 +44,32 @@
 #define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
-/* Returns true iff the independent variable lies in the range [nst->val1, nst->val2] */
+/* Returns true iff the independent variable lies between nst->val1 and  nst->val2 */
 static bool
 include_func (const struct ccase *c, void *aux)
 {
   const struct n_sample_test *nst = aux;
 
-  if (0 < value_compare_3way (&nst->val1, case_data (c, nst->indep_var), var_get_width (nst->indep_var)))
+  const union value *smaller = 0;
+  const union value *larger = 0;
+  int x = value_compare_3way (&nst->val1, &nst->val2, var_get_width (nst->indep_var));
+   if (x < 0)
+    {
+      smaller = &nst->val1;
+      larger = &nst->val2;
+    }
+  else
+    {
+      smaller = &nst->val2;
+      larger = &nst->val1;
+    }
+
+  if (0 < value_compare_3way (smaller, case_data (c, nst->indep_var),
+                              var_get_width (nst->indep_var)))
     return false;
 
-  if (0 > value_compare_3way (&nst->val2, case_data (c, nst->indep_var), var_get_width (nst->indep_var)))
+  if (0 > value_compare_3way (larger, case_data (c, nst->indep_var),
+                              var_get_width (nst->indep_var)))
     return false;
 
   return true;
