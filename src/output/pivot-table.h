@@ -489,6 +489,12 @@ struct pivot_table *pivot_table_unshare (struct pivot_table *);
 void pivot_table_unref (struct pivot_table *);
 bool pivot_table_is_shared (const struct pivot_table *);
 
+/* Titles. */
+void pivot_table_set_title (struct pivot_table *, struct pivot_value *);
+void pivot_table_set_subtype (struct pivot_table *, struct pivot_value *);
+void pivot_table_set_corner_text (struct pivot_table *, struct pivot_value *);
+void pivot_table_set_caption (struct pivot_table *, struct pivot_value *);
+
 /* Axes. */
 void pivot_table_swap_axes (struct pivot_table *,
                             enum pivot_axis_type, enum pivot_axis_type);

@@ -865,20 +865,20 @@ pivot_table_create (const char *title)
 struct pivot_table *
 pivot_table_create__ (struct pivot_value *title, const char *subtype)
 {
-  struct pivot_table *table = XZALLOC (struct pivot_table);
-  table->ref_cnt = 1;
-  table->show_title = true;
-  table->show_caption = true;
-  table->weight_format = (struct fmt_spec) { .type = FMT_F, .w = 40 };
-  table->title = title;
-  table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
-  table->command_c = xstrdup_if_nonempty (output_get_command_name ());
-  table->look = pivot_table_look_ref (pivot_table_look_get_default ());
-  table->settings = fmt_settings_copy (settings_get_fmt_settings ());
-  table->small = settings_get_small ();
-
-  hmap_init (&table->cells);
-
+  struct pivot_table *table = xmalloc (sizeof *table);
+  *table = (struct pivot_table) {
+    .ref_cnt = 1,
+    .show_title = true,
+    .show_caption = true,
+    .weight_format = (struct fmt_spec) { .type = FMT_F, .w = 40 },
+    .title = title,
+    .subtype = subtype ? pivot_value_new_text (subtype) : NULL,
+    .command_c = xstrdup_if_nonempty (output_get_command_name ()),
+    .look = pivot_table_look_ref (pivot_table_look_get_default ()),
+    .settings = fmt_settings_copy (settings_get_fmt_settings ()),
+    .small = settings_get_small (),
+    .cells = HMAP_INITIALIZER (table->cells),
+  };
   return table;
 }
 
@@ -1189,6 +1189,43 @@ bool
 pivot_table_is_shared (const struct pivot_table *table)
 {
   return table->ref_cnt > 1;
+}
+
+static void
+pivot_table_set_value__ (struct pivot_value **dstp, struct pivot_value *src)
+{
+  pivot_value_destroy (*dstp);
+  *dstp = src;
+}
+
+/* Changes the title of TABLE to TITLE.  Takes ownership of TITLE. */
+void
+pivot_table_set_title (struct pivot_table *table, struct pivot_value *title)
+{
+  pivot_table_set_value__ (&table->title, title);
+}
+
+/* Changes the subtype of TABLE to SUBTYPE.  Takes ownership of SUBTYPE. */
+void
+pivot_table_set_subtype (struct pivot_table *table, struct pivot_value *subtype)
+{
+  pivot_table_set_value__ (&table->subtype, subtype);
+}
+
+/* Changes the corner text of TABLE to CORNER_TEXT.  Takes ownership of
+   CORNER_TEXT. */
+void
+pivot_table_set_corner_text (struct pivot_table *table,
+                             struct pivot_value *corner_text)
+{
+  pivot_table_set_value__ (&table->corner_text, corner_text);
+}
+
+/* Changes the caption of TABLE to CAPTION.  Takes ownership of CAPTION. */
+void
+pivot_table_set_caption (struct pivot_table *table, struct pivot_value *caption)
+{
+  pivot_table_set_value__ (&table->caption, caption);
 }
 
 /* Swaps axes A and B in TABLE. */
@@ -2704,9 +2741,9 @@ pivot_value_new_user_text_nocopy (char *text)
    that pivot_value_new_variable() should be used for variable names).  For
    strings that are part of the PSPP user interface, such as names of
    procedures, statistics, annotations, error messages, etc., use
-   pivot_value_new_text().j
+   pivot_value_new_text().
 
-   The caller retains ownership of TEXT.*/
+   The caller retains ownership of TEXT. */
 struct pivot_value *
 pivot_value_new_user_text (const char *text, size_t length)
 {

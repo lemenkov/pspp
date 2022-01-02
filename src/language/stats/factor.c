@@ -1945,8 +1945,11 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
     }
 
   if (factor->print & PRINT_DETERMINANT)
-    table->caption = pivot_value_new_user_text_nocopy (
-      xasprintf ("%s: %.2f", _("Determinant"), idata->detR));
+    {
+      struct pivot_value *caption = pivot_value_new_user_text_nocopy (
+        xasprintf ("%s: %.2f", _("Determinant"), idata->detR));
+      pivot_table_set_caption (table, caption);
+    }
 
   pivot_table_submit (table);
 }
