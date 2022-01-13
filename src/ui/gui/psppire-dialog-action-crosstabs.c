@@ -296,13 +296,6 @@ generate_syntax (const PsppireDialogAction *a)
     g_string_append (string, "TABLES");
   else
     g_string_append (string, "NOTABLES");
-  g_string_append (string, " ");
-
-  if (cd->format_options_pivot)
-    g_string_append (string, "PIVOT");
-  else
-    g_string_append (string, "NOPIVOT");
-
 
   selected = 0;
   for (i = 0, ok = gtk_tree_model_get_iter_first (cd->stat, &iter); ok;
