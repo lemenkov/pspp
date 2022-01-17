@@ -2096,21 +2096,30 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       size_t *row_enumeration = pivot_table_enumerate_axis (
         table, PIVOT_AXIS_ROW, layer_indexes, table->look->omit_empty, NULL);
 
+      /* Print column headings.
+
+         Ordinarily the test for nonnull 'column_headings' would be
+         unnecessary, because 'column_headings' is null only if the axis's
+         label_depth is 0, but there is a special case for the column axis only
+         in pivot_table_assign_label_depth(). */
       char ***column_headings = compose_headings (
         table, &table->axes[PIVOT_AXIS_COLUMN], column_enumeration);
-      for (size_t y = 0; y < table->axes[PIVOT_AXIS_COLUMN].label_depth; y++)
+      if (column_headings)
         {
-          indent (indentation + 1);
-          for (size_t x = 0; x < table->axes[PIVOT_AXIS_COLUMN].extent; x++)
+          for (size_t y = 0; y < table->axes[PIVOT_AXIS_COLUMN].label_depth; y++)
             {
-              if (x)
-                fputs ("; ", stdout);
-              if (column_headings && column_headings[y] && column_headings[y][x])
-                fputs (column_headings[y][x], stdout);
+              indent (indentation + 1);
+              for (size_t x = 0; x < table->axes[PIVOT_AXIS_COLUMN].extent; x++)
+                {
+                  if (x)
+                    fputs ("; ", stdout);
+                  if (column_headings && column_headings[y] && column_headings[y][x])
+                    fputs (column_headings[y][x], stdout);
+                }
+              putchar ('\n');
             }
-          putchar ('\n');
+          free_headings (&table->axes[PIVOT_AXIS_COLUMN], column_headings);
         }
-      free_headings (&table->axes[PIVOT_AXIS_COLUMN], column_headings);
 
       indent (indentation + 1);
       printf ("-----------------------------------------------\n");
