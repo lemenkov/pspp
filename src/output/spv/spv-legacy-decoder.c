@@ -1771,7 +1771,8 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
                     const struct pivot_table_look *look,
                     const struct spv_data *data, struct pivot_table **outp)
 {
-  struct pivot_table *table = pivot_table_create__ (NULL, subtype);
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_user_text (v->name, SIZE_MAX), subtype);
 
   pivot_table_set_look (table, look);
   table->look = pivot_table_look_unshare (table->look);
