@@ -360,6 +360,7 @@ output_item_dump (const struct output_item *item, int indentation)
       break;
 
     case OUTPUT_ITEM_TABLE:
+      printf ("table\n");
       pivot_table_dump (item->table, indentation + 1);
       break;
 
