@@ -17,6 +17,21 @@
 #ifndef MATH_SORT_H
 #define MATH_SORT_H 1
 
+/* Support for sorting cases.
+
+   Use sort_create_writer() to sort cases in the most general way:
+
+   - Create a casewriter with sort_create_writer(), specifying the sort
+     criteria.
+   - Write all of the cases to be sorted to the casewriter, e.g. with
+     casewriter_write().
+   - Obtain the sorted results with casewriter_make_reader().
+
+  sort_execute() and sort_execute_1var() are shortcuts for situations where the
+  cases are already available from a casereader.
+
+  All of these functions can efficiently sort data bigger than memory. */
+
 struct subcase;
 struct caseproto;
 struct variable;

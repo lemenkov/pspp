@@ -21,6 +21,16 @@
 
 #include "order-stats.h"
 
+/* To calculate a percentile:
+
+   - Create a "struct percentile" with percentile_create().
+   - Feed in the data with order_stats_accumulate() or
+     order_stats_accumulate_idx().  The data must be in sorted order: if
+     necessary, use one of the sorting functions from sort.h to sort them.
+   - Obtain the percentile with percentile_calculate().
+   - Destroy the data structure with statistic_destroy().
+*/
+
 /* The algorithm used to calculate percentiles */
 enum pc_alg {
   PC_NONE=0,
@@ -48,15 +58,7 @@ struct percentile
   struct k k[2];
 };
 
-/* Create the Pth percentile.
-   W is the total sum of weights in the data set
-*/
 struct percentile *percentile_create (double p, double W);
+double percentile_calculate (const struct percentile *, enum pc_alg);
 
-/* Return the value of the percentile */
-double percentile_calculate (const struct percentile *ptl, enum pc_alg alg);
-
-void percentile_dump (const struct percentile *ptl);
-
-
-#endif
+#endif  /* percentiles.h */

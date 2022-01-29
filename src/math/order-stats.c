@@ -59,47 +59,31 @@ order_stats_dump (const struct order_stats *os)
 #endif
 
 static void
-update_k_lower (struct k *kk,
-		double y_i, double c_i, double cc_i)
-{
-  if (cc_i <= kk->tc)
-    {
-      kk->cc = cc_i;
-      kk->c = c_i;
-      kk->y = y_i;
-    }
-}
-
-
-static void
-update_k_upper (struct k *kk,
-		double y_i, double c_i, double cc_i)
-{
-  if (cc_i > kk->tc && kk->c_p1 == 0)
-    {
-      kk->cc_p1 = cc_i;
-      kk->c_p1 = c_i;
-      kk->y_p1 = y_i;
-    }
-}
-
-
-static void
 update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
 		 struct order_stats **os, size_t n_os)
 {
-  int j;
-
-  for (j = 0 ; j < n_os ; ++j)
+  for (size_t j = 0; j < n_os; ++j)
     {
-      int k;
       struct order_stats *tos = os[j];
       struct statistic  *stat = &tos->parent;
-      for (k = 0 ; k < tos->n_k; ++k)
+
+      for (struct k *k = tos->k; k < &tos->k[tos->n_k]; ++k)
 	{
-	  struct k *myk = &tos->k[k];
-	  update_k_lower (myk, y_i, c_i, cc_i);
-	  update_k_upper (myk, y_i, c_i, cc_i);
+          /* Update 'k' lower values. */
+          if (cc_i <= k->tc)
+            {
+              k->cc = cc_i;
+              k->c = c_i;
+              k->y = y_i;
+            }
+
+          /* Update 'k' upper values. */
+          if (cc_i > k->tc && k->c_p1 == 0)
+            {
+              k->cc_p1 = cc_i;
+              k->c_p1 = c_i;
+              k->y_p1 = y_i;
+            }
 	}
 
       if (stat->accumulate)
@@ -109,12 +93,19 @@ update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
     }
 }
 
+/* Reads all the cases from READER and accumulates their data into the N_OS
+   order statistics in OS, taking data from case index DATA_IDX and weights
+   from case index WEIGHT_IDX.  WEIGHT_IDX may be -1 to assume weight 1.
 
+   Takes ownership of READER.
+
+   Data values must be numeric and sorted in ascending order.  Use
+   sort_execute_1var() or related functions to sort unsorted data before
+   passing it to this function. */
 void
-order_stats_accumulate_idx (struct order_stats **os, size_t nos,
+order_stats_accumulate_idx (struct order_stats **os, size_t n_os,
                             struct casereader *reader,
-                            int wt_idx,
-                            int val_idx)
+                            int weight_idx, int data_idx)
 {
   struct ccase *cx;
   struct ccase *prev_cx = NULL;
@@ -125,13 +116,11 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
 
   for (; (cx = casereader_read (reader)) != NULL; case_unref (cx))
     {
-      const double weight = wt_idx == -1 ? 1.0 : case_num_idx (cx, wt_idx);
-      const double this_value = case_num_idx (cx, val_idx);
-
+      const double weight = weight_idx == -1 ? 1.0 : case_num_idx (cx, weight_idx);
       if (weight == SYSMIS)
         continue;
 
-      /* The casereader MUST be sorted */
+      const double this_value = case_num_idx (cx, data_idx);
       assert (this_value >= prev_value);
 
       if (prev_value == -DBL_MAX || prev_value == this_value)
@@ -139,7 +128,7 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
 
       if (prev_value > -DBL_MAX && this_value > prev_value)
 	{
-	  update_k_values (prev_cx, prev_value, c_i, cc_i, os, nos);
+	  update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
 	  c_i = weight;
 	}
 
@@ -149,26 +138,33 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
       prev_cx = case_ref (cx);
     }
 
-  update_k_values (prev_cx, prev_value, c_i, cc_i, os, nos);
+  update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
   case_unref (prev_cx);
 
   casereader_destroy (reader);
 }
 
+/* Reads all the cases from READER and accumulates their data into the N_OS
+   order statistics in OS, taking data from DATA_VAR and weights from
+   WEIGHT_VAR.  Drops cases for which the value of DATA_VAR is missing
+   according to EXCLUDE.  WEIGHT_VAR may be NULL to assume weight 1.
 
+   Takes ownership of READER.
+
+   DATA_VAR must be numeric and sorted in ascending order.  Use
+   sort_execute_1var() or related functions to sort unsorted data before
+   passing it to this function. */
 void
-order_stats_accumulate (struct order_stats **os, size_t nos,
+order_stats_accumulate (struct order_stats **os, size_t n_os,
 			struct casereader *reader,
-			const struct variable *wv,
-			const struct variable *var,
+			const struct variable *weight_var,
+			const struct variable *data_var,
 			enum mv_class exclude)
 {
-  /* Filter out missing cases */
-  reader = casereader_create_filter_missing (reader, &var, 1,
+  reader = casereader_create_filter_missing (reader, &data_var, 1,
                                              exclude, NULL, NULL);
 
-  order_stats_accumulate_idx (os, nos,
-                              reader,
-                              wv ? var_get_case_index (wv) : -1,
-                              var_get_case_index (var));
+  order_stats_accumulate_idx (os, n_os, reader,
+                              weight_var ? var_get_case_index (weight_var) : -1,
+                              var_get_case_index (data_var));
 }

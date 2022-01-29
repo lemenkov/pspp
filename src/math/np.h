@@ -29,6 +29,8 @@ enum
     n_NP_IDX
   };
 
+/* Statistics needed to produce a normal probability plot with
+   np_plot_create(). */
 struct np
 {
   struct order_stats parent;

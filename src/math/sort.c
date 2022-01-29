@@ -60,6 +60,9 @@ static struct ccase *pqueue_pop (struct pqueue *, casenumber *);
 
 static void output_record (struct sort_writer *);
 
+/* Creates a casewriter that sorts the cases written to it.  Once all the cases
+   have been written, use casewriter_make_reader() to obtain the sorted
+   results. */
 struct casewriter *
 sort_create_writer (const struct subcase *ordering,
                     const struct caseproto *proto)

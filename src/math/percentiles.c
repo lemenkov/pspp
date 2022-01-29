@@ -27,6 +27,7 @@
 
 #include "gl/xalloc.h"
 
+/* Return the value of the percentile. */
 double
 percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
 {
@@ -143,6 +144,9 @@ destroy (struct statistic *stat)
 }
 
 
+/* Create the Pth percentile.
+   W is the total sum of weights in the data set.
+*/
 struct percentile *
 percentile_create (double p, double W)
 {

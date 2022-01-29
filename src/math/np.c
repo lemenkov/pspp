@@ -71,6 +71,17 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
   np->prev_cc = cc;
 }
 
+/* Creates and returns a data structure whose accumulated results can be used
+   to produce a normal probability plot.  The caller must supply the weighted
+   sample size N and the mean MEAN and variance VAR of the distribution, then
+   feed in the data with order_stats_accumulate() or
+   order_stats_accumulate_idx().
+
+   There is no function to produce the results, which appear in "struct np" for
+   passing directly to np_plot_create() or dnp_plot_create().
+
+   The caller must eventually destroy the returned structure, with
+   statistic_destroy(). */
 struct np *
 np_create (double n, double mean, double var)
 {
