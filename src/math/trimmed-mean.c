@@ -44,8 +44,6 @@ static void
 destroy (struct statistic *s)
 {
   struct trimmed_mean *tm = UP_CAST (s, struct trimmed_mean, parent.parent);
-  struct order_stats *os = &tm->parent;
-  free (os->k);
   free (tm);
 }
 
@@ -57,7 +55,7 @@ trimmed_mean_create (double W, double tail)
   struct statistic *stat = &os->parent;
 
   os->n_k = 2;
-  os->k = xcalloc (2, sizeof (*os->k));
+  os->k = tm->k;
 
   assert (tail >= 0);
   assert (tail <= 1);

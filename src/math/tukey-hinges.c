@@ -64,10 +64,7 @@ static void
 destroy (struct statistic *s)
 {
   struct tukey_hinges *th = UP_CAST (s, struct tukey_hinges, parent.parent);
-  struct order_stats *os = &th->parent;
-
-  free (os->k);
-  free (s);
+  free (th);
 };
 
 struct tukey_hinges *
@@ -81,7 +78,7 @@ tukey_hinges_create (double W, double c_min)
   assert (c_min >= 0);
 
   os->n_k = 3;
-  os->k = xcalloc (3, sizeof (*os->k));
+  os->k = th->k;
 
   if (c_min >= 1.0)
     {

@@ -44,6 +44,8 @@ struct percentile
 
   double g2;
   double g2_star;
+
+  struct k k[2];
 };
 
 /* Create the Pth percentile.

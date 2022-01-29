@@ -25,6 +25,7 @@
 struct tukey_hinges
 {
   struct order_stats parent;
+  struct k k[3];
 };
 
 struct tukey_hinges * tukey_hinges_create (double W, double c_min);

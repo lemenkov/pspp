@@ -32,6 +32,8 @@ struct trimmed_mean
 
   double w;
   double tail;
+
+  struct k k[2];
 };
 
 struct trimmed_mean * trimmed_mean_create (double W, double c_min);
