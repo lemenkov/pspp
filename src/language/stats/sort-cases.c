@@ -71,7 +71,7 @@ cmd_sort_cases (struct lexer *lexer, struct dataset *ds)
   min_buffers = 64;
   max_buffers = INT_MAX;
 
-  subcase_destroy (&ordering);
+  subcase_uninit (&ordering);
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 }
 

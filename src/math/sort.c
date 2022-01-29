@@ -102,7 +102,7 @@ sort_casewriter_destroy (struct casewriter *writer UNUSED, void *sort_)
 {
   struct sort_writer *sort = sort_;
 
-  subcase_destroy (&sort->ordering);
+  subcase_uninit (&sort->ordering);
   merge_destroy (sort->merge);
   pqueue_destroy (sort->pqueue);
   casewriter_destroy (sort->run);
@@ -192,7 +192,7 @@ sort_execute_1var (struct casereader *input, const struct variable *var)
 
   subcase_init_var (&sc, var, SC_ASCEND);
   reader = sort_execute (input, &sc);
-  subcase_destroy (&sc);
+  subcase_uninit (&sc);
   return reader;
 }
 
@@ -247,7 +247,7 @@ pqueue_destroy (struct pqueue *pq)
           struct ccase *c = pqueue_pop (pq, &id);
           case_unref (c);
         }
-      subcase_destroy (&pq->ordering);
+      subcase_uninit (&pq->ordering);
       free (pq->records);
       free (pq);
     }

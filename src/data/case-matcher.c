@@ -102,7 +102,7 @@ case_matcher_destroy (struct case_matcher *cm)
       for (i = 0; i < cm->n_inputs; i++)
         {
           struct case_matcher_input *input = &cm->inputs[i];
-          subcase_destroy (&input->by_vars);
+          subcase_uninit (&input->by_vars);
         }
       free (cm->inputs);
       free (cm);

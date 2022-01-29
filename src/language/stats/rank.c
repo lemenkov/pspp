@@ -243,7 +243,7 @@ destroy_rank (struct rank *rank)
 {
  free (rank->vars);
  free (rank->group_vars);
- subcase_destroy (&rank->sc);
+ subcase_uninit (&rank->sc);
  pool_destroy (rank->pool);
 }
 
@@ -555,7 +555,7 @@ rank_sorted_file (struct casereader *input,
   /* Do ranking. */
   subcase_init (&input_var, 0, 0, SC_ASCEND);
   tie_grouper = casegrouper_create_subcase (input, &input_var);
-  subcase_destroy (&input_var);
+  subcase_uninit (&input_var);
   for (; casegrouper_get_next_group (tie_grouper, &tied_cases);
        casereader_destroy (tied_cases))
     {
@@ -996,7 +996,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
     for (i = 0; i < cmd->n_vars; i++)
       outputs[i] = sort_create_writer (&by_order, output_proto);
 
-    subcase_destroy (&by_order);
+    subcase_uninit (&by_order);
     caseproto_unref (output_proto);
   }
 
@@ -1047,7 +1047,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
       else
         weight_idx = -1;
       input_pass = casereader_project (input_pass, &projection);
-      subcase_destroy (&projection);
+      subcase_uninit (&projection);
 
       /* Prepare 'group_vars' as the set of grouping variables. */
       subcase_init_empty (&group_vars);
@@ -1068,7 +1068,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
                             var_get_width (dict_get_split_vars (d)[j]),
                             SC_ASCEND);
       split_grouper = casegrouper_create_subcase (input_pass, &split_vars);
-      subcase_destroy (&split_vars);
+      subcase_uninit (&split_vars);
       while (casegrouper_get_next_group (split_grouper, &split_group))
         {
           struct casereader *ordered;
@@ -1081,8 +1081,8 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
             rank_sorted_file (by_group, outputs[i], weight_idx, cmd);
           ok = casegrouper_destroy (by_grouper) && ok;
         }
-      subcase_destroy (&group_vars);
-      subcase_destroy (&rank_ordering);
+      subcase_uninit (&group_vars);
+      subcase_uninit (&rank_ordering);
 
       ok = casegrouper_destroy (split_grouper) && ok;
     }

@@ -57,8 +57,8 @@ static bool
 destroy_projection (void *project_)
 {
   struct casereader_project *project = project_;
-  subcase_destroy (&project->old_sc);
-  subcase_destroy (&project->new_sc);
+  subcase_uninit (&project->old_sc);
+  subcase_uninit (&project->new_sc);
   free (project);
   return true;
 }
@@ -99,7 +99,7 @@ casereader_project_1 (struct casereader *subreader, int column)
   subcase_init (&sc, column, caseproto_get_width (subproto, column),
                 SC_ASCEND);
   reader = casereader_project (subreader, &sc);
-  subcase_destroy (&sc);
+  subcase_uninit (&sc);
 
   return reader;
 }

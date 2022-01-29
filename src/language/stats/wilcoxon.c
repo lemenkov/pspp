@@ -116,7 +116,7 @@ wilcoxon_execute (const struct dataset *ds,
 
       subcase_init_var (&ordering, ws[i].absdiff, SC_ASCEND);
       writer = sort_create_writer (&ordering, proto);
-      subcase_destroy (&ordering);
+      subcase_uninit (&ordering);
 
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
 	{

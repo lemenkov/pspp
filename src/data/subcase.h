@@ -58,7 +58,7 @@ void subcase_init (struct subcase *, int index, int width,
 
 void subcase_clone (struct subcase *, const struct subcase *);
 void subcase_clear (struct subcase *);
-void subcase_destroy (struct subcase *);
+void subcase_uninit (struct subcase *);
 
 bool subcase_contains (const struct subcase *, int case_index);
 bool subcase_contains_var (const struct subcase *, const struct variable *);

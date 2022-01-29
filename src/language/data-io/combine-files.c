@@ -639,9 +639,9 @@ close_all_comb_files (struct comb_proc *proc)
   for (i = 0; i < proc->n_files; i++)
     {
       struct comb_file *file = &proc->files[i];
-      subcase_destroy (&file->by_vars);
-      subcase_destroy (&file->src);
-      subcase_destroy (&file->dst);
+      subcase_uninit (&file->by_vars);
+      subcase_uninit (&file->src);
+      subcase_uninit (&file->dst);
       free (file->mv);
       fh_unref (file->handle);
       dict_unref (file->dict);
@@ -668,7 +668,7 @@ free_comb_proc (struct comb_proc *proc)
                                 proc->prev_BY);
       free (proc->prev_BY);
     }
-  subcase_destroy (&proc->by_vars);
+  subcase_uninit (&proc->by_vars);
   case_unref (proc->buffered_case);
 }
 

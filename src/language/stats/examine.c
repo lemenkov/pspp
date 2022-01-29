@@ -1033,7 +1033,7 @@ create_n (const void *aux1, void *aux2 UNUSED)
       es[v].minimum =  DBL_MAX;
     }
 
-  subcase_destroy (&ordering);
+  subcase_uninit (&ordering);
   return es;
 }
 

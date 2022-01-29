@@ -168,7 +168,7 @@ median_execute (const struct dataset *ds,
 	      cc += dict_get_case_weight (dict, c, &warn);
 	      casewriter_write (writer, c);
 	    }
-	  subcase_destroy (&sc);
+	  subcase_uninit (&sc);
 	  casereader_destroy (rr);
 
 	  rr = casewriter_make_reader (writer);

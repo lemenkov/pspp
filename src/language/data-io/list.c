@@ -131,7 +131,7 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
   ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
 
-  subcase_destroy (&sc);
+  subcase_uninit (&sc);
   free (lcmd->v_variables);
 
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;

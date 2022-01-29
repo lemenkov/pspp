@@ -242,7 +242,7 @@ casegrouper_vars_destroy (void *sc_)
   struct subcase *sc = sc_;
   if (sc != NULL)
     {
-      subcase_destroy (sc);
+      subcase_uninit (sc);
       free (sc);
     }
 }

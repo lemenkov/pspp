@@ -86,7 +86,7 @@ subcase_clone (struct subcase *sc, const struct subcase *orig)
 
 /* Frees the memory owned by SC (but not SC itself). */
 void
-subcase_destroy (struct subcase *sc)
+subcase_uninit (struct subcase *sc)
 {
   free (sc->fields);
   caseproto_unref (sc->proto);

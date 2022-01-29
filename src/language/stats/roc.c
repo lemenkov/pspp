@@ -664,7 +664,7 @@ prepare_cutpoints (struct cmd_roc *roc, struct roc_state *rs, struct casereader 
       }
 
     caseproto_unref (proto);
-    subcase_destroy (&ordering);
+    subcase_uninit (&ordering);
   }
 
   for (; (c = casereader_read (r)) != NULL; case_unref (c))
@@ -945,8 +945,8 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
   casereader_destroy (negatives);
 
   caseproto_unref (n_proto);
-  subcase_destroy (&up_ordering);
-  subcase_destroy (&down_ordering);
+  subcase_uninit (&up_ordering);
+  subcase_uninit (&down_ordering);
 
   output_roc (rs, roc);
 

@@ -201,7 +201,7 @@ runs_execute (const struct dataset *ds,
 		cc += w;
 		casewriter_write (writer, c);
 	      }
-	    subcase_destroy (&sc);
+	    subcase_uninit (&sc);
 	    casereader_destroy (reader);
 	    reader = casewriter_make_reader (writer);
 

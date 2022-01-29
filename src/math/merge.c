@@ -66,7 +66,7 @@ merge_destroy (struct merge *m)
     {
       size_t i;
 
-      subcase_destroy (&m->ordering);
+      subcase_uninit (&m->ordering);
       for (i = 0; i < m->n_inputs; i++)
         casereader_destroy (m->inputs[i].reader);
       caseproto_unref (m->proto);

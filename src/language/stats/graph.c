@@ -977,7 +977,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     ok = proc_commit (ds) && ok;
   }
 
-  subcase_destroy (&graph.ordering);
+  subcase_uninit (&graph.ordering);
   free (graph.dep_vars);
   pool_destroy (graph.pool);
   caseproto_unref (graph.gr_proto);
@@ -985,7 +985,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   return CMD_SUCCESS;
 
  error:
-  subcase_destroy (&graph.ordering);
+  subcase_uninit (&graph.ordering);
   caseproto_unref (graph.gr_proto);
   free (graph.dep_vars);
   pool_destroy (graph.pool);

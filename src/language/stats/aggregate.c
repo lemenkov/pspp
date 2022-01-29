@@ -708,7 +708,7 @@ agr_destroy (struct agr_proc *agr)
 {
   struct agr_var *iter, *next;
 
-  subcase_destroy (&agr->sort);
+  subcase_uninit (&agr->sort);
   free (agr->break_vars);
   for (iter = agr->agr_vars; iter; iter = next)
     {
@@ -1119,7 +1119,7 @@ initialize_aggregate_info (struct agr_proc *agr)
 
             subcase_init_var (&ordering, iter->subject, SC_ASCEND);
 	    iter->writer = sort_create_writer (&ordering, proto);
-            subcase_destroy (&ordering);
+            subcase_uninit (&ordering);
             caseproto_unref (proto);
 
 	    iter->cc = 0;
