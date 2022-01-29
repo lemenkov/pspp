@@ -53,7 +53,6 @@ struct np
   struct casewriter *writer;
 };
 
-
-struct np * np_create (double n, double mean, double var);
+struct np *np_create (double n, double mean, double var);
 
 #endif

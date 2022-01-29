@@ -144,26 +144,24 @@ struct box_whisker *
 box_whisker_create (const struct tukey_hinges *th,
 		    size_t id_idx, const struct variable *id_var)
 {
-  struct box_whisker *w = XZALLOC (struct box_whisker);
-  struct order_stats *os = &w->parent;
-  struct statistic *stat = &os->parent;
+  double hinges[3];
+  tukey_hinges_calculate (th, hinges);
 
-  os->n_k = 0;
-
-  stat->destroy = destroy;
-  stat->accumulate = acc;
-
-  tukey_hinges_calculate (th, w->hinges);
-
-  w->id_idx = id_idx;
-  w->id_var = id_var;
-
-  w->step = (w->hinges[2] - w->hinges[0]) * 1.5;
-
-  w->whiskers[1] = w->hinges[2];
-  w->whiskers[0] = SYSMIS;
-
-  ll_init (&w->outliers);
+  struct box_whisker *w = xmalloc (sizeof *w);
+  *w = (struct box_whisker) {
+    .parent = {
+      .parent = {
+        .accumulate = acc,
+        .destroy = destroy,
+      },
+    },
+    .hinges = { hinges[0], hinges[1], hinges[2] },
+    .whiskers = { SYSMIS, hinges[2] },
+    .outliers = LL_INITIALIZER (w->outliers),
+    .step = (hinges[2] - hinges[0]) * 1.5,
+    .id_idx = id_idx,
+    .id_var = id_var,
+  };
 
   return w;
 }

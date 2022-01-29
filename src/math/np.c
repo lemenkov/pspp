@@ -38,12 +38,10 @@ destroy (struct statistic *stat)
   free (np);
 }
 
-
 static void
 acc (struct statistic *s, const struct ccase *cx UNUSED,
      double c, double cc, double y)
 {
-  struct ccase *cp;
   struct np *np = UP_CAST (s, struct np, parent.parent);
   double rank = np->prev_cc + (c + 1) / 2.0;
 
@@ -62,7 +60,7 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
   maximize (&np->y_max, y);
   minimize (&np->y_min, y);
 
-  cp = case_create (casewriter_get_proto (np->writer));
+  struct ccase *cp = case_create (casewriter_get_proto (np->writer));
   *case_num_rw_idx (cp, NP_IDX_Y) = y;
   *case_num_rw_idx (cp, NP_IDX_NS) = ns;
   *case_num_rw_idx (cp, NP_IDX_DNS) = dns;
@@ -85,31 +83,30 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
 struct np *
 np_create (double n, double mean, double var)
 {
-  struct np *np = XZALLOC (struct np);
-  struct order_stats *os = &np->parent;
-  struct statistic *stat = &os->parent;
-  struct caseproto *proto;
-  int i;
-
-  np->prev_cc = 0;
-
-  np->n = n;
-  np->mean = mean;
-
-  np->stddev = sqrt (var);
-
-  np->y_min = np->ns_min = np->dns_min = DBL_MAX;
-  np->y_max = np->ns_max = np->dns_max = -DBL_MAX;
-
-  proto = caseproto_create ();
-  for (i = 0; i < n_NP_IDX; i++)
+  struct caseproto *proto = caseproto_create ();
+  for (size_t i = 0; i < n_NP_IDX; i++)
     proto = caseproto_add_width (proto, 0);
-  np->writer = autopaging_writer_create (proto);
+  struct casewriter *writer = autopaging_writer_create (proto);
   caseproto_unref (proto);
 
-  os->k = 0;
-  stat->destroy = destroy;
-  stat->accumulate = acc;
-
+  struct np *np = xmalloc (sizeof *np);
+  *np = (struct np) {
+    .parent = {
+      .parent = {
+        .accumulate = acc,
+        .destroy = destroy,
+      },
+    },
+    .n = n,
+    .mean = mean,
+    .stddev = sqrt (var),
+    .ns_min = DBL_MAX,
+    .ns_max = -DBL_MAX,
+    .dns_min = DBL_MAX,
+    .dns_max = -DBL_MAX,
+    .y_min = DBL_MAX,
+    .y_max = -DBL_MAX,
+    .writer = writer,
+  };
   return np;
 }

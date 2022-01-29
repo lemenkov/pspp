@@ -50,29 +50,27 @@ destroy (struct statistic *s)
 struct trimmed_mean *
 trimmed_mean_create (double W, double tail)
 {
-  struct trimmed_mean *tm = XZALLOC (struct trimmed_mean);
-  struct order_stats *os = &tm->parent;
-  struct statistic *stat = &os->parent;
-
-  os->n_k = 2;
-  os->k = tm->k;
-
   assert (tail >= 0);
   assert (tail <= 1);
 
-  os->k[0].tc = tail * W;
-  os->k[1].tc = W * (1 - tail);
-
-  stat->accumulate = acc;
-  stat->destroy = destroy;
-
-  tm->cyk1p1 = SYSMIS;
-  tm->w = W;
-  tm->tail = tail;
-
+  struct trimmed_mean *tm = xmalloc (sizeof *tm);
+  *tm = (struct trimmed_mean) {
+    .parent = {
+      .parent = {
+        .accumulate = acc,
+        .destroy = destroy,
+      },
+      .k = tm->k,
+      .n_k = 2,
+    },
+    .k[0] = { .tc = tail * W },
+    .k[1] = { .tc = W * (1 - tail) },
+    .cyk1p1 = SYSMIS,
+    .w = W,
+    .tail = tail,
+  };
   return tm;
 }
-
 
 double
 trimmed_mean_calculate (const struct trimmed_mean *tm)
