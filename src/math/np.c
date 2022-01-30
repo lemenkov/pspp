@@ -93,9 +93,9 @@ np_create (double n, double mean, double var)
   *np = (struct np) {
     .parent = {
       .parent = {
-        .accumulate = acc,
         .destroy = destroy,
       },
+      .accumulate = acc,
     },
     .n = n,
     .mean = mean,

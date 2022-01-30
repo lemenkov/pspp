@@ -23,7 +23,6 @@ struct ccase ;
 
 struct statistic
 {
-  void (*accumulate) (struct statistic *, const struct ccase *cx, double c, double cc, double y);
   void (*destroy) (struct statistic *);
 };
 

@@ -18,6 +18,7 @@
 
 #include "math/order-stats.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "data/casereader.h"
@@ -86,16 +87,16 @@ update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
             }
 	}
 
-      if (stat->accumulate)
-	stat->accumulate (stat, cx, c_i, cc_i, y_i);
-
-      tos->cc = cc_i;
+      if (tos->accumulate)
+	tos->accumulate (stat, cx, c_i, cc_i, y_i);
     }
 }
 
 /* Reads all the cases from READER and accumulates their data into the N_OS
    order statistics in OS, taking data from case index DATA_IDX and weights
    from case index WEIGHT_IDX.  WEIGHT_IDX may be -1 to assume weight 1.
+
+   This function must be used only once per order_stats.
 
    Takes ownership of READER.
 
@@ -117,29 +118,37 @@ order_stats_accumulate_idx (struct order_stats **os, size_t n_os,
   for (; (cx = casereader_read (reader)) != NULL; case_unref (cx))
     {
       const double weight = weight_idx == -1 ? 1.0 : case_num_idx (cx, weight_idx);
-      if (weight == SYSMIS)
+      if (weight == SYSMIS || weight <= 0)
         continue;
 
       const double this_value = case_num_idx (cx, data_idx);
-      assert (this_value >= prev_value);
+      if (!isfinite (this_value) || this_value == SYSMIS)
+        continue;
 
-      if (prev_value == -DBL_MAX || prev_value == this_value)
-	c_i += weight;
+      if (!prev_cx || this_value > prev_value)
+        {
+          if (prev_cx)
+            update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
+          prev_value = this_value;
+          c_i = weight;
+        }
+      else
+        {
+          /* Data values must be sorted. */
+          assert (this_value == prev_value);
 
-      if (prev_value > -DBL_MAX && this_value > prev_value)
-	{
-	  update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
-	  c_i = weight;
-	}
+          c_i += weight;
+        }
 
-      case_unref (prev_cx);
       cc_i += weight;
-      prev_value = this_value;
+      case_unref (prev_cx);
       prev_cx = case_ref (cx);
     }
-
-  update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
-  case_unref (prev_cx);
+  if (prev_cx)
+    {
+      update_k_values (prev_cx, prev_value, c_i, cc_i, os, n_os);
+      case_unref (prev_cx);
+    }
 
   casereader_destroy (reader);
 }
@@ -148,6 +157,8 @@ order_stats_accumulate_idx (struct order_stats **os, size_t n_os,
    order statistics in OS, taking data from DATA_VAR and weights from
    WEIGHT_VAR.  Drops cases for which the value of DATA_VAR is missing
    according to EXCLUDE.  WEIGHT_VAR may be NULL to assume weight 1.
+
+   This function must be used only once per order_stats.
 
    Takes ownership of READER.
 

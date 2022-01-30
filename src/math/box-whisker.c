@@ -151,9 +151,9 @@ box_whisker_create (const struct tukey_hinges *th,
   *w = (struct box_whisker) {
     .parent = {
       .parent = {
-        .accumulate = acc,
         .destroy = destroy,
       },
+      .accumulate = acc,
     },
     .hinges = { hinges[0], hinges[1], hinges[2] },
     .whiskers = { SYSMIS, hinges[2] },

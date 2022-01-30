@@ -143,36 +143,32 @@ destroy (struct statistic *stat)
   free (ptl);
 }
 
-
 /* Create the Pth percentile.
    W is the total sum of weights in the data set.
 */
 struct percentile *
 percentile_create (double p, double W)
 {
-  struct percentile *ptl = XZALLOC (struct percentile);
-  struct order_stats *os = &ptl->parent;
-  struct statistic *stat = &os->parent;
-
   assert (p >= 0);
   assert (p <= 1.0);
 
-  ptl->ptile = p;
-  ptl->w = W;
-
-  os->n_k = 2;
-  os->k = ptl->k;
-  os->k[0].tc = W * p;
-  os->k[1].tc = (W + 1.0) * p;
-
-  ptl->g1 = ptl->g1_star = SYSMIS;
-  ptl->g2 = ptl->g2_star = SYSMIS;
-
-  os->k[1].y_p1 = os->k[1].y = SYSMIS;
-  os->k[0].y_p1 = os->k[0].y = SYSMIS;
-
-  stat->destroy = destroy;
-
+  struct percentile *ptl = xmalloc (sizeof *ptl);
+  *ptl = (struct percentile) {
+    .parent = {
+      .parent = {
+        .destroy = destroy
+      },
+      .k = ptl->k,
+      .n_k = 2,
+    },
+    .ptile = p,
+    .w = W,
+    .g1 = SYSMIS,
+    .g1_star = SYSMIS,
+    .g2 = SYSMIS,
+    .g2_star = SYSMIS,
+    .k[0] = { .tc = W * p, .y = SYSMIS, .y_p1 = SYSMIS },
+    .k[1] = { .tc = (W + 1.0) * p, .y = SYSMIS, .y_p1 = SYSMIS },
+  };
   return ptl;
 }
-

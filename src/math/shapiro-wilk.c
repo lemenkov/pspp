@@ -154,7 +154,7 @@ shapiro_wilk_create (int n, double mean)
 
   sw->warned = false;
 
-  stat->accumulate = acc;
+  os->accumulate = acc;
   stat->destroy = destroy;
 
   return sw;

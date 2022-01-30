@@ -57,9 +57,9 @@ trimmed_mean_create (double W, double tail)
   *tm = (struct trimmed_mean) {
     .parent = {
       .parent = {
-        .accumulate = acc,
         .destroy = destroy,
       },
+      .accumulate = acc,
       .k = tm->k,
       .n_k = 2,
     },

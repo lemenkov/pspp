@@ -37,16 +37,7 @@
 void
 histogram_add (struct histogram *h, double y, double c)
 {
-  struct statistic *stat = &h->parent;
-  stat->accumulate (stat, NULL, c, 0, y);
-}
-
-static void
-acc (struct statistic *s, const struct ccase *cx UNUSED, double c, double cc UNUSED, double y)
-{
-  struct histogram *hist = UP_CAST (s, struct histogram, parent);
-
-  gsl_histogram_accumulate (hist->gsl_hist, y, c);
+  gsl_histogram_accumulate (h->gsl_hist, y, c);
 }
 
 static void
@@ -177,7 +168,6 @@ histogram_create (double bin_width_in, double min, double max)
   }
 
   stat = &h->parent;
-  stat->accumulate = acc;
   stat->destroy = destroy;
 
   return h;
