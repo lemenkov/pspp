@@ -39,6 +39,7 @@ src_math_libpspp_math_la_SOURCES = \
 	src/math/levene.c src/math/levene.h \
 	src/math/linreg.c src/math/linreg.h \
 	src/math/merge.c  src/math/merge.h \
+	src/math/mode.c src/math/mode.h \
 	src/math/moments.c  src/math/moments.h \
 	src/math/np.c src/math/np.h \
 	src/math/order-stats.c src/math/order-stats.h \
