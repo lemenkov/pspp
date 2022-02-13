@@ -5367,25 +5367,12 @@ matrix_print_parse (struct matrix_state *s)
 
   if (lex_token (s->lexer) != T_SLASH && lex_token (s->lexer) != T_ENDCMD)
     {
-      size_t depth = 0;
-      for (size_t i = 0; ; i++)
-        {
-          enum token_type t = lex_next_token (s->lexer, i);
-          if (t == T_LPAREN || t == T_LBRACK || t == T_LCURLY)
-            depth++;
-          else if ((t == T_RPAREN || t == T_RBRACK || t == T_RCURLY) && depth)
-            depth--;
-          else if ((t == T_SLASH && !depth) || t == T_ENDCMD || t == T_STOP)
-            {
-              if (i > 0)
-                cmd->print.title = lex_next_representation (s->lexer, 0, i - 1);
-              break;
-            }
-        }
-
+      int start_ofs = lex_ofs (s->lexer);
       cmd->print.expression = matrix_parse_exp (s);
       if (!cmd->print.expression)
         goto error;
+      cmd->print.title = lex_ofs_representation (s->lexer, start_ofs,
+                                                 lex_ofs (s->lexer) - 1);
     }
 
   while (lex_match (s->lexer, T_SLASH))

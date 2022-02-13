@@ -44,28 +44,18 @@ parse_title (struct lexer *lexer, void (*set_title) (const char *))
       set_title (lex_tokcstr (lexer));
       lex_get (lexer);
     }
-  else if (lex_token (lexer) == T_ENDCMD)
-    {
-      /* This would be a bad special case below because n-1 would be
-         SIZE_MAX. */
-      set_title ("");
-    }
   else
     {
-      /* Count the tokens in the title. */
-      size_t n = 0;
-      while (lex_next (lexer, n)->type != T_ENDCMD)
-        n++;
+      int start_ofs = lex_ofs (lexer);
+      while (lex_token (lexer) != T_ENDCMD)
+        lex_get (lexer);
 
       /* Get the raw representation of all the tokens, including any space
          between them, and use it as the title. */
-      char *title = lex_next_representation (lexer, 0, n - 1);
+      char *title = lex_ofs_representation (lexer, start_ofs,
+                                            lex_ofs (lexer) - 1);
       set_title (title);
       free (title);
-
-      /* Skip past the tokens. */
-      for (size_t i = 0; i < n; i++)
-        lex_get (lexer);
     }
   return CMD_SUCCESS;
 }

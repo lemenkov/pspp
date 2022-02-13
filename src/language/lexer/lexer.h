@@ -166,6 +166,7 @@ struct msg_point lex_ofs_end_point (const struct lexer *, int ofs);
 
 /* Token representation. */
 char *lex_next_representation (const struct lexer *, int n0, int n1);
+char *lex_ofs_representation (const struct lexer *, int ofs0, int ofs1);
 bool lex_next_is_from_macro (const struct lexer *, int n);
 
 /* Current position. */

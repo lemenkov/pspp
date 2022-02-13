@@ -282,8 +282,8 @@ struct lexer
   };
 
 static struct lex_source *lex_source__ (const struct lexer *);
-static char *lex_source_get_syntax__ (const struct lex_source *,
-                                      int n0, int n1);
+static char *lex_source_syntax__ (const struct lex_source *,
+                                  int ofs0, int ofs1);
 static const struct lex_token *lex_next__ (const struct lexer *, int n);
 static void lex_source_push_endcmd__ (struct lex_source *);
 static void lex_source_push_parse (struct lex_source *, struct lex_token *);
@@ -1451,15 +1451,37 @@ lex_ofs_end_point (const struct lexer *lexer, int ofs)
 
 /* Returns the text of the syntax in tokens N0 ahead of the current one,
    through N1 ahead of the current one, inclusive.  (For example, if N0 and N1
-   are both zero, this requests the syntax for the current token.)  The caller
-   must eventually free the returned string (with free()).  The syntax is
-   encoded in UTF-8 and in the original form supplied to the lexer so that, for
-   example, it may include comments, spaces, and new-lines if it spans multiple
-   tokens.  Macro expansion, however, has already been performed. */
+   are both zero, this requests the syntax for the current token.)
+
+   The caller must eventually free the returned string (with free()).  The
+   syntax is encoded in UTF-8 and in the original form supplied to the lexer so
+   that, for example, it may include comments, spaces, and new-lines if it
+   spans multiple tokens.  Macro expansion, however, has already been
+   performed. */
 char *
 lex_next_representation (const struct lexer *lexer, int n0, int n1)
 {
-  return lex_source_get_syntax__ (lex_source__ (lexer), n0, n1);
+  const struct lex_source *src = lex_source__ (lexer);
+  return (src
+          ? lex_source_syntax__ (src, n0 + src->parse_ofs, n1 + src->parse_ofs)
+          : xstrdup (""));
+}
+
+
+/* Returns the text of the syntax in tokens with offsets OFS0 to OFS1,
+   inclusive.  (For example, if OFS0 and OFS1 are both zero, this requests the
+   syntax for the first token in the current command.)
+
+   The caller must eventually free the returned string (with free()).  The
+   syntax is encoded in UTF-8 and in the original form supplied to the lexer so
+   that, for example, it may include comments, spaces, and new-lines if it
+   spans multiple tokens.  Macro expansion, however, has already been
+   performed. */
+char *
+lex_ofs_representation (const struct lexer *lexer, int ofs0, int ofs1)
+{
+  const struct lex_source *src = lex_source__ (lexer);
+  return src ? lex_source_syntax__ (src, ofs0, ofs1) : xstrdup ("");
 }
 
 /* Returns true if the token N ahead of the current one was produced by macro
@@ -1787,32 +1809,33 @@ lex_source__ (const struct lexer *lexer)
           : ll_data (ll_head (&lexer->sources), struct lex_source, ll));
 }
 
-/* Returns the text of the syntax in SRC for tokens N0 ahead of the current
-   one, through N1 ahead of the current one, inclusive.  (For example, if N0
-   and N1 are both zero, this requests the syntax for the current token.)  The
-   caller must eventually free the returned string (with free()).  The syntax
-   is encoded in UTF-8 and in the original form supplied to the lexer so that,
-   for example, it may include comments, spaces, and new-lines if it spans
-   multiple tokens.  Macro expansion, however, has already been performed. */
+/* Returns the text of the syntax in SRC for tokens with offsets OFS0 through
+   OFS1 in the current command, inclusive.  (For example, if OFS0 and OFS1 are
+   both zero, this requests the syntax for the first token in the current
+   command.)  The caller must eventually free the returned string (with
+   free()).  The syntax is encoded in UTF-8 and in the original form supplied
+   to the lexer so that, for example, it may include comments, spaces, and
+   new-lines if it spans multiple tokens.  Macro expansion, however, has
+   already been performed. */
 static char *
-lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
+lex_source_syntax__ (const struct lex_source *src, int ofs0, int ofs1)
 {
   struct string s = DS_EMPTY_INITIALIZER;
-  for (size_t i = n0; i <= n1; )
+  for (size_t i = ofs0; i <= ofs1; )
     {
       /* Find [I,J) as the longest sequence of tokens not produced by macro
          expansion, or otherwise the longest sequence expanded from a single
          macro call. */
-      const struct lex_token *first = lex_source_next__ (src, i);
+      const struct lex_token *first = lex_source_ofs__ (src, i);
       size_t j;
-      for (j = i + 1; j <= n1; j++)
+      for (j = i + 1; j <= ofs1; j++)
         {
-          const struct lex_token *cur = lex_source_next__ (src, j);
+          const struct lex_token *cur = lex_source_ofs__ (src, j);
           if ((first->macro_rep != NULL) != (cur->macro_rep != NULL)
               || first->macro_rep != cur->macro_rep)
             break;
         }
-      const struct lex_token *last = lex_source_next__ (src, j - 1);
+      const struct lex_token *last = lex_source_ofs__ (src, j - 1);
 
       /* Now add the syntax for this sequence of tokens to SRC. */
       if (!ds_is_empty (&s))
@@ -1883,7 +1906,8 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
   else
     {
       /* Get the syntax that caused the error. */
-      char *raw_syntax = lex_source_get_syntax__ (src, n0, n1);
+      char *raw_syntax = lex_source_syntax__ (src, n0 + src->parse_ofs,
+                                              n1 + src->parse_ofs);
       char syntax[64];
       str_ellipsize (ss_cstr (raw_syntax), syntax, sizeof syntax);
       free (raw_syntax);
