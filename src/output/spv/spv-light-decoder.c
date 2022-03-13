@@ -170,6 +170,7 @@ decode_spvlb_halign (uint32_t in, enum table_halign *halignp)
       return NULL;
 
     default:
+      *halignp = 0;
       return xasprintf ("bad cell style halign %"PRIu32, in);
     }
 }
