@@ -312,7 +312,7 @@ dnl it can make arrangements to build the documentation examples.
 AM_CONDITIONAL(cross_compiling, test x"$cross_compiling" = x"yes" )
 
 AC_CONFIG_FILES(
-  [Makefile gl/Makefile po/Makefile tests/atlocal perl-module/lib/PSPP.pm])
+  [Makefile po/Makefile tests/atlocal perl-module/lib/PSPP.pm])
 
 AC_CONFIG_COMMANDS([doc/pspp-figures/dummy], [:])
 

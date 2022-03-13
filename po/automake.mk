@@ -94,12 +94,13 @@ install-data-hook: $(GMOFILES)
 	  $(INSTALL_DATA) $$f $(DESTDIR)$(prefix)/share/locale/$$lang/LC_MESSAGES/$(DOMAIN).mo ; \
 	done
 
-uninstall-hook:
+uninstall-hook: uninstall-gmofiles
+uninstall-gmofiles:
 	for f in $(GMOFILES); do \
 	  lang=`echo $$f | $(SED) -e 's%po/\(.*\)\.gmo%\1%' ` ; \
 	  rm -f $(DESTDIR)$(prefix)/share/locale/$$lang/LC_MESSAGES/$(DOMAIN).mo ; \
 	done
-
+.PHONY: uninstall-gmofiles
 
 EXTRA_DIST += \
 	$(LOCALPOFILES) \

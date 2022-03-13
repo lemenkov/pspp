@@ -336,7 +336,8 @@ prep_ph:
 	touch build-aux/config.rpath
 	$(GNULIB_TOOL) --add-import --no-changelog --m4-base=gl/m4 \
 		--source-base=gl --lib=libgl --tests-base=tests \
-		--doc-base=gl/doc --aux-dir=build-aux  \
+		--doc-base=gl/doc --aux-dir=build-aux \
+		--makefile-name=automake.mk --automake-subdir \
 		--libtool $(GNULIB_MODULES)
 	if (glibtoolize --version) >/dev/null 2>&1; then	\
 		LIBTOOLIZE=glibtoolize;				\
@@ -404,6 +405,7 @@ clean: clean-icons
 	rm -f config.h.in~
 	rm -f config.h.in
 	rm -f gl/Makefile.in
+	rm -f gl/automake.mk
 	rm -f Makefile.in
 	rm -f build-aux/compile
 	rm -f build-aux/ltmain.sh

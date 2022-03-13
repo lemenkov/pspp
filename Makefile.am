@@ -18,7 +18,7 @@
 
 AUTOMAKE_OPTIONS = std-options check-news 1.14 subdir-objects
 
-SUBDIRS = gl po
+SUBDIRS = po
 DISTCLEANFILES = ./po/stamp-po xconfigure
 BUILT_SOURCES =
 built-sources: $(BUILT_SOURCES)
@@ -38,6 +38,10 @@ pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 EXTRA_DIST = ONEWS
 
 CLEANFILES =
+MOSTLYCLEANDIRS =
+MOSTLYCLEANFILES =
+MAINTAINERCLEANFILES =
+
 CLEAN_LOCAL =
 ALL_LOCAL =
 CHECK_LOCAL =
@@ -55,9 +59,6 @@ PHONY =
 SUFFIXES =
 LDADD = gl/libgl.la
 
-gl/libgl.la: config.h
-	$(MAKE) -C gl
-
 # This ensures that files added to EXTRA_DIST are always distributed,
 # even if they are inside an Automake if...endif conditional block that is
 # disabled by some particular "configure" run.  For more information, see:
@@ -74,8 +75,10 @@ generate-changelog:
 
 DIST_HOOKS += generate-changelog
 
+GL_CFLAG_GNULIB_WARNINGS = -Wno-missing-prototypes -Wno-unused-parameter
 
 include $(top_srcdir)/build-aux/automake.mk
+include $(top_srcdir)/gl/automake.mk
 include $(top_srcdir)/po/automake.mk
 include $(top_srcdir)/lib/automake.mk
 include $(top_srcdir)/examples/automake.mk
