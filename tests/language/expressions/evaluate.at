@@ -3232,8 +3232,8 @@ for opt in OPT NOOPT; do
     AS_BOX([$opt])
     sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
     AT_CHECK([pspp --testing-mode evaluate.sps], [1], [dnl
-lower('ABCDEFGHIJKLMNOPQRSTUVWXYZ!@%&*089') => "abcdefghijklmnopqrstuvwxyz!@
-%&*089"
+lower('ABCDEFGHIJKLMNOPQRSTUVWXYZ!@%&*089') => "abcdefghijklmnopqrstuvwxyz!
+@%&*089"
 
 lower('') => ""
 
@@ -4308,8 +4308,8 @@ for opt in OPT NOOPT; do
     AS_BOX([$opt])
     sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
     AT_CHECK([pspp --testing-mode evaluate.sps], [1], [dnl
-upcase('abcdefghijklmnopqrstuvwxyz!@%&*089') => "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@
-%&*089"
+upcase('abcdefghijklmnopqrstuvwxyz!@%&*089') => "ABCDEFGHIJKLMNOPQRSTUVWXYZ!
+@%&*089"
 
 upcase('') => ""
 
