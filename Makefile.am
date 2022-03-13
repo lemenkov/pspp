@@ -152,7 +152,7 @@ distfiles: Makefile
 CLEANFILES += distfiles gitfiles missing-distfiles
 PHONY += dist-hook-git
 
-$(bin_PROGRAMS) $(RECURSIVE_TARGETS) dist: $(BUILT_SOURCES) gl/libgl.la
+$(bin_PROGRAMS) $(RECURSIVE_TARGETS) dist: $(BUILT_SOURCES) config.h
 
 
 
