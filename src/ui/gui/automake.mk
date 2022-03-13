@@ -119,7 +119,8 @@ src_ui_gui_psppire_LDADD = \
 	$(LIBRSVG_LIBS) \
 	$(CAIRO_LIBS) \
 	$(LIBINTL) \
-	$(GSL_LIBS)
+	$(GSL_LIBS) \
+	$(LIB_GETRANDOM)
 
 if host_is_w32
 src_ui_gui_psppire_LDADD += src/ui/gui/pspp.res
@@ -130,7 +131,8 @@ endif
 src_ui_gui_spreadsheet_test_LDADD = \
 	src/libpspp-core.la \
 	$(GTK_LIBS) \
-	$(GTHREAD_LIBS)
+	$(GTHREAD_LIBS) \
+	$(LIB_GETRANDOM)
 
 
 src_ui_gui_spreadsheet_test_SOURCES = src/ui/gui/spreadsheet-test.c src/ui/gui/psppire-spreadsheet-model.c

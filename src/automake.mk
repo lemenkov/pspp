@@ -35,7 +35,7 @@ src_libpspp_core_la_LDFLAGS = -release $(VERSION)
 src_libpspp_core_la_LIBADD = \
 	src/data/libdata.la \
 	src/libpspp/liblibpspp.la \
-	$(LIBXML2_LIBS) $(PG_LIBS) \
+	$(LIBXML2_LIBS) $(PG_LIBS) $(LIB_GETRANDOM) \
 	gl/libgl.la
 
 src_libpspp_la_SOURCES =

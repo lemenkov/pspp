@@ -59,7 +59,6 @@ PSPP_ENABLE_OPTION([-Wstrict-prototypes])
 PSPP_ENABLE_OPTION([-Wpointer-arith])
 PSPP_ENABLE_OPTION([-Wno-sign-compare])
 PSPP_ENABLE_OPTION([-Wmissing-prototypes])
-PSPP_ENABLE_OPTION([-Wc11-c2x-compat])
 
 AM_CONDITIONAL(cc_is_gcc, test x"$GCC" = x"yes" )
 AM_CONDITIONAL(host_is_w32, [case $host_os in mingw*) true;; *) false;; esac] )

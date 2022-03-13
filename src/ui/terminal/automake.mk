@@ -39,7 +39,8 @@ src_ui_terminal_pspp_LDADD = \
 	$(CAIRO_LIBS) \
 	$(NCURSES_LIBS) \
 	$(LTLIBREADLINE) \
-	$(GSL_LIBS)
+	$(GSL_LIBS) \
+	$(LIB_GETRANDOM)
 
 
 src_ui_terminal_pspp_LDFLAGS = $(PSPP_LDFLAGS) $(PG_LDFLAGS)

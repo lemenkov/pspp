@@ -36,14 +36,11 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
- commit 0edaafc813caff4101c58405c6ab279597afc0b9
+ commit 2d830e4a792fcd9f614ed08a7f18584b8b21d23b (HEAD, origin/master, origin/HEAD)
  Author: Bruno Haible <bruno@clisp.org>
- Date:   Sat Oct 10 22:52:22 2020 +0200
+ Date:   Sun Mar 13 15:12:46 2022 +0100
 
-     *-list, *-oset, *-omap: Avoid possible compiler warnings.
-
-     Reported by Marc Nieper-Wißkirchen in
-     <https://lists.gnu.org/r/bug-gnulib/2020-10/msg00025.html>.
+     sigsegv: Add support for Linux/PowerPC (32-bit) with musl libc.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
