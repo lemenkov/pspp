@@ -901,7 +901,7 @@ parse_sysvar (struct lexer *lexer, struct expression *e)
       struct tm *tm = localtime (&time);
       return expr_allocate_number (e, ymd_to_offset (tm->tm_year + 1900,
                                                      tm->tm_mon + 1,
-                                                     tm->tm_mday)
+                                                     tm->tm_mday) * DAY_S
                                    + tm->tm_hour * 60 * 60.
                                    + tm->tm_min * 60.
                                    + tm->tm_sec);

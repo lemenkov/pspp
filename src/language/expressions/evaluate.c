@@ -24,6 +24,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/message.h"
 #include "language/expressions/helpers.h"
+#include "language/lexer/format-parser.h"
 #include "language/lexer/value-parser.h"
 #include "libpspp/pool.h"
 #include "output/driver.h"
@@ -124,6 +125,8 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
 
   char *name = NULL;
   char *title = NULL;
+  struct fmt_spec format;
+  bool has_format = false;
 
   struct expression *expr;
 
@@ -219,6 +222,15 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           dict_create_vector_assert (d, "V", vars, n);
           free (vars);
         }
+      else if (lex_match_id (lexer, "FORMAT"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!parse_format_specifier (lexer, &format)
+              || !fmt_check_output (&format)
+              || !fmt_check_type_compat (&format, VAL_NUMERIC))
+            goto done;
+          has_format = true;
+        }
       else
         break;
     }
@@ -258,7 +270,15 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
       case OP_num_vec_elem:
         {
           double d = expr_evaluate_num (expr, c, 0);
-          if (d == SYSMIS)
+          if (has_format)
+            {
+              char *output = data_out (&(const union value) { .f = d },
+                                       NULL, &format,
+                                       settings_get_fmt_settings ());
+              output_log ("%s => %s", title, output);
+              free (output);
+            }
+          else if (d == SYSMIS)
             output_log ("%s => sysmis", title);
           else
             output_log ("%s => %.2f", title, d);

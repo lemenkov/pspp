@@ -420,7 +420,7 @@ $SYSMIS => sysmis
 AT_CLEANUP
 
 # This test will fail if the current date changes during the test.
-AT_SETUP([system variables - $DATE $DATE11])
+AT_SETUP([system variables - $DATE $DATE11 $JDATE $TIME])
 AT_KEYWORDS([expression expressions parse])
 # Get the date in the formats that $DATE and $DATE11 support.
 date=$(date +%d-%^b-%y)
@@ -441,11 +441,17 @@ AS_CASE([$date11],
 AT_DATA([parse.sps], [dnl
 DEBUG EVALUATE /$DATE.
 DEBUG EVALUATE /$DATE11.
+DEBUG EVALUATE FORMAT=DATE9 /$JDATE * 86400.
+DEBUG EVALUATE FORMAT=DATE9 /$TIME.
 ])
 AT_CHECK_UNQUOTED([pspp --testing-mode parse.sps], [0], [dnl
 \$DATE => "$date"
 
 \$DATE11 => "$date11"
+
+\$JDATE * 86400 => $date
+
+\$TIME => $date
 ])
 AT_CLEANUP
 
