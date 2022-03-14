@@ -30,6 +30,7 @@
     </ul>
     <p>PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data.</p>
   </description>
+  <launchable type="desktop-id">org.fsf.pspp.desktop</launchable>
   <categories>
     <category>Science</category>
     <category>Math</category>
