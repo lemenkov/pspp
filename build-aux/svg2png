@@ -14,19 +14,29 @@
 stripprefix=${3#src*icons\/}
 width=${stripprefix%%x*}
 
-# If no width can be extracted from the destination path
-# then take the natural width by setting width to 0
-case "$width" in
-    [0-9][0-9]|[0-9][0-9][0-9])  ;;
-    *)                 width="0";;
-esac
-
-echo "Converting" $1 "to" $3 "size" $width"x"$width
-
-comment=`cat $2`
-gimp -i -d -b "\
+if (gimp --version) >/dev/null 2>&1; then
+    echo "Converting $1 to $3 size $widthx$width with GIMP"
+    comment=`cat $2`
+    # If no width can be extracted from the destination path
+    # then take the natural width by setting width to 0
+    case "$width" in
+	[0-9][0-9] | [0-9][0-9][0-9])  ;;
+	*)                 width="0";;
+    esac
+    gimp -i -d -b "\
 (let* ((image (car (file-svg-load 1 \"$1\" \"$1\" 90 $width $width 0 ))))
       (gimp-image-attach-parasite image '(\"gimp-comment\" 0 \"$comment\"))
       (gimp-file-save 1 image (car (gimp-image-get-active-drawable image))
 		      \"$3\" \"$3\"))
     (gimp-quit 1)"
+elif (rsvg-convert --version) >/dev/null 2>&1; then
+    echo "Converting $1 to $3 size $widthx$width with rsvg-convert"
+    case $width in
+	[0-9][0-9] | [0-9][0-9][0-9]) widthoption="--width=$width --height=$width" ;;
+	*) widthoption= ;;
+    esac
+    rsvg-convert $widthoption "$1" > "$3"
+else
+    echo "$0: can't find gimp or rsvg-convert" >&2
+    exit 1
+fi
