@@ -132,8 +132,9 @@ if test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTK], [gtk+-3.0 >= 3.22.0], [],
     [PSPP_REQUIRED_PREREQ([gtk+ 3.0 version 3.22.0 or later (or use --without-gui)])])
 
-  PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
-    [PSPP_REQUIRED_PREREQ([gtksourceview 3.0 version 3.4.2 or later (or use --without-gui)])])
+  PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-4 >= 4.0], [],
+    [PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
+      [PSPP_REQUIRED_PREREQ([gtksourceview 4.x or gtksourceview 3.x version 3.4.2 or later (or use --without-gui)])])])
 
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.44], [],
     [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.44 or later (or use --without-gui)])])

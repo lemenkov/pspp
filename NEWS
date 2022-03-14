@@ -41,6 +41,8 @@ Changes from 1.4.1 to 1.5.3:
 
    - gettext 0.20 or later is now required.
 
+   - gtksourceview 4.x is now supported (3.x also remains supported).
+
  * Output improvements:
 
    - New drivers for output to TeX source files and to PNG files.
