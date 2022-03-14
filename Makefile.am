@@ -157,6 +157,6 @@ $(bin_PROGRAMS) $(RECURSIVE_TARGETS) dist: $(BUILT_SOURCES) config.h
 
 
 mimedir = $(datadir)/mime/packages
-mime_DATA =pspp.xml
-EXTRA_DIST += pspp.xml
+mime_DATA = org.fsf.pspp.xml
+EXTRA_DIST += org.fsf.pspp.xml
 
