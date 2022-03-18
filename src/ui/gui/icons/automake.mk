@@ -101,7 +101,7 @@ esac
 
 EXTRA_DIST += $(top_srcdir)/src/ui/gui/artwork/splash.svg $(icons) $(icon_srcs)
 
-src/ui/gui/icons/pspp.ico: src/ui/gui/icons/16x16/apps/pspp.png src/ui/gui/icons/32x32/apps/pspp.png src/ui/gui/icons/48x48/apps/pspp.png src/ui/gui/icons/256x256/apps/pspp.png
+src/ui/gui/icons/pspp.ico: src/ui/gui/icons/16x16/apps/org.fsf.pspp.png src/ui/gui/icons/32x32/apps/org.fsf.pspp.png src/ui/gui/icons/48x48/apps/org.fsf.pspp.png src/ui/gui/icons/256x256/apps/org.fsf.pspp.png
 	$(MKDIR_P) ${@D}
 	convert $^ $@
 
