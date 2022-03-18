@@ -193,14 +193,14 @@ native/Makefile:
 	$(MKDIR_P) native
 	(cd native && $(abs_top_srcdir)/configure --host=$(build) --without-gui)
 
-native/gl/libgl.la: native/Makefile
-	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) gl/libgl.la)
+# The gnulib header files are required for the object files of the native pspp
+# They are defined in BUILT_SOURCES but that is only defined as a first dependency
+# for the make all target. src/ui/terminal/pspp as a target will try to compile the
+# objects first but that fails without the header files. Therefore I build the native
+# executables via the default make target
+$(pspp) $(pspp_output) &: native/Makefile
+	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) )
 
-$(pspp): native/gl/libgl.la
-	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) src/ui/terminal/pspp)
-
-$(pspp_output): native/gl/libgl.la
-	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) utilities/pspp-output)
 else
 pspp = src/ui/terminal/pspp$(EXEEXT)
 pspp_output = utilities/pspp-output$(EXEEXT)
