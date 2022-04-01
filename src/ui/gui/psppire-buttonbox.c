@@ -146,7 +146,7 @@ psppire_button_box_class_init (PsppireButtonBoxClass *class)
   default_flags =
     g_param_spec_flags ("default",
 			"Default",
-			"The mask that decides what what button grabs the default",
+			"The mask that decides what button grabs the default",
 			PSPPIRE_TYPE_BUTTON_MASK,
 			0,
 			G_PARAM_READWRITE);

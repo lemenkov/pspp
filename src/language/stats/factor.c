@@ -443,7 +443,7 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
 
 
 /* Returns a newly allocated matrix identical to M.
-   It it the callers responsibility to free the returned value.
+   It is the callers responsibility to free the returned value.
 */
 static gsl_matrix *
 matrix_dup (const gsl_matrix *m)
@@ -2014,7 +2014,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   if (!idata->mm.cov && !(idata->mm.corr && idata->mm.var_matrix))
     {
       msg (ME, _("The dataset has no covariance matrix or a "
-                 "correlation matrix along with standard devications."));
+                 "correlation matrix along with standard deviations."));
       return;
     }
 

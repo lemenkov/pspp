@@ -3501,7 +3501,7 @@ matrix.sps:18: error: WRITE: FORMAT specifies 5 repetitions with record width
 matrix.sps:19: error: WRITE: Output format E5.0 specifies width 5, but E
 requires a width between 6 and 40.
 
-matrix.sps:20: error: WRITE: Format A9 is too wide for 8-byte matrix eleemnts.
+matrix.sps:20: error: WRITE: Format A9 is too wide for 8-byte matrix elements.
 
 matrix.sps:21.7-21.11: error: MATRIX: WRITE with MODE=TRIANGULAR requires a
 square matrix but the matrix to be written has dimensions 1×2.

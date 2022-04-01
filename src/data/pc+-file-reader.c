@@ -403,7 +403,7 @@ find_and_delete_var (struct dictionary *dict, const char *name)
     dict_delete_var (dict, var);
 }
 
-/* Decodes the dictionary read from R, saving it into into *DICT.  Character
+/* Decodes the dictionary read from R, saving it into *DICT.  Character
    strings in R are decoded using ENCODING, or an encoding obtained from R if
    ENCODING is null, or the locale encoding if R specifies no encoding.
 

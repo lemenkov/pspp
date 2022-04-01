@@ -2184,7 +2184,7 @@ current name.
 Renames each of the @var{count} variables in @var{vars} to the name in
 the corresponding position of @var{new_names}.  If the renaming would
 result in a duplicate variable name, returns false and stores one of
-the names that would be be duplicated into @code{*@var{err_name}}, if
+the names that would be duplicated into @code{*@var{err_name}}, if
 @var{err_name} is non-null.  Otherwise, the renaming is successful,
 and true is returned.
 @end deftypefun

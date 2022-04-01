@@ -178,7 +178,7 @@ session_get_dataset_by_seqno (const struct session *s, unsigned int seqno)
   return NULL;
 }
 
-/* Returns an identifier that is is not currently in use as a dataset name.
+/* Returns an identifier that is not currently in use as a dataset name.
    The caller must free the returned identifier, with free(). */
 char *
 session_generate_dataset_name (struct session *s)

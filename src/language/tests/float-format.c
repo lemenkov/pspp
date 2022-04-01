@@ -194,7 +194,7 @@ parse_fp (struct lexer *lexer, struct fp *fp)
 /* Renders SRC, which contains SRC_SIZE bytes of a floating-point
    number in the given FORMAT, as relatively human-readable
    null-terminated string in the DST_SIZE bytes in DST.  DST_SIZE
-   must be be large enough to hold the output. */
+   must be large enough to hold the output. */
 static void
 make_printable (enum float_format format, const void *src_, size_t src_size,
                 char *dst, size_t dst_size)

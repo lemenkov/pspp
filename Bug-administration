@@ -14,4 +14,4 @@ Severity:
 * Bugs which cause a crash when correct input is given are "Major"
 * Bugs which render the software unusable are "Blocker"
 
-Obviously some cases are unclear and judgement has be be used.
+Obviously some cases are unclear and judgement has to be used.

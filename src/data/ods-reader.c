@@ -129,7 +129,7 @@ struct cache_datum
 {
   struct hmap_node node;
 
-  /* The the number of the sheet.  */
+  /* The number of the sheet.  */
   int sheet;
 
   /* The cell's row.  */

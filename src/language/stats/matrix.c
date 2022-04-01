@@ -7196,7 +7196,7 @@ matrix_write_parse (struct matrix_state *s)
     {
       char s[FMT_STRING_LEN_MAX + 1];
       fmt_to_string (write->format, s);
-      msg (SE, _("Format %s is too wide for %zu-byte matrix eleemnts."),
+      msg (SE, _("Format %s is too wide for %zu-byte matrix elements."),
            s, sizeof (double));
       goto error;
     }

@@ -75,7 +75,7 @@ string_map_node_set_value_nocopy (struct string_map_node *node, char *value)
   node->value = value;
 }
 
-/* Frees NODE and and its key and value.  Ordinarily nodes are owned by
+/* Frees NODE and its key and value.  Ordinarily nodes are owned by
    string_maps, but this function should only be used by a caller that owns
    NODE, such as one that has called string_map_delete_nofree() for the
    node. */

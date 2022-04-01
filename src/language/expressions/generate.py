@@ -233,7 +233,7 @@ class Op:
         circumstances.
 
         If this operation has a minimum number of valid arguments,
-        'min_valid_src' should be an an expression that evaluates to
+        'min_valid_src' should be an expression that evaluates to
         the minimum number of valid arguments for this operation.
 
         """

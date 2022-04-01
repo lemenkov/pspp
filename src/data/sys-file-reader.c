@@ -744,7 +744,7 @@ sfm_get_strings (const struct any_reader *r_, struct pool *pool,
   return aux.n;
 }
 
-/* Decodes the dictionary read from R, saving it into into *DICT.  Character
+/* Decodes the dictionary read from R, saving it into *DICT.  Character
    strings in R are decoded using ENCODING, or an encoding obtained from R if
    ENCODING is null, or the locale encoding if R specifies no encoding.
 
