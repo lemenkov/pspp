@@ -41,6 +41,7 @@ uninstall-ext-icons:
 				(test ! "`printf '%s %s %s' . .. *`" = '. .. *' || test -f '*')) 2> /dev/null ; then \
 				  rm -rf $(themedir)/$$size/$$context/application-x-spss-* ; \
 				  rm -rf $(themedir)/$$size/$$context/pspp* ; \
+				  rm -rf $(themedir)/$$size/$$context/org.fsf.pspp*; \
 			fi ; \
 		done ; \
 	done
