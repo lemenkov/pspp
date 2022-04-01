@@ -142,3 +142,4 @@ src/data/sys-file-encoding.c: \
 	src/data/convrtrs.txt
 	$(AM_V_GEN)$(PYTHON3) $^ > $@.tmp && mv $@.tmp $@
 EXTRA_DIST += src/data/sys-file-encoding.py src/data/convrtrs.txt
+DISTCLEANFILES += src/data/sys-file-encoding.c
