@@ -1717,7 +1717,8 @@ display_crosstabulation (struct crosstabs_proc *proc,
           double expected_value = xt->row_tot[r] * xt->col_tot[c] / xt->total;
           double residual = *mp - expected_value;
           double sresidual = residual / sqrt (expected_value);
-          double asresidual = (sresidual
+          double asresidual
+            = residual / sqrt (expected_value
                                * (1. - xt->row_tot[r] / xt->total)
                                * (1. - xt->col_tot[c] / xt->total));
           double entries[CRS_N_CELLS] = {

@@ -16,6 +16,67 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([CROSSTABS procedure])
 
+dnl Based on bug #60982.
+AT_SETUP([CROSSTABS residuals])
+AT_DATA([crosstabs.sps],
+  [DATASET CLOSE ALL.
+DATA LIST LIST NOTABLE/ r c n.
+BEGIN DATA
+1 1 26
+1 2 31
+2 1 12
+2 2 32
+3 1 27
+3 2 18
+4 1 8
+4 2 7
+END DATA.
+WEIGHT by n.
+CROSSTABS r by c /STATISTICS=CHISQ
+/CELLS=COUNT EXPECTED RESID SRESID ASRESID.
+])
+AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
+  [Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+r × c,161.00,100.0%,.00,.0%,161.00,100.0%
+
+Table: r × c
+,,,c,,Total
+,,,1.00,2.00,
+r,1.00,Count,26.00,31.00,57.00
+,,Expected,25.84,31.16,.35
+,,Residual,.16,-.16,
+,,Std. Residual,.03,-.03,
+,,Adjusted Residual,.05,-.05,
+,2.00,Count,12.00,32.00,44.00
+,,Expected,19.95,24.05,.27
+,,Residual,-7.95,7.95,
+,,Std. Residual,-1.78,1.62,
+,,Adjusted Residual,-2.82,2.82,
+,3.00,Count,27.00,18.00,45.00
+,,Expected,20.40,24.60,.28
+,,Residual,6.60,-6.60,
+,,Std. Residual,1.46,-1.33,
+,,Adjusted Residual,2.33,-2.33,
+,4.00,Count,8.00,7.00,15.00
+,,Expected,6.80,8.20,.09
+,,Residual,1.20,-1.20,
+,,Std. Residual,.46,-.42,
+,,Adjusted Residual,.65,-.65,
+Total,,Count,73.00,88.00,161.00
+,,Expected,.45,.55,1.00
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed)
+Pearson Chi-Square,10.09,3.00,.018
+Likelihood Ratio,10.35,3.00,.016
+Linear-by-Linear Association,1.96,1.00,.162
+N of Valid Cases,161.00,,
+])
+AT_CLEANUP
+
 AT_SETUP([CROSSTABS integer mode crash])
 AT_DATA([crosstabs.sps],
   [DATA LIST LIST /A * B * X * Y * .
