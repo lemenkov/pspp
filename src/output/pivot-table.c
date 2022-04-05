@@ -1939,6 +1939,8 @@ compose_headings (const struct pivot_table *pt,
 static void
 free_headings (const struct pivot_axis *axis, char ***headings)
 {
+  if (!headings)
+    return;
   for (size_t i = 0; i < axis->label_depth; i++)
     {
       for (size_t j = 0; j < axis->extent; j++)
@@ -2103,7 +2105,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
             {
               if (x)
                 fputs ("; ", stdout);
-              if (column_headings[y][x])
+              if (column_headings && column_headings[y] && column_headings[y][x])
                 fputs (column_headings[y][x], stdout);
             }
           putchar ('\n');
