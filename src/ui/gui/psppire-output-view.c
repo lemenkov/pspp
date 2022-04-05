@@ -877,6 +877,19 @@ psppire_output_view_destroy (struct psppire_output_view *view)
 
 /* Export. */
 
+static void
+psppire_output_view_export__ (struct output_driver *driver,
+                              const struct output_item *item)
+{
+  if (item->type == OUTPUT_ITEM_GROUP && !driver->class->handles_groups)
+    {
+      for (size_t i = 0; i < item->group.n_children; i++)
+        psppire_output_view_export__ (driver, item->group.children[i]);
+    }
+  else
+    driver->class->submit (driver, item);
+}
+
 void
 psppire_output_view_export (struct psppire_output_view *view,
                             struct string_map *options)
@@ -890,7 +903,7 @@ psppire_output_view_export (struct psppire_output_view *view,
 
       for (i = 0; i < view->n_items; i++)
         if (view->items[i].nesting_depth == 0)
-          driver->class->submit (driver, view->items[i].item);
+          psppire_output_view_export__ (driver, view->items[i].item);
       output_driver_destroy (driver);
     }
 }
