@@ -1525,7 +1525,7 @@ dict_add_document_line (struct dictionary *d, const char *line,
   truncated = line[trunc_len] != '\0';
   if (truncated && issue_warning)
     {
-      /* Note to translators: "bytes" is correct, not characters */
+      /* TRANSLATORS: "bytes" is correct, not characters due to UTF encoding */
       msg (SW, _("Truncating document line to %d bytes."), DOC_LINE_LENGTH);
     }
 
