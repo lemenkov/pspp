@@ -1528,7 +1528,7 @@ scalar on the right-hand side, not a matrix with dimensions 1×2.
    18 | PRINT m**{1, 2}.
       |          ^~~~~~
 
-matrix.sps:19.10-19.12: error: MATRIX: Exponent 1.5 in matrix multiplication is
+matrix.sps:19.10-19.12: error: MATRIX: Exponent 1.5 in matrix exponentiation is
 non-integer or outside the valid range.
    19 | PRINT m**1.5.
       |          ^~~

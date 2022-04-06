@@ -3383,7 +3383,7 @@ matrix_expr_evaluate_exp_mat (const struct matrix_expr *e,
   if (bf != floor (bf) || bf <= LONG_MIN || bf > LONG_MAX)
     {
       msg_at (SE, matrix_expr_location (e->subs[1]),
-              _("Exponent %.1f in matrix multiplication is non-integer "
+              _("Exponent %.1f in matrix exponentiation is non-integer "
                 "or outside the valid range."), bf);
       return NULL;
     }
