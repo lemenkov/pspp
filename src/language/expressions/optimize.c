@@ -163,6 +163,13 @@ get_number_args (struct expr_node *n, size_t arg_idx, size_t n_args,
   return d;
 }
 
+static int
+get_integer_arg (struct expr_node *n, size_t arg_idx)
+{
+  double number = n->args[arg_idx]->number;
+  return number == SYSMIS ? INT_MIN : number;
+}
+
 static struct substring
 get_string_arg (struct expr_node *n, size_t arg_idx)
 {

@@ -870,7 +870,8 @@ def generate_optimize_inc():
             type_ = arg.type_
             c_type = type_.c_type
             if arg.idx is None:
-                func = 'get_%s_arg' % type_.atom
+                func = ('get_integer_arg' if type_.name == 'integer'
+                        else 'get_%s_arg' % type_.atom)
                 decls += ['%sarg_%s = %s (node, %s)'
                           % (c_type, name, func, arg_idx)]
             else:
