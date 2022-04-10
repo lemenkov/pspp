@@ -4,7 +4,7 @@
 #
 # John Darrington <john@darrington.wattle.id.au>, 2007.
 # Jean-Alain Meunier <ja.meunier@gmail.com>, 2012.
-# Eric Thivant <eric.thivant@wanadoo.fr>, 2016.
+# Eric Thivant <eric.thivant@wanadoo.fr>, 2016, 2022.
 # Stéphane Aulery <lkppo@free.fr>, 2016, 2017, 2019, 2020.
 #
 msgid ""
@@ -12,40 +12,40 @@ msgstr ""
 "Project-Id-Version: pspp 1.4.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2020-09-05 12:34-0700\n"
-"PO-Revision-Date: 2020-12-18 03:10+0100\n"
-"Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
+"PO-Revision-Date: 2022-04-09 11:39+0200\n"
+"Last-Translator: Eric Thivant <eric.thivant@wanadoo.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: src/data/any-reader.c:72 src/data/encrypted-file.c:78
 #, c-format
 msgid "An error occurred while opening `%s': %s."
-msgstr "Une erreur est survenue en ouvrant « %s » : %s."
+msgstr "Une erreur s’est produite lors de l’ouverture de '%s' : %s."
 
 #: src/data/any-reader.c:93 src/language/lexer/lexer.c:1633
 #, c-format
 msgid "Error reading `%s': %s."
-msgstr "Erreur de lecture « %s » : %s."
+msgstr "Erreur de lecture de « %s »: %s."
 
 #: src/data/any-reader.c:114
 #, c-format
 msgid "`%s' is not a system or portable file."
-msgstr "« %s » n’est pas un fichier système ou un fichier portable."
+msgstr "` %s ' n’est pas un fichier système ou un fichier portable."
 
 #: src/data/any-reader.c:123 src/data/any-writer.c:66
 msgid "The inline file is not allowed here."
-msgstr "Le fichier en ligne n’est pas permis ici."
+msgstr "Le fichier en ligne n’est pas autorisé ici."
 
 #: src/data/any-reader.c:205
 #, c-format
 msgid "Cannot read from dataset %s because no dictionary or data has been written to it yet."
-msgstr "Ne peut pas lire à partir du jeu de données %s car aucunes variables ou données n’ont été définies."
+msgstr "Impossible de lire à partir du jeu de données %s car aucun dictionnaire ou aucune donnée n’y a encore été écrit."
 
 #: src/data/any-reader.c:260 src/language/data-io/dataset.c:253
 msgid "Dataset"
@@ -64,7 +64,7 @@ msgstr "La valeur du jour %d doit être comprise entre 0 et 31."
 #: src/data/calendar.c:119
 #, c-format
 msgid "Date %04d-%d-%d is before the earliest acceptable date of 1582-10-15."
-msgstr "La date saisie %04d-%d-%d est avant la première date acceptable du 1582-10-15."
+msgstr "La date saisie %04d-%d-%d est avant la première date acceptable du 15-10-1582."
 
 #: src/data/casereader-filter.c:221
 msgid "At least one case in the data read had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
@@ -84,7 +84,7 @@ msgstr "Erreur d’ouverture de « %s » pendant l'écriture de données CSV :
 #: src/data/csv-file-writer.c:453
 #, c-format
 msgid "An I/O error occurred writing CSV file `%s'."
-msgstr "Une erreur d’entrée-sortie (I/O) est survenue lors de l’écriture d’un fichier CSV « %s »."
+msgstr "Une erreur d’entrée-sortie (I/O) est survenue lors de l’écriture d’un fichier CSV `%s '."
 
 #: src/data/data-in.c:175
 #, c-format
@@ -198,7 +198,7 @@ msgstr "Le nom de la semaine est non reconnue. il faut au moins spécifier les d
 #: src/data/data-in.c:1210
 #, c-format
 msgid "`%c' expected in date field."
-msgstr "« %c » attendus dans le champ date."
+msgstr "« `%c'  » attendus dans le champ date."
 
 #: src/data/data-out.c:580
 #, c-format
@@ -208,7 +208,7 @@ msgstr "Le nombre de semaine %f n’est pas entre 1 et 7."
 #: src/data/data-out.c:605
 #, c-format
 msgid "Month number %f is not between 1 and 12."
-msgstr "%f n'est pas un numéro de mois entre 1 et 12."
+msgstr "%f n'est pas le bon mois entre 1 et 12."
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -407,7 +407,7 @@ msgstr "La feuille ou la plage de cellules sélectionnées du tableur « %s »
 #: src/data/identifier2.c:60
 #, c-format
 msgid "Identifier `%s' exceeds %d-byte limit."
-msgstr "L’identifiant « %s » dépasse la limite %d-byte."
+msgstr "L’identifiant «`%s' » dépasse la limite %d-byte."
 
 #: src/data/identifier2.c:84
 msgid "Identifier cannot be empty string."
@@ -416,27 +416,27 @@ msgstr "L’identifiant ne peut pas être une chaîne vide."
 #: src/data/identifier2.c:92
 #, c-format
 msgid "`%s' may not be used as an identifier because it is a reserved word."
-msgstr "« %s » ne peut pas être utilisé comme identifiant car c’est un mot réservé."
+msgstr "`%s' ne peut pas être utilisé comme identifiant car c’est un mot réservé."
 
 #: src/data/identifier2.c:103
 #, c-format
 msgid "`%s' may not be used as an identifier because it contains ill-formed UTF-8 at byte offset %tu."
-msgstr "« %s » ne peut pas être utilisé comme identifiant car il contient un caractère UTF-8 non conforme au segment %tu."
+msgstr "`%s' ne peut pas être utilisé comme identifiant car il contient un caractère UTF-8 non conforme au segment %tu."
 
 #: src/data/identifier2.c:114
 #, c-format
 msgid "Character %s (in `%s') may not appear as the first character in a identifier."
-msgstr "Le caractère %s (en « %s ») ne peut être utilisé comme le premier caractère d’un identifiant."
+msgstr "Le caractère %s (en  `%s') ne peut être utilisé comme le premier caractère d’un identifiant."
 
 #: src/data/identifier2.c:126
 #, c-format
 msgid "Character %s (in `%s') may not appear in an identifier."
-msgstr "Le caractère %s (en « %s ») ne peut être utilisé dans un identifiant."
+msgstr "Le caractère %s (en `%s') ne peut être utilisé dans un identifiant."
 
 #: src/data/mdd-writer.c:241
 #, c-format
 msgid "An I/O error occurred writing metadata file `%s'."
-msgstr "Erreur d’entrée-sortie (I/O) survenue à l’écriture du fichier de métadonnées %s."
+msgstr "Erreur d’entrée-sortie (I/O) survenue à l’écriture du fichier de métadonnées «`%s' »."
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -447,7 +447,7 @@ msgstr "fichier de métadonnées"
 #: src/data/mdd-writer.c:465
 #, c-format
 msgid "Error opening `%s' for writing as a metadata file: %s."
-msgstr "Erreur d’ouverture « %s » pour la lecture du fichier de métadonnées : %s."
+msgstr "Erreur d’ouverture «`%s' » pour la lecture du fichier de métadonnées : %s."
 
 #: src/data/mdd-writer.c:473
 #, c-format
@@ -492,7 +492,7 @@ msgstr "Suppression %s:%s."
 #: src/data/mrset.c:83
 #, c-format
 msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
-msgstr "%s n’est pas un nom valide pour un jeu de réponses multiples Le jeu de réponses multiples doit commencer par « $ »."
+msgstr "%s n’est pas un nom valide pour un jeu de réponses multiples Le jeu de réponses multiples doit commencer par « `$' »."
 
 #: src/data/ods-reader.c:620
 #, c-format
@@ -508,7 +508,7 @@ msgstr "Fichier système SPSS/PC+"
 #: src/data/pc+-file-reader.c:215
 #, c-format
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
-msgstr "Erreur d’ouverture de « %s » pour la lecture du fichier système SPSS/PC+ : %s."
+msgstr "Erreur d’ouverture de « `%s' » pour la lecture du fichier système SPSS/PC+ : %s."
 
 #: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3541
 #, c-format
@@ -523,7 +523,7 @@ msgstr "%s : fichier trop grand."
 #: src/data/pc+-file-reader.c:257
 #, c-format
 msgid "Directory entry is for a %u-byte record starting at offset %u but file is only %u bytes long."
-msgstr "L’entrée d’annuaire est un enregistrement %u-octets en commençant à %u mais le fichier est uniquement %u octets."
+msgstr "L’entrée du répertoire est un enregistrement %u-octets en commençant à %u mais le fichier est uniquement %u octets."
 
 #: src/data/pc+-file-reader.c:275
 #, c-format
@@ -571,11 +571,11 @@ msgstr "Utilisation de l’encodage par défaut %s pour lire ce fichier système
 #: src/data/pc+-file-reader.c:483 src/data/sys-file-reader.c:890
 #, c-format
 msgid "Error closing system file `%s': %s."
-msgstr "Erreur de fermeture du fichier système « %s » : %s."
+msgstr "Erreur de fermeture du fichier système `%s' : %s."
 
 #: src/data/pc+-file-reader.c:544
 msgid "This is not an SPSS/PC+ system file."
-msgstr "Ce n’est pas un fichier système SPSS/PC+."
+msgstr "Il ne s'agit pas d'un fichier système SPSS/PC+."
 
 #: src/data/pc+-file-reader.c:548
 #, c-format
@@ -660,12 +660,12 @@ msgstr "Nom de variable invalide « %s »."
 #: src/data/pc+-file-reader.c:865 src/data/sys-file-reader.c:1444
 #, c-format
 msgid "Renaming variable with duplicate name `%s' to `%s'."
-msgstr "Renommage d’une variable en doublon de « %s » vers « %s »."
+msgstr "Renommer une variable en dupliquant son nom de `%s'  vers «  `%s' »."
 
 #: src/data/pc+-file-reader.c:877
 #, c-format
 msgid "Cannot weight by string variable `%s'."
-msgstr "Impossible de pondérer à partir de la variable chaîne de caractères « %s »."
+msgstr "Impossible de pondérer à partir de la variable chaîne de caractères «  `%s' »."
 
 #: src/data/pc+-file-reader.c:973 src/data/sys-file-reader.c:2762
 msgid "File ends in partial case."
@@ -689,12 +689,12 @@ msgstr "Possible corruption de données compressées : des chaînes contiennent 
 #: src/data/pc+-file-reader.c:1156 src/data/sys-file-reader.c:3234
 #, c-format
 msgid "`%s' near offset 0x%llx: "
-msgstr "« %s » près du segment 0x%llx : "
+msgstr "« `%s' » près du segment 0x%llx : "
 
 #: src/data/pc+-file-reader.c:1159 src/data/sys-file-reader.c:3237
 #, c-format
 msgid "`%s': "
-msgstr "« %s » : "
+msgstr "« `%s' » : "
 
 #: src/data/pc+-file-reader.c:1211 src/data/sys-file-reader.c:3288
 #, c-format
@@ -727,7 +727,7 @@ msgstr "lecture du fichier portable %s à la position 0x%llx : "
 #: src/data/por-file-reader.c:164
 #, c-format
 msgid "Error closing portable file `%s': %s."
-msgstr "Erreur de fermeture du fichier portable « %s » : %s."
+msgstr "Erreur de fermeture du fichier portable `%s ' : %s."
 
 #: src/data/por-file-reader.c:216
 msgid "unexpected end of file"
@@ -773,12 +773,12 @@ msgstr "%s : n’est pas un fichier portable."
 #: src/data/por-file-reader.c:564
 #, c-format
 msgid "Unrecognized version code `%c'."
-msgstr "Version de code non reconnue « %c »."
+msgstr "Version de code non reconnue  `%c'."
 
 #: src/data/por-file-reader.c:577
 #, c-format
 msgid "Bad date string length %zu."
-msgstr "Date de mauvaise longueur %zu."
+msgstr "Longueur de date incorrecte %zu."
 
 #: src/data/por-file-reader.c:579
 #, c-format
@@ -870,7 +870,7 @@ msgstr "Erreur d’ouverture « %s » pour la lecture du fichier portable : %s
 #: src/data/por-file-writer.c:505
 #, c-format
 msgid "An I/O error occurred writing portable file `%s'."
-msgstr "Une erreur d’entrée-sortie (I/O) est apparue lors de l’écriture du fichier « %s » en tant que fichier portable."
+msgstr "Une erreur d’entrée-sortie (I/O) ou (E/S) est apparue lors de l’écriture du fichier `%s' en tant que fichier portable."
 
 #: src/data/psql-reader.c:48
 msgid "Support for reading postgres databases was not compiled into this installation of PSPP"
@@ -928,7 +928,7 @@ msgstr "fichier système"
 #: src/data/sys-file-reader.c:414
 #, c-format
 msgid "Error opening `%s' for reading as a system file: %s."
-msgstr "Erreur d’ouverture « %s » en lecture de fichier système : %s."
+msgstr "Erreur lors de l’ouverture de '%s' pour la lecture en tant que fichier système : %s."
 
 #: src/data/sys-file-reader.c:491
 msgid "Misplaced type 4 record."
@@ -1183,7 +1183,7 @@ msgstr "L'index %d de la variable d'étiquette de valeur n'est pas dans l'interv
 #: src/data/sys-file-reader.c:2193
 #, c-format
 msgid "Value label variable index %d refers to long string continuation."
-msgstr ""
+msgstr "L’index de variable de poids %d fait référence à la continuation de chaîne longue.  Traitement du fichier comme non pondéré."
 
 #: src/data/sys-file-reader.c:2208
 #, c-format
@@ -1218,7 +1218,7 @@ msgstr "L’index de la variable de poids %d n’est pas dans l’intervalle 1 e
 #: src/data/sys-file-reader.c:2307
 #, c-format
 msgid "Weight variable index %d refers to long string continuation.  Treating file as unweighted."
-msgstr ""
+msgstr "L’index de variable de poids %d fait référence à la continuation de chaîne longue.  Traitement du fichier comme non pondéré."
 
 #: src/data/sys-file-reader.c:2315
 #, c-format
@@ -1553,7 +1553,7 @@ msgstr "nom de commande attendu"
 #: src/language/command.c:347
 #, c-format
 msgid "Unknown command `%s'."
-msgstr "Commande inconnue « %s »."
+msgstr "Commande inconnue « `%s' »."
 
 #: src/language/command.c:380
 #, c-format
@@ -1856,12 +1856,12 @@ msgstr "Lors de l’utilisation du mot-clé TO pour spécifier plusieurs variabl
 #: src/language/lexer/variable-parser.c:424
 #, c-format
 msgid "`%s' cannot be used with TO because it does not end in a digit."
-msgstr "« %s » ne peut pas être utilisé avec TO car elle ne se termine pas par un chiffre."
+msgstr "« `%s' » ne peut pas être utilisé avec TO car elle ne se termine pas par un chiffre."
 
 #: src/language/lexer/variable-parser.c:432
 #, c-format
 msgid "Numeric suffix on `%s' is larger than supported with TO."
-msgstr "Le suffixe numérique en « %s » is supérieur à la valeur autorisée avec TO."
+msgstr "Le suffixe numérique en « `%s' » is supérieur à la valeur autorisée avec TO."
 
 #: src/language/lexer/variable-parser.c:505
 msgid "Scratch variables not allowed here."
@@ -2471,7 +2471,7 @@ msgstr "%s chaînes de caractères encodées"
 
 #: src/language/dictionary/sys-file-info.c:1046
 msgid "Text strings in the file dictionary that the previously listed encodings interpret differently, along with the interpretations."
-msgstr ""
+msgstr "Chaînes de texte dans le dictionnaire de fichiers que les codages répertoriés précédemment interprètent différemment, ainsi que les interprétations."
 
 #: src/language/dictionary/sys-file-info.c:1049 src/output/text-item.c:57
 #: src/ui/gui/psppire-import-assistant.c:885
@@ -2585,7 +2585,7 @@ msgstr "Command ou shell introuvable"
 
 #: src/language/utilities/host.c:214
 msgid "Could not invoke command or shell"
-msgstr "Impossible d'invoquer la commande ou le shell"
+msgstr "Impossible d'appeler la commande ou le shell"
 
 #: src/language/utilities/host.c:217
 #, c-format
@@ -2920,7 +2920,7 @@ msgstr "Total"
 #: src/language/stats/chisquare.c:171
 #, c-format
 msgid "CHISQUARE test specified %d expected values, but variable %s has %zu distinct values."
-msgstr "Le test de CHISQUARE attend %d valeurs mais la variable %s a %zu valeurs distinctes."
+msgstr "Le test de khi-Deux attend %d valeurs mais la variable %s a %zu valeurs distinctes."
 
 #: src/language/stats/chisquare.c:184 src/language/stats/chisquare.c:241
 msgid "Observed N"
@@ -3203,7 +3203,7 @@ msgstr "Boîte à moustaches de %s"
 
 #: src/language/stats/examine.c:321
 msgid "Boxplot"
-msgstr "Boxplot"
+msgstr "Boite à moustaches"
 
 #: src/language/stats/examine.c:418
 msgid "Not creating NP plot because data set is empty."
@@ -3497,7 +3497,7 @@ msgstr "Analyse N"
 
 #: src/language/stats/factor.c:2099
 msgid "KMO and Bartlett's Test"
-msgstr "Test KMO et Bartlett"
+msgstr "Indice KMO et test de Bartlett"
 
 #: src/language/stats/factor.c:2103
 msgid "Kaiser-Meyer-Olkin Measure of Sampling Adequacy"
@@ -3771,7 +3771,7 @@ msgstr "Variable attendue"
 
 #: src/language/stats/graph.c:883
 msgid "FOOTNOTE is not implemented yet for GRAPH"
-msgstr "FOOTNOTE n’est pas encore imlémentée pour GRAPH"
+msgstr "Les notes de pied de page  ne sont pas encore imlémentées pour GRAPH"
 
 #: src/language/stats/ks-one-sample.c:274 src/ui/gui/ks-one-sample.ui:24
 msgid "One-Sample Kolmogorov-Smirnov Test"
@@ -3828,7 +3828,7 @@ msgstr "Sig. asymptotique (bi-variée)"
 
 #: src/language/stats/logistic.c:327
 msgid "All predicted values are either 1 or 0"
-msgstr "Toutes les valeurs prévues sont soit 1 ou 0"
+msgstr "Toutes les valeurs prédites sont soit 1 ou 0"
 
 #: src/language/stats/logistic.c:525
 msgid "Dependent variable's values are not dichotomous."
@@ -3957,7 +3957,7 @@ msgstr "Codages des variables catégorielles"
 
 #: src/language/stats/logistic.c:1380
 msgid "Codings"
-msgstr ""
+msgstr "Codages"
 
 #: src/language/stats/logistic.c:1383
 msgid "Parameter coding"
@@ -4504,11 +4504,11 @@ msgstr "VARIABLES ne peut figurer après %s"
 
 #: src/language/stats/regression.c:412
 msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr "REGRESSION avec SAVE ignore TEMPORARY. Les transformations temporaires seront donc permanentes."
+msgstr "Enregistrement de la régression, en ignorant les transformations temporaires. Les transformations temporaires seront donc permanentes."
 
 #: src/language/stats/regression.c:416
 msgid "REGRESSION with SAVE ignores FILTER.  All cases will be processed."
-msgstr "REGRESSION avec SAVE ignore TEMPORARY. Tous les cas seront passés en revue."
+msgstr "Enregistrement de la régression, en ignorant les filtres. Tous les cas seront passés en revue."
 
 #: src/language/stats/regression.c:569
 msgid "The dependent variable is equal to the independent variable. The least squares line is therefore Y=X. Standard errors and related statistics may be meaningless."
@@ -6516,12 +6516,12 @@ msgstr "Var%d"
 #: src/ui/source-init-opts.c:72
 #, c-format
 msgid "Algorithm must be either `%s' or `%s'."
-msgstr "L’algorithme doit être « %s » ou « %s »."
+msgstr "L’algorithme doit être « `%s'  » ou « `%s' »."
 
 #: src/ui/source-init-opts.c:97
 #, c-format
 msgid "Syntax must be either `%s' or `%s'."
-msgstr "La syntaxe doit être « %s » ou « %s »."
+msgstr "La syntaxe doit être «  `%s' » ou « `%s' »."
 
 #: src/ui/terminal/main.c:144
 msgid "Error encountered while ERROR=STOP is effective."
@@ -6621,11 +6621,7 @@ msgstr "Un logiciel pour l’analyse de données échantillonnées"
 #. who have helped in the translation.
 #: src/ui/gui/help-menu.c:80
 msgid "translator-credits"
-msgstr ""
-"John Darrington <john@darrington.wattle.id.au>, 2007\n"
-"Jean-Alain Meunier <ja.meunier@gmail.com>, 2012\n"
-"Eric Thivant <eric.thivant@wanadoo.fr>, 2016\n"
-"Stéphane Aulery <lkppo@free.fr>, 2016, 2017, 2019, 2020"
+msgstr "traducteur - crédits : Stéphane Aulery, Eric Thivant"
 
 #: src/ui/gui/help-menu.c:170
 #, c-format
@@ -6882,13 +6878,13 @@ msgstr "_Aller à l’observation…"
 
 #: src/ui/gui/psppire-data-window.c:1364 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
-msgstr "Co_uper"
+msgstr "_Couper"
 
 # _Copier
 #: src/ui/gui/psppire-data-window.c:1373 src/ui/gui/output-window.ui:96
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
-msgstr "Co_pier"
+msgstr "_Copier"
 
 #: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
@@ -7239,7 +7235,7 @@ msgstr "_Fenêtres"
 #: utilities/pspp-convert.c:67
 #, c-format
 msgid "%s argument must be a single character"
-msgstr "L'argument %s doit être un (un seul) caractère."
+msgstr "L'argument %s doit être un (un seul) caractère"
 
 #: utilities/pspp-convert.c:265
 msgid "exactly two non-option arguments are required; use --help for help"
@@ -7543,7 +7539,7 @@ msgstr "Valeurs"
 
 #: src/language/stats/crosstabs.q:1326 src/language/stats/crosstabs.q:1413
 msgid "Asymp. Std. Error"
-msgstr "Erreur standard asymp."
+msgstr "Erreur standard asymp"
 
 #: src/language/stats/crosstabs.q:1327 src/language/stats/crosstabs.q:1414
 msgid "Approx. T"
@@ -9569,7 +9565,7 @@ msgstr "PSPP est stable et robuste. Il peut pratiquer divers formes d'analyses :
 
 #: src/ui/gui/org.fsf.pspp.metainfo.xml.in:12
 msgid "A brief list of some of the PSPP's features."
-msgstr "Quelques fonctionnalités de PSPP"
+msgstr "Quelques fonctionnalités de PSPP."
 
 #: src/ui/gui/org.fsf.pspp.metainfo.xml.in:14
 msgid "Support for over 1 billion cases"
