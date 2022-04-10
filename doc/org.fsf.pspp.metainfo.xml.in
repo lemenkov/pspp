@@ -60,6 +60,9 @@
     <binary>psppire</binary>
   </provides>
   <releases>
+    <release version="1.5.5" date="2022-04-10">
+      <url>https://git.savannah.gnu.org/cgit/pspp.git/tree/NEWS?h=v1.5.5</url>
+    </release>
     <release version="1.5.4" date="2022-03-31">
       <url>https://git.savannah.gnu.org/cgit/pspp.git/tree/NEWS?h=v1.5.4</url>
     </release>

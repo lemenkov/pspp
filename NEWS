@@ -5,7 +5,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes from 1.4.1 to 1.5.4:
+Changes from 1.4.1 to 1.5.5:
 
  * In the Kruskal-Wallis test, a misleading result could occur
    if the lower bound specified by the user was in fact higher
