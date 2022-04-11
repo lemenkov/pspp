@@ -5,10 +5,10 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2015, 2016, 2017, 2018, 2020, 2022.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.5.4\n"
+"Project-Id-Version: pspp 1.5.5\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2022-03-31 19:52-0700\n"
-"PO-Revision-Date: 2022-04-01 19:06+0300\n"
+"POT-Creation-Date: 2022-04-10 16:31-0700\n"
+"PO-Revision-Date: 2022-04-11 11:20+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -522,6 +522,7 @@ msgstr "системний"
 msgid "scratch"
 msgstr "октоторпні"
 
+#. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
 #: src/data/dictionary.c:1529
 #, c-format
 msgid "Truncating document line to %d bytes."
@@ -3991,7 +3992,7 @@ msgid "Linear-by-Linear Association"
 msgstr "Критерій лінійної залежності"
 
 #: src/language/stats/crosstabs.c:1419 src/language/stats/crosstabs.c:1464
-#: src/language/stats/crosstabs.c:1972
+#: src/language/stats/crosstabs.c:1973
 msgid "N of Valid Cases"
 msgstr "К-ть коректних спостережень"
 
@@ -4136,12 +4137,12 @@ msgstr "Номінальне за інтервалом"
 msgid "Eta"
 msgstr "η"
 
-#: src/language/stats/crosstabs.c:1944
+#: src/language/stats/crosstabs.c:1945
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Відношення шансів для %s"
 
-#: src/language/stats/crosstabs.c:1953
+#: src/language/stats/crosstabs.c:1954
 #, c-format
 msgid "For cohort %s = "
 msgstr "Для когорти %s = "
@@ -4545,7 +4546,7 @@ msgid "The dataset contains no complete observations. No analysis will be perfor
 msgstr "У наборі даних не міститься повних спостережень. Аналіз виконано не буде."
 
 #: src/language/stats/factor.c:2016
-msgid "The dataset has no covariance matrix or a correlation matrix along with standard devications."
+msgid "The dataset has no covariance matrix or a correlation matrix along with standard deviations."
 msgstr "У наборі даних немає матриці коваріації або кореляції разом зі стандатними відхиленнями."
 
 #: src/language/stats/factor.c:2075
@@ -5162,8 +5163,8 @@ msgstr "Піднесення матриці до степеня за допом�
 
 #: src/language/stats/matrix.c:3386
 #, c-format
-msgid "Exponent %.1f in matrix multiplication is non-integer or outside the valid range."
-msgstr "Степінь %.1f у множенні матриць не є цілим числом або не належить до коректного діапазону значень."
+msgid "Exponent %.1f in matrix exponentiation is non-integer or outside the valid range."
+msgstr "Степінь %.1f у піднесенні до степеня матриць не є цілим числом або не належить до коректного діапазону значень."
 
 #: src/language/stats/matrix.c:3433
 #, c-format
@@ -5564,7 +5565,7 @@ msgstr "Неможливо виконати читання неквадратн�
 
 #: src/language/stats/matrix.c:7199
 #, c-format
-msgid "Format %s is too wide for %zu-byte matrix eleemnts."
+msgid "Format %s is too wide for %zu-byte matrix elements."
 msgstr "Формат %s є надто широким для %zu-байтових елементів матриці."
 
 #: src/language/stats/matrix.c:7222
