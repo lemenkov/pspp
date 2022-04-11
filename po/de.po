@@ -7,10 +7,10 @@
 # Friedrich Beckmann <friedrich.beckmann@gmx.de>, 2020, 2022
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.5.4\n"
+"Project-Id-Version: pspp 1.5.5\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2022-03-31 19:52-0700\n"
-"PO-Revision-Date: 2022-04-07 13:34+0200\n"
+"POT-Creation-Date: 2022-04-10 16:31-0700\n"
+"PO-Revision-Date: 2022-04-11 11:09+0200\n"
 "Last-Translator: Friedrich Beckmann <friedrich.beckmann@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de_DE\n"
@@ -530,6 +530,7 @@ msgstr "System"
 msgid "scratch"
 msgstr "temporär"
 
+#. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
 #: src/data/dictionary.c:1529
 #, c-format
 msgid "Truncating document line to %d bytes."
@@ -3987,7 +3988,7 @@ msgid "Linear-by-Linear Association"
 msgstr "Zusammenhangstest linear-mit-linear"
 
 #: src/language/stats/crosstabs.c:1419 src/language/stats/crosstabs.c:1464
-#: src/language/stats/crosstabs.c:1972
+#: src/language/stats/crosstabs.c:1973
 msgid "N of Valid Cases"
 msgstr "N der gültigen Fälle"
 
@@ -4132,12 +4133,12 @@ msgstr "Nominal zu Interval"
 msgid "Eta"
 msgstr "Eta"
 
-#: src/language/stats/crosstabs.c:1944
+#: src/language/stats/crosstabs.c:1945
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Quotenverhältnis für %s"
 
-#: src/language/stats/crosstabs.c:1953
+#: src/language/stats/crosstabs.c:1954
 #, c-format
 msgid "For cohort %s = "
 msgstr "Für Kohorte %s = "
@@ -4541,7 +4542,7 @@ msgid "The dataset contains no complete observations. No analysis will be perfor
 msgstr "Der Datensatz enthält keine vollständigen Beobachtungen. Die Analyse wird nicht durchgeführt."
 
 #: src/language/stats/factor.c:2016
-msgid "The dataset has no covariance matrix or a correlation matrix along with standard devications."
+msgid "The dataset has no covariance matrix or a correlation matrix along with standard deviations."
 msgstr "Der Datensatz hat keine Kovarianzmatrix oder eine Korrelationsmatrix zusammen mit Standardabweichungen."
 
 #: src/language/stats/factor.c:2075
@@ -5154,8 +5155,8 @@ msgstr "Matrixpotenzierung mit ** erfordert einen Skalar als rechten Operanden, 
 
 #: src/language/stats/matrix.c:3386
 #, c-format
-msgid "Exponent %.1f in matrix multiplication is non-integer or outside the valid range."
-msgstr "Der Exponent %.1f in der Matrixmultiplikation ist keine Ganzzahl oder außerhalb des gültigen Bereichs."
+msgid "Exponent %.1f in matrix exponentiation is non-integer or outside the valid range."
+msgstr "Der Exponent %.1f in der Matrixpotenzierung ist keine Ganzzahl oder außerhalb des gültigen Bereichs."
 
 #: src/language/stats/matrix.c:3433
 #, c-format
@@ -5544,7 +5545,7 @@ msgstr "Kann die nicht quadratische %zu×%zu Matrix nicht mit dem READ Befehl mi
 
 #: src/language/stats/matrix.c:7199
 #, c-format
-msgid "Format %s is too wide for %zu-byte matrix eleemnts."
+msgid "Format %s is too wide for %zu-byte matrix elements."
 msgstr "Format %s ist zu breit für %zu-Byte Matrixelemente."
 
 #: src/language/stats/matrix.c:7222
@@ -10033,7 +10034,7 @@ msgstr "_Median"
 
 #: src/ui/gui/k-means.ui:24
 msgid "K-Means Cluster Analysis"
-msgstr "k-Means Clusteranalyse"
+msgstr "K-Means Clusteranalyse"
 
 #: src/ui/gui/k-means.ui:122
 msgid "N_umber of Clusters: "
