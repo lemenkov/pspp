@@ -470,8 +470,7 @@ TESTSUITE_AT = \
 	tests/ui/terminal/main.at \
 	tests/ui/syntax-gen.at \
 	tests/utilities/pspp-convert.at \
-	tests/utilities/pspp-output.at \
-	tests/perl-module.at
+	tests/utilities/pspp-output.at
 
 TESTSUITE = $(srcdir)/tests/testsuite
 DISTCLEANFILES += tests/atconfig tests/atlocal
