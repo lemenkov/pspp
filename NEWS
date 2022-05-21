@@ -29,6 +29,9 @@ Changes from 1.4.1 to 1.5.5:
  * The user manual, in its Info and HTML versions, now includes
    graphical output examples and screenshots.
 
+ * New command SHOW SYSTEM to easily print system information useful
+   in bug reports.
+
  * Build changes:
 
    - Perl is no longer required to build.

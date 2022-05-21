@@ -53,27 +53,39 @@ to @email{bug-gnu-pspp@@gnu.org}.
 A high-quality bug report allows the developers to understand,
 reproduce, and ultimately fix the problem.  We recommend
 including the following:
+
 @itemize @bullet
-@item The version of @pspp{} in which you encountered the problem
-That means the precise version number.  ``The latest version''
-is often too ambiguous because
-releases happen quickly, and bug reports are archived indefinitely.
+@item
+The version of @pspp{} in which you encountered the problem.  It also
+often helps to know some information about how @pspp{} was built.
+
+With @pspp{} command syntax, @code{SHOW SYSTEM.} will output
+everything we ordinarily need.  In the PSPPIRE GUI,
+@clicksequence{Help @click{} System Info} produces the same output.
+
 @item The operating system and type of computer on which it is running.
+
 @item A sample of the syntax which causes the problem or, if it is a user
  interface problem, the sequence of steps required to reproduce it.
  Screenshots can be helpful for reporting bugs in the graphical user
  interface, especially since GUI bugs can arise on some systems but
  not others, but they do not usually help fixing other kinds of bugs.
+
 @item A description of what you think is wrong: What happened that you
-  didn't expect, and what did you expect to happen?
+  didn't expect, and what did you expect to happen?  Include any error
+  messages that @pspp{} output.
 @end itemize
 
 Here is one example of a bug report that includes all of the elements above:
 
 @cartouche
 @example
-When I run PSPP 0.8.4 on my GNU/Linux system, executing the following
-syntax:
+I'm running PSPP on a system where @code{SHOW SYSTEM.}  outputs the
+following:
+
+@psppoutput{show-system}
+
+The bug I'm seeing is that executing the following syntax:
 
  DATA LIST FREE /x *.
  BEGIN DATA.

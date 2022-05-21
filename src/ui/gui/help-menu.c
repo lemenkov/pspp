@@ -24,7 +24,9 @@
 #include "libpspp/copyleft.h"
 #include "libpspp/message.h"
 #include "libpspp/version.h"
+#include "ui/gui/executor.h"
 #include "ui/gui/help-menu.h"
+#include "ui/gui/psppire-data-window.h"
 
 #include "gl/configmake.h"
 #include "gl/relocatable.h"
@@ -124,6 +126,12 @@ on_activate_link (GtkAboutDialog *label,
   return  open_windows_help (uri, NULL);
 }
 #endif
+
+static void
+about_system_info (GtkMenuItem *mmm, GtkWindow *parent)
+{
+  execute_const_syntax_string (psppire_default_data_window (), "SHOW SYSTEM.");
+}
 
 static void
 about_new (GtkMenuItem *mmm, GtkWindow *parent)
@@ -265,6 +273,7 @@ create_help_menu (GtkWindow *toplevel)
   GtkWidget *menu = gtk_menu_new ();
 
   GtkWidget *help_about = gtk_menu_item_new_with_mnemonic (_("_About"));
+  GtkWidget *help_system_info = gtk_menu_item_new_with_mnemonic (_("_System Information"));
   GtkWidget *help_ref = gtk_menu_item_new_with_mnemonic (_("_Reference Manual"));
 
   GtkAccelGroup *accel_group = gtk_accel_group_new ();
@@ -277,9 +286,11 @@ create_help_menu (GtkWindow *toplevel)
 			      GTK_ACCEL_VISIBLE);
 
   gtk_menu_attach (GTK_MENU (menu), help_ref, 0, 1, 0, 1);
-  gtk_menu_attach (GTK_MENU (menu), help_about, 0, 1, 1, 2);
+  gtk_menu_attach (GTK_MENU (menu), help_system_info, 0, 1, 1, 2);
+  gtk_menu_attach (GTK_MENU (menu), help_about, 0, 1, 2, 3);
 
   g_signal_connect (help_about, "activate", G_CALLBACK (about_new), toplevel);
+  g_signal_connect (help_system_info, "activate", G_CALLBACK (about_system_info), toplevel);
   g_signal_connect (help_ref, "activate", G_CALLBACK (reference_manual), NULL);
 
   g_object_set (menuitem, "submenu", menu, NULL);

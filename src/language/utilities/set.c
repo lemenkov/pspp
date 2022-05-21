@@ -23,9 +23,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "gl/ftoastr.h"
-#include "gl/vasnprintf.h"
-
 #include "data/casereader.h"
 #include "data/data-in.h"
 #include "data/data-out.h"
@@ -52,11 +49,15 @@
 #include "output/journal.h"
 #include "output/pivot-table.h"
 
+#include "gl/ftoastr.h"
 #include "gl/minmax.h"
+#include "gl/relocatable.h"
+#include "gl/vasnprintf.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+#define N_(msgid) (msgid)
 
 struct setting
   {
@@ -941,12 +942,6 @@ show_SUBTITLE (const struct dataset *ds UNUSED)
 }
 
 static char *
-show_SYSTEM (const struct dataset *ds UNUSED)
-{
-  return xstrdup (host_system);
-}
-
-static char *
 show_TEMPDIR (const struct dataset *ds UNUSED)
 {
   return xstrdup (temp_dir_name ());
@@ -1168,6 +1163,36 @@ show_copying (const struct dataset *ds UNUSED)
 {
   fputs (copyleft, stdout);
 }
+
+static void
+add_row (struct pivot_table *table, const char *attribute,
+         const char *value)
+{
+  int row = pivot_category_create_leaf (table->dimensions[0]->root,
+                                        pivot_value_new_text (attribute));
+  if (value)
+    pivot_table_put1 (table, row, pivot_value_new_user_text (value, -1));
+}
+
+static void
+show_system (const struct dataset *ds UNUSED)
+{
+  struct pivot_table *table = pivot_table_create (N_("System Information"));
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Attribute"));
+
+  add_row (table, N_("Version"), version);
+  add_row (table, N_("Host System"), host_system);
+  add_row (table, N_("Build System"), build_system);
+  add_row (table, N_("Locale Directory"), relocate (locale_dir));
+  add_row (table, N_("Compiler Version"),
+#ifdef __VERSION__
+           __VERSION__
+#else
+           "Unknown"
+#endif
+           );
+  pivot_table_submit (table);
+}
 
 static const struct setting settings[] = {
   { "BASETEXTDIRECTION", parse_BASETEXTDIRECTION, NULL },
@@ -1213,7 +1238,6 @@ static const struct setting settings[] = {
   { "SCOMPRESSION", parse_SCOMPRESSION, show_SCOMPRESSION },
   { "SEED", parse_SEED, NULL },
   { "SMALL", parse_SMALL, show_SMALL },
-  { "SYSTEM", NULL, show_SYSTEM },
   { "TEMPDIR", NULL, show_TEMPDIR },
   { "TNUMBERS", parse_TNUMBERS, show_TNUMBERS },
   { "TVARS", parse_TVARS, show_TVARS },
@@ -1293,6 +1317,8 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
         show_warranty (ds);
       else if (lex_match_id (lexer, "COPYING") || lex_match_id (lexer, "LICENSE"))
         show_copying (ds);
+      else if (lex_match_id (lexer, "SYSTEM"))
+        show_system (ds);
       else if (lex_match_id (lexer, "TITLE"))
         {
           struct setting s = { .name = "TITLE", .show = show_TITLE };
