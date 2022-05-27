@@ -78,113 +78,6 @@ revise_fields_preview (PsppireImportAssistant *ia)
 }
 
 
-struct separator_count_node
-{
-  struct hmap_node node;
-  int occurance; /* The number of times the separator occurs in a line */
-  int quantity;  /* The number of lines with this occurance */
-};
-
-
-/* Picks the most likely separator and quote characters based on
-   IA's file data. */
-static void
-choose_likely_separators (PsppireImportAssistant *ia)
-{
-  gint first_line = 0;
-  g_object_get (ia->delimiters_model, "first-line", &first_line, NULL);
-
-  gboolean valid;
-  GtkTreeIter iter;
-
-  struct hmap count_map[N_SEPARATORS];
-  for (int j = 0; j < N_SEPARATORS; ++j)
-    hmap_init (count_map + j);
-
-  GtkTreePath *p = gtk_tree_path_new_from_indices (first_line, -1);
-
-  for (valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (ia->text_file), &iter, p);
-       valid;
-       valid = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->text_file), &iter))
-    {
-      gchar *line_text = NULL;
-      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
-
-      gint *counts = XCALLOC (N_SEPARATORS, gint);
-
-      struct substring cs = ss_cstr (line_text);
-      for (;
-	   UINT32_MAX != ss_first_mb (cs);
-	   ss_get_mb (&cs))
-	{
-	  ucs4_t character = ss_first_mb (cs);
-
-	  int s;
-	  for (s = 0; s < N_SEPARATORS; ++s)
-	    {
-	      if (character == separators[s].c)
-		counts[s]++;
-	    }
-	}
-
-      int j;
-      for (j = 0; j < N_SEPARATORS; ++j)
-	{
-	  if (counts[j] > 0)
-	    {
-	      struct separator_count_node *cn = NULL;
-	      unsigned int hash = hash_int (counts[j], 0);
-	      HMAP_FOR_EACH_WITH_HASH (cn, struct separator_count_node, node, hash, &count_map[j])
-		{
-		  if (cn->occurance == counts[j])
-		    break;
-		}
-
-	      if (cn == NULL)
-		{
-		  struct separator_count_node *new_cn = XZALLOC (struct separator_count_node);
-		  new_cn->occurance = counts[j];
-		  new_cn->quantity = 1;
-		  hmap_insert (&count_map[j], &new_cn->node, hash);
-		}
-	      else
-		cn->quantity++;
-	    }
-	}
-
-      free (line_text);
-      free (counts);
-    }
-  gtk_tree_path_free (p);
-
-  if (hmap_count (count_map) > 0)
-    {
-      int most_frequent = -1;
-      int largest = 0;
-      for (int j = 0; j < N_SEPARATORS; ++j)
-        {
-          struct separator_count_node *cn;
-          struct separator_count_node *next;
-          HMAP_FOR_EACH_SAFE (cn, next, struct separator_count_node, node, &count_map[j])
-            {
-              if (largest < cn->quantity)
-                {
-                  largest = cn->quantity;
-                  most_frequent = j;
-                }
-              free (cn);
-            }
-          hmap_destroy (&count_map[j]);
-        }
-
-      g_return_if_fail (most_frequent >= 0);
-
-      GtkWidget *toggle =
-        get_widget_assert (ia->text_builder, separators[most_frequent].name);
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (toggle), TRUE);
-    }
-}
-
 static void
 repopulate_delimiter_columns (PsppireImportAssistant *ia)
 {
@@ -604,14 +497,15 @@ static void
 reset_separators_page (PsppireImportAssistant *ia)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->custom_cb), FALSE);
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), TRUE);
   gtk_entry_set_text (GTK_ENTRY (ia->custom_entry), "");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), TRUE);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (ia->quote_combo), 0);
 
   for (gint i = 0; i < N_SEPARATORS; i++)
     {
       const struct separator *s = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), s->c == ',');
     }
 
   if (ia->delimiters_model)
@@ -619,7 +513,6 @@ reset_separators_page (PsppireImportAssistant *ia)
       repopulate_delimiter_columns (ia);
 
       revise_fields_preview (ia);
-      choose_likely_separators (ia);
     }
 }
 
@@ -665,8 +558,7 @@ separators_page_create (PsppireImportAssistant *ia)
   gtk_widget_set_sensitive (ia->custom_entry,
 			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)));
 
-  gtk_combo_box_set_active (GTK_COMBO_BOX (ia->quote_combo), 0);
-  gtk_entry_set_max_length (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo))), 2);
+  gtk_entry_set_max_length (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo))), 1);
 
   if (ia->fields_tree_view == NULL)
     {

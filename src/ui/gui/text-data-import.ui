@@ -499,9 +499,8 @@
                     <property name="has_frame">False</property>
                     <property name="has_entry">True</property>
                     <items>
-                      <item translatable="no">'"</item>
-                      <item translatable="no">'</item>
                       <item translatable="no">"</item>
+                      <item translatable="no">'</item>
                     </items>
                     <child internal-child="entry">
                       <object class="GtkEntry" id="combobox-entry1">
