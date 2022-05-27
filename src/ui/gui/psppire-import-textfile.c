@@ -48,10 +48,32 @@
 static void choose_column_names (PsppireImportAssistant *ia);
 
 /* Revises the contents of the fields tree view based on the
-   currently chosen set of separators. */
+   currently chosen set of separators and quotes. */
 static void
 revise_fields_preview (PsppireImportAssistant *ia)
 {
+  GSList *delimiters = NULL;
+  for (int i = 0; i < N_SEPARATORS; i++)
+    {
+      const struct separator *s = &separators[i];
+      GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
+	{
+	  delimiters = g_slist_prepend (delimiters,  GINT_TO_POINTER (s->c));
+	}
+    }
+
+  GtkComboBoxText *cbt = GTK_COMBO_BOX_TEXT (ia->quote_combo);
+  GtkToggleButton *quote_cb = GTK_TOGGLE_BUTTON (ia->quote_cb);
+  const gchar *quotes = (gtk_toggle_button_get_active (quote_cb)
+                         ? gtk_combo_box_text_get_active_text (cbt)
+                         : "");
+
+  g_object_set (ia->delimiters_model,
+                "delimiters", delimiters,
+                "quotes", quotes,
+                NULL);
+
   choose_column_names (ia);
 }
 
@@ -533,20 +555,6 @@ static void
 on_separator_toggle (GtkToggleButton *toggle UNUSED,
                      PsppireImportAssistant *ia)
 {
-  int i;
-  GSList *delimiters = NULL;
-  for (i = 0; i < N_SEPARATORS; i++)
-    {
-      const struct separator *s = &separators[i];
-      GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
-      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
-	{
-	  delimiters = g_slist_prepend (delimiters,  GINT_TO_POINTER (s->c));
-	}
-    }
-
-  g_object_set (ia->delimiters_model, "delimiters", delimiters, NULL);
-
   revise_fields_preview (ia);
 }
 
@@ -596,7 +604,7 @@ static void
 reset_separators_page (PsppireImportAssistant *ia)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->custom_cb), FALSE);
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), TRUE);
   gtk_entry_set_text (GTK_ENTRY (ia->custom_entry), "");
 
   for (gint i = 0; i < N_SEPARATORS; i++)
@@ -606,10 +614,13 @@ reset_separators_page (PsppireImportAssistant *ia)
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
     }
 
-  repopulate_delimiter_columns (ia);
+  if (ia->delimiters_model)
+    {
+      repopulate_delimiter_columns (ia);
 
-  revise_fields_preview (ia);
-  choose_likely_separators (ia);
+      revise_fields_preview (ia);
+      choose_likely_separators (ia);
+    }
 }
 
 /* Called just before the separators page becomes visible in the
@@ -655,6 +666,7 @@ separators_page_create (PsppireImportAssistant *ia)
 			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)));
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (ia->quote_combo), 0);
+  gtk_entry_set_max_length (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo))), 2);
 
   if (ia->fields_tree_view == NULL)
     {

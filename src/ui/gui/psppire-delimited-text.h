@@ -61,6 +61,8 @@ struct _PsppireDelimitedText
   GSList *delimiters;
   gint max_delimiters;
 
+  gunichar quotes[2];
+
   /*< private >*/
   gboolean dispose_has_run ;
   gint stamp;

@@ -32,20 +32,8 @@ enum
     PROP_0,
     PROP_CHILD,
     PROP_DELIMITERS,
+    PROP_QUOTES,
     PROP_FIRST_LINE
-  };
-
-struct enclosure
-{
-  gunichar opening;
-  gunichar closing;
-};
-
-static const struct enclosure enclosures[3] =
-  {
-    {'(',   ')'},
-    {'"',   '"'},
-    {'\'',  '\''}
   };
 
 static void
@@ -61,7 +49,7 @@ count_delims (PsppireDelimitedText *tf)
        valid;
        valid = gtk_tree_model_iter_next (tf->child, &iter))
     {
-      gint enc = -1;
+      gunichar quote = -1;
       // FIXME: Box these lines to avoid constant allocation/deallocation
       gchar *line = NULL;
       gtk_tree_model_get (tf->child, &iter, 1, &line, -1);
@@ -73,23 +61,13 @@ count_delims (PsppireDelimitedText *tf)
 	    const gunichar c = g_utf8_get_char (p);
 	    if (c == 0)
 	      break;
-	    if (enc == -1)
-	      {
-		gint i;
-		for (i = 0; i < 3; ++i)
-		  {
-		    if (c == enclosures[i].opening)
-		      {
-			enc = i;
-			break;
-		      }
-		  }
-	      }
-	    else if (c == enclosures[enc].closing)
-	      {
-		enc = -1;
-	      }
-	    if (enc == -1)
+
+            if (c == quote)
+              quote = -1;
+            else if (c == tf->quotes[0] || c == tf->quotes[1])
+              quote = c;
+
+	    if (quote == -1)
 	      {
 		GSList *del;
 		for (del = tf->delimiters; del; del = g_slist_next (del))
@@ -138,6 +116,18 @@ psppire_delimited_text_set_property (GObject         *object,
       g_slist_free (tf->delimiters);
       tf->delimiters =  g_slist_copy (g_value_get_pointer (value));
       break;
+    case PROP_QUOTES:
+      {
+        tf->quotes[0] = tf->quotes[1] = -1;
+
+        const gchar *s = g_value_get_string (value);
+        for (size_t i = 0; i < 2 && s && s[0]; i++)
+          {
+            tf->quotes[i] = g_utf8_get_char (s);
+            s = g_utf8_find_next_char (s, NULL);
+          }
+      }
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -162,6 +152,17 @@ psppire_delimited_text_get_property (GObject         *object,
       break;
     case PROP_DELIMITERS:
       g_value_set_pointer (value, text_file->delimiters);
+      break;
+    case PROP_QUOTES:
+      {
+        GString *s = g_string_new (NULL);
+        for (size_t i = 0; i < 2; i++)
+          {
+            gunichar quote = text_file->quotes[i];
+            if (quote && quote != -1)
+              g_string_append_unichar (s, quote);
+          }
+      }
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -377,35 +378,30 @@ split_row_into_fields (PsppireDelimitedText *file, gint n)
   struct substring cs = file->const_cache;
   int field = 0;
   file->cache_starts[0] = cs.string;
-  gint enc = -1;
+  gunichar quote = -1;
   for (;
        UINT32_MAX != ss_first_mb (cs);
        ss_get_mb (&cs))
     {
       ucs4_t character = ss_first_mb (cs);
       gboolean char_is_quote = FALSE;
-      if (enc == -1)
-	{
-	  gint i;
-	  for (i = 0; i < 3; ++i)
-	    {
-	      if (character == enclosures[i].opening)
-		{
-		  enc = i;
-		  char_is_quote = TRUE;
-		  file->cache_starts[field] += ss_first_mblen (cs);
-		  break;
-		}
-	    }
-	}
-      else if (character == enclosures[enc].closing)
+      if (quote == -1)
+        {
+          if (character == file->quotes[0] || character == file->quotes[1])
+            {
+              quote = character;
+              char_is_quote = TRUE;
+              file->cache_starts[field] += ss_first_mblen (cs);
+            }
+        }
+      else if (character == quote)
 	{
 	  char_is_quote = TRUE;
 	  nullify_char (cs);
-	  enc = -1;
+	  quote = -1;
 	}
 
-      if (enc == -1 && char_is_quote == FALSE)
+      if (quote == -1 && char_is_quote == FALSE)
 	{
 	  GSList *del;
 	  for (del = file->delimiters; del; del = g_slist_next (del))
@@ -507,6 +503,13 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
 			  P_("A GSList of gunichars which delimit the fields."),
 			  G_PARAM_READWRITE);
 
+  GParamSpec *quotes_spec =
+    g_param_spec_string ("quotes",
+                         "Field Quotes",
+                         P_("A string of characters that quote the fields."),
+                         P_(""),
+                         G_PARAM_READWRITE);
+
   GParamSpec *child_spec =
     g_param_spec_object ("child",
 			 "Child Model",
@@ -524,6 +527,10 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
   g_object_class_install_property (object_class,
                                    PROP_DELIMITERS,
                                    delimiters_spec);
+
+  g_object_class_install_property (object_class,
+                                   PROP_QUOTES,
+                                   quotes_spec);
 
   g_object_class_install_property (object_class,
                                    PROP_FIRST_LINE,
@@ -547,6 +554,8 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
   memset (text_file->cache_starts, 0, sizeof text_file->cache_starts);
 
   text_file->max_delimiters = 0;
+
+  text_file->quotes[0] = text_file->quotes[1] = -1;
 
   text_file->dispose_has_run = FALSE;
   text_file->stamp = g_random_int ();
