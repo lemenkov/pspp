@@ -32,7 +32,7 @@ enum
     PROP_0,
     PROP_CHILD,
     PROP_DELIMITERS,
-    PROP_QUOTES,
+    PROP_QUOTE,
     PROP_FIRST_LINE
   };
 
@@ -64,7 +64,7 @@ count_delims (PsppireDelimitedText *tf)
 
             if (c == quote)
               quote = -1;
-            else if (c == tf->quotes[0] || c == tf->quotes[1])
+            else if (tf->quote && c == tf->quote)
               quote = c;
 
 	    if (quote == -1)
@@ -116,17 +116,8 @@ psppire_delimited_text_set_property (GObject         *object,
       g_slist_free (tf->delimiters);
       tf->delimiters =  g_slist_copy (g_value_get_pointer (value));
       break;
-    case PROP_QUOTES:
-      {
-        tf->quotes[0] = tf->quotes[1] = -1;
-
-        const gchar *s = g_value_get_string (value);
-        for (size_t i = 0; i < 2 && s && s[0]; i++)
-          {
-            tf->quotes[i] = g_utf8_get_char (s);
-            s = g_utf8_find_next_char (s, NULL);
-          }
-      }
+    case PROP_QUOTE:
+      tf->quote = g_value_get_uint (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -153,16 +144,8 @@ psppire_delimited_text_get_property (GObject         *object,
     case PROP_DELIMITERS:
       g_value_set_pointer (value, text_file->delimiters);
       break;
-    case PROP_QUOTES:
-      {
-        GString *s = g_string_new (NULL);
-        for (size_t i = 0; i < 2; i++)
-          {
-            gunichar quote = text_file->quotes[i];
-            if (quote && quote != -1)
-              g_string_append_unichar (s, quote);
-          }
-      }
+    case PROP_QUOTE:
+      g_value_set_uint (value, text_file->quote);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -387,7 +370,7 @@ split_row_into_fields (PsppireDelimitedText *file, gint n)
       gboolean char_is_quote = FALSE;
       if (quote == -1)
         {
-          if (character == file->quotes[0] || character == file->quotes[1])
+          if (file->quote && character == file->quote)
             {
               quote = character;
               char_is_quote = TRUE;
@@ -503,11 +486,11 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
 			  P_("A GSList of gunichars which delimit the fields."),
 			  G_PARAM_READWRITE);
 
-  GParamSpec *quotes_spec =
-    g_param_spec_string ("quotes",
-                         "Field Quotes",
-                         P_("A string of characters that quote the fields."),
-                         P_(""),
+  GParamSpec *quote_spec =
+    g_param_spec_unichar ("quote",
+                         "Quote Character",
+                         P_("A character that quotes the field, or 0 to disable quoting."),
+                         0,
                          G_PARAM_READWRITE);
 
   GParamSpec *child_spec =
@@ -529,8 +512,8 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
                                    delimiters_spec);
 
   g_object_class_install_property (object_class,
-                                   PROP_QUOTES,
-                                   quotes_spec);
+                                   PROP_QUOTE,
+                                   quote_spec);
 
   g_object_class_install_property (object_class,
                                    PROP_FIRST_LINE,
@@ -555,7 +538,7 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
 
   text_file->max_delimiters = 0;
 
-  text_file->quotes[0] = text_file->quotes[1] = -1;
+  text_file->quote = 0;
 
   text_file->dispose_has_run = FALSE;
   text_file->stamp = g_random_int ();

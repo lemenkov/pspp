@@ -47,6 +47,25 @@
 /* Chooses a name for each column on the separators page */
 static void choose_column_names (PsppireImportAssistant *ia);
 
+static gunichar
+get_quote_character (const PsppireImportAssistant *ia)
+{
+  GtkToggleButton *quote_single = GTK_TOGGLE_BUTTON (ia->quote_single);
+  GtkToggleButton *quote_double = GTK_TOGGLE_BUTTON (ia->quote_double);
+  GtkToggleButton *quote_custom = GTK_TOGGLE_BUTTON (ia->quote_custom);
+
+  if (gtk_toggle_button_get_active (quote_custom))
+    {
+      GtkEntry *quote_custom_entry = GTK_ENTRY (ia->quote_custom_entry);
+      const gchar *text = gtk_entry_get_text (quote_custom_entry);
+      return text && text[0] ? g_utf8_get_char (text) : 0;
+    }
+  else
+    return (gtk_toggle_button_get_active (quote_single) ? '\''
+            : gtk_toggle_button_get_active (quote_double) ? '"'
+            : 0);
+}
+
 /* Revises the contents of the fields tree view based on the
    currently chosen set of separators and quotes. */
 static void
@@ -63,15 +82,9 @@ revise_fields_preview (PsppireImportAssistant *ia)
 	}
     }
 
-  GtkComboBoxText *cbt = GTK_COMBO_BOX_TEXT (ia->quote_combo);
-  GtkToggleButton *quote_cb = GTK_TOGGLE_BUTTON (ia->quote_cb);
-  const gchar *quotes = (gtk_toggle_button_get_active (quote_cb)
-                         ? gtk_combo_box_text_get_active_text (cbt)
-                         : "");
-
   g_object_set (ia->delimiters_model,
                 "delimiters", delimiters,
-                "quotes", quotes,
+                "quote", get_quote_character (ia),
                 NULL);
 
   choose_column_names (ia);
@@ -473,24 +486,23 @@ on_separators_custom_cb_toggle (GtkToggleButton *custom_cb,
   revise_fields_preview (ia);
 }
 
-/* Called when the user changes the selection in the combo box
-   that selects a quote character. */
+/* Called when the user changes any of the quote settings. */
 static void
-on_quote_combo_change (GtkComboBox *combo, PsppireImportAssistant *ia)
+on_quote_change (GtkWidget *widget UNUSED, PsppireImportAssistant *ia)
 {
+  GtkToggleButton *quote_custom = GTK_TOGGLE_BUTTON (ia->quote_custom);
+  bool is_custom = gtk_toggle_button_get_active (quote_custom);
+  gtk_widget_set_sensitive (ia->quote_custom_entry, is_custom);
   revise_fields_preview (ia);
 }
 
-/* Called when the user toggles the checkbox that enables
-   quoting. */
 static void
-on_quote_cb_toggle (GtkToggleButton *quote_cb, PsppireImportAssistant *ia)
+on_quote_custom_entry_change (GObject *gobject UNUSED,
+                              GParamSpec *arg1 UNUSED,
+                              PsppireImportAssistant *ia)
 {
-  bool is_active = gtk_toggle_button_get_active (quote_cb);
-  gtk_widget_set_sensitive (ia->quote_combo, is_active);
   revise_fields_preview (ia);
 }
-
 
 /* Called when the Reset button is clicked. */
 static void
@@ -498,8 +510,8 @@ reset_separators_page (PsppireImportAssistant *ia)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->custom_cb), FALSE);
   gtk_entry_set_text (GTK_ENTRY (ia->custom_entry), "");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb), TRUE);
-  gtk_combo_box_set_active (GTK_COMBO_BOX (ia->quote_combo), 0);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_double), TRUE);
+  gtk_entry_set_text (GTK_ENTRY (ia->quote_custom_entry), "");
 
   for (gint i = 0; i < N_SEPARATORS; i++)
     {
@@ -552,13 +564,16 @@ separators_page_create (PsppireImportAssistant *ia)
 
   ia->custom_cb = get_widget_assert (builder, "custom-cb");
   ia->custom_entry = get_widget_assert (builder, "custom-entry");
-  ia->quote_combo = get_widget_assert (builder, "quote-combo");
-  ia->quote_cb = get_widget_assert (builder, "quote-cb");
+  ia->quote_none = get_widget_assert (builder, "quote-none");
+  ia->quote_single = get_widget_assert (builder, "quote-single");
+  ia->quote_double = get_widget_assert (builder, "quote-double");
+  ia->quote_custom = get_widget_assert (builder, "quote-custom");
+  ia->quote_custom_entry = get_widget_assert (builder, "quote-custom-entry");
 
   gtk_widget_set_sensitive (ia->custom_entry,
 			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)));
 
-  gtk_entry_set_max_length (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo))), 1);
+  gtk_entry_set_max_length (GTK_ENTRY (ia->quote_custom_entry), 1);
 
   if (ia->fields_tree_view == NULL)
     {
@@ -569,10 +584,11 @@ separators_page_create (PsppireImportAssistant *ia)
       gtk_widget_show_all (scroller);
     }
 
-  g_signal_connect (ia->quote_combo, "changed",
-                    G_CALLBACK (on_quote_combo_change), ia);
-  g_signal_connect (ia->quote_cb, "toggled",
-                    G_CALLBACK (on_quote_cb_toggle), ia);
+  g_signal_connect (ia->quote_none, "toggled", G_CALLBACK (on_quote_change), ia);
+  g_signal_connect (ia->quote_single, "toggled", G_CALLBACK (on_quote_change), ia);
+  g_signal_connect (ia->quote_double, "toggled", G_CALLBACK (on_quote_change), ia);
+  g_signal_connect (ia->quote_custom, "toggled", G_CALLBACK (on_quote_change), ia);
+  g_signal_connect (ia->quote_custom_entry, "notify::text", G_CALLBACK (on_quote_custom_entry_change), ia);
   g_signal_connect (ia->custom_entry, "notify::text",
                     G_CALLBACK (on_separators_custom_entry_notify), ia);
   g_signal_connect (ia->custom_cb, "toggled",
@@ -915,13 +931,13 @@ separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
     }
   ds_put_cstr (s, "\"\n");
 
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->quote_cb)))
+  gunichar quote = get_quote_character (ia);
+  if (quote)
     {
-      GtkComboBoxText *cbt = GTK_COMBO_BOX_TEXT (ia->quote_combo);
-      gchar *quotes = gtk_combo_box_text_get_active_text (cbt);
-      if (quotes && *quotes)
-        syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", quotes);
-      free (quotes);
+      GString *quote_s = g_string_new (NULL);
+      g_string_append_unichar (quote_s, quote);
+      syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", quote_s->str);
+      g_string_free (quote_s, TRUE);
     }
 }
 

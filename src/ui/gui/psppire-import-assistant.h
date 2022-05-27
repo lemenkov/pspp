@@ -105,8 +105,11 @@ struct _PsppireImportAssistant
 
   GtkWidget *custom_cb;
   GtkWidget *custom_entry;
-  GtkWidget *quote_cb;
-  GtkWidget *quote_combo;
+  GtkWidget *quote_none;
+  GtkWidget *quote_single;
+  GtkWidget *quote_double;
+  GtkWidget *quote_custom;
+  GtkWidget *quote_custom_entry;
 
   GtkWidget *fields_tree_view;
 
