@@ -38,7 +38,7 @@ enum data_parser_type
   };
 
 /* Creating and configuring any parser. */
-struct data_parser *data_parser_create (struct dictionary *dict);
+struct data_parser *data_parser_create (void);
 void data_parser_destroy (struct data_parser *);
 
 enum data_parser_type data_parser_get_type (const struct data_parser *);
@@ -73,8 +73,9 @@ void data_parser_add_fixed_field (struct data_parser *,
                                   const char *name,
                                   int record, int first_column);
 bool data_parser_any_fields (const struct data_parser *);
-bool data_parser_parse (struct data_parser *,
-                        struct dfm_reader *, struct ccase *);
+bool data_parser_parse (struct data_parser *, struct dfm_reader *,
+                        struct dictionary *, struct ccase *);
+
 
 /* Uses for a configured parser. */
 void data_parser_output_description (struct data_parser *,

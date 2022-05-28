@@ -43,7 +43,6 @@
 /* Data parser for textual data like that read by DATA LIST. */
 struct data_parser
   {
-    struct dictionary *dict;    /* Dictionary of destination */
     enum data_parser_type type; /* Type of data to parse. */
     int skip_records;           /* Records to skip before first real data. */
 
@@ -81,7 +80,7 @@ static void set_any_sep (struct data_parser *parser);
 
 /* Creates and returns a new data parser. */
 struct data_parser *
-data_parser_create (struct dictionary *dict)
+data_parser_create (void)
 {
   struct data_parser *parser = xmalloc (sizeof *parser);
 
@@ -91,7 +90,6 @@ data_parser_create (struct dictionary *dict)
   parser->fields = NULL;
   parser->n_fields = 0;
   parser->field_allocated = 0;
-  parser->dict = dict_ref (dict);
 
   parser->span = true;
   parser->empty_line_has_field = false;
@@ -116,7 +114,6 @@ data_parser_destroy (struct data_parser *parser)
     {
       size_t i;
 
-      dict_unref (parser->dict);
       for (i = 0; i < parser->n_fields; i++)
         free (parser->fields[i].name);
       free (parser->fields);
@@ -358,19 +355,21 @@ set_any_sep (struct data_parser *parser)
 }
 
 static bool parse_delimited_span (const struct data_parser *,
-                                  struct dfm_reader *, struct ccase *);
+                                  struct dfm_reader *,
+                                  struct dictionary *, struct ccase *);
 static bool parse_delimited_no_span (const struct data_parser *,
-                                     struct dfm_reader *, struct ccase *);
-static bool parse_fixed (const struct data_parser *,
-                         struct dfm_reader *, struct ccase *);
+                                     struct dfm_reader *,
+                                     struct dictionary *, struct ccase *);
+static bool parse_fixed (const struct data_parser *, struct dfm_reader *,
+                         struct dictionary *, struct ccase *);
 
-/* Reads a case from DFM into C, parsing it with PARSER.  Returns
-   true if successful, false at end of file or on I/O error.
+/* Reads a case from DFM into C, which matches dictionary DICT, parsing it with
+   PARSER.  Returns true if successful, false at end of file or on I/O error.
 
    Case C must not be shared. */
 bool
 data_parser_parse (struct data_parser *parser, struct dfm_reader *reader,
-                   struct ccase *c)
+                   struct dictionary *dict, struct ccase *c)
 {
   bool retval;
 
@@ -390,12 +389,12 @@ data_parser_parse (struct data_parser *parser, struct dfm_reader *reader,
   if (parser->type == DP_DELIMITED)
     {
       if (parser->span)
-        retval = parse_delimited_span (parser, reader, c);
+        retval = parse_delimited_span (parser, reader, dict, c);
       else
-        retval = parse_delimited_no_span (parser, reader, c);
+        retval = parse_delimited_no_span (parser, reader, dict, c);
     }
   else
-    retval = parse_fixed (parser, reader, c);
+    retval = parse_fixed (parser, reader, dict, c);
 
   return retval;
 }
@@ -516,15 +515,15 @@ parse_error (const struct dfm_reader *reader, const struct field *field,
   free (error);
 }
 
-/* Reads a case from READER into C, parsing it according to
-   fixed-format syntax rules in PARSER.
-   Returns true if successful, false at end of file or on I/O error. */
+/* Reads a case from READER into C, which matches DICT, parsing it according to
+   fixed-format syntax rules in PARSER.  Returns true if successful, false at
+   end of file or on I/O error. */
 static bool
 parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
-             struct ccase *c)
+             struct dictionary *dict, struct ccase *c)
 {
   const char *input_encoding = dfm_reader_get_encoding (reader);
-  const char *output_encoding = dict_get_encoding (parser->dict);
+  const char *output_encoding = dict_get_encoding (dict);
   struct field *f;
   int row;
 
@@ -570,14 +569,15 @@ parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
   return true;
 }
 
-/* Reads a case from READER into C, parsing it according to
-   free-format syntax rules in PARSER.
-   Returns true if successful, false at end of file or on I/O error. */
+/* Reads a case from READER into C, which matches dictionary DICT, parsing it
+   according to free-format syntax rules in PARSER.  Returns true if
+   successful, false at end of file or on I/O error. */
 static bool
 parse_delimited_span (const struct data_parser *parser,
-                      struct dfm_reader *reader, struct ccase *c)
+                      struct dfm_reader *reader,
+                      struct dictionary *dict, struct ccase *c)
 {
-  const char *output_encoding = dict_get_encoding (parser->dict);
+  const char *output_encoding = dict_get_encoding (dict);
   struct string tmp = DS_EMPTY_INITIALIZER;
   struct field *f;
 
@@ -615,14 +615,15 @@ parse_delimited_span (const struct data_parser *parser,
   return true;
 }
 
-/* Reads a case from READER into C, parsing it according to
-   delimited syntax rules with one case per record in PARSER.
+/* Reads a case from READER into C, which matches dictionary DICT, parsing it
+   according to delimited syntax rules with one case per record in PARSER.
    Returns true if successful, false at end of file or on I/O error. */
 static bool
 parse_delimited_no_span (const struct data_parser *parser,
-                         struct dfm_reader *reader, struct ccase *c)
+                         struct dfm_reader *reader,
+                         struct dictionary *dict, struct ccase *c)
 {
-  const char *output_encoding = dict_get_encoding (parser->dict);
+  const char *output_encoding = dict_get_encoding (dict);
   struct string tmp = DS_EMPTY_INITIALIZER;
   struct substring s;
   struct field *f, *end;
@@ -769,6 +770,7 @@ data_parser_output_description (struct data_parser *parser,
 struct data_parser_casereader
   {
     struct data_parser *parser; /* Parser. */
+    struct dictionary *dict;    /* Dictionary. */
     struct dfm_reader *reader;  /* Data file reader. */
     struct caseproto *proto;    /* Format of cases. */
   };
@@ -783,7 +785,7 @@ static const struct casereader_class data_parser_casereader_class;
 void
 data_parser_make_active_file (struct data_parser *parser, struct dataset *ds,
 			       struct dfm_reader *reader,
-			       struct dictionary *dict,
+                              struct dictionary *dict,
 			       struct casereader* (*func)(struct casereader *,
 							  const struct dictionary *,
 							  void *),
@@ -795,6 +797,7 @@ data_parser_make_active_file (struct data_parser *parser, struct dataset *ds,
 
   r = xmalloc (sizeof *r);
   r->parser = parser;
+  r->dict = dict_ref (dict);
   r->reader = reader;
   r->proto = caseproto_ref (dict_get_proto (dict));
   casereader0 = casereader_create_sequential (NULL, r->proto,
@@ -816,7 +819,7 @@ data_parser_casereader_read (struct casereader *reader UNUSED, void *r_)
 {
   struct data_parser_casereader *r = r_;
   struct ccase *c = case_create (r->proto);
-  if (data_parser_parse (r->parser, r->reader, c))
+  if (data_parser_parse (r->parser, r->reader, r->dict, c))
     return c;
   else
     {
@@ -833,6 +836,7 @@ data_parser_casereader_destroy (struct casereader *reader, void *r_)
     casereader_force_error (reader);
   dfm_close_reader (r->reader);
   caseproto_unref (r->proto);
+  dict_unref (r->dict);
   data_parser_destroy (r->parser);
   free (r);
 }

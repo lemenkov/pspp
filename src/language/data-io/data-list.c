@@ -58,6 +58,7 @@
 struct data_list_trns
   {
     struct data_parser *parser; /* Parser. */
+    struct dictionary *dict;    /* Dictionary. */
     struct dfm_reader *reader;  /* Data file reader. */
     struct variable *end;	/* Variable specified on END subcommand. */
   };
@@ -88,7 +89,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
   dict = (in_input_program ()
           ? dataset_dict (ds)
           : dict_create (get_default_encoding ()));
-  parser = data_parser_create (dict);
+  parser = data_parser_create ();
   reader = NULL;
 
   table = -1;                /* Print table if nonzero, -1=undecided. */
@@ -292,6 +293,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
     {
       struct data_list_trns *trns = xmalloc (sizeof *trns);
       trns->parser = parser;
+      trns->dict = dict_ref (dict);
       trns->reader = reader;
       trns->end = end;
       add_transformation (ds, &data_list_trns_class, trns);
@@ -507,6 +509,7 @@ data_list_trns_free (void *trns_)
   struct data_list_trns *trns = trns_;
   data_parser_destroy (trns->parser);
   dfm_close_reader (trns->reader);
+  dict_unref (trns->dict);
   free (trns);
   return true;
 }
@@ -519,7 +522,7 @@ data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
   enum trns_result retval;
 
   *c = case_unshare (*c);
-  if (data_parser_parse (trns->parser, trns->reader, *c))
+  if (data_parser_parse (trns->parser, trns->reader, trns->dict, *c))
     retval = TRNS_CONTINUE;
   else if (dfm_reader_error (trns->reader) || dfm_eof (trns->reader) > 1)
     {

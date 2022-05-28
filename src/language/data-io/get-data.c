@@ -383,7 +383,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
   if (fh == NULL)
     goto error;
 
-  parser = data_parser_create (dict);
+  parser = data_parser_create ();
   has_type = false;
   data_parser_set_type (parser, DP_DELIMITED);
   data_parser_set_span (parser, false);
