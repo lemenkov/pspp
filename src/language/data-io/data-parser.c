@@ -32,6 +32,7 @@
 #include "libpspp/intern.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
+#include "libpspp/string-array.h"
 #include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
@@ -399,6 +400,54 @@ data_parser_parse (struct data_parser *parser, struct dfm_reader *reader,
   return retval;
 }
 
+static void
+cut_field__ (const struct data_parser *parser, const struct substring *line,
+             struct substring *p, size_t *n_columns,
+             struct string *tmp, struct substring *field)
+{
+  bool quoted = ss_find_byte (parser->quotes, ss_first (*p)) != SIZE_MAX;
+  if (quoted)
+    {
+      /* Quoted field. */
+      int quote = ss_get_byte (p);
+      if (!ss_get_until (p, quote, field))
+        msg (DW, _("Quoted string extends beyond end of line."));
+      if (parser->quote_escape && ss_first (*p) == quote)
+        {
+          ds_assign_substring (tmp, *field);
+          while (ss_match_byte (p, quote))
+            {
+              struct substring ss;
+              ds_put_byte (tmp, quote);
+              if (!ss_get_until (p, quote, &ss))
+                msg (DW, _("Quoted string extends beyond end of line."));
+              ds_put_substring (tmp, ss);
+            }
+          *field = ds_ss (tmp);
+        }
+      *n_columns = ss_length (*line) - ss_length (*p);
+    }
+  else
+    {
+      /* Regular field. */
+      ss_get_bytes (p, ss_cspan (*p, ds_ss (&parser->any_sep)), field);
+      *n_columns = ss_length (*field);
+    }
+
+  /* Skip trailing soft separator and a single hard separator if present. */
+  size_t length_before_separators = ss_length (*p);
+  ss_ltrim (p, parser->soft_seps);
+  if (!ss_is_empty (*p)
+      && ss_find_byte (parser->hard_seps, ss_first (*p)) != SIZE_MAX)
+    {
+      ss_advance (p, 1);
+      ss_ltrim (p, parser->soft_seps);
+    }
+
+  if (!ss_is_empty (*p) && quoted && length_before_separators == ss_length (*p))
+    msg (DW, _("Missing delimiter following quoted string."));
+}
+
 /* Extracts a delimited field from the current position in the
    current record according to PARSER, reading data from READER.
 
@@ -415,9 +464,7 @@ cut_field (const struct data_parser *parser, struct dfm_reader *reader,
            int *first_column, int *last_column, struct string *tmp,
            struct substring *field)
 {
-  size_t length_before_separators;
   struct substring line, p;
-  bool quoted;
 
   if (dfm_eof (reader))
     return false;
@@ -443,49 +490,13 @@ cut_field (const struct data_parser *parser, struct dfm_reader *reader,
         }
     }
 
+  size_t n_columns;
+  cut_field__ (parser, &line, &p, &n_columns, tmp, field);
   *first_column = dfm_column_start (reader);
-  quoted = ss_find_byte (parser->quotes, ss_first (p)) != SIZE_MAX;
-  if (quoted)
-    {
-      /* Quoted field. */
-      int quote = ss_get_byte (&p);
-      if (!ss_get_until (&p, quote, field))
-        msg (DW, _("Quoted string extends beyond end of line."));
-      if (parser->quote_escape && ss_first (p) == quote)
-        {
-          ds_assign_substring (tmp, *field);
-          while (ss_match_byte (&p, quote))
-            {
-              struct substring ss;
-              ds_put_byte (tmp, quote);
-              if (!ss_get_until (&p, quote, &ss))
-                msg (DW, _("Quoted string extends beyond end of line."));
-              ds_put_substring (tmp, ss);
-            }
-          *field = ds_ss (tmp);
-        }
-      *last_column = *first_column + (ss_length (line) - ss_length (p));
-    }
-  else
-    {
-      /* Regular field. */
-      ss_get_bytes (&p, ss_cspan (p, ds_ss (&parser->any_sep)), field);
-      *last_column = *first_column + ss_length (*field);
-    }
+  *last_column = *first_column + n_columns;
 
-  /* Skip trailing soft separator and a single hard separator if present. */
-  length_before_separators = ss_length (p);
-  ss_ltrim (&p, parser->soft_seps);
-  if (!ss_is_empty (p)
-      && ss_find_byte (parser->hard_seps, ss_first (p)) != SIZE_MAX)
-    {
-      ss_advance (&p, 1);
-      ss_ltrim (&p, parser->soft_seps);
-    }
   if (ss_is_empty (p))
     dfm_forward_columns (reader, 1);
-  else if (quoted && length_before_separators == ss_length (p))
-    msg (DW, _("Missing delimiter following quoted string."));
   dfm_forward_columns (reader, ss_length (line) - ss_length (p));
 
   return true;
@@ -567,6 +578,40 @@ parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
     }
 
   return true;
+}
+
+/* Splits the data line in LINE into individual text fields and returns the
+   number of fields.  If SA is nonnull, appends each field to SA; the caller
+   retains ownership of SA and its contents.  */
+size_t
+data_parser_split (const struct data_parser *parser,
+                   struct substring line, struct string_array *sa)
+{
+  size_t n = 0;
+
+  struct string tmp = DS_EMPTY_INITIALIZER;
+  for (;;)
+    {
+      struct substring p = line;
+      ss_ltrim (&p, parser->soft_seps);
+      if (ss_is_empty (p))
+        {
+          ds_destroy (&tmp);
+          return n;
+        }
+
+      size_t n_columns;
+      struct substring field;
+
+      msg_disable ();
+      cut_field__ (parser, &line, &p, &n_columns, &tmp, &field);
+      msg_enable ();
+
+      if (sa)
+        string_array_append_nocopy (sa, ss_xstrdup (field));
+      n++;
+      line = p;
+    }
 }
 
 /* Reads a case from READER into C, which matches dictionary DICT, parsing it

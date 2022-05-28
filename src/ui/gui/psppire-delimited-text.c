@@ -21,7 +21,9 @@
 
 #include "psppire-delimited-text.h"
 #include "psppire-text-file.h"
+#include "language/data-io/data-parser.h"
 #include "libpspp/str.h"
+#include "libpspp/string-array.h"
 #include "libpspp/i18n.h"
 
 #include <gtk/gtk.h>
@@ -36,63 +38,73 @@ enum
     PROP_FIRST_LINE
   };
 
+static struct data_parser *
+make_data_parser (PsppireDelimitedText *tf)
+{
+  struct data_parser *parser = data_parser_create ();
+  data_parser_set_type (parser, DP_DELIMITED);
+  data_parser_set_span (parser, false);
+  data_parser_set_quotes (parser, ss_empty ());
+  data_parser_set_quote_escape (parser, true);
+  data_parser_set_empty_line_has_field (parser, true);
+
+  bool space = false;
+  struct string hard_delimiters = DS_EMPTY_INITIALIZER;
+  GSList *del;
+  for (del = tf->delimiters; del; del = g_slist_next (del))
+    {
+      gunichar c = GPOINTER_TO_INT (del->data);
+      if (c == ' ')
+        space = true;
+      else
+        ds_put_unichar (&hard_delimiters, c);
+    }
+  data_parser_set_soft_delimiters (parser, ss_cstr (space ? " " : ""));
+  data_parser_set_hard_delimiters (parser, ds_ss (&hard_delimiters));
+  ds_destroy (&hard_delimiters);
+
+  if (tf->quote)
+    {
+      struct string quote = DS_EMPTY_INITIALIZER;
+      ds_put_unichar (&quote, tf->quote);
+      data_parser_set_quotes (parser, ds_ss (&quote));
+      ds_destroy (&quote);
+    }
+  return parser;
+}
+
 static void
 count_delims (PsppireDelimitedText *tf)
 {
   if (tf->child == NULL)
     return;
 
-  tf->max_delimiters = 0;
+  struct data_parser *parser = make_data_parser (tf);
+
+  tf->max_fields = 0;
   GtkTreeIter iter;
   gboolean valid;
   for (valid = gtk_tree_model_get_iter_first (tf->child, &iter);
        valid;
        valid = gtk_tree_model_iter_next (tf->child, &iter))
     {
-      gunichar quote = -1;
-      // FIXME: Box these lines to avoid constant allocation/deallocation
       gchar *line = NULL;
       gtk_tree_model_get (tf->child, &iter, 1, &line, -1);
-      {
-	char *p;
-	gint count = 0;
-	for (p = line; ; p = g_utf8_find_next_char (p, NULL))
-	  {
-	    const gunichar c = g_utf8_get_char (p);
-	    if (c == 0)
-	      break;
-
-            if (c == quote)
-              quote = -1;
-            else if (tf->quote && c == tf->quote)
-              quote = c;
-
-	    if (quote == -1)
-	      {
-		GSList *del;
-		for (del = tf->delimiters; del; del = g_slist_next (del))
-		  {
-		    if (c == GPOINTER_TO_INT (del->data))
-		      count++;
-		  }
-	      }
-	  }
-	tf->max_delimiters = MAX (tf->max_delimiters, count);
-      }
+      size_t n_fields = data_parser_split (parser, ss_cstr (line), NULL);
+      if (n_fields > tf->max_fields)
+        tf->max_fields = n_fields;
       g_free (line);
     }
+
+  data_parser_destroy (parser);
 }
 
 static void
 cache_invalidate (PsppireDelimitedText *tf)
 {
-  memset (tf->cache_starts, 0, sizeof tf->cache_starts);
-  if (tf->const_cache.string)
-    {
-      ss_dealloc (&tf->const_cache);
-      tf->const_cache.string = NULL;
-      tf->cache_row = -1;
-    }
+  tf->cache_row = -1;
+  data_parser_destroy (tf->parser);
+  tf->parser = make_data_parser (tf);
 }
 
 static void
@@ -295,8 +307,8 @@ __tree_model_get_n_columns (GtkTreeModel *tree_model)
 {
   PsppireDelimitedText *tf  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
-  /* + 1 for the trailing field and +1 for the leading line number column */
-  return tf->max_delimiters + 1 + 1;
+  /* +1 for the leading line number column */
+  return tf->max_fields + 1;
 }
 
 
@@ -327,80 +339,19 @@ __iter_nth_child (GtkTreeModel *tree_model,
   return TRUE;
 }
 
-
-static void
-nullify_char (struct substring cs)
-{
-  int char_len = ss_first_mblen (cs);
-  while (char_len > 0)
-    {
-      cs.string[char_len - 1] = '\0';
-      char_len--;
-    }
-}
-
-
 /* Split row N into it's delimited fields (if it is not already cached)
    and set this row as the current cache. */
 static void
 split_row_into_fields (PsppireDelimitedText *file, gint n)
 {
   if (n == file->cache_row)  /* Cache hit */
-    {
-      return;
-    }
+    return;
+  if (!file->parser)
+    file->parser = make_data_parser (file);
 
-  memset (file->cache_starts, 0, sizeof file->cache_starts);
-  /* Cache miss */
-  if (file->const_cache.string)
-    {
-      ss_dealloc (&file->const_cache);
-    }
-  ss_alloc_substring_pool (&file->const_cache,
-			   PSPPIRE_TEXT_FILE (file->child)->lines[n], NULL);
-  struct substring cs = file->const_cache;
-  int field = 0;
-  file->cache_starts[0] = cs.string;
-  gunichar quote = -1;
-  for (;
-       UINT32_MAX != ss_first_mb (cs);
-       ss_get_mb (&cs))
-    {
-      ucs4_t character = ss_first_mb (cs);
-      gboolean char_is_quote = FALSE;
-      if (quote == -1)
-        {
-          if (file->quote && character == file->quote)
-            {
-              quote = character;
-              char_is_quote = TRUE;
-              file->cache_starts[field] += ss_first_mblen (cs);
-            }
-        }
-      else if (character == quote)
-	{
-	  char_is_quote = TRUE;
-	  nullify_char (cs);
-	  quote = -1;
-	}
-
-      if (quote == -1 && char_is_quote == FALSE)
-	{
-	  GSList *del;
-	  for (del = file->delimiters; del; del = g_slist_next (del))
-	    {
-	      if (character == GPOINTER_TO_INT (del->data))
-		{
-		  field++;
-		  int char_len = ss_first_mblen (cs);
-		  file->cache_starts[field] = cs.string + char_len;
-		  nullify_char (cs);
-		  break;
-		}
-	    }
-	}
-    }
-
+  string_array_clear (&file->cache);
+  data_parser_split (file->parser, PSPPIRE_TEXT_FILE (file->child)->lines[n],
+                     &file->cache);
   file->cache_row = n;
 }
 
@@ -412,7 +363,7 @@ psppire_delimited_text_get_header_title (PsppireDelimitedText *file, gint column
 
   split_row_into_fields (file, file->first_line - 1);
 
-  return file->cache_starts [column];
+  return column < file->cache.n ? file->cache.strings[column] : "";
 }
 
 static void
@@ -439,7 +390,9 @@ __get_value (GtkTreeModel *tree_model,
 
   split_row_into_fields (file, n);
 
-  g_value_set_string (value, file->cache_starts [column - 1]);
+  size_t idx = column - 1;
+  const char *s = idx < file->cache.n ? file->cache.strings[idx] : "";
+  g_value_set_string (value, s);
 }
 
 
@@ -531,12 +484,11 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
   text_file->first_line = 0;
   text_file->delimiters = g_slist_prepend (NULL, GINT_TO_POINTER (':'));
 
-  text_file->const_cache.string = NULL;
-  text_file->const_cache.length = 0;
   text_file->cache_row = -1;
-  memset (text_file->cache_starts, 0, sizeof text_file->cache_starts);
+  string_array_init (&text_file->cache);
+  text_file->parser = NULL;
 
-  text_file->max_delimiters = 0;
+  text_file->max_fields = 0;
 
   text_file->quote = 0;
 
@@ -560,8 +512,8 @@ psppire_delimited_text_finalize (GObject *object)
   PsppireDelimitedText *tf = PSPPIRE_DELIMITED_TEXT (object);
 
   g_slist_free (tf->delimiters);
-
-  ss_dealloc (&tf->const_cache);
+  string_array_destroy (&tf->cache);
+  data_parser_destroy (tf->parser);
 
   /* must chain up */
   (* parent_class->finalize) (object);

@@ -28,6 +28,7 @@ struct dfm_reader;
 struct dictionary;
 struct file_handle;
 struct fmt_spec;
+struct string_array;
 struct substring;
 
 /* Type of data read by a data parser. */
@@ -75,7 +76,8 @@ void data_parser_add_fixed_field (struct data_parser *,
 bool data_parser_any_fields (const struct data_parser *);
 bool data_parser_parse (struct data_parser *, struct dfm_reader *,
                         struct dictionary *, struct ccase *);
-
+size_t data_parser_split (const struct data_parser *, struct substring line,
+                          struct string_array *);
 
 /* Uses for a configured parser. */
 void data_parser_output_description (struct data_parser *,

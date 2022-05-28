@@ -18,6 +18,7 @@
 #define __PSPPIRE_DELIMITED_TEXT_H__
 
 #include "libpspp/str.h"
+#include "libpspp/string-array.h"
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -59,7 +60,7 @@ struct _PsppireDelimitedText
   gint first_line;
 
   GSList *delimiters;
-  gint max_delimiters;
+  gint max_fields;
 
   gunichar quote;
 
@@ -68,9 +69,9 @@ struct _PsppireDelimitedText
   gint stamp;
 
   /* caching */
-  const char *cache_starts[512];
-  struct substring const_cache;
   int cache_row;
+  struct string_array cache;
+  struct data_parser *parser;
 };
 
 struct _PsppireDelimitedTextClass
