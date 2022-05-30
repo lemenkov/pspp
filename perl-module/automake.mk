@@ -57,8 +57,9 @@ PHONY += module-make
 module-make: perl-module/Makefile
 	$(AM_V_GEN)cd perl-module && $(MAKE) $(PERL_MAKEFLAGS)
 
-ALL_LOCAL += perl_module_tarball
-perl_module_tarball: $(module_sources) src/libpspp-core.la
+PHONY += module-copy
+DIST_HOOKS += module-copy
+module-copy: $(module_sources)
 	@if test x"$(top_builddir)" != x"$(top_srcdir)" ; then \
 	 for f in $(module_sources); do \
 	  destdir=`dirname $$f` ;\
@@ -75,6 +76,9 @@ perl_module_tarball: $(module_sources) src/libpspp-core.la
 	  fi ; \
 	 done \
 	fi
+
+ALL_LOCAL += perl_module_tarball
+perl_module_tarball: src/libpspp-core.la module-copy
 	$(AM_V_GEN)$(MAKE) $(PERL_MAKEFLAGS) module-make perl-module/PSPP-Perl-$(VERSION_FOR_PERL).tar.gz
 
 CLEAN_LOCAL += perl_module_clean
