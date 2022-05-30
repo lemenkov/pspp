@@ -677,13 +677,8 @@ AT_KEYWORDS([slow])
 AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 # Skip this test if Perl's Text::Diff module is not installed.
 AT_CHECK([perl -MText::Diff -e '' || exit 77])
-# Skip this test if Perl's Memory::Usage module is not installed.
-AT_CHECK([perl -MMemory::Usage -e '' || exit 77])
-# Skip this test if Address Sanitizer is in use because it will
-# screw up memory accounting and look like a leak.
-AT_SKIP_IF([$USING_ASAN])
 AT_CHECK([run_perl_module "$abs_top_builddir/perl-module/t/Pspp.t"], [0],
-  [[1..38
+  [[1..37
 ok 1 - use PSPP;
 ok 2 - Dictionary Creation
 ok 3
@@ -722,6 +717,5 @@ ok 34 - Missing Value Positive SYS
 ok 35 - Missing Value Positive Num
 ok 36 - Custom Attributes
 ok 37 - Case count
-ok 38 - Memory management of append_case
 ]],[ignore])
 AT_CLEANUP
