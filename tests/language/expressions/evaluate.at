@@ -114,6 +114,12 @@ DEBUG EVALUATE /'string' - 1e10.
 DEBUG EVALUATE /9.5 - ''.
 
 DEBUG EVALUATE /F2.0 + 3.
+
+/* Bug #62557.
+DEBUG EVALUATE (y=3)(x=2) /(1 - y) + (1 - x).
+DEBUG EVALUATE (y=3)(x=2) /((1 - y) + (1 - x)).
+DEBUG EVALUATE (y=3)(x=2) /(1-y) + (1-x).
+DEBUG EVALUATE (y=3)(x=2) /( (1-y) + (1-x) ).
 ])
 
 for opt in OPT NOOPT; do
@@ -210,6 +216,14 @@ evaluate.sps:18.24: note: DEBUG EVALUATE: This operand has type 'number'.
       |                        ^
 
 F2.0 + 3 => error
+
+(1 - y) + (1 - x) => -3.00
+
+((1 - y) + (1 - x)) => -3.00
+
+(1-y) + (1-x) => -3.00
+
+( (1-y) + (1-x) ) => -3.00
 ])
 done
 AT_CLEANUP
