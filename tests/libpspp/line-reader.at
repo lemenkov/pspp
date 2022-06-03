@@ -65,9 +65,9 @@ AT_CHECK([i18n-test supports_encodings ISO-8859-1])
 buffer_size=`line-reader-test buffer-size`
 ($PYTHON3 -c "import sys; sys.stdout.write('x' * ($buffer_size - 2))";
  printf '\none line\ntwo lines\nentr\351e\nfour lines\n') > input
-(printf 'encoded in ASCII (auto)\n\"'
+(printf 'encoded in ASCII (auto)\n"'
  $PYTHON3 -c "import sys; sys.stdout.write('x' * ($buffer_size - 2))";
- printf '\"\n"one line"\n"two lines"\nencoded in ISO-8859-1\n"entr\303\251e"\n"four lines"\n') > expout
+ printf '"\n"one line"\n"two lines"\nencoded in ISO-8859-1\n"entr\303\251e"\n"four lines"\n') > expout
 AT_CHECK([line-reader-test read input Auto,ISO-8859-1], [0], [expout])
 AT_CLEANUP
 
