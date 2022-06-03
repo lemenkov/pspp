@@ -5,9 +5,9 @@ To build this project from the sources direct from the Git archive,
 you must install the prerequisites listed in README, plus the
 following:
 
-	* Autoconf 2.60 (or later).
+	* Autoconf 2.64 (or later).
 
-	* Automake 1.10 (or later).
+	* Automake 1.14 (or later).
 
 	* Gettext 0.19 (or later).
 
@@ -36,11 +36,13 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
- commit 2d830e4a792fcd9f614ed08a7f18584b8b21d23b (HEAD, origin/master, origin/HEAD)
+ commit ff24917703530849f3b109905d437337cdeeab14
  Author: Bruno Haible <bruno@clisp.org>
- Date:   Sun Mar 13 15:12:46 2022 +0100
+ Date:   Fri Jun 3 17:46:27 2022 +0200
 
-     sigsegv: Add support for Linux/PowerPC (32-bit) with musl libc.
+     setlocale: Update after Turkey changed its name.
+
+     * lib/setlocale.c: Update comments.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
