@@ -28,7 +28,6 @@
 use Test::More tests => 37;
 use Text::Diff;
 use File::Temp qw/ tempfile tempdir /;
-use Memory::Usage;
 BEGIN { use_ok('PSPP') };
 
 #########################
