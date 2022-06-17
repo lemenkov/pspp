@@ -1,16 +1,16 @@
 # Dutch translation for pspp.
 # Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
 # This file is distributed under the same licence as the PSPP package.
-# filename: pspp-<version>.nl.po
+# filename: pspp-1.6.0.nl.po
 # Harry Thijssen <pspp4windows@gmail.com>, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017.
 # Jaap Verhage <pspp.vertaler@gmail.com>, 2017-2022.
 # Weet je een betere vertaling dan de huidige of een vertaling voor een nog niet vertaalde ingang, mail die dan naar Jaap alsjeblieft.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-1.5.5\n"
+"Project-Id-Version: pspp-1.6.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2022-04-10 16:31-0700\n"
-"PO-Revision-Date: 2022-05-22 19:38+0200\n"
+"POT-Creation-Date: 2022-05-30 11:00-0700\n"
+"PO-Revision-Date: 2022-06-02 12:04+0200\n"
 "Last-Translator: Jaap Verhage <pspp.vertaler@gmail.com>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -1832,6 +1832,7 @@ msgstr "Beide"
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:141
 #: src/ui/gui/psppire-variable-sheet.c:419 src/ui/gui/var-display.c:34
 #: src/ui/gui/examine.ui:598 src/ui/gui/examine.ui:691
+#: src/ui/gui/text-data-import.ui:494
 msgid "None"
 msgstr "Geen"
 
@@ -1852,7 +1853,7 @@ msgstr "%s (%s)"
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Minstens één observatie in het gegevensbestand heeft een gewichtwaarde \"user-missing\", \"system-missing\", nul, of negatief.  Deze observatie(s) zijn genegeerd."
 
-#: src/language/command.c:210 src/language/utilities/set.c:304
+#: src/language/command.c:210 src/language/utilities/set.c:305
 #: src/language/stats/graph.c:749 src/language/stats/graph.c:755
 #: src/language/stats/graph.c:789 src/language/stats/graph.c:794
 #: src/language/stats/graph.c:799 src/language/stats/graph.c:852
@@ -2430,7 +2431,7 @@ msgstr "geldige indelingsspecificatie verwacht"
 
 #: src/language/lexer/format-parser.c:116
 #: src/language/lexer/format-parser.c:143 src/language/utilities/output.c:108
-#: src/language/data-io/data-list.c:447 src/language/data-io/get-data.c:608
+#: src/language/data-io/data-list.c:449 src/language/data-io/get-data.c:608
 #: src/language/data-io/placement-parser.c:236
 #, c-format
 msgid "Unknown format type `%s'."
@@ -2882,8 +2883,8 @@ msgstr "\"Multiple response sets\""
 #: src/language/dictionary/mrsets.c:543
 #: src/language/dictionary/sys-file-info.c:445
 #: src/language/dictionary/sys-file-info.c:732
-#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:688
-#: src/language/data-io/data-parser.c:734 src/language/data-io/print.c:436
+#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:734
+#: src/language/data-io/data-parser.c:780 src/language/data-io/print.c:436
 msgid "Attributes"
 msgstr "Eigenschappen"
 
@@ -2969,8 +2970,8 @@ msgstr "Waarde"
 #: src/language/stats/matrix.c:6001 src/language/stats/matrix.c:8336
 #: src/language/stats/npar-summary.c:113
 #: src/language/stats/quick-cluster.c:588 src/language/stats/runs.c:331
-#: src/language/data-io/data-parser.c:692
-#: src/language/data-io/data-parser.c:737 src/language/data-io/print.c:440
+#: src/language/data-io/data-parser.c:738
+#: src/language/data-io/data-parser.c:783 src/language/data-io/print.c:440
 #: src/ui/gui/psppire-dictview.c:667 src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Variabele"
@@ -2980,7 +2981,8 @@ msgid "File Information"
 msgstr "Bestandsinformatie"
 
 #: src/language/dictionary/sys-file-info.c:184
-#: src/language/stats/matrix.c:5986 src/language/stats/matrix.c:8334
+#: src/language/utilities/set.c:1181 src/language/stats/matrix.c:5986
+#: src/language/stats/matrix.c:8334
 msgid "Attribute"
 msgstr "Eigenschap"
 
@@ -3007,7 +3009,7 @@ msgstr "\"Little Endian\""
 #: src/language/dictionary/sys-file-info.c:206
 #: src/language/dictionary/sys-file-info.c:215
 #: src/language/dictionary/sys-file-info.c:222
-#: src/language/utilities/set.c:1149
+#: src/language/utilities/set.c:1144
 msgid "Unknown"
 msgstr "Onbekend"
 
@@ -3212,7 +3214,7 @@ msgid "Text strings in the file dictionary that the previously listed encodings 
 msgstr "Tekenreeksen in het bestandswoordenboek die de hiervoor getoonde coderingen verschillend interpreteren, samen met die interpretaties."
 
 #: src/language/dictionary/sys-file-info.c:1048 src/output/output-item.c:711
-#: src/output/output-item.c:740 src/ui/gui/psppire-import-textfile.c:343
+#: src/output/output-item.c:740 src/ui/gui/psppire-import-textfile.c:271
 msgid "Text"
 msgstr "Tekst"
 
@@ -3340,82 +3342,106 @@ msgstr "Opdracht \"%s\" is geëindigd met status %d."
 msgid "Command \"%s\" output could not be read (%s)."
 msgstr "Uitvoer van opdracht \"%s\" kon niet worden gelezen (%s)."
 
-#: src/language/utilities/set.c:262
+#: src/language/utilities/set.c:263
 msgid "ISL (32-bit IEEE 754 single, little-endian)"
 msgstr "ISL (32-bit IEEE 754 single, little-endian)"
 
-#: src/language/utilities/set.c:265
+#: src/language/utilities/set.c:266
 msgid "ISB (32-bit IEEE 754 single, big-endian)"
 msgstr "ISB (32-bit IEEE 754 single, big-endian)"
 
-#: src/language/utilities/set.c:268
+#: src/language/utilities/set.c:269
 msgid "IDL (64-bit IEEE 754 double, little-endian)"
 msgstr "IDL (64-bit IEEE 754 double, little-endian)"
 
-#: src/language/utilities/set.c:271
+#: src/language/utilities/set.c:272
 msgid "IDB (64-bit IEEE 754 double, big-endian)"
 msgstr "IDB (64-bit IEEE 754 double, big-endian)"
 
-#: src/language/utilities/set.c:275
+#: src/language/utilities/set.c:276
 msgid "VF (32-bit VAX F, VAX-endian)"
 msgstr "VF (32-bit VAX F, VAX-endian)"
 
-#: src/language/utilities/set.c:278
+#: src/language/utilities/set.c:279
 msgid "VD (64-bit VAX D, VAX-endian)"
 msgstr "VD (64-bit VAX D, VAX-endian)"
 
-#: src/language/utilities/set.c:281
+#: src/language/utilities/set.c:282
 msgid "VG (64-bit VAX G, VAX-endian)"
 msgstr "VG (64-bit VAX G, VAX-endian)"
 
-#: src/language/utilities/set.c:285
+#: src/language/utilities/set.c:286
 msgid "ZS (32-bit IBM Z hexadecimal short, big-endian)"
 msgstr "ZS (32-bit IBM Z hexadecimal short, big-endian)"
 
-#: src/language/utilities/set.c:288
+#: src/language/utilities/set.c:289
 msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 msgstr "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 
-#: src/language/utilities/set.c:490
+#: src/language/utilities/set.c:491
 #, c-format
 msgid "expecting %s or year"
 msgstr "%s of jaar verwacht"
 
-#: src/language/utilities/set.c:530
+#: src/language/utilities/set.c:531
 #, c-format
 msgid "%s requires numeric output format as an argument.  Specified format %s is of type string."
 msgstr "%s vereist numerieke uitvoeropmaak als een argument.  Opgegeven opmaak %s is van type alfanumeriek."
 
-#: src/language/utilities/set.c:658
+#: src/language/utilities/set.c:659
 #, c-format
 msgid "%s is not a recognized encoding or locale name"
 msgstr "%s is geen herkende codering of lokale naam"
 
-#: src/language/utilities/set.c:774 src/language/utilities/set.c:794
+#: src/language/utilities/set.c:775 src/language/utilities/set.c:795
 #, c-format
 msgid "%s must be at least 1."
 msgstr "%s moet tenminste 1 zijn."
 
-#: src/language/utilities/set.c:814
+#: src/language/utilities/set.c:815
 #, c-format
 msgid "%s must not be negative."
 msgstr "%s mag niet negatief zijn."
 
-#: src/language/utilities/set.c:1156
+#: src/language/utilities/set.c:1151
 #, c-format
 msgid "%s is %s."
 msgstr "%s is %s."
 
-#: src/language/utilities/set.c:1156
+#: src/language/utilities/set.c:1151
 msgid "empty"
 msgstr "leeg"
 
-#: src/language/utilities/set.c:1352
+#: src/language/utilities/set.c:1180
+msgid "System Information"
+msgstr "Systeeminformatie"
+
+#: src/language/utilities/set.c:1183
+msgid "Version"
+msgstr "Versie"
+
+#: src/language/utilities/set.c:1184
+msgid "Host System"
+msgstr "Gastheersysteem"
+
+#: src/language/utilities/set.c:1185
+msgid "Build System"
+msgstr "Bouwsysteem"
+
+#: src/language/utilities/set.c:1186
+msgid "Locale Directory"
+msgstr "\"Locale\"-directory"
+
+#: src/language/utilities/set.c:1187
+msgid "Compiler Version"
+msgstr "Compiler versie"
+
+#: src/language/utilities/set.c:1378
 #, c-format
 msgid "Too many %s commands without a %s: at most %d levels of saved settings are allowed."
 msgstr "Te veel %s-opdrachten zonder een %s: ten hoogste %d niveaus van opgeslagen instellingen zijn toegestaan."
 
-#: src/language/utilities/set.c:1372
+#: src/language/utilities/set.c:1398
 #, c-format
 msgid "%s without matching %s."
 msgstr "%s zonder overeenkomende %s."
@@ -5413,7 +5439,7 @@ msgid "Rows"
 msgstr "Rijen"
 
 #: src/language/stats/matrix.c:5661 src/language/stats/matrix.c:5988
-#: src/language/stats/matrix.c:8354 src/language/data-io/data-parser.c:689
+#: src/language/stats/matrix.c:8354 src/language/data-io/data-parser.c:735
 #: src/language/data-io/print.c:437 src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Kolommen"
@@ -6539,99 +6565,99 @@ msgstr "Variabelennaam %s, opgegeven in subopdracht %s, is dezelfde als een best
 msgid "Encountered %zu sets of duplicate cases in the master file."
 msgstr "% zu verzamelingen van dubbele observaties in het \"master\"-bestand gevonden."
 
-#: src/language/data-io/data-list.c:145
+#: src/language/data-io/data-list.c:146
 #, c-format
 msgid "The %s subcommand may only be used within %s."
 msgstr "De subopdracht %s mag alleen binnen %s gebruikt worden."
 
-#: src/language/data-io/data-list.c:188
+#: src/language/data-io/data-list.c:189
 msgid "Only one of FIXED, FREE, or LIST may be specified."
 msgstr "Slechts één van FIXED, FREE of LIST mag gespecificeerd worden."
 
-#: src/language/data-io/data-list.c:251
+#: src/language/data-io/data-list.c:252
 msgid "Encoding should not be specified for inline data. It will be ignored."
 msgstr "Codering mag niet worden opgegeven voor \"inline\"-gegevens. Deze wordt genegeerd."
 
-#: src/language/data-io/data-list.c:260
+#: src/language/data-io/data-list.c:261
 #, c-format
 msgid "The %s subcommand may be used only with %s."
 msgstr "De subopdracht %s mag alleen gebruikt worden met %s."
 
-#: src/language/data-io/data-list.c:275
+#: src/language/data-io/data-list.c:276
 msgid "At least one variable must be specified."
 msgstr "Tenminste één variabele moet worden opgegeven."
 
-#: src/language/data-io/data-list.c:377 src/language/data-io/data-list.c:486
+#: src/language/data-io/data-list.c:379 src/language/data-io/data-list.c:488
 #: src/language/data-io/get-data.c:633
 #, c-format
 msgid "%s is a duplicate variable name."
 msgstr "%s is een reeds gebruikte variabelenaam."
 
-#: src/language/data-io/data-list.c:384
+#: src/language/data-io/data-list.c:386
 #, c-format
 msgid "There is already a variable %s of a different type."
 msgstr "Er bestaat al een variabele %s van een ander type."
 
-#: src/language/data-io/data-list.c:391
+#: src/language/data-io/data-list.c:393
 #, c-format
 msgid "There is already a string variable %s of a different width."
 msgstr "Er bestaat al een alfanumerieke variabele %s van een andere breedte."
 
-#: src/language/data-io/data-list.c:399
+#: src/language/data-io/data-list.c:401
 #, c-format
 msgid "Cannot place variable %s on record %d when RECORDS=%d is specified."
 msgstr "Kan variabele %s niet plaatsen op kaart %d als RECORDS=%d is opgegeven."
 
-#: src/language/data-io/data-parser.c:454
-#: src/language/data-io/data-parser.c:463
+#: src/language/data-io/data-parser.c:414
+#: src/language/data-io/data-parser.c:423
 msgid "Quoted string extends beyond end of line."
 msgstr "Aangehaalde tekenreeks loopt door over regeleinde."
 
-#: src/language/data-io/data-parser.c:489
+#: src/language/data-io/data-parser.c:448
 msgid "Missing delimiter following quoted string."
 msgstr "Ontbrekend scheidingsteken na aangehaalde tekenreeks."
 
-#: src/language/data-io/data-parser.c:511
+#: src/language/data-io/data-parser.c:521
 #, c-format
 msgid "Data for variable %s is not valid as format %s: %s"
 msgstr "Data voor variabele %s is niet geldig als opmaak %s: %s"
 
-#: src/language/data-io/data-parser.c:541
+#: src/language/data-io/data-parser.c:551
 #, c-format
 msgid "Partial case of %d of %d records discarded."
 msgstr "Gedeeltelijke observatie van %d van %d kaarten genegeerd."
 
-#: src/language/data-io/data-parser.c:599
+#: src/language/data-io/data-parser.c:644
 #, c-format
 msgid "Partial case discarded.  The first variable missing was %s."
 msgstr "Gedeeltelijke observatie genegeerd.  De eerste ontbrekende variabele was %s."
 
-#: src/language/data-io/data-parser.c:642
+#: src/language/data-io/data-parser.c:688
 #, c-format
 msgid "Missing value(s) for all variables from %s onward.  These will be filled with the system-missing value or blanks, as appropriate."
 msgstr "Ontbrekende waarde(n) voor alle variabelen vanaf %s.  Deze worden gevuld met de system-missing waarde of spaties, zoals van toepassing."
 
-#: src/language/data-io/data-parser.c:664
+#: src/language/data-io/data-parser.c:710
 msgid "Record ends in data not part of any field."
 msgstr "Kaart eindigt in gegevens die geen onderdeel zijn van enig veld."
 
-#: src/language/data-io/data-parser.c:679
+#: src/language/data-io/data-parser.c:725
 #, c-format
 msgid "Reading %d record from %s."
 msgid_plural "Reading %d records from %s."
 msgstr[0] "Kaart %d van %s wordt gelezen."
 msgstr[1] "%d van %s kaarten worden gelezen."
 
-#: src/language/data-io/data-parser.c:689 src/language/data-io/print.c:437
+#: src/language/data-io/data-parser.c:735 src/language/data-io/print.c:437
 msgid "Record"
 msgstr "Kaart"
 
-#: src/language/data-io/data-parser.c:689
-#: src/language/data-io/data-parser.c:734 src/language/data-io/print.c:437
+#: src/language/data-io/data-parser.c:735
+#: src/language/data-io/data-parser.c:780 src/language/data-io/print.c:437
 msgid "Format"
 msgstr "Indeling"
 
-#: src/language/data-io/data-parser.c:729
+#: src/language/data-io/data-parser.c:775
 #, c-format
 msgid "Reading free-form data from %s."
 msgstr "Vrije-vormgegevens van %s worden gelezen."
@@ -8444,35 +8470,39 @@ msgstr "Zoek"
 msgid "Bad regular expression: %s"
 msgstr "Foutieve reguliere expressie: %s"
 
-#: src/ui/gui/help-menu.c:157
+#: src/ui/gui/help-menu.c:165
 msgid "A program for the analysis of sampled data"
 msgstr "Een programma voor de analyse van steekproefgegevens"
 
 #. TRANSLATORS: Do not translate this string.  Instead, put the names of the people
 #. who have helped in the translation.
-#: src/ui/gui/help-menu.c:167
+#: src/ui/gui/help-menu.c:175
 msgid "translator-credits"
 msgstr "vertalers: Harry Thijssen (2009-2017), Jaap Verhage (2017-heden)"
 
-#: src/ui/gui/help-menu.c:222
+#: src/ui/gui/help-menu.c:230
 #, c-format
 msgid "Help path conversion error: %s"
 msgstr "Omzettingsfout van pad naar Help: %s"
 
-#: src/ui/gui/help-menu.c:243
+#: src/ui/gui/help-menu.c:251
 #, c-format
 msgid "Cannot open via html: %s with uri: %s The PSSP manual is also available at %s"
 msgstr "Kan niet openen via html: %s met uri: %s De PSSP-handleiding is ook beschikbaar op %s"
 
-#: src/ui/gui/help-menu.c:264
+#: src/ui/gui/help-menu.c:272
 msgid "_Help"
 msgstr "_Help"
 
-#: src/ui/gui/help-menu.c:267
+#: src/ui/gui/help-menu.c:275
 msgid "_About"
 msgstr "_Over"
 
-#: src/ui/gui/help-menu.c:268
+#: src/ui/gui/help-menu.c:276
+msgid "_System Information"
+msgstr "_Systeeminformatie"
+
+#: src/ui/gui/help-menu.c:277
 msgid "_Reference Manual"
 msgstr "_Handleiding"
 
@@ -8861,23 +8891,23 @@ msgstr "Pas variabele-indelingen aan"
 msgid "Importing Spreadsheet Data"
 msgstr "Rekenbladgegevens worden geïmporteerd"
 
-#: src/ui/gui/psppire-import-textfile.c:189
+#: src/ui/gui/psppire-import-textfile.c:117
 msgid "line"
 msgstr "regel"
 
-#: src/ui/gui/psppire-import-textfile.c:199
+#: src/ui/gui/psppire-import-textfile.c:127
 msgid "var"
 msgstr "var"
 
-#: src/ui/gui/psppire-import-textfile.c:323
+#: src/ui/gui/psppire-import-textfile.c:251
 msgid "Select the First Line"
 msgstr "Kies de eerste regel"
 
-#: src/ui/gui/psppire-import-textfile.c:335
+#: src/ui/gui/psppire-import-textfile.c:263
 msgid "Line"
 msgstr "Regel"
 
-#: src/ui/gui/psppire-import-textfile.c:394
+#: src/ui/gui/psppire-import-textfile.c:322
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -8885,46 +8915,46 @@ msgstr ""
 "Deze assistent zal u begeleiden bij het importeren van gegevens in PSPP uit een tekstbestand met één regel per observatie,  waarin velden van elkaar worden gescheiden door tabs, komma's of andere scheidingstekens.\n"
 "\n"
 
-#: src/ui/gui/psppire-import-textfile.c:404
+#: src/ui/gui/psppire-import-textfile.c:332
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
 msgstr[0] "Het gekozen bestand bevat %'lu regel tekst.  "
 msgstr[1] "Het gekozen bestand bevat %'lu regels tekst.  "
 
-#: src/ui/gui/psppire-import-textfile.c:413
+#: src/ui/gui/psppire-import-textfile.c:341
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
 msgstr[0] "Het gekozen bestand bevat ongeveer %'lu regel tekst.  "
 msgstr[1] "Het gekozen bestand bevat ongeveer %'lu regels tekst.  "
 
-#: src/ui/gui/psppire-import-textfile.c:419
+#: src/ui/gui/psppire-import-textfile.c:347
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
 msgstr[0] "Alleen de eerste %zu regel van het bestand wordt bij wijze van voorbeeld in de volgende schermen getoond.  "
 msgstr[1] "Alleen de eerste %zu regels van het bestand worden bij wijze van voorbeeld in de volgende schermen getoond.   "
 
-#: src/ui/gui/psppire-import-textfile.c:428
+#: src/ui/gui/psppire-import-textfile.c:356
 msgid "You may choose below how much of the file should actually be imported."
 msgstr "Hieronder kunt u kiezen hoeveel van het bestand daadwerkelijk geïmporteerd moet worden."
 
-#: src/ui/gui/psppire-import-textfile.c:437
+#: src/ui/gui/psppire-import-textfile.c:365
 #, c-format
 msgid "Only the first %4d cases"
 msgstr "Alleen de eerste %4d observaties"
 
-#: src/ui/gui/psppire-import-textfile.c:448
+#: src/ui/gui/psppire-import-textfile.c:376
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
 msgstr "Alleen de eerste %3d %% van het bestand (ongeveer)"
 
-#: src/ui/gui/psppire-import-textfile.c:476
+#: src/ui/gui/psppire-import-textfile.c:404
 msgid "Select the Lines to Import"
 msgstr "Kies de te importeren regels"
 
-#: src/ui/gui/psppire-import-textfile.c:647
+#: src/ui/gui/psppire-import-textfile.c:563
 msgid "Choose Separators"
 msgstr "Kies scheidingstekens"
 
@@ -10721,59 +10751,67 @@ msgstr "Alle observaties"
 msgid "<b>Amount to Import</b>"
 msgstr "<b>Te importeren hoeveelheid</b>"
 
-#: src/ui/gui/text-data-import.ui:313
+#: src/ui/gui/text-data-import.ui:314
 msgid "C_ustom"
 msgstr "_Aangepast"
 
-#: src/ui/gui/text-data-import.ui:328
+#: src/ui/gui/text-data-import.ui:329
 msgid "Slas_h (/)"
 msgstr "Sc_huine streep (/)"
 
-#: src/ui/gui/text-data-import.ui:343
+#: src/ui/gui/text-data-import.ui:344
 msgid "Semicolo_n (;)"
 msgstr "Pu_ntkomma (;)"
 
-#: src/ui/gui/text-data-import.ui:358
+#: src/ui/gui/text-data-import.ui:359
 msgid "P_ipe (|)"
 msgstr "P_ijpteken (|)"
 
-#: src/ui/gui/text-data-import.ui:373
+#: src/ui/gui/text-data-import.ui:374
 msgid "H_yphen (-)"
 msgstr "Kop_pelteken (-)"
 
-#: src/ui/gui/text-data-import.ui:388
+#: src/ui/gui/text-data-import.ui:389
 msgid "Co_mma (,)"
 msgstr "Ko_mma (,)"
 
-#: src/ui/gui/text-data-import.ui:403
+#: src/ui/gui/text-data-import.ui:404
 msgid "_Colon (:)"
 msgstr "_Dubbele punt (:)"
 
-#: src/ui/gui/text-data-import.ui:418
+#: src/ui/gui/text-data-import.ui:419
 msgid "Ban_g (!)"
 msgstr "_Uitroepteken (!)"
 
-#: src/ui/gui/text-data-import.ui:433
+#: src/ui/gui/text-data-import.ui:434
 msgid "Ta_b"
 msgstr "Ta_b"
 
-#: src/ui/gui/text-data-import.ui:448
+#: src/ui/gui/text-data-import.ui:449
 msgid "_Space"
 msgstr "_Spatie"
 
-#: src/ui/gui/text-data-import.ui:468
-msgid "<b>Separators</b>"
-msgstr "<b>Scheiders</b>"
+#: src/ui/gui/text-data-import.ui:469
+msgid "<b>What characters separate fields?</b>"
+msgstr "<b>Welke tekens scheiden velden van elkaar?</b>"
 
-#: src/ui/gui/text-data-import.ui:519
-msgid "Quote separator characters with"
-msgstr "Citeer scheidingstekens met"
+#: src/ui/gui/text-data-import.ui:510
+msgid "Single quote (')"
+msgstr "Enkel aanhalingsteken (')"
 
-#: src/ui/gui/text-data-import.ui:538
-msgid "<b>Quoting</b>"
-msgstr "<b>Citeren</b>"
+#: src/ui/gui/text-data-import.ui:527
+msgid "Double quote (\")"
+msgstr "Dubbele aanhalingstekens (\")"
 
-#: src/ui/gui/text-data-import.ui:576
+#: src/ui/gui/text-data-import.ui:548
+msgid "Custom:"
+msgstr "_Aangepast:"
+
+#: src/ui/gui/text-data-import.ui:589
+msgid "<b>What character quotes fields?</b>"
+msgstr "<b>Welk teken haalt velden aan?</b>"
+
+#: src/ui/gui/text-data-import.ui:627
 msgid "<b>Fields Preview</b>"
 msgstr "<b>Voorbeeldweergave van velden</b>"
 
@@ -11286,6 +11324,15 @@ msgstr "Analyseer statistische data met een gratis alternatief voor SPSS"
 #: doc/org.fsf.pspp.desktop.in:17
 msgid "statistics;analysis;spss;"
 msgstr "statistieken;analyse;spss;"
+
+#~ msgid "<b>Separators</b>"
+#~ msgstr "<b>Scheiders</b>"
+
+#~ msgid "Quote separator characters with"
+#~ msgstr "Citeer scheidingstekens met"
+
+#~ msgid "<b>Quoting</b>"
+#~ msgstr "<b>Citeren</b>"
 
 #~ msgid "Input format"
 #~ msgstr "Invoerindeling"

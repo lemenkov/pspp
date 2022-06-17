@@ -1,16 +1,16 @@
 # Catalan messages for PSPP
 # Copyright (C) 2009 Free Software Foundation, Inc.
 # This file is distributed under the same licence as the pspp package.
-# Francesc Josep Miguel Quesada, 2009.
 # Palmira Payá Sanchez, 2009.
 # Javier Gómez Serrano, 2009.
-# Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2020, 2022.
+# Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>, 2010-2022.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-1.5.4\n"
+"Project-Id-Version: pspp-1.6.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2022-03-31 19:52-0700\n"
-"PO-Revision-Date: 2022-04-07 13:40+0200\n"
+"POT-Creation-Date: 2022-05-30 11:00-0700\n"
+"PO-Revision-Date: 2022-06-01 15:31+0200\n"
 "Last-Translator: Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "Language: ca\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 19.12.3\n"
+"X-Generator: Gtranslator 3.36.0\n"
 
 #: gl/clean-temp.c:235
 msgid "cannot find a temporary directory, try setting $TMPDIR"
@@ -524,6 +524,7 @@ msgstr "sistema"
 msgid "scratch"
 msgstr "zero"
 
+#. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
 #: src/data/dictionary.c:1529
 #, c-format
 msgid "Truncating document line to %d bytes."
@@ -1827,6 +1828,7 @@ msgstr "Tots dos"
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:141
 #: src/ui/gui/psppire-variable-sheet.c:419 src/ui/gui/var-display.c:34
 #: src/ui/gui/examine.ui:598 src/ui/gui/examine.ui:691
+#: src/ui/gui/text-data-import.ui:494
 msgid "None"
 msgstr "Cap"
 
@@ -1847,7 +1849,7 @@ msgstr "%s (%s)"
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Almenys un cas a l'arxiu de dades tenia un valor de ponderació que és perdut d'usuari, de sistema, zero o negatiu. Aquest(s) cas(os) van ser ignorat(s)."
 
-#: src/language/command.c:210 src/language/utilities/set.c:304
+#: src/language/command.c:210 src/language/utilities/set.c:305
 #: src/language/stats/graph.c:749 src/language/stats/graph.c:755
 #: src/language/stats/graph.c:789 src/language/stats/graph.c:794
 #: src/language/stats/graph.c:799 src/language/stats/graph.c:852
@@ -2426,7 +2428,7 @@ msgstr "esperant especificador de format vàlid"
 
 #: src/language/lexer/format-parser.c:116
 #: src/language/lexer/format-parser.c:143 src/language/utilities/output.c:108
-#: src/language/data-io/data-list.c:447 src/language/data-io/get-data.c:608
+#: src/language/data-io/data-list.c:449 src/language/data-io/get-data.c:608
 #: src/language/data-io/placement-parser.c:236
 #, c-format
 msgid "Unknown format type `%s'."
@@ -2878,8 +2880,8 @@ msgstr "Conjunts Multi-Resposta"
 #: src/language/dictionary/mrsets.c:543
 #: src/language/dictionary/sys-file-info.c:445
 #: src/language/dictionary/sys-file-info.c:732
-#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:688
-#: src/language/data-io/data-parser.c:734 src/language/data-io/print.c:436
+#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:734
+#: src/language/data-io/data-parser.c:780 src/language/data-io/print.c:436
 msgid "Attributes"
 msgstr "Atributs"
 
@@ -2965,8 +2967,8 @@ msgstr "Valor"
 #: src/language/stats/matrix.c:6001 src/language/stats/matrix.c:8336
 #: src/language/stats/npar-summary.c:113
 #: src/language/stats/quick-cluster.c:588 src/language/stats/runs.c:331
-#: src/language/data-io/data-parser.c:692
-#: src/language/data-io/data-parser.c:737 src/language/data-io/print.c:440
+#: src/language/data-io/data-parser.c:738
+#: src/language/data-io/data-parser.c:783 src/language/data-io/print.c:440
 #: src/ui/gui/psppire-dictview.c:667 src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Variable"
@@ -2976,7 +2978,8 @@ msgid "File Information"
 msgstr "Arxiu d'Informació"
 
 #: src/language/dictionary/sys-file-info.c:184
-#: src/language/stats/matrix.c:5986 src/language/stats/matrix.c:8334
+#: src/language/utilities/set.c:1181 src/language/stats/matrix.c:5986
+#: src/language/stats/matrix.c:8334
 msgid "Attribute"
 msgstr "Atribut"
 
@@ -3003,7 +3006,7 @@ msgstr "Tipus Little-Endian."
 #: src/language/dictionary/sys-file-info.c:206
 #: src/language/dictionary/sys-file-info.c:215
 #: src/language/dictionary/sys-file-info.c:222
-#: src/language/utilities/set.c:1149
+#: src/language/utilities/set.c:1144
 msgid "Unknown"
 msgstr "Desconegut"
 
@@ -3208,7 +3211,7 @@ msgid "Text strings in the file dictionary that the previously listed encodings 
 msgstr "Cadenes de text al diccionari de l'arxiu que les codificacions prèviament llistades interpreten de forma diferent, amb les seves interpretacions."
 
 #: src/language/dictionary/sys-file-info.c:1048 src/output/output-item.c:711
-#: src/output/output-item.c:740 src/ui/gui/psppire-import-textfile.c:343
+#: src/output/output-item.c:740 src/ui/gui/psppire-import-textfile.c:271
 msgid "Text"
 msgstr "Text"
 
@@ -3336,82 +3339,106 @@ msgstr "L'ordre \"%s\" ha acabat amb estatus %d."
 msgid "Command \"%s\" output could not be read (%s)."
 msgstr "El resultat de l'ordre \"%s\" no s'ha pogut llegir (%s)."
 
-#: src/language/utilities/set.c:262
+#: src/language/utilities/set.c:263
 msgid "ISL (32-bit IEEE 754 single, little-endian)"
 msgstr "ISL (32-bit IEEE 754 single, little-endian)"
 
-#: src/language/utilities/set.c:265
+#: src/language/utilities/set.c:266
 msgid "ISB (32-bit IEEE 754 single, big-endian)"
 msgstr "ISB (32-bit IEEE 754 single, big-endian)"
 
-#: src/language/utilities/set.c:268
+#: src/language/utilities/set.c:269
 msgid "IDL (64-bit IEEE 754 double, little-endian)"
 msgstr "IDL (64-bit IEEE 754 double, little-endian)"
 
-#: src/language/utilities/set.c:271
+#: src/language/utilities/set.c:272
 msgid "IDB (64-bit IEEE 754 double, big-endian)"
 msgstr "IDB (64-bit IEEE 754 double, big-endian)"
 
-#: src/language/utilities/set.c:275
+#: src/language/utilities/set.c:276
 msgid "VF (32-bit VAX F, VAX-endian)"
 msgstr "VF (32-bit VAX F, VAX-endian)"
 
-#: src/language/utilities/set.c:278
+#: src/language/utilities/set.c:279
 msgid "VD (64-bit VAX D, VAX-endian)"
 msgstr "VD (64-bit VAX D, VAX-endian)"
 
-#: src/language/utilities/set.c:281
+#: src/language/utilities/set.c:282
 msgid "VG (64-bit VAX G, VAX-endian)"
 msgstr "VG (64-bit VAX G, VAX-endian)"
 
-#: src/language/utilities/set.c:285
+#: src/language/utilities/set.c:286
 msgid "ZS (32-bit IBM Z hexadecimal short, big-endian)"
 msgstr "ZS (32-bit IBM Z hexadecimal short, big-endian)"
 
-#: src/language/utilities/set.c:288
+#: src/language/utilities/set.c:289
 msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 msgstr "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 
-#: src/language/utilities/set.c:490
+#: src/language/utilities/set.c:491
 #, c-format
 msgid "expecting %s or year"
 msgstr "s'espera %s o un any"
 
-#: src/language/utilities/set.c:530
+#: src/language/utilities/set.c:531
 #, c-format
 msgid "%s requires numeric output format as an argument.  Specified format %s is of type string."
 msgstr "%s requereix format de resultat numèric com a argument.  El format %s especificat és de tipus cadena textual."
 
-#: src/language/utilities/set.c:658
+#: src/language/utilities/set.c:659
 #, c-format
 msgid "%s is not a recognized encoding or locale name"
 msgstr "%s no és una codificació o un nom local reconegut"
 
-#: src/language/utilities/set.c:774 src/language/utilities/set.c:794
+#: src/language/utilities/set.c:775 src/language/utilities/set.c:795
 #, c-format
 msgid "%s must be at least 1."
 msgstr "%s ha de ser com a mínim 1."
 
-#: src/language/utilities/set.c:814
+#: src/language/utilities/set.c:815
 #, c-format
 msgid "%s must not be negative."
 msgstr "%s no pot ser negatiu."
 
-#: src/language/utilities/set.c:1156
+#: src/language/utilities/set.c:1151
 #, c-format
 msgid "%s is %s."
 msgstr "%s és %s."
 
-#: src/language/utilities/set.c:1156
+#: src/language/utilities/set.c:1151
 msgid "empty"
 msgstr "buit"
 
-#: src/language/utilities/set.c:1352
+#: src/language/utilities/set.c:1180
+msgid "System Information"
+msgstr "Informació del Sistema"
+
+#: src/language/utilities/set.c:1183
+msgid "Version"
+msgstr "Versió"
+
+#: src/language/utilities/set.c:1184
+msgid "Host System"
+msgstr "Sistema amfitrió"
+
+#: src/language/utilities/set.c:1185
+msgid "Build System"
+msgstr "Sistema generat"
+
+#: src/language/utilities/set.c:1186
+msgid "Locale Directory"
+msgstr "Carpeta local"
+
+#: src/language/utilities/set.c:1187
+msgid "Compiler Version"
+msgstr "Versió de compilació"
+
+#: src/language/utilities/set.c:1378
 #, c-format
 msgid "Too many %s commands without a %s: at most %d levels of saved settings are allowed."
 msgstr "Massa ordres %s sense un %s: es permet, com a màxim, %d nivells de configuracions desades."
 
-#: src/language/utilities/set.c:1372
+#: src/language/utilities/set.c:1398
 #, c-format
 msgid "%s without matching %s."
 msgstr "%s sense el corresponent %s."
@@ -3982,7 +4009,7 @@ msgid "Linear-by-Linear Association"
 msgstr "Associació linear per linear"
 
 #: src/language/stats/crosstabs.c:1419 src/language/stats/crosstabs.c:1464
-#: src/language/stats/crosstabs.c:1972
+#: src/language/stats/crosstabs.c:1973
 msgid "N of Valid Cases"
 msgstr "N de casos vàlids"
 
@@ -4127,12 +4154,12 @@ msgstr "Nominal segons Interval"
 msgid "Eta"
 msgstr "Eta"
 
-#: src/language/stats/crosstabs.c:1944
+#: src/language/stats/crosstabs.c:1945
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Raó de diferencies per a %s"
 
-#: src/language/stats/crosstabs.c:1953
+#: src/language/stats/crosstabs.c:1954
 #, c-format
 msgid "For cohort %s = "
 msgstr "Per a cohort %s ="
@@ -4536,8 +4563,8 @@ msgid "The dataset contains no complete observations. No analysis will be perfor
 msgstr "La matriu de dades conté observacions incompletes. No es pot realitzar cap anàlisi."
 
 #: src/language/stats/factor.c:2016
-msgid "The dataset has no covariance matrix or a correlation matrix along with standard devications."
-msgstr "El conjunt de dades no té matriu de covariància o una matriu de correlació amb desviacions típiques."
+msgid "The dataset has no covariance matrix or a correlation matrix along with standard deviations."
+msgstr "El conjunt de dades no té una matriu de covariància o una matriu de correlació amb desviacions típiques."
 
 #: src/language/stats/factor.c:2075
 msgid "Analysis N"
@@ -5149,8 +5176,8 @@ msgstr "La matriu per a exponenciació amb ** requereix un escalar en el costat 
 
 #: src/language/stats/matrix.c:3386
 #, c-format
-msgid "Exponent %.1f in matrix multiplication is non-integer or outside the valid range."
-msgstr "L'exponent %.1f en la multiplicació de matriu és no enter o fora del  rang vàlid."
+msgid "Exponent %.1f in matrix exponentiation is non-integer or outside the valid range."
+msgstr "L'exponent %.1f en la potenciació de matriu és no enter o està fora del rang vàlid."
 
 #: src/language/stats/matrix.c:3433
 #, c-format
@@ -5405,7 +5432,7 @@ msgid "Rows"
 msgstr "Files"
 
 #: src/language/stats/matrix.c:5661 src/language/stats/matrix.c:5988
-#: src/language/stats/matrix.c:8354 src/language/data-io/data-parser.c:689
+#: src/language/stats/matrix.c:8354 src/language/data-io/data-parser.c:735
 #: src/language/data-io/print.c:437 src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Columnes"
@@ -5539,7 +5566,7 @@ msgstr "No es pot llegir una matriu %zu×%zu no-quadrada fent servir READ amb MO
 
 #: src/language/stats/matrix.c:7199
 #, c-format
-msgid "Format %s is too wide for %zu-byte matrix eleemnts."
+msgid "Format %s is too wide for %zu-byte matrix elements."
 msgstr "El format %s és massa ample per a elements de matriu de %zu bytes."
 
 #: src/language/stats/matrix.c:7222
@@ -6529,99 +6556,99 @@ msgstr "Nom de la variable %s especificat a la subordre %s duplica el nom de la 
 msgid "Encountered %zu sets of duplicate cases in the master file."
 msgstr "Trobats %zu conjunts de casos duplicats a l'arxiu principal."
 
-#: src/language/data-io/data-list.c:145
+#: src/language/data-io/data-list.c:146
 #, c-format
 msgid "The %s subcommand may only be used within %s."
 msgstr "La subordre %s només pot ser utilitzat dins de %s."
 
-#: src/language/data-io/data-list.c:188
+#: src/language/data-io/data-list.c:189
 msgid "Only one of FIXED, FREE, or LIST may be specified."
 msgstr "Només un de FIXED, FREE, o LIST pot ser especificat."
 
-#: src/language/data-io/data-list.c:251
+#: src/language/data-io/data-list.c:252
 msgid "Encoding should not be specified for inline data. It will be ignored."
 msgstr "La codificació no ha de ser especificada per les dades en línia. Serà ignorada."
 
-#: src/language/data-io/data-list.c:260
+#: src/language/data-io/data-list.c:261
 #, c-format
 msgid "The %s subcommand may be used only with %s."
 msgstr "La subordre %s només pot ser utilitzada només amb %s."
 
-#: src/language/data-io/data-list.c:275
+#: src/language/data-io/data-list.c:276
 msgid "At least one variable must be specified."
 msgstr "Al menys una variable ha de ser especificada."
 
-#: src/language/data-io/data-list.c:377 src/language/data-io/data-list.c:486
+#: src/language/data-io/data-list.c:379 src/language/data-io/data-list.c:488
 #: src/language/data-io/get-data.c:633
 #, c-format
 msgid "%s is a duplicate variable name."
 msgstr "%s és un nom de variable duplicat."
 
-#: src/language/data-io/data-list.c:384
+#: src/language/data-io/data-list.c:386
 #, c-format
 msgid "There is already a variable %s of a different type."
 msgstr "Ja existeix una variable %s de diferent tipus."
 
-#: src/language/data-io/data-list.c:391
+#: src/language/data-io/data-list.c:393
 #, c-format
 msgid "There is already a string variable %s of a different width."
 msgstr "Ja existeix una cadena de la variable %s d'amplada diferent."
 
-#: src/language/data-io/data-list.c:399
+#: src/language/data-io/data-list.c:401
 #, c-format
 msgid "Cannot place variable %s on record %d when RECORDS=%d is specified."
 msgstr "No es pot posar la variable %s en el registre %d quan RECORDS=%d està especificat."
 
-#: src/language/data-io/data-parser.c:454
-#: src/language/data-io/data-parser.c:463
+#: src/language/data-io/data-parser.c:414
+#: src/language/data-io/data-parser.c:423
 msgid "Quoted string extends beyond end of line."
 msgstr "La cadena entre cometes s'estén més enllà del final de línia."
 
-#: src/language/data-io/data-parser.c:489
+#: src/language/data-io/data-parser.c:448
 msgid "Missing delimiter following quoted string."
 msgstr "Manca el delimitador darrera de la cadena entre cometes."
 
-#: src/language/data-io/data-parser.c:511
+#: src/language/data-io/data-parser.c:521
 #, c-format
 msgid "Data for variable %s is not valid as format %s: %s"
 msgstr "Les dades per a la variable %s no son vàlides com a format %s: %s"
 
-#: src/language/data-io/data-parser.c:541
+#: src/language/data-io/data-parser.c:551
 #, c-format
 msgid "Partial case of %d of %d records discarded."
 msgstr "Casos parcials de %d de %d registres descartats."
 
-#: src/language/data-io/data-parser.c:599
+#: src/language/data-io/data-parser.c:644
 #, c-format
 msgid "Partial case discarded.  The first variable missing was %s."
 msgstr "Cas parcial descartat.  La primera variable que faltava era %s."
 
-#: src/language/data-io/data-parser.c:642
+#: src/language/data-io/data-parser.c:688
 #, c-format
 msgid "Missing value(s) for all variables from %s onward.  These will be filled with the system-missing value or blanks, as appropriate."
 msgstr "Valor(s) perdut(s) per a totes les variables des de %st.  Aquests s'omplen amb el valor perdut del sistema o espais en blanc, segons correspongui."
 
-#: src/language/data-io/data-parser.c:664
+#: src/language/data-io/data-parser.c:710
 msgid "Record ends in data not part of any field."
 msgstr "El registre termina amb dades que no formen part de cap camp."
 
-#: src/language/data-io/data-parser.c:679
+#: src/language/data-io/data-parser.c:725
 #, c-format
 msgid "Reading %d record from %s."
 msgid_plural "Reading %d records from %s."
 msgstr[0] "Llegint %d registre de %s."
 msgstr[1] "Llegint %d registres de %s."
 
-#: src/language/data-io/data-parser.c:689 src/language/data-io/print.c:437
+#: src/language/data-io/data-parser.c:735 src/language/data-io/print.c:437
 msgid "Record"
 msgstr "Registre"
 
-#: src/language/data-io/data-parser.c:689
-#: src/language/data-io/data-parser.c:734 src/language/data-io/print.c:437
+#: src/language/data-io/data-parser.c:735
+#: src/language/data-io/data-parser.c:780 src/language/data-io/print.c:437
 msgid "Format"
 msgstr "Format"
 
-#: src/language/data-io/data-parser.c:729
+#: src/language/data-io/data-parser.c:775
 #, c-format
 msgid "Reading free-form data from %s."
 msgstr "Llegint dades amb format lliure de %s."
@@ -8433,35 +8460,39 @@ msgstr "Cerca"
 msgid "Bad regular expression: %s"
 msgstr "Expressió regular incorrecta: %s"
 
-#: src/ui/gui/help-menu.c:157
+#: src/ui/gui/help-menu.c:165
 msgid "A program for the analysis of sampled data"
 msgstr "Un programa per a l'anàlisi de dades de mostreig"
 
 #. TRANSLATORS: Do not translate this string.  Instead, put the names of the people
 #. who have helped in the translation.
-#: src/ui/gui/help-menu.c:167
+#: src/ui/gui/help-menu.c:175
 msgid "translator-credits"
 msgstr "F.J. Miguel, J. Gómez, P. Payà"
 
-#: src/ui/gui/help-menu.c:222
+#: src/ui/gui/help-menu.c:230
 #, c-format
 msgid "Help path conversion error: %s"
 msgstr "Error de conversió de la ruta d'ajut: %s"
 
-#: src/ui/gui/help-menu.c:243
+#: src/ui/gui/help-menu.c:251
 #, c-format
 msgid "Cannot open via html: %s with uri: %s The PSSP manual is also available at %s"
 msgstr "No es pot obrir utilitzant html: %s amb uri: %s. El manual d'usuari de PSPP es troba també disponible a %s"
 
-#: src/ui/gui/help-menu.c:264
+#: src/ui/gui/help-menu.c:272
 msgid "_Help"
 msgstr "Ajut"
 
-#: src/ui/gui/help-menu.c:267
+#: src/ui/gui/help-menu.c:275
 msgid "_About"
 msgstr "Qu_ant a..."
 
-#: src/ui/gui/help-menu.c:268
+#: src/ui/gui/help-menu.c:276
+msgid "_System Information"
+msgstr "Informació del _Sistema"
+
+#: src/ui/gui/help-menu.c:277
 msgid "_Reference Manual"
 msgstr "Manual de _Referencia"
 
@@ -8849,23 +8880,23 @@ msgstr "Ajustar formats de variables"
 msgid "Importing Spreadsheet Data"
 msgstr "Important dades de full de càlcul"
 
-#: src/ui/gui/psppire-import-textfile.c:189
+#: src/ui/gui/psppire-import-textfile.c:117
 msgid "line"
 msgstr "línia"
 
-#: src/ui/gui/psppire-import-textfile.c:199
+#: src/ui/gui/psppire-import-textfile.c:127
 msgid "var"
 msgstr "var"
 
-#: src/ui/gui/psppire-import-textfile.c:323
+#: src/ui/gui/psppire-import-textfile.c:251
 msgid "Select the First Line"
 msgstr "Seleccionar la Primera Línia"
 
-#: src/ui/gui/psppire-import-textfile.c:335
+#: src/ui/gui/psppire-import-textfile.c:263
 msgid "Line"
 msgstr "Línia"
 
-#: src/ui/gui/psppire-import-textfile.c:394
+#: src/ui/gui/psppire-import-textfile.c:322
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -8873,46 +8904,46 @@ msgstr ""
 "Aquest assistent t'acompanyarà per tot el procés d'importar dades cap al PSPP a partir d'un arxiu de text amb una línia per cas,  al qual els camps estan separats per tabuladors, comes, o altres delimitadors.\n"
 "\n"
 
-#: src/ui/gui/psppire-import-textfile.c:404
+#: src/ui/gui/psppire-import-textfile.c:332
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
 msgstr[0] "L'arxiu seleccionat conté %'lu línia de text.  "
 msgstr[1] "L'arxiu seleccionat conté %'lu línies de text.  "
 
-#: src/ui/gui/psppire-import-textfile.c:413
+#: src/ui/gui/psppire-import-textfile.c:341
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
 msgstr[0] "L'arxiu seleccionat conté aproximadament %'lu línia de text.  "
 msgstr[1] "L'arxiu seleccionat conté aproximadament %'lu línies de text.  "
 
-#: src/ui/gui/psppire-import-textfile.c:419
+#: src/ui/gui/psppire-import-textfile.c:347
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
 msgstr[0] "Només les primeres %zu línies de l'arxiu es previsualitzaran a les següents pantalles.  "
 msgstr[1] "Només les primeres %zu línies de l'arxiu es previsualitzaran a les següents pantalles.  "
 
-#: src/ui/gui/psppire-import-textfile.c:428
+#: src/ui/gui/psppire-import-textfile.c:356
 msgid "You may choose below how much of the file should actually be imported."
 msgstr "Pots triar a continuació quina part de l'arxiu ha de ser importat."
 
-#: src/ui/gui/psppire-import-textfile.c:437
+#: src/ui/gui/psppire-import-textfile.c:365
 #, c-format
 msgid "Only the first %4d cases"
 msgstr "Només els primers %4d casos"
 
-#: src/ui/gui/psppire-import-textfile.c:448
+#: src/ui/gui/psppire-import-textfile.c:376
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
 msgstr "Només els primers %3ds %% de l'arxiu (aproximadament)"
 
-#: src/ui/gui/psppire-import-textfile.c:476
+#: src/ui/gui/psppire-import-textfile.c:404
 msgid "Select the Lines to Import"
 msgstr "Seleccionar les Línies a Importar"
 
-#: src/ui/gui/psppire-import-textfile.c:647
+#: src/ui/gui/psppire-import-textfile.c:563
 msgid "Choose Separators"
 msgstr "Triar els separadors"
 
@@ -10709,59 +10740,67 @@ msgstr "Tots els casos"
 msgid "<b>Amount to Import</b>"
 msgstr "<b>Quantitat a importar</b>"
 
-#: src/ui/gui/text-data-import.ui:313
+#: src/ui/gui/text-data-import.ui:314
 msgid "C_ustom"
 msgstr "_Usuari"
 
-#: src/ui/gui/text-data-import.ui:328
+#: src/ui/gui/text-data-import.ui:329
 msgid "Slas_h (/)"
 msgstr "Barra (/)"
 
-#: src/ui/gui/text-data-import.ui:343
+#: src/ui/gui/text-data-import.ui:344
 msgid "Semicolo_n (;)"
 msgstr "Punt i coma (;)"
 
-#: src/ui/gui/text-data-import.ui:358
+#: src/ui/gui/text-data-import.ui:359
 msgid "P_ipe (|)"
 msgstr "Tub (|)"
 
-#: src/ui/gui/text-data-import.ui:373
+#: src/ui/gui/text-data-import.ui:374
 msgid "H_yphen (-)"
 msgstr "Guionet (-)"
 
-#: src/ui/gui/text-data-import.ui:388
+#: src/ui/gui/text-data-import.ui:389
 msgid "Co_mma (,)"
 msgstr "Coma (,)"
 
-#: src/ui/gui/text-data-import.ui:403
+#: src/ui/gui/text-data-import.ui:404
 msgid "_Colon (:)"
 msgstr "Dos punts (:)"
 
-#: src/ui/gui/text-data-import.ui:418
+#: src/ui/gui/text-data-import.ui:419
 msgid "Ban_g (!)"
 msgstr "Exclamació (!)"
 
-#: src/ui/gui/text-data-import.ui:433
+#: src/ui/gui/text-data-import.ui:434
 msgid "Ta_b"
 msgstr "Tabulador"
 
-#: src/ui/gui/text-data-import.ui:448
+#: src/ui/gui/text-data-import.ui:449
 msgid "_Space"
 msgstr "E-spai"
 
-#: src/ui/gui/text-data-import.ui:468
-msgid "<b>Separators</b>"
-msgstr "<b>Separadors</b>"
+#: src/ui/gui/text-data-import.ui:469
+msgid "<b>What characters separate fields?</b>"
+msgstr "<b>Quins caràcters separen els camps?</b>"
 
-#: src/ui/gui/text-data-import.ui:519
-msgid "Quote separator characters with"
-msgstr "Separar caràcters amb Cometes"
+#: src/ui/gui/text-data-import.ui:510
+msgid "Single quote (')"
+msgstr "Cometa simple (')"
 
-#: src/ui/gui/text-data-import.ui:538
-msgid "<b>Quoting</b>"
-msgstr "<b>Camille's</b>"
+#: src/ui/gui/text-data-import.ui:527
+msgid "Double quote (\")"
+msgstr "Doble cometa (\")"
 
-#: src/ui/gui/text-data-import.ui:576
+#: src/ui/gui/text-data-import.ui:548
+msgid "Custom:"
+msgstr "_Personalitzat:"
+
+#: src/ui/gui/text-data-import.ui:589
+msgid "<b>What character quotes fields?</b>"
+msgstr "<b>Quin caràcter cita els camps?</b>"
+
+#: src/ui/gui/text-data-import.ui:627
 msgid "<b>Fields Preview</b>"
 msgstr "<b>Previsualitza camps</b>"
 
@@ -11274,6 +11313,15 @@ msgstr "Analitza dades estadístiques amb una alternativa lliure a SPSS"
 #: doc/org.fsf.pspp.desktop.in:17
 msgid "statistics;analysis;spss;"
 msgstr "statistics;analysis;spss;"
+
+#~ msgid "<b>Separators</b>"
+#~ msgstr "<b>Separadors</b>"
+
+#~ msgid "Quote separator characters with"
+#~ msgstr "Separar caràcters amb Cometes"
+
+#~ msgid "<b>Quoting</b>"
+#~ msgstr "<b>Camille's</b>"
 
 #~ msgid "Input format"
 #~ msgstr "Format d'entrada"
