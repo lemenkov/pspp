@@ -101,26 +101,38 @@ fmt_settings_get_style (const struct fmt_settings *settings,
 
 #define OPPOSITE(C) ((C) == ',' ? '.' : ',')
 #define AFFIX(S) { .s = (char *) (S), .width = sizeof (S) - 1 }
-#define NS(PREFIX, SUFFIX, DECIMAL, GROUPING) { \
+#define NS(PREFIX, SUFFIX, DECIMAL, GROUPING, INCLUDE_LEADING_ZERO) {        \
     .neg_prefix = AFFIX ("-"),                  \
     .prefix = AFFIX (PREFIX),                   \
     .suffix = AFFIX (SUFFIX),                   \
     .neg_suffix = AFFIX (""),                   \
     .decimal = DECIMAL,                         \
     .grouping = GROUPING,                       \
+    .include_leading_zero = INCLUDE_LEADING_ZERO \
   }
-#define ANS(DECIMAL, GROUPING) {                        \
-    [FMT_F]      = NS( "",  "", DECIMAL, 0),            \
-    [FMT_E]      = NS( "",  "", DECIMAL, 0),            \
-    [FMT_COMMA]  = NS( "",  "", DECIMAL, GROUPING),     \
-    [FMT_DOT]    = NS( "",  "", GROUPING, DECIMAL),     \
-    [FMT_DOLLAR] = NS("$",  "", DECIMAL, GROUPING),     \
-    [FMT_PCT]    = NS( "", "%", DECIMAL, 0),            \
+#define ANS(DECIMAL, GROUPING, INCLUDE_LEADING_ZERO) {                  \
+    [FMT_F]      = NS( "",  "", DECIMAL, 0, INCLUDE_LEADING_ZERO),      \
+    [FMT_E]      = NS( "",  "", DECIMAL, 0, INCLUDE_LEADING_ZERO),      \
+    [FMT_COMMA]  = NS( "",  "", DECIMAL, GROUPING, INCLUDE_LEADING_ZERO), \
+    [FMT_DOT]    = NS( "",  "", GROUPING, DECIMAL, INCLUDE_LEADING_ZERO), \
+    [FMT_DOLLAR] = NS("$",  "", DECIMAL, GROUPING, false),              \
+    [FMT_PCT]    = NS( "", "%", DECIMAL, 0, false),                     \
+  }
+#define ANS2(DECIMAL, GROUPING) {               \
+    ANS(DECIMAL, GROUPING, false),              \
+    ANS(DECIMAL, GROUPING, true),               \
   }
 
-  static const struct fmt_number_style period_styles[6] = ANS ('.', ',');
-  static const struct fmt_number_style comma_styles[6] = ANS (',', '.');
-  static const struct fmt_number_style default_style = NS ("", "", '.', 0);
+  /* First index: 0 for ',' decimal point, 1 for '.' decimal point.
+     Second index: 0 for no leading zero, 1 for leading zero.
+     Third index: TYPE.
+  */
+  static const struct fmt_number_style styles[2][2][6] = {
+    ANS2 (',', '.'),
+    ANS2 ('.', ','),
+  };
+
+  static const struct fmt_number_style default_style = NS ("", "", '.', 0, false);
 
   switch (type)
     {
@@ -130,9 +142,11 @@ fmt_settings_get_style (const struct fmt_settings *settings,
     case FMT_DOLLAR:
     case FMT_PCT:
     case FMT_E:
-      return (settings->decimal == '.'
-              ? &period_styles[type]
-              : &comma_styles[type]);
+      {
+        int decimal_idx = settings->decimal == '.';
+        int leadzero_idx = settings->include_leading_zero;
+        return &styles[decimal_idx][leadzero_idx][type];
+      }
 
     case FMT_CCA:
     case FMT_CCB:
@@ -1298,6 +1312,7 @@ fmt_number_style_from_string (const char *s)
     .neg_suffix = neg_suffix,
     .decimal = grouping == '.' ? ',' : '.',
     .grouping = grouping,
+    .include_leading_zero = false,
     .extra_bytes = extra_bytes,
   };
   return style;

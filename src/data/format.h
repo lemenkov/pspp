@@ -164,6 +164,7 @@ struct fmt_number_style
     struct fmt_affix neg_suffix; /* Negative suffix. */
     char decimal;                /* Decimal point: '.' or ','. */
     char grouping;               /* Grouping character: ',', '.', or 0. */
+    bool include_leading_zero;   /* Format as ".5" or "0.5"? */
 
     /* A fmt_affix may require more bytes than its display width; for example,
        U+00A5 (¥) is 2 bytes in UTF-8 but occupies only one display column.
@@ -192,6 +193,11 @@ struct fmt_settings
   {
     int epoch;                               /* 0 for default epoch. */
     char decimal;                            /* '.' or ','. */
+
+    /* Format F, E, COMMA, and DOT with leading zero (e.g. "0.5" instead of
+       ".5")? */
+    bool include_leading_zero;
+
     struct fmt_number_style *ccs[FMT_N_CCS]; /* CCA through CCE. */
   };
 #define FMT_SETTINGS_INIT { .decimal = '.' }

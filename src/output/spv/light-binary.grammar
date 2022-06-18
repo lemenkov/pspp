@@ -121,7 +121,7 @@ X0 => byte*14 Y1 Y2
 Y1 =>
    string[command] string[command-local]
    string[language] string[charset] string[locale]
-   bool[x10] bool[x11] bool[x12] bool[x13]
+   bool[x10] bool[include-leading-zero] bool[x12] bool[x13]
    Y0
 Y2 => CustomCurrency byte[missing] bool[x17]
 

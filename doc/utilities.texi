@@ -506,6 +506,7 @@ SET
         /CC@{A,B,C,D,E@}=@{'@var{npre},@var{pre},@var{suf},@var{nsuf}','@var{npre}.@var{pre}.@var{suf}.@var{nsuf}'@}
         /DECIMAL=@{DOT,COMMA@}
         /FORMAT=@var{fmt_spec}
+        /LEADZERO=@{ON,OFF@}
         /MDISPLAY=@{TEXT,TABLES@}
         /SMALL=@var{number}
         /WIB=@{NATIVE,MSBFIRST,LSBFIRST,VAX@}
@@ -746,6 +747,15 @@ The default @subcmd{DOT} setting causes the decimal point character to be
 @item FORMAT
 Allows the default numeric input/output format to be specified.  The
 default is F8.2.  @xref{Input and Output Formats}.
+
+@item LEADZERO
+@anchor{SET LEADZERO}
+
+Controls whether numbers with magnitude less than one are displayed
+with a zero before the decimal point.  For example, with @code{SET
+LEADZERO=OFF}, which is the default, one-half is shown as 0.5, and
+with @code{SET LEADZERO=ON}, it is shown as .5.  This setting affects
+only the @code{F}, @code{COMMA}, and @code{DOT} formats.
 
 @item MDISPLAY
 @anchor{SET MDISPLAY}

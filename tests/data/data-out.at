@@ -247,6 +247,49 @@ sys.exit(1 if errors else 0)
 AT_CHECK([$PYTHON3 num-out-compare.py $PSPP_NUM_OUT_COMPARE_FLAGS expout.inexact output.inexact])
 AT_CLEANUP
 
+AT_SETUP([leading zeros in numeric output])
+AT_KEYWORDS([data-out LEADZERO])
+AT_DATA([data-out.sps], [dnl
+DATA LIST LIST NOTABLE/x.
+BEGIN DATA.
+0.5
+0.99
+0.01
+0
+-0
+-0.5
+-0.99
+-0.01
+END DATA.
+
+PRINT/x (F5.2) x (F5.1).
+EXECUTE.
+
+SET LEADZERO=ON.
+PRINT/x (F5.2) x (F5.1).
+EXECUTE.
+])
+AT_CHECK([pspp -O format=csv data-out.sps], [0], [dnl
+.50   .5
+.99  1.0
+.01   .0
+.00   .0
+.00   .0
+-.50  -.5
+-.99 -1.0
+-.01   .0
+
+0.50  0.5
+0.99  1.0
+0.01  0.0
+0.00  0.0
+0.00  0.0
+-0.50 -0.5
+-0.99 -1.0
+-0.01  0.0
+])
+AT_CLEANUP
+
 AT_SETUP([non-ASCII custom currency formats])
 AT_KEYWORDS([data-out])
 AT_DATA([data-out.sps], [dnl

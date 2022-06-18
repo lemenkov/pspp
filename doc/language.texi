@@ -796,8 +796,10 @@ would not fit at all without it.  Scientific notation with @samp{$} or
 @item
 Except in scientific notation, a decimal point is included only when
 it is followed by a digit.  If the integer part of the number being
-output is 0, and a decimal point is included, then the zero before the
-decimal point is dropped.
+output is 0, and a decimal point is included, then @pspp{} ordinarily
+drops the zero before the decimal point.  However, in @code{F},
+@code{COMMA}, or @code{DOT} formats, @pspp{} keeps the zero if
+@code{SET LEADZERO} is set to @code{ON} (@pxref{SET LEADZERO}).
 
 In scientific notation, the number always includes a decimal point,
 even if it is not followed by a digit.

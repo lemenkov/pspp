@@ -799,7 +799,10 @@ put_y1 (struct buf *buf, const struct pivot_table *table)
   put_string (buf, table->language);
   put_string (buf, "UTF-8");    /* XXX */
   put_string (buf, table->locale);
-  put_bytes (buf, "\0\0\1\1", 4);
+  put_bool (buf, false);        /* x10 */
+  put_bool (buf, table->settings.include_leading_zero);
+  put_bool (buf, true);         /* x12 */
+  put_bool (buf, true);         /* x13 */
   put_y0 (buf, table);
 }
 

@@ -58,7 +58,8 @@ struct rounder
     bool negative;      /* Is the number negative? */
   };
 
-static void rounder_init (struct rounder *, double number, int max_decimals);
+static void rounder_init (struct rounder *, const struct fmt_number_style *,
+                          double number, int max_decimals);
 static int rounder_width (const struct rounder *, int decimals,
                           int *integer_digits, bool *negative);
 static void rounder_format (const struct rounder *, int decimals,
@@ -72,10 +73,10 @@ typedef void data_out_converter_func (const union value *,
 #include "format.def"
 
 static bool output_decimal (const struct rounder *, const struct fmt_spec *,
-                            const struct fmt_settings *, bool require_affixes,
-                            char *);
+                            const struct fmt_number_style *,
+                            bool require_affixes, char *);
 static bool output_scientific (double, const struct fmt_spec *,
-                               const struct fmt_settings *,
+                               const struct fmt_number_style *,
                                bool require_affixes, char *);
 
 static double power10 (int) PURE_FUNCTION;
@@ -254,18 +255,21 @@ output_number (const union value *input, const struct fmt_spec *format,
     output_infinite (number, format, output);
   else
     {
+      const struct fmt_number_style *style =
+        fmt_settings_get_style (settings, format->type);
+
       if (format->type != FMT_E && fabs (number) < 1.5 * power10 (format->w))
         {
           struct rounder r;
-          rounder_init (&r, number, format->d);
+          rounder_init (&r, style, number, format->d);
 
-          if (output_decimal (&r, format, settings, true, output)
-              || output_scientific (number, format, settings, true, output)
-              || output_decimal (&r, format, settings, false, output))
+          if (output_decimal (&r, format, style, true, output)
+              || output_scientific (number, format, style, true, output)
+              || output_decimal (&r, format, style, false, output))
             return;
         }
 
-      if (!output_scientific (number, format, settings, false, output))
+      if (!output_scientific (number, format, style, false, output))
         output_overflow (format, output);
     }
 }
@@ -651,19 +655,16 @@ allocate_space (int request, int max_width, int *width)
 }
 
 /* Tries to compose the number represented by R, in the style of
-   FORMAT, into OUTPUT.  Returns true if successful, false on
-   failure, which occurs if FORMAT's width is too narrow.  If
+   FORMAT and STYLE, into OUTPUT.  Returns true if successful, false on
+   failure, which cocurs if FORMAT's width is too narrow.  If
    REQUIRE_AFFIXES is true, then the prefix and suffix specified
    by FORMAT's style must be included; otherwise, they may be
    omitted to make the number fit. */
 static bool
 output_decimal (const struct rounder *r, const struct fmt_spec *format,
-                const struct fmt_settings *settings, bool require_affixes,
+                const struct fmt_number_style *style, bool require_affixes,
                 char *output)
 {
-  const struct fmt_number_style *style =
-    fmt_settings_get_style (settings, format->type);
-
   int decimals;
 
   for (decimals = format->d; decimals >= 0; decimals--)
@@ -760,15 +761,13 @@ output_decimal (const struct rounder *r, const struct fmt_spec *format,
   return false;
 }
 
-/* Formats NUMBER into OUTPUT in scientific notation according to
-   the style of the format specified in FORMAT. */
+/* Formats NUMBER into OUTPUT in scientific notation according to FORMAT and
+   STYLE. */
 static bool
 output_scientific (double number, const struct fmt_spec *format,
-                   const struct fmt_settings *settings,
+                   const struct fmt_number_style *style,
                    bool require_affixes, char *output)
 {
-  const struct fmt_number_style *style =
-    fmt_settings_get_style (settings, format->type);
   int width;
   int fraction_width;
   bool add_affixes;
@@ -853,10 +852,11 @@ should_round_up (const struct rounder *r, int decimals)
   return digit >= '5';
 }
 
-/* Initializes R for formatting the magnitude of NUMBER to no
+/* Initializes R for formatting the magnitude of NUMBER with STYLE to no
    more than MAX_DECIMAL decimal places. */
 static void
-rounder_init (struct rounder *r, double number, int max_decimals)
+rounder_init (struct rounder *r, const struct fmt_number_style *style,
+              double number, int max_decimals)
 {
   assert (fabs (number) < 1e41);
   assert (max_decimals >= 0 && max_decimals <= 16);
@@ -905,7 +905,7 @@ rounder_init (struct rounder *r, double number, int max_decimals)
         }
     }
 
-  if (r->string[0] == '0')
+  if (r->string[0] == '0' && !style->include_leading_zero)
     memmove (r->string, &r->string[1], strlen (r->string));
 
   r->leading_zeros = strspn (r->string, "0.");

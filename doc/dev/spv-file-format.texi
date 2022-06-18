@@ -1446,7 +1446,7 @@ X0 => byte*14 Y1 Y2
 Y1 =>
     string[command] string[command-local]
     string[language] string[charset] string[locale]
-    bool bool bool bool
+    bool[x10] bool[include-leading-zero] bool[x12] bool[x13]
     Y0
 Y2 => CustomCurrency byte[missing] bool[x17]
 @end example
@@ -1458,10 +1458,15 @@ Tests.''  @code{command-local} is the procedure's name, translated
 into the output language; it is often empty and, when it is not,
 sometimes the same as @code{command}.
 
+@code{include-leading-zero} is the @code{LEADZERO} setting for the
+table, where false is @code{OFF} (the default) and true is @code{ON}.
+@xref{SET LEADZERO,,, pspp, PSPP}.
+
 @code{missing} is the character used to indicate that a cell contains
 a missing value.  It is always observed as @samp{.}.
 
-A writer may safely use false for @code{x17}.
+A writer may safely use false for @code{x10} and @code{x17} and true
+for @code{x12} and @code{x13}.
 
 @subsubheading X1
 

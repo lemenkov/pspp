@@ -615,6 +615,12 @@ settings_set_decimal_char (char decimal)
   the_settings.styles.decimal = decimal;
 }
 
+void
+settings_set_include_leading_zero (bool include_leading_zero)
+{
+  the_settings.styles.include_leading_zero = include_leading_zero;
+}
+
 const struct fmt_settings *
 settings_get_fmt_settings (void)
 {

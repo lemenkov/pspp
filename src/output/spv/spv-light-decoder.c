@@ -939,6 +939,8 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
           /* XXX warn if parsing fails */
         }
     }
+  if (y1)
+    out->settings.include_leading_zero = y1->include_leading_zero;
   out->small = in->formats->x3 ? in->formats->x3->small : 0;
 
   /* Command information. */

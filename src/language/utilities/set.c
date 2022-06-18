@@ -618,6 +618,22 @@ show_JOURNAL (const struct dataset *ds UNUSED)
 }
 
 static bool
+parse_LEADZERO (struct lexer *lexer)
+{
+  int leadzero = force_parse_bool (lexer);
+  if (leadzero != -1)
+    settings_set_include_leading_zero (leadzero);
+  return leadzero != -1;
+}
+
+static char *
+show_LEADZERO (const struct dataset *ds UNUSED)
+{
+  bool leadzero = settings_get_fmt_settings ()->include_leading_zero;
+  return xstrdup (leadzero ? "ON" : "OFF");
+}
+
+static bool
 parse_LENGTH (struct lexer *lexer)
 {
   int page_length;
@@ -1218,6 +1234,7 @@ static const struct setting settings[] = {
   { "HEADER", parse_HEADER, NULL },
   { "INCLUDE", parse_INCLUDE, show_INCLUDE },
   { "JOURNAL", parse_JOURNAL, show_JOURNAL },
+  { "LEADZERO", parse_LEADZERO, show_LEADZERO },
   { "LENGTH", parse_LENGTH, show_LENGTH },
   { "LOCALE", parse_LOCALE, show_LOCALE },
   { "MDISPLAY", parse_MDISPLAY, show_MDISPLAY },
