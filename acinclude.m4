@@ -75,8 +75,6 @@ AC_DEFUN([PSPP_PERL_MODULE],
        [PSPP_REQUIRED_PREREQ([Config::Perl::V Perl module (or use --without-perl-module)])])
      CHECK_PERL_MODULE([Text::Diff], [],
        [PSPP_OPTIONAL_PREREQ([Text::Diff Perl module for running Perl tests])])
-     CHECK_PERL_MODULE([Memory::Usage], [],
-       [PSPP_OPTIONAL_PREREQ([Memory::Usage Perl module for running Perl tests])])
    fi])
 
 dnl Check that Python 3 is available.

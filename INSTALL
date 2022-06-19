@@ -97,8 +97,8 @@ module:
 
     * The Config::Perl::V module for Perl (https://cpan.org).
 
-    * Optionally, the Text::Diff and Memory::Usage modules for Perl
-      (https://cpan.org).  These modules enable PSPP to test its Perl
+    * Optionally, the Text::Diff module for Perl
+      (https://cpan.org).  This module enables PSPP to test its Perl
       module more thoroughly.
 
 Other optional packages:
