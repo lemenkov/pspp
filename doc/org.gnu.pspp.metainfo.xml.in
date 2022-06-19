@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (C) 2020 Free Software Foundation -->
 <component type="desktop">
-  <id>org.fsf.pspp</id>
+  <id>org.gnu.pspp</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <name>GNU PSPP</name>
@@ -30,7 +30,7 @@
     </ul>
     <p>PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data.</p>
   </description>
-  <launchable type="desktop-id">org.fsf.pspp.desktop</launchable>
+  <launchable type="desktop-id">org.gnu.pspp.desktop</launchable>
   <categories>
     <category>Science</category>
     <category>Math</category>

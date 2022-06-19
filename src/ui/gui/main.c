@@ -522,7 +522,7 @@ main (int argc, char *argv[])
   set_program_name (argv[0]);
 
   GtkApplication *app =
-    gtk_application_new ("gnu.pspp", G_APPLICATION_HANDLES_OPEN);
+    gtk_application_new ("org.gnu.pspp", G_APPLICATION_HANDLES_OPEN);
 
   process_pre_start_arguments (&argc, &argv);
 

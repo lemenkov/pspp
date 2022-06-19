@@ -41,7 +41,7 @@ uninstall-ext-icons:
 				(test ! "`printf '%s %s %s' . .. *`" = '. .. *' || test -f '*')) 2> /dev/null ; then \
 				  rm -rf $(themedir)/$$size/$$context/application-x-spss-* ; \
 				  rm -rf $(themedir)/$$size/$$context/pspp* ; \
-				  rm -rf $(themedir)/$$size/$$context/org.fsf.pspp*; \
+				  rm -rf $(themedir)/$$size/$$context/org.gnu.pspp*; \
 			fi ; \
 		done ; \
 	done
@@ -102,7 +102,7 @@ esac
 
 EXTRA_DIST += $(top_srcdir)/src/ui/gui/artwork/splash.svg $(icons) $(icon_srcs)
 
-src/ui/gui/icons/pspp.ico: src/ui/gui/icons/16x16/apps/org.fsf.pspp.png src/ui/gui/icons/32x32/apps/org.fsf.pspp.png src/ui/gui/icons/48x48/apps/org.fsf.pspp.png src/ui/gui/icons/256x256/apps/org.fsf.pspp.png
+src/ui/gui/icons/pspp.ico: src/ui/gui/icons/16x16/apps/org.gnu.pspp.png src/ui/gui/icons/32x32/apps/org.gnu.pspp.png src/ui/gui/icons/48x48/apps/org.gnu.pspp.png src/ui/gui/icons/256x256/apps/org.gnu.pspp.png
 	$(MKDIR_P) ${@D}
 	convert $^ $@
 
