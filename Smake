@@ -316,11 +316,11 @@ src/ui/gui/icons/manifest: $(MAKEFILE_LIST)
 	echo >> $@
 
 
-src/ui/gui/resources.xml: $(ICONS)
+src/ui/gui/resources.xml: $(MAKEFILE_LIST)
 	printf '<?xml version="1.0" encoding="UTF-8"?>\n' > $@
 	printf '<gresources>\n' >> $@
 	printf ' <gresource prefix="gnu/pspp">\n' >> $@
-	for x in $^; do \
+	for x in $(ICONS); do \
 	  z=`echo "$$x" | sed -e 's%src/ui/gui/%%'` ; \
 	  printf "  <file>$$z</file>\n" >> $@ ; \
 	done
