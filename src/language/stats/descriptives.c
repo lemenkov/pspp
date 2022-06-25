@@ -474,8 +474,8 @@ match_statistic (struct lexer *lexer)
         if (lex_match_id (lexer, dsc_info[stat].identifier))
 	  return stat;
 
-      lex_get (lexer);
       lex_error (lexer, _("expecting statistic name: reverting to default"));
+      lex_get (lexer);
     }
 
   return DSC_NONE;

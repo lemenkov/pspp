@@ -442,3 +442,21 @@ Valid N (listwise),40,,,,
 Missing N (listwise),0,,,,
 ])
 AT_CLEANUP
+
+dnl Check for regression for a bad error message that cited the
+dnl token following the bad statistic name.
+AT_SETUP([DESCRIPTIVES -- negative])
+AT_DATA([descriptives.sps], [dnl
+DATA LIST NOTABLE/V0 to V16 1-17.
+BEGIN DATA.
+12128989012389023
+END DATA.
+DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
+])
+AT_CHECK([pspp descriptives.sps], [1], [dnl
+descriptives.sps:5.29-5.33: error: DESCRIPTIVES: Syntax error at `COUNT':
+expecting statistic name: reverting to default.
+
+descriptives.sps:5.35-5.38: error: DESCRIPTIVES: Syntax error at `MEAN'.
+])
+AT_CLEANUP
