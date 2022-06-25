@@ -143,9 +143,9 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   g_signal_connect (about, "activate-link", G_CALLBACK (on_activate_link), parent);
 #endif
 
-  gtk_about_dialog_set_logo_icon_name (GTK_ABOUT_DIALOG (about), "pspp");
+  gtk_about_dialog_set_logo_icon_name (GTK_ABOUT_DIALOG (about), "org.gnu.pspp");
 
-  gtk_window_set_icon_name (GTK_WINDOW (about), "pspp");
+  gtk_window_set_icon_name (GTK_WINDOW (about), "org.gnu.pspp");
 
   gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), PACKAGE_URL);
 
