@@ -71,7 +71,7 @@ alias pspp='pspp --no-statrc'
 # Avoids error messages during tests if $TERM is set to an unknown terminal.
 TERM=; unset TERM
 
-pspp_diff=`which diff`
+pspp_diff=`command -v diff`
 if test X"$RUNNER" = Xwine; then
     diff () {
         $pspp_diff -w  "$@"
