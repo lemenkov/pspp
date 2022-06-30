@@ -1023,7 +1023,7 @@ error_dialog (GtkWindow *w, const gchar *filename,  GError *err)
 
   g_free (fn);
 
-  g_object_set (dialog, "icon-name", "pspp", NULL);
+  g_object_set (dialog, "icon-name", "org.gnu.pspp", NULL);
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
 					    "%s", err->message);

@@ -460,7 +460,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   gtk_window_set_title (GTK_WINDOW (ia),
                         _("Importing Delimited Text Data"));
 
-  gtk_window_set_icon_name (GTK_WINDOW (ia), "pspp");
+  gtk_window_set_icon_name (GTK_WINDOW (ia), "org.gnu.pspp");
   gtk_window_set_modal (GTK_WINDOW(ia), TRUE);
 
   chooser_page_create (ia);
