@@ -100,8 +100,8 @@ casewriter_translator_convert_to_reader (struct casewriter *writer UNUSED,
 {
   struct casewriter_translator *ct = ct_;
   struct casereader *reader = casewriter_make_reader (ct->subwriter);
-  free (ct);
   ct->destroy (ct->aux);
+  free (ct);
   return reader;
 }
 

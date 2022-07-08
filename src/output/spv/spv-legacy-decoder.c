@@ -1893,10 +1893,10 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
 
       if (!progress)
         {
-          free (nodes);
           error = xasprintf ("Table has %zu variables with circular or "
                              "unresolved references, including variable %s.",
                              n_nodes, nodes[0]->id);
+          free (nodes);
           goto exit;
         }
     }
