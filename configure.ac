@@ -25,19 +25,17 @@ AC_CONFIG_TESTDIR([tests])
 AM_INIT_AUTOMAKE([tar-ustar info-in-builddir])
 
 dnl Checks for programs.
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 gl_EARLY
 if test x"$cross_compiling" = x"yes"; then
    if test x"$srcdir" = x"."; then
-      AC_ERROR([Cross compiling must be done out of source.])
+      AC_MSG_ERROR([Cross compiling must be done out of source.])
    fi
 fi
 
 AM_PROG_CC_C_O
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_DLOPEN
-AC_PROG_LIBTOOL
+LT_INIT([dlopen win32-dll])
 AC_HEADER_TIOCGWINSZ
 
 AC_CHECK_SIZEOF([ptrdiff_t])

@@ -347,7 +347,7 @@ dnl PSPP_ENABLE_WERROR
 AC_DEFUN([PSPP_ENABLE_WERROR],
   [AC_ARG_ENABLE(
      [Werror],
-     [AC_HELP_STRING([--enable-Werror], [Add -Werror to CFLAGS])],
+     [AS_HELP_STRING([--enable-Werror], [Add -Werror to CFLAGS])],
      [], [enable_Werror=no])
    AC_CONFIG_COMMANDS_PRE(
      [if test "X$enable_Werror" = Xyes; then
