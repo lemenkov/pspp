@@ -75,7 +75,7 @@ generate-changelog:
 
 DIST_HOOKS += generate-changelog
 
-GL_CFLAG_GNULIB_WARNINGS = -Wno-missing-prototypes -Wno-unused-parameter
+GL_CFLAG_GNULIB_WARNINGS = -Wno-missing-prototypes -Wno-unused-parameter -Wno-alloc-size-larger-than
 
 include $(top_srcdir)/build-aux/automake.mk
 include $(top_srcdir)/gl/automake.mk

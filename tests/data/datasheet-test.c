@@ -699,7 +699,7 @@ datasheet_mc_mutate (struct mc *mc, const void *ods_)
 
           datasheet_delete_rows (ds, pos, n);
 
-          release_data (n, oproto, &data[pos]);
+          release_data (n, oproto, data + pos);
           remove_range (&data[0], n_rows, sizeof data[0], pos, n);
 
           check_datasheet (mc, ds, data, n_rows - n, oproto);

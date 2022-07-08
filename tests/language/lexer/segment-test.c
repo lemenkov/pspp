@@ -155,6 +155,7 @@ check_segmentation (const char *input, size_t length, bool print_segments)
                    offset);
         }
       assert (offset + n <= length);
+      assert (offset <= length);
 
       if (type == SEG_NEWLINE)
         {
