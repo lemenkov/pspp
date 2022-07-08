@@ -384,7 +384,7 @@ psppire_val_chooser_realize (GtkWidget *w)
 static struct old_value *
 old_value_copy (struct old_value *ov)
 {
-  struct old_value *copy = g_memdup (ov, sizeof (*copy));
+  struct old_value *copy = g_memdup2 (ov, sizeof (*copy));
 
   if (ov->type == OV_STRING)
     copy->v.s = g_strdup (ov->v.s);

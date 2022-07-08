@@ -21,7 +21,7 @@ static gpointer
 psppire_format_copy (gpointer boxed)
 {
   struct fmt_spec *format = boxed;
-  return g_memdup (format, sizeof *format);
+  return g_memdup2 (format, sizeof *format);
 }
 
 static void

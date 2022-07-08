@@ -71,7 +71,7 @@ struct new_value
 static struct new_value *
 new_value_copy (struct new_value *nv)
 {
-  struct new_value *copy = g_memdup (nv, sizeof (*copy));
+  struct new_value *copy = g_memdup2 (nv, sizeof (*copy));
 
   if (nv->type == NV_STRING)
     copy->v.s = xstrdup (nv->v.s);
