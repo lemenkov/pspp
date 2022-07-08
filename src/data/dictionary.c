@@ -67,6 +67,7 @@ struct dictionary
     int next_value_idx;         /* Index of next `union value' to allocate. */
     const struct variable **split;    /* SPLIT FILE vars. */
     size_t n_splits;            /* SPLIT FILE count. */
+    enum split_type split_type;
     struct variable *weight;    /* WEIGHT variable. */
     struct variable *filter;    /* FILTER variable. */
     casenumber case_limit;      /* Current case limit (N command). */
@@ -251,13 +252,16 @@ dict_copy_callbacks (struct dictionary *dest,
 struct dictionary *
 dict_create (const char *encoding)
 {
-  struct dictionary *d = XZALLOC (struct dictionary);
+  struct dictionary *d = xmalloc (sizeof *d);
 
-  d->encoding = xstrdup (encoding);
-  d->names_must_be_ids = true;
-  hmap_init (&d->name_map);
-  attrset_init (&d->attributes);
-  d->ref_cnt = 1;
+  *d = (struct dictionary) {
+    .encoding = xstrdup (encoding),
+    .names_must_be_ids = true,
+    .name_map = HMAP_INITIALIZER (d->name_map),
+    .attributes = ATTRSET_INITIALIZER (d->attributes),
+    .split_type = SPLIT_LAYERED,
+    .ref_cnt = 1,
+  };
 
   return d;
 }
@@ -299,9 +303,10 @@ dict_clone (const struct dictionary *s)
   if (d->n_splits > 0)
     {
        d->split = xnmalloc (d->n_splits, sizeof *d->split);
-      for (i = 0; i < d->n_splits; i++)
-        d->split[i] = dict_lookup_var_assert (d, var_get_name (s->split[i]));
+       for (i = 0; i < d->n_splits; i++)
+         d->split[i] = dict_lookup_var_assert (d, var_get_name (s->split[i]));
     }
+  d->split_type = s->split_type;
 
   if (s->weight != NULL)
     dict_set_weight (d, dict_lookup_var_assert (d, var_get_name (s->weight)));
@@ -383,11 +388,12 @@ dict_unset_split_var (struct dictionary *d, struct variable *v, bool skip_callba
 static void
 dict_set_split_vars__ (struct dictionary *d,
                        struct variable *const *split, size_t n,
-                       bool skip_callbacks)
+                       enum split_type type, bool skip_callbacks)
 {
   assert (n == 0 || split != NULL);
 
   d->n_splits = n;
+  d->split_type = type;
   if (n > 0)
    {
     d->split = xnrealloc (d->split, n, sizeof *d->split) ;
@@ -410,11 +416,17 @@ dict_set_split_vars__ (struct dictionary *d,
 /* Sets N split vars SPLIT in dictionary D. */
 void
 dict_set_split_vars (struct dictionary *d,
-                     struct variable *const *split, size_t n)
+                     struct variable *const *split, size_t n,
+                     enum split_type type)
 {
-  dict_set_split_vars__ (d, split, n, false);
+  dict_set_split_vars__ (d, split, n, type, false);
 }
 
+void
+dict_clear_split_vars (struct dictionary *d)
+{
+  dict_set_split_vars (d, NULL, 0, SPLIT_LAYERED);
+}
 
 
 /* Deletes variable V from dictionary D and frees V.
@@ -611,7 +623,7 @@ dict_clear__ (struct dictionary *d, bool skip_callbacks)
   invalidate_proto (d);
   hmap_clear (&d->name_map);
   d->next_value_idx = 0;
-  dict_set_split_vars__ (d, NULL, 0, skip_callbacks);
+  dict_set_split_vars__ (d, NULL, 0, SPLIT_LAYERED, skip_callbacks);
 
   if (skip_callbacks)
     {

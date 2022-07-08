@@ -1158,7 +1158,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
   dict_reorder_vars (dict, order, n_order);
   free (order);
 
-  dict_set_split_vars (dict, mf.svars, mf.n_svars);
+  dict_set_split_vars (dict, mf.svars, mf.n_svars, SPLIT_LAYERED);
 
   schedule_matrices (&mf);
 

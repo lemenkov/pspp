@@ -124,10 +124,18 @@ struct caseproto *dict_get_compacted_proto (const struct dictionary *,
                                             unsigned int exclude_classes);
 
 /* SPLIT FILE variables. */
+enum split_type
+  {
+    SPLIT_SEPARATE,             /* Produce separate output for each split. */
+    SPLIT_LAYERED,              /* Output splits in same table.  */
+  };
 const struct variable *const *dict_get_split_vars (const struct dictionary *);
 size_t dict_get_n_splits (const struct dictionary *);
+enum split_type dict_get_split_type (const struct dictionary *);
 void dict_set_split_vars (struct dictionary *,
-                          struct variable *const *, size_t n);
+                          struct variable *const *, size_t n,
+                          enum split_type);
+void dict_clear_split_vars (struct dictionary *);
 
 /* File label. */
 const char *dict_get_label (const struct dictionary *);

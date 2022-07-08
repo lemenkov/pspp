@@ -269,7 +269,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
     dict_clear_documents (agr.dict);
 
   /* Cancel SPLIT FILE. */
-  dict_set_split_vars (agr.dict, NULL, 0);
+  dict_clear_split_vars (agr.dict);
 
   /* Initialize. */
   agr.n_cases = 0;

@@ -208,12 +208,15 @@ An independent analysis is carried out for each group of cases, and the
 variable values for the group are printed along with the analysis.
 
 When a list of variable names is specified, one of the keywords
-@subcmd{LAYERED} or @subcmd{SEPARATE} may also be specified.  If provided, either
-keyword are ignored.
+@subcmd{LAYERED} or @subcmd{SEPARATE} may also be specified.  With
+@subcmd{LAYERED}, which is the default, the separate analyses for each
+group are presented together in a single table.  With
+@subcmd{SEPARATE}, each analysis is presented in a separate table.
+Not all procedures honor the distinction.
 
 Groups are formed only by @emph{adjacent} cases.  To create a split
 using a variable where like values are not adjacent in the working file,
-you should first sort the data by that variable (@pxref{SORT CASES}).
+first sort the data by that variable (@pxref{SORT CASES}).
 
 Specify @subcmd{OFF} to disable @cmd{SPLIT FILE} and resume analysis of the
 entire active dataset as a single group of data.

@@ -43,20 +43,22 @@ int
 cmd_split_file (struct lexer *lexer, struct dataset *ds)
 {
   if (lex_match_id (lexer, "OFF"))
-    dict_set_split_vars (dataset_dict (ds), NULL, 0);
+    dict_clear_split_vars (dataset_dict (ds));
   else
     {
       struct variable **v;
       size_t n;
 
-      /* For now, ignore SEPARATE and LAYERED. */
-      (void) (lex_match_id (lexer, "SEPARATE") || lex_match_id (lexer, "LAYERED"));
+      enum split_type type = (!lex_match_id (lexer, "LAYERED")
+                              && lex_match_id (lexer, "SEPARATE")
+                              ? SPLIT_SEPARATE
+                              : SPLIT_LAYERED);
 
       lex_match (lexer, T_BY);
       if (!parse_variables (lexer, dataset_dict (ds), &v, &n, PV_NO_DUPLICATE))
 	return CMD_CASCADING_FAILURE;
 
-      dict_set_split_vars (dataset_dict (ds), v, n);
+      dict_set_split_vars (dataset_dict (ds), v, n, type);
       free (v);
     }
 
