@@ -45,6 +45,7 @@ struct attrset
   {
     struct hmap map;
   };
+#define ATTRSET_INITIALIZER(ATTRSET) { .map = HMAP_INITIALIZER((ATTRSET).map) }
 
 void attrset_init (struct attrset *);
 void attrset_clone (struct attrset *, const struct attrset *);
