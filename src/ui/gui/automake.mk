@@ -428,6 +428,22 @@ src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 CLEANFILES += src/ui/gui/include/gtk/gtk.h
 EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h src/ui/gui/resources.xml
 
+# <gtk/gtk.h> wrapper
+BUILT_SOURCES += src/ui/gui/include/glib.h
+src/ui/gui/include/glib.h: src/ui/gui/include/glib.in.h
+	@$(MKDIR_P) src/ui/gui/include
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  $(SED) -e 's|%''INCLUDE_NEXT''%|$(INCLUDE_NEXT)|g' \
+	      -e 's|%''PRAGMA_SYSTEM_HEADER''%|$(PRAGMA_SYSTEM_HEADER)|g' \
+	      -e 's|%''PRAGMA_COLUMNS''%|$(PRAGMA_COLUMNS)|g' \
+	      -e 's|%''NEXT_GLIB_H''%|$(NEXT_GLIB_H)|g' \
+	      < $(srcdir)/src/ui/gui/include/glib.in.h; \
+	} > $@-t && \
+	mv $@-t $@
+CLEANFILES += src/ui/gui/include/glib.h
+EXTRA_DIST += src/ui/gui/include/glib.in.h
+
 include $(top_srcdir)/src/ui/gui/icons/automake.mk
 
 src/ui/gui/pspp.res: src/ui/gui/pspp.rc $(w32_icons)
