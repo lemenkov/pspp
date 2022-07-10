@@ -152,6 +152,10 @@ if test "$with_gui" != "no"; then
     PSPP_REQUIRED_PREREQ([glib-compile-resources (or use --without-gui)])
   fi
 
+  dnl g_memdup2 has been introduced in glib 2.67.3. Older versions need
+  dnl a workaround
+  AC_CHECK_LIB(glib-2.0, g_memdup2, [AC_DEFINE([HAVE_G_MEMDUP2], [1], [g_memdup2 check])])
+
 fi
 
 gl_NEXT_HEADERS([gtk/gtk.h])

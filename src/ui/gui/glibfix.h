@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2012, 2022 Free Software Foundation
+   Copyright (C) 2022 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,34 +14,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+#ifndef __GLIBFIX_H__
+#define __GLIBFIX_H__
+
 #include <config.h>
-#include "ui/gui/psppire-format.h"
-#include "ui/gui/glibfix.h"
 
-static gpointer
-psppire_format_copy (gpointer boxed)
+/* Workaround for g_memdup2 which is introduced in glib 2.67.3
+   for earlier versions of glib
+   Taken from:
+   https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1927
+*/
+
+#ifndef HAVE_G_MEMDUP2
+static inline gpointer
+g_memdup2 (gconstpointer mem,
+           gsize         byte_size)
 {
-  struct fmt_spec *format = boxed;
-  return g_memdup2 (format, sizeof *format);
+  gpointer new_mem;
+
+  if (mem && byte_size != 0)
+    {
+      new_mem = g_malloc (byte_size);
+      memcpy (new_mem, mem, byte_size);
+    }
+  else
+    new_mem = NULL;
+
+  return new_mem;
 }
+#endif
 
-static void
-psppire_format_free (gpointer boxed)
-{
-  struct fmt_spec *format = boxed;
-  g_free (format);
-}
-
-GType
-psppire_format_get_type (void)
-{
-  static GType type = 0;
-
-  if (type == 0)
-    type = g_boxed_type_register_static ("PsppireFormat",
-                                         psppire_format_copy,
-                                         psppire_format_free);
-
-  return type;
-}
-
+#endif

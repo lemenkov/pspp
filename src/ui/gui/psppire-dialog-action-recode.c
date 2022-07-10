@@ -1,6 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
    Copyright (C) 2007, 2009, 2010, 2011, 2012, 2014, 2016,
-   2020  Free Software Foundation
+   2020, 2022  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,11 +31,11 @@
 
 #include "helper.h"
 #include <ui/syntax-gen.h>
+#include "ui/gui/glibfix.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
-
 
 /* This might need to be changed to something less naive.
    In particular, what happends with dates, etc?
