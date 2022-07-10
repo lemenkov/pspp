@@ -154,7 +154,6 @@ if test "$with_gui" != "no"; then
 
 fi
 
-gl_NEXT_HEADERS([glib.h])
 gl_NEXT_HEADERS([gtk/gtk.h])
 
 dnl Checks needed for psql reader
