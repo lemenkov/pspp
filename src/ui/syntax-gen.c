@@ -149,7 +149,7 @@ syntax_gen_number (struct string *output,
 {
   assert (format == NULL || fmt_is_numeric (format->type));
   if (format != NULL
-      && (format->type
+      && (fmt_get_category (format->type)
           & (FMT_CAT_DATE | FMT_CAT_TIME | FMT_CAT_DATE_COMPONENT)))
     {
       union value v_in, v_out;
