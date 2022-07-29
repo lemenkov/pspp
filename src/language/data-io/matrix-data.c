@@ -847,7 +847,10 @@ parse_matrix_data_variables (struct lexer *lexer)
     if (!strcasecmp (names[i], "ROWTYPE_"))
       dict_create_var_assert (dict, "ROWTYPE_", 8);
     else
-      dict_create_var_assert (dict, names[i], 0);
+      {
+        struct variable *var = dict_create_var_assert (dict, names[i], 0);
+        var_set_measure (var, MEASURE_SCALE);
+      }
 
   for (size_t i = 0; i < n_names; ++i)
     free (names[i]);
@@ -891,6 +894,7 @@ parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
         }
       *tv = true;
 
+      var_set_measure (v, MEASURE_NOMINAL);
       var_set_both_formats (v, &(struct fmt_spec) { .type = FMT_F, .w = 4 });
     }
   return true;
@@ -1007,6 +1011,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
               mf.svars = xmalloc (sizeof *mf.svars);
               mf.svars[0] = dict_create_var_assert (dict, lex_tokcstr (lexer),
                                                     0);
+              var_set_measure (mf.svars[0], MEASURE_NOMINAL);
               var_set_both_formats (
                 mf.svars[0], &(struct fmt_spec) { .type = FMT_F, .w = 4 });
               mf.n_svars = 1;

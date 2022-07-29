@@ -254,8 +254,8 @@ list.
 AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-s1,1,Scale,Input,8,Right,F4.0,F4.0
-s2,2,Scale,Input,8,Right,F4.0,F4.0
+s1,1,Nominal,Input,8,Right,F4.0,F4.0
+s2,2,Nominal,Input,8,Right,F4.0,F4.0
 ROWTYPE_,3,Nominal,Input,8,Left,A8,A8
 VARNAME_,4,Nominal,Input,8,Left,A8,A8
 var01,5,Scale,Input,8,Right,F10.4,F10.4
@@ -418,9 +418,9 @@ list.
 AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-s,1,Scale,Input,8,Right,F4.0,F4.0
+s,1,Nominal,Input,8,Right,F4.0,F4.0
 ROWTYPE_,2,Nominal,Input,8,Left,A8,A8
-f,3,Scale,Input,8,Right,F4.0,F4.0
+f,3,Nominal,Input,8,Right,F4.0,F4.0
 VARNAME_,4,Nominal,Input,8,Left,A8,A8
 var01,5,Scale,Input,8,Right,F10.4,F10.4
 var02,6,Scale,Input,8,Right,F10.4,F10.4

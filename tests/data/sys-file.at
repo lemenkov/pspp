@@ -470,7 +470,7 @@ jalapeño vicuña.
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-àéîöçxyzabc,1,,Scale,Input,8,Right,F8.2,F8.2
+àéîöçxyzabc,1,,Nominal,Input,8,Right,F8.2,F8.2
 roué,2,Provençal soupçon,Nominal,Input,9,Left,A9,A9
 croûton,3,,Nominal,Input,32,Left,A1000,A1000
 

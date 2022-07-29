@@ -63,6 +63,7 @@ const GEnumValue align[] =
 
 const GEnumValue measure[] =
   {
+    {MEASURE_UNKNOWN, "unknown", N_("Unknown")},
     {MEASURE_NOMINAL, "nominal", N_("Nominal")},
     {MEASURE_ORDINAL, "ordinal", N_("Ordinal")},
     {MEASURE_SCALE,   "scale", N_("Scale")},
@@ -139,7 +140,7 @@ var_create (const char *name, int width)
   v->leave = var_must_leave (v);
   type = val_type_from_width (width);
   v->alignment = var_default_alignment (type);
-  v->measure = var_default_measure (type);
+  v->measure = var_default_measure_for_type (type);
   v->role = ROLE_INPUT;
   v->display_width = var_default_display_width (width);
   v->print = v->write = var_default_formats (width);
@@ -809,7 +810,8 @@ var_has_label (const struct variable *v)
 bool
 measure_is_valid (enum measure m)
 {
-  return m == MEASURE_NOMINAL || m == MEASURE_ORDINAL || m == MEASURE_SCALE;
+  return (m == MEASURE_UNKNOWN || m == MEASURE_NOMINAL
+          || m == MEASURE_ORDINAL || m == MEASURE_SCALE);
 }
 
 /* Returns a string version of measurement level M, for display to a user.
@@ -873,9 +875,38 @@ var_set_measure (struct variable *v, enum measure measure)
    used to reset a variable's measurement level to the
    default. */
 enum measure
-var_default_measure (enum val_type type)
+var_default_measure_for_type (enum val_type type)
 {
-  return type == VAL_NUMERIC ? MEASURE_SCALE : MEASURE_NOMINAL;
+  return type == VAL_NUMERIC ? MEASURE_UNKNOWN : MEASURE_NOMINAL;
+}
+
+/* Returns the default measurement level for a variable with the given
+   FORMAT, or MEASURE_UNKNOWN if there is no good default. */
+enum measure
+var_default_measure_for_format (enum fmt_type format)
+{
+  if (format == FMT_DOLLAR)
+    return MEASURE_SCALE;
+
+  switch (fmt_get_category (format))
+    {
+    case FMT_CAT_BASIC:
+    case FMT_CAT_LEGACY:
+    case FMT_CAT_BINARY:
+    case FMT_CAT_HEXADECIMAL:
+      return MEASURE_UNKNOWN;
+
+    case FMT_CAT_CUSTOM:
+    case FMT_CAT_DATE:
+    case FMT_CAT_TIME:
+      return MEASURE_SCALE;
+
+    case FMT_CAT_DATE_COMPONENT:
+    case FMT_CAT_STRING:
+      return MEASURE_NOMINAL;
+    }
+
+  NOT_REACHED ();
 }
 
 /* Returns true if M is a valid variable role,

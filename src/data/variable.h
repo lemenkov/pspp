@@ -127,9 +127,10 @@ bool var_has_label (const struct variable *);
 /* How data is measured. */
 enum measure
   {
-    MEASURE_NOMINAL = 0,
-    MEASURE_ORDINAL = 1,
-    MEASURE_SCALE = 2,
+    MEASURE_UNKNOWN = 0,
+    MEASURE_NOMINAL = 1,
+    MEASURE_ORDINAL = 2,
+    MEASURE_SCALE = 3,
     n_MEASURES
   };
 
@@ -140,7 +141,8 @@ const char *measure_to_syntax (enum measure);
 enum measure var_get_measure (const struct variable *);
 void var_set_measure (struct variable *, enum measure);
 
-enum measure var_default_measure (enum val_type);
+enum measure var_default_measure_for_type (enum val_type);
+enum measure var_default_measure_for_format (enum fmt_type);
 
 /* Intended usage of a variable, for populating dialogs. */
 enum var_role

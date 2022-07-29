@@ -55,7 +55,7 @@ Documents,"DOCUMENT A document.
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-x,1,Scale,Input,8,Right,F8.2,F8.2
+x,1,Nominal,Input,8,Right,F8.2,F8.2
 name,2,Nominal,Input,10,Left,A10,A10
 ])
 AT_CLEANUP

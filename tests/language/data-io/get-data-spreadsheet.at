@@ -403,6 +403,7 @@ AT_CHECK([cp $top_srcdir/tests/language/data-io/readnames.ods this.ods])dnl
 
 AT_DATA([readnames.sps],[dnl
 GET DATA /TYPE=ODS /FILE='this.ods' /CELLRANGE=RANGE 'A1:H8' /READNAMES=ON
+EXECUTE.
 DISPLAY DICTIONARY.
 LIST.
 ])
@@ -411,13 +412,13 @@ LIST.
 AT_CHECK([pspp -O format=csv readnames.sps], [0], [dnl
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-freda,1,Scale,Input,8,Right,F8.2,F8.2
-fred,2,Scale,Input,8,Right,F8.2,F8.2
-fred_A,3,Scale,Input,8,Right,F8.2,F8.2
-fred_B,4,Scale,Input,8,Right,F8.2,F8.2
-fred_C,5,Scale,Input,8,Right,F8.2,F8.2
-fred_D,6,Scale,Input,8,Right,F8.2,F8.2
-fred_E,7,Scale,Input,8,Right,F8.2,F8.2
+freda,1,Nominal,Input,8,Right,F8.2,F8.2
+fred,2,Nominal,Input,8,Right,F8.2,F8.2
+fred_A,3,Nominal,Input,8,Right,F8.2,F8.2
+fred_B,4,Nominal,Input,8,Right,F8.2,F8.2
+fred_C,5,Nominal,Input,8,Right,F8.2,F8.2
+fred_D,6,Nominal,Input,8,Right,F8.2,F8.2
+fred_E,7,Nominal,Input,8,Right,F8.2,F8.2
 
 Table: Data List
 freda,fred,fred_A,fred_B,fred_C,fred_D,fred_E

@@ -469,7 +469,7 @@ AT_CHECK([pspp -O format=csv dump-dicts.sps], [0],
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 string,1,A Short String Variable,Nominal,Input,8,Left,A8,A8,"""3333    """
 longstring,2,A Long String Variable,Nominal,Input,12,Left,A12,A12,
-numeric,3,A Numeric Variable,Scale,Input,8,Right,F10.0,F10.0,9; 5; 999
+numeric,3,A Numeric Variable,Nominal,Input,8,Right,F10.0,F10.0,9; 5; 999
 date,4,A Date Variable,Scale,Input,8,Right,DATE11,DATE11,
 dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
 datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,
@@ -504,7 +504,7 @@ Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 string,1,A Short String Variable,Nominal,Input,8,Left,A8,A8,"""3333    """
 longstring,2,A Long String Variable,Nominal,Input,12,Left,A12,A12,
-numeric,3,A Numeric Variable,Scale,Input,8,Right,F10.0,F10.0,9; 5; 999
+numeric,3,A Numeric Variable,Nominal,Input,8,Right,F10.0,F10.0,9; 5; 999
 date,4,A Date Variable,Scale,Input,8,Right,DATE11,DATE11,
 dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
 datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,

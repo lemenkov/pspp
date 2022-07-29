@@ -36,6 +36,8 @@
 #include "data/transformations.h"
 #include "data/variable.h"
 #include "libpspp/deque.h"
+#include "libpspp/hash-functions.h"
+#include "libpspp/hmap.h"
 #include "libpspp/misc.h"
 #include "libpspp/str.h"
 #include "libpspp/taint.h"
@@ -116,6 +118,8 @@ static void dataset_changed__ (struct dataset *);
 static void dataset_transformations_changed__ (struct dataset *,
                                                bool non_empty);
 
+static void add_measurement_level_trns (struct dataset *, struct dictionary *);
+static void cancel_measurement_level_trns (struct trns_chain *);
 static void add_case_limit_trns (struct dataset *ds);
 static void add_filter_trns (struct dataset *ds);
 
@@ -177,6 +181,7 @@ dataset_clone (struct dataset *old, const char *name)
   assert (old->sink == NULL);
   assert (!old->temporary);
   assert (!old->temporary_trns_chain.n);
+  assert (!old->n_stack);
 
   new = xzalloc (sizeof *new);
   new->name = xstrdup (name);
@@ -421,6 +426,7 @@ proc_open_filtering (struct dataset *ds, bool filter)
 {
   struct casereader *reader;
 
+  assert (ds->n_stack == 0);
   assert (ds->source != NULL);
   assert (ds->proc_state == PROC_COMMITTED);
 
@@ -432,6 +438,8 @@ proc_open_filtering (struct dataset *ds, bool filter)
   add_case_limit_trns (ds);
   if (filter)
     add_filter_trns (ds);
+  if (!proc_in_temporary_transformations (ds))
+    add_measurement_level_trns (ds, ds->dict);
 
   /* Make permanent_dict refer to the dictionary right before
      data reaches the sink. */
@@ -609,6 +617,7 @@ proc_commit (struct dataset *ds)
 
   /* Dictionary from before TEMPORARY becomes permanent. */
   proc_cancel_temporary_transformations (ds);
+  bool ok = proc_cancel_all_transformations (ds) && ds->ok;
 
   if (!ds->discard_output)
     {
@@ -638,7 +647,7 @@ proc_commit (struct dataset *ds)
 
   dict_clear_vectors (ds->dict);
   ds->permanent_dict = NULL;
-  return proc_cancel_all_transformations (ds) && ds->ok;
+  return ok;
 }
 
 /* Casereader class for procedure execution. */
@@ -699,11 +708,13 @@ proc_in_temporary_transformations (const struct dataset *ds)
 void
 proc_start_temporary_transformations (struct dataset *ds)
 {
+  assert (!ds->n_stack);
   if (!proc_in_temporary_transformations (ds))
     {
       add_case_limit_trns (ds);
 
       ds->permanent_dict = dict_clone (ds->dict);
+      add_measurement_level_trns (ds, ds->permanent_dict);
 
       ds->temporary = true;
       dataset_transformations_changed__ (ds, true);
@@ -723,6 +734,7 @@ proc_make_temporary_transformations_permanent (struct dataset *ds)
 {
   if (proc_in_temporary_transformations (ds))
     {
+      cancel_measurement_level_trns (&ds->permanent_trns_chain);
       trns_chain_splice (&ds->permanent_trns_chain, &ds->temporary_trns_chain);
 
       ds->temporary = false;
@@ -744,11 +756,11 @@ proc_cancel_temporary_transformations (struct dataset *ds)
 {
   if (proc_in_temporary_transformations (ds))
     {
+      trns_chain_clear (&ds->temporary_trns_chain);
+
       dict_unref (ds->dict);
       ds->dict = ds->permanent_dict;
       ds->permanent_dict = NULL;
-
-      trns_chain_clear (&ds->temporary_trns_chain);
 
       dataset_transformations_changed__ (ds, ds->permanent_trns_chain.n != 0);
       return true;
@@ -936,6 +948,256 @@ void
 dataset_need_lag (struct dataset *ds, int n_before)
 {
   ds->n_lag = MAX (ds->n_lag, n_before);
+}
+
+/* Measurement guesser, for guessing a measurement level from formats and
+   data. */
+
+struct mg_value
+  {
+    struct hmap_node hmap_node;
+    double value;
+  };
+
+struct mg_var
+  {
+    struct variable *var;
+    struct hmap *values;
+  };
+
+static void
+mg_var_uninit (struct mg_var *mgv)
+{
+  struct mg_value *mgvalue, *next;
+  HMAP_FOR_EACH_SAFE (mgvalue, next, struct mg_value, hmap_node,
+                      mgv->values)
+    {
+      hmap_delete (mgv->values, &mgvalue->hmap_node);
+      free (mgvalue);
+    }
+  hmap_destroy (mgv->values);
+  free (mgv->values);
+}
+
+static enum measure
+mg_var_interpret (const struct mg_var *mgv)
+{
+  size_t n = hmap_count (mgv->values);
+  if (!n)
+    {
+      /* All missing (or no data). */
+      return MEASURE_NOMINAL;
+    }
+
+  const struct mg_value *mgvalue;
+  HMAP_FOR_EACH (mgvalue, struct mg_value, hmap_node,
+                 mgv->values)
+    if (mgvalue->value < 10)
+      return MEASURE_NOMINAL;
+  return MEASURE_SCALE;
+}
+
+static enum measure
+mg_var_add_value (struct mg_var *mgv, double value)
+{
+  if (var_is_num_missing (mgv->var, value))
+    return MEASURE_UNKNOWN;
+  else if (value < 0 || value != floor (value))
+    return MEASURE_SCALE;
+
+  size_t hash = hash_double (value, 0);
+  struct mg_value *mgvalue;
+  HMAP_FOR_EACH_WITH_HASH (mgvalue, struct mg_value, hmap_node,
+                           hash, mgv->values)
+    if (mgvalue->value == value)
+      return MEASURE_UNKNOWN;
+
+  mgvalue = xmalloc (sizeof *mgvalue);
+  mgvalue->value = value;
+  hmap_insert (mgv->values, &mgvalue->hmap_node, hash);
+  if (hmap_count (mgv->values) >= settings_get_scalemin ())
+    return MEASURE_SCALE;
+
+  return MEASURE_UNKNOWN;
+}
+
+struct measure_guesser
+  {
+    struct mg_var *vars;
+    size_t n_vars;
+  };
+
+static struct measure_guesser *
+measure_guesser_create__ (struct dictionary *dict)
+{
+  struct mg_var *mgvs = NULL;
+  size_t n_mgvs = 0;
+  size_t allocated_mgvs = 0;
+
+  for (size_t i = 0; i < dict_get_n_vars (dict); i++)
+    {
+      struct variable *var = dict_get_var (dict, i);
+      if (var_get_measure (var) != MEASURE_UNKNOWN)
+        continue;
+
+      const struct fmt_spec *f = var_get_print_format (var);
+      enum measure m = var_default_measure_for_format (f->type);
+      if (m != MEASURE_UNKNOWN)
+        {
+          var_set_measure (var, m);
+          continue;
+        }
+
+      if (n_mgvs >= allocated_mgvs)
+        mgvs = x2nrealloc (mgvs, &allocated_mgvs, sizeof *mgvs);
+
+      struct mg_var *mgv = &mgvs[n_mgvs++];
+      *mgv = (struct mg_var) {
+        .var = var,
+        .values = xmalloc (sizeof *mgv->values),
+      };
+      hmap_init (mgv->values);
+    }
+  if (!n_mgvs)
+    return NULL;
+
+  struct measure_guesser *mg = xmalloc (sizeof *mg);
+  *mg = (struct measure_guesser) {
+    .vars = mgvs,
+    .n_vars = n_mgvs,
+  };
+  return mg;
+}
+
+/* Scans through DS's dictionary for variables that have an unknown measurement
+   level.  For those, if the measurement level can be guessed based on the
+   variable's type and format, sets a default.  If that's enough, returns NULL.
+   If any remain whose levels are unknown and can't be guessed that way,
+   creates and returns a structure that the caller should pass to
+   measure_guesser_add_case() or measure_guesser_run() for guessing a
+   measurement level based on the data.  */
+struct measure_guesser *
+measure_guesser_create (struct dataset *ds)
+{
+  return measure_guesser_create__ (dataset_dict (ds));
+}
+
+/* Adds data from case C to MG. */
+static void
+measure_guesser_add_case (struct measure_guesser *mg, const struct ccase *c)
+{
+  for (size_t i = 0; i < mg->n_vars; )
+    {
+      struct mg_var *mgv = &mg->vars[i];
+      double value = case_num (c, mgv->var);
+      enum measure m = mg_var_add_value (mgv, value);
+      if (m != MEASURE_UNKNOWN)
+        {
+          var_set_measure (mgv->var, m);
+
+          mg_var_uninit (mgv);
+          *mgv = mg->vars[--mg->n_vars];
+        }
+      else
+        i++;
+    }
+}
+
+/* Destroys MG. */
+void
+measure_guesser_destroy (struct measure_guesser *mg)
+{
+  if (!mg)
+    return;
+
+  for (size_t i = 0; i < mg->n_vars; i++)
+    {
+      struct mg_var *mgv = &mg->vars[i];
+      var_set_measure (mgv->var, mg_var_interpret (mgv));
+      mg_var_uninit (mgv);
+    }
+  free (mg->vars);
+  free (mg);
+}
+
+/* Adds final measurement levels based on MG, after all the cases have been
+   added. */
+static void
+measure_guesser_commit (struct measure_guesser *mg)
+{
+  for (size_t i = 0; i < mg->n_vars; i++)
+    {
+      struct mg_var *mgv = &mg->vars[i];
+      var_set_measure (mgv->var, mg_var_interpret (mgv));
+    }
+}
+
+/* Passes the cases in READER through MG and uses the data in the cases to set
+   measurement levels for the variables where they were still unknown. */
+void
+measure_guesser_run (struct measure_guesser *mg,
+                     const struct casereader *reader)
+{
+  struct casereader *r = casereader_clone (reader);
+  while (mg->n_vars > 0)
+    {
+      struct ccase *c = casereader_read (r);
+      if (!c)
+        break;
+      measure_guesser_add_case (mg, c);
+      case_unref (c);
+    }
+  casereader_destroy (r);
+
+  measure_guesser_commit (mg);
+}
+
+/* A transformation for guessing measurement levels. */
+
+static enum trns_result
+mg_trns_proc (void *mg_, struct ccase **c, casenumber case_nr UNUSED)
+{
+  struct measure_guesser *mg = mg_;
+  measure_guesser_add_case (mg, *c);
+  return TRNS_CONTINUE;
+}
+
+static bool
+mg_trns_free (void *mg_)
+{
+  struct measure_guesser *mg = mg_;
+  measure_guesser_commit (mg);
+  measure_guesser_destroy (mg);
+  return true;
+}
+
+static const struct trns_class mg_trns_class = {
+  .name = "add measurement level",
+  .execute = mg_trns_proc,
+  .destroy = mg_trns_free,
+};
+
+static void
+add_measurement_level_trns (struct dataset *ds, struct dictionary *dict)
+{
+  struct measure_guesser *mg = measure_guesser_create__ (dict);
+  if (mg)
+    add_transformation (ds, &mg_trns_class, mg);
+}
+
+static void
+cancel_measurement_level_trns (struct trns_chain *chain)
+{
+  if (!chain->n)
+    return;
+
+  struct transformation *trns = &chain->xforms[chain->n - 1];
+  if (trns->class != &mg_trns_class)
+    return;
+
+  struct measure_guesser *mg = trns->aux;
+  measure_guesser_destroy (mg);
+  chain->n--;
 }
 
 static void

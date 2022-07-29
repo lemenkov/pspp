@@ -1001,18 +1001,24 @@ members are as follows:
 
 @table @code
 @item int32 measure;
-The measurement type of the variable:
+The measurement level of the variable:
 @table @asis
+@item 0
+Unknown
 @item 1
-Nominal Scale
+Nominal
 @item 2
-Ordinal Scale
+Ordinal
 @item 3
-Continuous Scale
+Scale
 @end table
 
-SPSS sometimes writes a @code{measure} of 0.  PSPP interprets this as
-nominal scale.
+An ``unknown'' @code{measure} of 0 means that the variable was created
+in some way that doesn't make the measurement level clear, e.g.@: with
+a @code{COMPUTE} transformation.  PSPP sets the measurement level the
+first time it reads the data using the rules documented in
+@ref{Measurement Level,,,pspp, PSPP Users Guide}, so this should
+rarely appear.
 
 @item int32 width;
 The width of the display column for the variable in characters.

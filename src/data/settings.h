@@ -116,6 +116,9 @@ void settings_set_testing_mode (bool);
 int settings_get_fuzzbits (void);
 void settings_set_fuzzbits (int);
 
+int settings_get_scalemin (void);
+void settings_set_scalemin (int);
+
 /* Whether to show variable or value labels or the underlying value or variable
    name. */
 enum ATTRIBUTE ((packed)) settings_value_show

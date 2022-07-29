@@ -507,6 +507,75 @@ they are displayed.  Example: a width of 8, with 2 decimal places.
 Similar to print format, but used by the @cmd{WRITE} command
 (@pxref{WRITE}).
 
+@cindex measurement level
+@item Measurement level
+@anchor{Measurement Level}
+One of the following:
+
+@table @asis
+@item Nominal
+Each value of a nominal variable represents a distinct category.  The
+possible categories are finite and often have value labels.  The order
+of categories is not significant.  Political parties, US states, and
+yes/no choices are nominal.  Numeric and string variables can be
+nominal.
+
+@item Ordinal
+Ordinal variables also represent distinct categories, but their values
+are arranged according to some natural order.  Likert scales, e.g.@:
+from strongly disagree to strongly agree, are ordinal.  Data grouped
+into ranges, e.g.@: age groups or income groups, are ordinal.  Both
+numeric and string variables can be ordinal.  String values are
+ordered alphabetically, so letter grades from A to F will work as
+expected, but @code{poor}, @code{satisfactory}, @code{excellent} will
+not.
+
+@item Scale
+Scale variables are ones for which differences and ratios are
+meaningful.  These are often values which have a natural unit
+attached, such as age in years, income in dollars, or distance in
+miles.  Only numeric variables are scalar.
+@end table
+
+Variables created by @cmd{COMPUTE} and similar transformations,
+obtained from external sources, etc., initially have an unknown
+measurement level.  Any procedure that reads the data will then assign
+a default measurement level.  @pspp{} can assign some defaults without
+reading the data:
+
+@itemize @bullet
+@item
+Nominal, if it's a string variable.
+
+@item
+Nominal, if the variable has a WKDAY or MONTH print format.
+
+@item
+Scale, if the variable has a DOLLAR, CCA through CCE, or time or date
+print format.
+@end itemize
+
+Otherwise, @pspp{} reads the data and decides based on its
+distribution:
+
+@itemize @bullet
+@item
+Nominal, if all observations are missing.
+
+@item
+Scale, if one or more valid observations are noninteger or negative.
+
+@item
+Scale, if no valid observation is less than 10.
+
+@item
+Scale, if the variable has 24 or more unique valid values.  The value
+24 is the default and can be adjusted (@pxref{SET SCALEMIN}).
+@end itemize
+
+Finally, if none of the above is true, @pspp{} assigns the variable a
+nominal measurement level.
+
 @cindex custom attributes
 @item Custom attributes
 User-defined associations between names and values.  @xref{VARIABLE

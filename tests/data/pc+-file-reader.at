@@ -110,10 +110,10 @@ Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0,
-NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,1
-NUM4,4,Another numeric variable label,Scale,Input,8,Right,F8.0,F8.0,2
+NUM1,1,,Unknown,Input,8,Right,F8.0,F8.0,
+NUM2,2,Numeric variable 2's label,Unknown,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Unknown,Input,8,Right,F8.0,F8.0,1
+NUM4,4,Another numeric variable label,Unknown,Input,8,Right,F8.0,F8.0,2
 STR1,5,,Nominal,Input,8,Left,A8,A8,
 STR2,6,STR2's variable label,Nominal,Input,4,Left,A4,A4,
 STR3,7,,Nominal,Input,5,Left,A5,A5,"""MISS """
@@ -223,11 +223,11 @@ Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
-NUM3,3,Scale,Input,8,Right,F8.0,F8.0
-NUM4,4,Scale,Input,8,Right,F8.0,F8.0
-NUM5,5,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
+NUM3,3,Unknown,Input,8,Right,F8.0,F8.0
+NUM4,4,Unknown,Input,8,Right,F8.0,F8.0
+NUM5,5,Unknown,Input,8,Right,F8.0,F8.0
 STR1,6,Nominal,Input,1,Left,A1,A1
 STR2,7,Nominal,Input,2,Left,A2,A2
 STR3,8,Nominal,Input,3,Left,A3,A3
@@ -337,8 +337,8 @@ Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
 STR4,3,Nominal,Input,4,Left,A4,A4
 STR8,4,Nominal,Input,8,Left,A8,A8
 STR15,5,Nominal,Input,15,Left,A15,A15
@@ -413,10 +413,10 @@ Encoding,us-ascii
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
-NUM3,3,Scale,Input,8,Right,F8.0,F8.0
-NUM4,4,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
+NUM3,3,Unknown,Input,8,Right,F8.0,F8.0
+NUM4,4,Unknown,Input,8,Right,F8.0,F8.0
 ])
 AT_CLEANUP
 
@@ -483,10 +483,10 @@ Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
-NUM3,3,Scale,Input,8,Right,F8.0,F8.0
-NUM4,4,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
+NUM3,3,Unknown,Input,8,Right,F8.0,F8.0
+NUM4,4,Unknown,Input,8,Right,F8.0,F8.0
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4
@@ -507,10 +507,10 @@ Encoding,us-ascii
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
-NUM3,3,Scale,Input,8,Right,F8.0,F8.0
-NUM4,4,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
+NUM3,3,Unknown,Input,8,Right,F8.0,F8.0
+NUM4,4,Unknown,Input,8,Right,F8.0,F8.0
 ])
 AT_CLEANUP
 
@@ -1251,8 +1251,8 @@ Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-NUM1,1,Scale,Input,8,Right,F8.0,F8.0
-NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM1,1,Unknown,Input,8,Right,F8.0,F8.0
+NUM2,2,Unknown,Input,8,Right,F8.0,F8.0
 STR4,3,Nominal,Input,4,Left,A4,A4
 STR8,4,Nominal,Input,8,Left,A8,A8
 STR15,5,Nominal,Input,15,Left,A15,A15

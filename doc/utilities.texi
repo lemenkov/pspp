@@ -501,6 +501,7 @@ SET
         /SEED=@{RANDOM,@var{seed_value}@}
         /UNDEFINED=@{WARN,NOWARN@}
         /FUZZBITS=@var{fuzzbits}
+        /SCALEMIN=@var{count}
 
 (data output)
         /CC@{A,B,C,D,E@}=@{'@var{npre},@var{pre},@var{suf},@var{nsuf}','@var{npre}.@var{pre}.@var{suf}.@var{nsuf}'@}
@@ -712,6 +713,11 @@ The maximum number of bits of errors in the least-significant places
 to accept for rounding up a value that is almost halfway between two
 possibilities for rounding with the RND operator (@pxref{Miscellaneous
 Mathematics}).  The default @var{fuzzbits} is 6.
+
+@item SCALEMIN
+@anchor{SET SCALEMIN}
+The minimum number of distinct valid values for @pspp{} to assume that
+a variable has a scale measurement level.  @xref{Measurement Level}.
 
 @item WORKSPACE
 The maximum amount of memory (in kilobytes) that @pspp{} uses to

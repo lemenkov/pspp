@@ -858,7 +858,8 @@ apply_dict (const struct dictionary *dict, struct string *s)
       if (var_has_label (var))
         syntax_gen_pspp (s, "VARIABLE LABELS %ss %sq.\n",
                          name, var_get_label (var));
-      if (measure != var_default_measure (type))
+      if (measure != var_default_measure_for_type (type)
+          && measure != MEASURE_UNKNOWN)
         syntax_gen_pspp (s, "VARIABLE LEVEL %ss (%ss).\n",
                          name, measure_to_syntax (measure));
       if (role != ROLE_INPUT)

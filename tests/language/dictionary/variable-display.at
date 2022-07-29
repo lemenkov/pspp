@@ -35,6 +35,99 @@ z,3,Nominal,None,14,Center,F8.2,F8.2
 ])
 AT_CLEANUP
 
+AT_SETUP([variable level inference and SCALEMIN])
+AT_DATA([var-level.sps], [dnl
+DATA LIST LIST NOTABLE /n1 to n3 s1 to s5.
+
+* Nominal formats (copied from data that will default to scale).
+COMPUTE n4=s1.
+COMPUTE n5=s1.
+FORMATS n4(WKDAY5) n5(MONTH5).
+
+* Scale formats (copied from data that will default to nominal).
+COMPUTE s6=n1.
+COMPUTE s7=n1.
+COMPUTE s8=n1.
+FORMATS s6(DOLLAR6.2) s7(CCA8.2) s8(DATETIME17).
+
+STRING string(A8).
+DISPLAY DICTIONARY.
+EXECUTE.
+
+* n1 has 10 unique small values -> nominal.
+* n2 has 23 unique small values -> nominal.
+* n3 is all missing -> nominal.
+* s1 has 24 unique small values -> scale.
+* s2 has one negative value -> scale.
+* s3 has one non-integer value -> scale.
+* s4 has no valid values less than 10 -> scale.
+* s5 has no valid values less than 10,000 -> scale.
+BEGIN DATA.
+1  1  . 1  1  1    10 10001
+2  2  . 2  2  2    11 10002
+3  3  . 3  3  3    12 10003
+4  4  . 4  4  4    13 10004
+5  5  . 5  5  5    14 10005
+6  6  . 6  6  6    15 10006
+7  7  . 7  7  7    16 10007
+8  8  . 8  8  8    17 10008
+9  9  . 9  9  9    18 10009
+10 10 . 10 10 10.5 19 110000
+1  11 . 11 -1 1    11 10001
+2  12 . 12 2  2    12 10002
+3  13 . 13 3  3    13 10003
+4  14 . 14 4  4    14 10004
+5  15 . 15 5  5    15 10005
+6  16 . 16 6  6    16 10006
+7  17 . 17 7  7    17 10007
+8  18 . 18 8  8    18 10008
+9  19 . 19 9  9    19 10009
+1  20 . 20 1  1    20 10001
+2  21 . 21 2  2    21 10002
+3  22 . 22 3  3    22 10003
+4  23 . 23 4  4    23 10004
+5  23 . 24 5  5    24 10005
+6  23 . 24 6  6    25 10006
+END DATA.
+DISPLAY DICTIONARY.
+])
+AT_CHECK([pspp -o pspp.csv var-level.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Variables
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+n1,1,Unknown,Input,8,Right,F8.2,F8.2
+n2,2,Unknown,Input,8,Right,F8.2,F8.2
+n3,3,Unknown,Input,8,Right,F8.2,F8.2
+s1,4,Unknown,Input,8,Right,F8.2,F8.2
+s2,5,Unknown,Input,8,Right,F8.2,F8.2
+s3,6,Unknown,Input,8,Right,F8.2,F8.2
+s4,7,Unknown,Input,8,Right,F8.2,F8.2
+s5,8,Unknown,Input,8,Right,F8.2,F8.2
+n4,9,Unknown,Input,8,Right,WKDAY5,WKDAY5
+n5,10,Unknown,Input,8,Right,MONTH5,MONTH5
+s6,11,Unknown,Input,8,Right,DOLLAR6.2,DOLLAR6.2
+s7,12,Unknown,Input,8,Right,CCA8.2,CCA8.2
+s8,13,Unknown,Input,8,Right,DATETIME17.0,DATETIME17.0
+string,14,Nominal,Input,8,Left,A8,A8
+
+Table: Variables
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+n1,1,Nominal,Input,8,Right,F8.2,F8.2
+n2,2,Nominal,Input,8,Right,F8.2,F8.2
+n3,3,Nominal,Input,8,Right,F8.2,F8.2
+s1,4,Scale,Input,8,Right,F8.2,F8.2
+s2,5,Scale,Input,8,Right,F8.2,F8.2
+s3,6,Scale,Input,8,Right,F8.2,F8.2
+s4,7,Scale,Input,8,Right,F8.2,F8.2
+s5,8,Scale,Input,8,Right,F8.2,F8.2
+n4,9,Nominal,Input,8,Right,WKDAY5,WKDAY5
+n5,10,Nominal,Input,8,Right,MONTH5,MONTH5
+s6,11,Scale,Input,8,Right,DOLLAR6.2,DOLLAR6.2
+s7,12,Scale,Input,8,Right,CCA8.2,CCA8.2
+s8,13,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0
+string,14,Nominal,Input,8,Left,A8,A8
+])
+AT_CLEANUP
 
 AT_BANNER([VARIABLE LABELS])
 

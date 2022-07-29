@@ -123,6 +123,16 @@ static const rank_function_t rank_func[n_RANK_FUNCS] = {
   rank_savage
 };
 
+static enum measure rank_measures[n_RANK_FUNCS] = {
+  [RANK] = MEASURE_ORDINAL,
+  [NORMAL] = MEASURE_ORDINAL,
+  [PERCENT] = MEASURE_ORDINAL,
+  [RFRACTION] = MEASURE_ORDINAL,
+  [PROPORTION] = MEASURE_ORDINAL,
+  [N] = MEASURE_SCALE,
+  [NTILES] = MEASURE_ORDINAL,
+  [SAVAGE] = MEASURE_ORDINAL,
+};
 
 enum ties
   {
@@ -1116,6 +1126,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
           var = dict_create_var_assert (d, rs->dest_names[i], 0);
           var_set_both_formats (var, &dest_format[rs->rfunc]);
           var_set_label (var, rs->dest_labels[i]);
+          var_set_measure (var, rank_measures[rs->rfunc]);
 
           iv->output_vars[j] = var;
         }

@@ -100,17 +100,18 @@ EXPORT OUTFILE='data.por'.
 AT_CHECK([pspp -O format=csv export.sps])
 AT_DATA([import.sps], [dnl
 IMPORT FILE='data.por'.
+EXECUTE.
 DISPLAY DICTIONARY.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv import.sps], [0], [dnl
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-VAR1,1,Scale,Input,8,Right,F1.0,F1.0
-VAR2,2,Scale,Input,8,Right,F1.0,F1.0
-VAR3,3,Scale,Input,8,Right,F1.0,F1.0
-VAR4,4,Scale,Input,8,Right,F1.0,F1.0
-VAR5,5,Scale,Input,8,Right,F1.0,F1.0
+VAR1,1,Nominal,Input,8,Right,F1.0,F1.0
+VAR2,2,Nominal,Input,8,Right,F1.0,F1.0
+VAR3,3,Nominal,Input,8,Right,F1.0,F1.0
+VAR4,4,Nominal,Input,8,Right,F1.0,F1.0
+VAR5,5,Nominal,Input,8,Right,F1.0,F1.0
 
 Table: Value Labels
 Variable Value,,Label
@@ -142,11 +143,11 @@ Compression,None
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
-VAR1,1,Scale,Input,8,Right,F1.0,F1.0
-VAR2,2,Scale,Input,8,Right,F1.0,F1.0
-VAR3,3,Scale,Input,8,Right,F1.0,F1.0
-VAR4,4,Scale,Input,8,Right,F1.0,F1.0
-VAR5,5,Scale,Input,8,Right,F1.0,F1.0
+VAR1,1,Unknown,Input,8,Right,F1.0,F1.0
+VAR2,2,Unknown,Input,8,Right,F1.0,F1.0
+VAR3,3,Unknown,Input,8,Right,F1.0,F1.0
+VAR4,4,Unknown,Input,8,Right,F1.0,F1.0
+VAR5,5,Unknown,Input,8,Right,F1.0,F1.0
 
 Table: Value Labels
 Variable Value,,Label

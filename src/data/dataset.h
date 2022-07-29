@@ -105,6 +105,10 @@ bool proc_commit (struct dataset *);
 
 bool dataset_end_of_command (struct dataset *);
 
+struct measure_guesser *measure_guesser_create (struct dataset *);
+void measure_guesser_run (struct measure_guesser *, const struct casereader *);
+void measure_guesser_destroy (struct measure_guesser *);
+
 const struct ccase *lagged_case (const struct dataset *ds, int n_before);
 void dataset_need_lag (struct dataset *ds, int n_before);
 

@@ -74,6 +74,7 @@ struct settings
   struct fmt_spec default_format;
   bool testing_mode;
   int fuzzbits;
+  int scalemin;
 
   int cmd_algorithm;
   int global_algorithm;
@@ -122,6 +123,7 @@ static struct settings the_settings = {
   .default_format = { .type = FMT_F, .w = 8, .d = 2 },
   .testing_mode = false,
   .fuzzbits = 6,
+  .scalemin = 24,
   .cmd_algorithm = ENHANCED,
   .global_algorithm = ENHANCED,
   .syntax = ENHANCED,
@@ -546,6 +548,18 @@ void
 settings_set_fuzzbits (int fuzzbits)
 {
   the_settings.fuzzbits = fuzzbits;
+}
+
+int
+settings_get_scalemin (void)
+{
+  return the_settings.scalemin;
+}
+
+void
+settings_set_scalemin (int scalemin)
+{
+  the_settings.scalemin = scalemin;
 }
 
 /* Return the current algorithm setting */

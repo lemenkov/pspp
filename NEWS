@@ -12,6 +12,10 @@ Changes after 1.6.2:
 
 Changes from 1.6.1 to 1.6.2:
 
+ * Previously, numeric variables defaulted to "scale" measurement
+   level.  Now, the default is "unknown", with a better guess chosen
+   based on heuristics the first time the data is read.
+
  * Bug fixes.
 
 Changes from 1.6.0 to 1.6.1:
