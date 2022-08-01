@@ -531,7 +531,19 @@ lex_error_expecting_array (struct lexer *lexer, const char **options, size_t n)
       break;
 
     default:
-      lex_error (lexer, NULL);
+      {
+        struct string s = DS_EMPTY_INITIALIZER;
+        for (size_t i = 0; i < n; i++)
+          {
+            if (i > 0)
+              ds_put_cstr (&s, ", ");
+            ds_put_cstr (&s, options[i]);
+          }
+        lex_error (lexer, _("expecting one of the following: %s"),
+                   ds_cstr (&s));
+        ds_destroy (&s);
+      }
+      break;
     }
 }
 
