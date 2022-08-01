@@ -1677,6 +1677,18 @@ ds_put_unichar (struct string *st, ucs4_t uc)
   st->ss.length += u8_uctomb (CHAR_CAST (uint8_t *, ds_end (st)), uc, 6);
 }
 
+/* Appends N copies of S to ST. */
+void
+ds_put_substring_multiple (struct string *dst, struct substring src, size_t n)
+{
+  char *p = ds_put_uninit (dst, n * src.length);
+  for (size_t i = 0; i < n; i++)
+    {
+      memcpy (p, src.string, src.length);
+      p += src.length;
+    }
+}
+
 /* If relocation has been enabled, replace ST,
    with its relocated version */
 void

@@ -240,6 +240,7 @@ void ds_put_byte_multiple (struct string *, int ch, size_t);
 void ds_put_unichar (struct string *, ucs4_t uc);
 void ds_put_cstr (struct string *, const char *);
 void ds_put_substring (struct string *, struct substring);
+void ds_put_substring_multiple (struct string *, struct substring, size_t n);
 void ds_put_vformat (struct string *st, const char *, va_list)
      PRINTF_FORMAT (2, 0);
 void ds_put_c_vformat (struct string *st, const char *, va_list)
