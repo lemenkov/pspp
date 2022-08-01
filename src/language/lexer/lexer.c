@@ -1874,7 +1874,7 @@ lex_source_syntax__ (const struct lex_source *src, int ofs0, int ofs1)
 static bool
 lex_source_contains_macro_call (struct lex_source *src, int n0, int n1)
 {
-  for (size_t i = n0; i <= n1; i++)
+  for (int i = n0; i <= n1; i++)
     if (lex_source_next__ (src, i)->macro_rep)
       return true;
   return false;
