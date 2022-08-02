@@ -1244,9 +1244,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
  error:
 
   free (vars);
-  free (frq.vars);
   for (size_t i = 0; i < frq.n_vars; i++)
     free (frq.vars[i].percentiles);
+  free (frq.vars);
   free (frq.bar);
   free (frq.pie);
   free (frq.hist);
