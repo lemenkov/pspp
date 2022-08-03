@@ -1,0 +1,72 @@
+#! /usr/bin/python3
+
+import codecs
+import os
+import struct
+import sys
+import zlib
+
+if len(sys.argv) != 3 or '--help' in sys.argv:
+    sys.stdout.write("""\
+%s: adds a comment to a PNG file
+usage: png-add-comment KEYWORD TEXT < INPUT.PNG > OUTPUT.PNG
+where KEYWORD is the comment type, e.g. "Comment" or "Copyright"
+  and TEXT is the comment's content (encoded in Latin-1).
+""" % sys.argv[0])
+    sys.exit(0)
+
+if os.isatty(1):
+    sys.stderr.write("%s: not writing binary data to a terminal "
+                     "(use --help for help)\n")
+    sys.exit(1)
+
+infile = sys.stdin.buffer
+outfile = sys.stdout.buffer
+
+encoded_keyword = codecs.encode(sys.argv[1], "ASCII")
+if len(encoded_keyword) > 79:
+    sys.stderr.write("%s: keyword must be 79 bytes or less\n" % sys.argv[0])
+
+encoded_comment = codecs.encode(sys.argv[2], "Latin-1")
+comment_data = encoded_keyword + bytes([0]) + encoded_comment
+comment_crc = zlib.crc32(b'tEXt' + comment_data, 0)
+comment_chunk = struct.pack('!L', len(comment_data)) + b'tEXt' + comment_data + struct.pack('!L', comment_crc)
+
+def read_fully(stream, n):
+    data = stream.read(n)
+    if len(data) != n:
+        sys.stderr.write("%s: unexpected end of input\n" % sys.argv[0])
+        sys.exit(1)
+    return data
+
+# Copy signature and verify that we're working with a PNG file.
+signature = read_fully(infile, 8)
+if signature != bytes([137, 80, 78, 71, 13, 10, 26, 10]):
+    sys.stderr.write("%s: input is not a PNG file\n" % sys.argv[0])
+    sys.exit(1)
+outfile.write(signature)
+
+comment_written = False
+while True:
+    header = read_fully(infile, 8)
+    chunk_len, chunk_type = struct.unpack('!L 4s', header)
+    chunk_data = read_fully(infile, chunk_len)
+    chunk_crc = read_fully(infile, 4)
+
+    if (chunk_type in (b'iCCP', b'sRGB', b'sBIT', b'gAMA', b'cHRM',
+                       b'PLTE', b'tRNS', b'hIST', b'bKGD', b'IDAT',
+                       b'IEND')) and not comment_written:
+        outfile.write(comment_chunk)
+        comment_written = True
+
+    outfile.write(header)
+    outfile.write(chunk_data)
+    outfile.write(chunk_crc)
+    crc = struct.unpack('!L', chunk_crc)[0]
+    expected_crc = zlib.crc32(header[4:8] + chunk_data, 0)
+    if crc != expected_crc:
+        sys.stderr.write("%s: bad crc reading PNG chunk\n"
+                         % sys.argv[0])
+    if chunk_type == b'IEND':
+        break
+assert comment_written

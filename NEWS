@@ -5,6 +5,11 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Changes after 1.6.2:
+
+ * Building from a Git repository, which previously required GIMP, now
+   requires rsvg-convert from librsvg2 instead.
+
 Changes from 1.6.1 to 1.6.2:
 
  * Bug fixes.

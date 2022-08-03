@@ -24,6 +24,8 @@ all: everything
 GNULIB = ../gnulib
 GNULIB_TOOL = $(GNULIB)/gnulib-tool
 
+PYTHON3 = python3
+
 GNULIB_MODULES = \
 	assert \
 	byteswap \
@@ -419,12 +421,6 @@ clean: clean-icons
 .PHONY: all gettextize clean
 
 
-# The "convert" program from imagemagick can be used to create png from svg but doesn't properly deal
-# with the alpha channels.  Therefore, it is not recommended for production pspp builds, but might
-# be useful to get something working on a platform which doesn't have a working gimp.
-
-#svg2png=convert -background transparent $1 $3
-
 # Graphical layout of icons and our portfolio
 # ===========================================
 #
@@ -456,33 +452,35 @@ clean: clean-icons
 #  => all others are in scaled (just one design svg)
 #
 
+SVG2PNG = PYTHON3='$(PYTHON3)' build-aux/svg2png
+
 # Rule for icons with size dependent graphical design
 src/ui/gui/icons/%.png: src/ui/gui/artwork/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 
 # Rules for icons which are simply scaled - Attention multitarget would trigger only once...
 src/ui/gui/icons/16x16/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/22x22/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/24x24/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/32x32/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/48x48/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/96x96/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 src/ui/gui/icons/256x256/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
-	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+	$(SVG2PNG) "$<" "$(lastword $^)" "$@"
 
 # Copy svg
 src/ui/gui/icons/%.svg: src/ui/gui/artwork/%.svg
