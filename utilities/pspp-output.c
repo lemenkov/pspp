@@ -1174,7 +1174,7 @@ The following commands are available:\n\
   dir FILE               List tables and other items in FILE.\n\
   convert SOURCE DEST    Convert .spv SOURCE to DEST.\n\
   get-table-look SOURCE DEST  Copies first selected TableLook into DEST\n\
-  convert-table-look SOURCE DEST  Copies .tlo or .stt SOURCE into DEST\n\
+  convert-table-look SOURCE DEST  Copies .tlo or .stt SOURCE into .stt DEST\n\
 \n\
 Input selection options for \"dir\" and \"convert\":\n\
   --select=CLASS...   include only some kinds of objects\n\
