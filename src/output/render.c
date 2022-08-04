@@ -731,7 +731,7 @@ render_page_create (const struct render_params *params, struct table *table,
      span multiple columns. */
   struct render_row *columns[2];
   for (int i = 0; i < 2; i++)
-    columns[i] = xcalloc (nc , sizeof *columns[i]);
+    columns[i] = xcalloc (nc, sizeof *columns[i]);
   for (int y = 0; y < nr; y++)
     for (int x = 0; x < nc;)
       {
