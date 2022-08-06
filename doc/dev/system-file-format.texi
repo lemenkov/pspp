@@ -1518,7 +1518,8 @@ the following believed meanings:
 
 @table @asis
 @item 5
-A set of grouped variables (according to Aapi H@"am@"al@"ainen).
+A named variable set for use in the GUI (according to Aapi
+H@"am@"al@"ainen).
 
 @item 6
 Date info, probably related to USE (according to Aapi H@"am@"al@"ainen).
