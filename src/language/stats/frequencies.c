@@ -242,8 +242,11 @@ static void do_barchart(const struct frq_chart *bar,
 			const struct variable **var,
 			const struct freq_tab *frq_tab);
 
-static void dump_statistics (const struct frq_proc *frq,
-			     const struct variable *wv);
+static struct frq_stats_table *frq_stats_table_submit (
+  struct frq_stats_table *, const struct frq_proc *,
+  const struct dictionary *, const struct variable *wv,
+  const struct ccase *example);
+static void frq_stats_table_destroy (struct frq_stats_table *);
 
 static int
 compare_freq (const void *a_, const void *b_, const void *aux_)
@@ -453,14 +456,6 @@ postprocess_freq_tab (const struct frq_proc *frq, struct var_freqs *vf)
 
 }
 
-/* Frees the frequency table for variable V. */
-static void
-cleanup_freq_tab (struct var_freqs *vf)
-{
-  free (vf->tab.valid);
-  freq_hmap_destroy (&vf->tab.data, vf->width);
-}
-
 /* Add data from case C to the frequency table. */
 static void
 calc (struct frq_proc *frq, const struct ccase *c, const struct dataset *ds)
@@ -483,52 +478,52 @@ calc (struct frq_proc *frq, const struct ccase *c, const struct dataset *ds)
     }
 }
 
-/* Prepares each variable that is the target of FREQUENCIES by setting
-   up its hash table. */
 static void
-precalc (struct frq_proc *frq, struct casereader *input, struct dataset *ds)
+output_splits_once (bool *need_splits, const struct dataset *ds,
+                    const struct ccase *c)
 {
-  struct ccase *c;
-  size_t i;
-
-  c = casereader_peek (input, 0);
-  if (c != NULL)
+  if (*need_splits)
     {
       output_split_file_values (ds, c);
-      case_unref (c);
+      *need_splits = false;
     }
-
-  for (i = 0; i < frq->n_vars; i++)
-    hmap_init (&frq->vars[i].tab.data);
 }
 
 /* Finishes up with the variables after frequencies have been
    calculated.  Displays statistics, percentiles, ... */
-static void
-postcalc (struct frq_proc *frq, const struct dataset *ds)
+static struct frq_stats_table *
+postcalc (struct frq_proc *frq, const struct dataset *ds,
+          struct ccase *example, struct frq_stats_table *fst)
 {
   const struct dictionary *dict = dataset_dict (ds);
   const struct variable *wv = dict_get_weight (dict);
-  size_t i;
 
-  for (i = 0; i < frq->n_vars; i++)
+  for (size_t i = 0; i < frq->n_vars; i++)
     {
       struct var_freqs *vf = &frq->vars[i];
       postprocess_freq_tab (frq, vf);
       calc_percentiles (frq, vf);
     }
 
+  enum split_type st = dict_get_split_type (dict);
+  bool need_splits = true;
   if (frq->n_stats)
-    dump_statistics (frq, wv);
+    {
+      if (st != SPLIT_LAYERED)
+        output_splits_once (&need_splits, ds, example);
+      fst = frq_stats_table_submit (fst, frq, dict, wv, example);
+    }
 
-  for (i = 0; i < frq->n_vars; i++)
+  for (size_t i = 0; i < frq->n_vars; i++)
     {
       struct var_freqs *vf = &frq->vars[i];
 
       /* Frequencies tables. */
       if (vf->tab.n_valid + vf->tab.n_missing <= frq->max_categories)
-        dump_freq_table (vf, wv);
-
+        {
+          output_splits_once (&need_splits, ds, example);
+          dump_freq_table (vf, wv);
+        }
 
       if (frq->hist && var_is_numeric (vf->var) && vf->tab.n_valid > 0)
 	{
@@ -541,6 +536,7 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
 
 	  if (histogram)
 	    {
+              output_splits_once (&need_splits, ds, example);
 	      chart_submit (histogram_chart_create (
                               histogram->gsl_hist, var_to_string(vf->var),
                               vf->tab.valid_cases,
@@ -553,13 +549,49 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
 	}
 
       if (frq->pie)
-        do_piechart(frq->pie, vf->var, &vf->tab);
+        {
+          output_splits_once (&need_splits, ds, example);
+          do_piechart(frq->pie, vf->var, &vf->tab);
+        }
 
       if (frq->bar)
-        do_barchart(frq->bar, &vf->var, &vf->tab);
+        {
+          output_splits_once (&need_splits, ds, example);
+          do_barchart(frq->bar, &vf->var, &vf->tab);
+        }
 
-      cleanup_freq_tab (vf);
+      free (vf->tab.valid);
+      freq_hmap_destroy (&vf->tab.data, vf->width);
     }
+
+  return fst;
+}
+
+static void
+frq_run (struct frq_proc *frq, struct dataset *ds)
+{
+  struct frq_stats_table *fst = NULL;
+  struct casegrouper *grouper = casegrouper_create_splits (proc_open (ds),
+                                                           dataset_dict (ds));
+  struct casereader *group;
+  while (casegrouper_get_next_group (grouper, &group))
+    {
+      for (size_t i = 0; i < frq->n_vars; i++)
+        hmap_init (&frq->vars[i].tab.data);
+
+      struct ccase *example = casereader_peek (group, 0);
+
+      struct ccase *c;
+      for (; (c = casereader_read (group)) != NULL; case_unref (c))
+        calc (frq, c, ds);
+      fst = postcalc (frq, ds, example, fst);
+      casereader_destroy (group);
+
+      case_unref (example);
+    }
+  frq_stats_table_destroy (fst);
+  casegrouper_destroy (grouper);
+  proc_commit (ds);
 }
 
 int
@@ -1211,25 +1243,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
         }
   }
 
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
-
-    grouper = casegrouper_create_splits (proc_open (ds), dataset_dict (ds));
-    while (casegrouper_get_next_group (grouper, &group))
-      {
-	struct ccase *c;
-	precalc (&frq, group, ds);
-
-	for (; (c = casereader_read (group)) != NULL; case_unref (c))
-	  calc (&frq, c, ds);
-	postcalc (&frq, ds);
-	casereader_destroy (group);
-      }
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
+  frq_run (&frq, ds);
 
   free (vars);
   for (size_t i = 0; i < frq.n_vars; i++)
@@ -1540,19 +1554,31 @@ all_string_variables (const struct frq_proc *frq)
 
   return true;
 }
+
+struct frq_stats_table
+  {
+    struct pivot_table *table;
+    struct pivot_splits *splits;
+  };
 
 /* Displays a table of all the statistics requested. */
-static void
-dump_statistics (const struct frq_proc *frq, const struct variable *wv)
+static struct frq_stats_table *
+frq_stats_table_create (const struct frq_proc *frq,
+                        const struct dictionary *dict,
+                        const struct variable *wv)
 {
   if (all_string_variables (frq))
-    return;
+    return NULL;
 
   struct pivot_table *table = pivot_table_create (N_("Statistics"));
   pivot_table_set_weight_var (table, wv);
 
   struct pivot_dimension *variables
     = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Variables"));
+  for (size_t i = 0; i < frq->n_vars; i++)
+    if (!var_is_alpha (frq->vars[i].var))
+      pivot_category_create_leaf (variables->root,
+                                  pivot_value_new_variable (frq->vars[i].var));
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Statistics"));
@@ -1580,6 +1606,30 @@ dump_statistics (const struct frq_proc *frq, const struct variable *wv)
                                     pc->p * 100.0));
     }
 
+  struct pivot_splits *splits = pivot_splits_create (table, PIVOT_AXIS_COLUMN,
+                                                     dict);
+
+  struct frq_stats_table *fst = xmalloc (sizeof *fst);
+  *fst = (struct frq_stats_table) { .table = table, .splits = splits };
+  return fst;
+}
+
+static struct frq_stats_table *
+frq_stats_table_submit (struct frq_stats_table *fst,
+                        const struct frq_proc *frq,
+                        const struct dictionary *dict,
+                        const struct variable *wv,
+                        const struct ccase *example)
+{
+  if (!fst)
+    {
+      fst = frq_stats_table_create (frq, dict, wv);
+      if (!fst)
+        return NULL;
+    }
+  pivot_splits_new_split (fst->splits, example);
+
+  int var_idx = 0;
   for (size_t i = 0; i < frq->n_vars; i++)
     {
       struct var_freqs *vf = &frq->vars[i];
@@ -1588,13 +1638,10 @@ dump_statistics (const struct frq_proc *frq, const struct variable *wv)
 
       const struct freq_tab *ft = &vf->tab;
 
-      int var_idx = pivot_category_create_leaf (
-        variables->root, pivot_value_new_variable (vf->var));
-
       int row = 0;
-      pivot_table_put2 (table, var_idx, row++,
+      pivot_splits_put2 (fst->splits, fst->table, var_idx, row++,
                         pivot_value_new_number (ft->valid_cases));
-      pivot_table_put2 (table, var_idx, row++,
+      pivot_splits_put2 (fst->splits, fst->table, var_idx, row++,
                         pivot_value_new_number (
                           ft->total_cases - ft->valid_cases));
 
@@ -1610,7 +1657,7 @@ dump_statistics (const struct frq_proc *frq, const struct variable *wv)
             = (j == FRQ_ST_MODE || j == FRQ_ST_MINIMUM || j == FRQ_ST_MAXIMUM
                ? pivot_value_new_var_value (vf->var, &v)
                : pivot_value_new_number (v.f));
-          pivot_table_put2 (table, var_idx, row++, pv);
+          pivot_splits_put2 (fst->splits, fst->table, var_idx, row++, pv);
         }
 
       for (size_t j = 0; j < frq->n_percentiles; j++)
@@ -1622,10 +1669,28 @@ dump_statistics (const struct frq_proc *frq, const struct variable *wv)
           union value v = {
             .f = vf->tab.n_valid ? vf->percentiles[j] : SYSMIS
           };
-          pivot_table_put2 (table, var_idx, row++,
-                            pivot_value_new_var_value (vf->var, &v));
+          pivot_splits_put2 (fst->splits, fst->table, var_idx, row++,
+                             pivot_value_new_var_value (vf->var, &v));
         }
+
+      var_idx++;
     }
 
-  pivot_table_submit (table);
+  if (!fst->splits)
+    {
+      frq_stats_table_destroy (fst);
+      return NULL;
+    }
+  return fst;
+}
+
+static void
+frq_stats_table_destroy (struct frq_stats_table *fst)
+{
+  if (!fst)
+    return;
+
+  pivot_table_submit (fst->table);
+  pivot_splits_destroy (fst->splits);
+  free (fst);
 }

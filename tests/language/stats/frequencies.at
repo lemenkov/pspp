@@ -47,6 +47,163 @@ Total,,10,100.0%,,
 ])
 AT_CLEANUP
 
+AT_SETUP([FREQUENCIES with SPLIT FILE - LAYERED])
+AT_DATA([frequencies.sps], [dnl
+DATA LIST LIST NOTABLE/name (A8) value quantity.
+BEGIN DATA.
+foo 1 5
+bar 2 6
+baz 1 9
+quux 3 1
+bar 1 2
+baz 4 3
+baz 1 4
+baz 1 1
+foo 6 0
+quux 5 8
+END DATA.
+EXECUTE.
+
+SORT CASES BY name.
+SPLIT FILE BY name.
+FREQUENCIES /VARIABLES=value quantity /FORMAT NOTABLE.
+])
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,name,,,,,,,
+,,bar,,baz,,foo,,quux,
+,,value,quantity,value,quantity,value,quantity,value,quantity
+N,Valid,2,2,4,4,2,2,2,2
+,Missing,0,0,0,0,0,0,0,0
+Mean,,1.50,4.00,1.75,4.25,3.50,2.50,4.00,4.50
+Std Dev,,.71,2.83,1.50,3.40,3.54,3.54,1.41,4.95
+Minimum,,1.00,2.00,1.00,1.00,1.00,.00,3.00,1.00
+Maximum,,2.00,6.00,4.00,9.00,6.00,5.00,5.00,8.00
+])
+AT_CLEANUP
+
+AT_SETUP([FREQUENCIES with SPLIT FILE - SEPARATE])
+AT_DATA([frequencies.sps], [dnl
+DATA LIST LIST NOTABLE/name (A8) value quantity.
+BEGIN DATA.
+foo 1 5
+bar 2 6
+baz 1 9
+quux 3 1
+bar 1 2
+baz 4 3
+baz 1 4
+baz 1 1
+foo 6 0
+quux 5 8
+END DATA.
+EXECUTE.
+
+SORT CASES BY name.
+SPLIT FILE SEPARATE BY name.
+FREQUENCIES /VARIABLES=value quantity /FORMAT NOTABLE.
+])
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Split Values
+Variable,Value
+name,bar
+
+Table: Statistics
+,,value,quantity
+N,Valid,2,2
+,Missing,0,0
+Mean,,1.50,4.00
+Std Dev,,.71,2.83
+Minimum,,1.00,2.00
+Maximum,,2.00,6.00
+
+Table: Split Values
+Variable,Value
+name,baz
+
+Table: Statistics
+,,value,quantity
+N,Valid,4,4
+,Missing,0,0
+Mean,,1.75,4.25
+Std Dev,,1.50,3.40
+Minimum,,1.00,1.00
+Maximum,,4.00,9.00
+
+Table: Split Values
+Variable,Value
+name,foo
+
+Table: Statistics
+,,value,quantity
+N,Valid,2,2
+,Missing,0,0
+Mean,,3.50,2.50
+Std Dev,,3.54,3.54
+Minimum,,1.00,.00
+Maximum,,6.00,5.00
+
+Table: Split Values
+Variable,Value
+name,quux
+
+Table: Statistics
+,,value,quantity
+N,Valid,2,2
+,Missing,0,0
+Mean,,4.00,4.50
+Std Dev,,1.41,4.95
+Minimum,,3.00,1.00
+Maximum,,5.00,8.00
+])
+AT_CLEANUP
+
+AT_SETUP([FREQUENCIES with SPLIT FILE - LAYERED - unsorted data])
+AT_DATA([frequencies.sps], [dnl
+DATA LIST LIST NOTABLE/name (A8) value quantity.
+BEGIN DATA.
+foo 1 5
+bar 2 6
+baz 1 9
+quux 3 1
+baz 4 3
+bar 1 2
+baz 1 1
+foo 6 0
+baz 1 4
+quux 5 8
+END DATA.
+EXECUTE.
+
+SPLIT FILE BY name.
+FREQUENCIES /VARIABLES=value quantity /FORMAT NOTABLE.
+])
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+"frequencies.sps:17: warning: FREQUENCIES: When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: name = baz     "
+
+"frequencies.sps:17: warning: FREQUENCIES: When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: name = bar     "
+
+"frequencies.sps:17: warning: FREQUENCIES: When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: name = baz     "
+
+"frequencies.sps:17: warning: FREQUENCIES: When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: name = foo     "
+
+"frequencies.sps:17: warning: FREQUENCIES: When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: name = baz     "
+
+Table: Statistics
+,,name,,,,,,,,,,,,,,,,,,,
+,,foo,,bar,,baz,,quux,,baz,,bar,,baz,,foo,,baz,,quux,
+,,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity,value,quantity
+N,Valid,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+,Missing,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Mean,,1.00,5.00,2.00,6.00,1.00,9.00,3.00,1.00,4.00,3.00,1.00,2.00,1.00,1.00,6.00,.00,1.00,4.00,5.00,8.00
+Std Dev,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN
+Minimum,,1.00,5.00,2.00,6.00,1.00,9.00,3.00,1.00,4.00,3.00,1.00,2.00,1.00,1.00,6.00,.00,1.00,4.00,5.00,8.00
+Maximum,,1.00,5.00,2.00,6.00,1.00,9.00,3.00,1.00,4.00,3.00,1.00,2.00,1.00,1.00,6.00,.00,1.00,4.00,5.00,8.00
+
+frequencies.sps:17: warning: FREQUENCIES: Suppressed 1 additional warning about duplicate split values.
+])
+AT_CLEANUP
+
 # Tests for a bug where pspp would crash if two FREQUENCIES commands
 # existed in a input file.
 AT_SETUP([FREQUENCIES two runs crash])
