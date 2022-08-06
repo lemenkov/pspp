@@ -125,9 +125,12 @@ void dict_compact_values (struct dictionary *);
 struct caseproto *dict_get_compacted_proto (const struct dictionary *,
                                             unsigned int exclude_classes);
 
-/* SPLIT FILE variables. */
+/* SPLIT FILE variables.
+
+   SPLIT_NONE is used if and only if there are no split file variables. */
 enum split_type
   {
+    SPLIT_NONE,                 /* No split file variables. */
     SPLIT_SEPARATE,             /* Produce separate output for each split. */
     SPLIT_LAYERED,              /* Output splits in same table.  */
   };

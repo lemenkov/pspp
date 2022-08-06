@@ -259,7 +259,7 @@ dict_create (const char *encoding)
     .names_must_be_ids = true,
     .name_map = HMAP_INITIALIZER (d->name_map),
     .attributes = ATTRSET_INITIALIZER (d->attributes),
-    .split_type = SPLIT_LAYERED,
+    .split_type = SPLIT_NONE,
     .ref_cnt = 1,
   };
 
@@ -393,7 +393,7 @@ dict_set_split_vars__ (struct dictionary *d,
   assert (n == 0 || split != NULL);
 
   d->n_splits = n;
-  d->split_type = type;
+  d->split_type = type == SPLIT_NONE ? SPLIT_LAYERED : type;
   if (n > 0)
    {
     d->split = xnrealloc (d->split, n, sizeof *d->split) ;
@@ -413,6 +413,12 @@ dict_set_split_vars__ (struct dictionary *d,
     }
 }
 
+enum split_type
+dict_get_split_type (const struct dictionary *d)
+{
+  return d->split_type;
+}
+
 /* Sets N split vars SPLIT in dictionary D. */
 void
 dict_set_split_vars (struct dictionary *d,
@@ -425,7 +431,7 @@ dict_set_split_vars (struct dictionary *d,
 void
 dict_clear_split_vars (struct dictionary *d)
 {
-  dict_set_split_vars (d, NULL, 0, SPLIT_LAYERED);
+  dict_set_split_vars (d, NULL, 0, SPLIT_NONE);
 }
 
 
@@ -623,7 +629,7 @@ dict_clear__ (struct dictionary *d, bool skip_callbacks)
   invalidate_proto (d);
   hmap_clear (&d->name_map);
   d->next_value_idx = 0;
-  dict_set_split_vars__ (d, NULL, 0, SPLIT_LAYERED, skip_callbacks);
+  dict_set_split_vars__ (d, NULL, 0, SPLIT_NONE, skip_callbacks);
 
   if (skip_callbacks)
     {
