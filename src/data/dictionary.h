@@ -134,6 +134,7 @@ enum split_type
     SPLIT_SEPARATE,             /* Produce separate output for each split. */
     SPLIT_LAYERED,              /* Output splits in same table.  */
   };
+#define MAX_SPLITS 8
 const struct variable *const *dict_get_split_vars (const struct dictionary *);
 size_t dict_get_n_splits (const struct dictionary *);
 enum split_type dict_get_split_type (const struct dictionary *);

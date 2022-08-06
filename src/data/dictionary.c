@@ -384,12 +384,15 @@ dict_unset_split_var (struct dictionary *d, struct variable *v, bool skip_callba
 }
 
 
-/* Sets N split vars SPLIT in dictionary D. */
+/* Sets N split vars SPLIT in dictionary D.  N is silently capped to a maximum
+   of MAX_SPLITS. */
 static void
 dict_set_split_vars__ (struct dictionary *d,
                        struct variable *const *split, size_t n,
                        enum split_type type, bool skip_callbacks)
 {
+  if (n > MAX_SPLITS)
+    n = MAX_SPLITS;
   assert (n == 0 || split != NULL);
 
   d->n_splits = n;

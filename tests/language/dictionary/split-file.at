@@ -70,10 +70,6 @@ X,Y
 ])
 AT_CLEANUP
 
-
-
-
-
 AT_SETUP([SPLIT FILE  - vs procedures])
 AT_DATA([split-file.sps], [dnl
 
@@ -135,4 +131,15 @@ finish.
 
 AT_CHECK([pspp -O format=csv split-file.sps], [0],[ignore])
 
+AT_CLEANUP
+
+AT_SETUP([SPLIT FILE - split variable limit])
+AT_DATA([split-file.sps], [dnl
+DATA LIST LIST NOTABLE /V1 TO V9.
+SPLIT FILE BY V1 TO V9.
+])
+AT_CHECK([pspp split-file.sps], [1], [dnl
+split-file.sps:2: error: SPLIT FILE: At most 8 split variables may be
+specified.
+])
 AT_CLEANUP

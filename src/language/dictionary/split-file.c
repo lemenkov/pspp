@@ -58,6 +58,14 @@ cmd_split_file (struct lexer *lexer, struct dataset *ds)
       if (!parse_variables (lexer, dataset_dict (ds), &v, &n, PV_NO_DUPLICATE))
 	return CMD_CASCADING_FAILURE;
 
+      if (n > MAX_SPLITS)
+        {
+          verify (MAX_SPLITS == 8);
+          msg (SE, _("At most 8 split variables may be specified."));
+          free (v);
+          return CMD_CASCADING_FAILURE;
+        }
+
       dict_set_split_vars (dataset_dict (ds), v, n, type);
       free (v);
     }
