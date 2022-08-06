@@ -359,7 +359,8 @@ calc_percentiles (const struct frq_proc *frq, struct var_freqs *vf)
   if (!frq->n_percentiles)
     return;
 
-  vf->percentiles = xnmalloc (frq->n_percentiles, sizeof *vf->percentiles);
+  if (!vf->percentiles)
+    vf->percentiles = xnmalloc (frq->n_percentiles, sizeof *vf->percentiles);
 
   const struct freq_tab *ft = &vf->tab;
   const double W = ft->valid_cases;
