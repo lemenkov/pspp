@@ -770,7 +770,6 @@ void pivot_value_set_rc (const struct pivot_table *, struct pivot_value *,
 /* Converting a pivot_value to a string for display. */
 char *pivot_value_to_string (const struct pivot_value *,
                              const struct pivot_table *);
-char *pivot_value_to_string_defaults (const struct pivot_value *);
 bool pivot_value_format (const struct pivot_value *,
                          const struct pivot_table *, struct string *);
 bool pivot_value_format_body (const struct pivot_value *,

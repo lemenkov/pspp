@@ -2372,8 +2372,15 @@ get_text_from_markup (const char *markup, struct string *out)
   xmlFreeParserCtxt (parser);
 }
 
-/* Appends a text representation of the body of VALUE to OUT.  Settings on
-   PT control whether variable and value labels are included.
+static const struct pivot_table pivot_value_format_defaults = {
+  .show_values = SETTINGS_VALUE_SHOW_DEFAULT,
+  .show_variables = SETTINGS_VALUE_SHOW_DEFAULT,
+  .settings = FMT_SETTINGS_INIT,
+};
+
+/* Appends a text representation of the body of VALUE to OUT.  Settings on PT
+   control whether variable and value labels are included (pass NULL for PT to
+   get default formatting in the absence of a pivot table).
 
    The "body" omits subscripts and superscripts and footnotes.
 
@@ -2381,9 +2388,10 @@ get_text_from_markup (const char *markup, struct string *out)
    otherwise.  */
 bool
 pivot_value_format_body (const struct pivot_value *value,
-                         const struct pivot_table *pt,
+                         const struct pivot_table *pt_,
                          struct string *out)
 {
+  const struct pivot_table *pt = pt_ ? pt_ : &pivot_value_format_defaults;
   enum settings_value_show show;
   bool numeric = false;
 
@@ -2474,8 +2482,9 @@ pivot_value_format_body (const struct pivot_value *value,
   return numeric;
 }
 
-/* Appends a text representation of VALUE to OUT.  Settings on
-   PT control whether variable and value labels are included.
+/* Appends a text representation of VALUE to OUT.  Settings on PT control
+   whether variable and value labels are included (pass NULL for PT to get
+   default formatting in the absence of a pivot table).
 
    Subscripts and footnotes are included.
 
@@ -2483,9 +2492,10 @@ pivot_value_format_body (const struct pivot_value *value,
    otherwise.  */
 bool
 pivot_value_format (const struct pivot_value *value,
-                    const struct pivot_table *pt,
+                    const struct pivot_table *pt_,
                     struct string *out)
 {
+  const struct pivot_table *pt = pt_ ? pt_ : &pivot_value_format_defaults;
   bool numeric = pivot_value_format_body (value, pt, out);
 
   const struct pivot_value_ex *ex = value->ex;
@@ -2513,7 +2523,9 @@ pivot_value_format (const struct pivot_value *value,
 }
 
 /* Returns a text representation of VALUE.  The caller must free the string,
-   with free(). */
+   with free().  Settings on PT control whether variable and value labels are
+   included (pass NULL for PT to get default formatting in the absence of a
+   pivot table). */
 char *
 pivot_value_to_string (const struct pivot_value *value,
                        const struct pivot_table *pt)
@@ -2521,17 +2533,6 @@ pivot_value_to_string (const struct pivot_value *value,
   struct string s = DS_EMPTY_INITIALIZER;
   pivot_value_format (value, pt, &s);
   return ds_steal_cstr (&s);
-}
-
-char *
-pivot_value_to_string_defaults (const struct pivot_value *value)
-{
-  static const struct pivot_table pt = {
-    .show_values = SETTINGS_VALUE_SHOW_DEFAULT,
-    .show_variables = SETTINGS_VALUE_SHOW_DEFAULT,
-    .settings = FMT_SETTINGS_INIT,
-  };
-  return pivot_value_to_string (value, &pt);
 }
 
 struct pivot_value *
