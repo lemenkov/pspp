@@ -1488,21 +1488,14 @@ calc_stats (const struct frq_proc *frq, const struct var_freqs *vf,
   int most_often = -1;
   double X_mode = SYSMIS;
 
-  /* Calculate the mode. */
+  /* Calculate the mode.  If there is more than one mode, we take the
+     smallest. */
   for (f = ft->valid; f < ft->missing; f++)
-    {
-      if (most_often < f->count)
-        {
-          most_often = f->count;
-          X_mode = f->values[0].f;
-        }
-      else if (most_often == f->count)
-        {
-          /* A duplicate mode is undefined.
-             FIXME: keep track of *all* the modes. */
-          X_mode = SYSMIS;
-        }
-    }
+    if (most_often < f->count)
+      {
+        most_often = f->count;
+        X_mode = f->values[0].f;
+      }
 
   /* Calculate moments. */
   m = moments_create (MOMENT_KURTOSIS);
