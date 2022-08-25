@@ -411,6 +411,10 @@ These rules apply to macro calls, not to uses within a macro body of
 macro functions, macro arguments, and macro variables created by
 @code{!DO} or @code{!LET}, which are always expanded.
 
+@code{SET MEXPAND} may appear within the body of a macro, but it will
+not affect expansion of the macro that it appears in.  Use
+@code{!OFFEXPAND} and @code{!ONEXPAND} instead.
+
 @node Macro Functions
 @subsection Macro Functions
 
@@ -804,10 +808,6 @@ a macro that calls itself.
 MITERATE (@pxref{SET MITERATE}) limits the number of iterations in a
 @code{!DO} construct.  The default is 1000.
 
-PRESERVE...RESTORE
-
-SET MEXPAND, etc. doesn't work inside macro bodies.
-
 @node Macro Notes
 @subsection Additional Notes
 
@@ -816,9 +816,9 @@ SET MEXPAND, etc. doesn't work inside macro bodies.
 If the body of macro A includes a call to macro B, the call can use
 macro arguments (including @code{!*}) and macro variables as part of
 arguments to B.  For @code{!TOKENS} arguments, the argument or
-variable name counts as one token regardless of the number that
-expands into, for @code{!CHAREND} and @code{!ENCLOSE} arguments the
-delimiters come only from the call, not the expansions, and
+variable name counts as one token regardless of the number that it
+expands into; for @code{!CHAREND} and @code{!ENCLOSE} arguments, the
+delimiters come only from the call, not the expansions; and
 @code{!CMDEND} ends at the calling command, not any end of command
 within an argument or variable.
 
