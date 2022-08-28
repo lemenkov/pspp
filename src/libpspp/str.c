@@ -615,6 +615,21 @@ ss_match_string (struct substring *ss, const struct substring target)
     return false;
 }
 
+/* If SS begins with TARGET, except possibly for case differences, removes it
+   and returns true.  Otherwise, returns false without changing SS. */
+bool
+ss_match_string_case (struct substring *ss, const struct substring target)
+{
+  size_t length = ss_length (target);
+  if (ss_equals_case (ss_head (*ss, length), target))
+    {
+      ss_advance (ss, length);
+      return true;
+    }
+  else
+    return false;
+}
+
 /* Removes the first byte from SS and returns it.
    If SS is empty, returns EOF without modifying SS. */
 int
@@ -743,6 +758,14 @@ ss_starts_with (struct substring ss, struct substring prefix)
           && !memcmp (ss.string, prefix.string, prefix.length));
 }
 
+/* Returns true if SS starts with PREFIX in any case, false otherwise. */
+bool
+ss_starts_with_case (struct substring ss, struct substring prefix)
+{
+  return (ss.length >= prefix.length
+          && !memcasecmp (ss.string, prefix.string, prefix.length));
+}
+
 /* Returns true if SS ends with SUFFIX, false otherwise. */
 bool
 ss_ends_with (struct substring ss, struct substring suffix)
@@ -750,6 +773,15 @@ ss_ends_with (struct substring ss, struct substring suffix)
   return (ss.length >= suffix.length
           && !memcmp (&ss.string[ss.length - suffix.length], suffix.string,
                       suffix.length));
+}
+
+/* Returns true if SS ends with SUFFIX in any case, false otherwise. */
+bool
+ss_ends_with_case (struct substring ss, struct substring suffix)
+{
+  return (ss.length >= suffix.length
+          && !memcasecmp (&ss.string[ss.length - suffix.length], suffix.string,
+                          suffix.length));
 }
 
 /* Returns the number of contiguous bytes at the beginning
