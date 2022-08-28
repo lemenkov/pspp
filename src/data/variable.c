@@ -1326,15 +1326,16 @@ var_clear_vardict (struct variable *v)
 double
 var_force_valid_weight (const struct variable *wv, double w, bool *warn_on_invalid)
 {
-  if (w < 0.0 || (wv && var_is_num_missing (wv, w)))
-    w = 0.0;
-
-  if (w == 0.0 && warn_on_invalid != NULL && *warn_on_invalid)
+  if (w <= 0.0 || (wv ? var_is_num_missing (wv, w) : w == SYSMIS))
     {
-      *warn_on_invalid = false;
-      msg (SW, _("At least one case in the data file had a weight value "
-		 "that was user-missing, system-missing, zero, or "
-		 "negative.  These case(s) were ignored."));
+      w = 0.0;
+      if (warn_on_invalid != NULL && *warn_on_invalid)
+        {
+          *warn_on_invalid = false;
+          msg (SW, _("At least one case in the data file had a weight value "
+                     "that was user-missing, system-missing, zero, or "
+                     "negative.  These case(s) were ignored."));
+        }
     }
 
   return w;
