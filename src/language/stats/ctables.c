@@ -2895,6 +2895,7 @@ struct ctables_cell
     /* In struct ctables_section's 'cells' hmap.  Indexed by all the values in
        all the axes (except the scalar variable, if any). */
     struct hmap_node node;
+    struct ctables_section *section;
 
     /* The areas that contain this cell. */
     uint32_t omit_areas;
@@ -3079,29 +3080,10 @@ ctables_cell_compare_3way (const void *a_, const void *b_, const void *aux_)
   return 0;
 }
 
-static int
-ctables_cell_compare_leaf_3way (const void *a_, const void *b_,
-                                const void *aux UNUSED)
-{
-  struct ctables_cell *const *ap = a_;
-  struct ctables_cell *const *bp = b_;
-  const struct ctables_cell *a = *ap;
-  const struct ctables_cell *b = *bp;
-
-  for (enum pivot_axis_type axis = 0; axis < PIVOT_N_AXES; axis++)
-    {
-      int al = a->axes[axis].leaf;
-      int bl = b->axes[axis].leaf;
-      if (al != bl)
-        return al > bl ? 1 : -1;
-    }
-  return 0;
-}
-
 static struct ctables_area *
-ctables_area_insert (struct ctables_section *s, struct ctables_cell *cell,
-                       enum ctables_area_type area)
+ctables_area_insert (struct ctables_cell *cell, enum ctables_area_type area)
 {
+  struct ctables_section *s = cell->section;
   size_t hash = 0;
   for (enum pivot_axis_type a = 0; a < PIVOT_N_AXES; a++)
     {
@@ -3202,6 +3184,7 @@ ctables_cell_insert__ (struct ctables_section *s, const struct ccase *c,
     }
 
   cell = xmalloc (sizeof *cell);
+  cell->section = s;
   cell->hide = false;
   cell->sv = sv;
   cell->omit_areas = 0;
@@ -3264,7 +3247,7 @@ ctables_cell_insert__ (struct ctables_section *s, const struct ccase *c,
   for (size_t i = 0; i < specs->n; i++)
     ctables_summary_init (&cell->summaries[i], &specs->specs[i]);
   for (enum ctables_area_type at = 0; at < N_CTATS; at++)
-    cell->areas[at] = ctables_area_insert (s, cell, at);
+    cell->areas[at] = ctables_area_insert (cell, at);
   hmap_insert (&s->cells, &cell->node, hash);
   return cell;
 }
@@ -3448,7 +3431,7 @@ struct ctables_value
   };
 
 static struct ctables_value *
-ctables_value_find__ (struct ctables_table *t, const union value *value,
+ctables_value_find__ (const struct ctables_table *t, const union value *value,
                       int width, unsigned int hash)
 {
   struct ctables_value *clv;
@@ -3473,12 +3456,23 @@ ctables_value_insert (struct ctables_table *t, const union value *value,
     }
 }
 
-static struct ctables_value *
-ctables_value_find (struct ctables_table *t,
-                    const union value *value, int width)
+static const struct ctables_value *
+ctables_value_find (const struct ctables_cell *cell)
 {
-  return ctables_value_find__ (t, value, width,
-                               value_hash (value, width, 0));
+  const struct ctables_section *s = cell->section;
+  const struct ctables_table *t = s->table;
+  if (!t->clabels_example)
+    return NULL;
+
+  const struct ctables_nest *clabels_nest = s->nests[t->clabels_from_axis];
+  const struct variable *var = clabels_nest->vars[clabels_nest->n - 1];
+  const union value *value
+    = &cell->axes[t->clabels_from_axis].cvs[clabels_nest->n - 1].value;
+  int width = var_get_width (var);
+  const struct ctables_value *ctv = ctables_value_find__ (
+    t, value, width, value_hash (value, width, 0));
+  assert (ctv != NULL);
+  return ctv;
 }
 
 static int
@@ -4490,6 +4484,47 @@ all_hidden_vlabels (const struct ctables_table *t, enum pivot_axis_type a)
   return true;
 }
 
+static int
+compare_ints_3way (int a, int b)
+{
+  return a < b ? -1 : a > b;
+}
+
+static int
+ctables_cell_compare_leaf_3way (const void *a_, const void *b_,
+                                const void *aux UNUSED)
+{
+  struct ctables_cell *const *ap = a_;
+  struct ctables_cell *const *bp = b_;
+  const struct ctables_cell *a = *ap;
+  const struct ctables_cell *b = *bp;
+
+  if (a == b)
+    {
+      assert (a_ == b_);
+      return 0;
+    }
+
+  for (enum pivot_axis_type axis = 0; axis < PIVOT_N_AXES; axis++)
+    {
+      int cmp = compare_ints_3way (a->axes[axis].leaf, b->axes[axis].leaf);
+      if (cmp)
+        return cmp;
+    }
+
+  const struct ctables_value *a_ctv = ctables_value_find (a);
+  const struct ctables_value *b_ctv = ctables_value_find (b);
+  if (a_ctv && b_ctv)
+    {
+      int cmp = compare_ints_3way (a_ctv->leaf, b_ctv->leaf);
+      if (cmp)
+        return cmp;
+    }
+  else
+    assert (!a_ctv && !b_ctv);
+  return 0;
+}
+
 static void
 ctables_table_output (struct ctables *ct, struct ctables_table *t)
 {
@@ -4795,6 +4830,7 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
           if (cell->hide)
             continue;
 
+          const struct ctables_value *ctv = ctables_value_find (cell);
           const struct ctables_nest *specs_nest = s->nests[t->summary_axis];
           const struct ctables_summary_spec_set *specs = &specs_nest->specs[cell->sv];
           for (size_t j = 0; j < specs->n; j++)
@@ -4805,16 +4841,8 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
               if (summary_dimension)
                 dindexes[n_dindexes++] = specs->specs[j].axis_idx;
 
-              if (categories_dimension)
-                {
-                  const struct ctables_nest *clabels_nest = s->nests[t->clabels_from_axis];
-                  const struct variable *var = clabels_nest->vars[clabels_nest->n - 1];
-                  const union value *value = &cell->axes[t->clabels_from_axis].cvs[clabels_nest->n - 1].value;
-                  const struct ctables_value *ctv = ctables_value_find (t, value, var_get_width (var));
-                  if (!ctv)
-                    continue;
-                  dindexes[n_dindexes++] = ctv->leaf;
-                }
+              if (ctv)
+                dindexes[n_dindexes++] = ctv->leaf;
 
               for (enum pivot_axis_type a = 0; a < PIVOT_N_AXES; a++)
                 if (d[a])
