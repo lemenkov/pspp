@@ -177,9 +177,8 @@ enum pivot_axis_type
   {
     PIVOT_AXIS_LAYER,
     PIVOT_AXIS_ROW,
-    PIVOT_AXIS_COLUMN,
-
-    PIVOT_N_AXES
+    PIVOT_AXIS_COLUMN
+#define PIVOT_N_AXES 3
   };
 
 const char *pivot_axis_type_to_string (enum pivot_axis_type);
