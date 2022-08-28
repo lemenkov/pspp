@@ -25,6 +25,8 @@
 #include "libpspp/hmap.h"
 #include "output/table.h"
 
+struct ccase;
+struct dictionary;
 struct pivot_value;
 struct variable;
 union value;
@@ -279,6 +281,55 @@ void pivot_dimension_destroy (struct pivot_dimension *);
 
 void pivot_dimension_dump (const struct pivot_dimension *,
                            const struct pivot_table *, int indentation);
+
+/* Split file handling with pivot tables.
+
+   When SPLIT FILE is in effect with the LAYERED option, values for the split
+   file variables need to be incorporated into pivot table output.  These
+   functions make that easier.
+
+   To use them:
+
+   1. After adding the rest of the dimensions to an output pivot table, call
+      pivot_splits_create().  If there are any and LAYERED mode is in use, then
+      pivot_splits_create() will add a dimension for each split file
+      variable and return a structure.  Otherwise, it returns NULL.
+
+   2. Before adding data to the pivot table for each SPLIT FILE group, call
+      pivot_splits_new_split(), passing in an example case from the group (the
+      first or last case is fine).  This will the split file handler add
+      categories for the group to the split dimensions.
+
+      pivot_splits_new_split() does nothing if given a null pivot_splits, so
+      it's fine to call it unconditionally.
+
+   3. Use pivot_splits_put*(), instead of pivot_table_put*(), to add data to
+      the pivot table.  These functions automatically add the current group
+      leaf indexes after the indexes passed in, as a convenience.
+
+      These functions still work fine if given a null pivot_splits, so it's
+      fine to use them in all cases.
+
+   4. Destroy the pivot_splits with pivot_splits_destroy() when the pivot table
+      has been fully constructed. */
+
+struct pivot_splits *pivot_splits_create (struct pivot_table *,
+                                          enum pivot_axis_type,
+                                          const struct dictionary *);
+void pivot_splits_destroy (struct pivot_splits *);
+
+void pivot_splits_new_split (struct pivot_splits *, const struct ccase *);
+
+void pivot_splits_put1 (struct pivot_splits *, struct pivot_table *,
+                        size_t idx1, struct pivot_value *);
+void pivot_splits_put2 (struct pivot_splits *, struct pivot_table *,
+                        size_t idx1, size_t idx2, struct pivot_value *);
+void pivot_splits_put3 (struct pivot_splits *, struct pivot_table *,
+                        size_t idx1, size_t idx2, size_t idx3,
+                        struct pivot_value *);
+void pivot_splits_put4 (struct pivot_splits *, struct pivot_table *,
+                        size_t idx1, size_t idx2, size_t idx3, size_t idx4,
+                        struct pivot_value *);
 
 /* A pivot_category is a leaf (a category) or a group:
 

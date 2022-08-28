@@ -24,6 +24,7 @@
 #include <stdlib.h>
 
 #include "data/data-out.h"
+#include "data/dictionary.h"
 #include "data/settings.h"
 #include "data/value.h"
 #include "data/variable.h"
@@ -1443,8 +1444,9 @@ pivot_table_insert_cell (struct pivot_table *table, const size_t *dindexes)
 }
 
 /* Puts VALUE in the cell in TABLE whose indexes are given by the N indexes in
-   DINDEXES.  N must be the number of dimensions in TABLE.  Takes ownership of
-   VALUE.
+   DINDEXES.  The order of the indexes is the same as the order in which the
+   dimensions were created.  N must be the number of dimensions in TABLE.
+   Takes ownership of VALUE.
 
    If VALUE is a numeric value without a specified format, this function checks
    each of the categories designated by DINDEXES[] and takes the format from
@@ -3028,4 +3030,341 @@ pivot_value_ex_destroy (struct pivot_value_ex *ex)
       free (ex->subscripts);
       free (ex);
     }
+}
+
+/* pivot_splits */
+
+struct pivot_splits_value
+  {
+    struct hmap_node hmap_node;
+    union value value;
+    int leaf;
+  };
+
+struct pivot_splits_var
+  {
+    struct pivot_dimension *dimension;
+    const struct variable *var;
+    int width;
+    struct hmap values;
+  };
+
+struct pivot_splits_dup
+  {
+    struct hmap_node hmap_node;
+    union value *values;
+  };
+
+struct pivot_splits
+  {
+    struct pivot_splits_var *vars;
+    size_t n;
+    char *encoding;
+
+    struct hmap dups;
+
+    size_t dindexes[MAX_SPLITS];
+
+    int warnings_left;
+  };
+
+/* Adds a dimension for each layered split file variable in DICT to PT on AXIS.
+   These dimensions should be the last dimensions added to PT (the
+   pivot_splits_put*() functions rely on this).  Returns a new pivot_splits
+   structure if any dimensions were added, otherwise a null pointer.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+struct pivot_splits *
+pivot_splits_create (struct pivot_table *pt,
+                     enum pivot_axis_type axis,
+                     const struct dictionary *dict)
+{
+  if (dict_get_split_type (dict) != SPLIT_LAYERED)
+    return NULL;
+
+  size_t n = dict_get_n_splits (dict);
+  assert (n <= MAX_SPLITS);
+
+  const struct variable *const *vars = dict_get_split_vars (dict);
+  struct pivot_splits_var *psvars = xnmalloc (n, sizeof *psvars);
+  for (size_t i = n - 1; i < n; i--)
+    {
+      const struct variable *var = vars[i];
+      struct pivot_splits_var *psvar = &psvars[i];
+
+      struct pivot_dimension *d = pivot_dimension_create__ (
+        pt, axis, pivot_value_new_variable (var));
+      d->root->show_label = true;
+
+      *psvar = (struct pivot_splits_var) {
+        .width = var_get_width (var),
+        .values = HMAP_INITIALIZER (psvar->values),
+        .dimension = d,
+        .var = var,
+      };
+    }
+
+  struct pivot_splits *ps = xmalloc (sizeof *ps);
+  *ps = (struct pivot_splits) {
+    .vars = psvars,
+    .n = n,
+    .encoding = xstrdup (dict_get_encoding (dict)),
+    .dups = HMAP_INITIALIZER (ps->dups),
+    .dindexes = { [0] = SIZE_MAX },
+    .warnings_left = 5,
+  };
+  return ps;
+}
+
+/* Destroys PS. */
+void
+pivot_splits_destroy (struct pivot_splits *ps)
+{
+  if (!ps)
+    return;
+
+  if (ps->warnings_left < 0)
+    msg (SW, ngettext ("Suppressed %d additional warning about duplicate "
+                       "split values.",
+                       "Suppressed %d additional warnings about duplicate "
+                       "split values.", -ps->warnings_left),
+         -ps->warnings_left);
+
+  struct pivot_splits_dup *dup, *next_dup;
+  HMAP_FOR_EACH_SAFE (dup, next_dup, struct pivot_splits_dup, hmap_node,
+                      &ps->dups)
+    {
+      for (size_t i = 0; i < ps->n; i++)
+        value_destroy (&dup->values[i], ps->vars[i].width);
+      free (dup->values);
+      free (dup);
+    }
+  hmap_destroy (&ps->dups);
+
+  for (size_t i = 0; i < ps->n; i++)
+    {
+      struct pivot_splits_var *psvar = &ps->vars[i];
+      struct pivot_splits_value *psval, *next;
+      HMAP_FOR_EACH_SAFE (psval, next, struct pivot_splits_value, hmap_node,
+                          &psvar->values)
+        {
+          value_destroy (&psval->value, psvar->width);
+          hmap_delete (&psvar->values, &psval->hmap_node);
+          free (psval);
+        }
+      hmap_destroy (&psvar->values);
+    }
+  free (ps->vars);
+
+  free (ps->encoding);
+  free (ps);
+}
+
+static struct pivot_splits_value *
+pivot_splits_value_find (struct pivot_splits_var *psvar,
+                         const union value *value)
+{
+  struct pivot_splits_value *psval;
+  HMAP_FOR_EACH_WITH_HASH (psval, struct pivot_splits_value, hmap_node,
+                           value_hash (value, psvar->width, 0), &psvar->values)
+    if (value_equal (&psval->value, value, psvar->width))
+      return psval;
+  return NULL;
+}
+
+static bool
+pivot_splits_find_dup (struct pivot_splits *ps, const struct ccase *example)
+{
+  unsigned int hash = 0;
+  for (size_t i = 0; i < ps->n; i++)
+    {
+      struct pivot_splits_var *psvar = &ps->vars[i];
+      const union value *value = case_data (example, psvar->var);
+      hash = value_hash (value, psvar->width, hash);
+    }
+  struct pivot_splits_dup *dup;
+  HMAP_FOR_EACH_WITH_HASH (dup, struct pivot_splits_dup, hmap_node, hash,
+                           &ps->dups)
+    {
+      bool equal = true;
+      for (size_t i = 0; i < ps->n && equal; i++)
+        {
+          struct pivot_splits_var *psvar = &ps->vars[i];
+          const union value *value = case_data (example, psvar->var);
+          equal = value_equal (value, &dup->values[i], psvar->width);
+        }
+      if (equal)
+        return true;
+    }
+
+  union value *values = xmalloc (ps->n * sizeof *values);
+  for (size_t i = 0; i < ps->n; i++)
+    {
+      struct pivot_splits_var *psvar = &ps->vars[i];
+      const union value *value = case_data (example, psvar->var);
+      value_clone (&values[i], value, psvar->width);
+    }
+
+  dup = xmalloc (sizeof *dup);
+  dup->values = values;
+  hmap_insert (&ps->dups, &dup->hmap_node, hash);
+  return false;
+}
+
+/* Begins adding data for a new split file group to the pivot table associated
+   with PS.  EXAMPLE should be a case from the new split file group.
+
+   This is a no-op if PS is NULL.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+void
+pivot_splits_new_split (struct pivot_splits *ps, const struct ccase *example)
+{
+  if (!ps)
+    return;
+
+  for (size_t i = 0; i < ps->n; i++)
+    {
+      struct pivot_splits_var *psvar = &ps->vars[i];
+      const union value *value = case_data (example, psvar->var);
+      struct pivot_splits_value *psval = pivot_splits_value_find (psvar, value);
+      if (!psval)
+        {
+          psval = xmalloc (sizeof *psval);
+          hmap_insert (&psvar->values, &psval->hmap_node,
+                       value_hash (value, psvar->width, 0));
+          value_clone (&psval->value, value, psvar->width);
+          psval->leaf = pivot_category_create_leaf (
+            psvar->dimension->root,
+            pivot_value_new_var_value (psvar->var, value));
+        }
+
+      ps->dindexes[i] = psval->leaf;
+    }
+
+  if (pivot_splits_find_dup (ps, example))
+    {
+      if (ps->warnings_left-- > 0)
+        {
+          struct string s = DS_EMPTY_INITIALIZER;
+          for (size_t i = 0; i < ps->n; i++)
+            {
+              if (i > 0)
+                ds_put_cstr (&s, ", ");
+
+              struct pivot_splits_var *psvar = &ps->vars[i];
+              const union value *value = case_data (example, psvar->var);
+              ds_put_format (&s, "%s = ", var_get_name (psvar->var));
+
+              char *s2 = data_out (value, ps->encoding,
+                                   var_get_print_format (psvar->var),
+                                   settings_get_fmt_settings ());
+              ds_put_cstr (&s, s2 + strspn (s2, " "));
+              free (s2);
+            }
+          msg (SW, _("When SPLIT FILE is in effect, the input data must be "
+                     "sorted by the split variables (for example, using SORT "
+                     "CASES), but multiple runs of cases with the same split "
+                     "values were found separated by cases with different "
+                     "values.  Each run will be analyzed separately.  The "
+                     "duplicate split values are: %s"), ds_cstr (&s));
+          ds_destroy (&s);
+        }
+
+      struct pivot_splits_var *psvar = &ps->vars[0];
+      const union value *value = case_data (example, psvar->var);
+      ps->dindexes[0] = pivot_category_create_leaf (
+        psvar->dimension->root,
+        pivot_value_new_var_value (psvar->var, value));
+    }
+}
+
+static size_t
+pivot_splits_get_dindexes (const struct pivot_splits *ps, size_t *dindexes)
+{
+  if (!ps)
+    return 0;
+
+  assert (ps->dindexes[0] != SIZE_MAX);
+  for (size_t i = 0; i < ps->n; i++)
+    dindexes[ps->n - i - 1] = ps->dindexes[i];
+  return ps->n;
+}
+
+/* Puts VALUE in the cell in TABLE with index IDX1.  TABLE must have 1
+   dimension plus the split file dimensions from PS (if nonnull).  Takes
+   ownership of VALUE.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+void
+pivot_splits_put1 (struct pivot_splits *ps, struct pivot_table *table,
+                   size_t idx1, struct pivot_value *value)
+{
+  size_t dindexes[1 + MAX_SPLITS];
+  size_t *p = dindexes;
+  *p++ = idx1;
+  p += pivot_splits_get_dindexes (ps, p);
+  pivot_table_put (table, dindexes, p - dindexes, value);
+}
+
+/* Puts VALUE in the cell in TABLE with index (IDX1, IDX2).  TABLE must have 2
+   dimensions plus the split file dimensions from PS (if nonnull).  Takes
+   ownership of VALUE.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+void
+pivot_splits_put2 (struct pivot_splits *ps, struct pivot_table *table,
+                   size_t idx1, size_t idx2, struct pivot_value *value)
+{
+  size_t dindexes[2 + MAX_SPLITS];
+  size_t *p = dindexes;
+  *p++ = idx1;
+  *p++ = idx2;
+  p += pivot_splits_get_dindexes (ps, p);
+  pivot_table_put (table, dindexes, p - dindexes, value);
+}
+
+/* Puts VALUE in the cell in TABLE with index (IDX1, IDX2, IDX3).  TABLE must
+   have 3 dimensions plus the split file dimensions from PS (if nonnull).
+   Takes ownership of VALUE.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+void
+pivot_splits_put3 (struct pivot_splits *ps, struct pivot_table *table,
+                   size_t idx1, size_t idx2, size_t idx3,
+                   struct pivot_value *value)
+{
+  size_t dindexes[3 + MAX_SPLITS];
+  size_t *p = dindexes;
+  *p++ = idx1;
+  *p++ = idx2;
+  *p++ = idx3;
+  p += pivot_splits_get_dindexes (ps, p);
+  pivot_table_put (table, dindexes, p - dindexes, value);
+}
+
+/* Puts VALUE in the cell in TABLE with index (IDX1, IDX2, IDX3, IDX4).  TABLE
+   must have 4 dimensions plus the split file dimensions from PS (if nonnull).
+   Takes ownership of VALUE.
+
+   See the large comment on split file handling in pivot-table.h for more
+   information. */
+void
+pivot_splits_put4 (struct pivot_splits *ps, struct pivot_table *table,
+                   size_t idx1, size_t idx2, size_t idx3, size_t idx4,
+                   struct pivot_value *value)
+{
+  size_t dindexes[4 + MAX_SPLITS];
+  size_t *p = dindexes;
+  *p++ = idx1;
+  *p++ = idx2;
+  *p++ = idx3;
+  *p++ = idx4;
+  p += pivot_splits_get_dindexes (ps, p);
+  pivot_table_put (table, dindexes, p - dindexes, value);
 }
