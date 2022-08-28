@@ -175,6 +175,16 @@ msg_location_merge (struct msg_location **dstp, const struct msg_location *src)
 }
 
 struct msg_location *
+msg_location_merged (const struct msg_location *a,
+                     const struct msg_location *b)
+{
+  struct msg_location *new = msg_location_dup (a);
+  if (b)
+    msg_location_merge (&new, b);
+  return new;
+}
+
+struct msg_location *
 msg_location_dup (const struct msg_location *src)
 {
   if (!src)

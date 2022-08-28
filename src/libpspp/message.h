@@ -118,6 +118,8 @@ struct msg_location *msg_location_dup (const struct msg_location *);
 void msg_location_remove_columns (struct msg_location *);
 
 void msg_location_merge (struct msg_location **, const struct msg_location *);
+struct msg_location *msg_location_merged (const struct msg_location *,
+                                          const struct msg_location *);
 
 bool msg_location_is_empty (const struct msg_location *);
 void msg_location_format (const struct msg_location *, struct string *);
