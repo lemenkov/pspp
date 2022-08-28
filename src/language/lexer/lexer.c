@@ -290,7 +290,7 @@ static void lex_source_push_parse (struct lex_source *, struct lex_token *);
 static void lex_source_clear_parse (struct lex_source *);
 
 static bool lex_source_get_parse (struct lex_source *);
-static void lex_source_error_valist (struct lex_source *, int n0, int n1,
+static void lex_source_error_valist (struct lex_source *, int ofs0, int ofs1,
                                      const char *format, va_list)
    PRINTF_FORMAT (4, 0);
 static const struct lex_token *lex_source_next__ (const struct lex_source *,
@@ -425,7 +425,7 @@ lex_error (struct lexer *lexer, const char *format, ...)
   va_list args;
 
   va_start (args, format);
-  lex_next_error_valist (lexer, 0, 0, format, args);
+  lex_ofs_error_valist (lexer, lex_ofs (lexer), lex_ofs (lexer), format, args);
   va_end (args);
 }
 
@@ -434,18 +434,33 @@ lex_error (struct lexer *lexer, const char *format, ...)
 void
 lex_error_valist (struct lexer *lexer, const char *format, va_list args)
 {
-  lex_next_error_valist (lexer, 0, 0, format, args);
+  lex_ofs_error_valist (lexer, lex_ofs (lexer), lex_ofs (lexer), format, args);
 }
 
-/* Prints a syntax error message containing the current token and
-   given message MESSAGE (if non-null). */
+/* Prints a syntax error message for the span of tokens N0 through N1,
+   inclusive, from the current token in LEXER, adding message MESSAGE (if
+   non-null). */
 void
 lex_next_error (struct lexer *lexer, int n0, int n1, const char *format, ...)
 {
   va_list args;
 
   va_start (args, format);
-  lex_next_error_valist (lexer, n0, n1, format, args);
+  int ofs = lex_ofs (lexer);
+  lex_ofs_error_valist (lexer, n0 + ofs, n1 + ofs, format, args);
+  va_end (args);
+}
+
+/* Prints a syntax error message for the span of tokens with offsets OFS0
+   through OFS1, inclusive, within the current command in LEXER, adding message
+   MESSAGE (if non-null). */
+void
+lex_ofs_error (struct lexer *lexer, int ofs0, int ofs1, const char *format, ...)
+{
+  va_list args;
+
+  va_start (args, format);
+  lex_ofs_error_valist (lexer, ofs0, ofs1, format, args);
   va_end (args);
 }
 
@@ -590,16 +605,17 @@ lex_spec_missing (struct lexer *lexer, const char *sbc, const char *spec)
              sbc, spec);
 }
 
-/* Prints a syntax error message containing the current token and
-   given message MESSAGE (if non-null). */
+/* Prints a syntax error message for the span of tokens with offsets OFS0
+   through OFS1, inclusive, within the current command in LEXER, adding message
+   MESSAGE (if non-null) with the given ARGS. */
 void
-lex_next_error_valist (struct lexer *lexer, int n0, int n1,
-                       const char *format, va_list args)
+lex_ofs_error_valist (struct lexer *lexer, int ofs0, int ofs1,
+                      const char *format, va_list args)
 {
   struct lex_source *src = lex_source__ (lexer);
 
   if (src != NULL)
-    lex_source_error_valist (src, n0, n1, format, args);
+    lex_source_error_valist (src, ofs0, ofs1, format, args);
   else
     {
       struct string s;
@@ -1650,11 +1666,11 @@ lex_token_location_rw (const struct lex_source *src,
 }
 
 static struct msg_location *
-lex_source_get_location (const struct lex_source *src, int n0, int n1)
+lex_source_get_location (const struct lex_source *src, int ofs0, int ofs1)
 {
   return lex_token_location_rw (src,
-                                lex_source_next__ (src, n0),
-                                lex_source_next__ (src, n1));
+                                lex_source_ofs__ (src, ofs0),
+                                lex_source_ofs__ (src, ofs1));
 }
 
 /* Returns the name of the syntax file from which the current command is drawn.
@@ -1872,10 +1888,10 @@ lex_source_syntax__ (const struct lex_source *src, int ofs0, int ofs1)
 }
 
 static bool
-lex_source_contains_macro_call (struct lex_source *src, int n0, int n1)
+lex_source_contains_macro_call (struct lex_source *src, int ofs0, int ofs1)
 {
-  for (int i = n0; i <= n1; i++)
-    if (lex_source_next__ (src, i)->macro_rep)
+  for (int i = ofs0; i <= ofs1; i++)
+    if (lex_source_ofs__ (src, i)->macro_rep)
       return true;
   return false;
 }
@@ -1890,13 +1906,13 @@ lex_source_contains_macro_call (struct lex_source *src, int n0, int n1)
 
    The caller must not modify or free the returned string. */
 static struct substring
-lex_source_get_macro_call (struct lex_source *src, int n0, int n1)
+lex_source_get_macro_call (struct lex_source *src, int ofs0, int ofs1)
 {
-  if (!lex_source_contains_macro_call (src, n0, n1))
+  if (!lex_source_contains_macro_call (src, ofs0, ofs1))
     return ss_empty ();
 
-  const struct lex_token *token0 = lex_source_next__ (src, n0);
-  const struct lex_token *token1 = lex_source_next__ (src, MAX (n0, n1));
+  const struct lex_token *token0 = lex_source_ofs__ (src, ofs0);
+  const struct lex_token *token1 = lex_source_ofs__ (src, MAX (ofs0, ofs1));
   size_t start = token0->token_pos;
   size_t end = token1->token_pos + token1->token_len;
 
@@ -1904,7 +1920,7 @@ lex_source_get_macro_call (struct lex_source *src, int n0, int n1)
 }
 
 static void
-lex_source_error_valist (struct lex_source *src, int n0, int n1,
+lex_source_error_valist (struct lex_source *src, int ofs0, int ofs1,
                          const char *format, va_list args)
 {
   const struct lex_token *token;
@@ -1912,14 +1928,13 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
 
   ds_init_empty (&s);
 
-  token = lex_source_next__ (src, n0);
+  token = lex_source_ofs__ (src, ofs0);
   if (token->token.type == T_ENDCMD)
     ds_put_cstr (&s, _("Syntax error at end of command"));
   else
     {
       /* Get the syntax that caused the error. */
-      char *raw_syntax = lex_source_syntax__ (src, n0 + src->parse_ofs,
-                                              n1 + src->parse_ofs);
+      char *raw_syntax = lex_source_syntax__ (src, ofs0, ofs1);
       char syntax[64];
       str_ellipsize (ss_cstr (raw_syntax), syntax, sizeof syntax);
       free (raw_syntax);
@@ -1927,7 +1942,7 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
       /* Get the macro call(s) that expanded to the syntax that caused the
          error. */
       char call[64];
-      str_ellipsize (lex_source_get_macro_call (src, n0, n1),
+      str_ellipsize (lex_source_get_macro_call (src, ofs0, ofs1),
                      call, sizeof call);
 
       if (syntax[0])
@@ -1961,7 +1976,7 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
   *m = (struct msg) {
     .category = MSG_C_SYNTAX,
     .severity = MSG_S_ERROR,
-    .location = lex_source_get_location (src, n0, n1),
+    .location = lex_source_get_location (src, ofs0, ofs1),
     .text = ds_steal_cstr (&s),
   };
   msg_emit (m);

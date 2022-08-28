@@ -178,6 +178,8 @@ const char *lex_get_encoding (const struct lexer *);
 void lex_error (struct lexer *, const char *, ...) PRINTF_FORMAT (2, 3);
 void lex_next_error (struct lexer *, int n0, int n1, const char *, ...)
   PRINTF_FORMAT (4, 5);
+void lex_ofs_error (struct lexer *, int ofs0, int ofs1, const char *, ...)
+  PRINTF_FORMAT (4, 5);
 int lex_end_of_command (struct lexer *);
 
 void lex_error_expecting (struct lexer *, ...) SENTINEL(0);
@@ -196,8 +198,8 @@ void lex_spec_missing (struct lexer *, const char *subcommand,
 
 void lex_error_valist (struct lexer *, const char *, va_list)
   PRINTF_FORMAT (2, 0);
-void lex_next_error_valist (struct lexer *lexer, int n0, int n1,
-                            const char *format, va_list)
+void lex_ofs_error_valist (struct lexer *lexer, int ofs0, int ofs1,
+                           const char *format, va_list)
   PRINTF_FORMAT (4, 0);
 
 /* Error handling. */
