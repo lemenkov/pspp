@@ -43,7 +43,7 @@ LOCALPOFILES = po/cs.po
 
 POTFILE=po/$(DOMAIN).pot
 
-TRANSLATABLE_FILES = $(DIST_SOURCES) $(all_q_sources)
+TRANSLATABLE_FILES = $(DIST_SOURCES)
 
 XGETTEXT_OPTIONS = \
 	--copyright-holder="$(COPYRIGHT_HOLDER)" \
