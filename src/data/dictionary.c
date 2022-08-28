@@ -1253,7 +1253,7 @@ dict_get_weight (const struct dictionary *d)
 }
 
 /* Returns the value of D's weighting variable in case C, except
-   that a negative weight is returned as 0.  Returns 1 if the
+   that a negative or missing weight is returned as 0.  Returns 1 if the
    dictionary is unweighted.  Will warn about missing, negative,
    or zero values if *WARN_ON_INVALID is true.  The function will
    set *WARN_ON_INVALID to false if an invalid weight is
@@ -1272,6 +1272,15 @@ dict_get_case_weight (const struct dictionary *d, const struct ccase *c,
 
       return var_force_valid_weight (d->weight, w, warn_on_invalid);
     }
+}
+
+/* Like dict_get_case_weight(), but additionally rounds each weight to the
+   nearest integer.  */
+double
+dict_get_rounded_case_weight (const struct dictionary *d,
+                              const struct ccase *c, bool *warn_on_invalid)
+{
+  return floor (dict_get_case_weight (d, c, warn_on_invalid) + 0.5);
 }
 
 /* Returns the format to use for weights. */
