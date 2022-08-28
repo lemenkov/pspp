@@ -2777,7 +2777,7 @@ pivot_value_new_text (const char *text)
 }
 
 /* Same as pivot_value_new_text() but its argument is a printf()-like format
-   string. */
+   string.  The format string should generally be enclosed in N_(). */
 struct pivot_value * PRINTF_FORMAT (1, 2)
 pivot_value_new_text_format (const char *format, ...)
 {
