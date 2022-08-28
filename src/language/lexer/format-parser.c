@@ -32,7 +32,16 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-static bool
+/* Parses a token taking the form of a format specifier and
+   returns true only if successful.  Emits an error message on
+   failure.  Stores a null-terminated string representing the
+   format type in TYPE, and the width and number of decimal
+   places in *WIDTH and *DECIMALS.
+
+   TYPE is not checked as to whether it is really the name of a
+   format.  Both width and decimals are considered optional.  If
+   missing, *WIDTH or *DECIMALS or both will be set to 0. */
+bool
 parse_abstract_format_specifier__ (struct lexer *lexer,
                                    char type[FMT_TYPE_LEN_MAX + 1],
                                    uint16_t *width, uint8_t *decimals)
@@ -79,15 +88,8 @@ error:
   return false;
 }
 
-/* Parses a token taking the form of a format specifier and
-   returns true only if successful.  Emits an error message on
-   failure.  Stores a null-terminated string representing the
-   format type in TYPE, and the width and number of decimal
-   places in *WIDTH and *DECIMALS.
-
-   TYPE is not checked as to whether it is really the name of a
-   format.  Both width and decimals are considered optional.  If
-   missing, *WIDTH or *DECIMALS or both will be set to 0. */
+/* Like parse_abstract_format_specifier__(), but additionally advanced past
+   the token if successful. */
 bool
 parse_abstract_format_specifier (struct lexer *lexer,
                                  char type[FMT_TYPE_LEN_MAX + 1],

@@ -21,14 +21,16 @@
 
 #include "data/format.h"
 
+struct fmt_spec;
 struct lexer;
 
+bool parse_abstract_format_specifier__ (struct lexer *,
+                                        char type[FMT_TYPE_LEN_MAX + 1],
+                                        uint16_t *width, uint8_t *decimals);
 bool parse_abstract_format_specifier (struct lexer *,
                                       char type[FMT_TYPE_LEN_MAX + 1],
                                       uint16_t *width, uint8_t *decimals);
 
-enum fmt_type ;
-struct fmt_spec;
 bool parse_format_specifier (struct lexer *, struct fmt_spec *);
 bool parse_format_specifier_name (struct lexer *, enum fmt_type *type);
 
