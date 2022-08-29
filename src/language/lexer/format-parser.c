@@ -84,7 +84,7 @@ parse_abstract_format_specifier__ (struct lexer *lexer,
   return true;
 
 error:
-  lex_error (lexer, _("expecting valid format specifier"));
+  lex_error (lexer, _("Syntax error expecting valid format specifier."));
   return false;
 }
 
@@ -115,14 +115,14 @@ parse_format_specifier (struct lexer *lexer, struct fmt_spec *format)
 
   if (!fmt_from_name (type, &format->type))
     {
-      msg (SE, _("Unknown format type `%s'."), type);
+      lex_error (lexer, _("Unknown format type `%s'."), type);
       return false;
     }
 
   if (format->w == 0 && !strchr (lex_tokcstr (lexer), '0'))
     {
-      msg (SE, _("Format specifier `%s' lacks required width."),
-           lex_tokcstr (lexer));
+      lex_error (lexer, _("Format specifier `%s' lacks required width."),
+                 lex_tokcstr (lexer));
       return false;
     }
 
@@ -137,12 +137,12 @@ parse_format_specifier_name (struct lexer *lexer, enum fmt_type *type)
 {
   if (lex_token (lexer) != T_ID)
     {
-      lex_error (lexer, _("expecting format type"));
+      lex_error (lexer, _("Syntax error expecting format type."));
       return false;
     }
   if (!fmt_from_name (lex_tokcstr (lexer), type))
     {
-      msg (SE, _("Unknown format type `%s'."), lex_tokcstr (lexer));
+      lex_error (lexer, _("Unknown format type `%s'."), lex_tokcstr (lexer));
       return false;
     }
   lex_get (lexer);

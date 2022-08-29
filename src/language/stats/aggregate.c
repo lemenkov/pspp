@@ -445,7 +445,7 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
       /* Get the name of the aggregation function. */
       if (lex_token (lexer) != T_ID)
 	{
-	  lex_error (lexer, _("expecting aggregation function"));
+	  lex_error (lexer, _("Syntax error expecting aggregation function."));
 	  goto error;
 	}
 
@@ -457,8 +457,8 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 	  break;
       if (NULL == function->name)
 	{
-	  msg (SE, _("Unknown aggregation function %s."),
-	       ds_cstr (&function_name));
+	  lex_error (lexer, _("Unknown aggregation function %s."),
+                     ds_cstr (&function_name));
 	  goto error;
 	}
       ds_destroy (&function_name);
@@ -476,26 +476,28 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
       else
         {
 	  /* Parse list of source variables. */
-	  {
-	    int pv_opts = PV_NO_SCRATCH;
+          int pv_opts = PV_NO_SCRATCH;
+          if (func_index == SUM || func_index == MEAN || func_index == SD)
+            pv_opts |= PV_NUMERIC;
+          else if (function->n_args)
+            pv_opts |= PV_SAME_TYPE;
 
-	    if (func_index == SUM || func_index == MEAN || func_index == SD)
-	      pv_opts |= PV_NUMERIC;
-	    else if (function->n_args)
-	      pv_opts |= PV_SAME_TYPE;
-
-	    if (!parse_variables_const (lexer, dict, &src, &n_src, pv_opts))
-	      goto error;
-	  }
+          int vars_start_ofs = lex_ofs (lexer);
+          if (!parse_variables_const (lexer, dict, &src, &n_src, pv_opts))
+            goto error;
+          int vars_end_ofs = lex_ofs (lexer) - 1;
 
 	  /* Parse function arguments, for those functions that
 	     require arguments. */
+          int args_start_ofs = 0;
 	  if (function->n_args != 0)
 	    for (i = 0; i < function->n_args; i++)
 	      {
 		int type;
 
 		lex_match (lexer, T_COMMA);
+                if (i == 0)
+                  args_start_ofs = lex_ofs (lexer);
 		if (lex_is_string (lexer))
 		  {
 		    arg[i].c = recode_string (dict_get_encoding (agr->dict),
@@ -510,21 +512,35 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 		  }
                 else
                   {
-		    msg (SE, _("Missing argument %zu to %s."),
-                         i + 1, function->name);
+		    lex_error (lexer, _("Missing argument %zu to %s."),
+                               i + 1, function->name);
 		    goto error;
 		  }
-
-		lex_get (lexer);
-
 		if (type != var_get_type (src[0]))
 		  {
 		    msg (SE, _("Arguments to %s must be of same type as "
 			       "source variables."),
 			 function->name);
+                    if (type == VAL_NUMERIC)
+                      {
+                        lex_next_msg (lexer, SN, 0, 0,
+                                      _("The argument is numeric."));
+                        lex_ofs_msg (lexer, SN, vars_start_ofs, vars_end_ofs,
+                                     _("The variables have string type."));
+                      }
+                    else
+                      {
+                        lex_next_msg (lexer, SN, 0, 0,
+                                      _("The argument is a string."));
+                        lex_ofs_msg (lexer, SN, vars_start_ofs, vars_end_ofs,
+                                     _("The variables are numeric."));
+                      }
 		    goto error;
 		  }
+
+		lex_get (lexer);
 	      }
+          int args_end_ofs = lex_ofs (lexer) - 1;
 
 	  /* Trailing rparen. */
 	  if (!lex_force_match (lexer, T_RPAREN))
@@ -554,10 +570,11 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
               arg[0] = arg[1];
               arg[1] = t;
 
-              msg (SW, _("The value arguments passed to the %s function "
-                         "are out-of-order.  They will be treated as if "
-                         "they had been specified in the correct order."),
-                   function->name);
+              lex_ofs_msg (lexer, SW, args_start_ofs, args_end_ofs,
+                           _("The value arguments passed to the %s function "
+                             "are out of order.  They will be treated as if "
+                             "they had been specified in the correct order."),
+                           function->name);
             }
 	}
 
@@ -674,7 +691,7 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 	  if (lex_token (lexer) == T_ENDCMD)
 	    return true;
 
-	  lex_error (lexer, "expecting end of command");
+	  lex_error (lexer, "Syntax error expecting end of command.");
 	  return false;
 	}
       continue;

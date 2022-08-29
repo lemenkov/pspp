@@ -212,6 +212,8 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
   bool variables_seen = false;
   bool method_seen = false;
   bool dependent_seen = false;
+  int save_start = 0;
+  int save_end = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
@@ -220,12 +222,14 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         {
 	  if (method_seen)
 	    {
-	      msg (SE, _("VARIABLES may not appear after %s"), "METHOD");
+	      lex_next_error (lexer, -1, -1,
+                              _("VARIABLES may not appear after %s"), "METHOD");
 	      goto error;
 	    }
 	  if (dependent_seen)
 	    {
-	      msg (SE, _("VARIABLES may not appear after %s"), "DEPENDENT");
+	      lex_next_error (lexer, -1, -1,
+                              _("VARIABLES may not appear after %s"), "DEPENDENT");
 	      goto error;
 	    }
 	  variables_seen = true;
@@ -338,6 +342,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "SAVE"))
         {
+          save_start = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
 
           while (lex_token (lexer) != T_ENDCMD
@@ -357,6 +362,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                   goto error;
                 }
             }
+          save_end = lex_ofs (lexer) - 1;
         }
       else
         {
@@ -408,12 +414,14 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         }
 
       if (proc_make_temporary_transformations_permanent (ds))
-        msg (SW, _("REGRESSION with SAVE ignores TEMPORARY.  "
-                   "Temporary transformations will be made permanent."));
+        lex_ofs_msg (lexer, SW, save_start, save_end,
+                     _("REGRESSION with SAVE ignores TEMPORARY.  "
+                       "Temporary transformations will be made permanent."));
 
       if (dict_get_filter (dict))
-        msg (SW, _("REGRESSION with SAVE ignores FILTER.  "
-                   "All cases will be processed."));
+        lex_ofs_msg (lexer, SW, save_start, save_end,
+                     _("REGRESSION with SAVE ignores FILTER.  "
+                       "All cases will be processed."));
 
       workspace.writer = autopaging_writer_create (proto);
       caseproto_unref (proto);

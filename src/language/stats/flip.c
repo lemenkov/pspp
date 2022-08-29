@@ -97,8 +97,10 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
   bool ok;
 
   if (proc_make_temporary_transformations_permanent (ds))
-    msg (SW, _("%s ignores %s.  "
-               "Temporary transformations will be made permanent."), "FLIP", "TEMPORARY");
+    lex_ofs_msg (lexer, SW, 0, lex_ofs (lexer) - 1,
+                 _("%s ignores %s.  "
+                   "Temporary transformations will be made permanent."),
+                 "FLIP", "TEMPORARY");
 
   flip = pool_create_container (struct flip_pgm, pool);
   flip->n_vars = 0;

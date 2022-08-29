@@ -295,7 +295,7 @@ parse_ctables_summary_function (struct lexer *lexer,
         }
     }
 
-  lex_error (lexer, _("Expecting summary function name."));
+  lex_error (lexer, _("Syntax error expecting summary function name."));
   return false;
 }
 
@@ -1602,8 +1602,7 @@ struct ctables_category
           };
       };
 
-    /* Source location.  This is null for CCT_TOTAL, CCT_VALUE, CCT_LABEL,
-       CCT_FUNCTION, CCT_EXCLUDED_MISSING. */
+    /* Source location (sometimes NULL). */
     struct msg_location *location;
   };
 
@@ -2975,6 +2974,7 @@ struct ctables_table
     enum pivot_axis_type label_axis[PIVOT_N_AXES];
     enum pivot_axis_type clabels_from_axis;
     enum pivot_axis_type clabels_to_axis;
+    int clabels_start_ofs, clabels_end_ofs;
     const struct variable *clabels_example;
     struct hmap clabels_values_map;
     struct ctables_value **clabels_values;
@@ -4092,6 +4092,8 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
   bool show_totals = false;
   char *total_label = NULL;
   bool totals_before = false;
+  int key_start_ofs = 0;
+  int key_end_ofs = 0;
   while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
       if (!c->n_cats && lex_match_id (lexer, "ORDER"))
@@ -4109,7 +4111,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
         }
       else if (!c->n_cats && lex_match_id (lexer, "KEY"))
         {
-          int start_ofs = lex_ofs (lexer) - 1;
+          key_start_ofs = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "VALUE"))
             cat.type = CCT_VALUE;
@@ -4146,9 +4148,13 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
                   bool UNUSED b = lex_force_match (lexer, T_LPAREN);
                   goto error;
                 }
+            }
+          key_end_ofs = lex_ofs (lexer) - 1;
 
-              lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
-                              _("Data-dependent sorting is not implemented."));
+          if (cat.type == CCT_FUNCTION)
+            {
+              lex_ofs_error (lexer, key_start_ofs, key_end_ofs,
+                             _("Data-dependent sorting is not implemented."));
               goto error;
             }
         }
@@ -4219,6 +4225,9 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
 
   if (!c->n_cats)
     {
+      if (key_start_ofs)
+        cat.location = lex_ofs_location (lexer, key_start_ofs, key_end_ofs);
+
       if (c->n_cats >= allocated_cats)
         c->cats = x2nrealloc (c->cats, &allocated_cats, sizeof *c->cats);
       c->cats[c->n_cats++] = cat;
@@ -4893,14 +4902,12 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
 }
 
 static bool
-ctables_check_label_position (struct ctables_table *t, enum pivot_axis_type a)
+ctables_check_label_position (struct ctables_table *t, struct lexer *lexer,
+                              enum pivot_axis_type a)
 {
   enum pivot_axis_type label_pos = t->label_axis[a];
   if (label_pos == a)
     return true;
-
-  const char *subcommand_name = a == PIVOT_AXIS_ROW ? "ROWLABELS" : "COLLABELS";
-  const char *pos_name = label_pos == PIVOT_AXIS_LAYER ? "LAYER" : "OPPOSITE";
 
   const struct ctables_stack *stack = &t->stacks[a];
   if (!stack->n)
@@ -4920,17 +4927,29 @@ ctables_check_label_position (struct ctables_table *t, enum pivot_axis_type a)
   for (size_t i = 0; i < c0->n_cats; i++)
     if (c0->cats[i].type == CCT_FUNCTION)
       {
-        msg (SE, _("%s=%s is not allowed with sorting based "
-                   "on a summary function."),
-             subcommand_name, pos_name);
+        msg (SE, _("Category labels may not be moved to another axis when "
+                   "sorting by a summary function."));
+        lex_ofs_msg (lexer, SN, t->clabels_start_ofs, t->clabels_end_ofs,
+                     _("This syntax moves category labels to another axis."));
+        msg_at (SN, c0->cats[i].location,
+                _("This syntax requests sorting by a summary function."));
         return false;
       }
-  if (n0->n - 1 == n0->scale_idx)
+
+  for (size_t i = 0; i < stack->n; i++)
     {
-      msg (SE, _("%s=%s requires the variables to be moved to be categorical, "
-                 "but %s is a scale variable."),
-           subcommand_name, pos_name, var_get_name (v0));
-      return false;
+      const struct ctables_nest *ni = &stack->nests[i];
+      assert (ni->n > 0);
+      const struct variable *vi = ni->vars[ni->n - 1];
+      if (n0->n - 1 == ni->scale_idx)
+        {
+          msg (SE, _("To move category labels from one axis to another, "
+                     "the variables whose labels are to be moved must be "
+                     "categorical, but %s is scale."), var_get_name (vi));
+          lex_ofs_msg (lexer, SN, t->clabels_start_ofs, t->clabels_end_ofs,
+                       _("This syntax moves category labels to another axis."));
+          return false;
+        }
     }
 
   for (size_t i = 1; i < stack->n; i++)
@@ -4940,41 +4959,39 @@ ctables_check_label_position (struct ctables_table *t, enum pivot_axis_type a)
       const struct variable *vi = ni->vars[ni->n - 1];
       struct ctables_categories *ci = t->categories[var_get_dict_index (vi)];
 
-      if (ni->n - 1 == ni->scale_idx)
-        {
-          msg (SE, _("%s=%s requires the variables to be moved to be "
-                     "categorical, but %s is a scale variable."),
-               subcommand_name, pos_name, var_get_name (vi));
-          return false;
-        }
       if (var_get_width (v0) != var_get_width (vi))
         {
-          msg (SE, _("%s=%s requires the variables to be "
-                     "moved to have the same width, but %s has "
-                     "width %d and %s has width %d."),
-               subcommand_name, pos_name,
+          msg (SE, _("To move category labels from one axis to another, "
+                     "the variables whose labels are to be moved must all "
+                     "have the same width, but %s has width %d and %s has "
+                     "width %d."),
                var_get_name (v0), var_get_width (v0),
                var_get_name (vi), var_get_width (vi));
+          lex_ofs_msg (lexer, SN, t->clabels_start_ofs, t->clabels_end_ofs,
+                       _("This syntax moves category labels to another axis."));
           return false;
         }
       if (!val_labs_equal (var_get_value_labels (v0),
                            var_get_value_labels (vi)))
         {
-          msg (SE, _("%s=%s requires the variables to be "
-                     "moved to have the same value labels, but %s "
-                     "and %s have different value labels."),
-               subcommand_name, pos_name,
+          msg (SE, _("To move category labels from one axis to another, "
+                     "the variables whose labels are to be moved must all "
+                     "have the same value labels, but %s and %s have "
+                     "different value labels."),
                var_get_name (v0), var_get_name (vi));
+          lex_ofs_msg (lexer, SN, t->clabels_start_ofs, t->clabels_end_ofs,
+                       _("This syntax moves category labels to another axis."));
           return false;
         }
       if (!ctables_categories_equal (c0, ci))
         {
-          msg (SE, _("%s=%s requires the variables to be "
-                     "moved to have the same category "
-                     "specifications, but %s and %s have different "
-                     "category specifications."),
-               subcommand_name, pos_name,
+          msg (SE, _("To move category labels from one axis to another, "
+                     "the variables whose labels are to be moved must all "
+                     "have the same category specifications, but %s and %s "
+                     "have different category specifications."),
                var_get_name (v0), var_get_name (vi));
+          lex_ofs_msg (lexer, SN, t->clabels_start_ofs, t->clabels_end_ofs,
+                       _("This syntax moves category labels to another axis."));
           return false;
         }
     }
@@ -5051,7 +5068,7 @@ enumerate_sum_vars (const struct ctables_axis *a,
 }
 
 static bool
-ctables_prepare_table (struct ctables_table *t)
+ctables_prepare_table (struct ctables_table *t, struct lexer *lexer)
 {
   for (enum pivot_axis_type a = 0; a < PIVOT_N_AXES; a++)
     if (t->axes[a])
@@ -5288,8 +5305,8 @@ ctables_prepare_table (struct ctables_table *t)
   enumerate_sum_vars (t->axes[t->summary_axis],
                       &t->sum_vars, &t->n_sum_vars, &allocated_sum_vars);
 
-  return (ctables_check_label_position (t, PIVOT_AXIS_ROW)
-          && ctables_check_label_position (t, PIVOT_AXIS_COLUMN));
+  return (ctables_check_label_position (t, lexer, PIVOT_AXIS_ROW)
+          && ctables_check_label_position (t, lexer, PIVOT_AXIS_COLUMN));
 }
 
 static void
@@ -5800,7 +5817,8 @@ ctables_parse_pproperties (struct lexer *lexer, struct ctables *ct)
         = ctables_find_postcompute (ct, lex_tokcstr (lexer));
       if (!pc)
         {
-          msg (SE, _("Unknown computed category &%s."), lex_tokcstr (lexer));
+          lex_error (lexer, _("Unknown computed category &%s."),
+                     lex_tokcstr (lexer));
           goto error;
         }
       lex_get (lexer);
@@ -6017,6 +6035,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
           double widths[2] = { SYSMIS, SYSMIS };
           double units_per_inch = 72.0;
 
+          int start_ofs = lex_ofs (lexer);
           while (lex_token (lexer) != T_SLASH)
             {
               if (lex_match_id (lexer, "MINCOLWIDTH"))
@@ -6087,7 +6106,9 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
           if (widths[0] != SYSMIS && widths[1] != SYSMIS
               && widths[0] > widths[1])
             {
-              msg (SE, _("MINCOLWIDTH must not be greater than MAXCOLWIDTH."));
+              lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+                             _("MINCOLWIDTH must not be greater than "
+                               "MAXCOLWIDTH."));
               goto error;
             }
 
@@ -6200,6 +6221,15 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
           lex_error_expecting (lexer, "FORMAT", "VLABELS", "MRSETS",
                                "SMISSING", "PCOMPUTE", "PPROPERTIES",
                                "WEIGHT", "HIDESMALLCOUNTS", "TABLE");
+          if (lex_match_id (lexer, "SLABELS")
+              || lex_match_id (lexer, "CLABELS")
+              || lex_match_id (lexer, "CRITERIA")
+              || lex_match_id (lexer, "CATEGORIES")
+              || lex_match_id (lexer, "TITLES")
+              || lex_match_id (lexer, "SIGTEST")
+              || lex_match_id (lexer, "COMPARETEST"))
+            lex_next_msg (lexer, SN, -1, -1,
+                          _("TABLE must appear before this subcommand."));
           goto error;
         }
 
@@ -6343,7 +6373,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
 
       if (lex_token (lexer) == T_ENDCMD)
         {
-          if (!ctables_prepare_table (t))
+          if (!ctables_prepare_table (t, lexer))
             goto error;
           break;
         }
@@ -6386,6 +6416,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
             }
           else if (lex_match_id (lexer, "CLABELS"))
             {
+              int start_ofs = lex_ofs (lexer) - 1;
               if (lex_match_id (lexer, "AUTO"))
                 {
                   t->label_axis[PIVOT_AXIS_ROW] = PIVOT_AXIS_ROW;
@@ -6423,6 +6454,24 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
                                        "COLLABELS");
                   goto error;
                 }
+              int end_ofs = lex_ofs (lexer) - 1;
+
+              if (t->label_axis[PIVOT_AXIS_ROW] != PIVOT_AXIS_ROW
+                  && t->label_axis[PIVOT_AXIS_COLUMN] != PIVOT_AXIS_COLUMN)
+                {
+                  msg (SE, _("ROWLABELS and COLLABELS may not both be "
+                             "specified."));
+
+                  lex_ofs_msg (lexer, SN, t->clabels_start_ofs,
+                               t->clabels_end_ofs,
+                               _("This is the first specification."));
+                  lex_ofs_msg (lexer, SN, start_ofs, end_ofs,
+                               _("This is the second specification."));
+                  goto error;
+                }
+
+              t->clabels_start_ofs = start_ofs;
+              t->clabels_end_ofs = end_ofs;
             }
           else if (lex_match_id (lexer, "CRITERIA"))
             {
@@ -6540,7 +6589,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
             }
           else if (lex_match_id (lexer, "COMPARETEST"))
             {
-              int start_ofs = lex_ofs (lexer);
+              int start_ofs = lex_ofs (lexer) - 1;
               if (!t->pairwise)
                 {
                   t->pairwise = xmalloc (sizeof *t->pairwise);
@@ -6690,6 +6739,16 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
               lex_error_expecting (lexer, "TABLE", "SLABELS", "CLABELS",
                                    "CRITERIA", "CATEGORIES", "TITLES",
                                    "SIGTEST", "COMPARETEST");
+              if (lex_match_id (lexer, "FORMAT")
+                  || lex_match_id (lexer, "VLABELS")
+                  || lex_match_id (lexer, "MRSETS")
+                  || lex_match_id (lexer, "SMISSING")
+                  || lex_match_id (lexer, "PCOMPUTE")
+                  || lex_match_id (lexer, "PPROPERTIES")
+                  || lex_match_id (lexer, "WEIGHT")
+                  || lex_match_id (lexer, "HIDESMALLCOUNTS"))
+                lex_next_msg (lexer, SN, -1, -1,
+                              _("This subcommand must appear before TABLE."));
               goto error;
             }
 
@@ -6698,19 +6757,12 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
         }
 
       if (t->label_axis[PIVOT_AXIS_ROW] != PIVOT_AXIS_ROW)
-        {
-          t->clabels_from_axis = PIVOT_AXIS_ROW;
-          if (t->label_axis[PIVOT_AXIS_COLUMN] != PIVOT_AXIS_COLUMN)
-            {
-              msg (SE, _("ROWLABELS and COLLABELS may not both be specified."));
-              goto error;
-            }
-        }
+        t->clabels_from_axis = PIVOT_AXIS_ROW;
       else if (t->label_axis[PIVOT_AXIS_COLUMN] != PIVOT_AXIS_COLUMN)
         t->clabels_from_axis = PIVOT_AXIS_COLUMN;
       t->clabels_to_axis = t->label_axis[t->clabels_from_axis];
 
-      if (!ctables_prepare_table (t))
+      if (!ctables_prepare_table (t, lexer))
         goto error;
     }
   while (lex_token (lexer) != T_ENDCMD);

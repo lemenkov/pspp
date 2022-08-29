@@ -47,6 +47,8 @@ AT_DATA([pe.sps], [[PERMI|SIONS /FILE='foobar' PERMISSIONS=WRITEABLE.
 ]])
 
 AT_CHECK([pspp -O format=csv pe.sps], [1], [dnl
-pe.sps:1.6: error: PERMISSIONS: Syntax error at `|': expecting STRING.
+"pe.sps:1.6: error: PERMISSIONS: Syntax error expecting STRING.
+    1 | PERMI|SIONS /FILE='foobar' PERMISSIONS=WRITEABLE.
+      |      ^"
 ])
 AT_CLEANUP

@@ -1758,7 +1758,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   if (totals_seen && nototals_seen)
     {
-      msg (SE, _("%s and %s are mutually exclusive"), "TOTAL", "NOTOTAL");
+      msg (SE, _("%s and %s are mutually exclusive."), "TOTAL", "NOTOTAL");
       goto error;
     }
 

@@ -58,9 +58,9 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
   handle_name = xstrdup (lex_tokcstr (lexer));
   if (fh_from_id (handle_name))
     {
-      msg (SE, _("File handle %s is already defined.  "
-                 "Use %s before redefining a file handle."),
-	   handle_name, "CLOSE FILE HANDLE");
+      lex_error (lexer, _("File handle %s is already defined.  "
+                          "Use %s before redefining a file handle."),
+                 handle_name, "CLOSE FILE HANDLE");
       goto exit;
     }
 
@@ -74,7 +74,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (file_name)
             {
-              lex_sbc_only_once ("NAME");
+              lex_sbc_only_once (lexer, "NAME");
               goto exit;
             }
 
@@ -89,7 +89,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (lrecl)
             {
-              lex_sbc_only_once ("LRECL");
+              lex_sbc_only_once (lexer, "LRECL");
               goto exit;
             }
 
@@ -103,7 +103,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (tabwidth >= 0)
             {
-              lex_sbc_only_once ("TABWIDTH");
+              lex_sbc_only_once (lexer, "TABWIDTH");
               goto exit;
             }
           lex_match (lexer, T_EQUALS);
@@ -117,7 +117,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (mode != MODE_DEFAULT)
             {
-              lex_sbc_only_once ("MODE");
+              lex_sbc_only_once (lexer, "MODE");
               goto exit;
             }
           lex_match (lexer, T_EQUALS);
@@ -140,7 +140,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (ends >= 0)
             {
-              lex_sbc_only_once ("ENDS");
+              lex_sbc_only_once (lexer, "ENDS");
               goto exit;
             }
           lex_match (lexer, T_EQUALS);
@@ -159,7 +159,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (recform)
             {
-              lex_sbc_only_once ("RECFORM");
+              lex_sbc_only_once (lexer, "RECFORM");
               goto exit;
             }
           lex_match (lexer, T_EQUALS);
@@ -181,7 +181,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (encoding)
             {
-              lex_sbc_only_once ("ENCODING");
+              lex_sbc_only_once (lexer, "ENCODING");
               goto exit;
             }
 
@@ -323,8 +323,6 @@ struct file_handle *
 fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
           struct session *session)
 {
-  struct file_handle *handle;
-
   if (session != NULL && lex_token (lexer) == T_ID)
     {
       struct dataset *ds;
@@ -337,13 +335,16 @@ fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
         }
     }
 
+  int start_ofs = lex_ofs (lexer);
+  struct file_handle *handle;
   if (lex_match_id (lexer, "INLINE"))
     handle = fh_inline_file ();
   else
     {
       if (lex_token (lexer) != T_ID && !lex_is_string (lexer))
         {
-          lex_error (lexer, _("expecting a file name or handle name"));
+          lex_error (lexer,
+                     _("Syntax error expecting a file name or handle name."));
           return NULL;
         }
 
@@ -358,8 +359,9 @@ fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
 
   if (!(fh_get_referent (handle) & referent_mask))
     {
-      msg (SE, _("Handle for %s not allowed here."),
-           referent_name (fh_get_referent (handle)));
+      lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+                     _("Handle for %s not allowed here."),
+                     referent_name (fh_get_referent (handle)));
       fh_unref (handle);
       return NULL;
     }

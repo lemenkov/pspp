@@ -138,6 +138,8 @@ SET SAFER=ON.
 HOST COMMAND=[['sleep 10']] TIMELIMIT=0.1.
 ])
 AT_CHECK([pspp -O format=csv host.sps], [1], [dnl
-host.sps:2: error: HOST: This command not allowed when the SAFER option is set.
+"host.sps:2.1-2.4: error: HOST: This command not allowed when the SAFER option is set.
+    2 | HOST COMMAND=[['sleep 10']] TIMELIMIT=0.1.
+      | ^~~~"
 ])
 AT_CLEANUP

@@ -742,8 +742,9 @@ cmd_begin_data (struct lexer *lexer, struct dataset *ds)
 
   if (!fh_is_locked (fh_inline_file (), FH_ACC_READ))
     {
-      msg (SE, _("This command is not valid here since the current "
-                 "input program does not access the inline file."));
+      lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                     _("This command is not valid here since the current "
+                       "input program does not access the inline file."));
       return CMD_CASCADING_FAILURE;
     }
   lex_match (lexer, T_ENDCMD);

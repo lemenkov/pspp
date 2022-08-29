@@ -163,7 +163,7 @@ parse_if_clause (struct lexer *lexer, struct dataset *ds,
 {
   if (*condition != NULL)
     {
-      lex_sbc_only_once ("IF");
+      lex_sbc_only_once (lexer, "IF");
       return false;
     }
 
@@ -214,7 +214,7 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
 
       if (*e != NULL)
         {
-          lex_sbc_only_once (e == &loop->last_expr ? "TO" : "BY");
+          lex_sbc_only_once (lexer, e == &loop->last_expr ? "TO" : "BY");
           return false;
         }
       *e = expr_parse (lexer, ds, VAL_NUMERIC);

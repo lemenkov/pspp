@@ -454,9 +454,14 @@ END DATA.
 DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
 ])
 AT_CHECK([pspp descriptives.sps], [1], [dnl
-descriptives.sps:5.29-5.33: error: DESCRIPTIVES: Syntax error at `COUNT':
-expecting statistic name: reverting to default.
+descriptives.sps:5.29-5.33: error: DESCRIPTIVES: Syntax error expecting one of
+the following: MEAN, SEMEAN, STDDEV, VARIANCE, KURTOSIS, SEKURTOSIS, SKEWNESS,
+SESKEWNESS, RANGE, MINIMUM, MAXIMUM, SUM.
+    5 | DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
+      |                             ^~~~~
 
-descriptives.sps:5.35-5.38: error: DESCRIPTIVES: Syntax error at `MEAN'.
+descriptives.sps:5.35-5.38: error: DESCRIPTIVES: Syntax error.
+    5 | DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
+      |                                   ^~~~
 ])
 AT_CLEANUP

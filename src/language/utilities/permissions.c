@@ -43,6 +43,14 @@ int change_permissions(const char *file_name, enum PER per);
 int
 cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
 {
+  if (settings_get_safer_mode ())
+    {
+      lex_next_error (lexer, -1, -1,
+                      _("This command not allowed when the %s option is set."),
+                      "SAFER");
+      return 0;
+    }
+
   char  *fn = NULL;
   const char *str = NULL;
   lex_match (lexer, T_SLASH);
@@ -99,12 +107,6 @@ change_permissions (const char *file_name, enum PER per)
   char *locale_file_name;
   struct stat buf;
   mode_t mode;
-
-  if (settings_get_safer_mode ())
-    {
-      msg (SE, _("This command not allowed when the %s option is set."), "SAFER");
-      return 0;
-    }
 
   locale_file_name = utf8_to_filename (file_name);
   if (-1 == stat(locale_file_name, &buf))

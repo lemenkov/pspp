@@ -53,14 +53,11 @@
 #define N_(msgid) msgid
 
 #if !HAVE_FORK
+#define TIME_LIMIT_SUPPORTED 0
 static bool
 run_commands (const struct string_array *commands, double time_limit)
 {
-  if (time_limit != DBL_MAX)
-    {
-      msg (SE, _("Time limit not supported on this platform."));
-      return false;
-    }
+  assert (time_limit == DBL_MAX);
 
   for (size_t i = 0; i < commands->n; i++)
     {
@@ -80,6 +77,7 @@ run_commands (const struct string_array *commands, double time_limit)
   return true;
 }
 #else
+#define TIME_LIMIT_SUPPORTED 1
 static bool
 run_command (const char *command, struct timespec timeout)
 {
@@ -289,7 +287,9 @@ cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   if (settings_get_safer_mode ())
     {
-      msg (SE, _("This command not allowed when the %s option is set."), "SAFER");
+      lex_next_error (lexer, -1, -1,
+                      _("This command not allowed when the %s option is set."),
+                      "SAFER");
       return CMD_FAILURE;
     }
 
@@ -314,6 +314,7 @@ cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
   double time_limit = DBL_MAX;
   if (lex_match_id (lexer, "TIMELIMIT"))
     {
+      int time_limit_start = lex_ofs (lexer) - 1;
       if (!lex_force_match (lexer, T_EQUALS)
           || !lex_force_num (lexer))
         {
@@ -324,6 +325,15 @@ cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
       double num = lex_number (lexer);
       lex_get (lexer);
       time_limit = num < 0.0 ? 0.0 : num;
+
+      int time_limit_end = lex_ofs (lexer) - 1;
+      if (!TIME_LIMIT_SUPPORTED)
+        {
+          lex_ofs_error (lexer, time_limit_start, time_limit_end,
+                         _("Time limit not supported on this platform."));
+          string_array_destroy (&commands);
+          return false;
+        }
     }
 
   enum cmd_result result = lex_end_of_command (lexer);

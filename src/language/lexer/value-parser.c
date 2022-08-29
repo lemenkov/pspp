@@ -48,6 +48,8 @@ bool
 parse_num_range (struct lexer *lexer,
                  double *x, double *y, const enum fmt_type *format)
 {
+  int start_ofs = lex_ofs (lexer);
+
   if (lex_match_id (lexer, "LO") || lex_match_id (lexer, "LOWEST"))
     *x = LOWEST;
   else if (!parse_number (lexer, x, format))
@@ -63,15 +65,17 @@ parse_num_range (struct lexer *lexer,
       if (*y < *x)
         {
           double t;
-          msg (SW, _("The high end of the range (%.*g) is below the low end "
-                     "(%.*g).  The range will be treated as if reversed."),
-               DBL_DIG + 1, *y, DBL_DIG + 1, *x);
+          lex_ofs_msg (lexer, SW, start_ofs, lex_ofs (lexer) - 1,
+                       ("The high end of the range (%.*g) is below the low end "
+                        "(%.*g).  The range will be treated as if reversed."),
+                       DBL_DIG + 1, *y, DBL_DIG + 1, *x);
           t = *x;
           *x = *y;
           *y = t;
         }
       else if (*x == *y)
-        msg (SW, _("Ends of range are equal (%.*g)."), DBL_DIG + 1, *x);
+        lex_ofs_msg (lexer, SW, start_ofs, lex_ofs (lexer) - 1,
+                     _("Ends of range are equal (%.*g)."), DBL_DIG + 1, *x);
 
       return true;
     }
@@ -79,7 +83,9 @@ parse_num_range (struct lexer *lexer,
     {
       if (*x == LOWEST)
         {
-          msg (SE, _("%s or %s must be part of a range."), "LO", "LOWEST");
+          lex_next_msg (lexer, SW, -1, -1,
+                        _("%s or %s must be part of a range."),
+                         "LO", "LOWEST");
           return false;
         }
       *y = *x;
@@ -110,7 +116,8 @@ parse_number (struct lexer *lexer, double *x, const enum fmt_type *format)
       *x = v.f;
       if (*x == SYSMIS)
         {
-          msg (SE, _("System-missing value is not valid here."));
+          lex_next_error (lexer, -1, -1,
+                          _("System-missing value is not valid here."));
           return false;
         }
       return true;

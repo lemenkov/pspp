@@ -48,8 +48,10 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
   int status = CMD_CASCADING_FAILURE;
 
   if (proc_make_temporary_transformations_permanent (ds))
-    msg (SE, _("%s may not be used after %s.  "
-               "Temporary transformations will be made permanent."), "RENAME VARS", "TEMPORARY");
+    lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                   _("%s may not be used after %s.  "
+                     "Temporary transformations will be made permanent."),
+                   "RENAME VARS", "TEMPORARY");
 
   do
     {

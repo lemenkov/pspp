@@ -123,7 +123,8 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
       size_t name_len = strlen (name);
       if (find_dummy_var (dummies, name, name_len))
         {
-          msg (SE, _("Dummy variable name `%s' is given twice."), name);
+          lex_error (lexer, _("Dummy variable name `%s' is given twice."),
+                     name);
           goto error;
         }
 
@@ -359,7 +360,7 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
         {
           if (!lex_is_integer (lexer))
 	    {
-	      msg (SE, _("Ranges may only have integer bounds."));
+	      lex_error (lexer, _("Ranges may only have integer bounds."));
 	      return false;
 	    }
 
@@ -373,7 +374,8 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
 	  long b = lex_integer (lexer);
           if (b < a)
             {
-              msg (SE, _("%ld TO %ld is an invalid range."), a, b);
+              lex_next_error (lexer, -2, 0,
+                              _("%ld TO %ld is an invalid range."), a, b);
               return false;
             }
 	  lex_get (lexer);

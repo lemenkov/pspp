@@ -38,7 +38,9 @@ list.
 ])
 
 AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
-regression.sps:16: warning: REGRESSION: REGRESSION with SAVE ignores FILTER.  All cases will be processed.
+"regression.sps:16.82-16.96: warning: REGRESSION: REGRESSION with SAVE ignores FILTER.  All cases will be processed.
+   16 | regression /variables=v0 v1 v2 /statistics defaults /dependent=v2 /method=enter /save=pred resid.
+      |                                                                                  ^~~~~~~~~~~~~~~"
 
 Table: Model Summary (v2)
 R,R Square,Adjusted R Square,Std. Error of the Estimate

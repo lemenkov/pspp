@@ -79,7 +79,7 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
       expr = expr_parse (lexer, ds, VAL_NUMERIC);
       if (lex_token (lexer) != T_ENDCMD)
 	{
-          lex_error (lexer, _("expecting end of command"));
+          lex_error (lexer, _("Syntax error expecting end of command."));
           goto error;
 	}
     }

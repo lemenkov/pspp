@@ -151,7 +151,7 @@ struct msg_handler
     void (*output_msg) (const struct msg *, void *aux);
     void *aux;
 
-    void (*lex_source_ref) (const struct lex_source *);
+    struct lex_source *(*lex_source_ref) (const struct lex_source *);
     void (*lex_source_unref) (struct lex_source *);
     struct substring (*lex_source_get_line) (const struct lex_source *,
                                              int line);

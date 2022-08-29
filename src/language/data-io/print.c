@@ -190,7 +190,8 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 	print_table = false;
       else
 	{
-	  lex_error (lexer, _("expecting a valid subcommand"));
+          lex_error_expecting (lexer, "OUTFILE", "ENCODING", "RECORDS",
+                               "TABLE", "NOTABLE");
 	  goto error;
 	}
     }

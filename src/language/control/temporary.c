@@ -35,12 +35,13 @@
 
 /* Parses the TEMPORARY command. */
 int
-cmd_temporary (struct lexer *lexer UNUSED, struct dataset *ds)
+cmd_temporary (struct lexer *lexer, struct dataset *ds)
 {
   if (!proc_in_temporary_transformations (ds))
     proc_start_temporary_transformations (ds);
   else
-    msg (SE, _("This command may only appear once between "
-               "procedures and procedure-like commands."));
+    lex_ofs_error (lexer, 0, 0,
+                   _("This command may only appear once between "
+                     "procedures and procedure-like commands."));
   return CMD_SUCCESS;
 }

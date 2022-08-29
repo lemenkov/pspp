@@ -930,15 +930,21 @@ COMPUTE y(5)=1.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.10: error: COMPUTE: Syntax error at end of command: expecting `='.
+matrix.sps:2.10: error: COMPUTE: Syntax error expecting `='.
+    2 | COMPUTE x.
+      |          ^
 
-matrix.sps:3.11: error: COMPUTE: Syntax error at end of command.
+matrix.sps:3.11: error: COMPUTE: Syntax error.
+    3 | COMPUTE x=.
+      |           ^
 
 matrix.sps:4.9: error: MATRIX: Undefined variable x.
     4 | COMPUTE x(5)=1.
       |         ^
 
-matrix.sps:5: error: COMPUTE: Undefined variable y.
+matrix.sps:5.9: error: COMPUTE: Undefined variable y.
+    5 | COMPUTE y(5)=1.
+      |         ^
 ])
 AT_CLEANUP
 
@@ -3121,7 +3127,9 @@ BREAK.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2: error: BREAK: BREAK not inside LOOP.
+matrix.sps:2.1-2.5: error: BREAK: BREAK not inside LOOP.
+    2 | BREAK.
+      | ^~~~~
 ])
 AT_CLEANUP
 
@@ -3302,59 +3310,130 @@ xyzzy
 .
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.6: error: READ: Syntax error at `!': expecting identifier.
+matrix.sps:2.6: error: READ: Syntax error expecting identifier.
+    2 | READ !.
+      |      ^
 
-matrix.sps:3.13: error: READ: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:3.13: error: READ: Syntax error expecting a file name or handle
+name.
+    3 | READ x/FILE=!.
+      |             ^
 
-matrix.sps:4.17: error: READ: Syntax error at `!': expecting string.
+matrix.sps:4.17: error: READ: Syntax error expecting string.
+    4 | READ x/ENCODING=!.
+      |                 ^
 
-matrix.sps:5.14: error: READ: Syntax error at `!': Expected positive integer
-for FIELD.
+matrix.sps:5.14: error: READ: Syntax error expecting positive integer for
+FIELD.
+    5 | READ x/FIELD=!.
+      |              ^
 
-matrix.sps:6.16: error: READ: Syntax error at `!': expecting `TO'.
+matrix.sps:6.16: error: READ: Syntax error expecting `TO'.
+    6 | READ x/FIELD=1 !.
+      |                ^
 
-matrix.sps:7.19: error: READ: Syntax error at `!': Expected positive integer
-for TO.
+matrix.sps:7.19: error: READ: Syntax error expecting positive integer for TO.
+    7 | READ x/FIELD=1 TO !.
+      |                   ^
 
-matrix.sps:8.19: error: READ: Syntax error at `0': Expected positive integer
-for TO.
+matrix.sps:8.19: error: READ: Syntax error expecting positive integer for TO.
+    8 | READ x/FIELD=1 TO 0.
+      |                   ^
 
-matrix.sps:9.25: error: READ: Syntax error at `!': Expected integer between 1
-and 10 for BY.
+matrix.sps:9.25: error: READ: Syntax error expecting integer between 1 and 10
+for BY.
+    9 | READ x/FIELD=1 TO 10 BY !.
+      |                         ^
 
-matrix.sps:10: error: READ: BY 6 does not evenly divide record width 10.
+matrix.sps:10.14-10.25: error: READ: Field width 6 does not evenly divide
+record width 10.
+   10 | READ x/FIELD=1 TO 10 BY 6.
+      |              ^~~~~~~~~~~~
 
-matrix.sps:11.13: error: READ: Syntax error at `!'.
+matrix.sps:10.14-10.20: note: READ: This syntax designates the record width.
+   10 | READ x/FIELD=1 TO 10 BY 6.
+      |              ^~~~~~~
 
-matrix.sps:12.13: error: READ: Syntax error at `!': expecting RECTANGULAR or
-SYMMETRIC.
+matrix.sps:10.25: note: READ: This syntax specifies the field width.
+   10 | READ x/FIELD=1 TO 10 BY 6.
+      |                         ^
 
-matrix.sps:13.15: error: READ: Syntax error at `!': expecting identifier.
+matrix.sps:11.13: error: READ: Syntax error.
+   11 | READ x/SIZE=!.
+      |             ^
 
-matrix.sps:14: error: READ: Subcommand FORMAT may only be specified once.
+matrix.sps:12.13: error: READ: Syntax error expecting RECTANGULAR or SYMMETRIC.
+   12 | READ x/MODE=!.
+      |             ^
 
-matrix.sps:15.15-15.22: error: READ: Syntax error at `'5XYZZY'': Unknown format
-XYZZY.
+matrix.sps:13.15: error: READ: Syntax error expecting identifier.
+   13 | READ x/FORMAT=!.
+      |               ^
 
-matrix.sps:16: error: READ: Unknown format type `XYZZY'.
+matrix.sps:14.20-14.25: error: READ: Subcommand FORMAT may only be specified
+once.
+   14 | READ x/FORMAT=F8.2/FORMAT=F8.2.
+      |                    ^~~~~~
 
-matrix.sps:17.8: error: READ: Syntax error at `!': expecting FILE, FIELD, MODE,
-REREAD, or FORMAT.
+matrix.sps:15.15-15.22: error: READ: Unknown format XYZZY.
+   15 | READ x/FORMAT='5XYZZY'.
+      |               ^~~~~~~~
+
+matrix.sps:16.15-16.19: error: READ: Unknown format type `XYZZY'.
+   16 | READ x/FORMAT=XYZZY.
+      |               ^~~~~
+
+matrix.sps:17.8: error: READ: Syntax error expecting FILE, FIELD, MODE, REREAD,
+or FORMAT.
+   17 | READ x/!.
+      |        ^
 
 matrix.sps:18: error: READ: Required subcommand FIELD was not specified.
 
 matrix.sps:19: error: READ: SIZE is required for reading data into a full
 matrix (as opposed to a submatrix).
 
+matrix.sps:19.6: note: READ: This expression designates a full matrix.
+   19 | READ x/FIELD=1 TO 10.
+      |      ^
+
 matrix.sps:20: error: READ: Required subcommand FILE was not specified.
 
 matrix.sps:21: error: READ: 15 repetitions cannot fit in record width 10.
 
-matrix.sps:22: error: READ: FORMAT specifies field width 5 but BY specifies 2.
+matrix.sps:21.57-21.61: note: READ: This syntax designates the number of
+repetitions.
+   21 | READ x/FIELD=1 TO 10/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='15F'.
+      |                                                         ^~~~~
 
-matrix.sps:23: error: READ: FORMAT specifies 2 repetitions with record width
-10, which implies field width 5, but BY specifies field width 2.
+matrix.sps:21.14-21.20: note: READ: This syntax designates the record width.
+   21 | READ x/FIELD=1 TO 10/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='15F'.
+      |              ^~~~~~~
+
+matrix.sps:22: error: READ: This command specifies two different field widths.
+
+matrix.sps:22.62-22.63: note: READ: This syntax specifies field width 5.
+   22 | READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT=F5.
+      |                                                              ^~
+
+matrix.sps:22.25: note: READ: This syntax specifies field width 2.
+   22 | READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT=F5.
+      |                         ^
+
+matrix.sps:23: error: READ: This command specifies two different field widths.
+
+matrix.sps:23.62-23.65: note: READ: This syntax specifies 2 repetitions.
+   23 | READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='2F'.
+      |                                                              ^~~~
+
+matrix.sps:23.14-23.20: note: READ: This syntax designates record width 10,
+which divided by 2 repetitions implies field width 5.
+   23 | READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='2F'.
+      |              ^~~~~~~
+
+matrix.sps:23.25: note: READ: This syntax specifies field width 2.
+   23 | READ x/FIELD=1 TO 10 BY 2/SIZE={1,2}/FILE='xyzzy.txt'/FORMAT='2F'.
+      |                         ^
 
 matrix.sps:24.27-24.35: error: MATRIX: SIZE must evaluate to a scalar or a 2-
 element vector, not a 2×2 matrix.
@@ -3456,52 +3535,108 @@ WRITE {1,2}/FIELD=1 TO 10/OUTFILE='matrix.txt'/MODE=TRIANGULAR.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.7: error: WRITE: Syntax error at `!'.
+matrix.sps:2.7: error: WRITE: Syntax error.
+    2 | WRITE !.
+      |       ^
 
-matrix.sps:3.17: error: WRITE: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:3.17: error: WRITE: Syntax error expecting a file name or handle
+name.
+    3 | WRITE 1/OUTFILE=!.
+      |                 ^
 
-matrix.sps:4.18: error: WRITE: Syntax error at `!': expecting string.
+matrix.sps:4.18: error: WRITE: Syntax error expecting string.
+    4 | WRITE 1/ENCODING=!.
+      |                  ^
 
-matrix.sps:5.15: error: WRITE: Syntax error at `!': Expected positive integer
-for FIELD.
+matrix.sps:5.15: error: WRITE: Syntax error expecting positive integer for
+FIELD.
+    5 | WRITE 1/FIELD=!.
+      |               ^
 
-matrix.sps:6.17: error: WRITE: Syntax error at `!': expecting `TO'.
+matrix.sps:6.17: error: WRITE: Syntax error expecting `TO'.
+    6 | WRITE 1/FIELD=1 !.
+      |                 ^
 
-matrix.sps:7.20: error: WRITE: Syntax error at `0': Expected positive integer
-for TO.
+matrix.sps:7.20: error: WRITE: Syntax error expecting positive integer for TO.
+    7 | WRITE 1/FIELD=1 TO 0.
+      |                    ^
 
-matrix.sps:8.26-8.27: error: WRITE: Syntax error at `20': Expected integer
-between 1 and 10 for BY.
+matrix.sps:8.26-8.27: error: WRITE: Syntax error expecting integer between 1
+and 10 for BY.
+    8 | WRITE 1/FIELD=1 TO 10 BY 20.
+      |                          ^~
 
-matrix.sps:9: error: WRITE: BY 6 does not evenly divide record width 10.
+matrix.sps:9.15-9.26: error: WRITE: Field width 6 does not evenly divide record
+width 10.
+    9 | WRITE 1/FIELD=1 TO 10 BY 6.
+      |               ^~~~~~~~~~~~
 
-matrix.sps:10.14-10.24: error: WRITE: Syntax error at `TRAPEZOIDAL': expecting
-RECTANGULAR or TRIANGULAR.
+matrix.sps:9.15-9.21: note: WRITE: This syntax designates the record width.
+    9 | WRITE 1/FIELD=1 TO 10 BY 6.
+      |               ^~~~~~~
 
-matrix.sps:11: error: WRITE: Subcommand FORMAT may only be specified once.
+matrix.sps:9.26: note: WRITE: This syntax specifies the field width.
+    9 | WRITE 1/FIELD=1 TO 10 BY 6.
+      |                          ^
 
-matrix.sps:12.16-12.22: error: WRITE: Syntax error at `'5ASDF'': Unknown format
-ASDF.
+matrix.sps:10.14-10.24: error: WRITE: Syntax error expecting RECTANGULAR or
+TRIANGULAR.
+   10 | WRITE 1/MODE=TRAPEZOIDAL.
+      |              ^~~~~~~~~~~
 
-matrix.sps:13: error: WRITE: Unknown format type `ASDF'.
+matrix.sps:11.19-11.24: error: WRITE: Subcommand FORMAT may only be specified
+once.
+   11 | WRITE 1/FORMAT=F5/FORMAT=F5.
+      |                   ^~~~~~
 
-matrix.sps:14.9: error: WRITE: Syntax error at `!': expecting OUTFILE, FIELD,
-MODE, HOLD, or FORMAT.
+matrix.sps:12.16-12.22: error: WRITE: Unknown format ASDF.
+   12 | WRITE 1/FORMAT='5ASDF'.
+      |                ^~~~~~~
+
+matrix.sps:13.16-13.20: error: WRITE: Unknown format type `ASDF'.
+   13 | WRITE 1/FORMAT=ASDF5.
+      |                ^~~~~
+
+matrix.sps:14.9: error: WRITE: Syntax error expecting OUTFILE, FIELD, MODE,
+HOLD, or FORMAT.
+   14 | WRITE 1/!.
+      |         ^
 
 matrix.sps:15: error: WRITE: Required subcommand FIELD was not specified.
 
 matrix.sps:16: error: WRITE: Required subcommand OUTFILE was not specified.
 
-matrix.sps:17: error: WRITE: 15 repetitions cannot fit in record width 10.
+matrix.sps:17.51-17.55: note: WRITE: This syntax designates the number of
+repetitions.
+   17 | WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT='15F'.
+      |                                                   ^~~~~
 
-matrix.sps:18: error: WRITE: FORMAT specifies 5 repetitions with record width
-10, which implies field width 2, but BY specifies field width 5.
+matrix.sps:17.15-17.21: note: WRITE: This syntax designates the record width.
+   17 | WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT='15F'.
+      |               ^~~~~~~
+
+matrix.sps:18: error: WRITE: This command specifies two different field widths.
+
+matrix.sps:18.56-18.59: note: WRITE: This syntax specifies 5 repetitions.
+   18 | WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT='5F'.
+      |                                                        ^~~~
+
+matrix.sps:18.15-18.21: note: WRITE: This syntax designates record width 10,
+which divided by 5 repetitions implies field width 2.
+   18 | WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT='5F'.
+      |               ^~~~~~~
+
+matrix.sps:18.26: note: WRITE: This syntax specifies field width 5.
+   18 | WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT='5F'.
+      |                          ^
 
 matrix.sps:19: error: WRITE: Output format E5.0 specifies width 5, but E
 requires a width between 6 and 40.
 
-matrix.sps:20: error: WRITE: Format A9 is too wide for 8-byte matrix elements.
+matrix.sps:20.51-20.52: error: WRITE: Format A9 is too wide for 8-byte matrix
+elements.
+   20 | WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT=A9.
+      |                                                   ^~
 
 matrix.sps:21.7-21.11: error: MATRIX: WRITE with MODE=TRIANGULAR requires a
 square matrix but the matrix to be written has dimensions 1×2.
@@ -3697,38 +3832,64 @@ GET x/VARIABLES=a.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:12.5: error: GET: Syntax error at `!': expecting identifier.
+matrix.sps:12.5: error: GET: Syntax error expecting identifier.
+   12 | GET !.
+      |     ^
 
-matrix.sps:13.17: error: GET: Syntax error at `!': expecting variable name.
+matrix.sps:13.17: error: GET: Syntax error expecting variable name.
+   13 | GET x/VARIABLES=!.
+      |                 ^
 
-matrix.sps:14.12: error: GET: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:14.12: error: GET: Syntax error expecting a file name or handle
+name.
+   14 | GET x/FILE=!.
+      |            ^
 
-matrix.sps:15.16: error: GET: Syntax error at `!': expecting string.
+matrix.sps:15.16: error: GET: Syntax error expecting string.
+   15 | GET x/ENCODING=!.
+      |                ^
 
-matrix.sps:16.13: error: GET: Syntax error at `!': expecting identifier.
+matrix.sps:16.13: error: GET: Syntax error expecting identifier.
+   16 | GET x/NAMES=!.
+      |             ^
 
-matrix.sps:17.15: error: GET: Syntax error at `!'.
+matrix.sps:17.15: error: GET: Syntax error.
+   17 | GET x/MISSING=!.
+      |               ^
 
-matrix.sps:18.14: error: GET: Syntax error at `!'.
+matrix.sps:18.14: error: GET: Syntax error.
+   18 | GET x/SYSMIS=!.
+      |              ^
 
-matrix.sps:19.7: error: GET: Syntax error at `!': expecting FILE, VARIABLES,
-NAMES, MISSING, or SYSMIS.
+matrix.sps:19.7: error: GET: Syntax error expecting FILE, VARIABLES, NAMES,
+MISSING, or SYSMIS.
+   19 | GET x/!.
+      |       ^
 
-matrix.sps:20.17: error: GET: Syntax error at `!': expecting variable name.
+matrix.sps:20.17: error: GET: Syntax error expecting variable name.
+   20 | GET x/VARIABLES=!.
+      |                 ^
 
-matrix.sps:21.22: error: GET: Syntax error at `!': expecting variable name.
+matrix.sps:21.22: error: GET: Syntax error expecting variable name.
+   21 | GET x/VARIABLES=x TO !.
+      |                      ^
 
-matrix.sps:22: error: MATRIX: x is not a variable name.
+matrix.sps:22.17: error: MATRIX: x is not a variable name.
+   22 | GET x/VARIABLES=x.
+      |                 ^
 
-matrix.sps:23: error: MATRIX: c TO a is not valid syntax since c precedes a in
-the dictionary.
+matrix.sps:23.17-23.22: error: MATRIX: c TO a is not valid syntax since c
+precedes a in the dictionary.
+   23 | GET x/VARIABLES=c TO a.
+      |                 ^~~~~~
 
-matrix.sps:24: warning: MATRIX: d is not a numeric variable.
+matrix.sps:24.17: error: MATRIX: d is not a numeric variable.
+   24 | GET x/VARIABLES=d.
+      |                 ^
 
 matrix.sps:25: error: MATRIX: Variable d is not numeric.
 
-error: The GET command cannot read an empty active file.
+matrix.sps:30: error: MATRIX: The GET command cannot read an empty active file.
 ])
 AT_CLEANUP
 
@@ -3821,17 +3982,27 @@ SAVE {1,2}/OUTFILE='matrix5.sav'/STRINGS=a, b.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.6: error: SAVE: Syntax error at `!'.
+matrix.sps:2.6: error: SAVE: Syntax error.
+    2 | SAVE !.
+      |      ^
 
-matrix.sps:3.16: error: SAVE: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:3.16: error: SAVE: Syntax error expecting a file name or handle
+name.
+    3 | SAVE 1/OUTFILE=!.
+      |                ^
 
-matrix.sps:4.18: error: SAVE: Syntax error at `!': expecting variable name.
+matrix.sps:4.18: error: SAVE: Syntax error expecting variable name.
+    4 | SAVE 1/VARIABLES=!.
+      |                  ^
 
-matrix.sps:5.14: error: SAVE: Syntax error at `!'.
+matrix.sps:5.14: error: SAVE: Syntax error.
+    5 | SAVE 1/NAMES=!.
+      |              ^
 
-matrix.sps:6.8: error: SAVE: Syntax error at `!': expecting OUTFILE, VARIABLES,
-NAMES, or STRINGS.
+matrix.sps:6.8: error: SAVE: Syntax error expecting OUTFILE, VARIABLES, NAMES,
+or STRINGS.
+    6 | SAVE 1/!.
+      |        ^
 
 matrix.sps:7: error: SAVE: Required subcommand OUTFILE was not specified.
 
@@ -4185,18 +4356,28 @@ MGET TYPE=CORR !.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.6: error: MGET: Syntax error at `!': expecting FILE or TYPE.
+matrix.sps:2.6: error: MGET: Syntax error expecting FILE or TYPE.
+    2 | MGET !.
+      |      ^
 
-matrix.sps:3.11: error: MGET: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:3.11: error: MGET: Syntax error expecting a file name or handle
+name.
+    3 | MGET FILE=!.
+      |           ^
 
-matrix.sps:4.15: error: MGET: Syntax error at `!': expecting string.
+matrix.sps:4.15: error: MGET: Syntax error expecting string.
+    4 | MGET ENCODING=!.
+      |               ^
 
-matrix.sps:5.11: error: MGET: Syntax error at `!': expecting COV, CORR, MEAN,
-STDDEV, N, or COUNT.
+matrix.sps:5.11: error: MGET: Syntax error expecting COV, CORR, MEAN, STDDEV,
+N, or COUNT.
+    5 | MGET TYPE=!.
+      |           ^
 
-matrix.sps:6.16: error: MGET: Syntax error at `!': expecting COV, CORR, MEAN,
-STDDEV, N, or COUNT.
+matrix.sps:6.16: error: MGET: Syntax error expecting COV, CORR, MEAN, STDDEV,
+N, or COUNT.
+    6 | MGET TYPE=CORR !.
+      |                ^
 ])
 AT_CLEANUP
 
@@ -4554,52 +4735,108 @@ MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=ROWTYPE_.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.7: error: MSAVE: Syntax error at `!'.
+matrix.sps:2.7: error: MSAVE: Syntax error.
+    2 | MSAVE !.
+      |       ^
 
-matrix.sps:3.14: error: MSAVE: Syntax error at `!': expecting COV, CORR, MEAN,
-STDDEV, N, or COUNT.
+matrix.sps:3.14: error: MSAVE: Syntax error expecting COV, CORR, MEAN, STDDEV,
+N, or COUNT.
+    3 | MSAVE 1/TYPE=!.
+      |              ^
 
-matrix.sps:4.17: error: MSAVE: Syntax error at `!': expecting a file name or
-handle name.
+matrix.sps:4.17: error: MSAVE: Syntax error expecting a file name or handle
+name.
+    4 | MSAVE 1/OUTFILE=!.
+      |                 ^
 
-matrix.sps:5.19: error: MSAVE: Syntax error at `!': expecting variable name.
+matrix.sps:5.19: error: MSAVE: Syntax error expecting variable name.
+    5 | MSAVE 1/VARIABLES=!.
+      |                   ^
 
-matrix.sps:6.16: error: MSAVE: Syntax error at `!': expecting variable name.
+matrix.sps:6.16: error: MSAVE: Syntax error expecting variable name.
+    6 | MSAVE 1/FNAMES=!.
+      |                ^
 
-matrix.sps:7.16: error: MSAVE: Syntax error at `!': expecting variable name.
+matrix.sps:7.16: error: MSAVE: Syntax error expecting variable name.
+    7 | MSAVE 1/SNAMES=!.
+      |                ^
 
-matrix.sps:8.15: error: MSAVE: Syntax error at `!'.
+matrix.sps:8.15: error: MSAVE: Syntax error.
+    8 | MSAVE 1/SPLIT=!.
+      |               ^
 
-matrix.sps:9.16: error: MSAVE: Syntax error at `!'.
+matrix.sps:9.16: error: MSAVE: Syntax error.
+    9 | MSAVE 1/FACTOR=!.
+      |                ^
 
-matrix.sps:10.9: error: MSAVE: Syntax error at `!': expecting TYPE, OUTFILE,
-VARIABLES, FNAMES, SNAMES, SPLIT, or FACTOR.
+matrix.sps:10.9: error: MSAVE: Syntax error expecting TYPE, OUTFILE, VARIABLES,
+FNAMES, SNAMES, SPLIT, or FACTOR.
+   10 | MSAVE 1/!.
+      |         ^
 
 matrix.sps:11: error: MSAVE: Required subcommand TYPE was not specified.
 
-matrix.sps:12: error: MSAVE: FNAMES requires FACTOR.
+matrix.sps:12.25: error: MSAVE: FNAMES requires FACTOR.
+   12 | MSAVE 1/TYPE=COV/FNAMES=x.
+      |                         ^
 
-matrix.sps:13: error: MSAVE: SNAMES requires SPLIT.
+matrix.sps:13.25: error: MSAVE: SNAMES requires SPLIT.
+   13 | MSAVE 1/TYPE=COV/SNAMES=x.
+      |                         ^
 
 matrix.sps:14: error: MSAVE: Required subcommand OUTFILE was not specified.
 
 matrix.sps:20: error: MSAVE: OUTFILE must name the same file on each MSAVE
 within a single MATRIX command.
 
-matrix.sps:21: error: MSAVE: VARIABLES must specify the same variables each
-time within a given MATRIX.
+matrix.sps:16.26-16.37: note: MSAVE: This is the OUTFILE on the first MSAVE
+command.
+   16 | MSAVE 1/TYPE=COV/OUTFILE='matrix.sav'
+      |                          ^~~~~~~~~~~~
 
-matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+matrix.sps:20.26-20.38: note: MSAVE: This is the OUTFILE on a later MSAVE
+command.
+   20 | MSAVE 1/TYPE=COV/OUTFILE='matrix2.sav'.
+      |                          ^~~~~~~~~~~~~
 
-matrix.sps:22: error: MSAVE: FNAMES must specify the same variables each time
-within a given MATRIX.
+matrix.sps:21: error: MSAVE: VARIABLES must specify the same variables on each
+MSAVE within a given MATRIX.
 
-matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+matrix.sps:19.16: error: MSAVE: This is the specification of VARIABLES on the
+first MSAVE.
+   19 |     /VARIABLES=w.
+      |                ^
 
-matrix.sps:23: error: MSAVE: SNAMES must specify the same variables each time
-within a given MATRIX.
+matrix.sps:21.28: error: MSAVE: This is a different specification of VARIABLES
+on a later MSAVE.
+   21 | MSAVE 1/TYPE=COV/VARIABLES=x.
+      |                            ^
 
-matrix.sps:16-19: note: MSAVE: This is the location of the first MSAVE command.
+matrix.sps:22: error: MSAVE: FNAMES must specify the same variables on each
+MSAVE within a given MATRIX.
+
+matrix.sps:17.23: error: MSAVE: This is the specification of FNAMES on the
+first MSAVE.
+   17 |     /FACTOR=1 /FNAMES=y
+      |                       ^
+
+matrix.sps:22.25: error: MSAVE: This is a different specification of FNAMES on
+a later MSAVE.
+   22 | MSAVE 1/TYPE=COV/FNAMES=x.
+      |                         ^
+
+matrix.sps:23: error: MSAVE: SNAMES must specify the same variables on each
+MSAVE within a given MATRIX.
+
+matrix.sps:18.22: error: MSAVE: This is the specification of SNAMES on the
+first MSAVE.
+   18 |     /SPLIT=2 /SNAMES=z
+      |                      ^
+
+matrix.sps:23.25: error: MSAVE: This is a different specification of SNAMES on
+a later MSAVE.
+   23 | MSAVE 1/TYPE=COV/SNAMES=x.
+      |                         ^
 
 matrix.sps:28.7-28.11: error: MATRIX: Matrix on MSAVE has 2 columns but there
 are 1 variables.
@@ -4630,25 +4867,46 @@ values were supplied.
    31 | MSAVE 0/TYPE=COV/FACTOR=1/SPLIT={1;2}.
       |                                 ^~~~~
 
-matrix.sps:35: error: MSAVE: Variable x appears twice in variable list.
+matrix.sps:35.49: error: MSAVE: Variable x appears twice in variable list.
+   35 | MSAVE 1/TYPE=COV/OUTFILE='matrix4.sav'/SNAMES=x,x/SPLIT=1.
+      |                                                 ^
 
-matrix.sps:39: error: MATRIX: Duplicate or invalid FACTOR variable name x.
+matrix.sps:39.56: error: MATRIX: Duplicate or invalid FACTOR variable name x.
+   39 | MSAVE 1/TYPE=COV/OUTFILE='matrix5.sav'/SNAMES=x/FNAMES=x/SPLIT=1/
+FACTOR=1.
+      |                                                        ^
 
-matrix.sps:43: error: MATRIX: Duplicate or invalid variable name x.
+matrix.sps:43.50: error: MATRIX: Duplicate or invalid variable name x.
+   43 | MSAVE 1/TYPE=COV/OUTFILE='matrix6.sav'/VARIABLES=x/FNAMES=x/FACTOR=1.
+      |                                                  ^
 
-matrix.sps:47: error: MATRIX: Duplicate or invalid variable name x.
+matrix.sps:47.50: error: MATRIX: Duplicate or invalid variable name x.
+   47 | MSAVE 1/TYPE=COV/OUTFILE='matrix6.sav'/VARIABLES=x/SNAMES=x/SPLIT=1.
+      |                                                  ^
 
-matrix.sps:51: error: MSAVE: Variable name VARNAME_ is reserved.
+matrix.sps:51.47-51.54: error: MSAVE: Variable name VARNAME_ is reserved.
+   51 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/SNAMES=VARNAME_.
+      |                                               ^~~~~~~~
 
-matrix.sps:52: error: MSAVE: Variable name ROWTYPE_ is reserved.
+matrix.sps:52.47-52.54: error: MSAVE: Variable name ROWTYPE_ is reserved.
+   52 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/SNAMES=ROWTYPE_.
+      |                                               ^~~~~~~~
 
-matrix.sps:53: error: MSAVE: Variable name VARNAME_ is reserved.
+matrix.sps:53.47-53.54: error: MSAVE: Variable name VARNAME_ is reserved.
+   53 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/FNAMES=VARNAME_.
+      |                                               ^~~~~~~~
 
-matrix.sps:54: error: MSAVE: Variable name ROWTYPE_ is reserved.
+matrix.sps:54.47-54.54: error: MSAVE: Variable name ROWTYPE_ is reserved.
+   54 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/FNAMES=ROWTYPE_.
+      |                                               ^~~~~~~~
 
-matrix.sps:55: error: MSAVE: Variable name VARNAME_ is reserved.
+matrix.sps:55.50-55.57: error: MSAVE: Variable name VARNAME_ is reserved.
+   55 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=VARNAME_.
+      |                                                  ^~~~~~~~
 
-matrix.sps:56: error: MSAVE: Variable name ROWTYPE_ is reserved.
+matrix.sps:56.50-56.57: error: MSAVE: Variable name ROWTYPE_ is reserved.
+   56 | MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=ROWTYPE_.
+      |                                                  ^~~~~~~~
 ])
 AT_CLEANUP
 
@@ -4683,8 +4941,9 @@ DISPLAY !.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.9: error: DISPLAY: Syntax error at `!': expecting DICTIONARY or
-STATUS.
+matrix.sps:2.9: error: DISPLAY: Syntax error expecting DICTIONARY or STATUS.
+    2 | DISPLAY !.
+      |         ^
 ])
 AT_CLEANUP
 
@@ -4722,12 +4981,20 @@ RELEASE x.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.9: error: RELEASE: Syntax error at `!': expecting end of command.
+matrix.sps:2.9: error: RELEASE: Syntax error expecting end of command.
+    2 | RELEASE !.
+      |         ^
 
-matrix.sps:3.9: error: RELEASE: Syntax error at `x': Variable name expected.
+matrix.sps:3.9: error: RELEASE: Syntax error expecting variable name.
+    3 | RELEASE x.
+      |         ^
 
-matrix.sps:5.12: error: RELEASE: Syntax error at `!': expecting end of command.
+matrix.sps:5.12: error: RELEASE: Syntax error expecting end of command.
+    5 | RELEASE x, !.
+      |            ^
 
-matrix.sps:7.11: error: RELEASE: Syntax error at `y': expecting end of command.
+matrix.sps:7.11: error: RELEASE: Syntax error expecting end of command.
+    7 | RELEASE x y.
+      |           ^
 ])
 AT_CLEANUP

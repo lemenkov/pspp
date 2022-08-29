@@ -63,16 +63,18 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 
 	  if (dict_lookup_vector (dict, lex_tokcstr (lexer)))
 	    {
-	      msg (SE, _("A vector named %s already exists."),
-                   lex_tokcstr (lexer));
+	      lex_next_error (lexer, 0, 0,
+                              _("A vector named %s already exists."),
+                              lex_tokcstr (lexer));
 	      goto fail;
 	    }
 
           for (i = 0; i < n_vectors; i++)
             if (!utf8_strcasecmp (vectors[i], lex_tokcstr (lexer)))
 	      {
-		msg (SE, _("Vector name %s is given twice."),
-                     lex_tokcstr (lexer));
+		lex_next_error (lexer, 0, 0,
+                                _("Vector name %s is given twice."),
+                                lex_tokcstr (lexer));
 		goto fail;
 	      }
 
@@ -95,8 +97,8 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 
 	  if (n_vectors > 1)
 	    {
-	      msg (SE, _("A slash must separate each vector "
-                         "specification in VECTOR's long form."));
+	      lex_error (lexer, _("A slash must separate each vector "
+                                  "specification in VECTOR's long form."));
 	      goto fail;
 	    }
 
@@ -145,7 +147,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
             }
           if (n_vars == 0)
             {
-              lex_error (lexer, _("expecting vector length"));
+              lex_error (lexer, _("Syntax error expecting vector length."));
               goto fail;
             }
 

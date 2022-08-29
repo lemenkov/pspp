@@ -128,7 +128,9 @@ END DATA.
 VALUE LABELS /var=a 'label for a'.
 ])
 AT_CHECK([pspp -O format=csv value-labels.sps], [1], [dnl
-value-labels.sps:9: error: VALUE LABELS: var is not a variable name.
+"value-labels.sps:9.15-9.17: error: VALUE LABELS: var is not a variable name.
+    9 | VALUE LABELS /var=a 'label for a'.
+      |               ^~~"
 ])
 AT_CLEANUP
 

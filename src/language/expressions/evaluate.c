@@ -148,6 +148,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
 
           if (!lex_force_id (lexer))
             goto done;
+          int name_ofs = lex_ofs (lexer);
           name = xstrdup (lex_tokcstr (lexer));
 
           lex_get (lexer);
@@ -175,7 +176,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
             }
           else
             {
-              lex_error (lexer, _("expecting number or string"));
+              lex_error (lexer, _("Syntax error expecting number or string."));
               goto done;
             }
 
@@ -188,7 +189,8 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           v = dict_create_var (d, name, width);
           if (v == NULL)
             {
-              msg (SE, _("Duplicate variable name %s."), name);
+              lex_ofs_error (lexer, name_ofs, name_ofs,
+                             _("Duplicate variable name %s."), name);
               value_destroy (&value, width);
               goto done;
             }

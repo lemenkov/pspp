@@ -198,7 +198,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
 	{
           if (handle != NULL)
             {
-              lex_sbc_only_once ("OUTFILE");
+              lex_sbc_only_once (lexer, "OUTFILE");
               goto error;
             }
 
@@ -212,7 +212,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
 	{
           if (metadata != NULL)
             {
-              lex_sbc_only_once ("METADATA");
+              lex_sbc_only_once (lexer, "METADATA");
               goto error;
             }
 

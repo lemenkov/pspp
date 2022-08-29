@@ -905,8 +905,7 @@ quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 		}
 	      else
 		{
-		  lex_error (lexer, _("Expecting %s or %s."),
-			     "CLUSTER", "DISTANCE");
+		  lex_error_expecting (lexer, "CLUSTER", "DISTANCE");
 		  return false;
 		}
 	    }

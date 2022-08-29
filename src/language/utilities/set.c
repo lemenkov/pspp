@@ -35,6 +35,7 @@
 #include "language/command.h"
 #include "language/lexer/format-parser.h"
 #include "language/lexer/lexer.h"
+#include "language/lexer/token.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/copyleft.h"
@@ -76,6 +77,13 @@ match_subcommand (struct lexer *lexer, const char *name)
     }
   else
     return false;
+}
+
+static int
+subcommand_start_ofs (struct lexer *lexer)
+{
+  int ofs = lex_ofs (lexer) - 1;
+  return lex_ofs_token (lexer, ofs)->type == T_EQUALS ? ofs - 1 : ofs;
 }
 
 static int
@@ -154,16 +162,6 @@ force_parse_bool (struct lexer *lexer)
   return force_parse_enum (lexer,
                            "ON", true, "YES", true,
                            "OFF", false, "NO", false);
-}
-
-static bool
-force_parse_int (struct lexer *lexer, int *integerp)
-{
-  if (!lex_force_int (lexer))
-    return false;
-  *integerp = lex_integer (lexer);
-  lex_get (lexer);
-  return true;
 }
 
 static bool
@@ -302,9 +300,12 @@ show_real_format (enum float_format float_format)
 static bool
 parse_unimplemented (struct lexer *lexer, const char *name)
 {
-  msg (SW, _("%s is not yet implemented."), name);
+  int start = subcommand_start_ofs (lexer);
   if (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     lex_get (lexer);
+  int end = lex_ofs (lexer) - 1;
+
+  lex_ofs_msg (lexer, SW, start, end, _("%s is not yet implemented."), name);
   return true;
 }
 
@@ -488,7 +489,7 @@ parse_EPOCH (struct lexer *lexer)
     }
   else
     {
-      lex_error (lexer, _("expecting %s or year"), "AUTOMATIC");
+      lex_error (lexer, _("Syntax error expecting %s or year."), "AUTOMATIC");
       return false;
     }
 
@@ -516,22 +517,23 @@ show_ERRORS (const struct dataset *ds UNUSED)
 static bool
 parse_FORMAT (struct lexer *lexer)
 {
+  int start = subcommand_start_ofs (lexer);
   struct fmt_spec fmt;
 
-  lex_match (lexer, T_EQUALS);
   if (!parse_format_specifier (lexer, &fmt))
     return false;
 
   if (!fmt_check_output (&fmt))
     return false;
 
+  int end = lex_ofs (lexer) - 1;
   if (fmt_is_string (fmt.type))
     {
       char str[FMT_STRING_LEN_MAX + 1];
-      msg (SE, _("%s requires numeric output format as an argument.  "
-		 "Specified format %s is of type string."),
-	   "FORMAT",
-	   fmt_to_string (&fmt, str));
+      lex_ofs_error (lexer, start, end,
+                     _("%s requires numeric output format as an argument.  "
+                       "Specified format %s is of type string."),
+                     "FORMAT", fmt_to_string (&fmt, str));
       return false;
     }
 
@@ -672,7 +674,7 @@ parse_LOCALE (struct lexer *lexer)
     set_default_encoding (s);
   else if (!set_encoding_from_locale (s))
     {
-      msg (ME, _("%s is not a recognized encoding or locale name"), s);
+      lex_error (lexer, _("%s is not a recognized encoding or locale name"), s);
       return false;
     }
 
@@ -781,14 +783,10 @@ show_MPRINT (const struct dataset *ds UNUSED)
 static bool
 parse_MXERRS (struct lexer *lexer)
 {
-  int n;
-  if (!force_parse_int (lexer, &n))
+  if (!lex_force_int_range (lexer, "MXERRS", 1, INT_MAX))
     return false;
-
-  if (n >= 1)
-    settings_set_max_messages (MSG_S_ERROR, n);
-  else
-    msg (SE, _("%s must be at least 1."), "MXERRS");
+  settings_set_max_messages (MSG_S_ERROR, lex_integer (lexer));
+  lex_get (lexer);
   return true;
 }
 
@@ -801,14 +799,10 @@ show_MXERRS (const struct dataset *ds UNUSED)
 static bool
 parse_MXLOOPS (struct lexer *lexer)
 {
-  int n;
-  if (!force_parse_int (lexer, &n))
+  if (!lex_force_int_range (lexer, "MXLOOPS", 1, INT_MAX))
     return false;
-
-  if (n >= 1)
-    settings_set_mxloops (n);
-  else
-    msg (SE, _("%s must be at least 1."), "MXLOOPS");
+  settings_set_mxloops (lex_integer (lexer));
+  lex_get (lexer);
   return true;
 }
 
@@ -821,14 +815,10 @@ show_MXLOOPS (const struct dataset *ds UNUSED)
 static bool
 parse_MXWARNS (struct lexer *lexer)
 {
-  int n;
-  if (!force_parse_int (lexer, &n))
+  if (!lex_force_int_range (lexer, "MXWARNS", 0, INT_MAX))
     return false;
-
-  if (n >= 0)
-    settings_set_max_messages (MSG_S_WARNING, n);
-  else
-    msg (SE, _("%s must not be negative."), "MXWARNS");
+  settings_set_max_messages (MSG_S_WARNING, lex_integer (lexer));
+  lex_get (lexer);
   return true;
 }
 
@@ -1383,7 +1373,7 @@ static struct settings *saved_settings[MAX_SAVED_SETTINGS];
 static int n_saved_settings;
 
 int
-cmd_preserve (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+cmd_preserve (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   if (n_saved_settings < MAX_SAVED_SETTINGS)
     {
@@ -1392,16 +1382,17 @@ cmd_preserve (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
     }
   else
     {
-      msg (SE, _("Too many %s commands without a %s: at most "
-                 "%d levels of saved settings are allowed."),
-	   "PRESERVE", "RESTORE",
-           MAX_SAVED_SETTINGS);
+      lex_next_error (lexer, -1, -1,
+                      _("Too many %s commands without a %s: at most "
+                        "%d levels of saved settings are allowed."),
+                      "PRESERVE", "RESTORE",
+                      MAX_SAVED_SETTINGS);
       return CMD_CASCADING_FAILURE;
     }
 }
 
 int
-cmd_restore (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+cmd_restore (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   if (n_saved_settings > 0)
     {
@@ -1412,7 +1403,8 @@ cmd_restore (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
     }
   else
     {
-      msg (SE, _("%s without matching %s."), "RESTORE", "PRESERVE");
+      lex_next_error (lexer, -1, -1,
+                      _("%s without matching %s."), "RESTORE", "PRESERVE");
       return CMD_FAILURE;
     }
 }

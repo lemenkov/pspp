@@ -132,7 +132,9 @@ x
 Table: Datasets
 second (active dataset)
 
-dataset.pspp:10: error: LIST: LIST is allowed only after the active dataset has been defined.
+"dataset.pspp:10.1-10.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+   10 | LIST.
+      | ^~~~"
 ])
 AT_CLEANUP
 
@@ -213,7 +215,9 @@ one (active dataset)
 
 5 @&t@
 
-dataset.pspp:16: error: LIST: LIST is allowed only after the active dataset has been defined.
+"dataset.pspp:16.1-16.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+   16 | LIST.
+      | ^~~~"
 
 Table: Data List
 x

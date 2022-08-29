@@ -661,7 +661,7 @@ read_value_option (struct lexer *lexer, const struct pivot_table *pt,
       return;
     }
 
-  lex_error (lexer, "Expecting valid value option");
+  lex_error (lexer, "Syntax error expecting valid value option.");
   exit (1);
 }
 
@@ -826,7 +826,7 @@ read_stroke (struct lexer *lexer)
     if (lex_match_id (lexer, table_stroke_to_string (stroke)))
       return stroke;
 
-  lex_error (lexer, "expecting stroke");
+  lex_error (lexer, "Syntax error expecting stroke.");
   exit (1);
 }
 

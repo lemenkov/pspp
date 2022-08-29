@@ -912,7 +912,7 @@ parse_sysvar (struct lexer *lexer, struct expression *e)
     return expr_allocate_number (e, settings_get_viewwidth ());
   else
     {
-      msg (SE, _("Unknown system variable %s."), lex_tokcstr (lexer));
+      lex_error (lexer, _("Unknown system variable %s."), lex_tokcstr (lexer));
       return NULL;
     }
 }
@@ -960,7 +960,7 @@ parse_primary__ (struct lexer *lexer, struct expression *e)
             return expr_allocate_format (e, &fmt);
 
           /* All attempts failed. */
-          msg (SE, _("Unknown identifier %s."), lex_tokcstr (lexer));
+          lex_error (lexer, _("Unknown identifier %s."), lex_tokcstr (lexer));
           return NULL;
         }
       break;
@@ -1332,7 +1332,8 @@ parse_function (struct lexer *lexer, struct expression *e)
   const struct operation *first, *last;
   if (!lookup_function (lex_tokcstr (lexer), &first, &last))
     {
-      msg (SE, _("No function or vector named %s."), lex_tokcstr (lexer));
+      lex_error (lexer, _("No function or vector named %s."),
+                 lex_tokcstr (lexer));
       ds_destroy (&func_name);
       return NULL;
     }

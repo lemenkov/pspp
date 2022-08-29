@@ -93,7 +93,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 	{
           if (handle != NULL)
             {
-              lex_sbc_only_once ("OUTFILE");
+              lex_sbc_only_once (lexer, "OUTFILE");
               goto error;
             }
 
@@ -107,7 +107,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
         {
           if (type != 0)
             {
-              lex_sbc_only_once ("TYPE");
+              lex_sbc_only_once (lexer, "TYPE");
               goto error;
             }
 
@@ -165,8 +165,8 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
                   /* XXX should support multibyte UTF-8 delimiters */
                   if (ss_length (lex_tokss (lexer)) != 1)
                     {
-                      msg (SE, _("The %s string must contain exactly one "
-                                 "character."), "DELIMITER");
+                      lex_error (lexer, _("The %s string must contain exactly "
+                                          "one character."), "DELIMITER");
                       goto error;
                     }
                   delimiter = ss_first (lex_tokss (lexer));
@@ -180,8 +180,8 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
                   /* XXX should support multibyte UTF-8 qualifiers */
                   if (ss_length (lex_tokss (lexer)) != 1)
                     {
-                      msg (SE, _("The %s string must contain exactly one "
-                                 "character."), "QUALIFIER");
+                      lex_error (lexer, _("The %s string must contain exactly "
+                                          "one character."), "QUALIFIER");
                       goto error;
                     }
                   qualifier = ss_first (lex_tokss (lexer));

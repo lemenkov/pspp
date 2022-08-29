@@ -279,8 +279,9 @@ parse_mappings (struct lexer *lexer, struct recode_trns *trns,
           if (trns->src_type != VAL_STRING
               || (have_dst_type && trns->dst_type != VAL_NUMERIC))
             {
-              msg (SE, _("CONVERT requires string input values and "
-                         "numeric output values."));
+              lex_next_error (lexer, -1, -1,
+                              _("CONVERT requires string input values and "
+                                "numeric output values."));
               return false;
             }
         }
@@ -336,7 +337,8 @@ parse_map_in (struct lexer *lexer, struct map_in *in, struct pool *pool,
 	  if (lex_token (lexer) == T_ID
 	      && lex_id_match (ss_cstr ("THRU"), lex_tokss (lexer)))
 	    {
-	      msg (SE, _("%s is not allowed with string variables."), "THRU");
+	      lex_error (lexer, _("%s is not allowed with string variables."),
+                         "THRU");
 	      return false;
 	    }
 	}
@@ -419,7 +421,7 @@ parse_map_out (struct lexer *lexer, struct pool *pool, struct map_out *out)
     }
   else
     {
-      lex_error (lexer, _("expecting output value"));
+      lex_error (lexer, _("Syntax error expecting output value."));
       return false;
     }
   return true;
@@ -520,11 +522,12 @@ parse_dst_vars (struct lexer *lexer, struct recode_trns *trns,
       const struct variable *v = trns->dst_vars[i];
       if (v != NULL && var_get_type (v) != trns->dst_type)
         {
-          msg (SE, _("Type mismatch.  Cannot store %s data in "
-                     "%s variable %s."),
-               trns->dst_type == VAL_STRING ? _("string") : _("numeric"),
-               var_is_alpha (v) ? _("string") : _("numeric"),
-               var_get_name (v));
+          if (trns->dst_type == VAL_STRING)
+            msg (SE, _("Type mismatch.  Cannot store string data in "
+                       "numeric variable %s."), var_get_name (v));
+          else
+            msg (SE, _("Type mismatch.  Cannot store numeric data in "
+                       "string variable %s."), var_get_name (v));
           return false;
         }
     }

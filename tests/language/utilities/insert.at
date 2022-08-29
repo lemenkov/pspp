@@ -37,10 +37,18 @@ INSERT
 LIST.
 ])
 AT_CHECK([pspp -o pspp.csv insert.sps], [1], [dnl
-batch.sps:2.1-2.4: error: INPUT PROGRAM: Syntax error at `loop': expecting end of command.
-batch.sps:3: error: COMPUTE: COMPUTE is allowed only after the active dataset has been defined or inside INPUT PROGRAM.
-batch.sps:4: error: END CASE: END CASE is allowed only inside INPUT PROGRAM.
-insert.sps:4: error: LIST: LIST is allowed only after the active dataset has been defined.
+batch.sps:2.1-2.4: error: INPUT PROGRAM: Syntax error expecting end of command.
+    2 | loop #i = 1 to 5
+      | ^~~~
+batch.sps:3.4-3.10: error: COMPUTE: COMPUTE is allowed only after the active dataset has been defined or inside INPUT PROGRAM.
+    3 | +  compute z = #i
+      |    ^~~~~~~
+batch.sps:4.4-4.11: error: END CASE: END CASE is allowed only inside INPUT PROGRAM.
+    4 | +  end case
+      |    ^~~~~~~~
+insert.sps:4.1-4.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+    4 | LIST.
+      | ^~~~
 ])
 AT_CLEANUP
 
@@ -81,7 +89,9 @@ END DATA.
 ])
 AT_CHECK([pspp -o pspp.csv insert.sps], [1], [dnl
 Dir1/foo.sps:1: error: INSERT: Can't find `bar.sps' in include file search path.
-insert.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+insert.sps:2.1-2.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+    2 | LIST.
+      | ^~~~
 ])
 AT_CLEANUP
 
@@ -134,7 +144,9 @@ CREATE_ERROR_SPS
 AT_DATA([insert.sps], [INSERT FILE='error.sps' ERROR=STOP.
 ])
 AT_CHECK([pspp -o pspp.csv insert.sps], [1], [dnl
-error.sps:10: error: DISPLAY: AKSDJ is not a variable name.
+error.sps:10.9-10.13: error: DISPLAY: AKSDJ is not a variable name.
+   10 | DISPLAY AKSDJ.
+      |         ^~~~~
 warning: Error encountered while ERROR=STOP is effective.
 ])
 AT_CLEANUP
@@ -144,10 +156,14 @@ CREATE_ERROR_SPS
 AT_DATA([insert.sps], [INSERT FILE='error.sps' ERROR=CONTINUE.
 ])
 AT_CHECK([pspp -o pspp.csv insert.sps], [1], [dnl
-error.sps:10: error: DISPLAY: AKSDJ is not a variable name.
+error.sps:10.9-10.13: error: DISPLAY: AKSDJ is not a variable name.
+   10 | DISPLAY AKSDJ.
+      |         ^~~~~
 ])
 AT_CHECK([cat pspp.csv], [0], [dnl
-error.sps:10: error: DISPLAY: AKSDJ is not a variable name.
+"error.sps:10.9-10.13: error: DISPLAY: AKSDJ is not a variable name.
+   10 | DISPLAY AKSDJ.
+      |         ^~~~~"
 
 Table: Data List
 x
@@ -171,7 +187,9 @@ LIST.
 AT_CHECK([pspp -O format=csv insert.sps], [1], [dnl
 insert.sps:2: error: INSERT: Can't find `nonexistent' in include file search path.
 
-insert.sps:6: error: LIST: LIST is allowed only after the active dataset has been defined.
+"insert.sps:6.1-6.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+    6 | LIST.
+      | ^~~~"
 ])
 AT_CLEANUP
 

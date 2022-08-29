@@ -77,8 +77,9 @@ dup_arg_type (struct lexer *lexer, bool *saw_arg_type)
 {
   if (*saw_arg_type)
     {
-      lex_error (lexer, _("Only one of !TOKENS, !CHAREND, !ENCLOSE, or "
-                          "!CMDEND is allowed."));
+      lex_next_error (lexer, -1, -1,
+                      _("Only one of !TOKENS, !CHAREND, !ENCLOSE, or "
+                        "!CMDEND is allowed."));
       return false;
     }
   else
@@ -98,13 +99,13 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
      macro-expanded. */
   if (lex_token (lexer) != T_STRING)
     {
-      lex_error (lexer, _("expecting identifier"));
+      lex_error (lexer, _("Syntax error expecting identifier."));
       return CMD_FAILURE;
     }
   const char *name = lex_tokcstr (lexer);
   if (!id_is_plausible (name + (name[0] == '!'), false))
     {
-      lex_error (lexer, _("expecting identifier"));
+      lex_error (lexer, _("Syntax error expecting identifier."));
       return CMD_FAILURE;
     }
 
@@ -117,6 +118,7 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
     goto error;
 
   size_t allocated_params = 0;
+  int keyword_ofs = 0;
   while (!lex_match (lexer, T_RPAREN))
     {
       if (m->n_params >= allocated_params)
@@ -132,8 +134,11 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
         {
           if (param_index > 0 && !m->params[param_index - 1].positional)
             {
-              lex_error (lexer, _("Positional parameters must precede "
-                                  "keyword parameters."));
+              lex_next_error (lexer, -1, -1,
+                              _("Positional parameters must precede "
+                                "keyword parameters."));
+              lex_ofs_msg (lexer, SN, keyword_ofs, keyword_ofs,
+                           _("Here is a previous keyword parameter."));
               goto error;
             }
 
@@ -142,6 +147,8 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
         }
       else
         {
+          if (keyword_ofs == 0)
+            keyword_ofs = lex_ofs (lexer);
           if (lex_token (lexer) == T_MACRO_ID)
             {
               lex_error (lexer, _("Keyword macro parameter must be named in "
@@ -173,8 +180,9 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
             {
               if (saw_default)
                 {
-                  lex_error (lexer,
-                             _("!DEFAULT is allowed only once per argument."));
+                  lex_next_error (
+                    lexer, -1, -1,
+                    _("!DEFAULT is allowed only once per argument."));
                   goto error;
                 }
               saw_default = true;
@@ -267,7 +275,8 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
     {
       if (lex_token (lexer) != T_STRING)
         {
-          lex_error (lexer, _("Expecting macro body or !ENDDEFINE"));
+          lex_error (lexer,
+                     _("Syntax error expecting macro body or !ENDDEFINE."));
           ds_destroy (&body);
           goto error;
         }

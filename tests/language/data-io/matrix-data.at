@@ -211,7 +211,9 @@ list.
 ])
 
 AT_CHECK([pspp -O format=csv matrix-data.sps], [0], [dnl
-matrix-data.sps:4: warning: MATRIX DATA: CELLS is ignored when VARIABLES includes ROWTYPE_
+"matrix-data.sps:4.6-4.10: warning: MATRIX DATA: CELLS is ignored when VARIABLES includes ROWTYPE_.
+    4 |     /cells = 2.
+      |      ^~~~~"
 
 Table: Data List
 ROWTYPE_,VARNAME_,var01,var02,var03,var04
@@ -1185,7 +1187,9 @@ MATRIX DATA VARIABLES=v/XYZZY.
 AT_CHECK([pspp matrix-data.sps -O format=csv], [1], [dnl
 matrix-data.sps:1: error: MATRIX DATA: VARIABLES may not include VARNAME_.
 
-matrix-data.sps:2: error: MATRIX DATA: Variable v appears twice in variable list.
+"matrix-data.sps:2.25: error: MATRIX DATA: Variable v appears twice in variable list.
+    2 | MATRIX DATA VARIABLES=v v v.
+      |                         ^"
 
 matrix-data.sps:3: error: MATRIX DATA: ROWTYPE_ is not allowed on SPLIT or FACTORS.
 
@@ -1205,29 +1209,53 @@ matrix-data.sps:13: error: MATRIX DATA: VARIABLES includes ROWTYPE_ but the cont
 
 matrix-data.sps:14: error: MATRIX DATA: Cannot specify N on CONTENTS along with the N subcommand.
 
-matrix-data.sps:15.35-15.39: error: MATRIX DATA: Syntax error at `XYZZY': Row type keyword expected.
+"matrix-data.sps:15.35-15.39: error: MATRIX DATA: Syntax error expecting one of the following: CORR, COV, MAT, N_MATRIX, PROX, COUNT, DFE, MEAN, MSE, STDDEV, N, N_SCALAR, N_VECTOR, SD.
+   15 | MATRIX DATA VARIABLES=v1/CONTENTS=XYZZY.
+      |                                   ^~~~~"
 
-matrix-data.sps:16.36: error: MATRIX DATA: Syntax error at end of command: Row type keyword expected.
+"matrix-data.sps:16.36: error: MATRIX DATA: Syntax error expecting one of the following: CORR, COV, MAT, N_MATRIX, PROX, COUNT, DFE, MEAN, MSE, STDDEV, N, N_SCALAR, N_VECTOR, SD.
+   16 | MATRIX DATA VARIABLES=v1/CONTENTS=@{:@.
+      |                                    ^"
 
-matrix-data.sps:17.40: error: MATRIX DATA: Syntax error at end of command: Row type keyword expected.
+"matrix-data.sps:17.40: error: MATRIX DATA: Syntax error expecting one of the following: CORR, COV, MAT, N_MATRIX, PROX, COUNT, DFE, MEAN, MSE, STDDEV, N, N_SCALAR, N_VECTOR, SD.
+   17 | MATRIX DATA VARIABLES=v1/CONTENTS=@{:@CORR.
+      |                                        ^"
 
-matrix-data.sps:18.35: error: MATRIX DATA: Syntax error at `)': Row type keyword expected.
+"matrix-data.sps:18.35: error: MATRIX DATA: Syntax error expecting one of the following: CORR, COV, MAT, N_MATRIX, PROX, COUNT, DFE, MEAN, MSE, STDDEV, N, N_SCALAR, N_VECTOR, SD.
+   18 | MATRIX DATA VARIABLES=v1/CONTENTS=@:}@.
+      |                                   ^"
 
-matrix-data.sps:19.12: error: MATRIX DATA: Syntax error at end of command: expecting VARIABLES.
+"matrix-data.sps:19.12: error: MATRIX DATA: Syntax error expecting VARIABLES.
+   19 | MATRIX DATA.
+      |            ^"
 
-matrix-data.sps:20.24: error: MATRIX DATA: Syntax error at `*': expecting `/'.
+"matrix-data.sps:20.24: error: MATRIX DATA: Syntax error expecting `/'.
+   20 | MATRIX DATA VARIABLES=v*.
+      |                        ^"
 
-matrix-data.sps:21.27-21.28: error: MATRIX DATA: Syntax error at `-1': Expected non-negative integer for N.
+"matrix-data.sps:21.27-21.28: error: MATRIX DATA: Syntax error expecting non-negative integer for N.
+   21 | MATRIX DATA VARIABLES=v/N=-1.
+      |                           ^~"
 
-matrix-data.sps:22.32-22.36: error: MATRIX DATA: Syntax error at `XYZZY'.
+"matrix-data.sps:22.32-22.36: error: MATRIX DATA: Syntax error.
+   22 | MATRIX DATA VARIABLES=v/FORMAT=XYZZY.
+      |                                ^~~~~"
 
-matrix-data.sps:23.30-23.32: error: MATRIX DATA: Syntax error at `123': expecting a file name or handle name.
+"matrix-data.sps:23.30-23.32: error: MATRIX DATA: Syntax error expecting a file name or handle name.
+   23 | MATRIX DATA VARIABLES=v/FILE=123.
+      |                              ^~~"
 
-matrix-data.sps:24.31-24.33: error: MATRIX DATA: Syntax error at `123': expecting variable name.
+"matrix-data.sps:24.31-24.33: error: MATRIX DATA: Syntax error expecting variable name.
+   24 | MATRIX DATA VARIABLES=v/SPLIT=123.
+      |                               ^~~"
 
-matrix-data.sps:25.31-25.32: error: MATRIX DATA: Syntax error at `-1': Expected non-negative integer for CELLS.
+"matrix-data.sps:25.31-25.32: error: MATRIX DATA: Syntax error expecting non-negative integer for CELLS.
+   25 | MATRIX DATA VARIABLES=v/CELLS=-1.
+      |                               ^~"
 
-matrix-data.sps:26.25-26.29: error: MATRIX DATA: Syntax error at `XYZZY'.
+"matrix-data.sps:26.25-26.29: error: MATRIX DATA: Syntax error.
+   26 | MATRIX DATA VARIABLES=v/XYZZY.
+      |                         ^~~~~"
 ])
 AT_CLEANUP
 

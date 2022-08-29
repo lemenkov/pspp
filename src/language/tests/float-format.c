@@ -76,7 +76,7 @@ parse_float_format (struct lexer *lexer, enum float_format *format)
         *format = fp_formats[i].format;
         return true;
       }
-  lex_error (lexer, "expecting floating-point format identifier");
+  lex_error (lexer, "Syntax error expecting floating-point format identifier.");
   return false;
 }
 

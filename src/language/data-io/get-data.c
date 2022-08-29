@@ -124,8 +124,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
       spreadsheet_unref (spreadsheet);
     }
   else
-    msg (SE, _("Unsupported TYPE %s."), tok);
-
+    lex_error_expecting (lexer, "TXT", "PSQL", "GNM", "ODS");
 
  error:
   destroy_spreadsheet_read_info (&opts);
@@ -276,8 +275,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else
 	    {
-	      msg (SE, _("%s must be followed by either \"%s\" or \"%s\"."),
-		   "/SHEET", "NAME", "INDEX");
+              lex_error_expecting (lexer, "NAME", "INDEX");
 	      goto error;
 	    }
 	}
@@ -299,8 +297,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else
 	    {
-	      msg (SE, _("%s must be followed by either \"%s\" or \"%s\"."),
-		   "/CELLRANGE", "FULL", "RANGE");
+              lex_error_expecting (lexer, "FULL", "RANGE");
 	      goto error;
 	    }
 	}
@@ -318,8 +315,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else
 	    {
-	      msg (SE, _("%s must be followed by either \"%s\" or \"%s\"."),
-		   "/READNAMES", "ON", "OFF");
+              lex_error_expecting (lexer, "ON", "OFF");
 	      goto error;
 	    }
 	}
@@ -468,6 +464,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "IMPORTCASES"))
         {
+          int start_ofs = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
           if (lex_match (lexer, T_ALL))
             {
@@ -485,8 +482,9 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
                 goto error;
               lex_get (lexer);
             }
-          msg (SW, _("Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES "
-                     "or SAMPLE may be used to substitute.)"));
+          lex_ofs_msg (lexer, SW, start_ofs, lex_ofs (lexer) - 1,
+                       _("Ignoring obsolete IMPORTCASES subcommand.  (N OF "
+                         "CASES or SAMPLE may be used to substitute.)"));
         }
       else if (lex_match_id_n (lexer, "DELIMITERS", 4))
         {
@@ -532,8 +530,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           if (settings_get_syntax () == COMPATIBLE
               && ss_length (lex_tokss (lexer)) != 1)
             {
-              msg (SE, _("In compatible syntax mode, the QUALIFIER string "
-                         "must contain exactly one character."));
+              lex_error (lexer, _("In compatible syntax mode, the QUALIFIER "
+                                  "string must contain exactly one character."));
               goto error;
             }
 
@@ -567,6 +565,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           lex_get (lexer);
         }
 
+      int name_ofs = lex_ofs (lexer);
       const char * tstr = lex_tokcstr (lexer);
       if (tstr == NULL)
 	{
@@ -605,7 +604,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
             goto error;
           if (!fmt_from_name (fmt_type_name, &fmt_type))
             {
-              msg (SE, _("Unknown format type `%s'."), fmt_type_name);
+              lex_next_error (lexer, -1, -1,
+                              _("Unknown format type `%s'."), fmt_type_name);
               goto error;
             }
           /* Compose input format. */
@@ -630,7 +630,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
       v = dict_create_var (dict, name, fmt_var_width (&input));
       if (v == NULL)
         {
-          msg (SE, _("%s is a duplicate variable name."), name);
+          lex_ofs_error (lexer, name_ofs, name_ofs,
+                         _("%s is a duplicate variable name."), name);
           goto error;
         }
       var_set_both_formats (v, &output);

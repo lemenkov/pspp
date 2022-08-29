@@ -211,15 +211,18 @@ combine_files (enum comb_command_type command,
         {
           if (!dataset_has_source (ds))
             {
-              msg (SE, _("Cannot specify the active dataset since none "
-                         "has been defined."));
+              lex_next_error (lexer, -1, -1,
+                              _("Cannot specify the active dataset since none "
+                                "has been defined."));
               goto error;
             }
 
           if (proc_make_temporary_transformations_permanent (ds))
-            msg (SE, _("This command may not be used after TEMPORARY when "
-                       "the active dataset is an input source.  "
-                       "Temporary transformations will be made permanent."));
+            lex_next_error (lexer, -1, -1,
+                            _("This command may not be used after TEMPORARY "
+                              "when the active dataset is an input source.  "
+                              "Temporary transformations will be made "
+                              "permanent."));
 
           file->dict = dict_clone (dataset_dict (ds));
         }
@@ -244,16 +247,13 @@ combine_files (enum comb_command_type command,
         else if (lex_match_id (lexer, "IN"))
           {
             lex_match (lexer, T_EQUALS);
-            if (lex_token (lexer) != T_ID)
-              {
-                lex_error (lexer, NULL);
-                goto error;
-              }
+            if (!lex_force_id (lexer))
+              goto error;
 
             if (file->in_name)
               {
-                msg (SE, _("Multiple IN subcommands for a single FILE or "
-                           "TABLE."));
+                lex_error (lexer, _("Multiple IN subcommands for a single FILE "
+                                    "or TABLE."));
                 goto error;
               }
             file->in_name = xstrdup (lex_tokcstr (lexer));
@@ -279,7 +279,7 @@ combine_files (enum comb_command_type command,
 
 	  if (saw_by)
 	    {
-              lex_sbc_only_once ("BY");
+              lex_sbc_only_once (lexer, "BY");
 	      goto error;
 	    }
           saw_by = true;
@@ -325,7 +325,7 @@ combine_files (enum comb_command_type command,
         {
           if (first_name != NULL)
             {
-              lex_sbc_only_once ("FIRST");
+              lex_sbc_only_once (lexer, "FIRST");
               goto error;
             }
 
@@ -339,7 +339,7 @@ combine_files (enum comb_command_type command,
         {
           if (last_name != NULL)
             {
-              lex_sbc_only_once ("LAST");
+              lex_sbc_only_once (lexer, "LAST");
               goto error;
             }
 

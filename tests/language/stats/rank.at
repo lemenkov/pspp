@@ -595,12 +595,20 @@ RANK x
  /RANK INTO foo  bar wiz.
 ])
 AT_CHECK([pspp -O format=csv rank.sps], [1], [dnl
-rank.sps:15.1: error: RANK: Syntax error at end of command: expecting `@{:@'.
+"rank.sps:15.1: error: RANK: Syntax error expecting `@{:@'.
+   15 | .
+      | ^"
 
-rank.sps:19.11: error: RANK: Syntax error at `d': Expected positive integer for NTILES.
+"rank.sps:19.11: error: RANK: Syntax error expecting positive integer for NTILES.
+   19 |   /NTILES(d)
+      |           ^"
 
-rank.sps:25: error: RANK: Variable x already exists.
+"rank.sps:25.13: error: RANK: Variable x already exists.
+   25 |  /RANK INTO x.
+      |             ^"
 
-rank.sps:30: error: RANK: Too many variables in INTO clause.
+"rank.sps:30.18-30.20: error: RANK: Too many variables in INTO clause.
+   30 |  /RANK INTO foo  bar wiz.
+      |                  ^~~"
 ])
 AT_CLEANUP

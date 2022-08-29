@@ -80,7 +80,7 @@ parse_variables_option (const char *arg, struct dictionary *dict,
   bool ok = parse_variables (lexer, dict, vars, n_vars, 0);
   if (ok && (lex_token (lexer) != T_STOP && lex_token (lexer) != T_ENDCMD))
     {
-      lex_error (lexer, _("expecting variable name"));
+      lex_error (lexer, _("Syntax error expecting variable name."));
       ok = false;
     }
 

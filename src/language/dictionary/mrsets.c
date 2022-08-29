@@ -146,7 +146,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             {
               if (!lex_is_integer (lexer))
                 {
-                  msg (SE, _("Numeric VALUE must be an integer."));
+                  lex_error (lexer, _("Numeric VALUE must be an integer."));
                   goto error;
                 }
               value_destroy (&mrset->counted, mrset->width);
@@ -481,8 +481,8 @@ parse_mrset_names (struct lexer *lexer, struct dictionary *dict,
             return false;
           if (dict_lookup_mrset (dict, lex_tokcstr (lexer)) == NULL)
             {
-              msg (SE, _("No multiple response set named %s."),
-                   lex_tokcstr (lexer));
+              lex_error (lexer, _("No multiple response set named %s."),
+                         lex_tokcstr (lexer));
               stringi_set_destroy (mrset_names);
               return false;
             }

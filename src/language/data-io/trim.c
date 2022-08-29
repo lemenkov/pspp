@@ -55,7 +55,7 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
     return parse_dict_rename (lexer, dict, relax);
   else
     {
-      lex_error (lexer, _("expecting a valid subcommand"));
+      lex_error_expecting (lexer, "MAP", "DROP", "KEEP", "RENAME");
       return false;
     }
 }

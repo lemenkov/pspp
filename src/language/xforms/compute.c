@@ -374,7 +374,8 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
       lvalue->vector = dict_lookup_vector (dict, lex_tokcstr (lexer));
       if (lvalue->vector == NULL)
 	{
-	  msg (SE, _("There is no vector named %s."), lex_tokcstr (lexer));
+	  lex_error (lexer, _("There is no vector named %s."),
+                     lex_tokcstr (lexer));
           goto lossage;
 	}
 

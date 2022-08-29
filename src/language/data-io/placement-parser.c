@@ -103,8 +103,8 @@ parse_var_placements (struct lexer *lexer, struct pool *pool, size_t n_vars,
     }
   else
     {
-      msg (SE, _("SPSS-like or Fortran-like format "
-                 "specification expected after variable names."));
+      lex_error (lexer, _("SPSS-like or Fortran-like format "
+                          "specification expected after variable names."));
       return false;
     }
 }
@@ -233,7 +233,8 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
                 {
                   if (!fmt_from_name (type, &f.type))
                     {
-                      msg (SE, _("Unknown format type `%s'."), type);
+                      lex_next_error (lexer, -1, -1,
+                                      _("Unknown format type `%s'."), type);
                       return false;
                     }
                   if (!fmt_check (&f, use))
@@ -300,16 +301,26 @@ execute_placement_format (const struct fmt_spec *format,
 }
 
 static bool
-parse_column__ (int value, int base, int *column)
+parse_column__ (struct lexer *lexer, bool negative, int base, int *column)
 {
   assert (base == 0 || base == 1);
+
+  if (!lex_force_int (lexer))
+    return false;
+  long int value = lex_integer (lexer);
+  if (negative)
+    value = -value;
+  lex_get (lexer);
+
   *column = value - base + 1;
   if (*column < 1)
     {
       if (base == 1)
-        msg (SE, _("Column positions for fields must be positive."));
+        lex_next_error (lexer, -1, -1,
+                        _("Column positions for fields must be positive."));
       else
-        msg (SE, _("Column positions for fields must not be negative."));
+        lex_next_error (lexer, -1, -1,
+                        _("Column positions for fields must not be negative."));
       return false;
     }
   return true;
@@ -326,14 +337,7 @@ parse_column__ (int value, int base, int *column)
 bool
 parse_column (struct lexer *lexer, int base, int *column)
 {
-  assert (base == 0 || base == 1);
-
-  if (!lex_force_int (lexer)
-      || !parse_column__ (lex_integer (lexer), base, column))
-    return false;
-
-  lex_get (lexer);
-  return true;
+  return parse_column__ (lexer, false, base, column);
 }
 
 /* Parse a column or a range of columns, specified as a single
@@ -354,23 +358,23 @@ parse_column_range (struct lexer *lexer, int base,
                     int *first_column, int *last_column,
                     bool *range_specified)
 {
+  int start_ofs = lex_ofs (lexer);
+
   /* First column. */
-  if (!lex_force_int (lexer)
-      || !parse_column__ (lex_integer (lexer), base, first_column))
+  if (!parse_column__ (lexer, false, base, first_column))
     return false;
-  lex_get (lexer);
 
   /* Last column. */
   if (lex_is_integer (lexer) && lex_integer (lexer) < 0)
     {
-      if (!parse_column__ (-lex_integer (lexer), base, last_column))
+      if (!parse_column__ (lexer, true, base, last_column))
         return false;
-      lex_get (lexer);
 
       if (*last_column < *first_column)
 	{
-	  msg (SE, _("The ending column for a field must be "
-		     "greater than the starting column."));
+	  lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+                         _("The ending column for a field must be "
+                           "greater than the starting column."));
 	  return false;
 	}
 

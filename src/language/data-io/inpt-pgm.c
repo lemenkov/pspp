@@ -294,7 +294,7 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
 
 	  if (e)
 	    {
-              lex_sbc_only_once ("COLUMN");
+              lex_sbc_only_once (lexer, "COLUMN");
               goto error;
 	    }
 

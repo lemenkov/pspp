@@ -821,7 +821,7 @@ macro_call_create__ (const struct macro_set *macros,
 /* If TOKEN is the first token of a call to a macro in MACROS, create a new
    macro expander, initializes *MCP to it.  Returns 0 if more tokens are needed
    and should be added via macro_call_add() or 1 if the caller should next call
-   macro_call_get_expansion().
+   macro_call_expand().
 
    If TOKEN is not the first token of a macro call, returns -1 and sets *MCP to
    NULL. */
@@ -866,8 +866,8 @@ macro_call_destroy (struct macro_call *mc)
    Returns a positive number to indicate that the returned number of tokens
    invoke a macro.  The number returned might be less than the number of tokens
    added because it can take a few tokens of lookahead to determine whether the
-   macro invocation is finished.  The caller should call
-   macro_call_get_expansion() to obtain the expansion. */
+   macro invocation is finished.  The caller should call macro_call_expand() to
+   obtain the expansion. */
 int
 macro_call_add (struct macro_call *mc, const struct macro_token *mt,
                 const struct msg_location *loc)

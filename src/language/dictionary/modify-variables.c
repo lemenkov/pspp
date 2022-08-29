@@ -76,9 +76,10 @@ int
 cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 {
   if (proc_make_temporary_transformations_permanent (ds))
-    msg (SE, _("%s may not be used after %s.  "
-               "Temporary transformations will be made permanent."),
-         "MODIFY VARS", "TEMPORARY");
+    lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                   _("%s may not be used after %s.  "
+                     "Temporary transformations will be made permanent."),
+                   "MODIFY VARS", "TEMPORARY");
 
   /* Bits indicated whether we've already encountered a subcommand of this
      type. */
@@ -107,7 +108,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	{
 	  if (already_encountered & 1)
 	    {
-              lex_sbc_only_once ("REORDER");
+              lex_sbc_only_once (lexer, "REORDER");
 	      goto done;
 	    }
 	  already_encountered |= 1;
@@ -187,7 +188,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	{
 	  if (already_encountered & 2)
 	    {
-              lex_sbc_only_once ("RENAME");
+              lex_sbc_only_once (lexer, "RENAME");
 	      goto done;
 	    }
 	  already_encountered |= 2;
@@ -240,10 +241,11 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	{
 	  if (already_encountered & 4)
 	    {
-	      msg (SE,
-                   _("%s subcommand may be given at most once.  It may "
-                     "not be given in conjunction with the %s subcommand."),
-		   "KEEP", "DROP");
+	      lex_next_error (lexer, -1, -1,
+                              _("%s subcommand may be given at most once.  "
+                                "It may not be given in conjunction with the "
+                                "%s subcommand."),
+                              "KEEP", "DROP");
 	      goto done;
 	    }
 	  already_encountered |= 4;
@@ -291,9 +293,10 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 
 	  if (already_encountered & 4)
 	    {
-	      msg (SE, _("%s subcommand may be given at most once.  It may "
-                         "not be given in conjunction with the %s "
-                         "subcommand."),
+	      lex_next_error (lexer, -1, -1,
+                              _("%s subcommand may be given at most once.  "
+                                "It may not be given in conjunction with the "
+                                "%s subcommand."),
 		   "DROP", "KEEP"
 		);
 	      goto done;
@@ -327,11 +330,8 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	}
       else
 	{
-	  if (lex_token (lexer) == T_ID)
-	    msg (SE, _("Unrecognized subcommand name `%s'."),
-                 lex_tokcstr (lexer));
-	  else
-	    msg (SE, _("Subcommand name expected."));
+          lex_error_expecting (lexer, "REORDER", "RENAME", "KEEP",
+                               "DROP", "MAP");
 	  goto done;
 	}
 

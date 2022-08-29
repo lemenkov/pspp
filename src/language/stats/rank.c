@@ -328,11 +328,11 @@ parse_into (struct lexer *lexer, struct rank *cmd,
 	  const char *name = lex_tokcstr (lexer);
 
 	  if (var_count >= subcase_get_n_fields (&cmd->sc))
-            msg (SE, _("Too many variables in %s clause."), "INTO");
+            lex_error (lexer, _("Too many variables in %s clause."), "INTO");
 	  else if (dict_lookup_var (cmd->dict, name) != NULL)
-            msg (SE, _("Variable %s already exists."), name);
+            lex_error (lexer, _("Variable %s already exists."), name);
           else if (string_set_contains (new_names, name))
-            msg (SE, _("Duplicate variable name %s."), name);
+            lex_error (lexer, _("Duplicate variable name %s."), name);
           else
             {
               string_set_insert (new_names, name);

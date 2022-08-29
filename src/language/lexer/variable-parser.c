@@ -83,7 +83,7 @@ parse_vs_variable_idx (struct lexer *lexer, const struct var_set *vs,
 
   if (!is_vs_name_token (lexer, vs))
     {
-      lex_error (lexer, _("expecting variable name"));
+      lex_error (lexer, _("Syntax error expecting variable name."));
       return false;
     }
   else if (var_set_lookup_var_idx (vs, lex_tokcstr (lexer), idx))
@@ -93,7 +93,7 @@ parse_vs_variable_idx (struct lexer *lexer, const struct var_set *vs,
     }
   else
     {
-      msg (SE, _("%s is not a variable name."), lex_tokcstr (lexer));
+      lex_error (lexer, _("%s is not a variable name."), lex_tokcstr (lexer));
       return false;
     }
 }
@@ -195,37 +195,45 @@ parse_var_idx_class (struct lexer *lexer, const struct var_set *vs,
    PV_OPTS, which also affects what variables are allowed in
    appropriate ways. */
 static void
-add_variable (struct variable ***v, size_t *nv, size_t *mv,
+add_variable (struct lexer *lexer,
+              struct variable ***v, size_t *nv, size_t *mv,
               char *included, int pv_opts,
-              const struct var_set *vs, size_t idx)
+              const struct var_set *vs, size_t idx,
+              int start_ofs, int end_ofs)
 {
   struct variable *add = var_set_get_var (vs, idx);
   const char *add_name = var_get_name (add);
 
   if ((pv_opts & PV_NUMERIC) && !var_is_numeric (add))
-    msg (SW, _("%s is not a numeric variable.  It will not be "
-               "included in the variable list."), add_name);
+    lex_ofs_msg (lexer, SW, start_ofs, end_ofs,
+                 _("%s is not a numeric variable.  It will not be "
+                   "included in the variable list."), add_name);
   else if ((pv_opts & PV_STRING) && !var_is_alpha (add))
-    msg (SE, _("%s is not a string variable.  It will not be "
-               "included in the variable list."), add_name);
+    lex_ofs_error (lexer, start_ofs, end_ofs,
+                   _("%s is not a string variable.  It will not be "
+                     "included in the variable list."), add_name);
   else if ((pv_opts & PV_NO_SCRATCH)
            && dict_class_from_id (add_name) == DC_SCRATCH)
-    msg (SE, _("Scratch variables (such as %s) are not allowed "
-               "here."), add_name);
+    lex_ofs_error (lexer, start_ofs, end_ofs,
+                   _("Scratch variables (such as %s) are not allowed "
+                     "here."), add_name);
   else if ((pv_opts & (PV_SAME_TYPE | PV_SAME_WIDTH)) && *nv
            && var_get_type (add) != var_get_type ((*v)[0]))
-    msg (SE, _("%s and %s are not the same type.  All variables in "
-               "this variable list must be of the same type.  %s "
-               "will be omitted from the list."),
-         var_get_name ((*v)[0]), add_name, add_name);
+    lex_ofs_error (lexer, start_ofs, end_ofs,
+                 _("%s and %s are not the same type.  All variables in "
+                   "this variable list must be of the same type.  %s "
+                   "will be omitted from the list."),
+                 var_get_name ((*v)[0]), add_name, add_name);
   else if ((pv_opts & PV_SAME_WIDTH) && *nv
            && var_get_width (add) != var_get_width ((*v)[0]))
-    msg (SE, _("%s and %s are string variables with different widths.  "
-               "All variables in this variable list must have the "
-               "same width.  %s will be omitted from the list."),
-         var_get_name ((*v)[0]), add_name, add_name);
+    lex_ofs_error (lexer, start_ofs, end_ofs,
+                 _("%s and %s are string variables with different widths.  "
+                   "All variables in this variable list must have the "
+                   "same width.  %s will be omitted from the list."),
+                 var_get_name ((*v)[0]), add_name, add_name);
   else if ((pv_opts & PV_NO_DUPLICATE) && included && included[idx])
-    msg (SE, _("Variable %s appears twice in variable list."), add_name);
+    lex_ofs_error (lexer, start_ofs, end_ofs,
+                   _("Variable %s appears twice in variable list."), add_name);
   else if ((pv_opts & PV_DUPLICATE) || !included || !included[idx])
     {
       if (*nv >= *mv)
@@ -245,16 +253,19 @@ add_variable (struct variable ***v, size_t *nv, size_t *mv,
    duplicates if indicated by PV_OPTS, which also affects what
    variables are allowed in appropriate ways. */
 static void
-add_variables (struct variable ***v, size_t *nv, size_t *mv, char *included,
+add_variables (struct lexer *lexer,
+               struct variable ***v, size_t *nv, size_t *mv, char *included,
                int pv_opts,
                const struct var_set *vs, int first_idx, int last_idx,
-               enum dict_class class)
+               enum dict_class class,
+               int start_ofs, int end_ofs)
 {
   size_t i;
 
   for (i = first_idx; i <= last_idx; i++)
     if (dict_class_from_id (var_get_name (var_set_get_var (vs, i))) == class)
-      add_variable (v, nv, mv, included, pv_opts, vs, i);
+      add_variable (lexer, v, nv, mv, included, pv_opts, vs, i,
+                    start_ofs, end_ofs);
 }
 
 /* Note that if parse_variables() returns false, *v is free()'d.
@@ -309,9 +320,11 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
 
   do
     {
+      int start_ofs = lex_ofs (lexer);
       if (lex_match (lexer, T_ALL))
-        add_variables (v, nv, &mv, included, pv_opts,
-                       vs, 0, var_set_get_n (vs) - 1, DC_ORDINARY);
+        add_variables (lexer, v, nv, &mv, included, pv_opts,
+                       vs, 0, var_set_get_n (vs) - 1, DC_ORDINARY,
+                       start_ofs, start_ofs);
       else
         {
           enum dict_class class;
@@ -321,7 +334,8 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
             goto fail;
 
           if (!lex_match (lexer, T_TO))
-            add_variable (v, nv, &mv, included, pv_opts, vs, first_idx);
+            add_variable (lexer, v, nv, &mv, included, pv_opts, vs, first_idx,
+                          start_ofs, start_ofs);
           else
             {
               size_t last_idx;
@@ -331,6 +345,8 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
               if (!parse_var_idx_class (lexer, vs, &last_idx, &last_class))
                 goto fail;
 
+              int end_ofs = lex_ofs (lexer) - 1;
+
               first_var = var_set_get_var (vs, first_idx);
               last_var = var_set_get_var (vs, last_idx);
 
@@ -338,27 +354,56 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
                 {
                   const char *first_name = var_get_name (first_var);
                   const char *last_name = var_get_name (last_var);
-                  msg (SE, _("%s TO %s is not valid syntax since %s "
-                             "precedes %s in the dictionary."),
-                       first_name, last_name, first_name, last_name);
+                  lex_ofs_error (lexer, start_ofs, end_ofs,
+                                 _("%s TO %s is not valid syntax since %s "
+                                   "precedes %s in the dictionary."),
+                                 first_name, last_name, first_name, last_name);
                   goto fail;
                 }
 
               if (class != last_class)
                 {
-                  msg (SE, _("When using the TO keyword to specify several "
-                             "variables, both variables must be from "
-                             "the same variable dictionaries, of either "
-                             "ordinary, scratch, or system variables.  "
-                             "%s is a %s variable, whereas %s is %s."),
-                       var_get_name (first_var), dict_class_to_name (class),
-                       var_get_name (last_var),
-                       dict_class_to_name (last_class));
+                  lex_ofs_error (lexer, start_ofs, end_ofs,
+                                 _("With the syntax <a> TO <b>, variables <a> "
+                                   "and <b> must be both regular variables "
+                                   "or both scratch variables."));
+                  struct pair
+                    {
+                      const char *name;
+                      enum dict_class class;
+                      int ofs;
+                    }
+                  pairs[2] = {
+                    { var_get_name (first_var), class, start_ofs },
+                    { var_get_name (last_var), last_class, end_ofs },
+                  };
+                  for (size_t i = 0; i < 2; i++)
+                    switch (pairs[i].class)
+                      {
+                      case DC_ORDINARY:
+                        lex_ofs_msg (lexer, SN, pairs[i].ofs, pairs[i].ofs,
+                                     _("%s is a regular variable."),
+                                     pairs[i].name);
+                        break;
+
+                      case DC_SCRATCH:
+                        lex_ofs_msg (lexer, SN, pairs[i].ofs, pairs[i].ofs,
+                                     _("%s is a scratch variable."),
+                                     pairs[i].name);
+                        break;
+
+                      case DC_SYSTEM:
+                        lex_ofs_msg (lexer, SN, pairs[i].ofs, pairs[i].ofs,
+                                     _("%s is a system variable."),
+                                     pairs[i].name);
+                        break;
+                      }
                   goto fail;
                 }
 
-              add_variables (v, nv, &mv, included, pv_opts,
-                             vs, first_idx, last_idx, class);
+              add_variables (lexer, v, nv, &mv, included, pv_opts,
+                             vs, first_idx, last_idx, class,
+                             start_ofs, lex_ofs (lexer) - 1);
             }
         }
 
@@ -389,7 +434,7 @@ parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d)
 {
   if (!is_dict_name_token (lexer, d))
     {
-      lex_error (lexer, "expecting variable name");
+      lex_error (lexer, ("Syntax error expecting variable name."));
       return NULL;
     }
   if (!dict_id_is_valid (d, lex_tokcstr (lexer), true))
@@ -406,7 +451,7 @@ parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d)
    the number of digits in the suffix into *N_DIGITSP, and returns the number
    of bytes in the root.  On failure, returns 0. */
 static int
-extract_numeric_suffix (const char *name,
+extract_numeric_suffix (struct lexer *lexer, int ofs, const char *name,
                         unsigned long int *numberp, int *n_digitsp)
 {
   size_t root_len, n_digits;
@@ -421,16 +466,18 @@ extract_numeric_suffix (const char *name,
 
   if (n_digits == 0)
     {
-      msg (SE, _("`%s' cannot be used with TO because it does not end in "
-                 "a digit."), name);
+      lex_ofs_error (lexer, ofs, ofs,
+                     _("`%s' cannot be used with TO because it does not end in "
+                       "a digit."), name);
       return 0;
     }
 
   *numberp = strtoull (name + root_len, NULL, 10);
   if (*numberp == ULONG_MAX)
     {
-      msg (SE, _("Numeric suffix on `%s' is larger than supported with TO."),
-           name);
+      lex_ofs_error (lexer, ofs, ofs,
+                     _("Numeric suffix on `%s' is larger than supported with TO."),
+                     name);
       return 0;
     }
   *n_digitsp = n_digits;
@@ -438,14 +485,15 @@ extract_numeric_suffix (const char *name,
 }
 
 static bool
-add_var_name (char *name,
+add_var_name (struct lexer *lexer, int start_ofs, int end_ofs, char *name,
               char ***names, size_t *n_vars, size_t *allocated_vars,
               struct stringi_set *set, int pv_opts)
 {
   if (pv_opts & PV_NO_DUPLICATE && !stringi_set_insert (set, name))
     {
-      msg (SE, _("Variable %s appears twice in variable list."),
-           name);
+      lex_ofs_error (lexer, start_ofs, end_ofs,
+                     _("Variable %s appears twice in variable list."),
+                     name);
       return false;
     }
 
@@ -497,12 +545,14 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
 
   do
     {
+      int start_ofs = lex_ofs (lexer);
       name1 = parse_DATA_LIST_var (lexer, dict);
       if (!name1)
         goto exit;
       if (dict_class_from_id (name1) == DC_SCRATCH && pv_opts & PV_NO_SCRATCH)
 	{
-	  msg (SE, _("Scratch variables not allowed here."));
+	  lex_ofs_error (lexer, start_ofs, start_ofs,
+                         _("Scratch variables not allowed here."));
 	  goto exit;
 	}
       if (lex_match (lexer, T_TO))
@@ -515,23 +565,28 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           name2 = parse_DATA_LIST_var (lexer, dict);
           if (!name2)
             goto exit;
+          int end_ofs = lex_ofs (lexer) - 1;
 
-          root_len1 = extract_numeric_suffix (name1, &num1, &n_digits1);
+          root_len1 = extract_numeric_suffix (lexer, start_ofs,
+                                              name1, &num1, &n_digits1);
           if (root_len1 == 0)
             goto exit;
 
-          root_len2 = extract_numeric_suffix (name2, &num2, &n_digits2);
+          root_len2 = extract_numeric_suffix (lexer, end_ofs,
+                                              name2, &num2, &n_digits2);
           if (root_len2 == 0)
 	    goto exit;
 
 	  if (root_len1 != root_len2 || memcasecmp (name1, name2, root_len1))
 	    {
-	      msg (SE, _("Prefixes don't match in use of TO convention."));
+	      lex_ofs_error (lexer, start_ofs, end_ofs,
+                             _("Prefixes don't match in use of TO convention."));
 	      goto exit;
 	    }
 	  if (num1 > num2)
 	    {
-	      msg (SE, _("Bad bounds in use of TO convention."));
+	      lex_ofs_error (lexer, start_ofs, end_ofs,
+                             _("Bad bounds in use of TO convention."));
 	      goto exit;
 	    }
 
@@ -540,7 +595,8 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
               char *name = xasprintf ("%.*s%0*lu",
                                       root_len1, name1,
                                       n_digits1, number);
-              if (!add_var_name (name, &names, &n_vars, &allocated_vars,
+              if (!add_var_name (lexer, start_ofs, end_ofs,
+                                 name, &names, &n_vars, &allocated_vars,
                                  &set, pv_opts))
                 {
                   free (name);
@@ -555,7 +611,8 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
 	}
       else
 	{
-          if (!add_var_name (name1, &names, &n_vars, &allocated_vars,
+          if (!add_var_name (lexer, start_ofs, start_ofs,
+                             name1, &names, &n_vars, &allocated_vars,
                              &set, pv_opts))
             goto exit;
           name1 = NULL;
@@ -721,7 +778,7 @@ var_syntax_parse (struct lexer *lexer, struct var_syntax **vs, size_t *n_vs)
 
   if (lex_token (lexer) != T_ID)
     {
-      lex_error (lexer, _("expecting variable name"));
+      lex_error (lexer, _("Syntax error expecting variable name."));
       goto error;
     }
 
@@ -731,20 +788,24 @@ var_syntax_parse (struct lexer *lexer, struct var_syntax **vs, size_t *n_vs)
       if (allocated_vs >= *n_vs)
         *vs = x2nrealloc (*vs, &allocated_vs, sizeof **vs);
       struct var_syntax *new = &(*vs)[(*n_vs)++];
-      *new = (struct var_syntax) { .first = ss_xstrdup (lex_tokss (lexer)) };
+      *new = (struct var_syntax) {
+        .first = ss_xstrdup (lex_tokss (lexer)),
+        .first_ofs = lex_ofs (lexer)
+      };
       lex_get (lexer);
 
       if (lex_match (lexer, T_TO))
         {
           if (lex_token (lexer) != T_ID)
             {
-              lex_error (lexer, _("expecting variable name"));
+              lex_error (lexer, _("Syntax error expecting variable name."));
               goto error;
             }
 
           new->last = ss_xstrdup (lex_tokss (lexer));
           lex_get (lexer);
         }
+      new->last_ofs = lex_ofs (lexer) - 1;
     }
   while (lex_token (lexer) == T_ID);
   return true;
@@ -761,9 +822,12 @@ error:
    array of pointers to variables and *N_VARS to the length of the array and
    returns true.  On error, sets *VARS to NULL and *N_VARS to 0.
 
+   The LEXER is just used for error messages.
+
    For the moment, only honors PV_NUMERIC in OPTS. */
 bool
-var_syntax_evaluate (const struct var_syntax *vs, size_t n_vs,
+var_syntax_evaluate (struct lexer *lexer,
+                     const struct var_syntax *vs, size_t n_vs,
                      const struct dictionary *dict,
                      struct variable ***vars, size_t *n_vars, int opts)
 {
@@ -775,19 +839,23 @@ var_syntax_evaluate (const struct var_syntax *vs, size_t n_vs,
   size_t allocated_vars = 0;
   for (size_t i = 0; i < n_vs; i++)
     {
+      int first_ofs = vs[i].first_ofs;
       struct variable *first = dict_lookup_var (dict, vs[i].first);
       if (!first)
         {
-          msg (SE, _("%s is not a variable name."), vs[i].first);
+          lex_ofs_error (lexer, first_ofs, first_ofs,
+                         _("%s is not a variable name."), vs[i].first);
           goto error;
         }
 
+      int last_ofs = vs[i].last_ofs;
       struct variable *last = (vs[i].last
                                ? dict_lookup_var (dict, vs[i].last)
                                : first);
       if (!last)
         {
-          msg (SE, _("%s is not a variable name."), vs[i].last);
+          lex_ofs_error (lexer, last_ofs, last_ofs,
+                         _("%s is not a variable name."), vs[i].last);
           goto error;
         }
 
@@ -795,10 +863,11 @@ var_syntax_evaluate (const struct var_syntax *vs, size_t n_vs,
       size_t last_idx = var_get_dict_index (last);
       if (last_idx < first_idx)
         {
-          msg (SE, _("%s TO %s is not valid syntax since %s "
-                     "precedes %s in the dictionary."),
-               vs[i].first, vs[i].last,
-               vs[i].first, vs[i].last);
+          lex_ofs_error (lexer, first_ofs, last_ofs,
+                         _("%s TO %s is not valid syntax since %s "
+                           "precedes %s in the dictionary."),
+                         vs[i].first, vs[i].last,
+                         vs[i].first, vs[i].last);
           goto error;
         }
 
@@ -807,7 +876,9 @@ var_syntax_evaluate (const struct var_syntax *vs, size_t n_vs,
           struct variable *v = dict_get_var (dict, j);
           if (opts & PV_NUMERIC && !var_is_numeric (v))
             {
-              msg (SW, _("%s is not a numeric variable."), var_get_name (v));
+              lex_ofs_error (lexer, first_ofs, last_ofs,
+                             _("%s is not a numeric variable."),
+                             var_get_name (v));
               goto error;
             }
 

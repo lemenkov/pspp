@@ -305,6 +305,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
     .descending = false,
   };
   bool show_tables = true;
+  int exclude_ofs = 0;
   lex_match (lexer, T_SLASH);
   for (;;)
     {
@@ -316,6 +317,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "MISSING"))
         {
           lex_match (lexer, T_EQUALS);
+          exclude_ofs = lex_ofs (lexer);
           if (lex_match_id (lexer, "TABLE"))
             proc.exclude = MV_ANY;
           else if (lex_match_id (lexer, "INCLUDE"))
@@ -472,8 +474,9 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   /* Missing values. */
   if (proc.mode == GENERAL && !proc.exclude)
     {
-      msg (SE, _("Missing mode %s not allowed in general mode.  "
-		 "Assuming %s."), "REPORT", "MISSING=TABLE");
+      lex_ofs_error (lexer, exclude_ofs, exclude_ofs,
+                     _("Missing mode %s not allowed in general mode.  "
+                       "Assuming %s."), "REPORT", "MISSING=TABLE");
       proc.exclude = MV_ANY;
     }
 
@@ -656,7 +659,8 @@ parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
 {
   if (proc->n_pivots)
     {
-      msg (SE, _("%s must be specified before %s."), "VARIABLES", "TABLES");
+      lex_next_error (lexer, -1, -1, _("%s must be specified before %s."),
+                      "VARIABLES", "TABLES");
       return false;
     }
 

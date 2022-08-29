@@ -64,8 +64,9 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	  if (fmt_is_string (f.type))
 	    {
               char str[FMT_STRING_LEN_MAX + 1];
-	      msg (SE, _("Format type %s may not be used with a numeric "
-                         "variable."), fmt_to_string (&f, str));
+	      lex_next_error (lexer, -1, -1,
+                              _("Format type %s may not be used with a numeric "
+                                "variable."), fmt_to_string (&f, str));
 	      goto fail;
 	    }
 
@@ -135,8 +136,9 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
       if (!fmt_is_string (f.type))
 	{
           char str[FMT_STRING_LEN_MAX + 1];
-	  msg (SE, _("Format type %s may not be used with a string "
-                     "variable."), fmt_to_string (&f, str));
+	  lex_next_error (lexer, -2, -2,
+                          _("Format type %s may not be used with a string "
+                            "variable."), fmt_to_string (&f, str));
 	  goto fail;
 	}
       if (!fmt_check_output (&f))

@@ -46,12 +46,14 @@ cmd_weight (struct lexer *lexer, struct dataset *ds)
 	return CMD_CASCADING_FAILURE;
       if (var_is_alpha (v))
 	{
-	  msg (SE, _("The weighting variable must be numeric."));
+	  lex_next_error (lexer, -1, -1,
+                          _("The weighting variable must be numeric."));
 	  return CMD_CASCADING_FAILURE;
 	}
       if (dict_class_from_id (var_get_name (v)) == DC_SCRATCH)
 	{
-	  msg (SE, _("The weighting variable may not be scratch."));
+	  lex_next_error (lexer, -1, -1,
+                          _("The weighting variable may not be scratch."));
 	  return CMD_CASCADING_FAILURE;
 	}
 

@@ -1033,7 +1033,9 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "CELLS"))
 	{
           if (mf.input_rowtype)
-            msg (SW, _("CELLS is ignored when VARIABLES includes ROWTYPE_"));
+            lex_next_msg (lexer, SW,
+                          -1, -1, _("CELLS is ignored when VARIABLES "
+                                    "includes ROWTYPE_"));
 
 	  lex_match (lexer, T_EQUALS);
 
@@ -1058,7 +1060,14 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
                   if (open || in_parens || (lex_token (lexer) != T_ENDCMD
                                             && lex_token (lexer) != T_SLASH))
                     {
-                      lex_error (lexer, _("Row type keyword expected."));
+                      const char *rowtypes[] = {
+#define RT(NAME, DIMS) #NAME,
+                        ROWTYPES
+#undef RT
+                        "N_VECTOR", "SD",
+                      };
+                      lex_error_expecting_array (
+                        lexer, rowtypes, sizeof rowtypes / sizeof *rowtypes);
                       goto error;
                     }
                   break;

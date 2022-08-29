@@ -70,12 +70,8 @@ cmd_sample (struct lexer *lexer, struct dataset *ds)
       unsigned long max = gsl_rng_max (get_rng ());
 
       type = TYPE_FRACTION;
-      if (lex_tokval (lexer) <= 0 || lex_tokval (lexer) >= 1)
-	{
-	  msg (SE, _("The sampling factor must be between 0 and 1 "
-		     "exclusive."));
-	  return CMD_FAILURE;
-	}
+      if (!lex_force_num_range_open (lexer, "SAMPLE", 0, 1))
+        return CMD_FAILURE;
 
       frac = lex_tokval (lexer) * (max - min) + min;
       a = b = 0;

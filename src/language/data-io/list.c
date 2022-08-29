@@ -256,4 +256,3 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
   free (cmd.v_variables);
   return CMD_FAILURE;
 }
-

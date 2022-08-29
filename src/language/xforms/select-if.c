@@ -56,7 +56,7 @@ cmd_select_if (struct lexer *lexer, struct dataset *ds)
   if (lex_token (lexer) != T_ENDCMD)
     {
       expr_free (e);
-      lex_error (lexer, _("expecting end of command"));
+      lex_error (lexer, _("Syntax error expecting end of command."));
       return CMD_CASCADING_FAILURE;
     }
 
@@ -100,34 +100,32 @@ cmd_filter (struct lexer *lexer, struct dataset *ds)
   struct dictionary *dict = dataset_dict (ds);
   if (lex_match_id (lexer, "OFF"))
     dict_set_filter (dict, NULL);
-  else if (lex_token (lexer) == T_ENDCMD)
+  else if (lex_match (lexer, T_BY))
     {
-      msg (SW, _("Syntax error expecting OFF or BY.  "
-                 "Turning off case filtering."));
-      dict_set_filter (dict, NULL);
-    }
-  else
-    {
-      struct variable *v;
-
-      lex_match (lexer, T_BY);
-      v = parse_variable (lexer, dict);
+      struct variable *v = parse_variable (lexer, dict);
       if (!v)
 	return CMD_FAILURE;
 
       if (var_is_alpha (v))
 	{
-	  msg (SE, _("The filter variable must be numeric."));
+	  lex_next_error (lexer, -1, -1,
+                          _("The filter variable must be numeric."));
 	  return CMD_FAILURE;
 	}
 
       if (dict_class_from_id (var_get_name (v)) == DC_SCRATCH)
 	{
-	  msg (SE, _("The filter variable may not be scratch."));
+	  lex_next_error (lexer, -1, -1,
+                          _("The filter variable may not be scratch."));
 	  return CMD_FAILURE;
 	}
 
       dict_set_filter (dict, v);
+    }
+  else
+    {
+      lex_error_expecting (lexer, "OFF", "BY");
+      return CMD_FAILURE;
     }
 
   return CMD_SUCCESS;

@@ -158,7 +158,9 @@ LIST.
 
 AT_CHECK([pspp -O format=csv input.sps])
 AT_CHECK([pspp -O format=csv mconvert.sps], [1], [dnl
-mconvert.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+"mconvert.sps:2.1-2.4: error: LIST: LIST is allowed only after the active dataset has been defined.
+    2 | LIST.
+      | ^~~~"
 ])
 AT_CHECK([pspp -O format=csv output.sps], [0], [dnl
 Table: Data List

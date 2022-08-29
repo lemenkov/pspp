@@ -2184,7 +2184,7 @@ with the given @i{width}.  The input area must be a multiple of
 @code{F@i{width}.0} format.
 
 @item
-@code{FORMAT=@i{count}F} divides the input area into @i{count}
+@code{FORMAT="@i{count}F"} divides the input area into integer @i{count}
 equal-width fields per line.  The input area must be a multiple of
 @i{count} columns wide.  Another format type may be substituted for
 @code{F}.

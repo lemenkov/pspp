@@ -89,9 +89,13 @@ struct msave_common
     /* Common configuration for all MSAVEs. */
     struct msg_location *location; /* Range of lines for first MSAVE. */
     struct file_handle *outfile;   /* Output file for all the MSAVEs. */
+    struct msg_location *outfile_location;
     struct string_array variables; /* VARIABLES subcommand. */
+    struct msg_location *variables_location;
     struct string_array fnames;    /* FNAMES subcommand. */
+    struct msg_location *fnames_location;
     struct string_array snames;    /* SNAMES subcommand. */
+    struct msg_location *snames_location;
 
     /* Collects and owns factors and splits.  The individual msave_command
        structs point to these but do not own them.  (This is because factors
@@ -4742,7 +4746,8 @@ matrix_lvalue_parse (struct matrix_state *s)
     {
       if (!lvalue->var)
         {
-          msg (SE, _("Undefined variable %s."), lex_tokcstr (s->lexer));
+          lex_error (s->lexer, _("Undefined variable %s."),
+                     lex_tokcstr (s->lexer));
           goto error;
         }
 
@@ -5173,6 +5178,7 @@ struct matrix_command
 
         struct matrix_get
           {
+            struct lexer *lexer;
             struct matrix_lvalue *dst;
             struct dataset *dataset;
             struct file_handle *file;
@@ -5924,7 +5930,7 @@ matrix_break_parse (struct matrix_state *s)
 {
   if (!s->in_loop)
     {
-      msg (SE, _("BREAK not inside LOOP."));
+      lex_next_error (s->lexer, -1, -1, _("BREAK not inside LOOP."));
       return NULL;
     }
 
@@ -6022,7 +6028,7 @@ matrix_release_parse (struct matrix_state *s)
           cmd->release.vars[cmd->release.n_vars++] = var;
         }
       else
-        lex_error (s->lexer, _("Variable name expected."));
+        lex_error (s->lexer, _("Syntax error expecting variable name."));
       lex_get (s->lexer);
 
       if (!lex_match (s->lexer, T_COMMA))
@@ -6441,6 +6447,10 @@ matrix_read_parse (struct matrix_state *s)
   if (!read->dst)
     goto error;
 
+  int by_ofs = 0;
+  int format_ofs = 0;
+  int record_width_start = 0, record_width_end = 0;
+
   int by = 0;
   int repetitions = 0;
   int record_width = 0;
@@ -6471,6 +6481,7 @@ matrix_read_parse (struct matrix_state *s)
         {
           lex_match (s->lexer, T_EQUALS);
 
+          record_width_start = lex_ofs (s->lexer);
           if (!lex_force_int_range (s->lexer, "FIELD", 1, INT_MAX))
             goto error;
           read->c1 = lex_integer (s->lexer);
@@ -6479,6 +6490,7 @@ matrix_read_parse (struct matrix_state *s)
               || !lex_force_int_range (s->lexer, "TO", read->c1, INT_MAX))
             goto error;
           read->c2 = lex_integer (s->lexer) + 1;
+          record_width_end = lex_ofs (s->lexer);
           lex_get (s->lexer);
 
           record_width = read->c2 - read->c1;
@@ -6488,12 +6500,20 @@ matrix_read_parse (struct matrix_state *s)
                                         read->c2 - read->c1))
                 goto error;
               by = lex_integer (s->lexer);
+              by_ofs = lex_ofs (s->lexer);
+              int field_end = lex_ofs (s->lexer);
               lex_get (s->lexer);
 
               if (record_width % by)
                 {
-                  msg (SE, _("BY %d does not evenly divide record width %d."),
-                       by, record_width);
+                  lex_ofs_error (
+                    s->lexer, record_width_start, field_end,
+                    _("Field width %d does not evenly divide record width %d."),
+                    by, record_width);
+                  lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                               _("This syntax designates the record width."));
+                  lex_ofs_msg (s->lexer, SN, by_ofs, by_ofs,
+                               _("This syntax specifies the field width."));
                   goto error;
                 }
             }
@@ -6527,7 +6547,7 @@ matrix_read_parse (struct matrix_state *s)
         {
           if (seen_format)
             {
-              lex_sbc_only_once ("FORMAT");
+              lex_sbc_only_once (s->lexer, "FORMAT");
               goto error;
             }
           seen_format = true;
@@ -6537,6 +6557,7 @@ matrix_read_parse (struct matrix_state *s)
           if (lex_token (s->lexer) != T_STRING && !lex_force_id (s->lexer))
             goto error;
 
+          format_ofs = lex_ofs (s->lexer);
           const char *p = lex_tokcstr (s->lexer);
           if (c_isdigit (p[0]))
             {
@@ -6578,6 +6599,8 @@ matrix_read_parse (struct matrix_state *s)
     {
       msg (SE, _("SIZE is required for reading data into a full matrix "
                  "(as opposed to a submatrix)."));
+      msg_at (SN, read->dst->var_location,
+              _("This expression designates a full matrix."));
       goto error;
     }
 
@@ -6618,6 +6641,10 @@ matrix_read_parse (struct matrix_state *s)
     {
       msg (SE, _("%d repetitions cannot fit in record width %d."),
            repetitions, record_width);
+      lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                   _("This syntax designates the number of repetitions."));
+      lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                   _("This syntax designates the record width."));
       goto error;
     }
   int w = (repetitions ? record_width / repetitions
@@ -6625,14 +6652,26 @@ matrix_read_parse (struct matrix_state *s)
            : by);
   if (by && w != by)
     {
+      msg (SE, _("This command specifies two different field widths."));
       if (repetitions)
-        msg (SE, _("FORMAT specifies %d repetitions with record width %d, "
-                   "which implies field width %d, "
-                   "but BY specifies field width %d."),
-             repetitions, record_width, w, by);
+        {
+          lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                       ngettext ("This syntax specifies %d repetition.",
+                                 "This syntax specifies %d repetitions.",
+                                 repetitions),
+                       repetitions);
+          lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                       _("This syntax designates record width %d, "
+                         "which divided by %d repetitions implies "
+                         "field width %d."),
+                       record_width, repetitions, w);
+        }
       else
-        msg (SE, _("FORMAT specifies field width %d but BY specifies %d."),
-             w, by);
+        lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                     _("This syntax specifies field width %d."), w);
+
+      lex_ofs_msg (s->lexer, SN, by_ofs, by_ofs,
+                   _("This syntax specifies field width %d."), by);
       goto error;
     }
   read->w = w;
@@ -6988,6 +7027,10 @@ matrix_write_parse (struct matrix_state *s)
   if (!write->expression)
     goto error;
 
+  int by_ofs = 0;
+  int format_ofs = 0;
+  int record_width_start = 0, record_width_end = 0;
+
   int by = 0;
   int repetitions = 0;
   int record_width = 0;
@@ -7019,6 +7062,8 @@ matrix_write_parse (struct matrix_state *s)
         {
           lex_match (s->lexer, T_EQUALS);
 
+          record_width_start = lex_ofs (s->lexer);
+
           if (!lex_force_int_range (s->lexer, "FIELD", 1, INT_MAX))
             goto error;
           write->c1 = lex_integer (s->lexer);
@@ -7027,6 +7072,7 @@ matrix_write_parse (struct matrix_state *s)
               || !lex_force_int_range (s->lexer, "TO", write->c1, INT_MAX))
             goto error;
           write->c2 = lex_integer (s->lexer) + 1;
+          record_width_end = lex_ofs (s->lexer);
           lex_get (s->lexer);
 
           record_width = write->c2 - write->c1;
@@ -7035,13 +7081,21 @@ matrix_write_parse (struct matrix_state *s)
               if (!lex_force_int_range (s->lexer, "BY", 1,
                                         write->c2 - write->c1))
                 goto error;
+              by_ofs = lex_ofs (s->lexer);
+              int field_end = lex_ofs (s->lexer);
               by = lex_integer (s->lexer);
               lex_get (s->lexer);
 
               if (record_width % by)
                 {
-                  msg (SE, _("BY %d does not evenly divide record width %d."),
-                       by, record_width);
+                  lex_ofs_error (
+                    s->lexer, record_width_start, field_end,
+                    _("Field width %d does not evenly divide record width %d."),
+                    by, record_width);
+                  lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                               _("This syntax designates the record width."));
+                  lex_ofs_msg (s->lexer, SN, by_ofs, by_ofs,
+                               _("This syntax specifies the field width."));
                   goto error;
                 }
             }
@@ -7067,7 +7121,7 @@ matrix_write_parse (struct matrix_state *s)
         {
           if (has_format || write->format)
             {
-              lex_sbc_only_once ("FORMAT");
+              lex_sbc_only_once (s->lexer, "FORMAT");
               goto error;
             }
 
@@ -7076,6 +7130,7 @@ matrix_write_parse (struct matrix_state *s)
           if (lex_token (s->lexer) != T_STRING && !lex_force_id (s->lexer))
             goto error;
 
+          format_ofs = lex_ofs (s->lexer);
           const char *p = lex_tokcstr (s->lexer);
           if (c_isdigit (p[0]))
             {
@@ -7151,8 +7206,10 @@ matrix_write_parse (struct matrix_state *s)
    */
   if (repetitions > record_width)
     {
-      msg (SE, _("%d repetitions cannot fit in record width %d."),
-           repetitions, record_width);
+      lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                   _("This syntax designates the number of repetitions."));
+      lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                   _("This syntax designates the record width."));
       goto error;
     }
   int w = (repetitions ? record_width / repetitions
@@ -7160,14 +7217,26 @@ matrix_write_parse (struct matrix_state *s)
            : by);
   if (by && w != by)
     {
+      msg (SE, _("This command specifies two different field widths."));
       if (repetitions)
-        msg (SE, _("FORMAT specifies %d repetitions with record width %d, "
-                   "which implies field width %d, "
-                   "but BY specifies field width %d."),
-             repetitions, record_width, w, by);
+        {
+          lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                       ngettext ("This syntax specifies %d repetition.",
+                                 "This syntax specifies %d repetitions.",
+                                 repetitions),
+                       repetitions);
+          lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                       _("This syntax designates record width %d, "
+                         "which divided by %d repetitions implies "
+                         "field width %d."),
+                       record_width, repetitions, w);
+        }
       else
-        msg (SE, _("FORMAT specifies field width %d but BY specifies %d."),
-             w, by);
+        lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                     _("This syntax specifies field width %d."), w);
+
+      lex_ofs_msg (s->lexer, SN, by_ofs, by_ofs,
+                   _("This syntax specifies field width %d."), by);
       goto error;
     }
   if (w && !write->format)
@@ -7181,10 +7250,11 @@ matrix_write_parse (struct matrix_state *s)
 
   if (write->format && fmt_var_width (write->format) > sizeof (double))
     {
-      char s[FMT_STRING_LEN_MAX + 1];
-      fmt_to_string (write->format, s);
-      msg (SE, _("Format %s is too wide for %zu-byte matrix elements."),
-           s, sizeof (double));
+      char fs[FMT_STRING_LEN_MAX + 1];
+      fmt_to_string (write->format, fs);
+      lex_ofs_error (s->lexer, format_ofs, format_ofs,
+                     _("Format %s is too wide for %zu-byte matrix elements."),
+                     fs, sizeof (double));
       goto error;
     }
 
@@ -7291,6 +7361,7 @@ matrix_get_parse (struct matrix_state *s)
   *cmd = (struct matrix_command) {
     .type = MCMD_GET,
     .get = {
+      .lexer = s->lexer,
       .dataset = s->dataset,
       .user = { .treatment = MGET_ERROR },
       .system = { .treatment = MGET_ERROR },
@@ -7335,7 +7406,7 @@ matrix_get_parse (struct matrix_state *s)
 
           if (get->n_vars)
             {
-              lex_sbc_only_once ("VARIABLES");
+              lex_sbc_only_once (s->lexer, "VARIABLES");
               goto error;
             }
 
@@ -7418,7 +7489,7 @@ matrix_get_execute__ (struct matrix_command *cmd, struct casereader *reader,
 
   if (get->n_vars)
     {
-      if (!var_syntax_evaluate (get->vars, get->n_vars, dict,
+      if (!var_syntax_evaluate (get->lexer, get->vars, get->n_vars, dict,
                                 &vars, &n_vars, PV_NUMERIC))
         return;
     }
@@ -7540,7 +7611,7 @@ matrix_open_casereader (const struct matrix_command *cmd,
     {
       if (dict_get_n_vars (dataset_dict (dataset)) == 0)
         {
-          msg_at (ME, cmd->location,
+          msg_at (SE, cmd->location,
                   _("The %s command cannot read an empty active file."),
                   command_name);
           return false;
@@ -7579,21 +7650,39 @@ matrix_get_execute (struct matrix_command *cmd)
 
 static bool
 variables_changed (const char *keyword,
-                   const struct string_array *new,
-                   const struct string_array *old)
+                   const struct string_array *new_vars,
+                   const struct msg_location *new_vars_location,
+                   const struct msg_location *new_location,
+                   const struct string_array *old_vars,
+                   const struct msg_location *old_vars_location,
+                   const struct msg_location *old_location)
 {
-  if (new->n)
+  if (new_vars->n)
     {
-      if (!old->n)
+      if (!old_vars->n)
         {
-          msg (SE, _("%s may only be specified on MSAVE if it was specified "
-                     "on the first MSAVE within MATRIX."), keyword);
+          msg_at (SE, new_location,
+                  _("%s may only be specified on MSAVE if it was specified "
+                    "on the first MSAVE within MATRIX."), keyword);
+          msg_at (SN, old_location,
+                  _("The first MSAVE in MATRIX did not specify %s."),
+                  keyword);
+          msg_at (SN, new_vars_location,
+                  _("This is the specification of %s on a later MSAVE."),
+                  keyword);
           return true;
         }
-      else if (!string_array_equal_case (old, new))
+      if (!string_array_equal_case (old_vars, new_vars))
         {
-          msg (SE, _("%s must specify the same variables each time within "
-                     "a given MATRIX."), keyword);
+          msg_at (SE, new_location,
+                  _("%s must specify the same variables on each MSAVE "
+                    "within a given MATRIX."), keyword);
+          msg_at (SE, old_vars_location,
+                  _("This is the specification of %s on the first MSAVE."),
+                  keyword);
+          msg_at (SE, new_vars_location,
+                  _("This is a different specification of %s on a later MSAVE."),
+                  keyword);
           return true;
         }
     }
@@ -7605,14 +7694,25 @@ msave_common_changed (const struct msave_common *old,
                       const struct msave_common *new)
 {
   if (new->outfile && !fh_equal (old->outfile, new->outfile))
-    msg (SE, _("OUTFILE must name the same file on each MSAVE "
-               "within a single MATRIX command."));
-  else if (variables_changed ("VARIABLES", &new->variables, &old->variables)
-           || variables_changed ("FNAMES", &new->fnames, &old->fnames)
-           || variables_changed ("SNAMES", &new->snames, &old->snames))
-    msg_at (SN, old->location,
-            _("This is the location of the first MSAVE command."));
-  else
+    {
+      msg (SE, _("OUTFILE must name the same file on each MSAVE "
+                 "within a single MATRIX command."));
+      msg_at (SN, old->outfile_location,
+              _("This is the OUTFILE on the first MSAVE command."));
+      msg_at (SN, new->outfile_location,
+              _("This is the OUTFILE on a later MSAVE command."));
+      return false;
+    }
+
+  if (!variables_changed ("VARIABLES",
+                          &new->variables, new->variables_location, new->location,
+                          &old->variables, old->variables_location, old->location)
+      && !variables_changed ("FNAMES",
+                             &new->fnames, new->fnames_location, new->location,
+                             &old->fnames, old->fnames_location, old->location)
+      && !variables_changed ("SNAMES",
+                             &new->snames, new->snames_location, new->location,
+                             &old->snames, old->snames_location, old->location))
     return false;
 
   return true;
@@ -7625,9 +7725,13 @@ msave_common_destroy (struct msave_common *common)
     {
       msg_location_destroy (common->location);
       fh_unref (common->outfile);
+      msg_location_destroy (common->outfile_location);
       string_array_destroy (&common->variables);
+      msg_location_destroy (common->variables_location);
       string_array_destroy (&common->fnames);
+      msg_location_destroy (common->fnames_location);
       string_array_destroy (&common->snames);
+      msg_location_destroy (common->snames_location);
 
       for (size_t i = 0; i < common->n_factors; i++)
         matrix_expr_destroy (common->factors[i]);
@@ -7661,17 +7765,22 @@ match_rowtype (struct lexer *lexer)
 }
 
 static bool
-parse_var_names (struct lexer *lexer, struct string_array *sa)
+parse_var_names (struct lexer *lexer, struct string_array *sa,
+                 struct msg_location **locationp)
 {
   lex_match (lexer, T_EQUALS);
 
   string_array_clear (sa);
+  msg_location_destroy (*locationp);
+  *locationp = NULL;
 
   struct dictionary *dict = dict_create (get_default_encoding ());
   char **names;
   size_t n_names;
+  int start_ofs = lex_ofs (lexer);
   bool ok = parse_DATA_LIST_vars (lexer, dict, &names, &n_names,
                                   PV_NO_DUPLICATE | PV_NO_SCRATCH);
+  int end_ofs = lex_ofs (lexer) - 1;
   dict_unref (dict);
 
   if (ok)
@@ -7680,16 +7789,17 @@ parse_var_names (struct lexer *lexer, struct string_array *sa)
         if (ss_equals_case (ss_cstr (names[i]), ss_cstr ("ROWTYPE_"))
             || ss_equals_case (ss_cstr (names[i]), ss_cstr ("VARNAME_")))
           {
-            msg (SE, _("Variable name %s is reserved."), names[i]);
+            lex_ofs_error (lexer, start_ofs, end_ofs,
+                           _("Variable name %s is reserved."), names[i]);
             for (size_t j = 0; j < n_names; j++)
               free (names[i]);
             free (names);
             return false;
           }
 
-      string_array_clear (sa);
       sa->strings = names;
       sa->n = sa->allocated = n_names;
+      *locationp = lex_ofs_location (lexer, start_ofs, end_ofs);
     }
   return ok;
 }
@@ -7728,23 +7838,30 @@ matrix_msave_parse (struct matrix_state *s)
           lex_match (s->lexer, T_EQUALS);
 
           fh_unref (common->outfile);
+          int start_ofs = lex_ofs (s->lexer);
           common->outfile = fh_parse (s->lexer, FH_REF_FILE, NULL);
           if (!common->outfile)
             goto error;
+          msg_location_destroy (common->outfile_location);
+          common->outfile_location = lex_ofs_location (s->lexer, start_ofs,
+                                                       lex_ofs (s->lexer) - 1);
         }
       else if (lex_match_id (s->lexer, "VARIABLES"))
         {
-          if (!parse_var_names (s->lexer, &common->variables))
+          if (!parse_var_names (s->lexer, &common->variables,
+                                &common->variables_location))
             goto error;
         }
       else if (lex_match_id (s->lexer, "FNAMES"))
         {
-          if (!parse_var_names (s->lexer, &common->fnames))
+          if (!parse_var_names (s->lexer, &common->fnames,
+                                &common->fnames_location))
             goto error;
         }
       else if (lex_match_id (s->lexer, "SNAMES"))
         {
-          if (!parse_var_names (s->lexer, &common->snames))
+          if (!parse_var_names (s->lexer, &common->snames,
+                                &common->snames_location))
             goto error;
         }
       else if (lex_match_id (s->lexer, "SPLIT"))
@@ -7782,12 +7899,12 @@ matrix_msave_parse (struct matrix_state *s)
     {
       if (common->fnames.n && !factors)
         {
-          msg (SE, _("FNAMES requires FACTOR."));
+          msg_at (SE, common->fnames_location, _("FNAMES requires FACTOR."));
           goto error;
         }
       if (common->snames.n && !splits)
         {
-          msg (SE, _("SNAMES requires SPLIT."));
+          msg_at (SE, common->snames_location, _("SNAMES requires SPLIT."));
           goto error;
         }
       if (!common->outfile)
@@ -7869,8 +7986,7 @@ msave_add_vars (struct dictionary *d, const struct string_array *vars)
 }
 
 static struct dictionary *
-msave_create_dict (const struct msave_common *common,
-                   const struct msg_location *location)
+msave_create_dict (const struct msave_common *common)
 {
   struct dictionary *dict = dict_create (get_default_encoding ());
 
@@ -7887,7 +8003,8 @@ msave_create_dict (const struct msave_common *common,
   const char *dup_factor = msave_add_vars (dict, &common->fnames);
   if (dup_factor)
     {
-      msg_at (SE, location, _("Duplicate or invalid FACTOR variable name %s."),
+      msg_at (SE, common->fnames_location,
+              _("Duplicate or invalid FACTOR variable name %s."),
               dup_factor);
       goto error;
     }
@@ -7897,7 +8014,8 @@ msave_create_dict (const struct msave_common *common,
   const char *dup_var = msave_add_vars (dict, &common->variables);
   if (dup_var)
     {
-      msg_at (SE, location, _("Duplicate or invalid variable name %s."),
+      msg_at (SE, common->variables_location,
+              _("Duplicate or invalid variable name %s."),
               dup_var);
       goto error;
     }
@@ -7976,7 +8094,7 @@ matrix_msave_execute (struct matrix_command *cmd)
 
   if (!common->writer)
     {
-      struct dictionary *dict = msave_create_dict (common, cmd->location);
+      struct dictionary *dict = msave_create_dict (common);
       if (!dict)
         goto error;
 
@@ -8851,7 +8969,8 @@ matrix_commands_parse (struct matrix_state *s, struct matrix_commands *c,
 
       if (lex_at_phrase (s->lexer, "END MATRIX"))
         {
-          msg (SE, _("Premature END MATRIX within %s."), command_name);
+          lex_next_error (s->lexer, 0, 1,
+                          _("Premature END MATRIX within %s."), command_name);
           return false;
         }
 

@@ -62,10 +62,12 @@ start_clause (struct lexer *lexer, struct dataset *ds,
       && !do_if->clauses[do_if->n_clauses - 1].condition)
     {
       if (condition)
-        msg (SE, _("ELSE IF is not allowed following ELSE "
-                   "within DO IF...END IF."));
+        lex_ofs_error (lexer, 0, 1,
+                       _("ELSE IF is not allowed following ELSE "
+                         "within DO IF...END IF."));
       else
-        msg (SE, _("Only one ELSE is allowed within DO IF...END IF."));
+        lex_ofs_error (lexer, 0, 0,
+                       _("Only one ELSE is allowed within DO IF...END IF."));
 
       msg_at (SN, do_if->clauses[do_if->n_clauses - 1].location,
               _("This is the location of the previous ELSE clause."));

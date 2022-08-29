@@ -127,7 +127,7 @@ static const struct command commands[] =
 static const size_t n_commands = sizeof commands / sizeof *commands;
 
 static bool in_correct_state (const struct command *, enum cmd_state);
-static void report_state_mismatch (const struct command *, enum cmd_state);
+static char *report_state_mismatch (const struct command *, enum cmd_state);
 static void set_completion_state (enum cmd_state);
 
 /* Command parser. */
@@ -205,25 +205,32 @@ do_parse_command (struct lexer *lexer,
                                        utf8_to_title (command->name),
                                        utf8_to_title (command->name)));
 
+  int end = n_tokens - 1;
   if (command->function == NULL)
     {
-      msg (SE, _("%s is not yet implemented."), command->name);
+      lex_ofs_error (lexer, 0, end, _("%s is not yet implemented."),
+                     command->name);
       result = CMD_NOT_IMPLEMENTED;
     }
   else if ((command->flags & F_TESTING) && !settings_get_testing_mode ())
     {
-      msg (SE, _("%s may be used only in testing mode."), command->name);
+      lex_ofs_error (lexer, 0, end, _("%s may be used only in testing mode."),
+                     command->name);
       result = CMD_FAILURE;
     }
   else if ((command->flags & F_ENHANCED) && settings_get_syntax () != ENHANCED)
     {
-      msg (SE, _("%s may be used only in enhanced syntax mode."),
-           command->name);
+      lex_ofs_error (lexer, 0, end,
+                     _("%s may be used only in enhanced syntax mode."),
+                     command->name);
       result = CMD_FAILURE;
     }
   else if (!in_correct_state (command, state))
     {
-      report_state_mismatch (command, state);
+      char *message = report_state_mismatch (command, state);
+      lex_ofs_error (lexer, 0, end, "%s", message);
+      free (message);
+
       result = CMD_FAILURE;
     }
   else
@@ -342,17 +349,18 @@ parse_command_name (struct lexer *lexer, int *n_tokens)
       ds_truncate (&s, ds_length (&s) - 2);
     }
 
+  *n_tokens = (word + 1) + missing_words;
   if (command == NULL)
     {
       if (ds_is_empty (&s))
-        lex_error (lexer, _("expecting command name"));
+        lex_error (lexer, _("Syntax error expecting command name."));
       else
-        msg (SE, _("Unknown command `%s'."), ds_cstr (&s));
+        lex_ofs_error (lexer, 0, *n_tokens - 1,
+                       _("Unknown command `%s'."), ds_cstr (&s));
     }
 
   ds_destroy (&s);
 
-  *n_tokens = (word + 1) + missing_words;
   return command;
 }
 
@@ -364,9 +372,9 @@ in_correct_state (const struct command *command, enum cmd_state state)
   return command->states & (1 << state);
 }
 
-/* Emits an appropriate error message for trying to invoke
+/* Returns an appropriate error message for trying to invoke
    COMMAND in STATE. */
-static void
+static char *
 report_state_mismatch (const struct command *command, enum cmd_state state)
 {
   assert (!in_correct_state (command, state));
@@ -380,56 +388,49 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
         {
           /* One allowed state. */
         case S_INITIAL:
-          msg (SE, _("%s is allowed only before the active dataset has "
-                     "been defined."), command->name);
-          break;
+          return xasprintf (_("%s is allowed only before the active dataset has "
+                              "been defined."), command->name);
         case S_DATA:
-          msg (SE, _("%s is allowed only after the active dataset has "
-                     "been defined."), command->name);
-          break;
+          return xasprintf (_("%s is allowed only after the active dataset has "
+                              "been defined."), command->name);
         case S_INPUT_PROGRAM:
-          msg (SE, _("%s is allowed only inside %s."),
-               command->name, "INPUT PROGRAM");
-          break;
+          return xasprintf (_("%s is allowed only inside %s."),
+                            command->name, "INPUT PROGRAM");
         case S_FILE_TYPE:
-          msg (SE, _("%s is allowed only inside %s."), command->name, "FILE TYPE");
-          break;
+          return xasprintf (_("%s is allowed only inside %s."), command->name, "FILE TYPE");
 
           /* Two allowed states. */
         case S_INITIAL | S_DATA:
           NOT_REACHED ();
         case S_INITIAL | S_INPUT_PROGRAM:
-          msg (SE, _("%s is allowed only before the active dataset has been defined or inside %s."),
-	       command->name, "INPUT PROGRAM");
-          break;
+          return xasprintf (_("%s is allowed only before the active dataset "
+                              "has been defined or inside %s."),
+                            command->name, "INPUT PROGRAM");
         case S_INITIAL | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only before the active dataset has been defined or inside %s."),
-	       command->name, "FILE TYPE");
-          break;
+          return xasprintf (_("%s is allowed only before the active dataset "
+                              "has been defined or inside %s."),
+                            command->name, "FILE TYPE");
         case S_DATA | S_INPUT_PROGRAM:
-          msg (SE, _("%s is allowed only after the active dataset has been defined or inside %s."),
-	       command->name, "INPUT PROGRAM");
-          break;
+          return xasprintf (_("%s is allowed only after the active dataset "
+                              "has been defined or inside %s."),
+                            command->name, "INPUT PROGRAM");
         case S_DATA | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only after the active dataset has been defined or inside %s."),
-	       command->name, "FILE TYPE");
-          break;
+          return xasprintf (_("%s is allowed only after the active dataset "
+                              "has been defined or inside %s."),
+                            command->name, "FILE TYPE");
         case S_INPUT_PROGRAM | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only inside %s or inside %s."), command->name,
-	       "INPUT PROGRAM", "FILE TYPE");
-          break;
+          return xasprintf (_("%s is allowed only inside %s or inside %s."),
+                            command->name, "INPUT PROGRAM", "FILE TYPE");
 
           /* Three allowed states. */
         case S_DATA | S_INPUT_PROGRAM | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only after the active dataset has "
-                     "been defined, inside INPUT PROGRAM, or inside "
-                     "FILE TYPE."), command->name);
-          break;
+          return xasprintf (_("%s is allowed only after the active dataset has "
+                              "been defined, inside INPUT PROGRAM, or inside "
+                              "FILE TYPE."), command->name);
         case S_INITIAL | S_INPUT_PROGRAM | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only before the active dataset has "
-                     "been defined, inside INPUT PROGRAM, or inside "
-                     "FILE TYPE."), command->name);
-          break;
+          return xasprintf (_("%s is allowed only before the active dataset "
+                              "has been defined, inside INPUT PROGRAM, or "
+                              "inside FILE TYPE."), command->name);
         case S_INITIAL | S_DATA | S_FILE_TYPE:
           NOT_REACHED ();
         case S_INITIAL | S_DATA | S_INPUT_PROGRAM:
@@ -445,32 +446,32 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
       break;
 
     case CMD_STATE_INPUT_PROGRAM:
-      msg (SE, _("%s is not allowed inside %s."),
-           command->name, "INPUT PROGRAM");
-      break;
+      return xasprintf (_("%s is not allowed inside %s."),
+                        command->name, "INPUT PROGRAM");
 
     case CMD_STATE_FILE_TYPE:
-      msg (SE, _("%s is not allowed inside %s."), command->name, "FILE TYPE");
-      break;
+      return xasprintf (_("%s is not allowed inside %s."),
+                        command->name, "FILE TYPE");
 
     case CMD_STATE_NESTED_DATA:
     case CMD_STATE_NESTED_INPUT_PROGRAM:
       switch ((int) command->states & S_NESTED_ANY)
         {
         case 0:
-          msg (SE, _("%s is not allowed inside DO IF or LOOP."), command->name);
-          break;
+          return xasprintf (_("%s is not allowed inside DO IF or LOOP."),
+                            command->name);
 
         case S_NESTED_DATA:
-          msg (SE, _("In INPUT PROGRAM, "
-                     "%s is not allowed inside DO IF or LOOP."), command->name);
-          break;
+          return xasprintf (_("In INPUT PROGRAM, "
+                              "%s is not allowed inside DO IF or LOOP."),
+                            command->name);
 
         default:
           NOT_REACHED ();
         }
-      break;
     }
+
+  NOT_REACHED ();
 }
 
 /* Command name completion. */

@@ -805,7 +805,9 @@ end data.
 t-test /GROUPS=indep('a') /var=dep1 dep2.
 ])
 AT_CHECK([pspp -O format=csv t-test.sps], [1], [dnl
-"t-test.sps:17: error: T-TEST: When applying GROUPS to a string variable, two values must be specified."
+"t-test.sps:17.16-17.25: error: T-TEST: When applying GROUPS to a string variable, two values must be specified.
+   17 | t-test /GROUPS=indep('a') /var=dep1 dep2.
+      |                ^~~~~~~~~~"
 ])
 AT_CLEANUP
 

@@ -725,8 +725,10 @@ c').  To disable this warning, insert parentheses.
 
 1 >= 2 = 2 ge 3 => false
 
-evaluate.sps:17.24: error: DEBUG EVALUATE: Syntax error at `!': expecting end
-of command.
+evaluate.sps:17.24: error: DEBUG EVALUATE: Syntax error expecting end of
+command.
+   17 | DEBUG EVALUATE /3 ne 2 != 1.
+      |                        ^
 
 3 ne 2 != 1 => error
 
@@ -749,7 +751,9 @@ c').  To disable this warning, insert parentheses.
 
 2 le 2 => true
 
-evaluate.sps:25.21: error: DEBUG EVALUATE: Syntax error at `='.
+evaluate.sps:25.21: error: DEBUG EVALUATE: Syntax error.
+   25 | DEBUG EVALUATE /2 < = 2.
+      |                     ^
 
 2 < = 2 => error
 
@@ -950,7 +954,9 @@ for opt in OPT NOOPT; do
 
 2 ge 2 => true
 
-evaluate.sps:8.21: error: DEBUG EVALUATE: Syntax error at `='.
+evaluate.sps:8.21: error: DEBUG EVALUATE: Syntax error.
+    8 | DEBUG EVALUATE /2 > = 2.
+      |                     ^
 
 2 > = 2 => error
 
@@ -1118,12 +1124,16 @@ evaluate.sps:36.27-36.30: note: DEBUG EVALUATE: This operand has type 'number'.
 
 'asdf       ' ~= "asdf   " => false
 
-evaluate.sps:41.21: error: DEBUG EVALUATE: Syntax error at `>'.
+evaluate.sps:41.21: error: DEBUG EVALUATE: Syntax error.
+   41 | DEBUG EVALUATE /1 < > 1.
+      |                     ^
 
 1 < > 1 => error
 
-evaluate.sps:42.19: error: DEBUG EVALUATE: Syntax error at `~': expecting end
-of command.
+evaluate.sps:42.19: error: DEBUG EVALUATE: Syntax error expecting end of
+command.
+   42 | DEBUG EVALUATE /1 ~ = 1.
+      |                   ^
 
 1 ~ = 1 => error
 ])
@@ -2020,15 +2030,21 @@ ANY(string, string[, string]...).
 
 any(a10, 'b', 'c', 'd') => error
 
-evaluate.sps:37: error: DEBUG EVALUATE: Unknown identifier b.
+evaluate.sps:37.26: error: DEBUG EVALUATE: Unknown identifier b.
+   37 | DEBUG EVALUATE /any('a', b, 'c', 'd').
+      |                          ^
 
 any('a', b, 'c', 'd') => error
 
-evaluate.sps:38: error: DEBUG EVALUATE: Unknown identifier c.
+evaluate.sps:38.31: error: DEBUG EVALUATE: Unknown identifier c.
+   38 | DEBUG EVALUATE /any('a', 'b', c, 'd').
+      |                               ^
 
 any('a', 'b', c, 'd') => error
 
-evaluate.sps:39: error: DEBUG EVALUATE: Unknown identifier d.
+evaluate.sps:39.36: error: DEBUG EVALUATE: Unknown identifier d.
+   39 | DEBUG EVALUATE /any('a', 'b', 'c', d).
+      |                                    ^
 
 any('a', 'b', 'c', d) => error
 ]])

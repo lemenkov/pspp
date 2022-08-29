@@ -517,8 +517,9 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		    }
 		  else
 		    {
-		      msg (SE, _("The post hoc analysis method %s is not supported."), lex_tokcstr (lexer));
-		      lex_error (lexer, NULL);
+		      lex_error (lexer,
+                                 _("The post hoc analysis method %s is not supported."),
+                                 lex_tokcstr (lexer));
 		      goto error;
 		    }
 		}

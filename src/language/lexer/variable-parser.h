@@ -82,11 +82,20 @@ struct var_syntax
   {
     char *first;                /* Always nonnull. */
     char *last;                 /* Nonnull for var ranges (e.g. "a TO b"). */
+
+    /* For error reporting.
+
+      This only works if var_syntax_parse() and var_syntax_evaluate() are
+      called while we're parsing the same source file.  That matches the
+      current use case in MATRIX; if that changes, then this will need to
+      switch to use struct msg_location instead. */
+    int first_ofs;
+    int last_ofs;
   };
 void var_syntax_destroy (struct var_syntax *, size_t n);
 
 bool var_syntax_parse (struct lexer *, struct var_syntax **, size_t *);
-bool var_syntax_evaluate (const struct var_syntax *, size_t,
+bool var_syntax_evaluate (struct lexer *, const struct var_syntax *, size_t,
                           const struct dictionary *,
                           struct variable ***, size_t *, int opts);
 

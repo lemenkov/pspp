@@ -277,11 +277,15 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "STATISTICS"))
         {
+          int statistics_start = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
-          msg (SW, _("The STATISTICS subcommand is not yet implemented.  "
-                     "No statistics will be produced."));
           while (lex_match (lexer, T_ID))
             continue;
+          int statistics_end = lex_ofs (lexer) - 1;
+
+          lex_ofs_msg (lexer, SW, statistics_start, statistics_end,
+                       _("The STATISTICS subcommand is not yet implemented.  "
+                         "No statistics will be produced."));
         }
       else
 	{

@@ -43,7 +43,9 @@ x,11,12,13,14
 y,16,17,18,19
 z,21,22,23,24
 
-flip.sps:12: warning: FLIP: FLIP ignores TEMPORARY.  Temporary transformations will be made permanent.
+"flip.sps:12.1-12.4: warning: FLIP: FLIP ignores TEMPORARY.  Temporary transformations will be made permanent.
+   12 | flip newnames=n.
+      | ^~~~"
 
 Table: Data List
 CASE_LBL,v,w,x,y,z

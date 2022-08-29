@@ -214,7 +214,7 @@ CTABLES /TABLE qn1 /COMPARETEST MERGE=**.
 CTABLES /TABLE qn1 /COMPARETEST STYLE=**.
 CTABLES /TABLE qn1 /COMPARETEST SHOWSIG=**.
 CTABLES /TABLE qn1 /COMPARETEST **.
-CTABLES /TABLE qn1 / **.
+CTABLES /TABLE qn1 /FORMAT.
 CTABLES /TABLE qn1 /CLABELS ROWLABELS=OPPOSITE /CLABELS COLLABELS=OPPOSITE.
 CTABLES /TABLE qn20 > qnd1.
 CTABLES /TABLE qn1 [ROWPCT] > qnsa1.
@@ -222,40 +222,58 @@ NUMERIC datetime (DATETIME17.0).
 CTABLES /TABLE qn1 /CATEGORIES VARIABLES=datetime ['123'].
 ]])
 AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [1],
-[[ctables.sps:2.8: error: CTABLES: Syntax error at end of command: expecting `/'.
+[[ctables.sps:2.8: error: CTABLES: Syntax error expecting `/'.
+    2 | CTABLES.
+      |        ^
 
-ctables.sps:3.29-3.33: error: CTABLES: Syntax error at `'foo'': Expected non-
-negative number for MINCOLWIDTH.
+ctables.sps:3.29-3.33: error: CTABLES: Syntax error expecting non-negative
+number for MINCOLWIDTH.
+    3 | CTABLES /FORMAT MINCOLWIDTH='foo'.
+      |                             ^~~~~
 
-ctables.sps:4.21-4.22: error: CTABLES: Syntax error at `**': expecting
-identifier.
+ctables.sps:4.21-4.22: error: CTABLES: Syntax error expecting identifier.
+    4 | CTABLES /TABLE qn1 [**].
+      |                     ^~
 
-ctables.sps:5.21-5.32: error: CTABLES: Syntax error at `NOTAFUNCTION': Expecting
-summary function name.
+ctables.sps:5.21-5.32: error: CTABLES: Syntax error expecting summary function
+name.
+    5 | CTABLES /TABLE qn1 [NOTAFUNCTION].
+      |                     ^~~~~~~~~~~~
 
-ctables.sps:6.20: error: CTABLES: Syntax error at end of command: expecting `@:}@'.
+ctables.sps:6.20: error: CTABLES: Syntax error expecting `@:}@'.
+    6 | CTABLES /TABLE @{:@qn1.
+      |                    ^
 
-ctables.sps:7.16-7.17: error: CTABLES: Syntax error at `**': expecting
-identifier.
+ctables.sps:7.16-7.17: error: CTABLES: Syntax error expecting identifier.
+    7 | CTABLES /TABLE **.
+      |                ^~
 
-ctables.sps:8: error: CTABLES: NOTAVAR is not a variable name.
+ctables.sps:8.16-8.22: error: CTABLES: NOTAVAR is not a variable name.
+    8 | CTABLES /TABLE NOTAVAR.
+      |                ^~~~~~~
 
 ctables.sps:10.16-10.24: error: CTABLES: Cannot use string variable string as a
 scale variable.
    10 | CTABLES /TABLE string[S].
       |                ^~~~~~~~~
 
-ctables.sps:11.27-11.29: error: CTABLES: Syntax error at `101': Expected number
-between 0 and 100 for PTILE.
+ctables.sps:11.27-11.29: error: CTABLES: Syntax error expecting number between 0
+and 100 for PTILE.
+   11 | CTABLES /TABLE qn1 [PTILE 101].
+      |                           ^~~
 
 ctables.sps:12: error: CTABLES: Output format F0.1 specifies width 0, but F
 requires a width between 1 and 40.
 
-ctables.sps:13.26-13.36: error: CTABLES: Syntax error at `NEGPAREN1.2': Output
-format NEGPAREN requires width 2 or greater.
+ctables.sps:13.26-13.36: error: CTABLES: Output format NEGPAREN requires width 2
+or greater.
+   13 | CTABLES /TABLE qn1 [MEAN NEGPAREN1.2].
+      |                          ^~~~~~~~~~~
 
-ctables.sps:14.26-14.36: error: CTABLES: Syntax error at `NEGPAREN3.4': Output
-format NEGPAREN requires width greater than decimals.
+ctables.sps:14.26-14.36: error: CTABLES: Output format NEGPAREN requires width
+greater than decimals.
+   14 | CTABLES /TABLE qn1 [MEAN NEGPAREN3.4].
+      |                          ^~~~~~~~~~~
 
 ctables.sps:15.21-15.24: error: CTABLES: Summary function MEAN applies only to
 scale variables.
@@ -266,7 +284,9 @@ ctables.sps:15.16-15.18: note: CTABLES: 'QN1' is not a scale variable.
    15 | CTABLES /TABLE qn1 [MEAN TOTALS].
       |                ^~~
 
-ctables.sps:15.32: error: CTABLES: Syntax error at `@:>@': expecting `@<:@'.
+ctables.sps:15.32: error: CTABLES: Syntax error expecting `@<:@'.
+   15 | CTABLES /TABLE qn1 [MEAN TOTALS].
+      |                                ^
 
 ctables.sps:16.21-16.24: error: CTABLES: Summary function MEAN applies only to
 scale variables.
@@ -277,80 +297,135 @@ ctables.sps:16.16-16.18: note: CTABLES: 'QN1' is not a scale variable.
    16 | CTABLES /TABLE qn1 [MEAN TOTALS[STDDEV]%].
       |                ^~~
 
-ctables.sps:16.40: error: CTABLES: Syntax error at `%': expecting `@:>@'.
+ctables.sps:16.40: error: CTABLES: Syntax error expecting `@:>@'.
+   16 | CTABLES /TABLE qn1 [MEAN TOTALS[STDDEV]%].
+      |                                        ^
 
-ctables.sps:17.56: error: CTABLES: Syntax error at `x': expecting string.
+ctables.sps:17.56: error: CTABLES: Syntax error expecting string.
+   17 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [SUBTOTAL=x].
+      |                                                        ^
 
-ctables.sps:18.50-18.51: error: CTABLES: Syntax error at `**': expecting THRU.
+ctables.sps:18.50-18.51: error: CTABLES: Syntax error expecting THRU.
+   18 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [LO **].
+      |                                                  ^~
 
-ctables.sps:19.55: error: CTABLES: Syntax error at `x': expecting number.
+ctables.sps:19.55: error: CTABLES: Syntax error expecting number.
+   19 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [LO THRU x].
+      |                                                       ^
 
-ctables.sps:20.54-20.55: error: CTABLES: Syntax error at `**': expecting number.
+ctables.sps:20.54-20.55: error: CTABLES: Syntax error expecting number.
+   20 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [1 THRU **].
+      |                                                      ^~
 
-ctables.sps:21.56-21.57: error: CTABLES: Syntax error at `**': expecting string.
+ctables.sps:21.56-21.57: error: CTABLES: Syntax error expecting string.
+   21 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 ['x' THRU **].
+      |                                                        ^~
 
-ctables.sps:22.48-22.49: error: CTABLES: Syntax error at `**': expecting
-identifier.
+ctables.sps:22.48-22.49: error: CTABLES: Syntax error expecting identifier.
+   22 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&**].
+      |                                                ^~
 
 ctables.sps:23.47-23.48: error: CTABLES: Unknown postcompute &x.
    23 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&x].
       |                                               ^~
 
-ctables.sps:24.61-24.63: error: CTABLES: Syntax error at `101': Expected number
-between 0 and 100 for PTILE.
+ctables.sps:24.61-24.63: error: CTABLES: Syntax error expecting number between 0
+and 100 for PTILE.
+   24 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 KEY=PTILE(qn1, 101).
+      |                                                             ^~~
 
-ctables.sps:25.58: error: CTABLES: Syntax error at end of command: expecting
-`@:}@'.
+ctables.sps:25.58: error: CTABLES: Syntax error expecting `@:}@'.
+   25 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 KEY=MEAN(qn1.
+      |                                                          ^
 
-ctables.sps:26.54: error: CTABLES: Syntax error at end of command: expecting
-`@{:@'.
+ctables.sps:26.54: error: CTABLES: Syntax error expecting `@{:@'.
+   26 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 KEY=MEAN.
+      |                                                      ^
 
-ctables.sps:27.54-27.55: error: CTABLES: Syntax error at `**': expecting INCLUDE
-or EXCLUDE.
+ctables.sps:27.54-27.55: error: CTABLES: Syntax error expecting INCLUDE or
+EXCLUDE.
+   27 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 MISSING=**.
+      |                                                      ^~
 
-ctables.sps:28.52-28.53: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:28.52-28.53: error: CTABLES: Syntax error expecting YES or NO.
+   28 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 TOTAL=**.
+      |                                                    ^~
 
-ctables.sps:29.52-29.53: error: CTABLES: Syntax error at `**': expecting string.
+ctables.sps:29.52-29.53: error: CTABLES: Syntax error expecting string.
+   29 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 LABEL=**.
+      |                                                    ^~
 
-ctables.sps:30.55-30.56: error: CTABLES: Syntax error at `**': expecting BEFORE
-or AFTER.
+ctables.sps:30.55-30.56: error: CTABLES: Syntax error expecting BEFORE or AFTER.
+   30 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 POSITION=**.
+      |                                                       ^~
 
-ctables.sps:31.52-31.53: error: CTABLES: Syntax error at `**': expecting INCLUDE
-or EXCLUDE.
+ctables.sps:31.52-31.53: error: CTABLES: Syntax error expecting INCLUDE or
+EXCLUDE.
+   31 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 EMPTY=**.
+      |                                                    ^~
 
-ctables.sps:32.46-32.47: error: CTABLES: Syntax error at `**': expecting ORDER,
-KEY, MISSING, TOTAL, LABEL, POSITION, or EMPTY.
+ctables.sps:32.46-32.47: error: CTABLES: Syntax error expecting ORDER, KEY,
+MISSING, TOTAL, LABEL, POSITION, or EMPTY.
+   32 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 **.
+      |                                              ^~
 
-ctables.sps:33.54-33.55: error: CTABLES: Syntax error at `**': expecting TOTAL,
-LABEL, POSITION, or EMPTY.
+ctables.sps:33.54-33.55: error: CTABLES: Syntax error expecting TOTAL, LABEL,
+POSITION, or EMPTY.
+   33 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [1,2,3] **.
+      |                                                      ^~
 
-ctables.sps:34.36: error: CTABLES: Syntax error at `0': Expected positive
-integer for SUBTOTAL.
+ctables.sps:34.36: error: CTABLES: Syntax error expecting positive integer for
+SUBTOTAL.
+   34 | CTABLES /PCOMPUTE &k=EXPR(SUBTOTAL[0]).
+      |                                    ^
 
-ctables.sps:35.37-35.38: error: CTABLES: Syntax error at `**': expecting `@:>@'.
+ctables.sps:35.37-35.38: error: CTABLES: Syntax error expecting `@:>@'.
+   35 | CTABLES /PCOMPUTE &k=EXPR(SUBTOTAL[1**]).
+      |                                     ^~
 
-ctables.sps:36.31-36.32: error: CTABLES: Syntax error at `**': expecting THRU.
+ctables.sps:36.31-36.32: error: CTABLES: Syntax error expecting THRU.
+   36 | CTABLES /PCOMPUTE &k=EXPR([LO **]).
+      |                               ^~
 
-ctables.sps:37.36-37.37: error: CTABLES: Syntax error at `**': expecting number.
+ctables.sps:37.36-37.37: error: CTABLES: Syntax error expecting number.
+   37 | CTABLES /PCOMPUTE &k=EXPR([LO THRU **]).
+      |                                    ^~
 
-ctables.sps:38.35-38.36: error: CTABLES: Syntax error at `**': expecting number.
+ctables.sps:38.35-38.36: error: CTABLES: Syntax error expecting number.
+   38 | CTABLES /PCOMPUTE &k=EXPR([1 THRU **]).
+      |                                   ^~
 
-ctables.sps:39.29-39.30: error: CTABLES: Syntax error at `**': expecting `@:>@'.
+ctables.sps:39.29-39.30: error: CTABLES: Syntax error expecting `@:>@'.
+   39 | CTABLES /PCOMPUTE &k=EXPR([1**]).
+      |                             ^~
 
-ctables.sps:40.29: error: CTABLES: Syntax error at `x': expecting `@:}@'.
+ctables.sps:40.29: error: CTABLES: Syntax error expecting `@:}@'.
+   40 | CTABLES /PCOMPUTE &k=EXPR((1x)).
+      |                             ^
 
-ctables.sps:41.19-41.20: error: CTABLES: Syntax error at `**': expecting &.
+ctables.sps:41.19-41.20: error: CTABLES: Syntax error expecting &.
+   41 | CTABLES /PCOMPUTE **k.
+      |                   ^~
 
-ctables.sps:42.20: error: CTABLES: Syntax error at `1': expecting identifier.
+ctables.sps:42.20: error: CTABLES: Syntax error expecting identifier.
+   42 | CTABLES /PCOMPUTE &1.
+      |                    ^
 
-ctables.sps:43.21-43.22: error: CTABLES: Syntax error at `**': expecting `='.
+ctables.sps:43.21-43.22: error: CTABLES: Syntax error expecting `='.
+   43 | CTABLES /PCOMPUTE &k**.
+      |                     ^~
 
-ctables.sps:44.22-44.23: error: CTABLES: Syntax error at `**': expecting EXPR.
+ctables.sps:44.22-44.23: error: CTABLES: Syntax error expecting EXPR.
+   44 | CTABLES /PCOMPUTE &k=**.
+      |                      ^~
 
-ctables.sps:45.26-45.27: error: CTABLES: Syntax error at `**': expecting `('.
+ctables.sps:45.26-45.27: error: CTABLES: Syntax error expecting `@{:@'.
+   45 | CTABLES /PCOMPUTE &k=EXPR**.
+      |                          ^~
 
-ctables.sps:46.28: error: CTABLES: Syntax error at `x': expecting `)'.
+ctables.sps:46.28: error: CTABLES: Syntax error expecting `@:}@'.
+   46 | CTABLES /PCOMPUTE &k=EXPR(1x).
+      |                            ^
 
 ctables.sps:47.31-47.49: warning: CTABLES: New definition of &k will override
 the previous definition.
@@ -361,151 +436,248 @@ ctables.sps:47.10-47.28: note: CTABLES: This is the previous definition.
    47 | CTABLES /PCOMPUTE &k=EXPR(1) /PCOMPUTE &k=EXPR(2).
       |          ^~~~~~~~~~~~~~~~~~~
 
-ctables.sps:47.50: error: CTABLES: Syntax error at end of command: expecting
-`/'.
+ctables.sps:47.50: error: CTABLES: Syntax error expecting `/'.
+   47 | CTABLES /PCOMPUTE &k=EXPR(1) /PCOMPUTE &k=EXPR(2).
+      |                                                  ^
 
-ctables.sps:48.53-48.64: error: CTABLES: Syntax error at `NOTAFUNCTION':
-Expecting summary function name.
+ctables.sps:48.53-48.64: error: CTABLES: Syntax error expecting summary function
+name.
+   48 | CTABLES /PCOMPUTE &k=EXPR(1) /PPROPERTIES &k FORMAT=NOTAFUNCTION.
+      |                                                     ^~~~~~~~~~~~
 
-ctables.sps:49.59-49.60: error: CTABLES: Syntax error at `**': Expected number
-between 0 and 100 for PTILE.
+ctables.sps:49.59-49.60: error: CTABLES: Syntax error expecting number between 0
+and 100 for PTILE.
+   49 | CTABLES /PCOMPUTE &k=EXPR(1) /PPROPERTIES &k FORMAT=PTILE **.
+      |                                                           ^~
 
-ctables.sps:50.52-50.53: error: CTABLES: Syntax error at `**': expecting string.
+ctables.sps:50.52-50.53: error: CTABLES: Syntax error expecting string.
+   50 | CTABLES /PCOMPUTE &k=EXPR(1) /PPROPERTIES &k LABEL=**.
+      |                                                    ^~
 
-ctables.sps:51.61-51.62: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:51.61-51.62: error: CTABLES: Syntax error expecting YES or NO.
+   51 | CTABLES /PCOMPUTE &k=EXPR(1) /PPROPERTIES &k HIDESOURCECATS=**.
+      |                                                             ^~
 
-ctables.sps:52.46-52.47: error: CTABLES: Syntax error at `**': expecting LABEL,
-FORMAT, or HIDESOURCECATS.
+ctables.sps:52.46-52.47: error: CTABLES: Syntax error expecting LABEL, FORMAT,
+or HIDESOURCECATS.
+   52 | CTABLES /PCOMPUTE &k=EXPR(1) /PPROPERTIES &k **.
+      |                                              ^~
 
-ctables.sps:53.23-53.24: error: CTABLES: Syntax error at `**': expecting string.
+ctables.sps:53.23-53.24: error: CTABLES: Syntax error expecting string.
+   53 | CTABLES /FORMAT EMPTY=**.
+      |                       ^~
 
-ctables.sps:54.25-54.26: error: CTABLES: Syntax error at `**': expecting string.
+ctables.sps:54.25-54.26: error: CTABLES: Syntax error expecting string.
+   54 | CTABLES /FORMAT MISSING=**.
+      |                         ^~
 
-ctables.sps:55.17-55.18: error: CTABLES: Syntax error at `**': expecting
-MINCOLWIDTH, MAXCOLWIDTH, UNITS, EMPTY, or MISSING.
+ctables.sps:55.17-55.18: error: CTABLES: Syntax error expecting MINCOLWIDTH,
+MAXCOLWIDTH, UNITS, EMPTY, or MISSING.
+   55 | CTABLES /FORMAT **.
+      |                 ^~
 
-ctables.sps:56: error: CTABLES: MINCOLWIDTH must not be greater than
+ctables.sps:56.17-56.45: error: CTABLES: MINCOLWIDTH must not be greater than
 MAXCOLWIDTH.
+   56 | CTABLES /FORMAT MINCOLWIDTH=20 MAXCOLWIDTH=10/.
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:57.18-57.19: error: CTABLES: Syntax error at `**': expecting
-VARIABLES.
+ctables.sps:57.18-57.19: error: CTABLES: Syntax error expecting VARIABLES.
+   57 | CTABLES /VLABELS **.
+      |                  ^~
 
-ctables.sps:58: error: CTABLES: NOTAVAR is not a variable name.
+ctables.sps:58.28-58.34: error: CTABLES: NOTAVAR is not a variable name.
+   58 | CTABLES /VLABELS VARIABLES=NOTAVAR.
+      |                            ^~~~~~~
 
-ctables.sps:59.32-59.33: error: CTABLES: Syntax error at `**': expecting
-DISPLAY.
+ctables.sps:59.32-59.33: error: CTABLES: Syntax error expecting DISPLAY.
+   59 | CTABLES /VLABELS VARIABLES=qn1 **.
+      |                                ^~
 
-ctables.sps:60.40-60.41: error: CTABLES: Syntax error at `**': expecting
-DEFAULT, NAME, LABEL, BOTH, or NONE.
+ctables.sps:60.40-60.41: error: CTABLES: Syntax error expecting DEFAULT, NAME,
+LABEL, BOTH, or NONE.
+   60 | CTABLES /VLABELS VARIABLES=qn1 DISPLAY=**.
+      |                                        ^~
 
-ctables.sps:61.17-61.18: error: CTABLES: Syntax error at `**': expecting
-COUNTDUPLICATES.
+ctables.sps:61.17-61.18: error: CTABLES: Syntax error expecting COUNTDUPLICATES.
+   61 | CTABLES /MRSETS **.
+      |                 ^~
 
-ctables.sps:62.33-62.34: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:62.33-62.34: error: CTABLES: Syntax error expecting YES or NO.
+   62 | CTABLES /MRSETS COUNTDUPLICATES=**.
+      |                                 ^~
 
-ctables.sps:63.19-63.20: error: CTABLES: Syntax error at `**': expecting
-VARIABLE or LISTWISE.
+ctables.sps:63.19-63.20: error: CTABLES: Syntax error expecting VARIABLE or
+LISTWISE.
+   63 | CTABLES /SMISSING **.
+      |                   ^~
 
-ctables.sps:64.17-64.18: error: CTABLES: Syntax error at `**': expecting
-VARIABLE.
+ctables.sps:64.17-64.18: error: CTABLES: Syntax error expecting VARIABLE.
+   64 | CTABLES /WEIGHT **.
+      |                 ^~
 
-ctables.sps:65: error: CTABLES: NOTAVAR is not a variable name.
+ctables.sps:65.26-65.32: error: CTABLES: NOTAVAR is not a variable name.
+   65 | CTABLES /WEIGHT VARIABLE=NOTAVAR.
+      |                          ^~~~~~~
 
-ctables.sps:66.32: error: CTABLES: Syntax error at `1': Expected integer 2 or
-greater for HIDESMALLCOUNTS COUNT.
+ctables.sps:66.32: error: CTABLES: Syntax error expecting integer 2 or greater
+for HIDESMALLCOUNTS COUNT.
+   66 | CTABLES /HIDESMALLCOUNTS COUNT=1.
+      |                                ^
 
-ctables.sps:67.10-67.13: error: CTABLES: Syntax error at `QUUX': expecting one
-of the following: FORMAT, VLABELS, MRSETS, SMISSING, PCOMPUTE, PPROPERTIES,
-WEIGHT, HIDESMALLCOUNTS, TABLE.
+ctables.sps:67.10-67.13: error: CTABLES: Syntax error expecting one of the
+following: FORMAT, VLABELS, MRSETS, SMISSING, PCOMPUTE, PPROPERTIES, WEIGHT,
+HIDESMALLCOUNTS, TABLE.
+   67 | CTABLES /QUUX.
+      |          ^~~~
 
-ctables.sps:68.33: error: CTABLES: Syntax error at end of command: expecting
-`/'.
+ctables.sps:68.33: error: CTABLES: Syntax error expecting `/'.
+   68 | CTABLES /HIDESMALLCOUNTS COUNT=2.
+      |                                 ^
 
-ctables.sps:69.19-69.20: error: CTABLES: Syntax error at `**': expecting `/'.
+ctables.sps:69.19-69.20: error: CTABLES: Syntax error expecting `/'.
+   69 | CTABLES /TABLE qn1**.
+      |                   ^~
 
-ctables.sps:70.38-70.39: error: CTABLES: Syntax error at `**': expecting COLUMN,
-ROW, or LAYER.
+ctables.sps:70.38-70.39: error: CTABLES: Syntax error expecting COLUMN, ROW, or
+LAYER.
+   70 | CTABLES /TABLE qn1 /SLABELS POSITION=**.
+      |                                      ^~
 
-ctables.sps:71.37-71.38: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:71.37-71.38: error: CTABLES: Syntax error expecting YES or NO.
+   71 | CTABLES /TABLE qn1 /SLABELS VISIBLE=**.
+      |                                     ^~
 
-ctables.sps:72.29-72.30: error: CTABLES: Syntax error at `**': expecting
-POSITION or VISIBLE.
+ctables.sps:72.29-72.30: error: CTABLES: Syntax error expecting POSITION or
+VISIBLE.
+   72 | CTABLES /TABLE qn1 /SLABELS **.
+      |                             ^~
 
-ctables.sps:73.39-73.40: error: CTABLES: Syntax error at `**': expecting
-OPPOSITE or LAYER.
+ctables.sps:73.39-73.40: error: CTABLES: Syntax error expecting OPPOSITE or
+LAYER.
+   73 | CTABLES /TABLE qn1 /CLABELS ROWLABELS=**.
+      |                                       ^~
 
-ctables.sps:74.39-74.40: error: CTABLES: Syntax error at `**': expecting
-OPPOSITE or LAYER.
+ctables.sps:74.39-74.40: error: CTABLES: Syntax error expecting OPPOSITE or
+LAYER.
+   74 | CTABLES /TABLE qn1 /CLABELS COLLABELS=**.
+      |                                       ^~
 
-ctables.sps:75.29-75.30: error: CTABLES: Syntax error at `**': expecting AUTO,
-ROWLABELS, or COLLABELS.
+ctables.sps:75.29-75.30: error: CTABLES: Syntax error expecting AUTO, ROWLABELS,
+or COLLABELS.
+   75 | CTABLES /TABLE qn1 /CLABELS **.
+      |                             ^~
 
-ctables.sps:76.30-76.31: error: CTABLES: Syntax error at `**': expecting
-CILEVEL.
+ctables.sps:76.30-76.31: error: CTABLES: Syntax error expecting CILEVEL.
+   76 | CTABLES /TABLE qn1 /CRITERIA **.
+      |                              ^~
 
-ctables.sps:77.38-77.40: error: CTABLES: Syntax error at `101': Expected number
-in @<:@0,100@:}@ for CILEVEL.
+ctables.sps:77.38-77.40: error: CTABLES: Syntax error expecting number in
+@<:@0,100@:}@ for CILEVEL.
+   77 | CTABLES /TABLE qn1 /CRITERIA CILEVEL=101.
+      |                                      ^~~
 
-ctables.sps:78.28-78.29: error: CTABLES: Syntax error at `**': expecting
-CAPTION, CORNER, or TITLE.
+ctables.sps:78.28-78.29: error: CTABLES: Syntax error expecting CAPTION, CORNER,
+or TITLE.
+   78 | CTABLES /TABLE qn1 /TITLES **.
+      |                            ^~
 
-ctables.sps:79.34-79.35: error: CTABLES: Syntax error at `**': expecting
-CHISQUARE.
+ctables.sps:79.34-79.35: error: CTABLES: Syntax error expecting CHISQUARE.
+   79 | CTABLES /TABLE qn1 /SIGTEST TYPE=**.
+      |                                  ^~
 
-ctables.sps:80.35-80.36: error: CTABLES: Syntax error at `**': Expected number
-in @<:@0,1@:}@ for ALPHA.
-
-ctables.sps:81.43-81.44: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
-
-ctables.sps:82.40-82.41: error: CTABLES: Syntax error at `**': expecting
-ALLVISIBLE or SUBTOTALS.
-
-ctables.sps:83.29-83.30: error: CTABLES: Syntax error at `**': expecting TYPE,
-ALPHA, INCLUDEMRSETS, or CATEGORIES.
-
-ctables.sps:84.38-84.39: error: CTABLES: Syntax error at `**': expecting PROP or
-MEAN.
-
-ctables.sps:85.39-85.40: error: CTABLES: Syntax error at `**': Expected number
-in (0,1) for ALPHA.
-
-ctables.sps:86.39: error: CTABLES: Syntax error at `0': Expected number in (0,1)
+ctables.sps:80.35-80.36: error: CTABLES: Syntax error expecting number in @<:@0,1@:}@
 for ALPHA.
+   80 | CTABLES /TABLE qn1 /SIGTEST ALPHA=**.
+      |                                   ^~
 
-ctables.sps:87.40-87.41: error: CTABLES: Syntax error at `**': expecting
-BONFERRONI, BH, or NONE.
+ctables.sps:81.43-81.44: error: CTABLES: Syntax error expecting YES or NO.
+   81 | CTABLES /TABLE qn1 /SIGTEST INCLUDEMRSETS=**.
+      |                                           ^~
 
-ctables.sps:88.47-88.48: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:82.40-82.41: error: CTABLES: Syntax error expecting ALLVISIBLE or
+SUBTOTALS.
+   82 | CTABLES /TABLE qn1 /SIGTEST CATEGORIES=**.
+      |                                        ^~
 
-ctables.sps:89.47-89.48: error: CTABLES: Syntax error at `**': expecting ALLCATS
-or TESTEDCATS.
+ctables.sps:83.29-83.30: error: CTABLES: Syntax error expecting TYPE, ALPHA,
+INCLUDEMRSETS, or CATEGORIES.
+   83 | CTABLES /TABLE qn1 /SIGTEST **.
+      |                             ^~
 
-ctables.sps:90.44-90.45: error: CTABLES: Syntax error at `**': expecting
-ALLVISIBLE or SUBTOTALS.
+ctables.sps:84.38-84.39: error: CTABLES: Syntax error expecting PROP or MEAN.
+   84 | CTABLES /TABLE qn1 /COMPARETEST TYPE=**.
+      |                                      ^~
 
-ctables.sps:91.39-91.40: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:85.39-85.40: error: CTABLES: Syntax error expecting number in (0,1)
+for ALPHA.
+   85 | CTABLES /TABLE qn1 /COMPARETEST ALPHA=**.
+      |                                       ^~
 
-ctables.sps:92.39-92.40: error: CTABLES: Syntax error at `**': expecting APA or
-SIMPLE.
+ctables.sps:86.39: error: CTABLES: Syntax error expecting number in (0,1) for
+ALPHA.
+   86 | CTABLES /TABLE qn1 /COMPARETEST ALPHA=0,5.
+      |                                       ^
 
-ctables.sps:93.41-93.42: error: CTABLES: Syntax error at `**': expecting YES or
-NO.
+ctables.sps:87.40-87.41: error: CTABLES: Syntax error expecting BONFERRONI, BH,
+or NONE.
+   87 | CTABLES /TABLE qn1 /COMPARETEST ADJUST=**.
+      |                                        ^~
 
-ctables.sps:94.33-94.34: error: CTABLES: Syntax error at `**': expecting one of
-the following: TYPE, ALPHA, ADJUST, INCLUDEMRSETS, MEANSVARIANCE, CATEGORIES,
-MERGE, STYLE, SHOWSIG.
+ctables.sps:88.47-88.48: error: CTABLES: Syntax error expecting YES or NO.
+   88 | CTABLES /TABLE qn1 /COMPARETEST INCLUDEMRSETS=**.
+      |                                               ^~
 
-ctables.sps:95.22-95.23: error: CTABLES: Syntax error at `**': expecting TABLE,
-SLABELS, CLABELS, CRITERIA, CATEGORIES, TITLES, SIGTEST, or COMPARETEST.
+ctables.sps:89.47-89.48: error: CTABLES: Syntax error expecting ALLCATS or
+TESTEDCATS.
+   89 | CTABLES /TABLE qn1 /COMPARETEST MEANSVARIANCE=**.
+      |                                               ^~
+
+ctables.sps:90.44-90.45: error: CTABLES: Syntax error expecting ALLVISIBLE or
+SUBTOTALS.
+   90 | CTABLES /TABLE qn1 /COMPARETEST CATEGORIES=**.
+      |                                            ^~
+
+ctables.sps:91.39-91.40: error: CTABLES: Syntax error expecting YES or NO.
+   91 | CTABLES /TABLE qn1 /COMPARETEST MERGE=**.
+      |                                       ^~
+
+ctables.sps:92.39-92.40: error: CTABLES: Syntax error expecting APA or SIMPLE.
+   92 | CTABLES /TABLE qn1 /COMPARETEST STYLE=**.
+      |                                       ^~
+
+ctables.sps:93.41-93.42: error: CTABLES: Syntax error expecting YES or NO.
+   93 | CTABLES /TABLE qn1 /COMPARETEST SHOWSIG=**.
+      |                                         ^~
+
+ctables.sps:94.33-94.34: error: CTABLES: Syntax error expecting one of the
+following: TYPE, ALPHA, ADJUST, INCLUDEMRSETS, MEANSVARIANCE, CATEGORIES, MERGE,
+STYLE, SHOWSIG.
+   94 | CTABLES /TABLE qn1 /COMPARETEST **.
+      |                                 ^~
+
+ctables.sps:95.21-95.26: error: CTABLES: Syntax error expecting TABLE, SLABELS,
+CLABELS, CRITERIA, CATEGORIES, TITLES, SIGTEST, or COMPARETEST.
+   95 | CTABLES /TABLE qn1 /FORMAT.
+      |                     ^~~~~~
+
+ctables.sps:95.21-95.26: note: CTABLES: This subcommand must appear before
+TABLE.
+   95 | CTABLES /TABLE qn1 /FORMAT.
+      |                     ^~~~~~
 
 ctables.sps:96: error: CTABLES: ROWLABELS and COLLABELS may not both be
 specified.
+
+ctables.sps:96.21-96.46: note: CTABLES: This is the first specification.
+   96 | CTABLES /TABLE qn1 /CLABELS ROWLABELS=OPPOSITE /CLABELS
+COLLABELS=OPPOSITE.
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ctables.sps:96.49-96.74: note: CTABLES: This is the second specification.
+   96 | CTABLES /TABLE qn1 /CLABELS ROWLABELS=OPPOSITE /CLABELS
+COLLABELS=OPPOSITE.
+      |
+^~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ctables.sps:97.16-97.26: error: CTABLES: Cannot nest scale variables.
    97 | CTABLES /TABLE qn20 > qnd1.
@@ -573,140 +745,155 @@ CTABLES /TABLE qn113 /COMPARETEST TYPE=PROP.
 CTABLES /TABLE qn113 [COUNT.UCL].
 
 CTABLES /TABLE qn1 /CATEGORIES **.
+
+CTABLES /TITLES.
 ]])
-AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [1],
-[[ctables.sps:2.76-2.78: error: CTABLES: Computed category &pc references a
-category not included in the category list.
-    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES
-VARIABLES=qn1 [&pc].
-      |
-^~~
+AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [1],
+[[ctables.sps:2.76-2.78: error: CTABLES: Computed category &pc references a category not included in the category list.
+    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
+      |                                                                            ^~~
 
 ctables.sps:2.28-2.35: note: CTABLES: This is the missing category.
-    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES
-VARIABLES=qn1 [&pc].
+    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
       |                            ^~~~~~~~
 
-ctables.sps:2.76-2.79: note: CTABLES: To fix the problem, add subtotals to the
-list of categories here.
-    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES
-VARIABLES=qn1 [&pc].
-      |
-^~~~
+ctables.sps:2.76-2.79: note: CTABLES: To fix the problem, add subtotals to the list of categories here.
+    2 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
+      |                                                                            ^~~~
 
-ctables.sps:3.73-3.75: error: CTABLES: Computed category &pc references a
-category not included in the category list.
-    3 | CTABLES /PCOMPUTE &pc=EXPR(TOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1
-[&pc].
-      |
-^~~
+ctables.sps:3.73-3.75: error: CTABLES: Computed category &pc references a category not included in the category list.
+    3 | CTABLES /PCOMPUTE &pc=EXPR(TOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
+      |                                                                         ^~~
 
 ctables.sps:3.28-3.32: note: CTABLES: This is the missing category.
-    3 | CTABLES /PCOMPUTE &pc=EXPR(TOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1
-[&pc].
+    3 | CTABLES /PCOMPUTE &pc=EXPR(TOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
       |                            ^~~~~
 
-ctables.sps:3: note: CTABLES: To fix the problem, add TOTAL=YES to the
-variable's CATEGORIES specification.
+ctables.sps:3: note: CTABLES: To fix the problem, add TOTAL=YES to the variable's CATEGORIES specification.
 
-ctables.sps:4.76-4.99: error: CTABLES: These categories include 2 instances of
-SUBTOTAL or HSUBTOTAL, so references from computed categories must refer to
-subtotals by position, e.g. SUBTOTAL[1].
-    4 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES
-VARIABLES=qn1 [&pc, SUBTOTAL, SUBTOTAL].
-      |
-^~~~~~~~~~~~~~~~~~~~~~~~
+ctables.sps:4.76-4.99: error: CTABLES: These categories include 2 instances of SUBTOTAL or HSUBTOTAL, so references from
+computed categories must refer to subtotals by position, e.g. SUBTOTAL[1].
+    4 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc, SUBTOTAL, SUBTOTAL].
+      |                                                                            ^~~~~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:4.28-4.35: note: CTABLES: This is the reference that lacks a
-position.
-    4 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES
-VARIABLES=qn1 [&pc, SUBTOTAL, SUBTOTAL].
+ctables.sps:4.28-4.35: note: CTABLES: This is the reference that lacks a position.
+    4 | CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc, SUBTOTAL, SUBTOTAL].
       |                            ^~~~~~~~
 
-ctables.sps:7.47-7.54: error: CTABLES: This category specification may be
-applied only to string variables, but this subcommand tries to apply it to
-numeric variable QN1.
+ctables.sps:7.47-7.54: error: CTABLES: This category specification may be applied only to string variables, but this
+subcommand tries to apply it to numeric variable QN1.
     7 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 ['string'].
       |                                               ^~~~~~~~
 
-ctables.sps:8.53: error: CTABLES: This category specification may be applied
-only to numeric variables, but this subcommand tries to apply it to string
-variable string.
+ctables.sps:8.53: error: CTABLES: This category specification may be applied only to numeric variables, but this
+subcommand tries to apply it to string variable string.
     8 | CTABLES /TABLE string /CATEGORIES VARIABLES=string [1].
       |                                                     ^
 
-ctables.sps:10.74-10.86: error: CTABLES: Syntax error at `KEY=MEAN(qn1)': Data-
-dependent sorting is not implemented.
+ctables.sps:10.74-10.86: error: CTABLES: Data-dependent sorting is not implemented.
+   10 | CTABLES /TABLE qn1 /CLABELS ROWLABELS=OPPOSITE /CATEGORIES VARIABLES=qn1 KEY=MEAN(qn1).
+      |                                                                          ^~~~~~~~~~~~~
 
-ctables.sps:12: error: CTABLES: ROWLABELS=OPPOSITE requires the variables to be
-moved to be categorical, but qnd1 is a scale variable.
+ctables.sps:12: error: CTABLES: To move category labels from one axis to another, the variables whose labels are to be
+moved must be categorical, but qnd1 is scale.
 
-ctables.sps:13: error: CTABLES: ROWLABELS=OPPOSITE requires the variables to be
-moved to have the same width, but QN1 has width 0 and string has width 8.
+ctables.sps:12.22-12.47: note: CTABLES: This syntax moves category labels to another axis.
+   12 | CTABLES /TABLE qnd1 /CLABELS ROWLABELS=OPPOSITE.
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:14: error: CTABLES: ROWLABELS=OPPOSITE requires the variables to be
-moved to have the same value labels, but QN1 and QNSA1 have different value
-labels.
+ctables.sps:13: error: CTABLES: To move category labels from one axis to another, the variables whose labels are to be
+moved must all have the same width, but QN1 has width 0 and string has width 8.
 
-ctables.sps:15: error: CTABLES: ROWLABELS=OPPOSITE requires the variables to be
-moved to have the same category specifications, but QN105BA and QN105BB have
-different category specifications.
+ctables.sps:13.30-13.55: note: CTABLES: This syntax moves category labels to another axis.
+   13 | CTABLES /TABLE qn1 + string /CLABELS ROWLABELS=OPPOSITE.
+      |                              ^~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:17.27-17.33: warning: CTABLES: The exponentiation operator (`**') is
-left-associative: `a**b**c' equals `(a**b)**c', not `a**(b**c)'.  To disable
-this warning, insert parentheses.
+ctables.sps:14: error: CTABLES: To move category labels from one axis to another, the variables whose labels are to be
+moved must all have the same value labels, but QN1 and QNSA1 have different value labels.
+
+ctables.sps:14.29-14.54: note: CTABLES: This syntax moves category labels to another axis.
+   14 | CTABLES /TABLE qn1 + qnsa1 /CLABELS ROWLABELS=OPPOSITE.
+      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ctables.sps:15: error: CTABLES: To move category labels from one axis to another, the variables whose labels are to be
+moved must all have the same category specifications, but QN105BA and QN105BB have different category specifications.
+
+ctables.sps:15.35-15.60: note: CTABLES: This syntax moves category labels to another axis.
+   15 | CTABLES /TABLE qn105ba + qn105bb /CLABELS ROWLABELS=OPPOSITE /CATEGORIES VARIABLES=qn105ba [1,2,3].
+      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ctables.sps:17.27-17.33: warning: CTABLES: The exponentiation operator (`**') is left-associative: `a**b**c' equals
+`(a**b)**c', not `a**(b**c)'.  To disable this warning, insert parentheses.
    17 | CTABLES /PCOMPUTE &x=EXPR(1**2**3).
       |                           ^~~~~~~
 
-ctables.sps:17.35: error: CTABLES: Syntax error at end of command: expecting
-`/'.
+ctables.sps:17.35: error: CTABLES: Syntax error expecting `/'.
+   17 | CTABLES /PCOMPUTE &x=EXPR(1**2**3).
+      |                                   ^
 
-ctables.sps:18.28-18.29: error: CTABLES: Syntax error at `**'.
+ctables.sps:18.28-18.29: error: CTABLES: Syntax error.
+   18 | CTABLES /PCOMPUTE &x=EXPR([**]).
+      |                            ^~
 
-ctables.sps:19.27-19.28: error: CTABLES: Syntax error at `**'.
+ctables.sps:19.27-19.28: error: CTABLES: Syntax error.
+   19 | CTABLES /PCOMPUTE &x=EXPR(**).
+      |                           ^~
 
-ctables.sps:21.15: error: CTABLES: Syntax error at end of command: At least one
-variable must be specified.
+ctables.sps:21.15: error: CTABLES: At least one variable must be specified.
+   21 | CTABLES /TABLE.
+      |               ^
 
 ctables.sps:23: error: CTABLES: Summaries may appear only on one axis.
 
-ctables.sps:23.50-23.54: note: CTABLES: This variable on the layers axis has a
-summary.
+ctables.sps:23.50-23.54: note: CTABLES: This variable on the layers axis has a summary.
    23 | CTABLES /TABLE qn113 [COUNT] BY qn114 [COUNT] BY qn116 [COUNT].
       |                                                  ^~~~~
 
-ctables.sps:23.16-23.20: note: CTABLES: This variable on the rows axis has a
-summary.
+ctables.sps:23.16-23.20: note: CTABLES: This variable on the rows axis has a summary.
    23 | CTABLES /TABLE qn113 [COUNT] BY qn114 [COUNT] BY qn116 [COUNT].
       |                ^~~~~
 
-ctables.sps:23.33-23.37: note: CTABLES: This variable on the columns axis has a
-summary.
+ctables.sps:23.33-23.37: note: CTABLES: This variable on the columns axis has a summary.
    23 | CTABLES /TABLE qn113 [COUNT] BY qn114 [COUNT] BY qn116 [COUNT].
       |                                 ^~~~~
 
-ctables.sps:23.33-23.37: note: CTABLES: This is a scale variable, so it always
-has a summary even if the syntax does not explicitly specify one.
+ctables.sps:23.33-23.37: note: CTABLES: This is a scale variable, so it always has a summary even if the syntax does not
+explicitly specify one.
    23 | CTABLES /TABLE qn113 [COUNT] BY qn114 [COUNT] BY qn116 [COUNT].
       |                                 ^~~~~
 
-ctables.sps:25.46-25.63: error: CTABLES: Syntax error at `KEY=PTILE(qn1, 50)':
-Data-dependent sorting is not implemented.
+ctables.sps:25.46-25.63: error: CTABLES: Data-dependent sorting is not implemented.
+   25 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 KEY=PTILE(qn1, 50).
+      |                                              ^~~~~~~~~~~~~~~~~~
 
-ctables.sps:27.16-27.21: error: CTABLES: Syntax error at `$mrset': Multiple
-response set support not implemented.
+ctables.sps:27.16-27.21: error: CTABLES: Multiple response set support not implemented.
+   27 | CTABLES /TABLE $mrset.
+      |                ^~~~~~
 
-ctables.sps:29.23-29.44: error: CTABLES: Syntax error at `SIGTEST
-TYPE=CHISQUARE': Support for SIGTEST not yet implemented.
+ctables.sps:29.23-29.44: error: CTABLES: Support for SIGTEST not yet implemented.
+   29 | CTABLES /TABLE qn113 /SIGTEST TYPE=CHISQUARE.
+      |                       ^~~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:30.35-30.43: error: CTABLES: Syntax error at `TYPE=PROP': Support
-for COMPARETEST not yet implemented.
+ctables.sps:30.23-30.43: error: CTABLES: Support for COMPARETEST not yet implemented.
+   30 | CTABLES /TABLE qn113 /COMPARETEST TYPE=PROP.
+      |                       ^~~~~~~~~~~~~~~~~~~~~
 
-ctables.sps:32.23-32.31: error: CTABLES: Syntax error at `COUNT.UCL': Support
-for LCL, UCL, and SE summary functions is not yet implemented.
+ctables.sps:32.23-32.31: error: CTABLES: Support for LCL, UCL, and SE summary functions is not yet implemented.
+   32 | CTABLES /TABLE qn113 [COUNT.UCL].
+      |                       ^~~~~~~~~
 
-ctables.sps:34.32-34.33: error: CTABLES: Syntax error at `**': expecting
-VARIABLES.
+ctables.sps:34.32-34.33: error: CTABLES: Syntax error expecting VARIABLES.
+   34 | CTABLES /TABLE qn1 /CATEGORIES **.
+      |                                ^~
+
+ctables.sps:36.10-36.15: error: CTABLES: Syntax error expecting one of the following: FORMAT, VLABELS, MRSETS, SMISSING,
+PCOMPUTE, PPROPERTIES, WEIGHT, HIDESMALLCOUNTS, TABLE.
+   36 | CTABLES /TITLES.
+      |          ^~~~~~
+
+ctables.sps:36.10-36.15: note: CTABLES: TABLE must appear before this subcommand.
+   36 | CTABLES /TITLES.
+      |          ^~~~~~
 ]])
 AT_CLEANUP
 

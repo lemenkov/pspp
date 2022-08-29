@@ -174,12 +174,25 @@ const char *lex_get_file_name (const struct lexer *);
 struct msg_location *lex_get_location (const struct lexer *, int n0, int n1);
 const char *lex_get_encoding (const struct lexer *);
 
-/* Issuing errors. */
+/* Issuing errors and warnings. */
 void lex_error (struct lexer *, const char *, ...) PRINTF_FORMAT (2, 3);
 void lex_next_error (struct lexer *, int n0, int n1, const char *, ...)
   PRINTF_FORMAT (4, 5);
 void lex_ofs_error (struct lexer *, int ofs0, int ofs1, const char *, ...)
   PRINTF_FORMAT (4, 5);
+
+void lex_msg (struct lexer *, enum msg_class, const char *, ...)
+  PRINTF_FORMAT (3, 4);
+void lex_next_msg (struct lexer *, enum msg_class, int n0, int n1,
+                   const char *, ...)
+  PRINTF_FORMAT (5, 6);
+void lex_ofs_msg (struct lexer *, enum msg_class, int ofs0, int ofs1,
+                  const char *, ...)
+  PRINTF_FORMAT (5, 6);
+void lex_ofs_msg_valist (struct lexer *lexer, enum msg_class,
+                         int ofs0, int ofs1, const char *format, va_list)
+  PRINTF_FORMAT (5, 0);
+
 int lex_end_of_command (struct lexer *);
 
 void lex_error_expecting (struct lexer *, ...) SENTINEL(0);
@@ -188,19 +201,13 @@ void lex_error_expecting (struct lexer *, ...) SENTINEL(0);
 void lex_error_expecting_valist (struct lexer *, va_list);
 void lex_error_expecting_array (struct lexer *, const char **, size_t n);
 
-void lex_sbc_only_once (const char *);
+void lex_sbc_only_once (struct lexer *, const char *);
 void lex_sbc_missing (const char *);
 
 void lex_spec_only_once (struct lexer *, const char *subcommand,
                          const char *specification);
 void lex_spec_missing (struct lexer *, const char *subcommand,
                        const char *specification);
-
-void lex_error_valist (struct lexer *, const char *, va_list)
-  PRINTF_FORMAT (2, 0);
-void lex_ofs_error_valist (struct lexer *lexer, int ofs0, int ofs1,
-                           const char *format, va_list)
-  PRINTF_FORMAT (4, 0);
 
 /* Error handling. */
 enum segmenter_mode lex_get_syntax_mode (const struct lexer *);
@@ -213,7 +220,7 @@ void lex_discard_noninteractive (struct lexer *);
 void lex_set_message_handler (struct lexer *,
                               void (*output_msg) (const struct msg *,
                                                   struct lexer *));
-void lex_source_ref (const struct lex_source *);
+struct lex_source *lex_source_ref (const struct lex_source *);
 void lex_source_unref (struct lex_source *);
 struct substring lex_source_get_line (const struct lex_source *, int line);
 

@@ -615,8 +615,10 @@ END DATA.
 REGRESSION
 /VARIABLES= a
 
-ascii.sps:11: warning: REGRESSION: a is not a numeric variable.  It will not be
-included in the variable list.
+ascii.sps:10.13: warning: REGRESSION: a is not a numeric variable.  It will not
+be included in the variable list.
+   10 | /VARIABLES= a
+      |             ^
 
 /DEPENDENT= x y
 /STATISTICS=COEFF R ANOVA.

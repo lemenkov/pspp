@@ -61,7 +61,7 @@ parse_dataset_name (struct lexer *lexer, struct session *session)
   if (ds != NULL)
     lex_get (lexer);
   else
-    msg (SE, _("There is no dataset named %s."), lex_tokcstr (lexer));
+    lex_error (lexer, _("There is no dataset named %s."), lex_tokcstr (lexer));
   return ds;
 }
 

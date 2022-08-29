@@ -30,10 +30,10 @@
    masks. */
 enum dict_class
   {
-    DC_ORDINARY = 0x0001,       /* Ordinary identifier. */
-    DC_SYSTEM = 0x0002,         /* System variable. */
-    DC_SCRATCH = 0x0004,        /* Scratch variable. */
-    DC_ALL = 0x0007             /* All of the above. */
+    DC_ORDINARY = 1 << 0,       /* Ordinary identifier. */
+    DC_SYSTEM = 1 << 1,         /* System variable. */
+    DC_SCRATCH = 1 << 2,        /* Scratch variable. */
+#define DC_ALL (DC_ORDINARY | DC_SYSTEM | DC_SCRATCH)
   };
 
 enum dict_class dict_class_from_id (const char *name);

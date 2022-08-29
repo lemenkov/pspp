@@ -410,7 +410,9 @@ EXECUTE.
 ])
 
 AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
-data-list.sps:1.41-1.42: error: DATA LIST: Syntax error at `-1': Expected non-negative integer for SKIP.
+"data-list.sps:1.41-1.42: error: DATA LIST: Syntax error expecting non-negative integer for SKIP.
+    1 | DATA LIST LIST FILE='f.in' NOTABLE SKIP=-1 /a b c d.
+      |                                         ^~"
 
 data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
 ])
@@ -426,7 +428,9 @@ EXECUTE.
 ])
 
 AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
-data-list.sps:1.44-1.45: error: DATA LIST: Syntax error at `-1': Expected non-negative integer for RECORDS.
+"data-list.sps:1.44-1.45: error: DATA LIST: Syntax error expecting non-negative integer for RECORDS.
+    1 | DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
+      |                                            ^~"
 
 data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
 ])

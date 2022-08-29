@@ -57,98 +57,105 @@ m4_if([$1], [active], [OUTFILE=*],
       [outfile=aggregate]) dnl
 m4_if([$2], [presorted], [/PRESORTED]) dnl
 m4_if([$3], [columnwise], [/MISSING=COLUMNWISE])
-	/DOCUMENT
-	/BREAK=g
-	/N = n
-	/NI = n./
-	NU = nu
-	/NUI = nu./
-	NFGT2 = fgt(n, 2)
-	/NFGT2I = fgt.(n, 2)
-	/SFGT2 = fgt(s, '2')
-	/SFGT2I = fgt.(s, '2')
-	/NFIN23 = fin(n, 2, 3)
-	/NFIN23I = fin.(n, 2, 3)
-	/SFIN23 = fin(s, '2', '3')
-	/SFIN23I = fin.(s, '2', '3')
-	/NFLT2 = flt(n, 2)
-	/NFLT2I = flt.(n, 2)
-	/SFLT2 = flt(s, '2')
-	/SFLT2I = flt.(s, '2')
-	/NFIRST = first(n)
-	/NFIRSTI = first.(n)
-	/SFIRST = first(s)
-	/SFIRSTI = first.(s)
-	/NFOUT23 = fout(n, 3, 2)
-	/NFOUT23I = fout.(n, 3, 2)
-	/SFOUT23 = fout(s, '3', '2')
-	/SFOUT23I = fout.(s, '3', '2')
-	/NLAST = last(n)
-	/NLASTI = last.(n)
-	/SLAST = last(s)
-	/SLASTI = last.(s)
-	/NMAX = max(n)
-	/NMAXI = max.(n)
-	/SMAX = max(s)
-	/SMAXI = max.(s)
-	/NMEAN = mean(n)
-	/NMEANI = mean.(n)
-	/NMIN = min(n)
-	/NMINI = min.(n)
-	/SMIN = min(s)
-	/SMINI = min.(s)
-	/NN = n(n)
-	/NNI = n.(n)
-	/SN = n(s)
-	/SNI = n.(s)
-	/NNMISS = nmiss(n)
-	/NNMISSI = nmiss.(n)
-	/SNMISS = nmiss(s)
-	/SNMISSI = nmiss.(s)
-	/NNU = nu(n)
-	/NNUI = nu.(n)
-	/SNU = nu(s)
-	/SNUI = nu.(s)
-	/NNUMISS = numiss(n)
-	/NNUMISSI = numiss.(n)
-	/SNUMISS = numiss(s)
-	/SNUMISSI = numiss.(s)
-	/NPGT2 = pgt(n, 2)
-	/NPGT2I = pgt.(n, 2)
-	/SPGT2 = pgt(s, '2')
-	/SPGT2I = pgt.(s, '2')
-	/NPIN23 = pin(n, 2, 3)
-	/NPIN23I = pin.(n, 2, 3)
-	/SPIN23 = pin(s, '2', '3')
-	/SPIN23I = pin.(s, '2', '3')
-	/NPLT2 = plt(n, 2)
-	/NPLT2I = plt.(n, 2)
-	/SPLT2 = plt(s, '2')
-	/SPLT2I = plt.(s, '2')
-	/NPOUT23 = pout(n, 2, 3)
-	/NPOUT23I = pout.(n, 2, 3)
-	/SPOUT23 = pout(s, '2', '3')
-	/SPOUT23I = pout.(s, '2', '3')
-	/NMEDIAN = median(n)
-	/NMEDIANI = median.(n)
-	/NSD = sd(n)
-	/NSDI = sd.(n)
-	/NSUM = sum(n)
-	/NSUMI = sum.(n).
+        /DOCUMENT
+        /BREAK=g
+        /N = n
+        /NI = n./
+        NU = nu
+        /NUI = nu./
+        NFGT2 = fgt(n, 2)
+        /NFGT2I = fgt.(n, 2)
+        /SFGT2 = fgt(s, '2')
+        /SFGT2I = fgt.(s, '2')
+        /NFIN23 = fin(n, 2, 3)
+        /NFIN23I = fin.(n, 2, 3)
+        /SFIN23 = fin(s, '2', '3')
+        /SFIN23I = fin.(s, '2', '3')
+        /NFLT2 = flt(n, 2)
+        /NFLT2I = flt.(n, 2)
+        /SFLT2 = flt(s, '2')
+        /SFLT2I = flt.(s, '2')
+        /NFIRST = first(n)
+        /NFIRSTI = first.(n)
+        /SFIRST = first(s)
+        /SFIRSTI = first.(s)
+        /NFOUT23 = fout(n, 3, 2)
+        /NFOUT23I = fout.(n, 3, 2)
+        /SFOUT23 = fout(s, '3', '2')
+        /SFOUT23I = fout.(s, '3', '2')
+        /NLAST = last(n)
+        /NLASTI = last.(n)
+        /SLAST = last(s)
+        /SLASTI = last.(s)
+        /NMAX = max(n)
+        /NMAXI = max.(n)
+        /SMAX = max(s)
+        /SMAXI = max.(s)
+        /NMEAN = mean(n)
+        /NMEANI = mean.(n)
+        /NMIN = min(n)
+        /NMINI = min.(n)
+        /SMIN = min(s)
+        /SMINI = min.(s)
+        /NN = n(n)
+        /NNI = n.(n)
+        /SN = n(s)
+        /SNI = n.(s)
+        /NNMISS = nmiss(n)
+        /NNMISSI = nmiss.(n)
+        /SNMISS = nmiss(s)
+        /SNMISSI = nmiss.(s)
+        /NNU = nu(n)
+        /NNUI = nu.(n)
+        /SNU = nu(s)
+        /SNUI = nu.(s)
+        /NNUMISS = numiss(n)
+        /NNUMISSI = numiss.(n)
+        /SNUMISS = numiss(s)
+        /SNUMISSI = numiss.(s)
+        /NPGT2 = pgt(n, 2)
+        /NPGT2I = pgt.(n, 2)
+        /SPGT2 = pgt(s, '2')
+        /SPGT2I = pgt.(s, '2')
+        /NPIN23 = pin(n, 2, 3)
+        /NPIN23I = pin.(n, 2, 3)
+        /SPIN23 = pin(s, '2', '3')
+        /SPIN23I = pin.(s, '2', '3')
+        /NPLT2 = plt(n, 2)
+        /NPLT2I = plt.(n, 2)
+        /SPLT2 = plt(s, '2')
+        /SPLT2I = plt.(s, '2')
+        /NPOUT23 = pout(n, 2, 3)
+        /NPOUT23I = pout.(n, 2, 3)
+        /SPOUT23 = pout(s, '2', '3')
+        /SPOUT23I = pout.(s, '2', '3')
+        /NMEDIAN = median(n)
+        /NMEDIANI = median.(n)
+        /NSD = sd(n)
+        /NSDI = sd.(n)
+        /NSUM = sum(n)
+        /NSUMI = sum.(n).
 m4_if([$1], [external], [GET FILE='aggregate.sys'.],
       [$1], [dataset], [DATASET ACTIVATE aggregate.])
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv aggregate.sps], [0], [stdout])
-  AT_CHECK([[sed 's/^[^:]*:[0-9]*: //' < stdout]], [0],
-    [m4_if([$3], [itemwise],
-      [warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
+  AT_CHECK([pspp -O format=csv aggregate.sps], [0], 
+    [m4_if([$3], [itemwise], [dnl
+"aggregate.sps:29.28-29.31: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   29 |         /NFOUT23 = fout(n, 3, 2)
+      |                            ^~~~"
+ 
+"aggregate.sps:30.30-30.33: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   30 |         /NFOUT23I = fout.(n, 3, 2)
+      |                              ^~~~"
+ 
+"aggregate.sps:31.28-31.35: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   31 |         /SFOUT23 = fout(s, '3', '2')
+      |                            ^~~~~~~~"
+ 
+"aggregate.sps:32.30-32.37: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   32 |         /SFOUT23I = fout.(s, '3', '2')
+      |                              ^~~~~~~~"
 
 Table: Data List
 G,N,NI,NU,NUI,NFGT2,NFGT2I,SFGT2,SFGT2I,NFIN23,NFIN23I,SFIN23,SFIN23I,NFLT2,NFLT2I,SFLT2,SFLT2I,NFIRST,NFIRSTI,SFIRST,SFIRSTI,NFOUT23,NFOUT23I,SFOUT23,SFOUT23I,NLAST,NLASTI,SLAST,SLASTI,NMAX,NMAXI,SMAX,SMAXI,NMEAN,NMEANI,NMIN,NMINI,SMIN,SMINI,NN,NNI,SN,SNI,NNMISS,NNMISSI,SNMISS,SNMISSI,NNU,NNUI,SNU,SNUI,NNUMISS,NNUMISSI,SNUMISS,SNUMISSI,NPGT2,NPGT2I,SPGT2,SPGT2I,NPIN23,NPIN23I,SPIN23,SPIN23I,NPLT2,NPLT2I,SPLT2,SPLT2I,NPOUT23,NPOUT23I,SPOUT23,SPOUT23I,NMEDIAN,NMEDIANI,NSD,NSDI,NSUM,NSUMI
@@ -157,13 +164,22 @@ G,N,NI,NU,NUI,NFGT2,NFGT2I,SFGT2,SFGT2I,NFIN23,NFIN23I,SFIN23,SFIN23I,NFLT2,NFLT
 3,2.00,2.00,1,1,.000,.000,.000,.000,.000,.000,.000,.000,1.000,1.000,1.000,1.000,1,1,1,1,1.000,1.000,1.000,1.000,1,1,1,1,1,1,1,1,1.00,1.00,1,1,1,1,2.00,2.00,2.00,2.00,.00,.00,.00,.00,1,1,1,1,0,0,0,0,.0,.0,.0,.0,.0,.0,.0,.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,1.00,1.00,.00,.00,2.00,2.00
 4,1.00,1.00,1,1,.   ,.   ,.   ,1.000,.   ,.   ,.   ,.000,.   ,.   ,.   ,.000,.,.,,4,.   ,.   ,.   ,1.000,.,.,,4,.,.,,4,.  ,.  ,.,.,,4,.00,.00,.00,1.00,1.00,1.00,1.00,.00,0,0,0,1,1,1,1,0,. ,. ,. ,100.0,. ,. ,. ,.0,. ,. ,. ,.0,. ,. ,. ,100.0,NaN,NaN,.  ,.  ,.  ,.  @&t@
 ],
-      [warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
-
-warning: AGGREGATE: The value arguments passed to the FOUT function are out-of-order.  They will be treated as if they had been specified in the correct order.
+      [dnl
+"aggregate.sps:29.28-29.31: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   29 |         /NFOUT23 = fout(n, 3, 2)
+      |                            ^~~~"
+ 
+"aggregate.sps:30.30-30.33: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   30 |         /NFOUT23I = fout.(n, 3, 2)
+      |                              ^~~~"
+ 
+"aggregate.sps:31.28-31.35: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   31 |         /SFOUT23 = fout(s, '3', '2')
+      |                            ^~~~~~~~"
+ 
+"aggregate.sps:32.30-32.37: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
+   32 |         /SFOUT23I = fout.(s, '3', '2')
+      |                              ^~~~~~~~"
 
 Table: Data List
 G,N,NI,NU,NUI,NFGT2,NFGT2I,SFGT2,SFGT2I,NFIN23,NFIN23I,SFIN23,SFIN23I,NFLT2,NFLT2I,SFLT2,SFLT2I,NFIRST,NFIRSTI,SFIRST,SFIRSTI,NFOUT23,NFOUT23I,SFOUT23,SFOUT23I,NLAST,NLASTI,SLAST,SLASTI,NMAX,NMAXI,SMAX,SMAXI,NMEAN,NMEANI,NMIN,NMINI,SMIN,SMINI,NN,NNI,SN,SNI,NNMISS,NNMISSI,SNMISS,SNMISSI,NNU,NNUI,SNU,SNUI,NNUMISS,NNUMISSI,SNUMISS,SNUMISSI,NPGT2,NPGT2I,SPGT2,SPGT2I,NPIN23,NPIN23I,SPIN23,SPIN23I,NPLT2,NPLT2I,SPLT2,SPLT2I,NPOUT23,NPOUT23I,SPOUT23,SPOUT23I,NMEDIAN,NMEDIANI,NSD,NSDI,NSUM,NSUMI

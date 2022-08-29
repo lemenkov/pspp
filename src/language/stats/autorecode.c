@@ -203,7 +203,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
   if (lex_token (lexer) != T_ENDCMD)
     {
-      lex_error (lexer, _("expecting end of command"));
+      lex_error (lexer, _("Syntax error expecting end of command."));
       goto error;
     }
 

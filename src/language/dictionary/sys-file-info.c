@@ -718,7 +718,7 @@ display_vectors (const struct dictionary *dict, int sorted)
   size_t n_vectors = dict_get_n_vectors (dict);
   if (n_vectors == 0)
     {
-      msg (SW, _("No vectors defined."));
+      msg (SN, _("No vectors defined."));
       return;
     }
 

@@ -199,8 +199,10 @@ RELIABILITY
   /VARIABLES=var6 var8 var15 var17
   .
 ])
-AT_CHECK([pspp -o pspp.csv -o pspp.txt reliability.sps], [0],
-  [reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt reliability.sps], [0], [dnl
+reliability.sps:174.4-174.40: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+  174 |   /STATISTICS = DESCRIPTIVES COVARIANCES
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Scale: Everything
@@ -234,7 +236,9 @@ Spearman-Brown Coefficient,Equal Length,,.75
 ,Unequal Length,,.75
 Guttman Split-Half Coefficient,,,.75
 
-reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+"reliability.sps:174.4-174.40: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+  174 |   /STATISTICS = DESCRIPTIVES COVARIANCES
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 Scale: Totals
 

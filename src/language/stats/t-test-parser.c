@@ -93,6 +93,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
           tt.mode = MODE_INDEP;
           lex_match (lexer, T_EQUALS);
 
+          int groups_start = lex_ofs (lexer);
           if (NULL == (gvar = parse_variable (lexer, dict)))
             goto exit;
 
@@ -127,11 +128,13 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
               cut = false;
               n = 0;
             }
+          int groups_end = lex_ofs (lexer) - 1;
 
           if (n != 2 && var_is_alpha (gvar))
             {
-              msg (SE, _("When applying %s to a string variable, two "
-                         "values must be specified."), "GROUPS");
+              lex_ofs_error (lexer, groups_start, groups_end,
+                             _("When applying %s to a string variable, two "
+                               "values must be specified."), "GROUPS");
               goto exit;
             }
         }
@@ -142,7 +145,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
           if (tt.n_vars > 0)
             {
-              msg (SE, _("%s subcommand may not be used with %s."), "VARIABLES", "PAIRS");
+              lex_next_error (lexer, -1, -1,
+                              _("%s subcommand may not be used with %s."),
+                              "VARIABLES", "PAIRS");
               goto exit;
             }
 
@@ -238,7 +243,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
         {
           if (tt.mode == MODE_PAIRED)
             {
-              msg (SE, _("%s subcommand may not be used with %s."), "VARIABLES", "PAIRS");
+              lex_next_error (lexer, -1, -1,
+                              _("%s subcommand may not be used with %s."),
+                              "VARIABLES", "PAIRS");
               goto exit;
             }
 

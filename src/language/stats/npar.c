@@ -424,7 +424,7 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests
           npt->missing++;
           if (npt->missing > 1)
             {
-              lex_sbc_only_once ("MISSING");
+              lex_sbc_only_once (lexer, "MISSING");
               goto lossage;
             }
           while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
@@ -451,7 +451,7 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests
           npt->method++;
           if (npt->method > 1)
             {
-              lex_sbc_only_once ("METHOD");
+              lex_sbc_only_once (lexer, "METHOD");
               goto lossage;
             }
           switch (npar_method (lexer, nps))
@@ -500,7 +500,7 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests
       }
     if (lex_token (lexer) != T_ENDCMD)
       {
-        lex_error (lexer, _("expecting end of command"));
+        lex_error (lexer, _("Syntax error expecting end of command."));
         goto lossage;
       }
 
@@ -688,7 +688,8 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
 	}
       else
 	{
-	  lex_error (lexer, _("Expecting %s, %s, %s or a number."), "MEAN", "MEDIAN", "MODE");
+	  lex_error (lexer, _("Syntax error expecting %s, %s, %s or a number."),
+                     "MEAN", "MEDIAN", "MODE");
 	  return 0;
 	}
 

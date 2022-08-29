@@ -122,7 +122,7 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
         {
           if (var_is_alpha (dv->var))
             {
-              msg (SE, _("Destination cannot be a string variable."));
+              lex_error (lexer, _("Destination cannot be a string variable."));
               goto fail;
             }
         }

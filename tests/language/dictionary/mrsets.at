@@ -218,8 +218,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MDGROUP VALUE=1.5.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6: error: MRSETS: Numeric VALUE must be an integer.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.23-6.25: error: MRSETS: Numeric VALUE must be an integer.
+    6 | MRSETS /MDGROUP VALUE=1.5.
+      |                       ^~~"
 ])
 AT_CLEANUP
 
@@ -228,8 +230,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MCGROUP VARIABLES=a b c.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6.32: error: MRSETS: Syntax error at end of command: Required MCGROUP specification missing from NAME subcommand.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.32: error: MRSETS: Required NAME specification missing from MCGROUP subcommand.
+    6 | MRSETS /MCGROUP VARIABLES=a b c.
+      |                                ^"
 ])
 AT_CLEANUP
 
@@ -238,8 +242,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MCGROUP NAME=$Mcgroup.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6.30: error: MRSETS: Syntax error at end of command: Required MCGROUP specification missing from VARIABLES subcommand.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.30: error: MRSETS: Required VARIABLES specification missing from MCGROUP subcommand.
+    6 | MRSETS /MCGROUP NAME=$Mcgroup.
+      |                              ^"
 ])
 AT_CLEANUP
 
@@ -248,10 +254,14 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MCGROUP NAME=$mygroup VARIABLES=a b x y.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6: error: MRSETS: a and x are not the same type.  All variables in this variable list must be of the same type.  x will be omitted from the list.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.45: error: MRSETS: a and x are not the same type.  All variables in this variable list must be of the same type.  x will be omitted from the list.
+    6 | MRSETS /MCGROUP NAME=$mygroup VARIABLES=a b x y.
+      |                                             ^"
 
-mrsets.sps:6: error: MRSETS: a and y are not the same type.  All variables in this variable list must be of the same type.  y will be omitted from the list.
+"mrsets.sps:6.47: error: MRSETS: a and y are not the same type.  All variables in this variable list must be of the same type.  y will be omitted from the list.
+    6 | MRSETS /MCGROUP NAME=$mygroup VARIABLES=a b x y.
+      |                                               ^"
 ])
 AT_CLEANUP
 
@@ -295,9 +305,13 @@ AT_DATA([mrsets.sps],
 [MRSETS /DISPLAY NAME=[$x].
 MRSETS /DELETE NAME=[$y].
 ]])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6: error: MRSETS: No multiple response set named $x.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.23-6.24: error: MRSETS: No multiple response set named $x.
+    6 | MRSETS /DISPLAY NAME=[[$x]].
+      |                       ^~"
 
-mrsets.sps:7: error: MRSETS: No multiple response set named $y.
+"mrsets.sps:7.22-7.23: error: MRSETS: No multiple response set named $y.
+    7 | MRSETS /DELETE NAME=[[$y]].
+      |                      ^~"
 ])
 AT_CLEANUP

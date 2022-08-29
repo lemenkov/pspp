@@ -47,7 +47,7 @@ read_values (struct lexer *lexer, double **values, double **weights, size_t *n)
         {
           if (!lex_is_number (lexer))
             {
-              lex_error (lexer, _("expecting weight value"));
+              lex_error (lexer, _("Syntax error expecting weight value."));
               return false;
             }
           weight = lex_tokval (lexer);

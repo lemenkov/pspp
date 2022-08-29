@@ -16,6 +16,32 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([command parser])
 
+AT_SETUP([command parser negative tests])
+AT_DATA([command.sps], [dnl
+DATA X.
+XYZZY.
+CLOSE FILE XYZZY.
+foo.
+])
+AT_CHECK([pspp command.sps], [1], [dnl
+command.sps:1.1-1.6: error: Unknown command `DATA X'.
+    1 | DATA X.
+      | ^~~~~~
+
+command.sps:2.1-2.5: error: Unknown command `XYZZY'.
+    2 | XYZZY.
+      | ^~~~~
+
+command.sps:3.1-3.16: error: Unknown command `CLOSE FILE XYZZY'.
+    3 | CLOSE FILE XYZZY.
+      | ^~~~~~~~~~~~~~~~
+
+command.sps:4.1-4.3: error: Unknown command `foo'.
+    4 | foo.
+      | ^~~
+])
+AT_CLEANUP
+
 dnl Tests for a bug which crashed pspp when given certain invalid input.
 AT_SETUP([command parser crash bug])
 AT_DATA([command.sps], [dnl
@@ -23,16 +49,20 @@ DATA rubbish.
 EXECUTE.
 ])
 AT_CHECK([pspp -O format=csv command.sps], [1], [dnl
-command.sps:1: error: Unknown command `DATA rubbish'.
+"command.sps:1.1-1.12: error: Unknown command `DATA rubbish'.
+    1 | DATA rubbish.
+      | ^~~~~~~~~~~~"
 
-command.sps:2: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
+"command.sps:2.1-2.7: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
+    2 | EXECUTE.
+      | ^~~~~~~"
 ])
 AT_CLEANUP
 
 dnl Tests for a bug where FINISH or EXIT wasn't executed until the lexer
 dnl read the first token of the next command.
 dnl
-dnl (If this reecurs, the test will run forever.)
+dnl (If this recurs, the test will run forever.)
 AT_SETUP([FINISH executes immediately])
 AT_CHECK([(echo "FINISH."; while echo ; do true; done) | pspp], [0], [ignore], [ignore])
 AT_CLEANUP

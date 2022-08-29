@@ -98,7 +98,9 @@ do-if.sps:7: error: ELSE: This command cannot appear outside DO IF...END IF.
 
 do-if.sps:8: error: ELSE IF: This command cannot appear outside DO IF...END IF.
 
-do-if.sps:12: error: DO IF: Only one ELSE is allowed within DO IF...END IF.
+"do-if.sps:12.1-12.4: error: DO IF: Only one ELSE is allowed within DO IF...END IF.
+   12 | ELSE.
+      | ^~~~"
 
 "do-if.sps:11.1-11.5: note: DO IF: This is the location of the previous ELSE clause.
    11 | ELSE.
@@ -108,7 +110,9 @@ do-if.sps:12: error: DO IF: Only one ELSE is allowed within DO IF...END IF.
    10 | DO IF 0.
       | ^~~~~~~~"
 
-do-if.sps:17: error: DO IF: ELSE IF is not allowed following ELSE within DO IF...END IF.
+"do-if.sps:17.1-17.7: error: DO IF: ELSE IF is not allowed following ELSE within DO IF...END IF.
+   17 | ELSE IF 0.
+      | ^~~~~~~"
 
 "do-if.sps:16.1-16.5: note: DO IF: This is the location of the previous ELSE clause.
    16 | ELSE.
@@ -118,8 +122,10 @@ do-if.sps:17: error: DO IF: ELSE IF is not allowed following ELSE within DO IF..
    15 | DO IF 0.
       | ^~~~~~~~"
 
-do-if.sps:20.7: error: DO IF: Syntax error at `!'.
+"do-if.sps:20.7: error: DO IF: Syntax error.
+   20 | DO IF !.
+      |       ^"
 
-error: DO IF: Syntax error at end of input.
+error: DO IF: At end of input: Syntax error.
 ])
 AT_CLEANUP

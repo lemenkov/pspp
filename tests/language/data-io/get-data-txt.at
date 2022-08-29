@@ -315,15 +315,25 @@ get data /type=txt /file='test.data' /importcase=percent 95 /variables x f8.0.
 get data /type=txt /file='test.data' /importcase=percent 100 /variables x f8.0.
 ])
 AT_CHECK([pspp -O format=csv get-data.sps], [0], [dnl
-get-data.sps:1: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)
+"get-data.sps:1.39-1.57: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+    1 | get data /type=txt /file='test.data' /importcase=first 10 /variables x f8.0.
+      |                                       ^~~~~~~~~~~~~~~~~~~"
 
-get-data.sps:2: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)
+"get-data.sps:2.39-2.58: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+    2 | get data /type=txt /file='test.data' /importcase=percent 1 /variables x f8.0.
+      |                                       ^~~~~~~~~~~~~~~~~~~~"
 
-get-data.sps:3: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)
+"get-data.sps:3.39-3.59: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+    3 | get data /type=txt /file='test.data' /importcase=percent 35 /variables x f8.0.
+      |                                       ^~~~~~~~~~~~~~~~~~~~~"
 
-get-data.sps:4: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)
+"get-data.sps:4.39-4.59: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+    4 | get data /type=txt /file='test.data' /importcase=percent 95 /variables x f8.0.
+      |                                       ^~~~~~~~~~~~~~~~~~~~~"
 
-get-data.sps:5: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)
+"get-data.sps:5.39-5.60: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+    5 | get data /type=txt /file='test.data' /importcase=percent 100 /variables x f8.0.
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~"
 ])
 AT_CLEANUP
 

@@ -270,7 +270,9 @@ end data.
 QUICK CLUSTER x y /UNSUPPORTED.
 ])
 AT_CHECK([pspp -O format=csv quick-cluster.sps], [1], [dnl
-quick-cluster.sps:7.20-7.30: error: QUICK CLUSTER: Syntax error at `UNSUPPORTED'.
+"quick-cluster.sps:7.20-7.30: error: QUICK CLUSTER: Syntax error.
+    7 | QUICK CLUSTER x y /UNSUPPORTED.
+      |                    ^~~~~~~~~~~"
 ])
 AT_CLEANUP
 

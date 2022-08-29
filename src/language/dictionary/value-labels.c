@@ -149,7 +149,9 @@ get_label (struct lexer *lexer, struct variable **vars, size_t n_vars,
                                            MAX_LABEL_LEN);
       if (ds_length (&label) > trunc_len)
 	{
-	  msg (SW, _("Truncating value label to %d bytes."), MAX_LABEL_LEN);
+	  lex_next_msg (lexer, SW, 0, 0,
+                        _("Truncating value label to %d bytes."),
+                        MAX_LABEL_LEN);
 	  ds_truncate (&label, trunc_len);
 	}
 

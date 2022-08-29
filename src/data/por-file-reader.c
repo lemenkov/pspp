@@ -215,7 +215,7 @@ advance (struct pfm_reader *r)
       r->line_length = 0;
     }
   if (c == EOF)
-    error (r, _("unexpected end of file"));
+    error (r, _("Unexpected end of file"));
 
   if (r->trans != NULL)
     c = r->trans[c];

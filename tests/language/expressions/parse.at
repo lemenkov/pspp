@@ -33,7 +33,9 @@ COMPUTE x=y.
 END IF.
 ])
 AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-parse.sps:10: error: IF: Unknown identifier y.
+"parse.sps:10.6: error: IF: Unknown identifier y.
+   10 | IF ( y > 0 ) .
+      |      ^"
 
 parse.sps:11: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
 ])
@@ -102,7 +104,9 @@ DATA LIST NOTABLE/x 1.
 COMPUTE x=$nonexistent.
 ])
 AT_CHECK([pspp parse.sps], [1], [dnl
-parse.sps:2: error: COMPUTE: Unknown system variable $nonexistent.
+parse.sps:2.11-2.22: error: COMPUTE: Unknown system variable $nonexistent.
+    2 | COMPUTE x=$nonexistent.
+      |           ^~~~~~~~~~~~
 ])
 AT_CLEANUP
 
@@ -113,7 +117,9 @@ DATA LIST NOTABLE/x 1.
 COMPUTE x=y.
 ])
 AT_CHECK([pspp parse.sps], [1], [dnl
-parse.sps:2: error: COMPUTE: Unknown identifier y.
+parse.sps:2.11: error: COMPUTE: Unknown identifier y.
+    2 | COMPUTE x=y.
+      |           ^
 ])
 AT_CLEANUP
 
@@ -472,19 +478,22 @@ DEBUG EVALUATE (a=1)(b=2) VECTOR/v('abc').
 for opt in OPT NOOPT; do
     AS_BOX([$opt])
     sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
-    AT_CHECK([pspp --testing-mode evaluate.sps], [1],
-[[evaluate.sps:3: error: DEBUG EVALUATE: Unknown system variable $nonexistent.
+    AT_CHECK([pspp --testing-mode evaluate.sps], [1], [dnl
+evaluate.sps:3.17-3.28: error: DEBUG EVALUATE: Unknown system variable
+$nonexistent.
+    3 | DEBUG EVALUATE /$nonexistent.
+      |                 ^~~~~~~~~~~~
 
 $nonexistent => error
 
-evaluate.sps:4.17-4.27: error: DEBUG EVALUATE: RANGE(number, number, number[,
-number, number]...) must have an odd number of arguments.
+evaluate.sps:4.17-4.27: error: DEBUG EVALUATE: RANGE(number, number, number[[,
+number, number]]...) must have an odd number of arguments.
     4 | DEBUG EVALUATE /RANGE(1, 2).
       |                 ^~~~~~~~~~~
 
 RANGE(1, 2) => error
 
-evaluate.sps:5.17-5.34: error: DEBUG EVALUATE: CONCAT(string[, string]...)
+evaluate.sps:5.17-5.34: error: DEBUG EVALUATE: CONCAT(string[[, string]]...)
 function cannot accept suffix .1 to specify the minimum number of valid
 arguments.
     5 | DEBUG EVALUATE /CONCAT.1('a', 'b').
@@ -492,12 +501,16 @@ arguments.
 
 CONCAT.1('a', 'b') => error
 
-evaluate.sps:6: error: DEBUG EVALUATE: No function or vector named foobar.
+evaluate.sps:6.17-6.22: error: DEBUG EVALUATE: No function or vector named
+foobar.
+    6 | DEBUG EVALUATE /foobar(x).
+      |                 ^~~~~~
 
 foobar(x) => error
 
-evaluate.sps:7.30: error: DEBUG EVALUATE: Syntax error at `b': expecting `,' or
-`)'.
+evaluate.sps:7.30: error: DEBUG EVALUATE: Syntax error expecting `,' or `@:}@'.
+    7 | DEBUG EVALUATE /CONCAT.1('a' b).
+      |                              ^
 
 CONCAT.1('a' b) => error
 
@@ -518,6 +531,6 @@ evaluate.sps:9.36-9.40: note: DEBUG EVALUATE: This vector index has type
       |                                    ^~~~~
 
 v('abc') => error
-]])
+])
 done
 AT_CLEANUP

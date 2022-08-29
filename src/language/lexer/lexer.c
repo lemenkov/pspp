@@ -85,6 +85,8 @@ static struct msg_point lex_token_start_point (const struct lex_source *,
 static struct msg_point lex_token_end_point (const struct lex_source *,
                                              const struct lex_token *);
 
+static size_t lex_ofs_at_phrase__ (struct lexer *, int ofs, const char *s);
+
 /* Source offset of the last byte in TOKEN. */
 static size_t
 lex_token_end (const struct lex_token *token)
@@ -290,9 +292,10 @@ static void lex_source_push_parse (struct lex_source *, struct lex_token *);
 static void lex_source_clear_parse (struct lex_source *);
 
 static bool lex_source_get_parse (struct lex_source *);
-static void lex_source_error_valist (struct lex_source *, int ofs0, int ofs1,
-                                     const char *format, va_list)
-   PRINTF_FORMAT (4, 0);
+static void lex_source_msg_valist (struct lex_source *, enum msg_class,
+                                   int ofs0, int ofs1,
+                                   const char *format, va_list)
+   PRINTF_FORMAT (5, 0);
 static const struct lex_token *lex_source_next__ (const struct lex_source *,
                                                   int n);
 
@@ -425,16 +428,9 @@ lex_error (struct lexer *lexer, const char *format, ...)
   va_list args;
 
   va_start (args, format);
-  lex_ofs_error_valist (lexer, lex_ofs (lexer), lex_ofs (lexer), format, args);
+  lex_ofs_msg_valist (lexer, SE, lex_ofs (lexer), lex_ofs (lexer),
+                      format, args);
   va_end (args);
-}
-
-/* Prints a syntax error message containing the current token and
-   given message MESSAGE (if non-null). */
-void
-lex_error_valist (struct lexer *lexer, const char *format, va_list args)
-{
-  lex_ofs_error_valist (lexer, lex_ofs (lexer), lex_ofs (lexer), format, args);
 }
 
 /* Prints a syntax error message for the span of tokens N0 through N1,
@@ -447,7 +443,7 @@ lex_next_error (struct lexer *lexer, int n0, int n1, const char *format, ...)
 
   va_start (args, format);
   int ofs = lex_ofs (lexer);
-  lex_ofs_error_valist (lexer, n0 + ofs, n1 + ofs, format, args);
+  lex_ofs_msg_valist (lexer, SE, n0 + ofs, n1 + ofs, format, args);
   va_end (args);
 }
 
@@ -460,7 +456,49 @@ lex_ofs_error (struct lexer *lexer, int ofs0, int ofs1, const char *format, ...)
   va_list args;
 
   va_start (args, format);
-  lex_ofs_error_valist (lexer, ofs0, ofs1, format, args);
+  lex_ofs_msg_valist (lexer, SE, ofs0, ofs1, format, args);
+  va_end (args);
+}
+
+/* Prints a message of the given CLASS containing the current token and given
+   message MESSAGE (if non-null). */
+void
+lex_msg (struct lexer *lexer, enum msg_class class, const char *format, ...)
+{
+  va_list args;
+
+  va_start (args, format);
+  lex_ofs_msg_valist (lexer, class, lex_ofs (lexer), lex_ofs (lexer),
+                      format, args);
+  va_end (args);
+}
+
+/* Prints a syntax error message for the span of tokens N0 through N1,
+   inclusive, from the current token in LEXER, adding message MESSAGE (if
+   non-null). */
+void
+lex_next_msg (struct lexer *lexer, enum msg_class class, int n0, int n1,
+              const char *format, ...)
+{
+  va_list args;
+
+  va_start (args, format);
+  int ofs = lex_ofs (lexer);
+  lex_ofs_msg_valist (lexer, class, n0 + ofs, n1 + ofs, format, args);
+  va_end (args);
+}
+
+/* Prints a message of the given CLASS for the span of tokens with offsets OFS0
+   through OFS1, inclusive, within the current command in LEXER, adding message
+   MESSAGE (if non-null). */
+void
+lex_ofs_msg (struct lexer *lexer, enum msg_class class, int ofs0, int ofs1,
+             const char *format, ...)
+{
+  va_list args;
+
+  va_start (args, format);
+  lex_ofs_msg_valist (lexer, class, ofs0, ofs1, format, args);
   va_end (args);
 }
 
@@ -505,42 +543,45 @@ lex_error_expecting_array (struct lexer *lexer, const char **options, size_t n)
       break;
 
     case 1:
-      lex_error (lexer, _("expecting %s"), options[0]);
+      lex_error (lexer, _("Syntax error expecting %s."), options[0]);
       break;
 
     case 2:
-      lex_error (lexer, _("expecting %s or %s"), options[0], options[1]);
+      lex_error (lexer, _("Syntax error expecting %s or %s."),
+                 options[0], options[1]);
       break;
 
     case 3:
-      lex_error (lexer, _("expecting %s, %s, or %s"), options[0], options[1],
-                 options[2]);
+      lex_error (lexer, _("Syntax error expecting %s, %s, or %s."),
+                 options[0], options[1], options[2]);
       break;
 
     case 4:
-      lex_error (lexer, _("expecting %s, %s, %s, or %s"),
+      lex_error (lexer, _("Syntax error expecting %s, %s, %s, or %s."),
                  options[0], options[1], options[2], options[3]);
       break;
 
     case 5:
-      lex_error (lexer, _("expecting %s, %s, %s, %s, or %s"),
+      lex_error (lexer, _("Syntax error expecting %s, %s, %s, %s, or %s."),
                  options[0], options[1], options[2], options[3], options[4]);
       break;
 
     case 6:
-      lex_error (lexer, _("expecting %s, %s, %s, %s, %s, or %s"),
+      lex_error (lexer, _("Syntax error expecting %s, %s, %s, %s, %s, or %s."),
                  options[0], options[1], options[2], options[3], options[4],
                  options[5]);
       break;
 
     case 7:
-      lex_error (lexer, _("expecting %s, %s, %s, %s, %s, %s, or %s"),
+      lex_error (lexer, _("Syntax error expecting %s, %s, %s, %s, %s, %s, "
+                          "or %s."),
                  options[0], options[1], options[2], options[3], options[4],
                  options[5], options[6]);
       break;
 
     case 8:
-      lex_error (lexer, _("expecting %s, %s, %s, %s, %s, %s, %s, or %s"),
+      lex_error (lexer, _("Syntax error expecting %s, %s, %s, %s, %s, %s, %s, "
+                          "or %s."),
                  options[0], options[1], options[2], options[3], options[4],
                  options[5], options[6], options[7]);
       break;
@@ -554,7 +595,7 @@ lex_error_expecting_array (struct lexer *lexer, const char **options, size_t n)
               ds_put_cstr (&s, ", ");
             ds_put_cstr (&s, options[i]);
           }
-        lex_error (lexer, _("expecting one of the following: %s"),
+        lex_error (lexer, _("Syntax error expecting one of the following: %s."),
                    ds_cstr (&s));
         ds_destroy (&s);
       }
@@ -563,16 +604,21 @@ lex_error_expecting_array (struct lexer *lexer, const char **options, size_t n)
 }
 
 /* Reports an error to the effect that subcommand SBC may only be specified
-   once.
-
-   This function does not take a lexer as an argument or use lex_error(),
-   because the result would ordinarily just be redundant: "Syntax error at
-   SUBCOMMAND: Subcommand SUBCOMMAND may only be specified once.", which does
-   not help the user find the error. */
+   once. */
 void
-lex_sbc_only_once (const char *sbc)
+lex_sbc_only_once (struct lexer *lexer, const char *sbc)
 {
-  msg (SE, _("Subcommand %s may only be specified once."), sbc);
+  int ofs = lex_ofs (lexer) - 1;
+  if (lex_ofs_token (lexer, ofs)->type == T_EQUALS)
+    ofs--;
+
+  /* lex_ofs_at_phrase__() handles subcommand names that are keywords, such as
+     BY. */
+  if (lex_ofs_at_phrase__ (lexer, ofs, sbc))
+    lex_ofs_error (lexer, ofs, ofs,
+                   _("Subcommand %s may only be specified once."), sbc);
+  else
+    msg (SE, _("Subcommand %s may only be specified once."), sbc);
 }
 
 /* Reports an error to the effect that subcommand SBC is missing.
@@ -592,7 +638,7 @@ lex_sbc_missing (const char *sbc)
 void
 lex_spec_only_once (struct lexer *lexer, const char *sbc, const char *spec)
 {
-  lex_error (lexer, _("%s may only be specified once within subcommand %s"),
+  lex_error (lexer, _("%s may only be specified once within subcommand %s."),
              spec, sbc);
 }
 
@@ -601,37 +647,18 @@ lex_spec_only_once (struct lexer *lexer, const char *sbc, const char *spec)
 void
 lex_spec_missing (struct lexer *lexer, const char *sbc, const char *spec)
 {
-  lex_error (lexer, _("Required %s specification missing from %s subcommand"),
-             sbc, spec);
+  lex_error (lexer, _("Required %s specification missing from %s subcommand."),
+             spec, sbc);
 }
 
 /* Prints a syntax error message for the span of tokens with offsets OFS0
    through OFS1, inclusive, within the current command in LEXER, adding message
    MESSAGE (if non-null) with the given ARGS. */
 void
-lex_ofs_error_valist (struct lexer *lexer, int ofs0, int ofs1,
-                      const char *format, va_list args)
+lex_ofs_msg_valist (struct lexer *lexer, enum msg_class class,
+                    int ofs0, int ofs1, const char *format, va_list args)
 {
-  struct lex_source *src = lex_source__ (lexer);
-
-  if (src != NULL)
-    lex_source_error_valist (src, ofs0, ofs1, format, args);
-  else
-    {
-      struct string s;
-
-      ds_init_empty (&s);
-      ds_put_format (&s, _("Syntax error at end of input"));
-      if (format != NULL)
-        {
-          ds_put_cstr (&s, ": ");
-          ds_put_vformat (&s, format, args);
-        }
-      if (ds_last (&s) != '.')
-        ds_put_byte (&s, '.');
-      msg (SE, "%s", ds_cstr (&s));
-      ds_destroy (&s);
-    }
+  lex_source_msg_valist (lex_source__ (lexer), class, ofs0, ofs1, format, args);
 }
 
 /* Checks that we're at end of command.
@@ -643,7 +670,7 @@ lex_end_of_command (struct lexer *lexer)
 {
   if (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_STOP)
     {
-      lex_error (lexer, _("expecting end of command"));
+      lex_error (lexer, _("Syntax error expecting end of command."));
       return CMD_FAILURE;
     }
   else
@@ -845,7 +872,7 @@ lex_force_string (struct lexer *lexer)
     return true;
   else
     {
-      lex_error (lexer, _("expecting string"));
+      lex_error (lexer, _("Syntax error expecting string."));
       return false;
     }
 }
@@ -874,7 +901,7 @@ lex_force_int (struct lexer *lexer)
     return true;
   else
     {
-      lex_error (lexer, _("expecting integer"));
+      lex_error (lexer, _("Syntax error expecting integer."));
       return false;
     }
 }
@@ -901,23 +928,25 @@ lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
       /* Weird, maybe a bug in the caller.  Just report that we needed an
          integer. */
       if (name)
-        lex_error (lexer, _("Integer expected for %s."), name);
+        lex_error (lexer, _("Syntax error expecting integer for %s."), name);
       else
-        lex_error (lexer, _("Integer expected."));
+        lex_error (lexer, _("Syntax error expecting integer."));
     }
   else if (min == max)
     {
       if (name)
-        lex_error (lexer, _("Expected %ld for %s."), min, name);
+        lex_error (lexer, _("Syntax error expecting %ld for %s."), min, name);
       else
-        lex_error (lexer, _("Expected %ld."), min);
+        lex_error (lexer, _("Syntax error expecting %ld."), min);
     }
   else if (min + 1 == max)
     {
       if (name)
-        lex_error (lexer, _("Expected %ld or %ld for %s."), min, min + 1, name);
+        lex_error (lexer, _("Syntax error expecting %ld or %ld for %s."),
+                   min, min + 1, name);
       else
-        lex_error (lexer, _("Expected %ld or %ld."), min, min + 1);
+        lex_error (lexer, _("Syntax error expecting %ld or %ld."),
+                   min, min + 1);
     }
   else
     {
@@ -928,10 +957,12 @@ lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
         {
           if (name)
             lex_error (lexer,
-                       _("Expected integer between %ld and %ld for %s."),
+                       _("Syntax error expecting integer "
+                         "between %ld and %ld for %s."),
                        min, max, name);
           else
-            lex_error (lexer, _("Expected integer between %ld and %ld."),
+            lex_error (lexer, _("Syntax error expecting integer "
+                                "between %ld and %ld."),
                        min, max);
         }
       else if (report_lower_bound)
@@ -939,44 +970,53 @@ lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
           if (min == 0)
             {
               if (name)
-                lex_error (lexer, _("Expected non-negative integer for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative integer for %s."),
                            name);
               else
-                lex_error (lexer, _("Expected non-negative integer."));
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative integer."));
             }
           else if (min == 1)
             {
               if (name)
-                lex_error (lexer, _("Expected positive integer for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "positive integer for %s."),
                            name);
               else
-                lex_error (lexer, _("Expected positive integer."));
+                lex_error (lexer, _("Syntax error expecting "
+                                    "positive integer."));
             }
           else
             {
               if (name)
-                lex_error (lexer, _("Expected integer %ld or greater for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "integer %ld or greater for %s."),
                            min, name);
               else
-                lex_error (lexer, _("Expected integer %ld or greater."), min);
+                lex_error (lexer, _("Syntax error expecting "
+                                    "integer %ld or greater."), min);
             }
         }
       else if (report_upper_bound)
         {
           if (name)
             lex_error (lexer,
-                       _("Expected integer less than or equal to %ld for %s."),
+                       _("Syntax error expecting integer less than or equal "
+                         "to %ld for %s."),
                        max, name);
           else
-            lex_error (lexer, _("Expected integer less than or equal to %ld."),
+            lex_error (lexer, _("Syntax error expecting integer less than or "
+                                "equal to %ld."),
                        max);
         }
       else
         {
           if (name)
-            lex_error (lexer, _("Integer expected for %s."), name);
+            lex_error (lexer, _("Syntax error expecting integer for %s."),
+                       name);
           else
-            lex_error (lexer, _("Integer expected."));
+            lex_error (lexer, _("Syntax error expecting integer."));
         }
     }
   return false;
@@ -990,7 +1030,7 @@ lex_force_num (struct lexer *lexer)
   if (lex_is_number (lexer))
     return true;
 
-  lex_error (lexer, _("expecting number"));
+  lex_error (lexer, _("Syntax error expecting number."));
   return false;
 }
 
@@ -1012,16 +1052,17 @@ lex_force_num_range_closed (struct lexer *lexer, const char *name,
       /* Weird, maybe a bug in the caller.  Just report that we needed an
          number. */
       if (name)
-        lex_error (lexer, _("Number expected for %s."), name);
+        lex_error (lexer, _("Syntax error expecting number for %s."), name);
       else
-        lex_error (lexer, _("Number expected."));
+        lex_error (lexer, _("Syntax error expecting number."));
     }
   else if (min == max)
     {
       if (name)
-        lex_error (lexer, _("Expected %g for %s."), min, name);
+        lex_error (lexer, _("Syntax error expecting number %g for %s."),
+                   min, name);
       else
-        lex_error (lexer, _("Expected %g."), min);
+        lex_error (lexer, _("Syntax error expecting number %g."), min);
     }
   else
     {
@@ -1032,10 +1073,12 @@ lex_force_num_range_closed (struct lexer *lexer, const char *name,
         {
           if (name)
             lex_error (lexer,
-                       _("Expected number between %g and %g for %s."),
+                       _("Syntax error expecting number "
+                         "between %g and %g for %s."),
                        min, max, name);
           else
-            lex_error (lexer, _("Expected number between %g and %g."),
+            lex_error (lexer, _("Syntax error expecting number "
+                                "between %g and %g."),
                        min, max);
         }
       else if (report_lower_bound)
@@ -1043,36 +1086,42 @@ lex_force_num_range_closed (struct lexer *lexer, const char *name,
           if (min == 0)
             {
               if (name)
-                lex_error (lexer, _("Expected non-negative number for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative number for %s."),
                            name);
               else
-                lex_error (lexer, _("Expected non-negative number."));
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative number."));
             }
           else
             {
               if (name)
-                lex_error (lexer, _("Expected number %g or greater for %s."),
+                lex_error (lexer, _("Syntax error expecting number "
+                                    "%g or greater for %s."),
                            min, name);
               else
-                lex_error (lexer, _("Expected number %g or greater."), min);
+                lex_error (lexer, _("Syntax error expecting number "
+                                    "%g or greater."), min);
             }
         }
       else if (report_upper_bound)
         {
           if (name)
             lex_error (lexer,
-                       _("Expected number less than or equal to %g for %s."),
+                       _("Syntax error expecting number "
+                         "less than or equal to %g for %s."),
                        max, name);
           else
-            lex_error (lexer, _("Expected number less than or equal to %g."),
+            lex_error (lexer, _("Syntax error expecting number "
+                                "less than or equal to %g."),
                        max);
         }
       else
         {
           if (name)
-            lex_error (lexer, _("Number expected for %s."), name);
+            lex_error (lexer, _("Syntax error expecting number for %s."), name);
           else
-            lex_error (lexer, _("Number expected."));
+            lex_error (lexer, _("Syntax error expecting number."));
         }
     }
   return false;
@@ -1096,9 +1145,9 @@ lex_force_num_range_halfopen (struct lexer *lexer, const char *name,
       /* Weird, maybe a bug in the caller.  Just report that we needed an
          number. */
       if (name)
-        lex_error (lexer, _("Number expected for %s."), name);
+        lex_error (lexer, _("Syntax error expecting number for %s."), name);
       else
-        lex_error (lexer, _("Number expected."));
+        lex_error (lexer, _("Syntax error expecting number."));
     }
   else
     {
@@ -1108,10 +1157,11 @@ lex_force_num_range_halfopen (struct lexer *lexer, const char *name,
       if (report_lower_bound && report_upper_bound)
         {
           if (name)
-            lex_error (lexer, _("Expected number in [%g,%g) for %s."),
+            lex_error (lexer, _("Syntax error expecting number "
+                                "in [%g,%g) for %s."),
                        min, max, name);
           else
-            lex_error (lexer, _("Expected number in [%g,%g)."),
+            lex_error (lexer, _("Syntax error expecting number in [%g,%g)."),
                        min, max);
         }
       else if (report_lower_bound)
@@ -1119,40 +1169,46 @@ lex_force_num_range_halfopen (struct lexer *lexer, const char *name,
           if (min == 0)
             {
               if (name)
-                lex_error (lexer, _("Expected non-negative number for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative number for %s."),
                            name);
               else
-                lex_error (lexer, _("Expected non-negative number."));
+                lex_error (lexer, _("Syntax error expecting "
+                                    "non-negative number."));
             }
           else
             {
               if (name)
-                lex_error (lexer, _("Expected number %g or greater for %s."),
+                lex_error (lexer, _("Syntax error expecting "
+                                    "number %g or greater for %s."),
                            min, name);
               else
-                lex_error (lexer, _("Expected number %g or greater."), min);
+                lex_error (lexer, _("Syntax error expecting "
+                                    "number %g or greater."), min);
             }
         }
       else if (report_upper_bound)
         {
           if (name)
             lex_error (lexer,
-                       _("Expected number less than %g for %s."), max, name);
+                       _("Syntax error expecting "
+                         "number less than %g for %s."), max, name);
           else
-            lex_error (lexer, _("Expected number less than %g."), max);
+            lex_error (lexer, _("Syntax error expecting "
+                                "number less than %g."), max);
         }
       else
         {
           if (name)
-            lex_error (lexer, _("Number expected for %s."), name);
+            lex_error (lexer, _("Syntax error expecting number for %s."), name);
           else
-            lex_error (lexer, _("Number expected."));
+            lex_error (lexer, _("Syntax error expecting number."));
         }
     }
   return false;
 }
 
-/* If the current token is an number in the open range (MIN,MAX], does
+/* If the current token is an number in the open range (MIN,MAX), does
    nothing and returns true.  Otherwise, reports an error and returns false.
    If NAME is nonnull, then it is used in the error message. */
 bool
@@ -1170,9 +1226,9 @@ lex_force_num_range_open (struct lexer *lexer, const char *name,
       /* Weird, maybe a bug in the caller.  Just report that we needed an
          number. */
       if (name)
-        lex_error (lexer, _("Number expected for %s."), name);
+        lex_error (lexer, _("Syntax error expecting number for %s."), name);
       else
-        lex_error (lexer, _("Number expected."));
+        lex_error (lexer, _("Syntax error expecting number."));
     }
   else
     {
@@ -1182,43 +1238,52 @@ lex_force_num_range_open (struct lexer *lexer, const char *name,
       if (report_lower_bound && report_upper_bound)
         {
           if (name)
-            lex_error (lexer, _("Expected number in (%g,%g) for %s."),
+            lex_error (lexer, _("Syntax error expecting number "
+                                "in (%g,%g) for %s."),
                        min, max, name);
           else
-            lex_error (lexer, _("Expected number in (%g,%g)."), min, max);
+            lex_error (lexer, _("Syntax error expecting number "
+                                "in (%g,%g)."), min, max);
         }
       else if (report_lower_bound)
         {
           if (min == 0)
             {
               if (name)
-                lex_error (lexer, _("Expected positive number for %s."), name);
+                lex_error (lexer, _("Syntax error expecting "
+                                    "positive number for %s."), name);
               else
-                lex_error (lexer, _("Expected positive number."));
+                lex_error (lexer, _("Syntax error expecting "
+                                    "positive number."));
             }
           else
             {
               if (name)
-                lex_error (lexer, _("Expected number greater than %g for %s."),
+                lex_error (lexer, _("Syntax error expecting number "
+                                    "greater than %g for %s."),
                            min, name);
               else
-                lex_error (lexer, _("Expected number greater than %g."), min);
+                lex_error (lexer, _("Syntax error expecting number "
+                                    "greater than %g."), min);
             }
         }
       else if (report_upper_bound)
         {
           if (name)
-            lex_error (lexer, _("Expected number less than %g for %s."),
+            lex_error (lexer, _("Syntax error expecting number "
+                                "less than %g for %s."),
                        max, name);
           else
-            lex_error (lexer, _("Expected number less than %g."), max);
+            lex_error (lexer, _("Syntax error expecting number "
+                                "less than %g."), max);
         }
       else
         {
           if (name)
-            lex_error (lexer, _("Number expected for %s."), name);
+            lex_error (lexer, _("Syntax error expecting number "
+                                "for %s."), name);
           else
-            lex_error (lexer, _("Number expected."));
+            lex_error (lexer, _("Syntax error expecting number."));
         }
     }
   return false;
@@ -1232,7 +1297,7 @@ lex_force_id (struct lexer *lexer)
   if (lex_token (lexer) == T_ID)
     return true;
 
-  lex_error (lexer, _("expecting identifier"));
+  lex_error (lexer, _("Syntax error expecting identifier."));
   return false;
 }
 
@@ -1546,7 +1611,7 @@ lex_tokens_match (const struct token *actual, const struct token *expected)
 }
 
 static size_t
-lex_at_phrase__ (struct lexer *lexer, const char *s)
+lex_ofs_at_phrase__ (struct lexer *lexer, int ofs, const char *s)
 {
   struct string_lexer slex;
   struct token token;
@@ -1555,7 +1620,7 @@ lex_at_phrase__ (struct lexer *lexer, const char *s)
   string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE, true);
   while (string_lexer_next (&slex, &token))
     {
-      bool match = lex_tokens_match (lex_next (lexer, i++), &token);
+      bool match = lex_tokens_match (lex_ofs_token (lexer, ofs + i++), &token);
       token_uninit (&token);
       if (!match)
         return 0;
@@ -1572,7 +1637,7 @@ lex_at_phrase__ (struct lexer *lexer, const char *s)
 bool
 lex_at_phrase (struct lexer *lexer, const char *s)
 {
-  return lex_at_phrase__ (lexer, s) > 0;
+  return lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s) > 0;
 }
 
 /* If LEXER is positioned at the sequence of tokens that may be parsed from S,
@@ -1584,7 +1649,7 @@ lex_at_phrase (struct lexer *lexer, const char *s)
 bool
 lex_match_phrase (struct lexer *lexer, const char *s)
 {
-  size_t n = lex_at_phrase__ (lexer, s);
+  size_t n = lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s);
   if (n > 0)
     lex_get_n (lexer, n);
   return n > 0;
@@ -1653,6 +1718,7 @@ lex_token_location (const struct lex_source *src,
     .file_name = intern_new_if_nonnull (src->reader->file_name),
     .start = lex_token_start_point (src, t0),
     .end = lex_token_end_point (src, t1),
+    .src = CONST_CAST (struct lex_source *, src),
   };
 }
 
@@ -1920,63 +1986,39 @@ lex_source_get_macro_call (struct lex_source *src, int ofs0, int ofs1)
 }
 
 static void
-lex_source_error_valist (struct lex_source *src, int ofs0, int ofs1,
-                         const char *format, va_list args)
+lex_source_msg_valist (struct lex_source *src, enum msg_class class,
+                       int ofs0, int ofs1, const char *format, va_list args)
 {
-  const struct lex_token *token;
-  struct string s;
+  struct string s = DS_EMPTY_INITIALIZER;
 
-  ds_init_empty (&s);
-
-  token = lex_source_ofs__ (src, ofs0);
-  if (token->token.type == T_ENDCMD)
-    ds_put_cstr (&s, _("Syntax error at end of command"));
-  else
+  if (src)
     {
-      /* Get the syntax that caused the error. */
-      char *raw_syntax = lex_source_syntax__ (src, ofs0, ofs1);
-      char syntax[64];
-      str_ellipsize (ss_cstr (raw_syntax), syntax, sizeof syntax);
-      free (raw_syntax);
-
       /* Get the macro call(s) that expanded to the syntax that caused the
          error. */
       char call[64];
       str_ellipsize (lex_source_get_macro_call (src, ofs0, ofs1),
                      call, sizeof call);
-
-      if (syntax[0])
-        {
-          if (call[0])
-            ds_put_format (&s,
-                           _("Syntax error at `%s' (in expansion of `%s')"),
-                           syntax, call);
-          else
-            ds_put_format (&s, _("Syntax error at `%s'"), syntax);
-        }
-      else
-        {
-          if (call[0])
-            ds_put_format (&s, _("Syntax error in syntax expanded from `%s'"),
-                           call);
-          else
-            ds_put_cstr (&s, _("Syntax error"));
-        }
+      if (call[0])
+        ds_put_format (&s, _("In syntax expanded from `%s'"), call);
     }
+  else
+    ds_put_cstr (&s, _("At end of input"));
 
+  if (!ds_is_empty (&s))
+    ds_put_cstr (&s, ": ");
   if (format)
-    {
-      ds_put_cstr (&s, ": ");
-      ds_put_vformat (&s, format, args);
-    }
+    ds_put_vformat (&s, format, args);
+  else
+    ds_put_cstr (&s, _("Syntax error."));
+
   if (ds_last (&s) != '.')
     ds_put_byte (&s, '.');
 
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
-    .category = MSG_C_SYNTAX,
-    .severity = MSG_S_ERROR,
-    .location = lex_source_get_location (src, ofs0, ofs1),
+    .category = msg_class_to_category (class),
+    .severity = msg_class_to_severity (class),
+    .location = src ? lex_source_get_location (src, ofs0, ofs1) : NULL,
     .text = ds_steal_cstr (&s),
   };
   msg_emit (m);
@@ -1990,8 +2032,7 @@ lex_get_error (struct lex_source *src, const struct lex_token *token)
                  syntax, sizeof syntax);
 
   struct string s = DS_EMPTY_INITIALIZER;
-  ds_put_format (&s, _("Syntax error at `%s'"), syntax);
-  ds_put_format (&s, ": %s", token->token.string.string);
+  ds_put_cstr (&s, token->token.string.string);
 
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
@@ -2374,7 +2415,7 @@ lex_set_message_handler (struct lexer *lexer,
   msg_set_handler (&msg_handler);
 }
 
-void
+struct lex_source *
 lex_source_ref (const struct lex_source *src_)
 {
   struct lex_source *src = CONST_CAST (struct lex_source *, src_);
@@ -2383,6 +2424,7 @@ lex_source_ref (const struct lex_source *src_)
       assert (src->n_refs > 0);
       src->n_refs++;
     }
+  return src;
 }
 
 void
@@ -2590,6 +2632,13 @@ lex_source_get_line (const struct lex_source *src, int line)
     return ss_empty ();
 
   size_t ofs = src->lines[line - 1];
-  size_t end = line >= src->n_lines ? src->length : src->lines[line];
+  size_t end;
+  if (line < src->n_lines)
+    end = src->lines[line];
+  else
+    {
+      const char *newline = memchr (src->buffer + ofs, '\n', src->length - ofs);
+      end = newline ? newline - src->buffer : src->length;
+    }
   return ss_buffer (&src->buffer[ofs], end - ofs);
 }

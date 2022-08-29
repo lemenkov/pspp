@@ -50,29 +50,53 @@ u'110000'
 �
 ])
 AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
-"lexer.sps:1.1-1.6: error: Syntax error at `x'123'': String of hex digits has 3 characters, which is not a multiple of 2."
+"lexer.sps:1.1-1.6: error: String of hex digits has 3 characters, which is not a multiple of 2.
+    1 | x'123'
+      | ^~~~~~"
 
-lexer.sps:2.1-2.5: error: Syntax error at `x'1x'': `x' is not a valid hex digit.
+"lexer.sps:2.1-2.5: error: `x' is not a valid hex digit.
+    2 | x'1x'
+      | ^~~~~"
 
-"lexer.sps:3.1-3.3: error: Syntax error at `u''': Unicode string contains 0 bytes, which is not in the valid range of 1 to 8 bytes."
+"lexer.sps:3.1-3.3: error: Unicode string contains 0 bytes, which is not in the valid range of 1 to 8 bytes.
+    3 | u''
+      | ^~~"
 
-"lexer.sps:4.1-4.12: error: Syntax error at `u'012345678'': Unicode string contains 9 bytes, which is not in the valid range of 1 to 8 bytes."
+"lexer.sps:4.1-4.12: error: Unicode string contains 9 bytes, which is not in the valid range of 1 to 8 bytes.
+    4 | u'012345678'
+      | ^~~~~~~~~~~~"
 
-lexer.sps:5.1-5.7: error: Syntax error at `u'd800'': U+D800 is not a valid Unicode code point.
+"lexer.sps:5.1-5.7: error: U+D800 is not a valid Unicode code point.
+    5 | u'd800'
+      | ^~~~~~~"
 
-lexer.sps:6.1-6.9: error: Syntax error at `u'110000'': U+110000 is not a valid Unicode code point.
+"lexer.sps:6.1-6.9: error: U+110000 is not a valid Unicode code point.
+    6 | u'110000'
+      | ^~~~~~~~~"
 
-lexer.sps:7.1-7.4: error: Syntax error at `'foo': Unterminated string constant.
+"lexer.sps:7.1-7.4: error: Unterminated string constant.
+    7 | 'foo
+      | ^~~~"
 
-lexer.sps:8.1-8.70: error: Syntax error at `'very long unterminated string that be ellipsized in its err...': Unterminated string constant.
+"lexer.sps:8.1-8.70: error: Unterminated string constant.
+    8 | 'very long unterminated string that be ellipsized in its error message
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-lexer.sps:9.1-9.2: error: Syntax error at `1e': Missing exponent following `1e'.
+"lexer.sps:9.1-9.2: error: Missing exponent following `1e'.
+    9 | 1e .x
+      | ^~"
 
-lexer.sps:9.4: error: Syntax error at `.': expecting command name.
+"lexer.sps:9.4: error: Syntax error expecting command name.
+    9 | 1e .x
+      |    ^"
 
-lexer.sps:10.1: error: Syntax error at `^': Bad character `^' in input.
+"lexer.sps:10.1: error: Bad character `^' in input.
+   10 | ^
+      | ^"
 
-lexer.sps:11.1-11.2: error: Syntax error at `�': Bad character U+FFFD in input.
+"lexer.sps:11.1-11.2: error: Bad character U+FFFD in input.
+   11 | �
+      | ^~"
 ])
 AT_CLEANUP
 
@@ -83,11 +107,15 @@ printf "datA dist list notable file='input.txt'/a b c.
 lis|.\0" > lexer.sps
 
 AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
-lexer.sps:1: error: Unknown command `datA dist'.
+"lexer.sps:1.1-1.9: error: Unknown command `datA dist'.
+    1 | datA dist list notable file='input.txt'/a b c.
+      | ^~~~~~~~~"
 
-lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+"lexer.sps:2.1-2.3: error: LIST: LIST is allowed only after the active dataset has been defined.
+    2 | lis|."
 
-lexer.sps:2.6: error: LIST: Syntax error at `...': Bad character U+0000 in input.
+"lexer.sps:2.6: error: LIST: Bad character U+0000 in input.
+    2 | lis|."
 ])
 AT_CLEANUP
 
@@ -99,7 +127,9 @@ AT_SETUP([lexer crash due to overflow])
 printf "DATA LIST/5555555555555555." > lexer.sps
 
 AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
-lexer.sps:1.11-1.26: error: DATA LIST: Syntax error at `5555555555555555': Expected integer between 1 and 2147483647.
+"lexer.sps:1.11-1.26: error: DATA LIST: Syntax error expecting integer between 1 and 2147483647.
+    1 | DATA LIST/5555555555555555.
+      |           ^~~~~~~~~~~~~~~~"
 ])
 
 AT_CLEANUP

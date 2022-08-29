@@ -335,11 +335,8 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
 
               if (lex_match (lexer, T_LPAREN))
                 {
-                  if (lex_token (lexer) != T_ID)
-                    {
-                      lex_error (lexer, NULL);
-                      goto error;
-                    }
+                  if (!lex_force_id (lexer))
+                    goto error;
                   if (try_name (dict, dsc, lex_tokcstr (lexer)))
                     {
                       struct dsc_var *dsc_var = &dsc->vars[dsc->n_vars - 1];
@@ -347,8 +344,9 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                       n_zs++;
                     }
                   else
-                    msg (SE, _("Z-score variable name %s would be"
-                               " a duplicate variable name."), lex_tokcstr (lexer));
+                    lex_error (lexer, _("Z-score variable name %s would be "
+                                        "a duplicate variable name."),
+                               lex_tokcstr (lexer));
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
 		    goto error;
@@ -468,13 +466,15 @@ match_statistic (struct lexer *lexer)
 {
   if (lex_token (lexer) == T_ID)
     {
-      enum dsc_statistic stat;
-
-      for (stat = 0; stat < DSC_N_STATS; stat++)
+      for (enum dsc_statistic stat = 0; stat < DSC_N_STATS; stat++)
         if (lex_match_id (lexer, dsc_info[stat].identifier))
 	  return stat;
 
-      lex_error (lexer, _("expecting statistic name: reverting to default"));
+      const char *stat_names[DSC_N_STATS];
+      for (enum dsc_statistic stat = 0; stat < DSC_N_STATS; stat++)
+        stat_names[stat] = dsc_info[stat].identifier;
+      lex_error_expecting_array (lexer, stat_names,
+                                 sizeof stat_names / sizeof *stat_names);
       lex_get (lexer);
     }
 

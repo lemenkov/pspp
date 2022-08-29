@@ -120,7 +120,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	{
           if (data_parser_get_records (parser) > 0)
             {
-              lex_sbc_only_once ("RECORDS");
+              lex_sbc_only_once (lexer, "RECORDS");
               goto error;
             }
 	  lex_match (lexer, T_EQUALS);
@@ -143,12 +143,14 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	{
           if (!in_input_program ())
             {
-              msg (SE, _("The %s subcommand may only be used within %s."), "END", "INPUT PROGRAM");
+              lex_next_error (lexer, -1, -1,
+                              _("The %s subcommand may only be used within %s."),
+                              "END", "INPUT PROGRAM");
               goto error;
             }
 	  if (end)
 	    {
-              lex_sbc_only_once ("END");
+              lex_sbc_only_once (lexer, "END");
 	      goto error;
 	    }
 
@@ -186,8 +188,9 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 
           if (has_type)
             {
-              msg (SE, _("Only one of FIXED, FREE, or LIST may "
-                         "be specified."));
+              lex_next_error (lexer, -1, -1,
+                              _("Only one of FIXED, FREE, or LIST may "
+                                "be specified."));
               goto error;
             }
           has_type = true;
@@ -446,7 +449,8 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
             return NULL;
           if (!fmt_from_name (type, &input.type))
             {
-              msg (SE, _("Unknown format type `%s'."), type);
+              lex_next_error (lexer, -1, -1,
+                              _("Unknown format type `%s'."), type);
               return NULL;
             }
 

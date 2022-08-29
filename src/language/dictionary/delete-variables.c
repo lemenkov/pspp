@@ -22,6 +22,7 @@
 #include "data/dataset.h"
 #include "data/dictionary.h"
 #include "language/command.h"
+#include "language/lexer/lexer.h"
 #include "language/lexer/variable-parser.h"
 #include "libpspp/message.h"
 
@@ -37,9 +38,10 @@ cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
   bool ok;
 
   if (proc_make_temporary_transformations_permanent (ds))
-    msg (SE, _("%s may not be used after %s.  "
-               "Temporary transformations will be made permanent."),
-	 "DELETE VARIABLES", "TEMPORARY");
+    lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                   _("%s may not be used after %s.  "
+                     "Temporary transformations will be made permanent."),
+                   "DELETE VARIABLES", "TEMPORARY");
 
   if (!parse_variables (lexer, dataset_dict (ds), &vars, &n_vars, PV_NONE))
     goto error;

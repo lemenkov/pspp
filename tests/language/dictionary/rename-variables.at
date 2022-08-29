@@ -98,7 +98,9 @@ RENAME VARIABLES warp auxiliary=foobar xyzzy.
 ])
 
 AT_CHECK([pspp -o pspp.csv rename-variables.sps], [1], [dnl
-rename-variables.sps:2.23-2.31: error: RENAME VARIABLES: Syntax error at `auxiliary': expecting `='.
+rename-variables.sps:2.23-2.31: error: RENAME VARIABLES: Syntax error expecting `='.
+    2 | RENAME VARIABLES warp auxiliary=foobar xyzzy.
+      |                       ^~~~~~~~~
 ])
 AT_CLEANUP
 

@@ -840,7 +840,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      const struct variable *v = NULL;
 	      if (!lex_match_variable (lexer,graph.dict,&v))
 		{
-		  lex_error (lexer, _("Variable expected"));
+		  lex_error (lexer, _("Syntax error expecting variable name."));
 		  goto error;
 		}
 	      graph.by_var[0] = v;
@@ -880,7 +880,6 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "FOOTNOTE"))
 	{
 	  lex_error (lexer, _("%s is not yet implemented."),"FOOTNOTE");
-	  lex_error (lexer, _("FOOTNOTE is not implemented yet for GRAPH"));
 	  goto error;
 	}
       else if (lex_match_id (lexer, "MISSING"))

@@ -123,9 +123,9 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                   utf8_trunc_len = utf8_encoding_trunc_len (utf8_s, encoding,
                                                             MV_MAX_STRING);
                   if (utf8_trunc_len < utf8_len)
-                    msg (SE, _("Truncating missing value to maximum "
-                               "acceptable length (%d bytes)."),
-                         MV_MAX_STRING);
+                    lex_error (lexer, _("Truncating missing value to maximum "
+                                        "acceptable length (%d bytes)."),
+                               MV_MAX_STRING);
 
                   /* Recode to dictionary encoding and add. */
                   raw_s = recode_string (encoding, "UTF-8",
