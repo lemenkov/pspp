@@ -14,6 +14,8 @@ Changes after 1.6.2:
  * Building from a Git repository, which previously required GIMP, now
    requires rsvg-convert from librsvg2 instead.
 
+ * The pspp-dump-sav program is no longer installed by default.
+
 Changes from 1.6.1 to 1.6.2:
 
  * Previously, numeric variables defaulted to "scale" measurement

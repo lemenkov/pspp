@@ -13,7 +13,9 @@
 @cindex @command{pspp-dump-sav}
 
 @command{pspp-dump-sav} is a command-line utility accompanying
-@pspp{}.  It reads one or more SPSS system files and prints their
+@pspp{}.  It is not installed by default, so it may be missing
+from your PSPP installation.
+It reads one or more SPSS system files and prints their
 contents.  The output format is useful for debugging system file
 readers and writers and for discovering how to interpret unknown or
 poorly understood records.  End users may find the output useful for

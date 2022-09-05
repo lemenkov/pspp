@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-bin_PROGRAMS += utilities/pspp-dump-sav
+noinst_PROGRAMS += utilities/pspp-dump-sav
 dist_man_MANS += utilities/pspp-dump-sav.1
 utilities_pspp_dump_sav_SOURCES = \
 	src/libpspp/integer-format.c \
