@@ -6446,11 +6446,11 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
               do
                 {
                   char **textp;
-                  if (lex_match_id (lexer, "CAPTION"))
+                  if (lex_match_id (lexer, "CAPTIONS"))
                     textp = &t->caption;
-                  else if (lex_match_id (lexer, "CORNER"))
+                  else if (lex_match_id (lexer, "CORNERS"))
                     textp = &t->corner;
-                  else if (lex_match_id (lexer, "TITLE"))
+                  else if (lex_match_id (lexer, "TITLES"))
                     textp = &t->title;
                   else
                     {
