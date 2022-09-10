@@ -87,12 +87,16 @@ static char *
 parse_attribute_name (struct lexer *lexer, const char *dict_encoding,
                       size_t *index)
 {
-  char *name;
-
-  if (!lex_force_id (lexer)
-      || !id_is_valid (lex_tokcstr (lexer), dict_encoding, true))
+  if (!lex_force_id (lexer))
     return NULL;
-  name = xstrdup (lex_tokcstr (lexer));
+  char *error = id_is_valid__ (lex_tokcstr (lexer), dict_encoding);
+  if (error)
+    {
+      lex_error (lexer, "%s", error);
+      free (error);
+      return NULL;
+    }
+  char *name = xstrdup (lex_tokcstr (lexer));
   lex_get (lexer);
 
   if (lex_match (lexer, T_LBRACK))

@@ -851,7 +851,7 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
       if (name[0] == '$')
         name = pool_asprintf (r->pool, "%s_", name + 1);
 
-      if (!dict_id_is_valid (dict, name, false) || name[0] == '#')
+      if (!dict_id_is_valid (dict, name) || name[0] == '#')
         {
           pcp_error (r, rec->pos, _("Invalid variable name `%s'."), name);
           return false;

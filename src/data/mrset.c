@@ -67,26 +67,42 @@ mrset_destroy (struct mrset *mrset)
     }
 }
 
-/* Returns true if the UTF-8 encoded NAME is a valid name for a multiple
-   response set in a dictionary encoded in DICT_ENCODING, false otherwise.  If
-   ISSUE_ERROR is true, issues an explanatory error message on failure. */
-bool
-mrset_is_valid_name (const char *name, const char *dict_encoding,
-                     bool issue_error)
+/* Checks whether the UTF-8 encoded NAME is a valid name for a multiple
+   response set in a dictionary encoded in DICT_ENCODING.  Return NULL if it
+   is, otherwise an error message that the caller must free(). */
+char * WARN_UNUSED_RESULT
+mrset_is_valid_name__ (const char *name, const char *dict_encoding)
 {
-  if (!id_is_valid (name, dict_encoding, issue_error))
-    return false;
+  char *error = id_is_valid__ (name, dict_encoding);
+  if (error)
+    return error;
 
   if (name[0] != '$')
+    return xasprintf (_("%s is not a valid name for a multiple response "
+                        "set.  Multiple response set names must begin with "
+                        "`$'."), name);
+
+  return NULL;
+}
+
+static bool
+error_to_bool (char *error)
+{
+  if (error)
     {
-      if (issue_error)
-        msg (SE, _("%s is not a valid name for a multiple response "
-                   "set.  Multiple response set names must begin with "
-                   "`$'."), name);
+      free (error);
       return false;
     }
+  else
+    return true;
+}
 
-  return true;
+/* Returns true if the UTF-8 encoded NAME is a valid name for a multiple
+   response set in a dictionary encoded in DICT_ENCODING, false otherwise. */
+bool
+mrset_is_valid_name (const char *name, const char *dict_encoding)
+{
+  return error_to_bool (mrset_is_valid_name__ (name, dict_encoding));
 }
 
 /* Checks various constraints on MRSET:
@@ -112,7 +128,7 @@ mrset_ok (const struct mrset *mrset, const struct dictionary *dict)
   size_t i;
 
   if (mrset->name == NULL
-      || !mrset_is_valid_name (mrset->name, dict_get_encoding (dict), false)
+      || !mrset_is_valid_name (mrset->name, dict_get_encoding (dict))
       || (mrset->type != MRSET_MD && mrset->type != MRSET_MC)
       || mrset->vars == NULL
       || mrset->n_vars < 2)

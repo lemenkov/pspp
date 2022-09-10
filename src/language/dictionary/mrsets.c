@@ -92,10 +92,16 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
     {
       if (lex_match_id (lexer, "NAME"))
         {
-          if (!lex_force_match (lexer, T_EQUALS) || !lex_force_id (lexer)
-              || !mrset_is_valid_name (lex_tokcstr (lexer),
-                                       dict_get_encoding (dict), true))
+          if (!lex_force_match (lexer, T_EQUALS) || !lex_force_id (lexer))
             goto error;
+          char *error = mrset_is_valid_name__ (lex_tokcstr (lexer),
+                                               dict_get_encoding (dict));
+          if (error)
+            {
+              lex_error (lexer, "%s", error);
+              free (error);
+              goto error;
+            }
 
           free (mrset->name);
           mrset->name = xstrdup (lex_tokcstr (lexer));

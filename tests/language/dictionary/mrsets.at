@@ -198,8 +198,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MCGROUP NAME=x.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  [mrsets.sps:6: error: MRSETS: x is not a valid name for a multiple response set.  Multiple response set names must begin with `$'.
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.22: error: MRSETS: x is not a valid name for a multiple response set.  Multiple response set names must begin with `$'.
+    6 | MRSETS /MCGROUP NAME=x.
+      |                      ^"
 ])
 AT_CLEANUP
 

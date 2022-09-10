@@ -34,17 +34,29 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Returns true if UTF-8 string ID is an acceptable identifier in encoding
-   DICT_ENCODING (UTF-8 if null), false otherwise.  If ISSUE_ERROR is true,
-   issues an explanatory error message on failure. */
-bool
-id_is_valid (const char *id, const char *dict_encoding, bool issue_error)
+static bool
+error_to_bool (char *error)
 {
+  if (error)
+    {
+      free (error);
+      return false;
+    }
+  else
+    return true;
+}
+
+/* Checks whether if UTF-8 string ID is an acceptable identifier in encoding
+   DICT_ENCODING (UTF-8 if null).  Returns NULL if it is acceptable, otherwise
+   an error message that the caller must free(). */
+char * WARN_UNUSED_RESULT
+id_is_valid__ (const char *id, const char *dict_encoding)
+{
+  char *error = id_is_plausible__ (id);
+  if (error)
+    return error;
+
   size_t dict_len;
-
-  if (!id_is_plausible (id, issue_error))
-    return false;
-
   if (dict_encoding != NULL)
     {
       /* XXX need to reject recoded strings that contain the fallback
@@ -55,79 +67,74 @@ id_is_valid (const char *id, const char *dict_encoding, bool issue_error)
     dict_len = strlen (id);
 
   if (dict_len > ID_MAX_LEN)
-    {
-      if (issue_error)
-        msg (SE, _("Identifier `%s' exceeds %d-byte limit."),
-             id, ID_MAX_LEN);
-      return false;
-    }
+    return xasprintf (_("Identifier `%s' exceeds %d-byte limit."),
+                      id, ID_MAX_LEN);
 
-  return true;
+  return NULL;
 }
 
-/* Returns true if UTF-8 string ID is an plausible identifier, false
-   otherwise.  If ISSUE_ERROR is true, issues an explanatory error message on
-   failure.  */
+/* Returns true if UTF-8 string ID is an acceptable identifier in encoding
+   DICT_ENCODING (UTF-8 if null), false otherwise. */
 bool
-id_is_plausible (const char *id, bool issue_error)
+id_is_valid (const char *id, const char *dict_encoding)
 {
-  const uint8_t *bad_unit;
-  const uint8_t *s;
-  char ucname[16];
-  int mblen;
-  ucs4_t uc;
+  return error_to_bool (id_is_valid__ (id, dict_encoding));
+}
 
+/* Checks whether UTF-8 string ID is an plausible identifier.  Returns NULL if
+   it is, otherwise an error message that the caller must free().  */
+char * WARN_UNUSED_RESULT
+id_is_plausible__ (const char *id)
+{
   /* ID cannot be the empty string. */
   if (id[0] == '\0')
-    {
-      if (issue_error)
-        msg (SE, _("Identifier cannot be empty string."));
-      return false;
-    }
+    return xstrdup (_("Identifier cannot be empty string."));
 
   /* ID cannot be a reserved word. */
   if (lex_id_to_token (ss_cstr (id)) != T_ID)
-    {
-      if (issue_error)
-        msg (SE, _("`%s' may not be used as an identifier because it "
-                   "is a reserved word."), id);
-      return false;
-    }
+    return xasprintf (_("`%s' may not be used as an identifier because it "
+                        "is a reserved word."), id);
 
-  bad_unit = u8_check (CHAR_CAST (const uint8_t *, id), strlen (id));
+  const uint8_t *bad_unit = u8_check (CHAR_CAST (const uint8_t *, id),
+                                      strlen (id));
   if (bad_unit != NULL)
     {
       /* If this message ever appears, it probably indicates a PSPP bug since
          it shouldn't be possible to get invalid UTF-8 this far. */
-      if (issue_error)
-        msg (SE, _("`%s' may not be used as an identifier because it "
-                   "contains ill-formed UTF-8 at byte offset %tu."),
-             id, CHAR_CAST (const char *, bad_unit) - id);
-      return false;
+      return xasprintf (_("`%s' may not be used as an identifier because it "
+                          "contains ill-formed UTF-8 at byte offset %tu."),
+                        id, CHAR_CAST (const char *, bad_unit) - id);
     }
 
   /* Check that it is a valid identifier. */
-  mblen = u8_strmbtouc (&uc, CHAR_CAST (uint8_t *, id));
+  ucs4_t uc;
+  int mblen = u8_strmbtouc (&uc, CHAR_CAST (uint8_t *, id));
   if (!lex_uc_is_id1 (uc))
     {
-      if (issue_error)
-        msg (SE, _("Character %s (in `%s') may not appear "
-                   "as the first character in a identifier."),
-             uc_name (uc, ucname), id);
-      return false;
+      char ucname[16];
+      return xasprintf (_("Character %s (in `%s') may not appear "
+                          "as the first character in a identifier."),
+                        uc_name (uc, ucname), id);
     }
 
-  for (s = CHAR_CAST (uint8_t *, id + mblen);
+  for (const uint8_t *s = CHAR_CAST (uint8_t *, id + mblen);
        (mblen = u8_strmbtouc (&uc, s)) != 0;
         s += mblen)
     if (!lex_uc_is_idn (uc))
       {
-        if (issue_error)
-          msg (SE, _("Character %s (in `%s') may not appear in an "
-                     "identifier."),
-               uc_name (uc, ucname), id);
-        return false;
+        char ucname[16];
+        return xasprintf (_("Character %s (in `%s') may not appear in an "
+                            "identifier."),
+                          uc_name (uc, ucname), id);
       }
 
-  return true;
+  return NULL;
+}
+
+/* Returns true if UTF-8 string ID is an plausible identifier, false
+   otherwise. */
+bool
+id_is_plausible (const char *id)
+{
+  return error_to_bool (id_is_plausible__ (id));
 }

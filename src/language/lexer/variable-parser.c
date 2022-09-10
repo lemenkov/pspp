@@ -437,8 +437,13 @@ parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d)
       lex_error (lexer, ("Syntax error expecting variable name."));
       return NULL;
     }
-  if (!dict_id_is_valid (d, lex_tokcstr (lexer), true))
-    return NULL;
+  char *error = dict_id_is_valid__ (d, lex_tokcstr (lexer));
+  if (error)
+    {
+      lex_error (lexer, "%s", error);
+      free (error);
+      return NULL;
+    }
 
   char *name = xstrdup (lex_tokcstr (lexer));
   lex_get (lexer);

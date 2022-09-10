@@ -836,7 +836,7 @@ recode_strings (struct pool *pool,
           ss_rtrim (&utf8, ss_cstr (" "));
           utf8.string[utf8.length] = '\0';
 
-          if (ids[i] && !id_is_plausible (utf8.string, false))
+          if (ids[i] && !id_is_plausible (utf8.string))
             error = EINVAL;
         }
 

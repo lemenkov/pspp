@@ -566,16 +566,14 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         }
 
       int name_ofs = lex_ofs (lexer);
-      const char * tstr = lex_tokcstr (lexer);
-      if (tstr == NULL)
-	{
-	  lex_error (lexer, NULL);
-	  goto error;
-	}
-      name = xstrdup (tstr);
-      if (!lex_force_id (lexer)
-          || !dict_id_is_valid (dict, name, true))
-	{
+      if (!lex_force_id (lexer))
+        goto error;
+      name = xstrdup (lex_tokcstr (lexer));
+      char *error = dict_id_is_valid__ (dict, name);
+      if (error)
+        {
+          lex_error (lexer, "%s", error);
+          free (error);
       	  goto error;
       	}
       lex_get (lexer);

@@ -77,8 +77,9 @@ struct mrset
 struct mrset *mrset_clone (const struct mrset *);
 void mrset_destroy (struct mrset *);
 
-bool mrset_is_valid_name (const char *name, const char *dict_encoding,
-                          bool issue_error);
+char *mrset_is_valid_name__ (const char *name, const char *dict_encoding)
+  WARN_UNUSED_RESULT;
+bool mrset_is_valid_name (const char *name, const char *dict_encoding);
 
 bool mrset_ok (const struct mrset *, const struct dictionary *);
 

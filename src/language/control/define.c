@@ -103,7 +103,7 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
       return CMD_FAILURE;
     }
   const char *name = lex_tokcstr (lexer);
-  if (!id_is_plausible (name + (name[0] == '!'), false))
+  if (!id_is_plausible (name + (name[0] == '!')))
     {
       lex_error (lexer, _("Syntax error expecting identifier."));
       return CMD_FAILURE;

@@ -189,8 +189,9 @@ bool dict_has_attributes (const struct dictionary *);
 /* Data encoding. */
 const char *dict_get_encoding (const struct dictionary *d);
 
-bool dict_id_is_valid (const struct dictionary *, const char *id,
-                       bool issue_error);
+char *dict_id_is_valid__ (const struct dictionary *, const char *id)
+  WARN_UNUSED_RESULT;
+bool dict_id_is_valid (const struct dictionary *, const char *id);
 
 /* Internal variables. */
 struct variable *dict_create_internal_var (int case_idx, int width);

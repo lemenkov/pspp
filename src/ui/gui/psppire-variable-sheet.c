@@ -342,7 +342,7 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
     case DICT_TVM_COL_NAME:
       {
 	const char *name = g_value_get_string (value);
-	if (psppire_dict_check_name (dict, name, FALSE))
+	if (psppire_dict_check_name (dict, name))
 	  dict_rename_var (dict->dict, var, g_value_get_string (value));
       }
       break;

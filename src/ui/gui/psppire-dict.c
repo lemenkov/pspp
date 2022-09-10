@@ -454,7 +454,7 @@ psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
   g_assert (d);
   g_assert (PSPPIRE_IS_DICT (d));
 
-  if (! dict_id_is_valid (d->dict, name, false))
+  if (! dict_id_is_valid (d->dict, name))
     return FALSE;
 
   if (idx < dict_get_n_vars (d->dict))
@@ -550,25 +550,14 @@ psppire_dict_clear (PsppireDict *d)
 
 /* Return true if NAME would be a valid name of a variable to add to the
    dictionary.  False otherwise.
-   If REPORT is true, then invalid names will be reported as such as errors
 */
 gboolean
 psppire_dict_check_name (const PsppireDict *dict,
-			 const gchar *name, gboolean report)
+			 const gchar *name)
 {
-  if (! dict_id_is_valid (dict->dict, name, report))
-    return FALSE;
-
-  if (psppire_dict_lookup_var (dict, name))
-    {
-      if (report)
-	msg (ME, _("Duplicate variable name."));
-      return FALSE;
-    }
-
-  return TRUE;
+  return (dict_id_is_valid (dict->dict, name)
+          && !psppire_dict_lookup_var (dict, name));
 }
-
 
 gint
 psppire_dict_get_next_value_idx (const PsppireDict *dict)
@@ -891,7 +880,7 @@ gboolean
 psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
 			 const gchar *name)
 {
-  if (! dict_id_is_valid (dict->dict, name, false))
+  if (! dict_id_is_valid (dict->dict, name))
     return FALSE;
 
   /* Make sure no other variable has this name */

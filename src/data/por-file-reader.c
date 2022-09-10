@@ -716,8 +716,7 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
       for (j = 0; j < 6; j++)
         fmt[j] = read_int (r);
 
-      if (!dict_id_is_valid (dict, name, false)
-          || *name == '#' || *name == '$')
+      if (!dict_id_is_valid (dict, name) || *name == '#' || *name == '$')
         error (r, _("Invalid variable name `%s' in position %d."), name, i);
       str_uppercase (name);
 

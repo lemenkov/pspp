@@ -368,7 +368,7 @@ pxs_dict_create_var (dict, name, ip_fmt)
 INIT:
  SV *errstr = get_sv("PSPP::errstr", TRUE);
  sv_setpv (errstr, "");
- if ( ! id_is_plausible (name, false))
+ if ( ! id_is_plausible (name))
   {
     sv_setpv (errstr, "The variable name is not valid.");
     XSRETURN_UNDEF;

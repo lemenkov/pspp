@@ -89,8 +89,11 @@ bool lex_is_keyword (enum token_type);
 /* Validating identifiers. */
 #define ID_MAX_LEN 64          /* Maximum length of identifier, in bytes. */
 
-bool id_is_valid (const char *id, const char *dict_encoding, bool issue_error);
-bool id_is_plausible (const char *id, bool issue_error);
+bool id_is_valid (const char *id, const char *dict_encoding);
+bool id_is_plausible (const char *id);
+char *id_is_valid__ (const char *id, const char *dict_encoding)
+  WARN_UNUSED_RESULT;
+char *id_is_plausible__ (const char *id) WARN_UNUSED_RESULT;
 
 /* Recognizing identifiers. */
 bool lex_is_id1 (char);

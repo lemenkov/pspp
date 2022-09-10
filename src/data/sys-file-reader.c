@@ -1433,8 +1433,7 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
         }
 
       struct variable *var;
-      if (!dict_id_is_valid (dict, name, false)
-          || name[0] == '$' || name[0] == '#')
+      if (!dict_id_is_valid (dict, name) || name[0] == '$' || name[0] == '#')
         {
           var = add_var_with_generated_name (dict, rec->width);
           sys_warn (r, rec->pos, _("Renaming variable with invalid name "
@@ -1817,7 +1816,7 @@ decode_mrsets (struct sfm_reader *r, struct dictionary *dict)
       size_t i;
 
       name = recode_string ("UTF-8", r->encoding, s->name, -1);
-      if (!mrset_is_valid_name (name, dict_get_encoding (dict), false))
+      if (!mrset_is_valid_name (name, dict_get_encoding (dict)))
         {
           sys_warn (r, -1, _("Invalid multiple response set name `%s'."),
                     name);
@@ -2051,7 +2050,7 @@ parse_long_var_name_map (struct sfm_reader *r,
   while (read_variable_to_value_pair (r, dict, text, &var, &long_name))
     {
       /* Validate long name. */
-      if (!dict_id_is_valid (dict, long_name, false)
+      if (!dict_id_is_valid (dict, long_name)
           || long_name[0] == '$' || long_name[0] == '#')
         {
           sys_warn (r, record->pos,

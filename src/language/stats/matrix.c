@@ -6135,10 +6135,15 @@ save_file_open (struct save_file *sf, gsl_matrix *m,
           for (size_t i = 0; i < nv.size; i++)
             {
               char *name = trimmed_string (gsl_vector_get (&nv, i));
-              if (dict_id_is_valid (dict, name, true))
+              char *error = dict_id_is_valid__ (dict, name);
+              if (!error)
                 string_array_append_nocopy (&names, name);
               else
-                ok = false;
+                {
+                  msg_at (SE, save_location, "%s", error);
+                  free (error);
+                  ok = false;
+                }
             }
         }
       gsl_matrix_free (nm);

@@ -95,12 +95,22 @@ try_to_sequence (struct lexer *lexer, const struct dictionary *dict,
   /* Check that the first and last tokens are suitable as
      variable names.  */
   const char *s0 = lex_tokcstr (lexer);
-  if (!id_is_valid (s0, dict_get_encoding (dict), true))
-    return NULL;
+  char *error = id_is_valid__ (s0, dict_get_encoding (dict));
+  if (error)
+    {
+      lex_error (lexer, "%s", error);
+      free (error);
+      return NULL;
+    }
 
   const char *s1 = lex_next_tokcstr (lexer, 2);
-  if (!id_is_valid (s1, dict_get_encoding (dict), true))
-    return NULL;
+  error = id_is_valid__ (s1, dict_get_encoding (dict));
+  if (error)
+    {
+      lex_next_error (lexer, 2, 2, "%s", error);
+      free (error);
+      return NULL;
+    }
 
   int x0 = strcspn (s0, "0123456789");
   int x1 = strcspn (s1, "0123456789");
@@ -211,8 +221,16 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
           if (n_newvars >= n_oldvars)
             break;
           const char *new_name = lex_tokcstr (lexer);
-          if (!relax && ! id_is_plausible (new_name, true))
-            goto fail;
+          if (!relax)
+            {
+              char *error = id_is_plausible__ (new_name);
+              if (error)
+                {
+                  lex_error (lexer, "%s", error);
+                  free (error);
+                  goto fail;
+                }
+            }
 
           if (!check_rename (dict, var_get_name (oldvars[n_newvars]), new_name))
             goto fail;

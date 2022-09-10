@@ -51,9 +51,15 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
       size_t n_vectors, allocated_vectors;
 
       /* Get the name(s) of the new vector(s). */
-      if (!lex_force_id (lexer)
-          || !dict_id_is_valid (dict, lex_tokcstr (lexer), true))
+      if (!lex_force_id (lexer))
 	return CMD_CASCADING_FAILURE;
+      char *error = dict_id_is_valid__ (dict, lex_tokcstr (lexer));
+      if (error)
+        {
+          lex_error (lexer, "%s", error);
+          free (error);
+          return CMD_CASCADING_FAILURE;
+        }
 
       vectors = NULL;
       n_vectors = allocated_vectors = 0;
@@ -111,17 +117,10 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
       else if (lex_match (lexer, T_LPAREN))
 	{
           /* Short form. */
-          struct fmt_spec format;
+          struct fmt_spec format = fmt_for_output (FMT_F, 8, 2);
           bool seen_format = false;
-
-          struct variable **vars;
-          int n_vars;
-
-          size_t i;
-
-          n_vars = 0;
-          format = fmt_for_output (FMT_F, 8, 2);
-          seen_format = false;
+          size_t n_vars = 0;
+          int start_ofs = lex_ofs (lexer) - 2;
           while (!lex_match (lexer, T_RPAREN))
             {
               if (lex_is_integer (lexer) && n_vars == 0)
@@ -145,6 +144,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                 }
               lex_match (lexer, T_COMMA);
             }
+          int end_ofs = lex_ofs (lexer) - 1;
           if (n_vars == 0)
             {
               lex_error (lexer, _("Syntax error expecting vector length."));
@@ -153,20 +153,25 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 
 	  /* Check that none of the variables exist and that their names are
              not excessively long. */
-          for (i = 0; i < n_vectors; i++)
+          for (size_t i = 0; i < n_vectors; i++)
 	    {
               int j;
 	      for (j = 0; j < n_vars; j++)
 		{
                   char *name = xasprintf ("%s%d", vectors[i], j + 1);
-                  if (!dict_id_is_valid (dict, name, true))
+                  char *error = dict_id_is_valid__ (dict, name);
+                  if (error)
                     {
+                      lex_ofs_error (lexer, start_ofs, end_ofs, "%s", error);
+                      free (error);
                       free (name);
                       goto fail;
                     }
                   if (dict_lookup_var (dict, name))
 		    {
-		      msg (SE, _("%s is an existing variable name."), name);
+		      lex_ofs_error (lexer, start_ofs, end_ofs,
+                                     _("%s is an existing variable name."),
+                                     name);
                       free (name);
 		      goto fail;
 		    }
@@ -175,13 +180,12 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 	    }
 
 	  /* Finally create the variables and vectors. */
-          vars = pool_nmalloc (pool, n_vars, sizeof *vars);
-          for (i = 0; i < n_vectors; i++)
+          struct variable **vars = pool_nmalloc (pool, n_vars, sizeof *vars);
+          for (size_t i = 0; i < n_vectors; i++)
 	    {
-              int j;
-	      for (j = 0; j < n_vars; j++)
+	      for (size_t j = 0; j < n_vars; j++)
 		{
-                  char *name = xasprintf ("%s%d", vectors[i], j + 1);
+                  char *name = xasprintf ("%s%zu", vectors[i], j + 1);
 		  vars[j] = dict_create_var_assert (dict, name,
                                                     fmt_var_width (&format));
                   var_set_both_formats (vars[j], &format);

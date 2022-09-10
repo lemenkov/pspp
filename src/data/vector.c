@@ -57,7 +57,7 @@ vector_create (const char *name, struct variable **vars, size_t n_vars)
   struct vector *vector = xmalloc (sizeof *vector);
 
   assert (n_vars > 0);
-  assert (id_is_plausible (name, false));
+  assert (id_is_plausible (name));
 
   vector->name = xstrdup (name);
   vector->vars = xmemdup (vars, n_vars * sizeof *vector->vars);

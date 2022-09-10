@@ -107,8 +107,7 @@ void psppire_dict_delete_variables (PsppireDict *d, gint first, gint n);
 struct variable *psppire_dict_insert_variable (PsppireDict *d, gint idx,
                                                const gchar *name);
 
-gboolean psppire_dict_check_name (const PsppireDict *dict,
-			      const gchar *name, gboolean report);
+gboolean psppire_dict_check_name (const PsppireDict *, const gchar *name);
 
 bool psppire_dict_generate_name (const PsppireDict *, char *name, size_t size);
 

@@ -179,15 +179,35 @@ dict_get_encoding (const struct dictionary *d)
   return d->encoding ;
 }
 
-/* Returns true if UTF-8 string ID is an acceptable identifier in DICT's
-   encoding, false otherwise.  If ISSUE_ERROR is true, issues an explanatory
-   error message on failure. */
-bool
-dict_id_is_valid (const struct dictionary *dict, const char *id,
-                  bool issue_error)
+/* Checks whether UTF-8 string ID is an acceptable identifier in DICT's
+   encoding.  Returns true if it is, otherwise an error message that the caller
+   must free(). */
+char * WARN_UNUSED_RESULT
+dict_id_is_valid__ (const struct dictionary *dict, const char *id)
 {
-  return (!dict->names_must_be_ids
-          || id_is_valid (id, dict->encoding, issue_error));
+  if (!dict->names_must_be_ids)
+    return NULL;
+  return id_is_valid__ (id, dict->encoding);
+}
+
+static bool
+error_to_bool (char *error)
+{
+  if (error)
+    {
+      free (error);
+      return false;
+    }
+  else
+    return true;
+}
+
+/* Returns true if UTF-8 string ID is an acceptable identifier in DICT's
+   encoding, false otherwise. */
+bool
+dict_id_is_valid (const struct dictionary *dict, const char *id)
+{
+  return error_to_bool (dict_id_is_valid__ (dict, id));
 }
 
 void

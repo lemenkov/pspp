@@ -281,7 +281,7 @@ make_new_var (struct dictionary *dict, const char *name_)
 
   /* Use the mangled name, if it is available, or add numeric
      extensions until we find one that is. */
-  if (!id_is_plausible (name, false) || !dict_create_var (dict, name, 0))
+  if (!id_is_plausible (name) || !dict_create_var (dict, name, 0))
     {
       int len = strlen (name);
       int i;
@@ -292,7 +292,7 @@ make_new_var (struct dictionary *dict, const char *name_)
           strncpy (n, name, ofs);
           sprintf (&n[ofs], "%d", i);
 
-          if (id_is_plausible (n, false) && dict_create_var (dict, n, 0))
+          if (id_is_plausible (n) && dict_create_var (dict, n, 0))
             break;
         }
     }
