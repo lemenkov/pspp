@@ -640,7 +640,8 @@ convert_format (struct pfm_reader *r, const int portable_format[3],
 
   msg_disable ();
   ok = (fmt_check_output (&format)
-        && fmt_check_width_compat (&format, var_get_width (v)));
+        && fmt_check_width_compat (&format, var_get_name (v),
+                                   var_get_width (v)));
   msg_enable ();
 
   if (!ok)

@@ -89,7 +89,7 @@ internal_cmd_formats (struct lexer *lexer, struct dataset *ds, int which)
 	}
       if (!parse_format_specifier (lexer, &f)
           || !fmt_check_output (&f)
-          || !fmt_check_width_compat (&f, width))
+          || !fmt_check_width_compat (&f, var_get_name (v[0]), width))
 	goto fail;
 
       if (!lex_match (lexer, T_RPAREN))

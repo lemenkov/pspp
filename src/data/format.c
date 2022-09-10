@@ -518,9 +518,11 @@ fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
 
 /* Checks that FORMAT is appropriate for a variable of the given WIDTH and
    returns NULL if so.  Otherwise returns a malloc()'d error message that the
-   calelr must eventually free(). */
+   caller must eventually free().  VARNAME is optional and only used in the
+   error message. */
 char *
-fmt_check_width_compat__ (const struct fmt_spec *format, int width)
+fmt_check_width_compat__ (const struct fmt_spec *format, const char *varname,
+                          int width)
 {
   char *error = fmt_check_type_compat__ (format, val_type_from_width (width));
   if (error)
@@ -528,22 +530,31 @@ fmt_check_width_compat__ (const struct fmt_spec *format, int width)
 
   if (fmt_var_width (format) != width)
     {
-      char str[FMT_STRING_LEN_MAX + 1];
-      return xasprintf (_("String variable with width %d is not compatible "
-                          "with format %s."),
-                        width, fmt_to_string (format, str));
+      char format_str[FMT_STRING_LEN_MAX + 1];
+      fmt_to_string (format, format_str);
+
+      if (varname)
+        return xasprintf (_("String variable %s with width %d is not "
+                            "compatible with format %s."),
+                          varname, width, format_str);
+        else
+        return xasprintf (_("String variable with width %d is not compatible "
+                            "with format %s."),
+                          width, format_str);
     }
 
   return NULL;
 }
 
-/* Checks that FORMAT is appropriate for a variable of the given
-   WIDTH and returns true if so.  Otherwise returns false and
-   emits an error message. */
+/* Checks that FORMAT is appropriate for a variable of the given WIDTH and
+   returns true if so.  Otherwise returns false and emits an error message.
+   VARNAME is optional and only used in the error message. */
 bool
-fmt_check_width_compat (const struct fmt_spec *format, int width)
+fmt_check_width_compat (const struct fmt_spec *format, const char *varname,
+                        int width)
 {
-  return fmt_emit_and_free_error (fmt_check_width_compat__ (format, width));
+  return fmt_emit_and_free_error (fmt_check_width_compat__ (format, varname,
+                                                            width));
 }
 
 /* Returns the width corresponding to FORMAT.  The return value
@@ -1020,7 +1031,7 @@ fmt_from_u32 (uint32_t u32, int width, bool loose, struct fmt_spec *f)
         ok = fmt_check_output (f);
     }
   if (ok)
-    ok = fmt_check_width_compat (f, width);
+    ok = fmt_check_width_compat (f, NULL, width);
   msg_enable ();
 
   return ok;

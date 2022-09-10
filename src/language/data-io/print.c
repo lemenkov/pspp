@@ -398,7 +398,8 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
         struct prt_out_spec *spec;
 
         var = vars[var_idx++];
-        if (!fmt_check_width_compat (f, var_get_width (var)))
+        if (!fmt_check_width_compat (f, var_get_name (var),
+                                     var_get_width (var)))
           return false;
 
         spec = pool_alloc (trns->pool, sizeof *spec);

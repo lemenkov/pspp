@@ -634,7 +634,7 @@ var_set_print_format_quiet (struct variable *v, const struct fmt_spec *print)
 {
   if (!fmt_equal (&v->print, print))
     {
-      assert (fmt_check_width_compat (print, v->width));
+      assert (fmt_check_width_compat (print, v->name, v->width));
       v->print = *print;
     }
 }
@@ -667,7 +667,7 @@ var_set_write_format_quiet (struct variable *v, const struct fmt_spec *write)
 {
   if (!fmt_equal (&v->write, write))
     {
-      assert (fmt_check_width_compat (write, v->width));
+      assert (fmt_check_width_compat (write, v->name, v->width));
       v->write = *write;
     }
 }
