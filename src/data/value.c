@@ -35,12 +35,7 @@
    is padded on the right with PAD bytes.
 
    SRC and DST must be string values; that is, SRC_WIDTH and
-   DST_WIDTH must both be positive.
-
-   It is important that SRC_WIDTH and DST_WIDTH be the actual
-   widths with which SRC and DST were initialized.  Passing,
-   e.g., smaller values in order to copy only a prefix of SRC or
-   modify only a prefix of DST will not work in every case. */
+   DST_WIDTH must both be positive. */
 void
 value_copy_rpad (union value *dst, int dst_width,
                  const union value *src, int src_width,
@@ -56,11 +51,7 @@ value_copy_rpad (union value *dst, int dst_width,
    padded on the right with PAD bytes.
 
    DST must be a string value; that is, DST_WIDTH must be
-   positive.
-
-   It is important that DST_WIDTH be the actual width with which
-   DST was initialized.  Passing, e.g., a smaller value in order
-   to modify only a prefix of DST will not work in every case. */
+   positive. */
 void
 value_copy_str_rpad (union value *dst, int dst_width, const uint8_t *src,
                      char pad)
@@ -74,11 +65,7 @@ value_copy_str_rpad (union value *dst, int dst_width, const uint8_t *src,
    than SRC_LEN, then DST is padded on the right with PAD bytes.
 
    DST must be a string value; that is, DST_WIDTH must be
-   positive.
-
-   It is important that DST_WIDTH be the actual width with which
-   DST was initialized.  Passing, e.g., a smaller value in order
-   to modify only a prefix of DST will not work in every case. */
+   positive. */
 void
 value_copy_buf_rpad (union value *dst, int dst_width,
                      const uint8_t *src, size_t src_len, char pad)
