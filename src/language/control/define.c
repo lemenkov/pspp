@@ -139,19 +139,21 @@ parse_macro_body (struct lexer *lexer, struct macro_tokens *mts)
           break;
 
         case TOKENIZE_ERROR:
-          size_t start_offset = mt.syntax.string - body.ss.string;
-          size_t end_offset = start_offset + (mt.syntax.length ? mt.syntax.length - 1 : 0);
+          {
+            size_t start_offset = mt.syntax.string - body.ss.string;
+            size_t end_offset = start_offset + (mt.syntax.length ? mt.syntax.length - 1 : 0);
 
-          const struct msg_location loc = {
-            .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
-            .start = msg_point_advance (start, ss_buffer (body.ss.string, start_offset)),
-            .end = msg_point_advance (start, ss_buffer (body.ss.string, end_offset)),
-            .src = CONST_CAST (struct lex_source *, lex_source (lexer)),
-          };
-          msg_at (SE, &loc, "%s", mt.token.string.string);
-          intern_unref (loc.file_name);
+            const struct msg_location loc = {
+              .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
+              .start = msg_point_advance (start, ss_buffer (body.ss.string, start_offset)),
+              .end = msg_point_advance (start, ss_buffer (body.ss.string, end_offset)),
+              .src = CONST_CAST (struct lex_source *, lex_source (lexer)),
+            };
+            msg_at (SE, &loc, "%s", mt.token.string.string);
+            intern_unref (loc.file_name);
 
-          ok = false;
+            ok = false;
+          }
           break;
         }
 
