@@ -380,7 +380,7 @@ combine_files (enum comb_command_type command,
     {
       if (command == COMB_UPDATE)
         {
-          lex_sbc_missing ("BY");
+          lex_sbc_missing (lexer, "BY");
           goto error;
         }
       if (n_tables)

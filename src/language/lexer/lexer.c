@@ -628,9 +628,10 @@ lex_sbc_only_once (struct lexer *lexer, const char *sbc)
    command has been parsed, and so lex_error() would always report "Syntax
    error at end of command", which does not help the user find the error. */
 void
-lex_sbc_missing (const char *sbc)
+lex_sbc_missing (struct lexer *lexer, const char *sbc)
 {
-  msg (SE, _("Required subcommand %s was not specified."), sbc);
+  lex_ofs_error (lexer, 0, lex_max_ofs (lexer),
+                 _("Required subcommand %s was not specified."), sbc);
 }
 
 /* Reports an error to the effect that specification SPEC may only be specified
@@ -1472,6 +1473,25 @@ lex_ofs (const struct lexer *lexer)
 {
   struct lex_source *src = lex_source__ (lexer);
   return src ? src->parse_ofs : 0;
+}
+
+/* Returns the offset of the last token in the current command. */
+int
+lex_max_ofs (const struct lexer *lexer)
+{
+  struct lex_source *src = lex_source__ (lexer);
+  if (!src)
+    return 0;
+
+  int ofs = MAX (1, src->n_parse) - 1;
+  for (;;)
+    {
+      enum token_type type = lex_source_ofs__ (src, ofs)->token.type;
+      if (type == T_ENDCMD || type == T_STOP)
+        return ofs;
+
+      ofs++;
+    }
 }
 
 /* Returns the token within LEXER's current command with offset OFS.  Use

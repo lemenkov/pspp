@@ -202,7 +202,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
   struct fh_properties properties = *fh_default_properties ();
   if (file_name == NULL)
     {
-      lex_sbc_missing ("NAME");
+      lex_sbc_missing (lexer, "NAME");
       goto exit;
     }
 

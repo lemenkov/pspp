@@ -236,12 +236,12 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 
   if (type == 0)
     {
-      lex_sbc_missing ("TYPE");
+      lex_sbc_missing (lexer, "TYPE");
       goto error;
     }
   else if (handle == NULL)
     {
-      lex_sbc_missing ("OUTFILE");
+      lex_sbc_missing (lexer, "OUTFILE");
       goto error;
     }
   else if (!replace && fn_exists (handle))

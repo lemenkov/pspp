@@ -316,7 +316,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
   if (tt.n_vars == 0 && tt.mode != MODE_PAIRED)
     {
-      lex_sbc_missing ("VARIABLES");
+      lex_sbc_missing (lexer, "VARIABLES");
       goto exit;
     }
 

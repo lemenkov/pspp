@@ -6331,7 +6331,7 @@ matrix_save_parse (struct matrix_state *s)
         fh = fh_ref (s->prev_save_file);
       else
         {
-          lex_sbc_missing ("OUTFILE");
+          lex_sbc_missing (s->lexer, "OUTFILE");
           goto error;
         }
     }
@@ -6596,7 +6596,7 @@ matrix_read_parse (struct matrix_state *s)
 
   if (!read->c1)
     {
-      lex_sbc_missing ("FIELD");
+      lex_sbc_missing (s->lexer, "FIELD");
       goto error;
     }
 
@@ -6615,7 +6615,7 @@ matrix_read_parse (struct matrix_state *s)
         fh = fh_ref (s->prev_read_file);
       else
         {
-          lex_sbc_missing ("FILE");
+          lex_sbc_missing (s->lexer, "FILE");
           goto error;
         }
     }
@@ -7172,7 +7172,7 @@ matrix_write_parse (struct matrix_state *s)
 
   if (!write->c1)
     {
-      lex_sbc_missing ("FIELD");
+      lex_sbc_missing (s->lexer, "FIELD");
       goto error;
     }
 
@@ -7182,7 +7182,7 @@ matrix_write_parse (struct matrix_state *s)
         fh = fh_ref (s->prev_write_file);
       else
         {
-          lex_sbc_missing ("OUTFILE");
+          lex_sbc_missing (s->lexer, "OUTFILE");
           goto error;
         }
     }
@@ -7896,7 +7896,7 @@ matrix_msave_parse (struct matrix_state *s)
     }
   if (!msave->rowtype)
     {
-      lex_sbc_missing ("TYPE");
+      lex_sbc_missing (s->lexer, "TYPE");
       goto error;
     }
 
@@ -7914,7 +7914,7 @@ matrix_msave_parse (struct matrix_state *s)
         }
       if (!common->outfile)
         {
-          lex_sbc_missing ("OUTFILE");
+          lex_sbc_missing (s->lexer, "OUTFILE");
           goto error;
         }
       common->location = lex_ofs_location (s->lexer, start_ofs,

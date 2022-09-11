@@ -119,7 +119,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
 
   if (fh == NULL)
     {
-      lex_sbc_missing ("FILE");
+      lex_sbc_missing (lexer, "FILE");
       goto error;
     }
 

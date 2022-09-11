@@ -338,7 +338,9 @@ loop.sps:19.21-19.22: error: LOOP: Subcommand BY may only be specified once.
    19 | LOOP A=1 BY 5 TO 10 BY !.
       |                     ^~
 
-loop.sps:21: error: LOOP: Required subcommand TO was not specified.
+loop.sps:21.1-21.9: error: LOOP: Required subcommand TO was not specified.
+   21 | LOOP A=1.
+      | ^~~~~~~~~
 
 loop.sps:23.6: error: LOOP: Syntax error.
    23 | LOOP !.

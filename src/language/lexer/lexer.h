@@ -159,6 +159,7 @@ struct substring lex_next_tokss (const struct lexer *, int n);
 
 /* Looking at the current command, including lookahead and lookbehind. */
 int lex_ofs (const struct lexer *);
+int lex_max_ofs (const struct lexer *);
 const struct token *lex_ofs_token (const struct lexer *, int ofs);
 struct msg_location *lex_ofs_location (const struct lexer *, int ofs0, int ofs1);
 struct msg_point lex_ofs_start_point (const struct lexer *, int ofs);
@@ -202,7 +203,7 @@ void lex_error_expecting_valist (struct lexer *, va_list);
 void lex_error_expecting_array (struct lexer *, const char **, size_t n);
 
 void lex_sbc_only_once (struct lexer *, const char *);
-void lex_sbc_missing (const char *);
+void lex_sbc_missing (struct lexer *, const char *);
 
 void lex_spec_only_once (struct lexer *, const char *subcommand,
                          const char *specification);

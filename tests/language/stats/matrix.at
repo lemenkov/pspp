@@ -3388,7 +3388,9 @@ or FORMAT.
    17 | READ x/!.
       |        ^
 
-matrix.sps:18: error: READ: Required subcommand FIELD was not specified.
+matrix.sps:18.1-18.7: error: READ: Required subcommand FIELD was not specified.
+   18 | READ x.
+      | ^~~~~~~
 
 matrix.sps:19: error: READ: SIZE is required for reading data into a full
 matrix (as opposed to a submatrix).
@@ -3397,7 +3399,9 @@ matrix.sps:19.6: note: READ: This expression designates a full matrix.
    19 | READ x/FIELD=1 TO 10.
       |      ^
 
-matrix.sps:20: error: READ: Required subcommand FILE was not specified.
+matrix.sps:20.1-20.32: error: READ: Required subcommand FILE was not specified.
+   20 | READ x/FIELD=1 TO 10/SIZE={1,2}.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 matrix.sps:21: error: READ: 15 repetitions cannot fit in record width 10.
 
@@ -3602,9 +3606,15 @@ HOLD, or FORMAT.
    14 | WRITE 1/!.
       |         ^
 
-matrix.sps:15: error: WRITE: Required subcommand FIELD was not specified.
+matrix.sps:15.1-15.8: error: WRITE: Required subcommand FIELD was not
+specified.
+   15 | WRITE 1.
+      | ^~~~~~~~
 
-matrix.sps:16: error: WRITE: Required subcommand OUTFILE was not specified.
+matrix.sps:16.1-16.22: error: WRITE: Required subcommand OUTFILE was not
+specified.
+   16 | WRITE 1/FIELD=1 TO 10.
+      | ^~~~~~~~~~~~~~~~~~~~~~
 
 matrix.sps:17.51-17.55: note: WRITE: This syntax designates the number of
 repetitions.
@@ -4004,7 +4014,9 @@ or STRINGS.
     6 | SAVE 1/!.
       |        ^
 
-matrix.sps:7: error: SAVE: Required subcommand OUTFILE was not specified.
+matrix.sps:7.1-7.7: error: SAVE: Required subcommand OUTFILE was not specified.
+    7 | SAVE 1.
+      | ^~~~~~~
 
 matrix.sps:8: warning: SAVE: VARIABLES and NAMES both specified; ignoring
 NAMES.
@@ -4774,7 +4786,9 @@ FNAMES, SNAMES, SPLIT, or FACTOR.
    10 | MSAVE 1/!.
       |         ^
 
-matrix.sps:11: error: MSAVE: Required subcommand TYPE was not specified.
+matrix.sps:11.1-11.8: error: MSAVE: Required subcommand TYPE was not specified.
+   11 | MSAVE 1.
+      | ^~~~~~~~
 
 matrix.sps:12.25: error: MSAVE: FNAMES requires FACTOR.
    12 | MSAVE 1/TYPE=COV/FNAMES=x.
@@ -4784,7 +4798,10 @@ matrix.sps:13.25: error: MSAVE: SNAMES requires SPLIT.
    13 | MSAVE 1/TYPE=COV/SNAMES=x.
       |                         ^
 
-matrix.sps:14: error: MSAVE: Required subcommand OUTFILE was not specified.
+matrix.sps:14.1-14.17: error: MSAVE: Required subcommand OUTFILE was not
+specified.
+   14 | MSAVE 1/TYPE=COV.
+      | ^~~~~~~~~~~~~~~~~
 
 matrix.sps:20: error: MSAVE: OUTFILE must name the same file on each MSAVE
 within a single MATRIX command.
