@@ -78,7 +78,7 @@ struct agr_var
 
     /* Accumulated during AGGREGATE execution. */
     double dbl[3];
-    int int1, int2;
+    int int1;
     char *string;
     bool saw_missing;
     struct moments1 *moments;
@@ -1104,7 +1104,7 @@ initialize_aggregate_info (struct agr_proc *agr)
     {
       iter->saw_missing = false;
       iter->dbl[0] = iter->dbl[1] = iter->dbl[2] = 0.0;
-      iter->int1 = iter->int2 = 0;
+      iter->int1 = 0;
       switch (iter->function)
 	{
 	case MIN:
