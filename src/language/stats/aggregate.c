@@ -75,7 +75,8 @@ struct agr_var
     union agr_argument arg[2];	/* Arguments. */
 
     /* Accumulated during AGGREGATE execution. */
-    double dbl[3];
+    double dbl;
+    double W;                   /* Total non-missing weight. */
     int int1;
     char *string;
     bool saw_missing;
@@ -764,7 +765,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
                 {
                 case NMISS:
                 case NMISS | FSTRING:
-                  av->dbl[0] += weight;
+                  av->dbl += weight;
                   break;
                 case NUMISS:
                 case NUMISS | FSTRING:
@@ -776,15 +777,15 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             }
 
           /* This is horrible.  There are too many possibilities. */
+          av->W += weight;
           switch (av->function)
             {
             case SUM:
-              av->dbl[0] += v->f * weight;
+              av->dbl += v->f * weight;
               av->int1 = 1;
               break;
             case MEAN:
-              av->dbl[0] += v->f * weight;
-              av->dbl[1] += weight;
+              av->dbl += v->f * weight;
               break;
             case MEDIAN:
               {
@@ -808,7 +809,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
               moments1_add (av->moments, v->f, weight);
               break;
             case MAX:
-              av->dbl[0] = MAX (av->dbl[0], v->f);
+              av->dbl = MAX (av->dbl, v->f);
               av->int1 = 1;
               break;
             case MAX | FSTRING:
@@ -818,7 +819,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
               av->int1 = 1;
               break;
             case MIN:
-              av->dbl[0] = MIN (av->dbl[0], v->f);
+              av->dbl = MIN (av->dbl, v->f);
               av->int1 = 1;
               break;
             case MIN | FSTRING:
@@ -829,56 +830,48 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             case FGT:
             case PGT:
               if (v->f > av->arg[0].f)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FGT | FSTRING:
             case PGT | FSTRING:
               if (memcmp (av->arg[0].c, v->s, src_width) < 0)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FLT:
             case PLT:
               if (v->f < av->arg[0].f)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FLT | FSTRING:
             case PLT | FSTRING:
               if (memcmp (av->arg[0].c, v->s, src_width) > 0)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FIN:
             case PIN:
               if (av->arg[0].f <= v->f && v->f <= av->arg[1].f)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FIN | FSTRING:
             case PIN | FSTRING:
               if (memcmp (av->arg[0].c, v->s, src_width) <= 0
                   && memcmp (av->arg[1].c, v->s, src_width) >= 0)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FOUT:
             case POUT:
               if (av->arg[0].f > v->f || v->f > av->arg[1].f)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case FOUT | FSTRING:
             case POUT | FSTRING:
               if (memcmp (av->arg[0].c, v->s, src_width) > 0
                   || memcmp (av->arg[1].c, v->s, src_width) < 0)
-                av->dbl[0] += weight;
-              av->dbl[1] += weight;
+                av->dbl += weight;
               break;
             case N:
             case N | FSTRING:
-              av->dbl[0] += weight;
+              av->dbl += weight;
               break;
             case NU:
             case NU | FSTRING:
@@ -887,7 +880,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             case FIRST:
               if (av->int1 == 0)
                 {
-                  av->dbl[0] = v->f;
+                  av->dbl = v->f;
                   av->int1 = 1;
                 }
               break;
@@ -899,7 +892,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
                 }
               break;
             case LAST:
-              av->dbl[0] = v->f;
+              av->dbl = v->f;
               av->int1 = 1;
               break;
             case LAST | FSTRING:
@@ -922,7 +915,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
           switch (av->function)
             {
             case N:
-              av->dbl[0] += weight;
+              av->dbl += weight;
               break;
             case NU:
               av->int1++;
@@ -977,10 +970,10 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
       switch (av->function)
         {
         case SUM:
-          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          v->f = av->int1 ? av->dbl : SYSMIS;
           break;
         case MEAN:
-          v->f = av->dbl[1] != 0.0 ? av->dbl[0] / av->dbl[1] : SYSMIS;
+          v->f = av->W != 0.0 ? av->dbl / av->W : SYSMIS;
           break;
         case MEDIAN:
           {
@@ -996,10 +989,10 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
                                         av->weight,
                                         av->subject,
                                         av->exclude);
-                av->dbl[0] = percentile_calculate (median, PC_HAVERAGE);
+                av->dbl = percentile_calculate (median, PC_HAVERAGE);
                 statistic_destroy (&median->parent.parent);
               }
-            v->f = av->dbl[0];
+            v->f = av->dbl;
           }
           break;
         case SD:
@@ -1017,7 +1010,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
           break;
         case MAX:
         case MIN:
-          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          v->f = av->int1 ? av->dbl : SYSMIS;
           break;
         case MAX | FSTRING:
         case MIN | FSTRING:
@@ -1034,7 +1027,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
         case FIN | FSTRING:
         case FOUT:
         case FOUT | FSTRING:
-          v->f = av->dbl[1] ? av->dbl[0] / av->dbl[1] : SYSMIS;
+          v->f = av->W ? av->dbl / av->W : SYSMIS;
           break;
         case PGT:
         case PGT | FSTRING:
@@ -1044,11 +1037,11 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
         case PIN | FSTRING:
         case POUT:
         case POUT | FSTRING:
-          v->f = av->dbl[1] ? av->dbl[0] / av->dbl[1] * 100.0 : SYSMIS;
+          v->f = av->W ? av->dbl / av->W * 100.0 : SYSMIS;
           break;
         case N:
         case N | FSTRING:
-          v->f = av->dbl[0];
+          v->f = av->dbl;
           break;
         case NU:
         case NU | FSTRING:
@@ -1056,7 +1049,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
           break;
         case FIRST:
         case LAST:
-          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          v->f = av->int1 ? av->dbl : SYSMIS;
           break;
         case FIRST | FSTRING:
         case LAST | FSTRING:
@@ -1067,7 +1060,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
           break;
         case NMISS:
         case NMISS | FSTRING:
-          v->f = av->dbl[0];
+          v->f = av->dbl;
           break;
         case NUMISS:
         case NUMISS | FSTRING:
@@ -1089,18 +1082,18 @@ initialize_aggregate_info (struct agr_proc *agr)
     {
       struct agr_var *av = &agr->agr_vars[i];
       av->saw_missing = false;
-      av->dbl[0] = av->dbl[1] = av->dbl[2] = 0.0;
+      av->dbl = av->W = 0.0;
       av->int1 = 0;
       switch (av->function)
 	{
 	case MIN:
-	  av->dbl[0] = DBL_MAX;
+	  av->dbl = DBL_MAX;
 	  break;
 	case MIN | FSTRING:
 	  memset (av->string, 255, var_get_width (av->src));
 	  break;
 	case MAX:
-	  av->dbl[0] = -DBL_MAX;
+	  av->dbl = -DBL_MAX;
 	  break;
 	case MAX | FSTRING:
 	  memset (av->string, 0, var_get_width (av->src));
