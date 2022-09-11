@@ -32,183 +32,184 @@ as a rule.
 
 @display
 AGGREGATE
-        OUTFILE=@{*,'@var{file_name}',@var{file_handle}@} [MODE=@{REPLACE, ADDVARIABLES@}]
-        /PRESORTED
-        /DOCUMENT
-        /MISSING=COLUMNWISE
-        /BREAK=@var{var_list}
-        /@var{dest_var}['@var{label}']@dots{}=@var{agr_func}(@var{src_vars}, @var{args}@dots{})@dots{}
+        [OUTFILE=@{*,'@var{file_name}',@var{file_handle}@} [MODE=@{REPLACE,ADDVARIABLES@}]]
+        [/MISSING=COLUMNWISE]
+        [/PRESORTED]
+        [/DOCUMENT]
+        [/BREAK=@var{var_list}]
+        /@var{dest_var}['@var{label}']@dots{}=@var{agr_func}(@var{src_vars}[, @var{args}]@dots{})@dots{}
 @end display
 
 @cmd{AGGREGATE} summarizes groups of cases into single cases.
-Cases are divided into groups that have the same values for one or more
+It divides cases into groups that have the same values for one or more
 variables called @dfn{break variables}.  Several functions are available
 for summarizing case contents.
 
-The @subcmd{OUTFILE} subcommand is required and must appear first.  Specify a
-system file or portable file by file name or file
-handle (@pxref{File Handles}), or a dataset by its name
-(@pxref{Datasets}).
-The aggregated cases are written to this file.  If @samp{*} is
-specified, then the aggregated cases replace the active dataset's data.
-Use of @subcmd{OUTFILE} to write a portable file is a @pspp{} extension.
+The @cmd{AGGREGATE} syntax consists of subcommands to control its
+behavior, all of which are optional, followed by one or more
+destination variable assigments, each of which uses an aggregation
+function to define how it is calculated.
 
-If @subcmd{OUTFILE=*} is given, then the subcommand @subcmd{MODE} may also be
-specified.
-The mode subcommand has two possible values: @subcmd{ADDVARIABLES} or @subcmd{REPLACE}.
-In @subcmd{REPLACE} mode, the entire active dataset is replaced by a new dataset
+The @subcmd{OUTFILE} subcommand, which must be first, names the
+destination for @cmd{AGGREGATE} output.  It may name a system file by
+file name or file handle (@pxref{File Handles}), a dataset by its name
+(@pxref{Datasets}), or @samp{*} to replace the active dataset.
+@cmd{AGGREGATE} writes its output to this file.
+
+With @subcmd{OUTFILE=*} only, @code{MODE} may be specified immediately
+afterward with the value @code{ADDVARIABLES} or @code{REPLACE}:
+
+@itemize
+@item
+With @code{REPLACE}, the default, the active dataset is replaced by a new dataset
 which contains just the break variables and the destination varibles.
-In this mode, the new file contains as many cases as there are
+The new file contains as many cases as there are
 unique combinations of the break variables.
-In @subcmd{ADDVARIABLES} mode, the destination variables are appended to
-the existing active dataset.
-Cases which have identical combinations of values in their break
-variables, receive identical values for the destination variables.
-The number of cases in the active dataset remains unchanged.
-Note that if @subcmd{ADDVARIABLES} is specified, then the data @emph{must} be
-sorted on the break variables.
 
-By default, the active dataset is sorted based on the break variables
-before aggregation takes place.  If the active dataset is already sorted
-or otherwise grouped in terms of the break variables, specify
+@item
+With @code{ADDVARIABLES}, the destination variables are added to those in
+the existing active dataset.
+Cases that have the same combination of values in their break
+variables receive identical values for the destination variables.
+The number of cases in the active dataset remains unchanged.
+The data must be
+sorted on the break variables, that is, @code{ADDVARIABLES} implies @code{PRESORTED}
+@end itemize
+
+If @code{OUTFILE} is omitted, @cmd{AGGREGATE} acts as if
+@code{OUTFILE=* MODE=ADDVARIABLES} were specified.
+
+By default, @cmd{AGGREGATE} first sorts the data on the break variables.
+If the active dataset is already sorted
+or grouped by the break variables, specify
 @subcmd{PRESORTED} to save time.
-@subcmd{PRESORTED} is assumed if @subcmd{MODE=ADDVARIABLES} is used.
+With @subcmd{MODE=ADDVARIABLES}, the data must be pre-sorted.
 
 Specify @subcmd{DOCUMENT} to copy the documents from the active dataset into the
 aggregate file (@pxref{DOCUMENT}).  Otherwise, the aggregate file does
 not contain any documents, even if the aggregate file replaces the
 active dataset.
 
-Normally, only a single case (for @subcmd{SD} and @subcmd{SD}., two cases) need be
-non-missing in each group for the aggregate variable to be
-non-missing.  Specifying @subcmd{/MISSING=COLUMNWISE} inverts this behavior, so
-that the aggregate variable becomes missing if any aggregated value is
-missing.
+Normally, @code{AGGREGATE} produces a non-missing value whenever there
+is enough non-missing data for the aggregation function in use, that
+is, just one non-missing value or, for the @code{SD} and @code{SD.}
+aggregation functions, two non-missing values.  Specify
+@code{/MISSING=COLUMNWISE} to make @code{AGGREGATE} output a missing
+value when one or more of the input values are missing.
 
-If @subcmd{PRESORTED}, @subcmd{DOCUMENT}, or @subcmd{MISSING} are specified, they must appear
-between @subcmd{OUTFILE} and @subcmd{BREAK}.
+The @subcmd{BREAK} subcommand is optionally but usually present.  On
+@subcmd{BREAK}, list the variables used to divide the active dataset
+into groups to be summarized.
 
-At least one break variable must be specified on @subcmd{BREAK}, a
-required subcommand.  The values of these variables are used to divide
-the active dataset into groups to be summarized.  In addition, at least
-one @var{dest_var} must be specified.
+@cmd{AGGREGATE} is particular about the order of subcommands.
+@subcmd{OUTFILE} must be first, followed by @subcmd{MISSING}.
+@subcmd{PRESORTED} and @subcmd{DOCUMENT} follow @subcmd{MISSING}, in
+either order, followed by @subcmd{BREAK}, then followed by aggregation
+variable specifications.
 
-One or more sets of aggregation variables must be specified.  Each set
+At least one set of aggregation variables is required.  Each set
 comprises a list of aggregation variables, an equals sign (@samp{=}),
 the name of an aggregation function (see the list below), and a list
-of source variables in parentheses.  Some aggregation functions expect
-additional arguments following the source variable names.
+of source variables in parentheses.  A few aggregation functions do
+not accept source variables, and some aggregation functions expect
+additional arguments after the source variable names.
 
-Aggregation variables typically are created with no variable label,
-value labels, or missing values.  Their default print and write
-formats depend on the aggregation function used, with details given in
-the table below.  A variable label for an aggregation variable may be
-specified just after the variable's name in the aggregation variable
-list.
+@cmd{AGGREGATE} typically creates aggregation variables with no
+variable label, value labels, or missing values.  Their default print
+and write formats depend on the aggregation function used, with
+details given in the table below.  A variable label for an aggregation
+variable may be specified just after the variable's name in the
+aggregation variable list.
 
 Each set must have exactly as many source variables as aggregation
 variables.  Each aggregation variable receives the results of applying
 the specified aggregation function to the corresponding source
-variable.  The @subcmd{MEAN}, @subcmd{MEDIAN}, @subcmd{SD}, and @subcmd{SUM}
-aggregation functions may only be
-applied to numeric variables.  All the rest may be applied to numeric
-and string variables.
+variable.
 
-The available aggregation functions are as follows:
+The following aggregation functions may be applied only to numeric
+variables:
 
 @table @asis
-@item @subcmd{FGT(@var{var_name}, @var{value})}
-Fraction of values greater than the specified constant.  The default
-format is F5.3.
-
-@item @subcmd{FIN(@var{var_name}, @var{low}, @var{high})}
-Fraction of values within the specified inclusive range of constants.
-The default format is F5.3.
-
-@item @subcmd{FLT(@var{var_name}, @var{value})}
-Fraction of values less than the specified constant.  The default
-format is F5.3.
-
-@item @subcmd{FIRST(@var{var_name})}
-First non-missing value in break group.  The aggregation variable
-receives the complete dictionary information from the source variable.
-The sort performed by @cmd{AGGREGATE} (and by @cmd{SORT CASES}) is stable.
-This means that
-the first case with particular values for the break variables before
-sorting is also the first case in that break group after sorting.
-
-@item @subcmd{FOUT(@var{var_name}, @var{low}, @var{high})}
-Fraction of values strictly outside the specified range of constants.
-The default format is F5.3.
-
-@item @subcmd{LAST(@var{var_name})}
-Last non-missing value in break group.  The aggregation variable
-receives the complete dictionary information from the source variable.
-The sort performed by @cmd{AGGREGATE} (and by @cmd{SORT CASES}) is stable.
-
-@item @subcmd{MAX(@var{var_name})}
-Maximum value.  The aggregation variable receives the complete
-dictionary information from the source variable.
-
-@item @subcmd{MEAN(@var{var_name})}
+@item @subcmd{MEAN(@var{var_name}@dots{})}
 Arithmetic mean.  Limited to numeric values.  The default format is
 F8.2.
 
-@item @subcmd{MEDIAN(@var{var_name})}
+@item @subcmd{MEDIAN(@var{var_name}@dots{})}
 The median value.  Limited to numeric values.  The default format is F8.2.
 
-@item @subcmd{MIN(@var{var_name})}
-Minimum value.  The aggregation variable receives the complete
-dictionary information from the source variable.
-
-@item @subcmd{N(@var{var_name})}
-Number of non-missing values.  The default format is F7.0 if weighting
-is not enabled, F8.2 if it is (@pxref{WEIGHT}).
-
-@item @subcmd{N}
-Number of cases aggregated to form this group.  The default format is
-F7.0 if weighting is not enabled, F8.2 if it is (@pxref{WEIGHT}).
-
-@item @subcmd{NMISS(@var{var_name})}
-Number of missing values.  The default format is F7.0 if weighting is
-not enabled, F8.2 if it is (@pxref{WEIGHT}).
-
-@item @subcmd{NU(@var{var_name})}
-Number of non-missing values.  Each case is considered to have a weight
-of 1, regardless of the current weighting variable (@pxref{WEIGHT}).
-The default format is F7.0.
-
-@item @subcmd{NU}
-Number of cases aggregated to form this group.  Each case is considered
-to have a weight of 1, regardless of the current weighting variable.
-The default format is F7.0.
-
-@item @subcmd{NUMISS(@var{var_name})}
-Number of missing values.  Each case is considered to have a weight of
-1, regardless of the current weighting variable.  The default format is F7.0.
-
-@item @subcmd{PGT(@var{var_name}, @var{value})}
-Percentage between 0 and 100 of values greater than the specified
-constant.  The default format is F5.1.
-
-@item @subcmd{PIN(@var{var_name}, @var{low}, @var{high})}
-Percentage of values within the specified inclusive range of
-constants.  The default format is F5.1.
-
-@item @subcmd{PLT(@var{var_name}, @var{value})}
-Percentage of values less than the specified constant.  The default
-format is F5.1.
-
-@item @subcmd{POUT(@var{var_name}, @var{low}, @var{high})}
-Percentage of values strictly outside the specified range of
-constants.  The default format is F5.1.
-
-@item @subcmd{SD(@var{var_name})}
+@item @subcmd{SD(@var{var_name}@dots{})}
 Standard deviation of the mean.  Limited to numeric values.  The
 default format is F8.2.
 
-@item @subcmd{SUM(@var{var_name})}
+@item @subcmd{SUM(@var{var_name}@dots{})}
 Sum.  Limited to numeric values.  The default format is F8.2.
+@end table
+
+These aggregation functions may be applied to numeric and string variables:
+
+@table @asis
+@item @subcmd{CGT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{CLT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{CIN(@var{var_name}@dots{}, @var{low}, @var{high})}
+@itemx @subcmd{COUT(@var{var_name}@dots{}, @var{low}, @var{high})}
+Total weight of cases greater than or less than @var{value} or inside
+or outside the closed range [@var{low},@var{high}], respectively.  The
+default format is F5.3.
+
+@item @subcmd{FGT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{FLT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{FIN(@var{var_name}@dots{}, @var{low}, @var{high})}
+@itemx @subcmd{FOUT(@var{var_name}@dots{}, @var{low}, @var{high})}
+Fraction of values greater than or less than @var{value} or inside or
+outside the closed range [@var{low},@var{high}], respectively.  The
+default format is F5.3.
+
+@item @subcmd{FIRST(@var{var_name}@dots{})}
+@itemx @subcmd{LAST(@var{var_name}@dots{})}
+First or last non-missing value, respectively, in break group.  The
+aggregation variable
+receives the complete dictionary information from the source variable.
+The sort performed by @cmd{AGGREGATE} (and by @cmd{SORT CASES}) is stable.
+This means that
+the first (or last) case with particular values for the break variables before
+sorting is also the first (or last) case in that break group after sorting.
+
+@item @subcmd{MIN(@var{var_name}@dots{})}
+@itemx @subcmd{MAX(@var{var_name}@dots{})}
+Minimum or maximum value, respectively.  The aggregation variable
+receives the complete dictionary information from the source variable.
+
+@item @subcmd{N(@var{var_name}@dots{})}
+@itemx @subcmd{NMISS(@var{var_name}@dots{})}
+Total weight of non-missing or missing values, respectively.  The
+default format is F7.0 if weighting is not enabled, F8.2 if it is
+(@pxref{WEIGHT}).
+
+@item @subcmd{NU(@var{var_name}@dots{})}
+@itemx @subcmd{NUMISS(@var{var_name}@dots{})}
+Count of non-missing or missing values, respectively, ignoring case
+weights.  The default format is F7.0.
+
+@item @subcmd{PGT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{PLT(@var{var_name}@dots{}, @var{value})}
+@itemx @subcmd{PIN(@var{var_name}@dots{}, @var{low}, @var{high})}
+@itemx @subcmd{POUT(@var{var_name}@dots{}, @var{low}, @var{high})}
+Percentage between 0 and 100 of values greater than or less than
+@var{VALUE} or inside or outside the closed range
+[@var{low},@var{high}], respectively.  The default format is F5.1.
+@end table
+
+These aggregation functions do not accept source variables:
+
+@table @asis
+@item @subcmd{N}
+Total weight of cases aggregated to form this group.  The default
+format is F7.0 if weighting is not enabled, F8.2 if it is
+(@pxref{WEIGHT}).
+
+@item @subcmd{NU}
+Count of cases aggregated to form this group, ignoring case weights.
+The default format is F7.0.
 @end table
 
 Aggregation functions compare string values in terms of internal
@@ -238,7 +239,7 @@ occupation.
 @caption {Calculating aggregated statistics from the @file{personnel.sav} file.}
 @end float
 
-Since we chose the @samp{MODE = REPLACE} option, in @ref{aggregate:res} cases
+Since we chose the @samp{MODE=REPLACE} option, in @ref{aggregate:res} cases
 for the individual persons are no longer present.  They have each been replaced
 by a single case per aggregated value.
 
@@ -250,7 +251,6 @@ by a single case per aggregated value.
 Note that some values for the standard deviation are blank.
 This is because there is only one case with the respective
 occupation.
-
 
 @node AUTORECODE
 @section AUTORECODE

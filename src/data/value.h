@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "xalloc.h"
+#include "libpspp/cast.h"
+#include "libpspp/str.h"
+#include "gl/xalloc.h"
 
 /* A numeric or string value.  The client is responsible for keeping track of
    the value's width. */
@@ -55,6 +57,8 @@ unsigned int value_hash (const union value *, int width, unsigned int basis) WAR
 bool value_is_resizable (const union value *, int old_width, int new_width);
 bool value_needs_resize (int old_width, int new_width);
 void value_resize (union value *, int old_width, int new_width);
+
+static inline struct substring value_ss (const union value *, int width);
 
 bool value_is_spaces (const union value *, int width);
 
@@ -147,6 +151,15 @@ value_swap (union value *a, union value *b)
   union value tmp = *a;
   *a = *b;
   *b = tmp;
+}
+
+static inline struct substring
+value_ss (const union value *v, int width)
+{
+  return (struct substring) {
+    .string = CHAR_CAST (char *, v->s),
+    .length = width
+  };
 }
 
 #endif /* data/value.h */

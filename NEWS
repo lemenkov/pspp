@@ -11,6 +11,12 @@ Changes after 1.6.2:
 
  * FREQUENCIES now honors the LAYERED setting on SPLIT FILE.
 
+ * AGGREGATE:
+
+   - New aggregation functions CGT, CLT, CIN, and COUT.
+
+   - Break variables are now optional.
+
  * Building from a Git repository, which previously required GIMP, now
    requires rsvg-convert from librsvg2 instead.
 

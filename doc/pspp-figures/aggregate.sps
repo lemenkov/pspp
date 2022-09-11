@@ -1,10 +1,7 @@
-get file="personnel.sav".
-
-aggregate outfile=* 
-        mode = replace
-        /break= occupation
-        /occ_mean_salaray = mean (salary)
-        /occ_median_salary = median (salary)
-        /occ_std_dev_salary = sd (salary).
-
-list.
+GET FILE="personnel.sav".
+AGGREGATE OUTFILE=* MODE=REPLACE
+        /BREAK=occupation
+        /occ_mean_salary=MEAN(salary)
+        /occ_median_salary=MEDIAN(salary)
+        /occ_std_dev_salary=SD(salary).
+LIST.

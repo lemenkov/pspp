@@ -57,11 +57,14 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-/* Argument for AGGREGATE function. */
-union agr_argument
+/* Argument for AGGREGATE function.
+
+   Only one of the members is used, so this could be a union, but it's simpler
+   to just have both. */
+struct agr_argument
   {
     double f;                           /* Numeric. */
-    char *c;                            /* Short or long string. */
+    struct substring s;                 /* String. */
   };
 
 /* Specifies how to make an aggregate variable. */
@@ -70,9 +73,9 @@ struct agr_var
     /* Collected during parsing. */
     const struct variable *src;	/* Source variable. */
     struct variable *dest;	/* Target variable. */
-    int function;		/* Function. */
+    enum agr_function function; /* Function. */
     enum mv_class exclude;      /* Classes of missing values to exclude. */
-    union agr_argument arg[2];	/* Arguments. */
+    struct agr_argument arg[2];	/* Arguments. */
 
     /* Accumulated during AGGREGATE execution. */
     double dbl;
@@ -81,38 +84,21 @@ struct agr_var
     char *string;
     bool saw_missing;
     struct moments1 *moments;
-    double cc;
 
     struct variable *subject;
     struct variable *weight;
     struct casewriter *writer;
   };
 
-
 /* Attributes of aggregation functions. */
 const struct agr_func agr_func_tab[] =
   {
-    {"SUM",     N_("Sum of values"),                         AGR_SV_YES, 0, -1,          { .type = FMT_F, .w = 8, .d = 2 }},
-    {"MEAN",	N_("Mean average"),                          AGR_SV_YES, 0, -1,          { .type = FMT_F, .w = 8, .d = 2 }},
-    {"MEDIAN",	N_("Median average"),                        AGR_SV_YES, 0, -1,          { .type = FMT_F, .w = 8, .d = 2 }},
-    {"SD",      N_("Standard deviation"),                    AGR_SV_YES, 0, -1,          { .type = FMT_F, .w = 8, .d = 2 }},
-    {"MAX",     N_("Maximum value"),                         AGR_SV_YES, 0, VAL_STRING,  {-1, -1, -1}},
-    {"MIN",     N_("Minimum value"),                         AGR_SV_YES, 0, VAL_STRING,  {-1, -1, -1}},
-    {"PGT",     N_("Percentage greater than"),               AGR_SV_YES, 1, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 1 }},
-    {"PLT",     N_("Percentage less than"),                  AGR_SV_YES, 1, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 1 }},
-    {"PIN",     N_("Percentage included in range"),          AGR_SV_YES, 2, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 1 }},
-    {"POUT",    N_("Percentage excluded from range"),        AGR_SV_YES, 2, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 1 }},
-    {"FGT",     N_("Fraction greater than"),                 AGR_SV_YES, 1, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 3 }},
-    {"FLT",     N_("Fraction less than"),                    AGR_SV_YES, 1, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 3 }},
-    {"FIN",     N_("Fraction included in range"),            AGR_SV_YES, 2, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 3 }},
-    {"FOUT",    N_("Fraction excluded from range"),          AGR_SV_YES, 2, VAL_NUMERIC, { .type = FMT_F, .w = 5, .d = 3 }},
-    {"N",       N_("Number of cases"),                       AGR_SV_NO,  0, VAL_NUMERIC, { .type = FMT_F, .w = 7, .d = 0 }},
-    {"NU",      N_("Number of cases (unweighted)"),          AGR_SV_OPT, 0, VAL_NUMERIC, { .type = FMT_F, .w = 7, .d = 0 }},
-    {"NMISS",   N_("Number of missing values"),              AGR_SV_YES, 0, VAL_NUMERIC, { .type = FMT_F, .w = 7, .d = 0 }},
-    {"NUMISS",  N_("Number of missing values (unweighted)"), AGR_SV_YES, 0, VAL_NUMERIC, { .type = FMT_F, .w = 7, .d = 0 }},
-    {"FIRST",   N_("First non-missing value"),               AGR_SV_YES, 0, VAL_STRING,  {-1, -1, -1}},
-    {"LAST",    N_("Last non-missing value"),                AGR_SV_YES, 0, VAL_STRING,  {-1, -1, -1}},
-    {NULL,      NULL,                                        AGR_SV_NO,  0, -1,          {-1, -1, -1}},
+#define AGRF(ENUM, NAME, DESCRIPTION, SRC_VARS, N_ARGS, ALPHA_TYPE, W, D) \
+    [ENUM] = { NAME, DESCRIPTION, SRC_VARS, N_ARGS, ALPHA_TYPE, \
+               { .type = (W) > 0 ? FMT_F : -1, .w = W, .d = D } },
+AGGREGATE_FUNCTIONS
+#undef AGRF
+    {NULL, NULL, AGR_SV_NO, 0, -1, {-1, -1, -1}},
   };
 
 /* Missing value types. */
@@ -160,51 +146,75 @@ int
 cmd_aggregate (struct lexer *lexer, struct dataset *ds)
 {
   struct dictionary *dict = dataset_dict (ds);
-  struct agr_proc agr;
+  struct agr_proc agr = {
+    .missing = ITEMWISE,
+    .src_dict = dict,
+  };
   struct file_handle *out_file = NULL;
-  struct casereader *input = NULL, *group;
-  struct casegrouper *grouper;
+  struct casereader *input = NULL;
   struct casewriter *output = NULL;
 
   bool copy_documents = false;
   bool presorted = false;
-  bool saw_direction;
-  bool ok;
-
-  memset(&agr, 0 , sizeof (agr));
-  agr.missing = ITEMWISE;
-  agr.src_dict = dict;
-  subcase_init_empty (&agr.sort);
+  int addvariables_ofs = 0;
 
   /* OUTFILE subcommand must be first. */
-  lex_match (lexer, T_SLASH);
-  if (!lex_force_match_id (lexer, "OUTFILE"))
-    goto error;
-  lex_match (lexer, T_EQUALS);
-  if (!lex_match (lexer, T_ASTERISK))
-    {
-      out_file = fh_parse (lexer, FH_REF_FILE, dataset_session (ds));
-      if (out_file == NULL)
-        goto error;
-    }
-
-  if (out_file == NULL && lex_match_id (lexer, "MODE"))
+  if (lex_match_phrase (lexer, "/OUTFILE") || lex_match_id (lexer, "OUTFILE"))
     {
       lex_match (lexer, T_EQUALS);
-      if (lex_match_id (lexer, "ADDVARIABLES"))
-	{
-	  agr.add_variables = true;
+      if (!lex_match (lexer, T_ASTERISK))
+        {
+          out_file = fh_parse (lexer, FH_REF_FILE, dataset_session (ds));
+          if (out_file == NULL)
+            goto error;
+        }
 
-	  /* presorted is assumed in ADDVARIABLES mode */
-	  presorted = true;
-	}
-      else if (lex_match_id (lexer, "REPLACE"))
-	{
-	  agr.add_variables = false;
-	}
-      else
-	goto error;
+      if (!out_file && lex_match_id (lexer, "MODE"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "ADDVARIABLES"))
+            {
+              addvariables_ofs = lex_ofs (lexer) - 1;
+              agr.add_variables = true;
+              presorted = true;
+            }
+          else if (lex_match_id (lexer, "REPLACE"))
+            agr.add_variables = false;
+          else
+            {
+              lex_error_expecting (lexer, "ADDVARIABLES", "REPLACE");
+              goto error;
+            }
+        }
     }
+  else
+    {
+      agr.add_variables = true;
+      presorted = true;
+    }
+
+  if (lex_match_phrase (lexer, "/MISSING"))
+    {
+      lex_match (lexer, T_EQUALS);
+      if (!lex_match_id (lexer, "COLUMNWISE"))
+        {
+          lex_error_expecting (lexer, "COLUMNWISE");
+          goto error;
+        }
+      agr.missing = COLUMNWISE;
+    }
+
+  int presorted_ofs = 0;
+  for (;;)
+    if (lex_match_phrase (lexer, "/DOCUMENT"))
+      copy_documents = true;
+    else if (lex_match_phrase (lexer, "/PRESORTED"))
+      {
+        presorted = true;
+        presorted_ofs = lex_ofs (lexer) - 1;
+      }
+    else
+      break;
 
   if (agr.add_variables)
     agr.dict = dict_clone (dict);
@@ -214,53 +224,43 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
   dict_set_label (agr.dict, dict_get_label (dict));
   dict_set_documents (agr.dict, dict_get_documents (dict));
 
-  /* Read most of the subcommands. */
-  for (;;)
+  if (lex_match_phrase (lexer, "/BREAK"))
     {
-      lex_match (lexer, T_SLASH);
-
-      if (lex_match_id (lexer, "MISSING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_match_id (lexer, "COLUMNWISE"))
-	    {
-	      lex_error_expecting (lexer, "COLUMNWISE");
-              goto error;
-	    }
-	  agr.missing = COLUMNWISE;
-	}
-      else if (lex_match_id (lexer, "DOCUMENT"))
-        copy_documents = true;
-      else if (lex_match_id (lexer, "PRESORTED"))
-        presorted = true;
-      else if (lex_force_match_id (lexer, "BREAK"))
-	{
-          int i;
-
-	  lex_match (lexer, T_EQUALS);
-          if (!parse_sort_criteria (lexer, dict, &agr.sort, &agr.break_vars,
-                                    &saw_direction))
-            goto error;
-          agr.break_n_vars = subcase_get_n_fields (&agr.sort);
-
-	  if  (! agr.add_variables)
-	    for (i = 0; i < agr.break_n_vars; i++)
-	      dict_clone_var_assert (agr.dict, agr.break_vars[i]);
-
-          /* BREAK must follow the options. */
-          break;
-	}
-      else
+      lex_match (lexer, T_EQUALS);
+      bool saw_direction;
+      int break_start = lex_ofs (lexer);
+      if (!parse_sort_criteria (lexer, dict, &agr.sort, &agr.break_vars,
+                                &saw_direction))
         goto error;
+      int break_end = lex_ofs (lexer) - 1;
+      agr.break_n_vars = subcase_get_n_fields (&agr.sort);
 
+      if  (! agr.add_variables)
+        for (size_t i = 0; i < agr.break_n_vars; i++)
+          dict_clone_var_assert (agr.dict, agr.break_vars[i]);
+
+      if (presorted && saw_direction)
+        {
+          lex_ofs_msg (lexer, SW, break_start, break_end,
+                       _("When the input data is presorted, specifying "
+                         "sorting directions with (A) or (D) has no effect.  "
+                         "Output data will be sorted the same way as the "
+                         "input data."));
+          if (presorted_ofs)
+            lex_ofs_msg (lexer, SN, presorted_ofs, presorted_ofs,
+                         _("The PRESORTED subcommand state that the "
+                           "input data is presorted."));
+          else if (addvariables_ofs)
+            lex_ofs_msg (lexer, SN, addvariables_ofs, addvariables_ofs,
+                         _("ADDVARIABLES implies that the input data "
+                           "is presorted."));
+          else
+            msg (SN, _("The input data must be presorted because the "
+                       "OUTFILE subcommand is not specified."));
+        }
     }
-  if (presorted && saw_direction)
-    msg (SW, _("When PRESORTED is specified, specifying sorting directions "
-               "with (A) or (D) has no effect.  Output data will be sorted "
-               "the same way as the input data."));
 
   /* Read in the aggregate functions. */
-  lex_match (lexer, T_SLASH);
   if (!parse_aggregate_functions (lexer, dict, &agr))
     goto error;
 
@@ -296,6 +296,8 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
       subcase_clear (&agr.sort);
     }
 
+  struct casegrouper *grouper;
+  struct casereader *group;
   for (grouper = casegrouper_create_vars (input, agr.break_vars,
                                           agr.break_n_vars);
        casegrouper_get_next_group (grouper, &group);
@@ -339,12 +341,10 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
   if (!casegrouper_destroy (grouper))
     goto error;
 
-  if (!proc_commit (ds))
-    {
-      input = NULL;
-      goto error;
-    }
+  bool ok = proc_commit (ds);
   input = NULL;
+  if (!ok)
+    goto error;
 
   if (out_file == NULL)
     {
@@ -377,98 +377,89 @@ error:
   return CMD_CASCADING_FAILURE;
 }
 
+static bool
+parse_agr_func_name (struct lexer *lexer, int *func_index,
+                     enum mv_class *exclude)
+{
+  if (lex_token (lexer) != T_ID)
+    {
+      lex_error (lexer, _("Syntax error expecting aggregation function."));
+      return false;
+    }
+
+  struct substring name = lex_tokss (lexer);
+  *exclude = ss_chomp_byte (&name, '.') ? MV_SYSTEM : MV_ANY;
+
+  for (const struct agr_func *f = agr_func_tab; f->name; f++)
+    if (ss_equals_case (ss_cstr (f->name), name))
+      {
+        *func_index = f - agr_func_tab;
+        lex_get (lexer);
+        return true;
+      }
+  lex_error (lexer, _("Unknown aggregation function %s."), lex_tokcstr (lexer));
+  return false;
+}
+
 /* Parse all the aggregate functions. */
 static bool
 parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 			   struct agr_proc *agr)
 {
+  if (!lex_force_match (lexer, T_SLASH))
+    return false;
+
+  size_t starting_n_vars = dict_get_n_vars (dict);
   size_t allocated_agr_vars = 0;
 
   /* Parse everything. */
   for (;;)
     {
-      char **dest;
-      char **dest_label;
-      size_t n_dest;
-      struct string function_name;
+      char **dest = NULL;
+      char **dest_label = NULL;
+      size_t n_vars = 0;
 
-      enum mv_class exclude;
-      const struct agr_func *function;
-      int func_index;
+      struct agr_argument arg[2] = { { .f = 0 }, { .f = 0 } };
 
-      union agr_argument arg[2];
-
-      const struct variable **src;
-      size_t n_src;
-
-      size_t i;
-
-      dest = NULL;
-      dest_label = NULL;
-      n_dest = 0;
-      src = NULL;
-      function = NULL;
-      n_src = 0;
-      arg[0].c = NULL;
-      arg[1].c = NULL;
-      ds_init_empty (&function_name);
+      const struct variable **src = NULL;
 
       /* Parse the list of target variables. */
+      int dst_start_ofs = lex_ofs (lexer);
       while (!lex_match (lexer, T_EQUALS))
 	{
-	  size_t n_dest_prev = n_dest;
+	  size_t n_vars_prev = n_vars;
 
-	  if (!parse_DATA_LIST_vars (lexer, dict, &dest, &n_dest,
+	  if (!parse_DATA_LIST_vars (lexer, dict, &dest, &n_vars,
                                      (PV_APPEND | PV_SINGLE | PV_NO_SCRATCH
                                       | PV_NO_DUPLICATE)))
 	    goto error;
 
 	  /* Assign empty labels. */
-	  {
-	    int j;
-
-	    dest_label = xnrealloc (dest_label, n_dest, sizeof *dest_label);
-	    for (j = n_dest_prev; j < n_dest; j++)
-	      dest_label[j] = NULL;
-	  }
-
-
+          dest_label = xnrealloc (dest_label, n_vars, sizeof *dest_label);
+          for (size_t j = n_vars_prev; j < n_vars; j++)
+            dest_label[j] = NULL;
 
 	  if (lex_is_string (lexer))
 	    {
-	      dest_label[n_dest - 1] = xstrdup (lex_tokcstr (lexer));
+	      dest_label[n_vars - 1] = xstrdup (lex_tokcstr (lexer));
 	      lex_get (lexer);
 	    }
 	}
+      int dst_end_ofs = lex_ofs (lexer) - 2;
 
       /* Get the name of the aggregation function. */
-      if (lex_token (lexer) != T_ID)
-	{
-	  lex_error (lexer, _("Syntax error expecting aggregation function."));
-	  goto error;
-	}
-
-      ds_assign_substring (&function_name, lex_tokss (lexer));
-      exclude = ds_chomp_byte (&function_name, '.') ? MV_SYSTEM : MV_ANY;
-
-      for (function = agr_func_tab; function->name; function++)
-	if (!c_strcasecmp (function->name, ds_cstr (&function_name)))
-	  break;
-      if (NULL == function->name)
-	{
-	  lex_error (lexer, _("Unknown aggregation function %s."),
-                     ds_cstr (&function_name));
-	  goto error;
-	}
-      ds_destroy (&function_name);
-      func_index = function - agr_func_tab;
-      lex_get (lexer);
+      int func_index;
+      enum mv_class exclude;
+      if (!parse_agr_func_name (lexer, &func_index, &exclude))
+        goto error;
+      const struct agr_func *function = &agr_func_tab[func_index];
 
       /* Check for leading lparen. */
       if (!lex_match (lexer, T_LPAREN))
 	{
 	  if (function->src_vars == AGR_SV_YES)
 	    {
+              bool ok UNUSED = lex_force_match (lexer, T_LPAREN);
 	      goto error;
 	    }
 	}
@@ -476,45 +467,38 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
         {
 	  /* Parse list of source variables. */
           int pv_opts = PV_NO_SCRATCH;
-          if (func_index == SUM || func_index == MEAN || func_index == SD)
+          if (func_index == AGRF_SUM || func_index == AGRF_MEAN
+              || func_index == AGRF_MEDIAN || func_index == AGRF_SD)
             pv_opts |= PV_NUMERIC;
           else if (function->n_args)
             pv_opts |= PV_SAME_TYPE;
 
-          int vars_start_ofs = lex_ofs (lexer);
+          int src_start_ofs = lex_ofs (lexer);
+          size_t n_src;
           if (!parse_variables_const (lexer, dict, &src, &n_src, pv_opts))
             goto error;
-          int vars_end_ofs = lex_ofs (lexer) - 1;
+          int src_end_ofs = lex_ofs (lexer) - 1;
 
 	  /* Parse function arguments, for those functions that
 	     require arguments. */
           int args_start_ofs = 0;
 	  if (function->n_args != 0)
-	    for (i = 0; i < function->n_args; i++)
+	    for (size_t i = 0; i < function->n_args; i++)
 	      {
-		int type;
-
 		lex_match (lexer, T_COMMA);
-                if (i == 0)
-                  args_start_ofs = lex_ofs (lexer);
+
+		enum val_type type;
 		if (lex_is_string (lexer))
-		  {
-		    arg[i].c = recode_string (dict_get_encoding (agr->dict),
-                                              "UTF-8", lex_tokcstr (lexer),
-                                              -1);
-		    type = VAL_STRING;
-		  }
-		else if (lex_is_number (lexer))
-		  {
-		    arg[i].f = lex_tokval (lexer);
-		    type = VAL_NUMERIC;
-		  }
+                  type = VAL_STRING;
+                else if (lex_is_number (lexer))
+                  type = VAL_NUMERIC;
                 else
                   {
 		    lex_error (lexer, _("Missing argument %zu to %s."),
                                i + 1, function->name);
 		    goto error;
 		  }
+
 		if (type != var_get_type (src[0]))
 		  {
 		    msg (SE, _("Arguments to %s must be of same type as "
@@ -524,19 +508,27 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
                       {
                         lex_next_msg (lexer, SN, 0, 0,
                                       _("The argument is numeric."));
-                        lex_ofs_msg (lexer, SN, vars_start_ofs, vars_end_ofs,
+                        lex_ofs_msg (lexer, SN, src_start_ofs, src_end_ofs,
                                      _("The variables have string type."));
                       }
                     else
                       {
                         lex_next_msg (lexer, SN, 0, 0,
                                       _("The argument is a string."));
-                        lex_ofs_msg (lexer, SN, vars_start_ofs, vars_end_ofs,
+                        lex_ofs_msg (lexer, SN, src_start_ofs, src_end_ofs,
                                      _("The variables are numeric."));
                       }
 		    goto error;
 		  }
 
+                if (i == 0)
+                  args_start_ofs = lex_ofs (lexer);
+		if (type == VAL_NUMERIC)
+                  arg[i].f = lex_tokval (lexer);
+                else
+                  arg[i].s = recode_substring_pool (dict_get_encoding (agr->dict),
+                                                    "UTF-8", lex_tokss (lexer),
+                                                    NULL);
 		lex_get (lexer);
 	      }
           int args_end_ofs = lex_ofs (lexer) - 1;
@@ -551,23 +543,28 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 	     message, i.e. `AGGREGATE x=SUM(y t).' will get this
 	     error message when a proper message would be more
 	     like `unknown variable t'. */
-	  if (n_src != n_dest)
+	  if (n_src != n_vars)
 	    {
 	      msg (SE, _("Number of source variables (%zu) does not match "
 			 "number of target variables (%zu)."),
-		    n_src, n_dest);
+                   n_src, n_vars);
+              lex_ofs_msg (lexer, SN, src_start_ofs, src_end_ofs,
+                           _("These are the source variables."));
+              lex_ofs_msg (lexer, SN, dst_start_ofs, dst_end_ofs,
+                           _("These are the target variables."));
 	      goto error;
 	    }
 
-          if ((func_index == PIN || func_index == POUT
-              || func_index == FIN || func_index == FOUT)
+          if ((func_index == AGRF_PIN || func_index == AGRF_POUT
+              || func_index == AGRF_FIN || func_index == AGRF_FOUT)
               && (var_is_numeric (src[0])
                   ? arg[0].f > arg[1].f
-                  : str_compare_rpad (arg[0].c, arg[1].c) > 0))
+                  : buf_compare_rpad (arg[0].s.string, arg[0].s.length,
+                                      arg[1].s.string, arg[1].s.length) > 0))
             {
-              union agr_argument t = arg[0];
+              struct agr_argument tmp = arg[0];
               arg[0] = arg[1];
-              arg[1] = t;
+              arg[1] = tmp;
 
               lex_ofs_msg (lexer, SW, args_start_ofs, args_end_ofs,
                            _("The value arguments passed to the %s function "
@@ -577,105 +574,79 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
             }
 	}
 
-      /* Finally add these to the linked list of aggregation
-         variables. */
-      for (i = 0; i < n_dest; i++)
+      /* Finally add these to the aggregation variables. */
+      for (size_t i = 0; i < n_vars; i++)
 	{
+          const struct variable *existing_var = dict_lookup_var (agr->dict,
+                                                                 dest[i]);
+          if (existing_var)
+            {
+              if (var_get_dict_index (existing_var) >= starting_n_vars)
+		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                               _("Duplicate target variable name %s."),
+                               dest[i]);
+              else if (agr->add_variables)
+		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                               _("Variable name %s duplicates the name of a "
+                                 "variable in the active file dictionary."),
+                               dest[i]);
+              else
+		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                               _("Variable name %s duplicates the name of a "
+                                 "break variable."), dest[i]);
+              goto error;
+            }
+
+	  /* Add variable. */
           if (agr->n_agr_vars >= allocated_agr_vars)
             agr->agr_vars = x2nrealloc (agr->agr_vars, &allocated_agr_vars,
                                         sizeof *agr->agr_vars);
-	  struct agr_var *v = &agr->agr_vars[agr->n_agr_vars++];
+          struct agr_var *v = &agr->agr_vars[agr->n_agr_vars++];
           *v = (struct agr_var) {
-            .moments = NULL,
-            .src = src ? src[i] : NULL,
             .exclude = exclude,
+            .moments = NULL,
+            .function = func_index,
+            .src = src ? src[i] : NULL,
           };
 
-	  /* Create the target variable in the aggregate
-             dictionary. */
-	  {
-	    struct variable *destvar;
+	  /* Create the target variable in the aggregate dictionary. */
+          if (v->src && var_is_alpha (v->src))
+            v->string = xmalloc (var_get_width (v->src));
 
-	    v->function = func_index;
+          if (v->src && function->alpha_type == VAL_STRING)
+            v->dest = dict_clone_var_as_assert (agr->dict, v->src, dest[i]);
+          else
+            {
+              v->dest = dict_create_var_assert (agr->dict, dest[i], 0);
 
-	    if (src)
-	      {
-		if (var_is_alpha (src[i]))
-		  {
-		    v->function |= FSTRING;
-		    v->string = xmalloc (var_get_width (src[i]));
-		  }
-
-		if (function->alpha_type == VAL_STRING)
-		  destvar = dict_clone_var_as (agr->dict, v->src, dest[i]);
-		else
-                  {
-                    assert (var_is_numeric (v->src)
-                            || function->alpha_type == VAL_NUMERIC);
-                    destvar = dict_create_var (agr->dict, dest[i], 0);
-                    if (destvar != NULL)
-                      {
-                        struct fmt_spec f;
-                        if ((func_index == N || func_index == NMISS)
-                            && dict_get_weight (dict) != NULL)
-                          f = fmt_for_output (FMT_F, 8, 2);
-                        else
-                          f = function->format;
-                        var_set_both_formats (destvar, &f);
-                      }
-                  }
-	      } else {
-                struct fmt_spec f;
-		destvar = dict_create_var (agr->dict, dest[i], 0);
-		if (destvar != NULL)
-		  {
-		    if ((func_index == N || func_index == NMISS)
-			&& dict_get_weight (dict) != NULL)
-		      f = fmt_for_output (FMT_F, 8, 2);
-		    else
-		      f = function->format;
-		    var_set_both_formats (destvar, &f);
-		  }
-	    }
-
-	    if (!destvar)
-	      {
-		msg (SE, _("Variable name %s is not unique within the "
-			   "aggregate file dictionary, which contains "
-			   "the aggregate variables and the break "
-			   "variables."),
-		     dest[i]);
-		goto error;
-	      }
-
-	    free (dest[i]);
-	    if (dest_label[i])
-              var_set_label (destvar, dest_label[i]);
-
-	    v->dest = destvar;
-	  }
+              struct fmt_spec f;
+              if ((func_index == AGRF_N || func_index == AGRF_NMISS)
+                  && dict_get_weight (dict) != NULL)
+                f = fmt_for_output (FMT_F, 8, 2);
+              else
+                f = function->format;
+              var_set_both_formats (v->dest, &f);
+            }
+          if (dest_label[i])
+            var_set_label (v->dest, dest_label[i]);
 
 	  if (v->src != NULL)
-	    {
-	      int j;
-
-	      if (var_is_numeric (v->src))
-		for (j = 0; j < function->n_args; j++)
-		  v->arg[j].f = arg[j].f;
-	      else
-		for (j = 0; j < function->n_args; j++)
-		  v->arg[j].c = xstrdup (arg[j].c);
-	    }
+            for (size_t j = 0; j < function->n_args; j++)
+              v->arg[j] = (struct agr_argument) {
+                .f = arg[j].f,
+                .s = arg[j].s.string ? ss_clone (arg[j].s) : ss_empty (),
+              };
 	}
 
-      if (src != NULL && var_is_alpha (src[0]))
-	for (i = 0; i < function->n_args; i++)
-	  {
-	    free (arg[i].c);
-	    arg[i].c = NULL;
-	  }
+      ss_dealloc (&arg[0].s);
+      ss_dealloc (&arg[1].s);
 
       free (src);
+      for (size_t i = 0; i < n_vars; i++)
+	{
+	  free (dest[i]);
+	  free (dest_label[i]);
+	}
       free (dest);
       free (dest_label);
 
@@ -690,22 +661,15 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
       continue;
 
     error:
-      ds_destroy (&function_name);
-      for (i = 0; i < n_dest; i++)
+      for (size_t i = 0; i < n_vars; i++)
 	{
 	  free (dest[i]);
 	  free (dest_label[i]);
 	}
       free (dest);
       free (dest_label);
-      free (arg[0].c);
-      free (arg[1].c);
-      if (src && n_src && var_is_alpha (src[0]))
-	for (i = 0; i < function->n_args; i++)
-	  {
-	    free (arg[i].c);
-	    arg[i].c = NULL;
-	  }
+      ss_dealloc (&arg[0].s);
+      ss_dealloc (&arg[1].s);
       free (src);
 
       return false;
@@ -722,14 +686,11 @@ agr_destroy (struct agr_proc *agr)
     {
       struct agr_var *av = &agr->agr_vars[i];
 
-      if (av->function & FSTRING)
-	{
-	  size_t n_args = agr_func_tab[av->function & FUNC].n_args;
-	  for (size_t i = 0; i < n_args; i++)
-	    free (av->arg[i].c);
-	  free (av->string);
-	}
-      else if (av->function == SD)
+      ss_dealloc (&av->arg[0].s);
+      ss_dealloc (&av->arg[1].s);
+      free (av->string);
+
+      if (av->function == AGRF_SD)
         moments1_destroy (av->moments);
 
       dict_destroy_internal_var (av->subject);
@@ -746,30 +707,54 @@ agr_destroy (struct agr_proc *agr)
 static void
 accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 {
-  double weight;
   bool bad_warn = true;
-
-  weight = dict_get_case_weight (agr->src_dict, input, &bad_warn);
-
+  double weight = dict_get_case_weight (agr->src_dict, input, &bad_warn);
   for (size_t i = 0; i < agr->n_agr_vars; i++)
     {
       struct agr_var *av = &agr->agr_vars[i];
       if (av->src)
         {
+          bool is_string = var_is_alpha (av->src);
           const union value *v = case_data (input, av->src);
           int src_width = var_get_width (av->src);
+          const struct substring vs = (src_width > 0
+                                       ? value_ss (v, src_width)
+                                       : ss_empty ());
 
           if (var_is_value_missing (av->src, v) & av->exclude)
             {
               switch (av->function)
                 {
-                case NMISS:
-                case NMISS | FSTRING:
+                case AGRF_NMISS:
                   av->dbl += weight;
                   break;
-                case NUMISS:
-                case NUMISS | FSTRING:
+
+                case AGRF_NUMISS:
                   av->int1++;
+                  break;
+
+                case AGRF_SUM:
+                case AGRF_MEAN:
+                case AGRF_MEDIAN:
+                case AGRF_SD:
+                case AGRF_MAX:
+                case AGRF_MIN:
+                case AGRF_PGT:
+                case AGRF_PLT:
+                case AGRF_PIN:
+                case AGRF_POUT:
+                case AGRF_FGT:
+                case AGRF_FLT:
+                case AGRF_FIN:
+                case AGRF_FOUT:
+                case AGRF_CGT:
+                case AGRF_CLT:
+                case AGRF_CIN:
+                case AGRF_COUT:
+                case AGRF_N:
+                case AGRF_NU:
+                case AGRF_FIRST:
+                case AGRF_LAST:
                   break;
                 }
               av->saw_missing = true;
@@ -780,147 +765,151 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
           av->W += weight;
           switch (av->function)
             {
-            case SUM:
+            case AGRF_SUM:
               av->dbl += v->f * weight;
               av->int1 = 1;
               break;
-            case MEAN:
+
+            case AGRF_MEAN:
               av->dbl += v->f * weight;
               break;
-            case MEDIAN:
+
+            case AGRF_MEDIAN:
               {
-                double wv ;
-                struct ccase *cout;
-
-                cout = case_create (casewriter_get_proto (av->writer));
-
+                struct ccase *cout = case_create (casewriter_get_proto (av->writer));
                 *case_num_rw (cout, av->subject) = case_num (input, av->src);
-
-                wv = dict_get_case_weight (agr->src_dict, input, NULL);
-
-                *case_num_rw (cout, av->weight) = wv;
-
-                av->cc += wv;
-
+                *case_num_rw (cout, av->weight) = weight;
                 casewriter_write (av->writer, cout);
               }
               break;
-            case SD:
+
+            case AGRF_SD:
               moments1_add (av->moments, v->f, weight);
               break;
-            case MAX:
-              av->dbl = MAX (av->dbl, v->f);
-              av->int1 = 1;
-              break;
-            case MAX | FSTRING:
-              /* Need to do some kind of Unicode collation thingy here */
-              if (memcmp (av->string, v->s, src_width) < 0)
+
+            case AGRF_MAX:
+              if (!is_string)
+                av->dbl = MAX (av->dbl, v->f);
+              else if (memcmp (av->string, v->s, src_width) < 0)
                 memcpy (av->string, v->s, src_width);
               av->int1 = 1;
               break;
-            case MIN:
+
+            case AGRF_MIN:
+              if (!is_string)
+                av->dbl = MIN (av->dbl, v->f);
+              else if (memcmp (av->string, v->s, src_width) > 0)
+                memcpy (av->string, v->s, src_width);
               av->dbl = MIN (av->dbl, v->f);
               av->int1 = 1;
               break;
-            case MIN | FSTRING:
-              if (memcmp (av->string, v->s, src_width) > 0)
-                memcpy (av->string, v->s, src_width);
-              av->int1 = 1;
-              break;
-            case FGT:
-            case PGT:
-              if (v->f > av->arg[0].f)
+
+            case AGRF_FGT:
+            case AGRF_PGT:
+            case AGRF_CGT:
+              if (is_string
+                  ? ss_compare_rpad (av->arg[0].s, vs) < 0
+                  : v->f > av->arg[0].f)
                 av->dbl += weight;
               break;
-            case FGT | FSTRING:
-            case PGT | FSTRING:
-              if (memcmp (av->arg[0].c, v->s, src_width) < 0)
+
+            case AGRF_FLT:
+            case AGRF_PLT:
+            case AGRF_CLT:
+              if (is_string
+                  ? ss_compare_rpad (av->arg[0].s, vs) > 0
+                  : v->f < av->arg[0].f)
                 av->dbl += weight;
               break;
-            case FLT:
-            case PLT:
-              if (v->f < av->arg[0].f)
+
+            case AGRF_FIN:
+            case AGRF_PIN:
+            case AGRF_CIN:
+              if (is_string
+                  ? (ss_compare_rpad (av->arg[0].s, vs) <= 0
+                     && ss_compare_rpad (av->arg[1].s, vs) >= 0)
+                  : av->arg[0].f <= v->f && v->f <= av->arg[1].f)
                 av->dbl += weight;
               break;
-            case FLT | FSTRING:
-            case PLT | FSTRING:
-              if (memcmp (av->arg[0].c, v->s, src_width) > 0)
+
+            case AGRF_FOUT:
+            case AGRF_POUT:
+            case AGRF_COUT:
+              if (is_string
+                  ? (ss_compare_rpad (av->arg[0].s, vs) > 0
+                     || ss_compare_rpad (av->arg[1].s, vs) < 0)
+                  : av->arg[0].f > v->f || v->f > av->arg[1].f)
                 av->dbl += weight;
               break;
-            case FIN:
-            case PIN:
-              if (av->arg[0].f <= v->f && v->f <= av->arg[1].f)
-                av->dbl += weight;
-              break;
-            case FIN | FSTRING:
-            case PIN | FSTRING:
-              if (memcmp (av->arg[0].c, v->s, src_width) <= 0
-                  && memcmp (av->arg[1].c, v->s, src_width) >= 0)
-                av->dbl += weight;
-              break;
-            case FOUT:
-            case POUT:
-              if (av->arg[0].f > v->f || v->f > av->arg[1].f)
-                av->dbl += weight;
-              break;
-            case FOUT | FSTRING:
-            case POUT | FSTRING:
-              if (memcmp (av->arg[0].c, v->s, src_width) > 0
-                  || memcmp (av->arg[1].c, v->s, src_width) < 0)
-                av->dbl += weight;
-              break;
-            case N:
-            case N | FSTRING:
+
+            case AGRF_N:
               av->dbl += weight;
               break;
-            case NU:
-            case NU | FSTRING:
+
+            case AGRF_NU:
               av->int1++;
               break;
-            case FIRST:
+
+            case AGRF_FIRST:
               if (av->int1 == 0)
                 {
-                  av->dbl = v->f;
+                  if (is_string)
+                    memcpy (av->string, v->s, src_width);
+                  else
+                    av->dbl = v->f;
                   av->int1 = 1;
                 }
               break;
-            case FIRST | FSTRING:
-              if (av->int1 == 0)
-                {
-                  memcpy (av->string, v->s, src_width);
-                  av->int1 = 1;
-                }
-              break;
-            case LAST:
-              av->dbl = v->f;
+
+            case AGRF_LAST:
+              if (is_string)
+                memcpy (av->string, v->s, src_width);
+              else
+                av->dbl = v->f;
               av->int1 = 1;
               break;
-            case LAST | FSTRING:
-              memcpy (av->string, v->s, src_width);
-              av->int1 = 1;
-              break;
-            case NMISS:
-            case NMISS | FSTRING:
-            case NUMISS:
-            case NUMISS | FSTRING:
+
+            case AGRF_NMISS:
+            case AGRF_NUMISS:
               /* Our value is not missing or it would have been
                  caught earlier.  Nothing to do. */
               break;
-            default:
-              NOT_REACHED ();
             }
         }
       else
         {
+          av->W += weight;
           switch (av->function)
             {
-            case N:
-              av->dbl += weight;
+            case AGRF_N:
               break;
-            case NU:
+
+            case AGRF_NU:
               av->int1++;
               break;
-            default:
+
+            case AGRF_SUM:
+            case AGRF_MEAN:
+            case AGRF_MEDIAN:
+            case AGRF_SD:
+            case AGRF_MAX:
+            case AGRF_MIN:
+            case AGRF_PGT:
+            case AGRF_PLT:
+            case AGRF_PIN:
+            case AGRF_POUT:
+            case AGRF_FGT:
+            case AGRF_FLT:
+            case AGRF_FIN:
+            case AGRF_FOUT:
+            case AGRF_CGT:
+            case AGRF_CLT:
+            case AGRF_CIN:
+            case AGRF_COUT:
+            case AGRF_NMISS:
+            case AGRF_NUMISS:
+            case AGRF_FIRST:
+            case AGRF_LAST:
               NOT_REACHED ();
             }
         }
@@ -940,9 +929,8 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
   else
     {
       int value_idx = 0;
-      int i;
 
-      for (i = 0; i < agr->break_n_vars; i++)
+      for (size_t i = 0; i < agr->break_n_vars; i++)
 	{
 	  const struct variable *v = agr->break_vars[i];
 	  value_copy (case_data_rw_idx (c, value_idx),
@@ -959,8 +947,10 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
       int width = var_get_width (av->dest);
 
       if (agr->missing == COLUMNWISE && av->saw_missing
-          && (av->function & FUNC) != N && (av->function & FUNC) != NU
-          && (av->function & FUNC) != NMISS && (av->function & FUNC) != NUMISS)
+          && av->function != AGRF_N
+          && av->function != AGRF_NU
+          && av->function != AGRF_NMISS
+          && av->function != AGRF_NUMISS)
         {
           value_set_missing (v, width);
           casewriter_destroy (av->writer);
@@ -969,17 +959,19 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 
       switch (av->function)
         {
-        case SUM:
+        case AGRF_SUM:
           v->f = av->int1 ? av->dbl : SYSMIS;
           break;
-        case MEAN:
+
+        case AGRF_MEAN:
           v->f = av->W != 0.0 ? av->dbl / av->W : SYSMIS;
           break;
-        case MEDIAN:
+
+        case AGRF_MEDIAN:
           {
             if (av->writer)
               {
-                struct percentile *median = percentile_create (0.5, av->cc);
+                struct percentile *median = percentile_create (0.5, av->W);
                 struct order_stats *os = &median->parent;
                 struct casereader *sorted_reader = casewriter_make_reader (av->writer);
                 av->writer = NULL;
@@ -995,79 +987,65 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
             v->f = av->dbl;
           }
           break;
-        case SD:
+
+        case AGRF_SD:
           {
             double variance;
 
-            /* FIXME: we should use two passes. */
             moments1_calculate (av->moments, NULL, NULL, &variance,
                                 NULL, NULL);
-            if (variance != SYSMIS)
-              v->f = sqrt (variance);
-            else
-              v->f = SYSMIS;
+            v->f = variance != SYSMIS ? sqrt (variance) : SYSMIS;
           }
           break;
-        case MAX:
-        case MIN:
-          v->f = av->int1 ? av->dbl : SYSMIS;
-          break;
-        case MAX | FSTRING:
-        case MIN | FSTRING:
-          if (av->int1)
-            memcpy (v->s, av->string, width);
+
+        case AGRF_MAX:
+        case AGRF_MIN:
+        case AGRF_FIRST:
+        case AGRF_LAST:
+          if (!width)
+            v->f = av->int1 ? av->dbl : SYSMIS;
           else
-            value_set_missing (v, width);
+            {
+              if (av->int1)
+                memcpy (v->s, av->string, width);
+              else
+                value_set_missing (v, width);
+            }
           break;
-        case FGT:
-        case FGT | FSTRING:
-        case FLT:
-        case FLT | FSTRING:
-        case FIN:
-        case FIN | FSTRING:
-        case FOUT:
-        case FOUT | FSTRING:
+
+        case AGRF_FGT:
+        case AGRF_FLT:
+        case AGRF_FIN:
+        case AGRF_FOUT:
           v->f = av->W ? av->dbl / av->W : SYSMIS;
           break;
-        case PGT:
-        case PGT | FSTRING:
-        case PLT:
-        case PLT | FSTRING:
-        case PIN:
-        case PIN | FSTRING:
-        case POUT:
-        case POUT | FSTRING:
+
+        case AGRF_PGT:
+        case AGRF_PLT:
+        case AGRF_PIN:
+        case AGRF_POUT:
           v->f = av->W ? av->dbl / av->W * 100.0 : SYSMIS;
           break;
-        case N:
-        case N | FSTRING:
+
+        case AGRF_CGT:
+        case AGRF_CLT:
+        case AGRF_CIN:
+        case AGRF_COUT:
           v->f = av->dbl;
           break;
-        case NU:
-        case NU | FSTRING:
+
+        case AGRF_N:
+          v->f = av->W;
+          break;
+
+        case AGRF_NU:
+        case AGRF_NUMISS:
           v->f = av->int1;
           break;
-        case FIRST:
-        case LAST:
-          v->f = av->int1 ? av->dbl : SYSMIS;
-          break;
-        case FIRST | FSTRING:
-        case LAST | FSTRING:
-          if (av->int1)
-            memcpy (v->s, av->string, width);
-          else
-            value_set_missing (v, width);
-          break;
-        case NMISS:
-        case NMISS | FSTRING:
+
+        case AGRF_NMISS:
           v->f = av->dbl;
           break;
-        case NUMISS:
-        case NUMISS | FSTRING:
-          v->f = av->int1;
-          break;
-        default:
-          NOT_REACHED ();
         }
     }
 
@@ -1084,26 +1062,27 @@ initialize_aggregate_info (struct agr_proc *agr)
       av->saw_missing = false;
       av->dbl = av->W = 0.0;
       av->int1 = 0;
+
+      int width = av->src ? var_get_width (av->src) : 0;
       switch (av->function)
 	{
-	case MIN:
-	  av->dbl = DBL_MAX;
+	case AGRF_MIN:
+          if (!width)
+            av->dbl = DBL_MAX;
+          else
+            memset (av->string, 255, width);
 	  break;
-	case MIN | FSTRING:
-	  memset (av->string, 255, var_get_width (av->src));
-	  break;
-	case MAX:
-	  av->dbl = -DBL_MAX;
-	  break;
-	case MAX | FSTRING:
-	  memset (av->string, 0, var_get_width (av->src));
-	  break;
-	case MEDIAN:
-	  {
-            struct caseproto *proto;
-            struct subcase ordering;
 
-            proto = caseproto_create ();
+	case AGRF_MAX:
+          if (!width)
+            av->dbl = -DBL_MAX;
+	  else
+            memset (av->string, 0, width);
+	  break;
+
+	case AGRF_MEDIAN:
+	  {
+            struct caseproto *proto = caseproto_create ();
             proto = caseproto_add_width (proto, 0);
             proto = caseproto_add_width (proto, 0);
 
@@ -1113,21 +1092,41 @@ initialize_aggregate_info (struct agr_proc *agr)
 	    if (! av->weight)
 	      av->weight = dict_create_internal_var (1, 0);
 
+            struct subcase ordering;
             subcase_init_var (&ordering, av->subject, SC_ASCEND);
 	    av->writer = sort_create_writer (&ordering, proto);
             subcase_uninit (&ordering);
             caseproto_unref (proto);
-
-	    av->cc = 0;
 	  }
 	  break;
-        case SD:
+
+        case AGRF_SD:
           if (av->moments == NULL)
             av->moments = moments1_create (MOMENT_VARIANCE);
           else
             moments1_clear (av->moments);
           break;
-        default:
+
+        case AGRF_SUM:
+        case AGRF_MEAN:
+        case AGRF_PGT:
+        case AGRF_PLT:
+        case AGRF_PIN:
+        case AGRF_POUT:
+        case AGRF_FGT:
+        case AGRF_FLT:
+        case AGRF_FIN:
+        case AGRF_FOUT:
+        case AGRF_CGT:
+        case AGRF_CLT:
+        case AGRF_CIN:
+        case AGRF_COUT:
+        case AGRF_N:
+        case AGRF_NU:
+        case AGRF_NMISS:
+        case AGRF_NUMISS:
+        case AGRF_FIRST:
+        case AGRF_LAST:
           break;
 	}
     }

@@ -55,8 +55,8 @@ AGGREGATE dnl
 m4_if([$1], [active], [OUTFILE=*],
       [$1], [external], [OUTFILE='aggregate.sys'],
       [outfile=aggregate]) dnl
-m4_if([$2], [presorted], [/PRESORTED]) dnl
 m4_if([$3], [columnwise], [/MISSING=COLUMNWISE])
+m4_if([$2], [presorted], [/PRESORTED]) dnl
         /DOCUMENT
         /BREAK=g
         /N = n
@@ -283,39 +283,231 @@ x,cn,y,sum,mean,median
 
 AT_CLEANUP
 
-
-AT_SETUP([AGGREGATE buggy duplicate variables])
-dnl Test for a bug which crashed when duplicated
-dnl variables were attempted.
-AT_DATA([dup-variables.sps],
-  [DATA LIST NOTABLE LIST /x * .
-begin data
-1
-1
-1
-1
-2
-2
-2
-3
-3
-3
-3
-3
-3
-end data.
-
-AGGREGATE OUTFILE=* MODE=ADDVARIABLES
-	/BREAK= x
-	/N_BREAK = N.
-
-AGGREGATE OUTFILE=* MODE=ADDVARIABLES
-	/BREAK= x
-	/N_BREAK = N.
+AT_SETUP([AGGREGATE duplicate variable errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='aggregate.sps' ERROR=IGNORE.
 ])
-
-AT_CHECK([pspp -O format=csv dup-variables.sps], [1],
-["dup-variables.sps:24: error: AGGREGATE: Variable name N_BREAK is not unique within the aggregate file dictionary, which contains the aggregate variables and the break variables."
+AT_DATA([aggregate.sps], [dnl
+DATA LIST NOTABLE LIST /x.
+AGGREGATE OUTFILE=* /BREAK=x /x=N.
+AGGREGATE OUTFILE=* MODE=ADDVARIABLES /x=N.
+AGGREGATE OUTFILE=* MODE=ADDVARIABLES /y=N /y=N.
 ])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"aggregate.sps:2.31: error: AGGREGATE: Variable name x duplicates the name of a break variable.
+    2 | AGGREGATE OUTFILE=* /BREAK=x /x=N.
+      |                               ^"
 
+"aggregate.sps:3.40: error: AGGREGATE: Variable name x duplicates the name of a variable in the active file dictionary.
+    3 | AGGREGATE OUTFILE=* MODE=ADDVARIABLES /x=N.
+      |                                        ^"
+
+"aggregate.sps:4.45: error: AGGREGATE: Duplicate target variable name y.
+    4 | AGGREGATE OUTFILE=* MODE=ADDVARIABLES /y=N /y=N.
+      |                                             ^"
+])
+AT_CLEANUP
+
+AT_SETUP([AGGREGATE presorted warnings])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='aggregate.sps' ERROR=IGNORE.
+])
+AT_DATA([aggregate.sps], [dnl
+DATA LIST NOTABLE LIST /x.
+AGGREGATE/PRESORTED/BREAK=x(A).
+AGGREGATE/BREAK=x(A).
+AGGREGATE/OUTFILE=* MODE=ADDVARIABLES/BREAK=x(A).
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"aggregate.sps:2.27-2.30: warning: AGGREGATE: When the input data is presorted, specifying sorting directions with (A) or (D) has no effect.  Output data will be sorted the same way as the input data.
+    2 | AGGREGATE/PRESORTED/BREAK=x(A).
+      |                           ^~~~"
+
+"aggregate.sps:2.11-2.19: note: AGGREGATE: The PRESORTED subcommand state that the input data is presorted.
+    2 | AGGREGATE/PRESORTED/BREAK=x(A).
+      |           ^~~~~~~~~"
+
+"aggregate.sps:2.31: error: AGGREGATE: Syntax error expecting `/'.
+    2 | AGGREGATE/PRESORTED/BREAK=x(A).
+      |                               ^"
+
+"aggregate.sps:3.17-3.20: warning: AGGREGATE: When the input data is presorted, specifying sorting directions with (A) or (D) has no effect.  Output data will be sorted the same way as the input data.
+    3 | AGGREGATE/BREAK=x(A).
+      |                 ^~~~"
+
+aggregate.sps:3: note: AGGREGATE: The input data must be presorted because the OUTFILE subcommand is not specified.
+
+"aggregate.sps:3.21: error: AGGREGATE: Syntax error expecting `/'.
+    3 | AGGREGATE/BREAK=x(A).
+      |                     ^"
+
+"aggregate.sps:4.45-4.48: warning: AGGREGATE: When the input data is presorted, specifying sorting directions with (A) or (D) has no effect.  Output data will be sorted the same way as the input data.
+    4 | AGGREGATE/OUTFILE=* MODE=ADDVARIABLES/BREAK=x(A).
+      |                                             ^~~~"
+
+"aggregate.sps:4.26-4.37: note: AGGREGATE: ADDVARIABLES implies that the input data is presorted.
+    4 | AGGREGATE/OUTFILE=* MODE=ADDVARIABLES/BREAK=x(A).
+      |                          ^~~~~~~~~~~~"
+
+"aggregate.sps:4.49: error: AGGREGATE: Syntax error expecting `/'.
+    4 | AGGREGATE/OUTFILE=* MODE=ADDVARIABLES/BREAK=x(A).
+      |                                                 ^"
+])
+AT_CLEANUP
+
+AT_SETUP([AGGREGATE - subcommand syntax errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='aggregate.sps' ERROR=IGNORE.
+])
+AT_DATA([aggregate.sps], [dnl
+DATA LIST NOTABLE LIST /x.
+AGGREGATE OUTFILE=**.
+AGGREGATE OUTFILE=* MODE=**.
+AGGREGATE /MISSING=**.
+AGGREGATE /BREAK=**.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"aggregate.sps:2.19-2.20: error: AGGREGATE: Syntax error expecting a file name or handle name.
+    2 | AGGREGATE OUTFILE=**.
+      |                   ^~"
+
+"aggregate.sps:3.26-3.27: error: AGGREGATE: Syntax error expecting ADDVARIABLES or REPLACE.
+    3 | AGGREGATE OUTFILE=* MODE=**.
+      |                          ^~"
+
+"aggregate.sps:4.20-4.21: error: AGGREGATE: Syntax error expecting COLUMNWISE.
+    4 | AGGREGATE /MISSING=**.
+      |                    ^~"
+
+"aggregate.sps:5.18-5.19: error: AGGREGATE: Syntax error expecting variable name.
+    5 | AGGREGATE /BREAK=**.
+      |                  ^~"
+])
+AT_CLEANUP
+
+AT_SETUP([AGGREGATE - aggregation function syntax errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='aggregate.sps' ERROR=IGNORE.
+])
+AT_DATA([aggregate.sps], [dnl
+DATA LIST NOTABLE LIST /x (f8.2) s (a8).
+AGGREGATE **.
+AGGREGATE / **.
+AGGREGATE /y.
+AGGREGATE /y=**.
+AGGREGATE /y=xyzzy.
+AGGREGATE /y=mean.
+AGGREGATE /y=mean(**).
+AGGREGATE /y=fgt(x **).
+AGGREGATE /y=fgt(x 'xyzzy').
+AGGREGATE /y=fgt(s 1).
+AGGREGATE /y=fgt(s x).
+AGGREGATE /y=sum(s).
+AGGREGATE /y=sum(x. /* )
+AGGREGATE /y=min(x, s).
+AGGREGATE /y t=min(x).
+AGGREGATE /y=pin(x, 2, 1).
+AGGREGATE /y=mean(x)**.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"aggregate.sps:2.11-2.12: error: AGGREGATE: Syntax error expecting `/'.
+    2 | AGGREGATE **.
+      |           ^~"
+
+"aggregate.sps:3.13-3.14: error: AGGREGATE: Syntax error expecting variable name.
+    3 | AGGREGATE / **.
+      |             ^~"
+
+"aggregate.sps:4.13: error: AGGREGATE: Syntax error expecting variable name.
+    4 | AGGREGATE /y.
+      |             ^"
+
+"aggregate.sps:5.14-5.15: error: AGGREGATE: Syntax error expecting aggregation function.
+    5 | AGGREGATE /y=**.
+      |              ^~"
+
+"aggregate.sps:6.14-6.18: error: AGGREGATE: Unknown aggregation function xyzzy.
+    6 | AGGREGATE /y=xyzzy.
+      |              ^~~~~"
+
+"aggregate.sps:7.18: error: AGGREGATE: Syntax error expecting `('.
+    7 | AGGREGATE /y=mean.
+      |                  ^"
+
+"aggregate.sps:8.19-8.20: error: AGGREGATE: Syntax error expecting variable name.
+    8 | AGGREGATE /y=mean(**).
+      |                   ^~"
+
+"aggregate.sps:9.20-9.21: error: AGGREGATE: Missing argument 1 to FGT.
+    9 | AGGREGATE /y=fgt(x **).
+      |                    ^~"
+
+aggregate.sps:10: error: AGGREGATE: Arguments to FGT must be of same type as source variables.
+
+"aggregate.sps:10.20-10.26: note: AGGREGATE: The argument is a string.
+   10 | AGGREGATE /y=fgt(x 'xyzzy').
+      |                    ^~~~~~~"
+
+"aggregate.sps:10.18: note: AGGREGATE: The variables are numeric.
+   10 | AGGREGATE /y=fgt(x 'xyzzy').
+      |                  ^"
+
+aggregate.sps:11: error: AGGREGATE: Arguments to FGT must be of same type as source variables.
+
+"aggregate.sps:11.20: note: AGGREGATE: The argument is numeric.
+   11 | AGGREGATE /y=fgt(s 1).
+      |                    ^"
+
+"aggregate.sps:11.18: note: AGGREGATE: The variables have string type.
+   11 | AGGREGATE /y=fgt(s 1).
+      |                  ^"
+
+"aggregate.sps:12.20: error: AGGREGATE: s and x are not the same type.  All variables in this variable list must be of the same type.  x will be omitted from the list.
+   12 | AGGREGATE /y=fgt(s x).
+      |                    ^"
+
+"aggregate.sps:12.21: error: AGGREGATE: Missing argument 1 to FGT.
+   12 | AGGREGATE /y=fgt(s x).
+      |                     ^"
+
+"aggregate.sps:13.18: warning: AGGREGATE: s is not a numeric variable.  It will not be included in the variable list.
+   13 | AGGREGATE /y=sum(s).
+      |                  ^"
+
+"aggregate.sps:14.19: error: AGGREGATE: Syntax error expecting `)'.
+   14 | AGGREGATE /y=sum(x. /* )
+      |                   ^"
+
+aggregate.sps:15: error: AGGREGATE: Number of source variables (2) does not match number of target variables (1).
+
+"aggregate.sps:15.18-15.21: note: AGGREGATE: These are the source variables.
+   15 | AGGREGATE /y=min(x, s).
+      |                  ^~~~"
+
+"aggregate.sps:15.12: note: AGGREGATE: These are the target variables.
+   15 | AGGREGATE /y=min(x, s).
+      |            ^"
+
+aggregate.sps:16: error: AGGREGATE: Number of source variables (1) does not match number of target variables (2).
+
+"aggregate.sps:16.20: note: AGGREGATE: These are the source variables.
+   16 | AGGREGATE /y t=min(x).
+      |                    ^"
+
+"aggregate.sps:16.12-16.14: note: AGGREGATE: These are the target variables.
+   16 | AGGREGATE /y t=min(x).
+      |            ^~~"
+
+"aggregate.sps:17.21-17.24: warning: AGGREGATE: The value arguments passed to the PIN function are out of order.  They will be treated as if they had been specified in the correct order.
+   17 | AGGREGATE /y=pin(x, 2, 1).
+      |                     ^~~~"
+
+"aggregate.sps:18.1-18.9: error: AGGREGATE: Syntax error expecting BEGIN.
+   18 | AGGREGATE /y=mean(x)**.
+      | ^~~~~~~~~"
+
+"aggregate.sps:18.1-18.9: error: AGGREGATE: Syntax error expecting end of command.
+   18 | AGGREGATE /y=mean(x)**.
+      | ^~~~~~~~~"
+])
 AT_CLEANUP

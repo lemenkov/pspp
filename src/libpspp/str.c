@@ -839,6 +839,15 @@ ss_compare (struct substring a, struct substring b)
   return retval;
 }
 
+/* Compares A to B and returns a strcmp()-type comparison result.  The shorter
+   string is considered to be padded with spaces to the length of the
+   longer. */
+int
+ss_compare_rpad (struct substring a, struct substring b)
+{
+  return buf_compare_rpad (a.string, a.length, b.string, b.length);
+}
+
 /* Compares A and B case-insensitively and returns a
    strcmp()-type comparison result. */
 int

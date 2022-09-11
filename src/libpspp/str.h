@@ -140,6 +140,7 @@ size_t ss_cspan (struct substring, struct substring stop_set);
 size_t ss_find_byte (struct substring, char);
 size_t ss_find_substring (struct substring, struct substring);
 int ss_compare (struct substring, struct substring);
+int ss_compare_rpad (struct substring, struct substring);
 int ss_compare_case (struct substring, struct substring);
 int ss_equals (struct substring, struct substring);
 int ss_equals_case (struct substring, struct substring);

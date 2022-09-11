@@ -168,7 +168,7 @@ refresh (PsppireDialogAction *fd_)
   gtk_entry_set_text (GTK_ENTRY (agg->summary_var_name_entry), "N_BREAK");
   gtk_editable_select_region (GTK_EDITABLE (agg->summary_var_name_entry), 0, -1);
 
-  gtk_combo_box_set_active (GTK_COMBO_BOX (agg->function_combo), N);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (agg->function_combo), AGRF_N);
 
   gtk_list_store_clear (PSPPIRE_ACR (agg->summary_acr)->list_store);
 
