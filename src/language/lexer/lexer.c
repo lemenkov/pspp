@@ -1923,6 +1923,12 @@ lex_source__ (const struct lexer *lexer)
           : ll_data (ll_head (&lexer->sources), struct lex_source, ll));
 }
 
+const struct lex_source *
+lex_source (const struct lexer *lexer)
+{
+  return lex_source__ (lexer);
+}
+
 /* Returns the text of the syntax in SRC for tokens with offsets OFS0 through
    OFS1 in the current command, inclusive.  (For example, if OFS0 and OFS1 are
    both zero, this requests the syntax for the first token in the current

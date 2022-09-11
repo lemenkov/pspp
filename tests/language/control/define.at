@@ -1790,8 +1790,10 @@ x'123'
 !ENDDEFINE.
 ])
 AT_CHECK([pspp define.sps], [1], [dnl
-define.sps:3: error: DEFINE: String of hex digits has 3 characters, which is
-not a multiple of 2.
+define.sps:2.1-2.6: error: DEFINE: String of hex digits has 3 characters, which
+is not a multiple of 2.
+    2 | x'123'
+      | ^~~~~~
 ])
 AT_CLEANUP
 

@@ -57,9 +57,6 @@ void macro_tokens_uninit (struct macro_tokens *);
 struct macro_token *macro_tokens_add_uninit (struct macro_tokens *);
 void macro_tokens_add (struct macro_tokens *, const struct macro_token *);
 
-void macro_tokens_from_string (struct macro_tokens *, const struct substring,
-                               enum segmenter_mode);
-
 void macro_tokens_to_syntax (struct macro_tokens *, struct string *,
                              size_t *ofs, size_t *len);
 

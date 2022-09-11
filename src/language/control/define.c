@@ -89,6 +89,78 @@ dup_arg_type (struct lexer *lexer, bool *saw_arg_type)
     }
 }
 
+static bool
+parse_macro_body (struct lexer *lexer, struct macro_tokens *mts)
+{
+  *mts = (struct macro_tokens) { .n = 0 };
+  struct string body = DS_EMPTY_INITIALIZER;
+  struct msg_point start = lex_ofs_start_point (lexer, lex_ofs (lexer));
+  while (!match_macro_id (lexer, "!ENDDEFINE"))
+    {
+      if (lex_token (lexer) != T_STRING)
+        {
+          lex_error (lexer,
+                     _("Syntax error expecting macro body or !ENDDEFINE."));
+          ds_destroy (&body);
+          return false;
+        }
+
+      ds_put_substring (&body, lex_tokss (lexer));
+      ds_put_byte (&body, '\n');
+      lex_get (lexer);
+    }
+
+  struct segmenter segmenter = segmenter_init (lex_get_syntax_mode (lexer),
+                                               true);
+  struct substring p = body.ss;
+  bool ok = true;
+  while (p.length > 0)
+    {
+      enum segment_type type;
+      int seg_len = segmenter_push (&segmenter, p.string,
+                                    p.length, true, &type);
+      assert (seg_len >= 0);
+
+      struct macro_token mt = {
+        .token = { .type = T_STOP },
+        .syntax = ss_head (p, seg_len),
+      };
+      enum tokenize_result result
+        = token_from_segment (type, mt.syntax, &mt.token);
+      ss_advance (&p, seg_len);
+
+      switch (result)
+        {
+        case TOKENIZE_EMPTY:
+          break;
+
+        case TOKENIZE_TOKEN:
+          macro_tokens_add (mts, &mt);
+          break;
+
+        case TOKENIZE_ERROR:
+          size_t start_offset = mt.syntax.string - body.ss.string;
+          size_t end_offset = start_offset + (mt.syntax.length ? mt.syntax.length - 1 : 0);
+
+          const struct msg_location loc = {
+            .file_name = intern_new_if_nonnull (lex_get_file_name (lexer)),
+            .start = msg_point_advance (start, ss_buffer (body.ss.string, start_offset)),
+            .end = msg_point_advance (start, ss_buffer (body.ss.string, end_offset)),
+            .src = CONST_CAST (struct lex_source *, lex_source (lexer)),
+          };
+          msg_at (SE, &loc, "%s", mt.token.string.string);
+          intern_unref (loc.file_name);
+
+          ok = false;
+          break;
+        }
+
+      token_uninit (&mt.token);
+    }
+  ds_destroy (&body);
+  return ok;
+}
+
 int
 cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
 {
@@ -270,21 +342,8 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
         goto error;
     }
 
-  struct string body = DS_EMPTY_INITIALIZER;
-  while (!match_macro_id (lexer, "!ENDDEFINE"))
-    {
-      if (lex_token (lexer) != T_STRING)
-        {
-          lex_error (lexer,
-                     _("Syntax error expecting macro body or !ENDDEFINE."));
-          ds_destroy (&body);
-          goto error;
-        }
-
-      ds_put_substring (&body, lex_tokss (lexer));
-      ds_put_byte (&body, '\n');
-      lex_get (lexer);
-    }
+  if (!parse_macro_body (lexer, &m->body))
+    goto error;
 
   struct msg_point macro_end = lex_ofs_end_point (lexer, lex_ofs (lexer) - 1);
   m->location = xmalloc (sizeof *m->location);
@@ -293,9 +352,6 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
     .start = { .line = macro_start.line },
     .end = { .line = macro_end.line },
   };
-
-  macro_tokens_from_string (&m->body, body.ss, lex_get_syntax_mode (lexer));
-  ds_destroy (&body);
 
   lex_define_macro (lexer, m);
 

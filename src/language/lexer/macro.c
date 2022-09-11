@@ -220,12 +220,12 @@ macro_tokens_add (struct macro_tokens *mts, const struct macro_token *mt)
   macro_token_copy (macro_tokens_add_uninit (mts), mt);
 }
 
-/* Tokenizes SRC according to MODE and appends the tokens to MTS.  Uses STACK,
-   if nonull, for error reporting. */
+/* Tokenizes SRC according to MODE and appends the tokens to MTS, using STACK
+   for error reporting. */
 static void
-macro_tokens_from_string__ (struct macro_tokens *mts, const struct substring src,
-                            enum segmenter_mode mode,
-                            const struct macro_expansion_stack *stack)
+macro_tokens_from_string (struct macro_tokens *mts, const struct substring src,
+                          enum segmenter_mode mode,
+                          const struct macro_expansion_stack *stack)
 {
   struct segmenter segmenter = segmenter_init (mode, true);
   struct substring body = src;
@@ -265,14 +265,6 @@ macro_tokens_from_string__ (struct macro_tokens *mts, const struct substring src
 
       token_uninit (token);
     }
-}
-
-/* Tokenizes SRC according to MODE and appends the tokens to MTS. */
-void
-macro_tokens_from_string (struct macro_tokens *mts, const struct substring src,
-                          enum segmenter_mode mode)
-{
-  macro_tokens_from_string__ (mts, src, mode, NULL);
 }
 
 void
@@ -1204,8 +1196,8 @@ expand_macro_function (const struct macro_expander *me,
                                                  me->segmenter_mode, &tmp);
 
         struct macro_tokens mts = { .n = 0 };
-        macro_tokens_from_string__ (&mts, ss_cstr (s), me->segmenter_mode,
-                                    me->stack);
+        macro_tokens_from_string (&mts, ss_cstr (s), me->segmenter_mode,
+                                  me->stack);
         if (mts.n > 0)
           ds_put_substring (output, mts.mts[0].syntax);
         macro_tokens_uninit (&mts);
@@ -1274,8 +1266,8 @@ expand_macro_function (const struct macro_expander *me,
                                                  me->segmenter_mode, &tmp);
 
         struct macro_tokens mts = { .n = 0 };
-        macro_tokens_from_string__ (&mts, ss_cstr (s), me->segmenter_mode,
-                                    me->stack);
+        macro_tokens_from_string (&mts, ss_cstr (s), me->segmenter_mode,
+                                  me->stack);
         if (mts.n > 1)
           {
             struct macro_tokens tail = { .mts = mts.mts + 1, .n = mts.n - 1 };
@@ -1306,8 +1298,8 @@ expand_macro_function (const struct macro_expander *me,
     case MF_EVAL:
       {
         struct macro_tokens mts = { .n = 0 };
-        macro_tokens_from_string__ (&mts, ss_cstr (args.strings[0]),
-                                    me->segmenter_mode, me->stack);
+        macro_tokens_from_string (&mts, ss_cstr (args.strings[0]),
+                                  me->segmenter_mode, me->stack);
         struct macro_tokens exp = { .n = 0 };
         struct macro_expansion_stack stack = {
           .name = "!EVAL",
@@ -1575,7 +1567,7 @@ macro_evaluate_number (const struct macro_token **tokens, size_t n_tokens,
     return false;
 
   struct macro_tokens mts = { .n = 0 };
-  macro_tokens_from_string__ (&mts, ss_cstr (s), me->segmenter_mode, me->stack);
+  macro_tokens_from_string (&mts, ss_cstr (s), me->segmenter_mode, me->stack);
   if (mts.n != 1 || !token_is_number (&mts.mts[0].token))
     {
       macro_error (me->stack, mts.n > 0 ? &mts.mts[0] : NULL,
@@ -1817,8 +1809,8 @@ macro_expand_do (const struct macro_token *tokens, size_t n_tokens,
         return 0;
 
       struct macro_tokens items = { .n = 0 };
-      macro_tokens_from_string__ (&items, ss_cstr (list), me->segmenter_mode,
-                                  me->stack);
+      macro_tokens_from_string (&items, ss_cstr (list), me->segmenter_mode,
+                                me->stack);
       free (list);
 
       const struct macro_token *do_end = find_doend (subme.stack, p, end);
@@ -1984,8 +1976,8 @@ macro_expand_arg (const struct token *token, const struct macro_expander *me,
                                         token->string.length);
   if (var)
     {
-      macro_tokens_from_string__ (exp, ss_cstr (var),
-                                  me->segmenter_mode, me->stack);
+      macro_tokens_from_string (exp, ss_cstr (var),
+                                me->segmenter_mode, me->stack);
       return true;
     }
 
@@ -2055,8 +2047,8 @@ macro_expand__ (const struct macro_token *mts, size_t n,
   size_t n_function = expand_macro_function (me, mts, n, &function_output);
   if (n_function)
     {
-      macro_tokens_from_string__ (exp, function_output.ss,
-                                  me->segmenter_mode, me->stack);
+      macro_tokens_from_string (exp, function_output.ss,
+                                me->segmenter_mode, me->stack);
       ds_destroy (&function_output);
 
       return n_function;

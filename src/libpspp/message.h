@@ -23,6 +23,7 @@
 #include "libpspp/compiler.h"
 
 struct string;
+struct substring;
 
 /* What kind of message is this? */
 enum msg_category
@@ -84,6 +85,8 @@ struct msg_point
     int line;
     int column;
   };
+
+struct msg_point msg_point_advance (struct msg_point, struct substring);
 
 /* Location of the cause of an error. */
 struct msg_location

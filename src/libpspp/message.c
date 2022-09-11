@@ -112,6 +112,28 @@ msg_set_handler (const struct msg_handler *handler)
   msg_handler = *handler;
 }
 
+/* msg_point. */
+
+/* Takes POINT, adds to it the syntax in SYNTAX, incrementing the line number
+   for each new-line in SYNTAX and the column number for each column, and
+   returns the result. */
+struct msg_point
+msg_point_advance (struct msg_point point, struct substring syntax)
+{
+  for (;;)
+    {
+      size_t newline = ss_find_byte (syntax, '\n');
+      if (newline == SIZE_MAX)
+        break;
+      point.line++;
+      point.column = 1;
+      ss_advance (&syntax, newline + 1);
+    }
+
+  point.column += ss_utf8_count_columns (syntax);
+  return point;
+}
+
 /* msg_location. */
 
 void

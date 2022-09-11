@@ -174,6 +174,7 @@ bool lex_next_is_from_macro (const struct lexer *, int n);
 const char *lex_get_file_name (const struct lexer *);
 struct msg_location *lex_get_location (const struct lexer *, int n0, int n1);
 const char *lex_get_encoding (const struct lexer *);
+const struct lex_source *lex_source (const struct lexer *);
 
 /* Issuing errors and warnings. */
 void lex_error (struct lexer *, const char *, ...) PRINTF_FORMAT (2, 3);
