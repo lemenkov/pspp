@@ -67,8 +67,6 @@ union agr_argument
 /* Specifies how to make an aggregate variable. */
 struct agr_var
   {
-    struct agr_var *next;		/* Next in list. */
-
     /* Collected during parsing. */
     const struct variable *src;	/* Source variable. */
     struct variable *dest;	/* Target variable. */
@@ -132,7 +130,8 @@ struct agr_proc
     size_t break_n_vars;                /* Number of break variables. */
 
     enum missing_treatment missing;     /* How to treat missing values. */
-    struct agr_var *agr_vars;           /* First aggregate variable. */
+    struct agr_var *agr_vars;           /* Aggregate variables. */
+    size_t n_agr_vars;
     struct dictionary *dict;            /* Aggregate dictionary. */
     const struct dictionary *src_dict;  /* Dict of the source */
     int n_cases;                        /* Counts aggregated cases. */
@@ -382,10 +381,9 @@ static bool
 parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 			   struct agr_proc *agr)
 {
-  struct agr_var *tail; /* Tail of linked list starting at agr->vars. */
+  size_t allocated_agr_vars = 0;
 
   /* Parse everything. */
-  tail = NULL;
   for (;;)
     {
       char **dest;
@@ -582,16 +580,15 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
          variables. */
       for (i = 0; i < n_dest; i++)
 	{
-	  struct agr_var *v = XZALLOC (struct agr_var);
-
-	  /* Add variable to chain. */
-	  if (agr->agr_vars != NULL)
-	    tail->next = v;
-	  else
-	    agr->agr_vars = v;
-          tail = v;
-	  tail->next = NULL;
-          v->moments = NULL;
+          if (agr->n_agr_vars >= allocated_agr_vars)
+            agr->agr_vars = x2nrealloc (agr->agr_vars, &allocated_agr_vars,
+                                        sizeof *agr->agr_vars);
+	  struct agr_var *v = &agr->agr_vars[agr->n_agr_vars++];
+          *v = (struct agr_var) {
+            .moments = NULL,
+            .src = src ? src[i] : NULL,
+            .exclude = exclude,
+          };
 
 	  /* Create the target variable in the aggregate
              dictionary. */
@@ -602,8 +599,6 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 
 	    if (src)
 	      {
-		v->src = src[i];
-
 		if (var_is_alpha (src[i]))
 		  {
 		    v->function |= FSTRING;
@@ -630,7 +625,6 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
                   }
 	      } else {
                 struct fmt_spec f;
-		v->src = NULL;
 		destvar = dict_create_var (agr->dict, dest[i], 0);
 		if (destvar != NULL)
 		  {
@@ -659,8 +653,6 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 
 	    v->dest = destvar;
 	  }
-
-	  v->exclude = exclude;
 
 	  if (v->src != NULL)
 	    {
@@ -723,32 +715,26 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 static void
 agr_destroy (struct agr_proc *agr)
 {
-  struct agr_var *iter, *next;
-
   subcase_uninit (&agr->sort);
   free (agr->break_vars);
-  for (iter = agr->agr_vars; iter; iter = next)
+  for (size_t i = 0; i < agr->n_agr_vars; i++)
     {
-      next = iter->next;
+      struct agr_var *av = &agr->agr_vars[i];
 
-      if (iter->function & FSTRING)
+      if (av->function & FSTRING)
 	{
-	  size_t n_args;
-	  size_t i;
-
-	  n_args = agr_func_tab[iter->function & FUNC].n_args;
-	  for (i = 0; i < n_args; i++)
-	    free (iter->arg[i].c);
-	  free (iter->string);
+	  size_t n_args = agr_func_tab[av->function & FUNC].n_args;
+	  for (size_t i = 0; i < n_args; i++)
+	    free (av->arg[i].c);
+	  free (av->string);
 	}
-      else if (iter->function == SD)
-        moments1_destroy (iter->moments);
+      else if (av->function == SD)
+        moments1_destroy (av->moments);
 
-      dict_destroy_internal_var (iter->subject);
-      dict_destroy_internal_var (iter->weight);
-
-      free (iter);
+      dict_destroy_internal_var (av->subject);
+      dict_destroy_internal_var (av->weight);
     }
+  free (agr->agr_vars);
   if (agr->dict != NULL)
     dict_unref (agr->dict);
 }
@@ -759,188 +745,192 @@ agr_destroy (struct agr_proc *agr)
 static void
 accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 {
-  struct agr_var *iter;
   double weight;
   bool bad_warn = true;
 
   weight = dict_get_case_weight (agr->src_dict, input, &bad_warn);
 
-  for (iter = agr->agr_vars; iter; iter = iter->next)
-    if (iter->src)
-      {
-	const union value *v = case_data (input, iter->src);
-        int src_width = var_get_width (iter->src);
+  for (size_t i = 0; i < agr->n_agr_vars; i++)
+    {
+      struct agr_var *av = &agr->agr_vars[i];
+      if (av->src)
+        {
+          const union value *v = case_data (input, av->src);
+          int src_width = var_get_width (av->src);
 
-        if (var_is_value_missing (iter->src, v) & iter->exclude)
-	  {
-	    switch (iter->function)
-	      {
-	      case NMISS:
-	      case NMISS | FSTRING:
-		iter->dbl[0] += weight;
-                break;
-	      case NUMISS:
-	      case NUMISS | FSTRING:
-		iter->int1++;
-		break;
-	      }
-	    iter->saw_missing = true;
-	    continue;
-	  }
+          if (var_is_value_missing (av->src, v) & av->exclude)
+            {
+              switch (av->function)
+                {
+                case NMISS:
+                case NMISS | FSTRING:
+                  av->dbl[0] += weight;
+                  break;
+                case NUMISS:
+                case NUMISS | FSTRING:
+                  av->int1++;
+                  break;
+                }
+              av->saw_missing = true;
+              continue;
+            }
 
-	/* This is horrible.  There are too many possibilities. */
-	switch (iter->function)
-	  {
-	  case SUM:
-	    iter->dbl[0] += v->f * weight;
-            iter->int1 = 1;
-	    break;
-	  case MEAN:
-            iter->dbl[0] += v->f * weight;
-            iter->dbl[1] += weight;
-            break;
-	  case MEDIAN:
-	    {
-	      double wv ;
-	      struct ccase *cout;
+          /* This is horrible.  There are too many possibilities. */
+          switch (av->function)
+            {
+            case SUM:
+              av->dbl[0] += v->f * weight;
+              av->int1 = 1;
+              break;
+            case MEAN:
+              av->dbl[0] += v->f * weight;
+              av->dbl[1] += weight;
+              break;
+            case MEDIAN:
+              {
+                double wv ;
+                struct ccase *cout;
 
-              cout = case_create (casewriter_get_proto (iter->writer));
+                cout = case_create (casewriter_get_proto (av->writer));
 
-	      *case_num_rw (cout, iter->subject) = case_num (input, iter->src);
+                *case_num_rw (cout, av->subject) = case_num (input, av->src);
 
-	      wv = dict_get_case_weight (agr->src_dict, input, NULL);
+                wv = dict_get_case_weight (agr->src_dict, input, NULL);
 
-	      *case_num_rw (cout, iter->weight) = wv;
+                *case_num_rw (cout, av->weight) = wv;
 
-	      iter->cc += wv;
+                av->cc += wv;
 
-	      casewriter_write (iter->writer, cout);
-	    }
-	    break;
-	  case SD:
-            moments1_add (iter->moments, v->f, weight);
-            break;
-	  case MAX:
-	    iter->dbl[0] = MAX (iter->dbl[0], v->f);
-	    iter->int1 = 1;
-	    break;
-	  case MAX | FSTRING:
-            /* Need to do some kind of Unicode collation thingy here */
-	    if (memcmp (iter->string, v->s, src_width) < 0)
-	      memcpy (iter->string, v->s, src_width);
-	    iter->int1 = 1;
-	    break;
-	  case MIN:
-	    iter->dbl[0] = MIN (iter->dbl[0], v->f);
-	    iter->int1 = 1;
-	    break;
-	  case MIN | FSTRING:
-	    if (memcmp (iter->string, v->s, src_width) > 0)
-	      memcpy (iter->string, v->s, src_width);
-	    iter->int1 = 1;
-	    break;
-	  case FGT:
-	  case PGT:
-            if (v->f > iter->arg[0].f)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FGT | FSTRING:
-	  case PGT | FSTRING:
-            if (memcmp (iter->arg[0].c, v->s, src_width) < 0)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FLT:
-	  case PLT:
-            if (v->f < iter->arg[0].f)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FLT | FSTRING:
-	  case PLT | FSTRING:
-            if (memcmp (iter->arg[0].c, v->s, src_width) > 0)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FIN:
-	  case PIN:
-            if (iter->arg[0].f <= v->f && v->f <= iter->arg[1].f)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FIN | FSTRING:
-	  case PIN | FSTRING:
-            if (memcmp (iter->arg[0].c, v->s, src_width) <= 0
-                && memcmp (iter->arg[1].c, v->s, src_width) >= 0)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FOUT:
-	  case POUT:
-            if (iter->arg[0].f > v->f || v->f > iter->arg[1].f)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case FOUT | FSTRING:
-	  case POUT | FSTRING:
-            if (memcmp (iter->arg[0].c, v->s, src_width) > 0
-                || memcmp (iter->arg[1].c, v->s, src_width) < 0)
-              iter->dbl[0] += weight;
-            iter->dbl[1] += weight;
-            break;
-	  case N:
-	  case N | FSTRING:
-	    iter->dbl[0] += weight;
-	    break;
-	  case NU:
-	  case NU | FSTRING:
-	    iter->int1++;
-	    break;
-	  case FIRST:
-	    if (iter->int1 == 0)
-	      {
-		iter->dbl[0] = v->f;
-		iter->int1 = 1;
-	      }
-	    break;
-	  case FIRST | FSTRING:
-	    if (iter->int1 == 0)
-	      {
-		memcpy (iter->string, v->s, src_width);
-		iter->int1 = 1;
-	      }
-	    break;
-	  case LAST:
-	    iter->dbl[0] = v->f;
-	    iter->int1 = 1;
-	    break;
-	  case LAST | FSTRING:
-	    memcpy (iter->string, v->s, src_width);
-	    iter->int1 = 1;
-	    break;
-          case NMISS:
-          case NMISS | FSTRING:
-          case NUMISS:
-          case NUMISS | FSTRING:
-            /* Our value is not missing or it would have been
-               caught earlier.  Nothing to do. */
-            break;
-	  default:
-	    NOT_REACHED ();
-	  }
-      } else {
-      switch (iter->function)
-	{
-	case N:
-	  iter->dbl[0] += weight;
-	  break;
-	case NU:
-	  iter->int1++;
-	  break;
-	default:
-	  NOT_REACHED ();
-	}
+                casewriter_write (av->writer, cout);
+              }
+              break;
+            case SD:
+              moments1_add (av->moments, v->f, weight);
+              break;
+            case MAX:
+              av->dbl[0] = MAX (av->dbl[0], v->f);
+              av->int1 = 1;
+              break;
+            case MAX | FSTRING:
+              /* Need to do some kind of Unicode collation thingy here */
+              if (memcmp (av->string, v->s, src_width) < 0)
+                memcpy (av->string, v->s, src_width);
+              av->int1 = 1;
+              break;
+            case MIN:
+              av->dbl[0] = MIN (av->dbl[0], v->f);
+              av->int1 = 1;
+              break;
+            case MIN | FSTRING:
+              if (memcmp (av->string, v->s, src_width) > 0)
+                memcpy (av->string, v->s, src_width);
+              av->int1 = 1;
+              break;
+            case FGT:
+            case PGT:
+              if (v->f > av->arg[0].f)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FGT | FSTRING:
+            case PGT | FSTRING:
+              if (memcmp (av->arg[0].c, v->s, src_width) < 0)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FLT:
+            case PLT:
+              if (v->f < av->arg[0].f)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FLT | FSTRING:
+            case PLT | FSTRING:
+              if (memcmp (av->arg[0].c, v->s, src_width) > 0)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FIN:
+            case PIN:
+              if (av->arg[0].f <= v->f && v->f <= av->arg[1].f)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FIN | FSTRING:
+            case PIN | FSTRING:
+              if (memcmp (av->arg[0].c, v->s, src_width) <= 0
+                  && memcmp (av->arg[1].c, v->s, src_width) >= 0)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FOUT:
+            case POUT:
+              if (av->arg[0].f > v->f || v->f > av->arg[1].f)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case FOUT | FSTRING:
+            case POUT | FSTRING:
+              if (memcmp (av->arg[0].c, v->s, src_width) > 0
+                  || memcmp (av->arg[1].c, v->s, src_width) < 0)
+                av->dbl[0] += weight;
+              av->dbl[1] += weight;
+              break;
+            case N:
+            case N | FSTRING:
+              av->dbl[0] += weight;
+              break;
+            case NU:
+            case NU | FSTRING:
+              av->int1++;
+              break;
+            case FIRST:
+              if (av->int1 == 0)
+                {
+                  av->dbl[0] = v->f;
+                  av->int1 = 1;
+                }
+              break;
+            case FIRST | FSTRING:
+              if (av->int1 == 0)
+                {
+                  memcpy (av->string, v->s, src_width);
+                  av->int1 = 1;
+                }
+              break;
+            case LAST:
+              av->dbl[0] = v->f;
+              av->int1 = 1;
+              break;
+            case LAST | FSTRING:
+              memcpy (av->string, v->s, src_width);
+              av->int1 = 1;
+              break;
+            case NMISS:
+            case NMISS | FSTRING:
+            case NUMISS:
+            case NUMISS | FSTRING:
+              /* Our value is not missing or it would have been
+                 caught earlier.  Nothing to do. */
+              break;
+            default:
+              NOT_REACHED ();
+            }
+        }
+      else
+        {
+          switch (av->function)
+            {
+            case N:
+              av->dbl[0] += weight;
+              break;
+            case NU:
+              av->int1++;
+              break;
+            default:
+              NOT_REACHED ();
+            }
+        }
     }
 }
 
@@ -969,127 +959,124 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 	}
     }
 
-  {
-    struct agr_var *i;
+  for (size_t i = 0; i < agr->n_agr_vars; i++)
+    {
+      struct agr_var *av = &agr->agr_vars[i];
+      union value *v = case_data_rw (c, av->dest);
+      int width = var_get_width (av->dest);
 
-    for (i = agr->agr_vars; i; i = i->next)
-      {
-	union value *v = case_data_rw (c, i->dest);
-        int width = var_get_width (i->dest);
+      if (agr->missing == COLUMNWISE && av->saw_missing
+          && (av->function & FUNC) != N && (av->function & FUNC) != NU
+          && (av->function & FUNC) != NMISS && (av->function & FUNC) != NUMISS)
+        {
+          value_set_missing (v, width);
+          casewriter_destroy (av->writer);
+          continue;
+        }
 
-	if (agr->missing == COLUMNWISE && i->saw_missing
-	    && (i->function & FUNC) != N && (i->function & FUNC) != NU
-	    && (i->function & FUNC) != NMISS && (i->function & FUNC) != NUMISS)
-	  {
+      switch (av->function)
+        {
+        case SUM:
+          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          break;
+        case MEAN:
+          v->f = av->dbl[1] != 0.0 ? av->dbl[0] / av->dbl[1] : SYSMIS;
+          break;
+        case MEDIAN:
+          {
+            if (av->writer)
+              {
+                struct percentile *median = percentile_create (0.5, av->cc);
+                struct order_stats *os = &median->parent;
+                struct casereader *sorted_reader = casewriter_make_reader (av->writer);
+                av->writer = NULL;
+
+                order_stats_accumulate (&os, 1,
+                                        sorted_reader,
+                                        av->weight,
+                                        av->subject,
+                                        av->exclude);
+                av->dbl[0] = percentile_calculate (median, PC_HAVERAGE);
+                statistic_destroy (&median->parent.parent);
+              }
+            v->f = av->dbl[0];
+          }
+          break;
+        case SD:
+          {
+            double variance;
+
+            /* FIXME: we should use two passes. */
+            moments1_calculate (av->moments, NULL, NULL, &variance,
+                                NULL, NULL);
+            if (variance != SYSMIS)
+              v->f = sqrt (variance);
+            else
+              v->f = SYSMIS;
+          }
+          break;
+        case MAX:
+        case MIN:
+          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          break;
+        case MAX | FSTRING:
+        case MIN | FSTRING:
+          if (av->int1)
+            memcpy (v->s, av->string, width);
+          else
             value_set_missing (v, width);
-	    casewriter_destroy (i->writer);
-	    continue;
-	  }
-
-	switch (i->function)
-	  {
-	  case SUM:
-	    v->f = i->int1 ? i->dbl[0] : SYSMIS;
-	    break;
-	  case MEAN:
-	    v->f = i->dbl[1] != 0.0 ? i->dbl[0] / i->dbl[1] : SYSMIS;
-	    break;
-	  case MEDIAN:
-	    {
-	      if (i->writer)
-		{
-		  struct percentile *median = percentile_create (0.5, i->cc);
-		  struct order_stats *os = &median->parent;
-		  struct casereader *sorted_reader = casewriter_make_reader (i->writer);
-		  i->writer = NULL;
-
-		  order_stats_accumulate (&os, 1,
-					  sorted_reader,
-					  i->weight,
-					  i->subject,
-					  i->exclude);
-		  i->dbl[0] = percentile_calculate (median, PC_HAVERAGE);
-		  statistic_destroy (&median->parent.parent);
-		}
-	      v->f = i->dbl[0];
-	    }
-	    break;
-	  case SD:
-            {
-              double variance;
-
-              /* FIXME: we should use two passes. */
-              moments1_calculate (i->moments, NULL, NULL, &variance,
-                                 NULL, NULL);
-              if (variance != SYSMIS)
-                v->f = sqrt (variance);
-              else
-                v->f = SYSMIS;
-            }
-	    break;
-	  case MAX:
-	  case MIN:
-	    v->f = i->int1 ? i->dbl[0] : SYSMIS;
-	    break;
-	  case MAX | FSTRING:
-	  case MIN | FSTRING:
-	    if (i->int1)
-	      memcpy (v->s, i->string, width);
-	    else
-              value_set_missing (v, width);
-	    break;
-	  case FGT:
-	  case FGT | FSTRING:
-	  case FLT:
-	  case FLT | FSTRING:
-	  case FIN:
-	  case FIN | FSTRING:
-	  case FOUT:
-	  case FOUT | FSTRING:
-	    v->f = i->dbl[1] ? i->dbl[0] / i->dbl[1] : SYSMIS;
-	    break;
-	  case PGT:
-	  case PGT | FSTRING:
-	  case PLT:
-	  case PLT | FSTRING:
-	  case PIN:
-	  case PIN | FSTRING:
-	  case POUT:
-	  case POUT | FSTRING:
-	    v->f = i->dbl[1] ? i->dbl[0] / i->dbl[1] * 100.0 : SYSMIS;
-	    break;
-	  case N:
-	  case N | FSTRING:
-	      v->f = i->dbl[0];
-            break;
-	  case NU:
-	  case NU | FSTRING:
-	    v->f = i->int1;
-	    break;
-	  case FIRST:
-	  case LAST:
-	    v->f = i->int1 ? i->dbl[0] : SYSMIS;
-	    break;
-	  case FIRST | FSTRING:
-	  case LAST | FSTRING:
-	    if (i->int1)
-	      memcpy (v->s, i->string, width);
-	    else
-              value_set_missing (v, width);
-	    break;
-	  case NMISS:
-	  case NMISS | FSTRING:
-	    v->f = i->dbl[0];
-	    break;
-	  case NUMISS:
-	  case NUMISS | FSTRING:
-	    v->f = i->int1;
-	    break;
-	  default:
-	    NOT_REACHED ();
-	  }
-      }
-  }
+          break;
+        case FGT:
+        case FGT | FSTRING:
+        case FLT:
+        case FLT | FSTRING:
+        case FIN:
+        case FIN | FSTRING:
+        case FOUT:
+        case FOUT | FSTRING:
+          v->f = av->dbl[1] ? av->dbl[0] / av->dbl[1] : SYSMIS;
+          break;
+        case PGT:
+        case PGT | FSTRING:
+        case PLT:
+        case PLT | FSTRING:
+        case PIN:
+        case PIN | FSTRING:
+        case POUT:
+        case POUT | FSTRING:
+          v->f = av->dbl[1] ? av->dbl[0] / av->dbl[1] * 100.0 : SYSMIS;
+          break;
+        case N:
+        case N | FSTRING:
+          v->f = av->dbl[0];
+          break;
+        case NU:
+        case NU | FSTRING:
+          v->f = av->int1;
+          break;
+        case FIRST:
+        case LAST:
+          v->f = av->int1 ? av->dbl[0] : SYSMIS;
+          break;
+        case FIRST | FSTRING:
+        case LAST | FSTRING:
+          if (av->int1)
+            memcpy (v->s, av->string, width);
+          else
+            value_set_missing (v, width);
+          break;
+        case NMISS:
+        case NMISS | FSTRING:
+          v->f = av->dbl[0];
+          break;
+        case NUMISS:
+        case NUMISS | FSTRING:
+          v->f = av->int1;
+          break;
+        default:
+          NOT_REACHED ();
+        }
+    }
 
   casewriter_write (output, c);
 }
@@ -1098,26 +1085,25 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 static void
 initialize_aggregate_info (struct agr_proc *agr)
 {
-  struct agr_var *iter;
-
-  for (iter = agr->agr_vars; iter; iter = iter->next)
+  for (size_t i = 0; i < agr->n_agr_vars; i++)
     {
-      iter->saw_missing = false;
-      iter->dbl[0] = iter->dbl[1] = iter->dbl[2] = 0.0;
-      iter->int1 = 0;
-      switch (iter->function)
+      struct agr_var *av = &agr->agr_vars[i];
+      av->saw_missing = false;
+      av->dbl[0] = av->dbl[1] = av->dbl[2] = 0.0;
+      av->int1 = 0;
+      switch (av->function)
 	{
 	case MIN:
-	  iter->dbl[0] = DBL_MAX;
+	  av->dbl[0] = DBL_MAX;
 	  break;
 	case MIN | FSTRING:
-	  memset (iter->string, 255, var_get_width (iter->src));
+	  memset (av->string, 255, var_get_width (av->src));
 	  break;
 	case MAX:
-	  iter->dbl[0] = -DBL_MAX;
+	  av->dbl[0] = -DBL_MAX;
 	  break;
 	case MAX | FSTRING:
-	  memset (iter->string, 0, var_get_width (iter->src));
+	  memset (av->string, 0, var_get_width (av->src));
 	  break;
 	case MEDIAN:
 	  {
@@ -1128,25 +1114,25 @@ initialize_aggregate_info (struct agr_proc *agr)
             proto = caseproto_add_width (proto, 0);
             proto = caseproto_add_width (proto, 0);
 
-	    if (! iter->subject)
-	      iter->subject = dict_create_internal_var (0, 0);
+	    if (! av->subject)
+	      av->subject = dict_create_internal_var (0, 0);
 
-	    if (! iter->weight)
-	      iter->weight = dict_create_internal_var (1, 0);
+	    if (! av->weight)
+	      av->weight = dict_create_internal_var (1, 0);
 
-            subcase_init_var (&ordering, iter->subject, SC_ASCEND);
-	    iter->writer = sort_create_writer (&ordering, proto);
+            subcase_init_var (&ordering, av->subject, SC_ASCEND);
+	    av->writer = sort_create_writer (&ordering, proto);
             subcase_uninit (&ordering);
             caseproto_unref (proto);
 
-	    iter->cc = 0;
+	    av->cc = 0;
 	  }
 	  break;
         case SD:
-          if (iter->moments == NULL)
-            iter->moments = moments1_create (MOMENT_VARIANCE);
+          if (av->moments == NULL)
+            av->moments = moments1_create (MOMENT_VARIANCE);
           else
-            moments1_clear (iter->moments);
+            moments1_clear (av->moments);
           break;
         default:
           break;
