@@ -382,7 +382,7 @@ pool_strdup (struct pool *pool, const char *string)
    strings, because the returned pointere may not be aligned
    properly for other types. */
 char *
-pool_strdup0 (struct pool *pool, const char *string, size_t size)
+pool_memdup0 (struct pool *pool, const char *string, size_t size)
 {
   char *new_string = pool_alloc_unaligned (pool, size + 1);
   memcpy (new_string, string, size);

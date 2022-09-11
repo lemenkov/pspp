@@ -37,8 +37,8 @@ token_copy (struct token *dst, const struct token *src)
   *dst = (struct token) {
     .type = src->type,
     .number = src->number,
+    .string = ss_clone (src->string),
   };
-  ss_alloc_substring (&dst->string, src->string);
 }
 
 /* Frees the string that TOKEN contains. */

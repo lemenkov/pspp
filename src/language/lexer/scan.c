@@ -334,8 +334,7 @@ token_from_segment (enum segment_type type, struct substring s,
     case SEG_DOCUMENT:
     case SEG_MACRO_BODY:
     case SEG_MACRO_NAME:
-      *token = (struct token) { .type = T_STRING };
-      ss_alloc_substring (&token->string, s);
+      *token = (struct token) { .type = T_STRING, .string = ss_clone (s) };
       return TOKENIZE_TOKEN;
 
     case SEG_RESERVED_WORD:
@@ -343,19 +342,17 @@ token_from_segment (enum segment_type type, struct substring s,
       return TOKENIZE_TOKEN;
 
     case SEG_IDENTIFIER:
-      *token = (struct token) { .type = T_ID };
-      ss_alloc_substring (&token->string, s);
+      *token = (struct token) { .type = T_ID, .string = ss_clone (s) };
       return TOKENIZE_TOKEN;
 
     case SEG_MACRO_ID:
-      *token = (struct token) { .type = T_MACRO_ID };
-      ss_alloc_substring (&token->string, s);
+      *token = (struct token) { .type = T_MACRO_ID, .string = ss_clone (s)};
       return TOKENIZE_TOKEN;
 
     case SEG_PUNCT:
       *token = (struct token) { .type = scan_punct__ (s) };
       if (token->type == T_MACRO_PUNCT)
-        ss_alloc_substring (&token->string, s);
+        token->string = ss_clone (s);
       return TOKENIZE_TOKEN;
 
     case SEG_SHBANG:
@@ -366,8 +363,10 @@ token_from_segment (enum segment_type type, struct substring s,
       return TOKENIZE_EMPTY;
 
     case SEG_START_DOCUMENT:
-      *token = (struct token) { .type = T_ID };
-      ss_alloc_substring (&token->string, ss_cstr ("DOCUMENT"));
+      *token = (struct token) {
+        .type = T_ID,
+        .string = ss_clone (ss_cstr ("DOCUMENT"))
+      };
       return TOKENIZE_TOKEN;
 
     case SEG_START_COMMAND:

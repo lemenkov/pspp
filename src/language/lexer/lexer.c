@@ -2596,9 +2596,7 @@ lex_reader_for_substring_nocopy (struct substring s, const char *encoding)
 struct lex_reader *
 lex_reader_for_string (const char *s, const char *encoding)
 {
-  struct substring ss;
-  ss_alloc_substring (&ss, ss_cstr (s));
-  return lex_reader_for_substring_nocopy (ss, encoding);
+  return lex_reader_for_substring_nocopy (ss_clone (ss_cstr (s)), encoding);
 }
 
 /* Formats FORMAT as a printf()-like format string and creates and returns a

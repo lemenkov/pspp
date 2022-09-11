@@ -84,25 +84,15 @@ struct data_parser *
 data_parser_create (void)
 {
   struct data_parser *parser = xmalloc (sizeof *parser);
-
-  parser->type = DP_FIXED;
-  parser->skip_records = 0;
-
-  parser->fields = NULL;
-  parser->n_fields = 0;
-  parser->field_allocated = 0;
-
-  parser->span = true;
-  parser->empty_line_has_field = false;
-  parser->warn_missing_fields = true;
-  ss_alloc_substring (&parser->quotes, ss_cstr ("\"'"));
-  parser->quote_escape = false;
-  ss_alloc_substring (&parser->soft_seps, ss_cstr (CC_SPACES));
-  ss_alloc_substring (&parser->hard_seps, ss_cstr (","));
-  ds_init_empty (&parser->any_sep);
+  *parser = (struct data_parser) {
+    .type = DP_FIXED,
+    .span = true,
+    .warn_missing_fields = true,
+    .quotes = ss_clone (ss_cstr ("\"'")),
+    .soft_seps = ss_clone (ss_cstr (CC_SPACES)),
+    .hard_seps = ss_clone (ss_cstr (",")),
+  };
   set_any_sep (parser);
-
-  parser->records_per_case = 0;
 
   return parser;
 }
@@ -215,7 +205,7 @@ void
 data_parser_set_quotes (struct data_parser *parser, struct substring quotes)
 {
   ss_dealloc (&parser->quotes);
-  ss_alloc_substring (&parser->quotes, quotes);
+  parser->quotes = ss_clone (quotes);
 }
 
 /* If ESCAPE is false (the default setting), a character used for
@@ -245,7 +235,7 @@ data_parser_set_soft_delimiters (struct data_parser *parser,
                                  struct substring delimiters)
 {
   ss_dealloc (&parser->soft_seps);
-  ss_alloc_substring (&parser->soft_seps, delimiters);
+  parser->soft_seps = ss_clone (delimiters);
   set_any_sep (parser);
 }
 
@@ -261,7 +251,7 @@ data_parser_set_hard_delimiters (struct data_parser *parser,
                                  struct substring delimiters)
 {
   ss_dealloc (&parser->hard_seps);
-  ss_alloc_substring (&parser->hard_seps, delimiters);
+  parser->hard_seps = ss_clone (delimiters);
   set_any_sep (parser);
 }
 

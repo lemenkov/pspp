@@ -863,9 +863,7 @@ expr_date (struct expression *e, int year_digits)
                : xasprintf ("%02d-%s-%04d", time->tm_mday, months[time->tm_mon],
                             time->tm_year + 1900));
 
-  struct substring s;
-  ss_alloc_substring_pool (&s, ss_cstr (tmp), e->expr_pool);
-
+  struct substring s = ss_clone_pool (ss_cstr (tmp), e->expr_pool);
   free (tmp);
 
   return expr_allocate_string (e, s);

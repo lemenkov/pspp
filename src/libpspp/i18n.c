@@ -1068,9 +1068,9 @@ get_encoding_info (struct encoding_info *e, const char *name)
       ss_dealloc (&cr);
       ss_dealloc (&lf);
       ss_dealloc (&space);
-      ss_alloc_substring (&cr, ss_cstr ("\r"));
-      ss_alloc_substring (&lf, ss_cstr ("\n"));
-      ss_alloc_substring (&space, ss_cstr (" "));
+      cr = ss_clone (ss_cstr ("\r"));
+      lf = ss_clone (ss_cstr ("\n"));
+      space = ss_clone (ss_cstr (" "));
     }
 
   e->unit = cr.length;

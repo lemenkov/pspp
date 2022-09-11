@@ -376,13 +376,15 @@ ss_tail (struct substring ss, size_t n)
     return ss;
 }
 
-/* Makes a malloc()'d, null-terminated copy of the contents of OLD
-   and stores it in NEW. */
-void
-ss_alloc_substring (struct substring *new, struct substring old)
+/* Returns a malloc()'d, null-terminated copy of the contents of OLD.  The
+  caller owns the returned string and must eventually free it. */
+struct substring
+ss_clone (struct substring old)
 {
-  new->string = xmemdup0 (old.string, old.length);
-  new->length = old.length;
+  return (struct substring) {
+    .string = xmemdup0 (old.string, old.length),
+    .length = old.length,
+  };
 }
 
 /* Allocates room for a N-byte string in NEW. */
@@ -399,16 +401,15 @@ ss_realloc (struct substring *ss, size_t size)
   ss->string = xrealloc (ss->string, size);
 }
 
-/* Makes a pool_alloc_unaligned()'d, null-terminated copy of the contents of
-   OLD in POOL, and stores it in NEW. */
-void
-ss_alloc_substring_pool (struct substring *new, struct substring old,
-                         struct pool *pool)
+/* Returns a pool_alloc_unaligned()'d, null-terminated copy of the contents of
+  OLD in POOL.  The pool owns the returned string. */
+struct substring
+ss_clone_pool (struct substring old, struct pool *pool)
 {
-  new->string = pool_alloc_unaligned (pool, old.length + 1);
-  new->length = old.length;
-  memcpy (new->string, old.string, old.length);
-  new->string[old.length] = '\0';
+  return (struct substring) {
+    .string = pool_memdup0 (pool, old.string, old.length),
+    .length = old.length
+  };
 }
 
 /* Allocates room for a N-byte string in NEW in POOL. */

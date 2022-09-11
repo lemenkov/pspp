@@ -136,7 +136,7 @@ void
 macro_token_copy (struct macro_token *dst, const struct macro_token *src)
 {
   token_copy (&dst->token, &src->token);
-  ss_alloc_substring (&dst->syntax, src->syntax);
+  dst->syntax = ss_clone (src->syntax);
 }
 
 void
