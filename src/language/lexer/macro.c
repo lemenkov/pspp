@@ -232,19 +232,17 @@ macro_tokens_from_string (struct macro_tokens *mts, const struct substring src,
 
   while (body.length > 0)
     {
-      struct macro_token mt = {
-        .token = { .type = T_STOP },
-        .syntax = { .string = body.string },
-      };
-      struct token *token = &mt.token;
-
       enum segment_type type;
       int seg_len = segmenter_push (&segmenter, body.string,
                                     body.length, true, &type);
       assert (seg_len >= 0);
 
-      struct substring segment = ss_head (body, seg_len);
-      enum tokenize_result result = token_from_segment (type, segment, token);
+      struct macro_token mt = {
+        .token = { .type = T_STOP },
+        .syntax = ss_head (body, seg_len),
+      };
+      enum tokenize_result result
+        = token_from_segment (type, mt.syntax, &mt.token);
       ss_advance (&body, seg_len);
 
       switch (result)
@@ -253,17 +251,15 @@ macro_tokens_from_string (struct macro_tokens *mts, const struct substring src,
           break;
 
         case TOKENIZE_TOKEN:
-          mt.syntax.length = body.string - mt.syntax.string;
           macro_tokens_add (mts, &mt);
           break;
 
         case TOKENIZE_ERROR:
-          mt.syntax.length = body.string - mt.syntax.string;
-          macro_error (stack, &mt, "%s", token->string.string);
+          macro_error (stack, &mt, "%s", mt.token.string.string);
           break;
         }
 
-      token_uninit (token);
+      token_uninit (&mt.token);
     }
 }
 
