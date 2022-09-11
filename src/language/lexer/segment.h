@@ -36,7 +36,7 @@
    Some segment types correspond directly to tokens; for example, an
    "identifier" segment (SEG_IDENTIFIER) becomes an identifier token (T_ID)
    later in lexical analysis.  Other segments contribute to tokens but do not
-   correspond diectly; for example, multiple quoted string segments
+   correspond directly; for example, multiple quoted string segments
    (SEG_QUOTED_STRING) separated by spaces (SEG_SPACES) and  "+" punctuators
    (SEG_PUNCT) may be combined to form a single string token (T_STRING).
    Still other segments are ignored (e.g. SEG_SPACES) or trigger special
