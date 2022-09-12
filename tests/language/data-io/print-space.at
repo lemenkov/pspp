@@ -99,3 +99,55 @@ AT_CHECK([cat output.txt], [0], [dnl
  @&t@
 ])
 AT_CLEANUP
+
+AT_SETUP([PRINT SPACE syntax errors])
+AT_DATA([print-space.sps], [dnl
+DATA LIST NOTABLE /x 1.
+PRINT SPACE OUTFILE=**.
+PRINT SPACE OUTFILE='out.txt' ENCODING=**.
+PRINT SPACE **.
+PRINT SPACE 1 'xyzzy'.
+])
+AT_CHECK([pspp -O format=csv print-space.sps], [1], [dnl
+"print-space.sps:2.21-2.22: error: PRINT SPACE: Syntax error expecting a file name or handle name.
+    2 | PRINT SPACE OUTFILE=**.
+      |                     ^~"
+
+"print-space.sps:3.40-3.41: error: PRINT SPACE: Syntax error expecting string.
+    3 | PRINT SPACE OUTFILE='out.txt' ENCODING=**.
+      |                                        ^~"
+
+"print-space.sps:4.13-4.14: error: PRINT SPACE: Syntax error.
+    4 | PRINT SPACE **.
+      |             ^~"
+
+"print-space.sps:5.15-5.21: error: PRINT SPACE: Syntax error expecting end of command.
+    5 | PRINT SPACE 1 'xyzzy'.
+      |               ^~~~~~~"
+])
+AT_CLEANUP
+
+AT_SETUP([PRINT SPACE evaluation errors])
+AT_DATA([print-space.sps], [dnl
+DATA LIST NOTABLE /x 1.
+BEGIN DATA.
+1
+END DATA.
+PRINT SPACE $SYSMIS.
+PRINT SPACE -1.
+EXECUTE.
+])
+AT_CHECK([pspp -O format=csv print-space.sps], [0], [dnl
+"print-space.sps:5.13-5.19: warning: EXECUTE: The expression on PRINT SPACE evaluated to the system-missing value.
+    5 | PRINT SPACE $SYSMIS.
+      |             ^~~~~~~"
+
+
+
+"print-space.sps:6.13-6.14: warning: EXECUTE: The expression on PRINT SPACE evaluated to -1.
+    6 | PRINT SPACE -1.
+      |             ^~"
+
+
+])
+AT_CLEANUP

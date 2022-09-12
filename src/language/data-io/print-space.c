@@ -39,6 +39,7 @@ struct print_space_trns
   {
     struct dfm_writer *writer;  /* Output data file. */
     struct expression *expr;	/* Number of lines; NULL means 1. */
+    struct msg_location *expr_location;
   };
 
 static const struct trns_class print_space_class;
@@ -46,10 +47,9 @@ static const struct trns_class print_space_class;
 int
 cmd_print_space (struct lexer *lexer, struct dataset *ds)
 {
-  struct print_space_trns *trns;
   struct file_handle *handle = NULL;
   struct expression *expr = NULL;
-  struct dfm_writer *writer;
+  struct msg_location *expr_location = NULL;
   char *encoding = NULL;
 
   if (lex_match_id (lexer, "OUTFILE"))
@@ -76,7 +76,13 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
 
   if (lex_token (lexer) != T_ENDCMD)
     {
+      int start_ofs = lex_ofs (lexer);
       expr = expr_parse (lexer, ds, VAL_NUMERIC);
+      int end_ofs = lex_ofs (lexer) - 1;
+      expr_location = lex_ofs_location (lexer, start_ofs, end_ofs);
+      if (!expr)
+        goto error;
+
       if (lex_token (lexer) != T_ENDCMD)
 	{
           lex_error (lexer, _("Syntax error expecting end of command."));
@@ -86,26 +92,31 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
   else
     expr = NULL;
 
+  struct dfm_writer *writer = NULL;
   if (handle != NULL)
     {
       writer = dfm_open_writer (handle, encoding);
       if (writer == NULL)
         goto error;
     }
-  else
-    writer = NULL;
 
-  trns = xmalloc (sizeof *trns);
-  trns->writer = writer;
-  trns->expr = expr;
+  struct print_space_trns *trns = xmalloc (sizeof *trns);
+  *trns = (struct print_space_trns) {
+    .writer = writer,
+    .expr = expr,
+    .expr_location = expr_location,
+  };
 
   add_transformation (ds, &print_space_class, trns);
   fh_unref (handle);
+  free (encoding);
   return CMD_SUCCESS;
 
 error:
+  msg_location_destroy (expr_location);
   fh_unref (handle);
   expr_free (expr);
+  free (encoding);
   return CMD_FAILURE;
 }
 
@@ -122,10 +133,12 @@ print_space_trns_proc (void *t_, struct ccase **c,
     {
       double f = expr_evaluate_num (trns->expr, *c, case_num);
       if (f == SYSMIS)
-        msg (SW, _("The expression on %s evaluated to the "
-                   "system-missing value."), "PRINT SPACE");
+        msg_at (SW, trns->expr_location,
+                _("The expression on %s evaluated to the "
+                  "system-missing value."), "PRINT SPACE");
       else if (f < 0 || f > INT_MAX)
-        msg (SW, _("The expression on %s evaluated to %g."), "PRINT SPACE", f);
+        msg_at (SW, trns->expr_location,
+                _("The expression on %s evaluated to %g."), "PRINT SPACE", f);
       else
         n = f;
     }
@@ -149,6 +162,7 @@ print_space_trns_free (void *trns_)
   struct print_space_trns *trns = trns_;
   bool ok = dfm_close_writer (trns->writer);
   expr_free (trns->expr);
+  msg_location_destroy (trns->expr_location);
   free (trns);
   return ok;
 }
