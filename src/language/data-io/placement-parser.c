@@ -81,21 +81,21 @@ parse_var_placements (struct lexer *lexer, struct pool *pool, size_t n_vars,
                                 formats, n_formats);
   else if (lex_match (lexer, T_LPAREN))
     {
-      size_t n_assignments;
-      size_t i;
-
+      int start_ofs = lex_ofs (lexer);
       if (!fixed_parse_fortran (lexer, pool, use, formats, n_formats))
         return false;
+      int end_ofs = lex_ofs (lexer) - 1;
 
-      n_assignments = 0;
-      for (i = 0; i < *n_formats; i++)
+      size_t n_assignments = 0;
+      for (size_t i = 0; i < *n_formats; i++)
         n_assignments += (*formats)[i].type < FMT_NUMBER_OF_FORMATS;
 
       if (n_assignments != n_vars)
         {
-          msg (SE, _("Number of variables specified (%zu) "
-                     "differs from number of variable formats (%zu)."),
-               n_vars, n_assignments);
+          lex_ofs_error (lexer, start_ofs, end_ofs,
+                         _("Number of variables specified (%zu) "
+                           "differs from number of variable formats (%zu)."),
+                         n_vars, n_assignments);
           return false;
         }
 
@@ -125,9 +125,10 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
   int w = (lc - fc + 1) / n_vars;
   if ((lc - fc + 1) % n_vars)
     {
-      msg (SE, _("The %d columns %d-%d "
-		 "can't be evenly divided into %zu fields."),
-	   lc - fc + 1, fc, lc, n_vars);
+      lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+                     _("The %d columns %d-%d "
+                       "can't be evenly divided into %zu fields."),
+                     lc - fc + 1, fc, lc, n_vars);
       return false;
     }
 

@@ -402,38 +402,33 @@ Case Number,A
 AT_CLEANUP
 
 
-AT_SETUP([DATA LIST - Negative SKIP])
+AT_SETUP([DATA LIST syntax errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='data-list.sps' ERROR=IGNORE.
+])
 AT_DATA([data-list.sps], [dnl
 DATA LIST LIST FILE='f.in' NOTABLE SKIP=-1 /a b c d.
-
-EXECUTE.
+DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
+DATA LIST FIXED FILE='f.in' NOTABLE/a (F8.0, F9.0).
+DATA LIST FIXED FILE='f.in' NOTABLE/a b 1-3.
 ])
 
-AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
 "data-list.sps:1.41-1.42: error: DATA LIST: Syntax error expecting non-negative integer for SKIP.
     1 | DATA LIST LIST FILE='f.in' NOTABLE SKIP=-1 /a b c d.
       |                                         ^~"
 
-data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
-])
-
-AT_CLEANUP
-
-
-AT_SETUP([DATA LIST - Negative RECORDS])
-AT_DATA([data-list.sps], [dnl
-DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
-
-EXECUTE.
-])
-
-AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
-"data-list.sps:1.44-1.45: error: DATA LIST: Syntax error expecting non-negative integer for RECORDS.
-    1 | DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
+"data-list.sps:2.44-2.45: error: DATA LIST: Syntax error expecting non-negative integer for RECORDS.
+    2 | DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
       |                                            ^~"
 
-data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+"data-list.sps:3.40-3.50: error: DATA LIST: Number of variables specified (1) differs from number of variable formats (2).
+    3 | DATA LIST FIXED FILE='f.in' NOTABLE/a (F8.0, F9.0).
+      |                                        ^~~~~~~~~~~"
+
+"data-list.sps:4.41-4.43: error: DATA LIST: The 3 columns 1-3 can't be evenly divided into 2 fields.
+    4 | DATA LIST FIXED FILE='f.in' NOTABLE/a b 1-3.
+      |                                         ^~~"
 ])
 
 AT_CLEANUP
-
