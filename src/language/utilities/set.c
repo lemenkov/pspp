@@ -315,7 +315,14 @@ parse_ccx (struct lexer *lexer, enum fmt_type ccx)
   if (!lex_force_string (lexer))
     return false;
 
-  settings_set_cc (lex_tokcstr (lexer), ccx);
+  char *error = settings_set_cc (lex_tokcstr (lexer), ccx);
+  if (error)
+    {
+      lex_error (lexer, "%s", error);
+      free (error);
+      return false;
+    }
+
   lex_get (lexer);
   return true;
 }
@@ -1358,9 +1365,7 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_token (lexer) == T_ID)
         {
-          int i;
-
-          for (i = 0; i < sizeof settings / sizeof *settings; i++)
+          for (size_t i = 0; i < sizeof settings / sizeof *settings; i++)
             {
               const struct setting *s = &settings[i];
               if (s->show && lex_match_id (lexer, s->name))

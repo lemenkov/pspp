@@ -605,22 +605,21 @@ settings_set_syntax (enum behavior_mode mode)
 }
 
 
-/* Sets custom currency specifier CC having name CC_NAME ('A' through
-   'E') to correspond to the settings in CC_STRING. */
-bool
+/* Sets custom currency specifier CC having name CC_NAME ('A' through 'E') to
+   correspond to the settings in CC_STRING.  Returns NULL if successful,
+   otherwise an error message that the caller must free. */
+char * WARN_UNUSED_RESULT
 settings_set_cc (const char *cc_string, enum fmt_type type)
 {
   struct fmt_number_style *style = fmt_number_style_from_string (cc_string);
   if (!style)
-    {
-      msg (SE, _("%s: Custom currency string `%s' does not contain "
-                 "exactly three periods or commas (or it contains both)."),
-           fmt_name (type), cc_string);
-      return false;
-    }
+    return xasprintf (_("Custom currency string `%s' for %s does not contain "
+                        "exactly three periods or commas (or it contains "
+                        "both)."),
+                      fmt_name (type), cc_string);
 
   fmt_settings_set_cc (&the_settings.styles, type, style);
-  return true;
+  return NULL;
 }
 
 void

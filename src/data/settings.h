@@ -155,7 +155,7 @@ void settings_set_cmd_algorithm (enum behavior_mode);
 void unset_cmd_algorithm (void);
 
 enum fmt_type;
-bool settings_set_cc (const char *cc_string, enum fmt_type type);
+char *settings_set_cc (const char *cc_string, enum fmt_type) WARN_UNUSED_RESULT;
 
 void settings_set_decimal_char (char decimal);
 void settings_set_include_leading_zero (bool include_leading_zero);

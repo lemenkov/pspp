@@ -48,7 +48,11 @@ AT_DATA([set.pspp], [dnl
 SET CCA='xxxx'.SHGW CCA.
 ])
 
-AT_CHECK([pspp -O format=csv set.pspp], [1], [ignore])
+AT_CHECK([pspp -O format=csv set.pspp], [1], [dnl
+"set.pspp:1.9-1.14: error: SET: Custom currency string `CCA' for xxxx does not contain exactly three periods or commas (or it contains both).
+    1 | SET CCA='xxxx'.SHGW CCA.
+      |         ^~~~~~"
+])
 AT_CLEANUP
 
 
