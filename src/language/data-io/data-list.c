@@ -464,7 +464,14 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
               input.d = 0;
             }
 
-          if (!fmt_check_input (&input) || !lex_force_match (lexer, T_RPAREN))
+          char *error = fmt_check_input__ (&input);
+          if (error)
+            {
+              lex_next_error (lexer, -1, -1, "%s", error);
+              free (error);
+              return NULL;
+            }
+          if (!lex_force_match (lexer, T_RPAREN))
             return NULL;
 
           /* As a special case, N format is treated as F format

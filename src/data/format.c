@@ -451,12 +451,23 @@ fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
   return NULL;
 }
 
+char *
+fmt_check_input__ (const struct fmt_spec *spec)
+{
+  return fmt_check__ (spec, FMT_FOR_INPUT);
+}
+
+char *
+fmt_check_output__ (const struct fmt_spec *spec)
+{
+  return fmt_check__ (spec, FMT_FOR_OUTPUT);
+}
+
 static bool
-fmt_emit_and_free_error (char *error)
+error_to_bool (char *error)
 {
   if (error)
     {
-      msg (SE, "%s", error);
       free (error);
       return false;
     }
@@ -464,25 +475,21 @@ fmt_emit_and_free_error (char *error)
     return true;
 }
 
-/* Checks whether SPEC is valid for USE and returns nonzero if so.  Otherwise,
-   emits an error message for the current source location and returns zero. */
+/* Returns true if SPEC is valid for USE, false otherwise. */
 bool
 fmt_check (const struct fmt_spec *spec, enum fmt_use use)
 {
-  return fmt_emit_and_free_error (fmt_check__ (spec, use));
+  return error_to_bool (fmt_check__ (spec, use));
 }
 
-/* Checks whether SPEC is valid as an input format and returns
-   nonzero if so.  Otherwise, emits an error message and returns
-   zero. */
+/* Returns true if SPEC is valid as an input format, otherwise false. */
 bool
 fmt_check_input (const struct fmt_spec *spec)
 {
   return fmt_check (spec, FMT_FOR_INPUT);
 }
 
-/* Checks whether SPEC is valid as an output format and returns
-   true if so.  Otherwise, emits an error message and returns false. */
+/* Returnst true SPEC is valid as an output format, false otherwise. */
 bool
 fmt_check_output (const struct fmt_spec *spec)
 {
@@ -491,7 +498,7 @@ fmt_check_output (const struct fmt_spec *spec)
 
 /* Checks that FORMAT is appropriate for a variable of the given VAR_TYPE and
    returns NULL if so.  Otherwise returns a malloc()'d error message that the
-   calelr must eventually free(). */
+   caller must eventually free(). */
 char *
 fmt_check_type_compat__ (const struct fmt_spec *format, enum val_type var_type)
 {
@@ -499,21 +506,23 @@ fmt_check_type_compat__ (const struct fmt_spec *format, enum val_type var_type)
   if ((var_type == VAL_STRING) != (fmt_is_string (format->type) != 0))
     {
       char str[FMT_STRING_LEN_MAX + 1];
-      return xasprintf (_("%s variables are not compatible with %s format %s."),
-                        var_type == VAL_STRING ? _("String") : _("Numeric"),
-                        var_type == VAL_STRING ? _("numeric") : _("string"),
-                        fmt_to_string (format, str));
+      fmt_to_string (format, str);
+      if (var_type == VAL_STRING)
+        return xasprintf (_("String variables are not compatible with "
+                            "numeric format %s."), str);
+      else
+        return xasprintf (_("Numeric variables are not compatible with "
+                            "string format %s."), str);
     }
   return NULL;
 }
 
-/* Checks that FORMAT is appropriate for a variable of the given
-   VAR_TYPE and returns true if so.  Otherwise returns false and
-   emits an error message. */
+/* Returns FORMAT is appropriate for a variable of the given
+   VAR_TYPE and returns true if so, otherwise false. */
 bool
 fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
 {
-  return fmt_emit_and_free_error (fmt_check_type_compat__ (format, var_type));
+  return error_to_bool (fmt_check_type_compat__ (format, var_type));
 }
 
 /* Checks that FORMAT is appropriate for a variable of the given WIDTH and
@@ -533,28 +542,33 @@ fmt_check_width_compat__ (const struct fmt_spec *format, const char *varname,
       char format_str[FMT_STRING_LEN_MAX + 1];
       fmt_to_string (format, format_str);
 
+      char better_str[FMT_STRING_LEN_MAX + 1];
+      if (format->type == FMT_A)
+        snprintf (better_str, sizeof better_str, "A%d", width);
+      else
+        snprintf (better_str, sizeof better_str, "AHEX%d", width * 2);
+
       if (varname)
         return xasprintf (_("String variable %s with width %d is not "
-                            "compatible with format %s."),
-                          varname, width, format_str);
-        else
+                            "compatible with format %s.  "
+                            "Use format %s instead."),
+                          varname, width, format_str, better_str);
+      else
         return xasprintf (_("String variable with width %d is not compatible "
-                            "with format %s."),
-                          width, format_str);
+                            "with format %s.  Use format %s instead."),
+                          width, format_str, better_str);
     }
 
   return NULL;
 }
 
 /* Checks that FORMAT is appropriate for a variable of the given WIDTH and
-   returns true if so.  Otherwise returns false and emits an error message.
-   VARNAME is optional and only used in the error message. */
+   returns true if so, otherwise false. */
 bool
 fmt_check_width_compat (const struct fmt_spec *format, const char *varname,
                         int width)
 {
-  return fmt_emit_and_free_error (fmt_check_width_compat__ (format, varname,
-                                                            width));
+  return error_to_bool (fmt_check_width_compat__ (format, varname, width));
 }
 
 /* Returns the width corresponding to FORMAT.  The return value
@@ -1019,22 +1033,18 @@ fmt_from_u32 (uint32_t u32, int width, bool loose, struct fmt_spec *f)
   uint8_t w = u32 >> 8;
   uint8_t d = u32;
 
-  msg_disable ();
-  f->w = w;
-  f->d = d;
-  bool ok = fmt_from_io (raw_type, &f->type);
-  if (ok)
-    {
-      if (loose)
-        fmt_fix_output (f);
-      else
-        ok = fmt_check_output (f);
-    }
-  if (ok)
-    ok = fmt_check_width_compat (f, NULL, width);
-  msg_enable ();
+  enum fmt_type type;
+  if (!fmt_from_io (raw_type, &type))
+    return false;
 
-  return ok;
+  *f = (struct fmt_spec) { .type = type, .w = w, .d = d };
+
+  if (loose)
+    fmt_fix_output (f);
+  else if (!fmt_check_output (f))
+    return false;
+
+  return fmt_check_width_compat (f, NULL, width);
 }
 
 /* Returns true if TYPE may be used as an input format,

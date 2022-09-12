@@ -1288,9 +1288,20 @@ parse_ctables_format_specifier (struct lexer *lexer, struct fmt_spec *format,
   else
     {
       *is_ctables_format = false;
-      return (parse_format_specifier (lexer, format)
-              && fmt_check_output (format)
-              && fmt_check_type_compat (format, VAL_NUMERIC));
+      if (!parse_format_specifier (lexer, format))
+        return false;
+
+      char *error = fmt_check_output__ (format);
+      if (!error)
+        error = fmt_check_type_compat__ (format, VAL_NUMERIC);
+      if (error)
+        {
+          lex_next_error (lexer, -1, -1, "%s", error);
+          free (error);
+          return false;
+        }
+
+      return true;
     }
 
   lex_get (lexer);

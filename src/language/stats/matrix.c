@@ -7249,9 +7249,38 @@ matrix_write_parse (struct matrix_state *s)
       write->format = xmalloc (sizeof *write->format);
       *write->format = (struct fmt_spec) { .type = format, .w = w };
 
-      if (!fmt_check_output (write->format))
-        goto error;
-    };
+      char *error = fmt_check_output__ (write->format);
+      if (error)
+        {
+          msg (SE, "%s", error);
+          free (error);
+
+          if (has_format)
+            lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                         _("This syntax specifies format %s."),
+                         fmt_name (format));
+
+          if (repetitions)
+            {
+              lex_ofs_msg (s->lexer, SN, format_ofs, format_ofs,
+                           ngettext ("This syntax specifies %d repetition.",
+                                     "This syntax specifies %d repetitions.",
+                                     repetitions),
+                           repetitions);
+              lex_ofs_msg (s->lexer, SN, record_width_start, record_width_end,
+                           _("This syntax designates record width %d, "
+                             "which divided by %d repetitions implies "
+                             "field width %d."),
+                           record_width, repetitions, w);
+            }
+
+          if (by)
+            lex_ofs_msg (s->lexer, SN, by_ofs, by_ofs,
+                         _("This syntax specifies field width %d."), by);
+
+          goto error;
+        }
+    }
 
   if (write->format && fmt_var_width (write->format) > sizeof (double))
     {

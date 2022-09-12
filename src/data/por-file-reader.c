@@ -623,29 +623,20 @@ static struct fmt_spec
 convert_format (struct pfm_reader *r, const int portable_format[3],
                 struct variable *v, bool *report_error)
 {
-  struct fmt_spec format;
-  bool ok;
-
-  if (!fmt_from_io (portable_format[0], &format.type))
+  enum fmt_type type;
+  if (fmt_from_io (portable_format[0], &type))
     {
-      if (*report_error)
-        warning (r, _("%s: Bad format specifier byte (%d).  Variable "
-                      "will be assigned a default format."),
-                 var_get_name (v), portable_format[0]);
-      goto assign_default;
-    }
+      struct fmt_spec format = {
+        .type = type,
+        .w = portable_format[1],
+        .d = portable_format[2],
+      };
 
-  format.w = portable_format[1];
-  format.d = portable_format[2];
+      if (fmt_check_output (&format)
+          && fmt_check_width_compat (&format, var_get_name (v),
+                                     var_get_width (v)))
+        return format;
 
-  msg_disable ();
-  ok = (fmt_check_output (&format)
-        && fmt_check_width_compat (&format, var_get_name (v),
-                                   var_get_width (v)));
-  msg_enable ();
-
-  if (!ok)
-    {
       if (*report_error)
         {
           char fmt_string[FMT_STRING_LEN_MAX + 1];
@@ -659,12 +650,15 @@ convert_format (struct pfm_reader *r, const int portable_format[3],
                           "invalid format specifier %s."),
                      var_get_name (v), var_get_width (v), fmt_string);
         }
-      goto assign_default;
+    }
+  else
+    {
+      if (*report_error)
+        warning (r, _("%s: Bad format specifier byte (%d).  Variable "
+                      "will be assigned a default format."),
+                 var_get_name (v), portable_format[0]);
     }
 
-  return format;
-
-assign_default:
   *report_error = false;
   return fmt_default_for_width (var_get_width (v));
 }

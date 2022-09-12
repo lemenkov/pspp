@@ -882,7 +882,6 @@ spv_decode_fmt_spec (uint32_t u32, struct fmt_spec *out)
   uint8_t w = u32 >> 8;
   uint8_t d = u32;
 
-  msg_disable ();
   *out = (struct fmt_spec) { .type = FMT_F, .w = w, .d = d };
   bool ok = raw_type >= 40 || fmt_from_io (raw_type, &out->type);
   if (ok)
@@ -890,7 +889,6 @@ spv_decode_fmt_spec (uint32_t u32, struct fmt_spec *out)
       fmt_fix_output (out);
       ok = fmt_check_width_compat (out, NULL, 0);
     }
-  msg_enable ();
 
   if (!ok)
     {

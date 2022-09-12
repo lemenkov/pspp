@@ -43,14 +43,12 @@ cmd_debug_format_guesser (struct lexer *lexer, struct dataset *ds UNUSED)
   fmt_guesser_guess (g, &format);
   fmt_to_string (&format, format_string);
   fprintf (stderr, "=> %s", format_string);
-  msg_disable ();
   if (!fmt_check_input (&format))
     {
       fmt_fix_input (&format);
       fmt_to_string (&format, format_string);
       fprintf (stderr, " (%s)", format_string);
     }
-  msg_enable ();
   putc ('\n', stderr);
   fmt_guesser_destroy (g);
 

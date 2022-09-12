@@ -84,20 +84,28 @@ x,A1
 y,A2
 z,A3
 
-"formats.sps:2: error: FORMATS: Output format E6.1 specifies 1 decimal place, but the given width does not allow for any decimals."
+"formats.sps:2.12-2.15: error: FORMATS: Output format E6.1 specifies 1 decimal place, but the given width does not allow for any decimals.
+    2 | FORMATS a (E6.1).
+      |            ^~~~"
 
 "formats.sps:3.11: error: FORMATS: a and y are not the same type.  All variables in this variable list must be of the same type.  y will be omitted from the list.
     3 | FORMATS a y (F4).
       |           ^"
 
-formats.sps:4: error: FORMATS: String variable x with width 1 is not compatible with format A2.
+"formats.sps:4.12-4.13: error: FORMATS: String variable x with width 1 is not compatible with format A2.  Use format A1 instead.
+    4 | FORMATS x (A2).
+      |            ^~"
 
-formats.sps:5: error: FORMATS: String variable y with width 2 is not compatible with format AHEX2.
+"formats.sps:5.12-5.16: error: FORMATS: String variable y with width 2 is not compatible with format AHEX2.  Use format AHEX4 instead.
+    5 | FORMATS y (AHEX2).
+      |            ^~~~~"
 
 "formats.sps:6.11: error: FORMATS: x and y are string variables with different widths.  All variables in this variable list must have the same width.  y will be omitted from the list.
     6 | FORMATS x y (A2).
       |           ^"
 
-formats.sps:6: error: FORMATS: String variable x with width 1 is not compatible with format A2.
+"formats.sps:6.14-6.15: error: FORMATS: String variable x with width 1 is not compatible with format A2.  Use format A1 instead.
+    6 | FORMATS x y (A2).
+      |              ^~"
 ])
 AT_CLEANUP

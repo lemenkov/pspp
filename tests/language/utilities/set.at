@@ -29,7 +29,9 @@ SET FORMAT F41.
 DESCRIPTIVES /x.
 ])
 AT_CHECK([pspp -O format=csv set.pspp], [1], [dnl
-"set.pspp:7: error: SET: Output format F41.0 specifies width 41, but F requires a width between 1 and 40."
+"set.pspp:7.12-7.14: error: SET: Output format F41.0 specifies width 41, but F requires a width between 1 and 40.
+    7 | SET FORMAT F41.
+      |            ^~~"
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum

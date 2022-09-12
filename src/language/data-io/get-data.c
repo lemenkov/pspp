@@ -579,9 +579,13 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
       lex_get (lexer);
       if (type == DP_DELIMITED)
         {
-          if (!parse_format_specifier (lexer, &input)
-	      || !fmt_check_input (&input))
+          if (!parse_format_specifier (lexer, &input))
+            goto error;
+          error = fmt_check_input__ (&input);
+          if (error)
 	    {
+              lex_next_error (lexer, -1, -1, "%s", error);
+              free (error);
 	      goto error;
 	    }
           output = fmt_for_output_from_input (&input,
@@ -589,37 +593,47 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         }
       else
         {
-          char fmt_type_name[FMT_TYPE_LEN_MAX + 1];
-          enum fmt_type fmt_type;
-          uint16_t w;
-          uint8_t d;
-
+          int start_ofs = lex_ofs (lexer);
           if (!parse_column_range (lexer, 0, &fc, &lc, NULL))
             goto error;
 
           /* Accept a format (e.g. F8.2) or just a type name (e.g. DOLLAR).  */
+          char fmt_type_name[FMT_TYPE_LEN_MAX + 1];
+          uint16_t w;
+          uint8_t d;
           if (!parse_abstract_format_specifier (lexer, fmt_type_name, &w, &d))
             goto error;
+
+          enum fmt_type fmt_type;
           if (!fmt_from_name (fmt_type_name, &fmt_type))
             {
               lex_next_error (lexer, -1, -1,
                               _("Unknown format type `%s'."), fmt_type_name);
               goto error;
             }
+          int end_ofs = lex_ofs (lexer) - 1;
+
           /* Compose input format. */
-          input.type = fmt_type;
-          input.w = lc - fc + 1;
-          input.d = 0;
-          if (!fmt_check_input (&input))
-            goto error;
+          input = (struct fmt_spec) { .type = fmt_type, .w = lc - fc + 1 };
+          error = fmt_check_input__ (&input);
+          if (error)
+            {
+              lex_next_error (lexer, start_ofs, end_ofs, "%s", error);
+              free (error);
+              goto error;
+            }
+
           /* Compose output format. */
           if (w != 0)
             {
-              output.type = fmt_type;
-              output.w = w;
-              output.d = d;
-              if (!fmt_check_output (&output))
-                goto error;
+              output = (struct fmt_spec) { .type = fmt_type, .w = w, .d = d };
+              error = fmt_check_output__ (&output);
+              if (error)
+                {
+                  lex_next_error (lexer, start_ofs, end_ofs, "%s", error);
+                  free (error);
+                  goto error;
+                }
             }
           else
             output = fmt_for_output_from_input (&input,

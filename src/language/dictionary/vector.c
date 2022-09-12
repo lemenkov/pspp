@@ -133,9 +133,15 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
               else if (lex_token (lexer) == T_ID && !seen_format)
                 {
                   seen_format = true;
-                  if (!parse_format_specifier (lexer, &format)
-                      || !fmt_check_output (&format))
+                  if (!parse_format_specifier (lexer, &format))
                     goto fail;
+                  char *error = fmt_check_output__ (&format);
+                  if (error)
+                    {
+                      lex_next_error (lexer, -1, -1, "%s", error);
+                      free (error);
+                      goto fail;
+                    }
                 }
               else
                 {

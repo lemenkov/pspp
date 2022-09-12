@@ -3643,6 +3643,14 @@ matrix.sps:18.26: note: WRITE: This syntax specifies field width 5.
 matrix.sps:19: error: WRITE: Output format E5.0 specifies width 5, but E
 requires a width between 6 and 40.
 
+matrix.sps:19.56: note: WRITE: This syntax specifies format E.
+   19 | WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT=E.
+      |                                                        ^
+
+matrix.sps:19.26: note: WRITE: This syntax specifies field width 5.
+   19 | WRITE 1/FIELD=1 TO 10 BY 5/OUTFILE='matrix.txt'/FORMAT=E.
+      |                          ^
+
 matrix.sps:20.51-20.52: error: WRITE: Format A9 is too wide for 8-byte matrix
 elements.
    20 | WRITE 1/FIELD=1 TO 10/OUTFILE='matrix.txt'/FORMAT=A9.

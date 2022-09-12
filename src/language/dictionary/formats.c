@@ -34,34 +34,30 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-enum
-  {
-    FORMATS_PRINT = 001,
-    FORMATS_WRITE = 002
-  };
-
-static int internal_cmd_formats (struct lexer *, struct dataset *ds, int);
+static int cmd_formats__ (struct lexer *, struct dataset *ds,
+                          bool print_format, bool write_format);
 
 int
 cmd_print_formats (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_formats (lexer, ds, FORMATS_PRINT);
+  return cmd_formats__ (lexer, ds, true, false);
 }
 
 int
 cmd_write_formats (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_formats (lexer, ds, FORMATS_WRITE);
+  return cmd_formats__ (lexer, ds, false, true);
 }
 
 int
 cmd_formats (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_formats (lexer, ds, FORMATS_PRINT | FORMATS_WRITE);
+  return cmd_formats__ (lexer, ds, true, true);
 }
 
 static int
-internal_cmd_formats (struct lexer *lexer, struct dataset *ds, int which)
+cmd_formats__ (struct lexer *lexer, struct dataset *ds,
+               bool print_format, bool write_format)
 {
   /* Variables. */
   struct variable **v;
@@ -87,10 +83,17 @@ internal_cmd_formats (struct lexer *lexer, struct dataset *ds, int which)
           lex_error_expecting (lexer, "`('");
 	  goto fail;
 	}
-      if (!parse_format_specifier (lexer, &f)
-          || !fmt_check_output (&f)
-          || !fmt_check_width_compat (&f, var_get_name (v[0]), width))
-	goto fail;
+      if (!parse_format_specifier (lexer, &f))
+        goto fail;
+      char *error = fmt_check_output__ (&f);
+      if (!error)
+        error = fmt_check_width_compat__ (&f, var_get_name (v[0]), width);
+      if (error)
+        {
+          lex_next_error (lexer, -1, -1, "%s", error);
+          free (error);
+          goto fail;
+        }
 
       if (!lex_match (lexer, T_RPAREN))
 	{
@@ -100,9 +103,9 @@ internal_cmd_formats (struct lexer *lexer, struct dataset *ds, int which)
 
       for (i = 0; i < cv; i++)
 	{
-	  if (which & FORMATS_PRINT)
+	  if (print_format)
             var_set_print_format (v[i], &f);
-	  if (which & FORMATS_WRITE)
+	  if (write_format)
             var_set_write_format (v[i], &f);
 	}
       free (v);

@@ -490,31 +490,25 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
       NOT_REACHED ();
 
     case OP_ni_format:
-      msg_disable ();
       if (arg->type == OP_format
           && fmt_check_input (&arg->format)
           && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
         {
-          msg_enable ();
           if (do_coercion)
             arg->type = OP_ni_format;
           return true;
         }
-      msg_enable ();
       break;
 
     case OP_no_format:
-      msg_disable ();
       if (arg->type == OP_format
           && fmt_check_output (&arg->format)
           && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
         {
-          msg_enable ();
           if (do_coercion)
             arg->type = OP_no_format;
           return true;
         }
-      msg_enable ();
       break;
 
     case OP_num_var:

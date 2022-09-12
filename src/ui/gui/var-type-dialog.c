@@ -432,7 +432,6 @@ preview_custom (GtkWidget *w, gpointer data)
   text = gtk_entry_get_text (GTK_ENTRY (dialog->entry_width));
   dialog->fmt_l.w = atoi (text);
 
-  msg_disable ();
   if (! fmt_check_output (&dialog->fmt_l))
     {
       gtk_label_set_text (GTK_LABEL (dialog->label_psample), "---");
@@ -455,7 +454,6 @@ preview_custom (GtkWidget *w, gpointer data)
       gtk_label_set_text (GTK_LABEL (dialog->label_nsample), sample_text);
       g_free (sample_text);
     }
-  msg_enable ();
 }
 
 static gint

@@ -262,8 +262,10 @@ and 100 for PTILE.
    11 | CTABLES /TABLE qn1 [PTILE 101].
       |                           ^~~
 
-ctables.sps:12: error: CTABLES: Output format F0.1 specifies width 0, but F
-requires a width between 1 and 40.
+ctables.sps:12.26-12.29: error: CTABLES: Output format F0.1 specifies width 0,
+but F requires a width between 1 and 40.
+   12 | CTABLES /TABLE qn1 [MEAN F0.1].
+      |                          ^~~~
 
 ctables.sps:13.26-13.36: error: CTABLES: Output format NEGPAREN requires width 2
 or greater.

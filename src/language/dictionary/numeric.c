@@ -58,8 +58,13 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	  if (!parse_format_specifier (lexer, &f))
 	    goto fail;
 
-	  if (! fmt_check_output (&f))
-	    goto fail;
+          char *error = fmt_check_output__ (&f);
+          if (error)
+            {
+              lex_next_error (lexer, -1, -1, "%s", error);
+              free (error);
+              goto fail;
+            }
 
 	  if (fmt_is_string (f.type))
 	    {
@@ -130,18 +135,20 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
 	return CMD_FAILURE;
 
       if (!lex_force_match (lexer, T_LPAREN)
-          || !parse_format_specifier (lexer, &f)
-          || !lex_force_match (lexer, T_RPAREN))
+          || !parse_format_specifier (lexer, &f))
 	goto fail;
-      if (!fmt_is_string (f.type))
-	{
-          char str[FMT_STRING_LEN_MAX + 1];
-	  lex_next_error (lexer, -2, -2,
-                          _("Format type %s may not be used with a string "
-                            "variable."), fmt_to_string (&f, str));
-	  goto fail;
-	}
-      if (!fmt_check_output (&f))
+
+      char *error = fmt_check_type_compat__ (&f, VAL_STRING);
+      if (!error)
+        error = fmt_check_output__ (&f);
+      if (error)
+        {
+          lex_next_error (lexer, -2, -2, "%s", error);
+          free (error);
+          goto fail;
+        }
+
+      if (!lex_force_match (lexer, T_RPAREN))
         goto fail;
 
       width = fmt_var_width (&f);

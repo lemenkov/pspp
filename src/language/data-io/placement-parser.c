@@ -115,15 +115,14 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
                      enum fmt_use use,
                      struct fmt_spec **formats, size_t *n_formats)
 {
-  struct fmt_spec format;
-  int fc, lc;
-  size_t i;
+  int start_ofs = lex_ofs (lexer);
 
+  int fc, lc;
   if (!parse_column_range (lexer, 1, &fc, &lc, NULL))
     return false;
 
   /* Divide columns evenly. */
-  format.w = (lc - fc + 1) / n_vars;
+  int w = (lc - fc + 1) / n_vars;
   if ((lc - fc + 1) % n_vars)
     {
       msg (SE, _("The %d columns %d-%d "
@@ -133,43 +132,53 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
     }
 
   /* Format specifier. */
+  enum fmt_type type;
+  int d;
   if (lex_match (lexer, T_LPAREN))
     {
       /* Get format type. */
       if (lex_token (lexer) == T_ID)
 	{
-	  if (!parse_format_specifier_name (lexer, &format.type))
+	  if (!parse_format_specifier_name (lexer, &type))
             return false;
 	  lex_match (lexer, T_COMMA);
 	}
       else
-	format.type = FMT_F;
+	type = FMT_F;
 
       /* Get decimal places. */
       if (lex_is_integer (lexer))
 	{
-	  format.d = lex_integer (lexer);
+	  d = lex_integer (lexer);
 	  lex_get (lexer);
 	}
       else
-	format.d = 0;
+	d = 0;
 
       if (!lex_force_match (lexer, T_RPAREN))
 	return false;
     }
   else
     {
-      format.type = FMT_F;
-      format.d = 0;
+      type = FMT_F;
+      d = 0;
     }
-  if (!fmt_check (&format, use))
-    return false;
+  int end_ofs = lex_ofs (lexer) - 1;
+
+  struct fmt_spec format = { .type = type, .w = w, .d = d };
+  char *error = fmt_check__ (&format, use);
+  if (error)
+    {
+      lex_ofs_error (lexer, start_ofs, end_ofs, "%s", error);
+      free (error);
+      return false;
+    }
 
   *formats = pool_nalloc (pool, n_vars + 1, sizeof **formats);
   *n_formats = n_vars + 1;
   (*formats)[0].type = (enum fmt_type) PRS_TYPE_T;
   (*formats)[0].w = fc;
-  for (i = 1; i <= n_vars; i++)
+  for (size_t i = 1; i <= n_vars; i++)
     (*formats)[i] = format;
   return true;
 }
@@ -216,8 +225,8 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
             f.type = (enum fmt_type) PRS_TYPE_NEW_REC;
           else
             {
+              int ofs = lex_ofs (lexer);
               char type[FMT_TYPE_LEN_MAX + 1];
-
               if (!parse_abstract_format_specifier (lexer, type, &f.w, &f.d))
                 return false;
 
@@ -233,12 +242,17 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
                 {
                   if (!fmt_from_name (type, &f.type))
                     {
-                      lex_next_error (lexer, -1, -1,
-                                      _("Unknown format type `%s'."), type);
+                      lex_ofs_error (lexer, ofs, ofs,
+                                     _("Unknown format type `%s'."), type);
                       return false;
                     }
-                  if (!fmt_check (&f, use))
-                    return false;
+                  char *error = fmt_check__ (&f, use);
+                  if (error)
+                    {
+                      lex_ofs_error (lexer, ofs, ofs, "%s", error);
+                      free (error);
+                      return false;
+                    }
                 }
             }
         }

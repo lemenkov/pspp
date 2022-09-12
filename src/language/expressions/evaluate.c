@@ -227,10 +227,17 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
       else if (lex_match_id (lexer, "FORMAT"))
         {
           lex_match (lexer, T_EQUALS);
-          if (!parse_format_specifier (lexer, &format)
-              || !fmt_check_output (&format)
-              || !fmt_check_type_compat (&format, VAL_NUMERIC))
+          if (!parse_format_specifier (lexer, &format))
             goto done;
+          char *error = fmt_check_output__ (&format);
+          if (!error)
+            error = fmt_check_type_compat__ (&format, VAL_NUMERIC);
+          if (error)
+            {
+              lex_next_error (lexer, -1, -1, "%s", error);
+              free (error);
+              goto done;
+            }
           has_format = true;
         }
       else

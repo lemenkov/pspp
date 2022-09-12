@@ -356,15 +356,15 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
                          enum which_formats which_formats)
 {
   const struct variable **vars;
-  size_t n_vars, var_idx;
+  size_t n_vars;
+  if (!parse_variables_const_pool (lexer, tmp_pool, dict,
+                                   &vars, &n_vars, PV_DUPLICATE))
+    return false;
+
   struct fmt_spec *formats, *f;
   size_t n_formats;
   bool add_space;
-
-  if (!parse_variables_const_pool (lexer, tmp_pool, dict,
-			     &vars, &n_vars, PV_DUPLICATE))
-    return false;
-
+  int formats_start = lex_ofs (lexer);
   if (lex_is_number (lexer) || lex_token (lexer) == T_LPAREN)
     {
       if (!parse_var_placements (lexer, tmp_pool, n_vars, FMT_FOR_OUTPUT,
@@ -374,13 +374,11 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
     }
   else
     {
-      size_t i;
-
       lex_match (lexer, T_ASTERISK);
 
       formats = pool_nmalloc (tmp_pool, n_vars, sizeof *formats);
       n_formats = n_vars;
-      for (i = 0; i < n_vars; i++)
+      for (size_t i = 0; i < n_vars; i++)
         {
           const struct variable *v = vars[i];
           formats[i] = (which_formats == PRINT
@@ -389,36 +387,40 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
         }
       add_space = which_formats == PRINT;
     }
+  int formats_end = lex_ofs (lexer) - 1;
 
-  var_idx = 0;
+  size_t var_idx = 0;
   for (f = formats; f < &formats[n_formats]; f++)
     if (!execute_placement_format (f, record, column))
       {
-        const struct variable *var;
-        struct prt_out_spec *spec;
+        const struct variable *var = vars[var_idx++];
+        char *error = fmt_check_width_compat__ (f, var_get_name (var),
+                                                var_get_width (var));
+        if (error)
+          {
+            lex_ofs_error (lexer, formats_start, formats_end, "%s", error);
+            free (error);
+            return false;
+          }
 
-        var = vars[var_idx++];
-        if (!fmt_check_width_compat (f, var_get_name (var),
-                                     var_get_width (var)))
-          return false;
+        struct prt_out_spec *spec = pool_alloc (trns->pool, sizeof *spec);
+        *spec = (struct prt_out_spec) {
+          .type = PRT_VAR,
+          .record = *record,
+          .first_column = *column,
+          .var = var,
+          .format = *f,
+          .add_space = add_space,
 
-        spec = pool_alloc (trns->pool, sizeof *spec);
-        spec->type = PRT_VAR;
-        spec->record = *record;
-        spec->first_column = *column;
-        spec->var = var;
-        spec->format = *f;
-        spec->add_space = add_space;
-
-        /* This is a completely bizarre twist for compatibility:
-           WRITE outputs the system-missing value as a field
-           filled with spaces, instead of using the normal format
-           that usually contains a period. */
-        spec->sysmis_as_spaces = (which_formats == WRITE
-                                  && var_is_numeric (var)
-                                  && (fmt_get_category (spec->format.type)
-                                      != FMT_CAT_BINARY));
-
+          /* This is a completely bizarre twist for compatibility: WRITE
+             outputs the system-missing value as a field filled with spaces,
+             instead of using the normal format that usually contains a
+             period. */
+          .sysmis_as_spaces = (which_formats == WRITE
+                               && var_is_numeric (var)
+                               && (fmt_get_category (f->type)
+                                   != FMT_CAT_BINARY)),
+        };
         ll_push_tail (&trns->specs, &spec->ll);
 
         *column += f->w + add_space;

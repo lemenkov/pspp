@@ -523,8 +523,13 @@ parse_FORMAT (struct lexer *lexer)
   if (!parse_format_specifier (lexer, &fmt))
     return false;
 
-  if (!fmt_check_output (&fmt))
-    return false;
+  char *error = fmt_check_output__ (&fmt);
+  if (error)
+    {
+      lex_next_error (lexer, -1, -1, "%s", error);
+      free (error);
+      return false;
+    }
 
   int end = lex_ofs (lexer) - 1;
   if (fmt_is_string (fmt.type))
