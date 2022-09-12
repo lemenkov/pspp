@@ -47,40 +47,28 @@
 #define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
-enum numbering
-  {
-    format_unnumbered,
-    format_numbered
-  };
-
-
 struct lst_cmd
-{
-  long first;
-  long last;
-  long step;
-  const struct variable **v_variables;
-  size_t n_variables;
-  enum numbering numbering;
-};
-
+  {
+    long first;
+    long last;
+    long step;
+    const struct variable **vars;
+    size_t n_vars;
+    bool number_cases;
+  };
 
 static int
 list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
 {
   const struct dictionary *dict = dataset_dict (ds);
 
-  bool ok;
-  int i;
+  struct subcase sc;
+  subcase_init_empty (&sc);
+  for (size_t i = 0; i < lcmd->n_vars; i++)
+    subcase_add_var (&sc, lcmd->vars[i], SC_ASCEND);
+
   struct casegrouper *grouper;
   struct casereader *group;
-  struct subcase sc;
-
-  subcase_init_empty (&sc);
-  for (i = 0; i < lcmd->n_variables; i++)
-    subcase_add_var (&sc, lcmd->v_variables[i], SC_ASCEND);
-
-
   grouper = casegrouper_create_splits (proc_open (ds), dict);
   while (casegrouper_get_next_group (grouper, &group))
     {
@@ -101,13 +89,13 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
 
       struct pivot_dimension *variables = pivot_dimension_create (
         table, PIVOT_AXIS_COLUMN, N_("Variables"));
-      for (int i = 0; i < lcmd->n_variables; i++)
+      for (size_t i = 0; i < lcmd->n_vars; i++)
         pivot_category_create_leaf (
-          variables->root, pivot_value_new_variable (lcmd->v_variables[i]));
+          variables->root, pivot_value_new_variable (lcmd->vars[i]));
 
       struct pivot_dimension *cases = pivot_dimension_create (
         table, PIVOT_AXIS_ROW, N_("Case Number"));
-      if (lcmd->numbering == format_numbered)
+      if (lcmd->number_cases)
         cases->root->show_label = true;
       else
         cases->hide_all_labels = true;
@@ -119,20 +107,21 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
             cases->root, pivot_value_new_integer (case_num));
           case_num += lcmd->step;
 
-          for (int i = 0; i < lcmd->n_variables; i++)
+          for (size_t i = 0; i < lcmd->n_vars; i++)
             pivot_table_put2 (table, i, case_idx,
                               pivot_value_new_var_value (
-                                lcmd->v_variables[i], case_data_idx (c, i)));
+                                lcmd->vars[i], case_data_idx (c, i)));
         }
       casereader_destroy (group);
 
       pivot_table_submit (table);
     }
-  ok = casegrouper_destroy (grouper);
+
+  bool ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
 
   subcase_uninit (&sc);
-  free (lcmd->v_variables);
+  free (lcmd->vars);
 
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 }
@@ -142,17 +131,13 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
 int
 cmd_list (struct lexer *lexer, struct dataset *ds)
 {
-  struct lst_cmd cmd;
   const struct dictionary *dict = dataset_dict (ds);
 
-  /* Fill in defaults. */
-  cmd.step = 1;
-  cmd.first = 1;
-  cmd.last = LONG_MAX;
-  cmd.n_variables = 0;
-  cmd.v_variables = NULL;
-  cmd.numbering = format_unnumbered;
-
+  struct lst_cmd cmd = {
+    .step = 1,
+    .first = 1,
+    .last = LONG_MAX,
+  };
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -160,99 +145,74 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
       if (lex_match_id (lexer, "VARIABLES"))
         {
           lex_match (lexer, T_EQUALS);
-          if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0))
-            {
-              msg (SE, _("No variables specified."));
-              return CMD_FAILURE;
-            }
+          free (cmd.vars);
+          cmd.vars = NULL;
+          if (!parse_variables_const (lexer, dict, &cmd.vars, &cmd.n_vars,
+                                      PV_DUPLICATE))
+            goto error;
         }
       else if (lex_match_id (lexer, "FORMAT"))
         {
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "NUMBERED"))
-            {
-              cmd.numbering = format_numbered;
-            }
+            cmd.number_cases = true;
           else if (lex_match_id (lexer, "UNNUMBERED"))
-            {
-              cmd.numbering = format_unnumbered;
-            }
+            cmd.number_cases = false;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "NUMBERED", "UNNUMBERED");
               goto error;
             }
         }
-      /* example: LIST /CASES=FROM 1 TO 25 BY 5. */
       else if (lex_match_id (lexer, "CASES"))
         {
           lex_match (lexer, T_EQUALS);
-          if (lex_match_id (lexer, "FROM") && lex_force_int (lexer))
+
+          if (lex_match_id (lexer, "FROM"))
             {
+              if (!lex_force_int_range (lexer, "FROM", 1, LONG_MAX))
+                goto error;
               cmd.first = lex_integer (lexer);
               lex_get (lexer);
             }
+          else
+            cmd.first = 1;
 
-          if ((lex_match (lexer, T_TO) && lex_force_int (lexer))
-              || lex_is_integer (lexer))
+          if (lex_match (lexer, T_TO) || lex_is_integer (lexer))
             {
+              if (!lex_force_int_range (lexer, "TO", cmd.first, LONG_MAX))
+                goto error;
               cmd.last = lex_integer (lexer);
               lex_get (lexer);
             }
+          else
+            cmd.last = LONG_MAX;
 
-          if (lex_match (lexer, T_BY) && lex_force_int (lexer))
+          if (lex_match (lexer, T_BY))
             {
+              if (!lex_force_int_range (lexer, "TO", 1, LONG_MAX))
+                goto error;
               cmd.step = lex_integer (lexer);
               lex_get (lexer);
             }
+          else
+            cmd.step = 1;
         }
-      else if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0))
+      else
         {
-          return CMD_FAILURE;
+          free (cmd.vars);
+          cmd.vars = NULL;
+          if (!parse_variables_const (lexer, dict, &cmd.vars, &cmd.n_vars,
+                                       PV_DUPLICATE))
+            goto error;
         }
     }
 
-
-  /* Verify arguments. */
-  if (cmd.first > cmd.last)
-    {
-      int t;
-      msg (SW, _("The first case (%ld) specified precedes the last case (%ld) "
-                 "specified.  The values will be swapped."), cmd.first, cmd.last);
-      t = cmd.first;
-      cmd.first = cmd.last;
-      cmd.last = t;
-    }
-
-  if (cmd.first < 1)
-    {
-      msg (SW, _("The first case (%ld) to list is numbered less than 1.  "
-                 "The value is being reset to 1."), cmd.first);
-      cmd.first = 1;
-    }
-
-  if (cmd.last < 1)
-    {
-      msg (SW, _("The last case (%ld) to list is numbered less than 1.  "
-                 "The value is being reset to 1."), cmd.last);
-      cmd.last = 1;
-    }
-
-  if (cmd.step < 1)
-    {
-      msg (SW, _("The step value %ld is less than 1.  The value is being "
-                 "reset to 1."), cmd.step);
-      cmd.step = 1;
-    }
-
-  /* If no variables were explicitly provided, then default to ALL */
-  if (cmd.n_variables == 0)
-    dict_get_vars (dict, &cmd.v_variables, &cmd.n_variables,
-                   DC_SYSTEM | DC_SCRATCH);
-
+  if (!cmd.n_vars)
+    dict_get_vars (dict, &cmd.vars, &cmd.n_vars, DC_SYSTEM | DC_SCRATCH);
   return list_execute (&cmd, ds);
 
  error:
-  free (cmd.v_variables);
+  free (cmd.vars);
   return CMD_FAILURE;
 }

@@ -325,3 +325,40 @@ Case Number,forename,height
 4,David,109.10
 ])
 AT_CLEANUP
+
+AT_SETUP([LIST syntax errors])
+AT_DATA([list.sps], [dnl
+DATA LIST LIST NOTABLE /x.
+LIST VARIABLES=**.
+LIST FORMAT=**.
+LIST CASES=FROM -1.
+LIST CASES=FROM 5 TO 4.
+LIST CASES=BY 0.
+LIST **.
+])
+AT_CHECK([pspp -O format=csv list.sps], [1], [dnl
+"list.sps:2.16-2.17: error: LIST: Syntax error expecting variable name.
+    2 | LIST VARIABLES=**.
+      |                ^~"
+
+"list.sps:3.13-3.14: error: LIST: Syntax error expecting NUMBERED or UNNUMBERED.
+    3 | LIST FORMAT=**.
+      |             ^~"
+
+"list.sps:4.17-4.18: error: LIST: Syntax error expecting positive integer for FROM.
+    4 | LIST CASES=FROM -1.
+      |                 ^~"
+
+"list.sps:5.22: error: LIST: Syntax error expecting integer 5 or greater for TO.
+    5 | LIST CASES=FROM 5 TO 4.
+      |                      ^"
+
+"list.sps:6.15: error: LIST: Syntax error expecting positive integer for TO.
+    6 | LIST CASES=BY 0.
+      |               ^"
+
+"list.sps:7.6-7.7: error: LIST: Syntax error expecting variable name.
+    7 | LIST **.
+      |      ^~"
+])
+AT_CLEANUP
