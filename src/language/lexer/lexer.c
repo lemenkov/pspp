@@ -1866,9 +1866,11 @@ void
 lex_discard_noninteractive (struct lexer *lexer)
 {
   struct lex_source *src = lex_source__ (lexer);
-
   if (src != NULL)
     {
+      if (src->reader->error == LEX_ERROR_IGNORE)
+        return;
+
       lex_stage_clear (&src->pp);
       lex_stage_clear (&src->merge);
       lex_source_clear_parse (src);

@@ -142,17 +142,25 @@ main (int argc, char **argv)
 	break;
       else if (cmd_result_is_failure (result) && lex_token (lexer) != T_STOP)
         {
-          if (lex_get_error_mode (lexer) == LEX_ERROR_STOP)
+          switch (lex_get_error_mode (lexer))
             {
+            case LEX_ERROR_STOP:
               msg (MW, _("Error encountered while ERROR=STOP is effective."));
               lex_discard_noninteractive (lexer);
-            }
-          else if (result == CMD_CASCADING_FAILURE
-                   && lex_get_error_mode (lexer) != LEX_ERROR_TERMINAL)
-            {
-              msg (SE, _("Stopping syntax file processing here to avoid "
-                         "a cascade of dependent command failures."));
-              lex_discard_noninteractive (lexer);
+              break;
+
+            case LEX_ERROR_CONTINUE:
+              if (result == CMD_CASCADING_FAILURE)
+                {
+                  msg (SE, _("Stopping syntax file processing here to avoid "
+                             "a cascade of dependent command failures."));
+                  lex_discard_noninteractive (lexer);
+                }
+              break;
+
+            case LEX_ERROR_TERMINAL:
+            case LEX_ERROR_IGNORE:
+              break;
             }
         }
 

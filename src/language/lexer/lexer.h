@@ -40,7 +40,8 @@ enum lex_error_mode
     LEX_ERROR_TERMINAL,        /* Discard input line and continue reading. */
     LEX_ERROR_CONTINUE,        /* Continue to next command, except for
                                   cascading failures. */
-    LEX_ERROR_STOP             /* Stop processing. */
+    LEX_ERROR_IGNORE,          /* Continue, even for cascading failures. */
+    LEX_ERROR_STOP,            /* Stop processing. */
   };
 
 /* Reads a single syntax file as a stream of bytes encoded in UTF-8.

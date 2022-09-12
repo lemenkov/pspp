@@ -130,13 +130,12 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 	{
 	  lex_match (lexer, T_EQUALS);
 	  if (lex_match_id (lexer, "CONTINUE"))
-	    {
-	      error_mode = LEX_ERROR_CONTINUE;
-	    }
+            error_mode = LEX_ERROR_CONTINUE;
 	  else if (lex_match_id (lexer, "STOP"))
-	    {
-	      error_mode = LEX_ERROR_STOP;
-	    }
+            error_mode = LEX_ERROR_STOP;
+          else if (settings_get_testing_mode ()
+                   && lex_match_id (lexer, "IGNORE"))
+            error_mode = LEX_ERROR_IGNORE;
 	  else
 	    {
 	      lex_error_expecting (lexer, "CONTINUE", "STOP");
