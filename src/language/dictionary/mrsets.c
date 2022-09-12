@@ -79,15 +79,21 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
              enum mrset_type type)
 {
   const char *subcommand_name = type == MRSET_MD ? "MDGROUP" : "MCGROUP";
-  bool labelsource_varlabel;
-  bool has_value;
 
   struct mrset *mrset = XZALLOC (struct mrset);
   mrset->type = type;
   mrset->cat_source = MRSET_VARLABELS;
 
-  labelsource_varlabel = false;
-  has_value = false;
+  bool labelsource_varlabel = false;
+  bool has_value = false;
+
+  int vars_start = 0;
+  int vars_end = 0;
+  int value_ofs = 0;
+  int labelsource_start = 0;
+  int labelsource_end = 0;
+  int label_start = 0;
+  int label_end = 0;
   while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "NAME"))
@@ -113,22 +119,27 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             goto error;
 
           free (mrset->vars);
+          vars_start = lex_ofs (lexer);
           if (!parse_variables (lexer, dict, &mrset->vars, &mrset->n_vars,
                                 PV_SAME_TYPE | PV_NO_SCRATCH))
             goto error;
+          vars_end = lex_ofs (lexer) - 1;
 
           if (mrset->n_vars < 2)
             {
-              msg (SE, _("VARIABLES specified only variable %s on %s, but "
-                         "at least two variables are required."),
+              lex_ofs_error (lexer, vars_start, vars_end,
+                             _("VARIABLES specified only variable %s on %s, but "
+                               "at least two variables are required."),
                    var_get_name (mrset->vars[0]), subcommand_name);
               goto error;
             }
         }
       else if (lex_match_id (lexer, "LABEL"))
         {
+          label_start = lex_ofs (lexer) - 1;
           if (!lex_force_match (lexer, T_EQUALS) || !lex_force_string (lexer))
             goto error;
+          label_end = lex_ofs (lexer);
 
           free (mrset->label);
           mrset->label = ss_xstrdup (lex_tokss (lexer));
@@ -141,6 +152,8 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             goto error;
 
           labelsource_varlabel = true;
+          labelsource_start = lex_ofs (lexer) - 3;
+          labelsource_end = lex_ofs (lexer) - 1;
         }
       else if (type == MRSET_MD && lex_match_id (lexer, "VALUE"))
         {
@@ -148,6 +161,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             goto error;
 
           has_value = true;
+          value_ofs = lex_ofs (lexer);
           if (lex_is_number (lexer))
             {
               if (!lex_is_integer (lexer))
@@ -232,10 +246,11 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
         {
           if (mrset->width == 0)
             {
-              msg (SE, _("MDGROUP subcommand for group %s specifies a string "
-                         "VALUE, but the variables specified for this group "
-                         "are numeric."),
-                   mrset->name);
+              lex_ofs_error (lexer, value_ofs, value_ofs,
+                             _("MDGROUP subcommand for group %s specifies a "
+                               "string VALUE, but the variables specified for "
+                               "this group are numeric."),
+                             mrset->name);
               goto error;
             }
           else {
@@ -256,12 +271,14 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
               }
             if (mrset->width > min_width)
               {
-                msg (SE, _("VALUE string on MDGROUP subcommand for group "
-                           "%s is %d bytes long, but it must be no longer "
-                           "than the narrowest variable in the group, "
-                           "which is %s with a width of %d bytes."),
-                     mrset->name, mrset->width,
-                     var_get_name (shortest_var), min_width);
+                lex_ofs_error (lexer, value_ofs, value_ofs,
+                               _("VALUE string on MDGROUP subcommand for "
+                                 "group %s is %d bytes long, but it must be "
+                                 "no longer than the narrowest variable in "
+                                 "the group, which is %s with a width of "
+                                 "%d bytes."),
+                               mrset->name, mrset->width,
+                               var_get_name (shortest_var), min_width);
                 goto error;
               }
           }
@@ -270,9 +287,10 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
         {
           if (mrset->width != 0)
             {
-              msg (SE, _("MDGROUP subcommand for group %s specifies a string "
-                         "VALUE, but the variables specified for this group "
-                         "are numeric."),
+              lex_ofs_error (lexer, value_ofs, value_ofs,
+                             _("MDGROUP subcommand for group %s specifies a "
+                               "string VALUE, but the variables specified for "
+                               "this group are numeric."),
                    mrset->name);
               goto error;
             }
@@ -282,16 +300,24 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
       if (labelsource_varlabel)
         {
           if (mrset->cat_source != MRSET_COUNTEDVALUES)
-            msg (SW, _("MDGROUP subcommand for group %s specifies "
-                       "LABELSOURCE=VARLABEL but not "
-                       "CATEGORYLABELS=COUNTEDVALUES.  "
-                       "Ignoring LABELSOURCE."),
+            lex_ofs_msg (lexer, SW, labelsource_start, labelsource_end,
+                         _("MDGROUP subcommand for group %s specifies "
+                           "LABELSOURCE=VARLABEL but not "
+                           "CATEGORYLABELS=COUNTEDVALUES.  "
+                           "Ignoring LABELSOURCE."),
                  mrset->name);
           else if (mrset->label)
-            msg (SW, _("MDGROUP subcommand for group %s specifies both LABEL "
-                       "and LABELSOURCE, but only one of these subcommands "
-                       "may be used at a time.  Ignoring LABELSOURCE."),
-                 mrset->name);
+            {
+              msg (SW, _("MDGROUP subcommand for group %s specifies both "
+                         "LABEL and LABELSOURCE, but only one of these "
+                         "subcommands may be used at a time.  "
+                         "Ignoring LABELSOURCE."),
+                   mrset->name);
+              lex_ofs_msg (lexer, SN, label_start, label_end,
+                           _("Here is the %s setting."), "LABEL");
+              lex_ofs_msg (lexer, SN, labelsource_start, labelsource_end,
+                           _("Here is the %s setting."), "LABELSOURCE");
+            }
           else
             {
               size_t i;
@@ -328,12 +354,13 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                   if (other_name == NULL)
                     stringi_map_insert (&seen, label, name);
                   else
-                    msg (SW, _("Variables %s and %s specified as part of "
-                               "multiple dichotomy group %s have the same "
-                               "variable label.  Categories represented by "
-                               "these variables will not be distinguishable "
-                               "in output."),
-                         other_name, name, mrset->name);
+                    lex_ofs_msg (lexer, SW, vars_start, vars_end,
+                                 _("Variables %s and %s specified as part of "
+                                   "multiple dichotomy group %s have the same "
+                                   "variable label.  Categories represented by "
+                                   "these variables will not be distinguishable "
+                                   "in output."),
+                                 other_name, name, mrset->name);
                 }
             }
           stringi_map_destroy (&seen);
@@ -358,11 +385,12 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
               val_labs = var_get_value_labels (var);
               label = val_labs_find (val_labs, &value);
               if (label == NULL)
-                msg (SW, _("Variable %s specified as part of multiple "
-                           "dichotomy group %s (which has "
-                           "CATEGORYLABELS=COUNTEDVALUES) has no value label "
-                           "for its counted value.  This category will not "
-                           "be distinguishable in output."),
+                lex_ofs_msg (lexer, SW, vars_start, vars_end,
+                             _("Variable %s specified as part of multiple "
+                               "dichotomy group %s (which has "
+                               "CATEGORYLABELS=COUNTEDVALUES) has no value "
+                               "label for its counted value.  This category "
+                               "will not be distinguishable in output."),
                      name, mrset->name);
               else
                 {
@@ -371,13 +399,14 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                   if (other_name == NULL)
                     stringi_map_insert (&seen, label, name);
                   else
-                    msg (SW, _("Variables %s and %s specified as part of "
-                               "multiple dichotomy group %s (which has "
-                               "CATEGORYLABELS=COUNTEDVALUES) have the same "
-                               "value label for the group's counted "
-                               "value.  These categories will not be "
-                               "distinguishable in output."),
-                         other_name, name, mrset->name);
+                    lex_ofs_msg (lexer, SW, vars_start, vars_end,
+                                 _("Variables %s and %s specified as part of "
+                                   "multiple dichotomy group %s (which has "
+                                   "CATEGORYLABELS=COUNTEDVALUES) have the same "
+                                   "value label for the group's counted "
+                                   "value.  These categories will not be "
+                                   "distinguishable in output."),
+                                 other_name, name, mrset->name);
                 }
             }
           stringi_map_destroy (&seen);
@@ -429,12 +458,13 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                                               var_get_print_format (var),
                                               settings_get_fmt_settings ());
                           c->warned = true;
-                          msg (SW, _("Variables specified on MCGROUP should "
-                                     "have the same categories, but %s and %s "
-                                     "(and possibly others) in multiple "
-                                     "category group %s have different "
-                                     "value labels for value %s."),
-                               c->var_name, name, mrset->name, s);
+                          lex_ofs_msg (lexer, SW, vars_start, vars_end,
+                                       _("Variables specified on MCGROUP should "
+                                         "have the same categories, but %s and "
+                                         "%s (and possibly others) in multiple "
+                                         "category group %s have different "
+                                         "value labels for value %s."),
+                                       c->var_name, name, mrset->name, s);
                           free (s);
                         }
                       goto found;
@@ -536,8 +566,9 @@ parse_display (struct lexer *lexer, struct dictionary *dict)
   if (n == 0)
     {
       if (dict_get_n_mrsets (dict) == 0)
-        msg (SN, _("The active dataset dictionary does not contain any "
-                   "multiple response sets."));
+        lex_next_msg (lexer, SN, -1, -1,
+                      _("The active dataset dictionary does not contain any "
+                        "multiple response sets."));
       stringi_set_destroy (&mrset_names_set);
       return true;
     }

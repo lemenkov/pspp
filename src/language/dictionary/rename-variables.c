@@ -59,6 +59,7 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
 
       if (!lex_match (lexer, T_LPAREN))
         opts |= PV_SINGLE;
+      int start_ofs = lex_ofs (lexer);
       if (!parse_variables (lexer, dataset_dict (ds),
                             &vars_to_be_renamed, &n_vars_to_be_renamed, opts))
 	{
@@ -73,10 +74,12 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
 	{
 	  goto lossage;
 	}
+      int end_ofs = lex_ofs (lexer) - 1;
       if (n_new_names != n_vars_to_be_renamed)
         {
-          msg (SE, _("Differing number of variables in old name list "
-                     "(%zu) and in new name list (%zu)."),
+          lex_ofs_error (lexer, start_ofs, end_ofs,
+                         _("Differing number of variables in old name list "
+                           "(%zu) and in new name list (%zu)."),
 	       n_vars_to_be_renamed, n_new_names);
           goto lossage;
         }
@@ -91,7 +94,8 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
                          vars_to_be_renamed, new_names, n_new_names,
                          &err_name))
     {
-      msg (SE, _("Renaming would duplicate variable name %s."), err_name);
+      lex_ofs_error (lexer, 2, lex_ofs (lexer) - 1,
+                     _("Renaming would duplicate variable name %s."), err_name);
       goto lossage;
     }
 

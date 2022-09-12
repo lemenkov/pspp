@@ -389,7 +389,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
                                 vl, n, attribute_flags);
         }
       else
-        msg (SW, _("No variables to display."));
+        msg (SN, _("No variables to display."));
 
       free (vl);
     }

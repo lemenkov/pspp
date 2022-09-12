@@ -171,7 +171,9 @@ MISSING VALUES str1 ('abc', 'def', 'ghi', 'jkl').
 MISSING VALUES num1 (2 THRU 1).
 ])
 AT_CHECK([pspp -O format=csv missing-values.sps], [1], [dnl
-missing-values.sps:5: error: MISSING VALUES: Missing values provided are too long to assign to variable of width 3.
+"missing-values.sps:5.35-5.41: error: MISSING VALUES: Missing values are too long to assign to variable str2 with width 3.
+    5 | MISSING VALUES str1 str2 longstr ('abcde').
+      |                                   ^~~~~~~"
 
 "missing-values.sps:8.25-8.37: error: MISSING VALUES: Truncating missing value to maximum acceptable length (8 bytes).
     8 | MISSING VALUES longstr ('abcdefghijk').
@@ -187,13 +189,21 @@ missing-values.sps:5: error: MISSING VALUES: Missing values provided are too lon
 
 missing-values.sps:14: error: MISSING VALUES: Cannot mix numeric variables (e.g. num1) and string variables (e.g. str1) within a single list.
 
-missing-values.sps:17: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+"missing-values.sps:17.22-17.31: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+   17 | MISSING VALUES num1 (1, 2, 3, 4).
+      |                      ^~~~~~~~~~"
 
-missing-values.sps:18: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+"missing-values.sps:18.22-18.39: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+   18 | MISSING VALUES num1 (1 THRU 2, 3 THRU 4).
+      |                      ^~~~~~~~~~~~~~~~~~"
 
-missing-values.sps:19: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+"missing-values.sps:19.22-19.35: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+   19 | MISSING VALUES num1 (1, 2 THRU 3, 4).
+      |                      ^~~~~~~~~~~~~~"
 
-missing-values.sps:20: error: MISSING VALUES: Too many string missing values.  At most three individual values are allowed.
+"missing-values.sps:20.22-20.47: error: MISSING VALUES: Too many string missing values.  At most three individual values are allowed.
+   20 | MISSING VALUES str1 ('abc', 'def', 'ghi', 'jkl').
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 "missing-values.sps:23.22-23.29: warning: MISSING VALUES: The high end of the range (1) is below the low end (2).  The range will be treated as if reversed.
    23 | MISSING VALUES num1 (2 THRU 1).

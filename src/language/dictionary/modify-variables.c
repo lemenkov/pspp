@@ -303,18 +303,21 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	    }
 	  already_encountered |= 4;
 
+          int start_ofs = lex_ofs (lexer) - 1;
 	  lex_match (lexer, T_EQUALS);
 	  if (!parse_variables (lexer, dataset_dict (ds),
                                 &drop_vars, &n_drop, PV_NONE))
 	    goto done;
+          int end_ofs = lex_ofs (lexer) - 1;
           vm.drop_vars = drop_vars;
           vm.n_drop = n_drop;
 
           if (n_drop == dict_get_n_vars (dataset_dict (ds)))
             {
-              msg (SE, _("%s may not be used to delete all variables "
-                         "from the active dataset dictionary.  "
-                         "Use %s instead."), "MODIFY VARS", "NEW FILE");
+              lex_ofs_error (lexer, start_ofs, end_ofs,
+                             _("%s may not be used to delete all variables "
+                               "from the active dataset dictionary.  "
+                               "Use %s instead."), "MODIFY VARS", "NEW FILE");
               goto done;
             }
 	}

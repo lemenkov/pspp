@@ -177,6 +177,10 @@ struct crosstabulation
     double *row_tot;		/* Row totals. */
     double *col_tot;		/* Column totals. */
     double total;		/* Grand total. */
+
+    /* Syntax. */
+    int start_ofs;
+    int end_ofs;
   };
 
 /* Integer mode variable info. */
@@ -237,7 +241,7 @@ static void tabulate_general_case (struct crosstabulation *, const struct ccase 
                                    double weight);
 static void tabulate_integer_case (struct crosstabulation *, const struct ccase *,
                                    double weight);
-static void postcalc (struct crosstabs_proc *);
+static void postcalc (struct crosstabs_proc *, struct lexer *);
 
 static double
 round_weight (const struct crosstabs_proc *proc, double weight)
@@ -528,7 +532,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
       casereader_destroy (group);
 
       /* Output. */
-      postcalc (&proc);
+      postcalc (&proc, lexer);
     }
   bool ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
@@ -585,6 +589,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
 
   size_t nx = 1;
   int n_by = 0;
+  int vars_start = lex_ofs (lexer);
   for (;;)
     {
       by = xnrealloc (by, n_by + 1, sizeof *by);
@@ -594,7 +599,9 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
 	goto done;
       if (xalloc_oversized (nx, by_nvar[n_by]))
         {
-          msg (SE, _("Too many cross-tabulation variables or dimensions."));
+          lex_ofs_error (
+            lexer, vars_start, lex_ofs (lexer),
+            _("Too many cross-tabulation variables or dimensions."));
           goto done;
         }
       nx *= by_nvar[n_by];
@@ -608,6 +615,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
 	    break;
 	}
     }
+  int vars_end = lex_ofs (lexer) - 1;
 
   int *by_iter = XCALLOC (n_by, int);
   proc->pivots = xnrealloc (proc->pivots,
@@ -625,6 +633,8 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
         .n_consts = 0,
         .const_vars = NULL,
         .const_indexes = NULL,
+        .start_ofs = vars_start,
+        .end_ofs = vars_end,
       };
 
       for (int j = 0; j < n_by; j++)
@@ -856,7 +866,8 @@ static void enum_var_values (const struct crosstabulation *, int var_idx,
                              bool descending);
 static void free_var_values (const struct crosstabulation *, int var_idx);
 static void output_crosstabulation (struct crosstabs_proc *,
-                                struct crosstabulation *);
+                                    struct crosstabulation *,
+                                    struct lexer *);
 static void make_crosstabulation_subset (struct crosstabulation *xt,
                                      size_t row0, size_t row1,
                                      struct crosstabulation *subset);
@@ -865,7 +876,7 @@ static bool find_crosstab (struct crosstabulation *, size_t *row0p,
                            size_t *row1p);
 
 static void
-postcalc (struct crosstabs_proc *proc)
+postcalc (struct crosstabs_proc *proc, struct lexer *lexer)
 {
   /* Round hash table entries, if requested
 
@@ -912,7 +923,7 @@ postcalc (struct crosstabs_proc *proc)
   for (struct crosstabulation *xt = proc->pivots;
        xt < &proc->pivots[proc->n_pivots]; xt++)
     {
-      output_crosstabulation (proc, xt);
+      output_crosstabulation (proc, xt, lexer);
       if (proc->barchart)
         {
           int n_vars = (xt->n_vars > 2 ? 2 : xt->n_vars);
@@ -1127,7 +1138,8 @@ static void build_matrix (struct crosstabulation *);
 
 /* Output pivot table XT in the context of PROC. */
 static void
-output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
+output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt,
+                        struct lexer *lexer)
 {
   for (size_t i = 0; i < xt->n_vars; i++)
     enum_var_values (xt, i, proc->descending);
@@ -1143,8 +1155,9 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
 
       /* TRANSLATORS: The %s here describes a crosstabulation.  It takes the
          form "var1 * var2 * var3 * ...".  */
-      msg (SW, _("Crosstabulation %s contained no non-missing cases."),
-           ds_cstr (&vars));
+      lex_ofs_msg (lexer, SW, xt->start_ofs, xt->end_ofs,
+                   _("Crosstabulation %s contained no non-missing cases."),
+                   ds_cstr (&vars));
 
       ds_destroy (&vars);
       for (size_t i = 0; i < xt->n_vars; i++)

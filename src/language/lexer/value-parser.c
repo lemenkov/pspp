@@ -144,8 +144,26 @@ parse_value (struct lexer *lexer, union value *v, const struct variable *var)
     return parse_number (lexer, &v->f, &var_get_print_format (var)->type);
   else if (lex_force_string (lexer))
     {
-      const char *s = lex_tokcstr (lexer);
-      value_copy_str_rpad (v, width, CHAR_CAST_BUG (const uint8_t *, s), ' ');
+      struct substring out;
+      if (recode_pedantically (var_get_encoding (var), "UTF-8",
+                               lex_tokss (lexer), NULL, &out))
+        {
+          lex_error (lexer, _("This string is not representable in the "
+                              "dataset encoding."));
+          return false;
+        }
+      if (out.length > width)
+        {
+          lex_error (lexer, _("This %zu-byte string is too long for "
+                              "variable %s with width %d."),
+                     out.length, var_get_name (var), width);
+          ss_dealloc (&out);
+          return false;
+        }
+
+      value_copy_buf_rpad (v, width, CHAR_CAST (const uint8_t *, out.string),
+                           out.length, ' ');
+      ss_dealloc (&out);
     }
   else
     return false;

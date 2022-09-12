@@ -42,7 +42,9 @@ Table: Data List
 AÈIÖU,aeiou
 1.00,2.00
 
-dictionary.sps:8: error: RENAME VARIABLES: Renaming would duplicate variable name aèiöu.
+"dictionary.sps:8.17-8.29: error: RENAME VARIABLES: Renaming would duplicate variable name aèiöu.
+    8 | RENAME VARIABLE (aeiou=aèiöu).
+      |                 ^~~~~~~~~~~~~"
 ])
 
 AT_CLEANUP

@@ -137,7 +137,11 @@ SAVE TRANSLATE
 ])
 
 AT_CHECK([pspp -O format=csv bad.sps], [1], [dnl
-"bad.sps:16: error: SAVE TRANSLATE: Cannot rename Var2 as Var3 because there already exists a variable named Var3.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
+"bad.sps:16.26-16.29: error: SAVE TRANSLATE: Cannot rename Var2 as Var3 because a variable named Var3 already exists.
+   16 |         (Var1 Var2 = one Var3 )
+      |                          ^~~~"
+
+"bad.sps:16: note: SAVE TRANSLATE: To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
 ])
 
 

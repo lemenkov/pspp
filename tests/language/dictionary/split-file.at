@@ -139,7 +139,9 @@ DATA LIST LIST NOTABLE /V1 TO V9.
 SPLIT FILE BY V1 TO V9.
 ])
 AT_CHECK([pspp split-file.sps], [1], [dnl
-split-file.sps:2: error: SPLIT FILE: At most 8 split variables may be
+split-file.sps:2.15-2.22: error: SPLIT FILE: At most 8 split variables may be
 specified.
+    2 | SPLIT FILE BY V1 TO V9.
+      |               ^~~~~~~~
 ])
 AT_CLEANUP

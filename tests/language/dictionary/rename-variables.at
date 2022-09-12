@@ -111,7 +111,9 @@ RENAME VARIABLES (brakeFluid=applecarts y=bananamobiles).
 ])
 
 AT_CHECK([pspp -o pspp.csv rename-variables.sps], [1], [dnl
-rename-variables.sps:2: error: RENAME VARIABLES: Differing number of variables in old name list (1) and in new name list (2).
+rename-variables.sps:2.19-2.41: error: RENAME VARIABLES: Differing number of variables in old name list (1) and in new name list (2).
+    2 | RENAME VARIABLES (brakeFluid=applecarts y=bananamobiles).
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~
 ])
 AT_CLEANUP
 

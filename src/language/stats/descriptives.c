@@ -214,6 +214,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
   dsc->z_writer = NULL;
 
   /* Parse DESCRIPTIVES. */
+  int z_ofs = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "MISSING"))
@@ -236,7 +237,10 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
             }
         }
       else if (lex_match_id (lexer, "SAVE"))
-        save_z_scores = 1;
+        {
+          save_z_scores = 1;
+          z_ofs = lex_ofs (lexer) - 1;
+        }
       else if (lex_match_id (lexer, "FORMAT"))
         {
           lex_match (lexer, T_EQUALS);
@@ -337,6 +341,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                 {
                   if (!lex_force_id (lexer))
                     goto error;
+                  z_ofs = lex_ofs (lexer);
                   if (try_name (dict, dsc, lex_tokcstr (lexer)))
                     {
                       struct dsc_var *dsc_var = &dsc->vars[dsc->n_vars - 1];
@@ -396,8 +401,9 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
          that) when TEMPORARY is in effect, but in the meantime this at least
          prevents a use-after-free error.  See bug #38786.  */
       if (proc_make_temporary_transformations_permanent (ds))
-        msg (SW, _("DESCRIPTIVES with Z scores ignores TEMPORARY.  "
-                   "Temporary transformations will be made permanent."));
+        lex_ofs_msg (lexer, SW, z_ofs, z_ofs,
+                     _("DESCRIPTIVES with Z scores ignores TEMPORARY.  "
+                       "Temporary transformations will be made permanent."));
 
       proto = caseproto_create ();
       for (i = 0; i < 1 + 2 * n_zs; i++)

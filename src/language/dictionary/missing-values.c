@@ -27,6 +27,7 @@
 #include "data/variable.h"
 #include "language/command.h"
 #include "language/lexer/lexer.h"
+#include "language/lexer/token.h"
 #include "language/lexer/value-parser.h"
 #include "language/lexer/variable-parser.h"
 #include "libpspp/i18n.h"
@@ -58,6 +59,15 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
       for (i = 0; i < nv; i++)
         var_clear_missing_values (v[i]);
 
+      int start_ofs = lex_ofs (lexer);
+      int end_ofs;
+      for (end_ofs = start_ofs; ; end_ofs++)
+        {
+          enum token_type next = lex_ofs_token (lexer, end_ofs + 1)->type;
+          if (next == T_RPAREN || next == T_ENDCMD || next == T_STOP)
+            break;
+        }
+
       if (!lex_match (lexer, T_RPAREN))
         {
           struct missing_values mv;
@@ -88,9 +98,10 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                         ? mv_add_num (&mv, x)
                         : mv_add_range (&mv, x, y)))
                     {
-                      msg (SE, _("Too many numeric missing values.  At most "
-                                 "three individual values or one value and "
-                                 "one range are allowed."));
+                      lex_ofs_error (lexer, start_ofs, end_ofs,
+                                     _("Too many numeric missing values.  At "
+                                       "most three individual values or one "
+                                       "value and one range are allowed."));
                       ok = false;
                     }
 
@@ -133,9 +144,10 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                   if (!mv_add_str (&mv, CHAR_CAST (const uint8_t *, raw_s),
                                    strlen (raw_s)))
                     {
-                      msg (SE,
-                           _("Too many string missing values.  "
-                             "At most three individual values are allowed."));
+                      lex_ofs_error (lexer, start_ofs, end_ofs,
+                                     _("Too many string missing values.  "
+                                       "At most three individual values "
+                                       "are allowed."));
                       ok = false;
                     }
                   free (raw_s);
@@ -151,9 +163,10 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                 var_set_missing_values (v[i], &mv);
               else
                 {
-                  msg (SE, _("Missing values provided are too long to assign "
-                             "to variable of width %d."),
-                       var_get_width (v[i]));
+                  lex_ofs_error (lexer, start_ofs, end_ofs,
+                                 _("Missing values are too long to assign "
+                                   "to variable %s with width %d."),
+                                 var_get_name (v[i]), var_get_width (v[i]));
                   ok = false;
                 }
             }

@@ -96,8 +96,12 @@ emit_END_CASE (struct dataset *ds)
 int
 cmd_input_program (struct lexer *lexer, struct dataset *ds)
 {
+  struct msg_location *location = lex_ofs_location (lexer, 0, 1);
   if (!lex_match (lexer, T_ENDCMD))
-    return lex_end_of_command (lexer);
+    {
+      msg_location_destroy (location);
+      return lex_end_of_command (lexer);
+    }
 
   struct session *session = session_create (dataset_session (ds));
   struct dataset *inp_ds = dataset_create (session, "INPUT PROGRAM");
@@ -123,6 +127,7 @@ cmd_input_program (struct lexer *lexer, struct dataset *ds)
             msg (SE, _("Unexpected end-of-file within %s."), "INPUT PROGRAM");
           inside_input_program = false;
           destroy_input_program (inp);
+          msg_location_destroy (location);
           return result;
         }
     }
@@ -131,18 +136,27 @@ cmd_input_program (struct lexer *lexer, struct dataset *ds)
   inside_input_program = false;
   proc_pop_transformations (inp->ds, &inp->xforms);
 
+  struct msg_location *end = lex_ofs_location (lexer, 0, 2);
+  msg_location_merge (&location, end);
+  location->omit_underlines = true;
+  msg_location_destroy (end);
+
   if (!saw_DATA_LIST && !saw_END_FILE)
     {
-      msg (SE, _("Input program must contain %s or %s."), "DATA LIST", "END FILE");
+      msg_at (SE, location, _("Input program does not contain %s or %s."),
+              "DATA LIST", "END FILE");
       destroy_input_program (inp);
+      msg_location_destroy (location);
       return CMD_FAILURE;
     }
   if (dict_get_next_value_idx (dataset_dict (inp->ds)) == 0)
     {
-      msg (SE, _("Input program did not create any variables."));
+      msg_at (SE, location, _("Input program did not create any variables."));
       destroy_input_program (inp);
+      msg_location_destroy (location);
       return CMD_FAILURE;
     }
+  msg_location_destroy (location);
 
   /* Figure out how to initialize each input case. */
   inp->init = caseinit_create ();

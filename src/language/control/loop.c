@@ -122,9 +122,10 @@ cmd_loop (struct lexer *lexer, struct dataset *ds)
 }
 
 int
-cmd_inside_loop (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+cmd_inside_loop (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  msg (SE, _("This command cannot appear outside LOOP...END LOOP."));
+  lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                 _("This command cannot appear outside LOOP...END LOOP."));
   return CMD_FAILURE;
 }
 

@@ -147,9 +147,10 @@ cmd_do_if (struct lexer *lexer, struct dataset *ds)
 }
 
 int
-cmd_inside_do_if (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+cmd_inside_do_if (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  msg (SE, _("This command cannot appear outside DO IF...END IF."));
+  lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                 _("This command cannot appear outside DO IF...END IF."));
   return CMD_FAILURE;
 }
 

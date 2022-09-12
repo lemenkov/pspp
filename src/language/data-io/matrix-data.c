@@ -871,8 +871,10 @@ parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
                            struct variable ***vars, size_t **indexes,
                            size_t *n_vars)
 {
+  int start_ofs = lex_ofs (lexer);
   if (!parse_variables (lexer, dict, vars, n_vars, 0))
     return false;
+  int end_ofs = lex_ofs (lexer) - 1;
 
   *indexes = xnmalloc (*n_vars, sizeof **indexes);
   for (size_t i = 0; i < *n_vars; i++)
@@ -880,7 +882,8 @@ parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
       struct variable *v = (*vars)[i];
       if (!strcasecmp (var_get_name (v), "ROWTYPE_"))
         {
-          msg (SE, _("ROWTYPE_ is not allowed on SPLIT or FACTORS."));
+          lex_ofs_error (lexer, start_ofs, end_ofs,
+                         _("ROWTYPE_ is not allowed on SPLIT or FACTORS."));
           goto error;
         }
       (*indexes)[i] = var_get_dict_index (v);

@@ -303,10 +303,15 @@ END LOOP !.
 LOOP.
 ])
 AT_CHECK([pspp loop.sps], 1, [dnl
-loop.sps:2: error: BREAK: This command cannot appear outside LOOP...END LOOP.
-
-loop.sps:3: error: END LOOP: This command cannot appear outside LOOP...END
+loop.sps:2.1-2.5: error: BREAK: This command cannot appear outside LOOP...END
 LOOP.
+    2 | BREAK.
+      | ^~~~~
+
+loop.sps:3.1-3.8: error: END LOOP: This command cannot appear outside LOOP...
+END LOOP.
+    3 | END LOOP.
+      | ^~~~~~~~
 
 loop.sps:5: error: LOOP: Only one index clause may be specified.
 

@@ -26,13 +26,15 @@ struct dataset;
 struct dictionary;
 struct expression;
 struct lexer;
+struct msg_location;
 struct pool;
 union value;
 
 struct expression *expr_parse (struct lexer *, struct dataset *, enum val_type);
 struct expression *expr_parse_bool (struct lexer *, struct dataset *);
-struct expression *expr_parse_new_variable (struct lexer *, struct dataset *,
-                                            const char *new_var_name);
+struct expression *expr_parse_new_variable (
+  struct lexer *, struct dataset *,
+  const char *new_var_name, const struct msg_location *new_var_location);
 void expr_free (struct expression *);
 
 struct dataset;

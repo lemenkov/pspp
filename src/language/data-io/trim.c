@@ -62,16 +62,19 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
 
 /* Check that OLD_NAME can be renamed to NEW_NAME in DICT.  */
 static bool
-check_rename (const struct dictionary *dict, const char *old_name, const char *new_name)
+check_rename (struct lexer *lexer, int start_ofs, int end_ofs,
+              const struct dictionary *dict,
+              const char *old_name, const char *new_name)
 {
   if (dict_lookup_var (dict, new_name) != NULL)
     {
-      msg (SE, _("Cannot rename %s as %s because there already exists "
-                 "a variable named %s.  To rename variables with "
-                 "overlapping names, use a single RENAME subcommand "
-                 "such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, "
-                 "`/RENAME (A B C=B C A)'."),
-           old_name, new_name, new_name);
+      lex_ofs_error (lexer, start_ofs, end_ofs,
+                     _("Cannot rename %s as %s because a variable named %s "
+                       "already exists."),
+                     old_name, new_name, new_name);
+      msg (SN, _("To rename variables with overlapping names, use a single "
+                 "RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or "
+                 "equivalently, `/RENAME (A B C=B C A)'."));
       return false;
     }
   return true;
@@ -194,19 +197,21 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
         {
           /* These 3 tokens have already been checked in the
              try_to_sequence function.  */
+          int start_ofs = lex_ofs (lexer);
           lex_get (lexer);
           lex_get (lexer);
           lex_get (lexer);
+          int end_ofs = lex_ofs (lexer) - 1;
 
           /* Make sure the new names are suitable.  */
           for (int i = first; i <= last; ++i)
             {
-              int sz = strlen (prefix) + intlog10 (last) + 1;
-              char *vn = malloc (sz);
-              snprintf (vn, sz, "%s%d", prefix, i);
+              char *vn = xasprintf ("%s%d", prefix, i);
 
-              if (!check_rename (dict, var_get_name (oldvars[n_newvars]), vn))
+              if (!check_rename (lexer, start_ofs, end_ofs,
+                                 dict, var_get_name (oldvars[n_newvars]), vn))
                 {
+                  free (vn);
                   free (prefix);
                   goto fail;
                 }
@@ -232,9 +237,11 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
                 }
             }
 
-          if (!check_rename (dict, var_get_name (oldvars[n_newvars]), new_name))
+          int ofs = lex_ofs (lexer);
+          if (!check_rename (lexer, ofs, ofs,
+                             dict, var_get_name (oldvars[n_newvars]), new_name))
             goto fail;
-          newnames[n_newvars] = strdup (new_name);
+          newnames[n_newvars] = xstrdup (new_name);
           lex_get (lexer);
           n_newvars++;
         }

@@ -59,7 +59,10 @@ END INPUT PROGRAM.
 EXECUTE.
 ])
 AT_CHECK([pspp -O format=csv input-program.sps], [1], [dnl
-input-program.sps:3: error: INPUT PROGRAM: Input program must contain DATA LIST or END FILE.
+"input-program.sps:1.1-3.17: error: INPUT PROGRAM: Input program does not contain DATA LIST or END FILE.
+    1 | INPUT PROGRAM.
+    2 | STRING firstname lastname (a24) / address (a80).
+    3 | END INPUT PROGRAM."
 
 "input-program.sps:4.1-4.7: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
     4 | EXECUTE.
@@ -342,7 +345,10 @@ END FILE.
 END INPUT PROGRAM.
 ])
 AT_CHECK([pspp input-program.sps], 1, [dnl
-input-program.sps:3: error: INPUT PROGRAM: Input program did not create any
-variables.
+input-program.sps:1.1-3.17: error: INPUT PROGRAM: Input program did not create
+any variables.
+    1 | INPUT PROGRAM.
+    2 | END FILE.
+    3 | END INPUT PROGRAM.
 ])
 AT_CLEANUP

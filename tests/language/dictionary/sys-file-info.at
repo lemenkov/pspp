@@ -94,7 +94,7 @@ COMPUTE #x=0.
 DISPLAY SCRATCH.
 ])
 AT_CHECK([pspp -O format=csv sysfile-info.sps], [0], [dnl
-sysfile-info.sps:2: warning: DISPLAY: No variables to display.
+sysfile-info.sps:2: note: DISPLAY: No variables to display.
 
 Table: Variables
 Name

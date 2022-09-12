@@ -423,7 +423,7 @@ msg_to_string (const struct msg *m)
 
           int c0 = ln == l0 ? loc->start.column : 1;
           int c1 = ln == l1 ? loc->end.column : ss_utf8_count_columns (line);
-          if (c0 > 0 && c1 >= c0)
+          if (c0 > 0 && c1 >= c0 && !loc->omit_underlines)
             {
               ds_put_cstr (&s, "\n      |");
               ds_put_byte_multiple (&s, ' ', c0);

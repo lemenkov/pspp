@@ -94,10 +94,14 @@ END REPEAT.
 LIST.
 ])
 AT_CHECK([pspp -o pspp.csv do-repeat.sps], [0], [dnl
-do-repeat.sps:8: warning: DO REPEAT: Dummy variable name `x' hides dictionary variable `x'.
+do-repeat.sps:8.11: warning: DO REPEAT: Dummy variable name `x' hides dictionary variable `x'.
+    8 | DO REPEAT x = 1 2 3.
+      |           ^
 ])
 AT_CHECK([cat pspp.csv], [0], [dnl
-do-repeat.sps:8: warning: DO REPEAT: Dummy variable name `x' hides dictionary variable `x'.
+"do-repeat.sps:8.11: warning: DO REPEAT: Dummy variable name `x' hides dictionary variable `x'.
+    8 | DO REPEAT x = 1 2 3.
+      |           ^"
 
 Table: Data List
 x,y

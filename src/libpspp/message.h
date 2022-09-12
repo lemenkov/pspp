@@ -112,6 +112,11 @@ struct msg_location
        Both 'start' and 'end' are inclusive, line-wise and column-wise.
     */
     struct msg_point start, end;
+
+    /* Normally, 'start' and 'end' contain column information, then displaying
+       the message will underline the location.  Setting this to true disables
+       displaying underlines. */
+    bool omit_underlines;
   };
 
 void msg_location_uninit (struct msg_location *);

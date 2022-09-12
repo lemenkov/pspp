@@ -92,11 +92,17 @@ END IF.
 DO IF 0.
 ])
 AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
-do-if.sps:6: error: END IF: This command cannot appear outside DO IF...END IF.
+"do-if.sps:6.1-6.6: error: END IF: This command cannot appear outside DO IF...END IF.
+    6 | END IF.
+      | ^~~~~~"
 
-do-if.sps:7: error: ELSE: This command cannot appear outside DO IF...END IF.
+"do-if.sps:7.1-7.4: error: ELSE: This command cannot appear outside DO IF...END IF.
+    7 | ELSE.
+      | ^~~~"
 
-do-if.sps:8: error: ELSE IF: This command cannot appear outside DO IF...END IF.
+"do-if.sps:8.1-8.7: error: ELSE IF: This command cannot appear outside DO IF...END IF.
+    8 | ELSE IF 1.
+      | ^~~~~~~"
 
 "do-if.sps:12.1-12.4: error: DO IF: Only one ELSE is allowed within DO IF...END IF.
    12 | ELSE.

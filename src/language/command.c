@@ -548,7 +548,9 @@ cmd_erase (struct lexer *lexer, struct dataset *ds UNUSED)
 
   if (settings_get_safer_mode ())
     {
-      msg (SE, _("This command not allowed when the %s option is set."), "SAFER");
+      lex_ofs_error (lexer, 0, 0,
+                     _("This command not allowed when the %s option is set."),
+                     "SAFER");
       return CMD_FAILURE;
     }
 

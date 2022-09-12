@@ -46,6 +46,8 @@ struct lvalue;
    For a vector element, the `vector' member is non-null. */
 struct lvalue
   {
+    struct msg_location *location; /* Syntax for variable or vector. */
+
     struct variable *variable;   /* Destination variable. */
     bool is_new_variable;        /* Did we create the variable? */
 
@@ -75,6 +77,8 @@ struct compute_trns
     /* Vector lvalue, if vector != NULL. */
     const struct vector *vector; /* Destination vector, if any. */
     struct expression *element;  /* Destination vector element expr. */
+
+    struct msg_location *lvalue_location;
 
     /* Rvalue. */
     struct expression *rvalue;	 /* Rvalue expression. */
@@ -159,11 +163,13 @@ compute_num_vec (void *compute_, struct ccase **c, casenumber case_num)
           || rindx < 1 || rindx > vector_get_n_vars (compute->vector))
         {
           if (index == SYSMIS)
-            msg (SW, _("When executing COMPUTE: SYSMIS is not a valid value "
-                       "as an index into vector %s."),
+            msg_at (SW, compute->lvalue_location,
+                    _("When executing COMPUTE: SYSMIS is not a valid value "
+                      "as an index into vector %s."),
                  vector_get_name (compute->vector));
           else
-            msg (SW, _("When executing COMPUTE: %.*g is not a valid value as "
+            msg_at (SW, compute->lvalue_location,
+                    _("When executing COMPUTE: %.*g is not a valid value as "
                        "an index into vector %s."),
                  DBL_DIG + 1, index, vector_get_name (compute->vector));
           return TRNS_CONTINUE;
@@ -214,16 +220,18 @@ compute_str_vec (void *compute_, struct ccase **c, casenumber case_num)
       rindx = floor (index + EPSILON);
       if (index == SYSMIS)
         {
-          msg (SW, _("When executing COMPUTE: SYSMIS is not a valid "
-                     "value as an index into vector %s."),
-               vector_get_name (compute->vector));
+          msg_at (SW, compute->lvalue_location,
+                  _("When executing COMPUTE: SYSMIS is not a valid "
+                    "value as an index into vector %s."),
+                  vector_get_name (compute->vector));
           return TRNS_CONTINUE;
         }
       else if (rindx < 1 || rindx > vector_get_n_vars (compute->vector))
         {
-          msg (SW, _("When executing COMPUTE: %.*g is not a valid value as "
-                     "an index into vector %s."),
-               DBL_DIG + 1, index, vector_get_name (compute->vector));
+          msg_at (SW, compute->lvalue_location,
+                  _("When executing COMPUTE: %.*g is not a valid value as "
+                    "an index into vector %s."),
+                  DBL_DIG + 1, index, vector_get_name (compute->vector));
           return TRNS_CONTINUE;
         }
 
@@ -317,7 +325,8 @@ parse_rvalue (struct lexer *lexer,
 	      const struct lvalue *lvalue, struct dataset *ds)
 {
   if (lvalue->is_new_variable)
-    return expr_parse_new_variable (lexer, ds, var_get_name (lvalue->variable));
+    return expr_parse_new_variable (lexer, ds, var_get_name (lvalue->variable),
+                                    lvalue->location);
   else
     return expr_parse (lexer, ds, lvalue_get_type (lvalue));
 }
@@ -327,11 +336,7 @@ static struct compute_trns *
 compute_trns_create (void)
 {
   struct compute_trns *compute = xmalloc (sizeof *compute);
-  compute->test = NULL;
-  compute->variable = NULL;
-  compute->vector = NULL;
-  compute->element = NULL;
-  compute->rvalue = NULL;
+  *compute = (struct compute_trns) { .test = NULL };
   return compute;
 }
 
@@ -343,6 +348,7 @@ compute_trns_free (void *compute_)
 
   if (compute != NULL)
     {
+      msg_location_destroy (compute->lvalue_location);
       expr_free (compute->test);
       expr_free (compute->element);
       expr_free (compute->rvalue);
@@ -357,17 +363,14 @@ static struct lvalue *
 lvalue_parse (struct lexer *lexer, struct dataset *ds)
 {
   struct dictionary *dict = dataset_dict (ds);
-  struct lvalue *lvalue;
 
-  lvalue = xmalloc (sizeof *lvalue);
-  lvalue->variable = NULL;
-  lvalue->is_new_variable = false;
-  lvalue->vector = NULL;
-  lvalue->element = NULL;
+  struct lvalue *lvalue = xmalloc (sizeof *lvalue);
+  *lvalue = (struct lvalue) { .variable = NULL };
 
   if (!lex_force_id (lexer))
     goto lossage;
 
+  int start_ofs = lex_ofs (lexer);
   if (lex_next_token (lexer, 1) == T_LPAREN)
     {
       /* Vector. */
@@ -401,6 +404,8 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
         }
       lex_get (lexer);
     }
+  int end_ofs = lex_ofs (lexer) - 1;
+  lvalue->location = lex_ofs_location (lexer, start_ofs, end_ofs);
   return lvalue;
 
  lossage:
@@ -432,6 +437,9 @@ lvalue_finalize (struct lvalue *lvalue,
 		 struct compute_trns *compute,
 		 struct dictionary *dict)
 {
+  compute->lvalue_location = lvalue->location;
+  lvalue->location = NULL;
+
   if (lvalue->vector == NULL)
     {
       compute->variable = lvalue->variable;
@@ -464,5 +472,6 @@ lvalue_destroy (struct lvalue *lvalue, struct dictionary *dict)
   if (lvalue->is_new_variable)
     dict_delete_var (dict, lvalue->variable);
   expr_free (lvalue->element);
+  msg_location_destroy (lvalue->location);
   free (lvalue);
 }

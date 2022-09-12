@@ -340,10 +340,14 @@ DESCRIPTIVES /VAR=abc/SAVE.
 LIST.
 ])
 AT_CHECK([pspp -o pspp.csv -o pspp.txt descriptives.sps], [0], [dnl
-descriptives.sps:15: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
+descriptives.sps:15.23-15.26: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
+   15 | DESCRIPTIVES /VAR=abc/SAVE.
+      |                       ^~~~
 ])
 AT_CHECK([cat pspp.csv], [0], [dnl
-descriptives.sps:15: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
+"descriptives.sps:15.23-15.26: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
+   15 | DESCRIPTIVES /VAR=abc/SAVE.
+      |                       ^~~~"
 
 Table: Mapping of Variables to Z-scores
 Source,Target

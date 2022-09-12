@@ -64,22 +64,38 @@ MRSETS
      VARIABLES=a b c d.
 ]])
 
-m4_define([DEFINE_MRSETS_OUTPUT],
-  [mrsets.sps:25: warning: MRSETS: Variables w and z specified as part of multiple dichotomy group $a have the same variable label.  Categories represented by these variables will not be distinguishable in output.
+m4_define([DEFINE_MRSETS_OUTPUT], [dnl
+"mrsets.sps:23.16-23.22: warning: MRSETS: Variables w and z specified as part of multiple dichotomy group $a have the same variable label.  Categories represented by these variables will not be distinguishable in output.
+   23 |      VARIABLES=w x y z
+      |                ^~~~~~~"
 
-mrsets.sps:29: warning: MRSETS: Variable z specified as part of multiple dichotomy group $b (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+"mrsets.sps:27.16-27.18: warning: MRSETS: Variable z specified as part of multiple dichotomy group $b (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+   27 |      VARIABLES=z y
+      |                ^~~"
 
-mrsets.sps:29: warning: MRSETS: Variable y specified as part of multiple dichotomy group $b (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+"mrsets.sps:27.16-27.18: warning: MRSETS: Variable y specified as part of multiple dichotomy group $b (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+   27 |      VARIABLES=z y
+      |                ^~~"
 
-mrsets.sps:34: warning: MRSETS: Variable x specified as part of multiple dichotomy group $c (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+"mrsets.sps:32.16-32.22: warning: MRSETS: Variable x specified as part of multiple dichotomy group $c (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output.
+   32 |      VARIABLES=w x y z
+      |                ^~~~~~~"
 
-mrsets.sps:34: warning: MRSETS: Variables y and z specified as part of multiple dichotomy group $c (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output.
+"mrsets.sps:32.16-32.22: warning: MRSETS: Variables y and z specified as part of multiple dichotomy group $c (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output.
+   32 |      VARIABLES=w x y z
+      |                ^~~~~~~"
 
-mrsets.sps:38: warning: MRSETS: MDGROUP subcommand for group $d specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE.
+"mrsets.sps:35.6-35.25: warning: MRSETS: MDGROUP subcommand for group $d specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE.
+   35 |      LABELSOURCE=VARLABEL
+      |      ^~~~~~~~~~~~~~~~~~~~"
 
-"mrsets.sps:41: warning: MRSETS: Variables specified on MCGROUP should have the same categories, but w and y (and possibly others) in multiple category group $e have different value labels for value 1."
+"mrsets.sps:40.16-40.22: warning: MRSETS: Variables specified on MCGROUP should have the same categories, but w and y (and possibly others) in multiple category group $e have different value labels for value 1.
+   40 |      VARIABLES=w x y z
+      |                ^~~~~~~"
 
-"mrsets.sps:42: warning: MRSETS: Variables specified on MCGROUP should have the same categories, but a and c (and possibly others) in multiple category group $f have different value labels for value b."
+"mrsets.sps:42.16-42.22: warning: MRSETS: Variables specified on MCGROUP should have the same categories, but a and c (and possibly others) in multiple category group $f have different value labels for value b.
+   42 |      VARIABLES=a b c d.
+      |                ^~~~~~~"
 ])
 
 m4_define([MRSETS_DISPLAY_OUTPUT], [dnl
@@ -175,7 +191,9 @@ b
 c
 d"
 
-mrsets.sps:50: note: MRSETS: The active dataset dictionary does not contain any multiple response sets.
+"mrsets.sps:50.19-50.21: note: MRSETS: The active dataset dictionary does not contain any multiple response sets.
+   50 |     /DISPLAY NAME=ALL.
+      |                   ^~~"
 ])
 AT_CLEANUP
 
@@ -210,8 +228,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MCGROUP NAME=$x VARIABLES=a.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  ["mrsets.sps:6: error: MRSETS: VARIABLES specified only variable a on MCGROUP, but at least two variables are required."
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.35: error: MRSETS: VARIABLES specified only variable a on MCGROUP, but at least two variables are required.
+    6 | MRSETS /MCGROUP NAME=$x VARIABLES=a.
+      |                                   ^"
 ])
 AT_CLEANUP
 
@@ -273,10 +293,14 @@ AT_DATA([mrsets.sps],
 MRSETS /MDGROUP NAME=$group1 VARIABLES=a b VALUE=1.
 MRSETS /MDGROUP NAME=$group2 VARIABLES=x y VALUE='abc'.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  ["mrsets.sps:6: error: MRSETS: MDGROUP subcommand for group $group1 specifies a string VALUE, but the variables specified for this group are numeric."
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.50: error: MRSETS: MDGROUP subcommand for group $group1 specifies a string VALUE, but the variables specified for this group are numeric.
+    6 | MRSETS /MDGROUP NAME=$group1 VARIABLES=a b VALUE=1.
+      |                                                  ^"
 
-"mrsets.sps:7: error: MRSETS: MDGROUP subcommand for group $group2 specifies a string VALUE, but the variables specified for this group are numeric."
+"mrsets.sps:7.50-7.54: error: MRSETS: MDGROUP subcommand for group $group2 specifies a string VALUE, but the variables specified for this group are numeric.
+    7 | MRSETS /MDGROUP NAME=$group2 VARIABLES=x y VALUE='abc'.
+      |                                                  ^~~~~"
 ])
 AT_CLEANUP
 
@@ -285,8 +309,10 @@ AT_DATA([mrsets.sps],
   [DEFINE_MRSETS_DATA
 MRSETS /MDGROUP NAME=$group1 VARIABLES=a b VALUE='abc'.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [1],
-  ["mrsets.sps:6: error: MRSETS: VALUE string on MDGROUP subcommand for group $group1 is 3 bytes long, but it must be no longer than the narrowest variable in the group, which is a with a width of 1 bytes."
+AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+"mrsets.sps:6.50-6.54: error: MRSETS: VALUE string on MDGROUP subcommand for group $group1 is 3 bytes long, but it must be no longer than the narrowest variable in the group, which is a with a width of 1 bytes.
+    6 | MRSETS /MDGROUP NAME=$group1 VARIABLES=a b VALUE='abc'.
+      |                                                  ^~~~~"
 ])
 AT_CLEANUP
 
@@ -296,8 +322,10 @@ AT_DATA([mrsets.sps],
 MRSETS /MDGROUP NAME=$group1 VARIABLES=a b VALUE='a'
                 LABEL='label' LABELSOURCE=VARLABEL.
 ])
-AT_CHECK([pspp -O format=csv mrsets.sps], [0],
-  [mrsets.sps:7: warning: MRSETS: MDGROUP subcommand for group $group1 specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE.
+AT_CHECK([pspp -O format=csv mrsets.sps], [0], [dnl
+"mrsets.sps:7.31-7.50: warning: MRSETS: MDGROUP subcommand for group $group1 specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE.
+    7 |                 LABEL='label' LABELSOURCE=VARLABEL.
+      |                               ^~~~~~~~~~~~~~~~~~~~"
 ])
 AT_CLEANUP
 

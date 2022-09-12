@@ -682,7 +682,9 @@ Table: Summary
 ,N,Percent,N,Percent,N,Percent
 X1 × X2,0,.0%,1,100.0%,1,100.0%
 
-crosstabs.sps:8: warning: CROSSTABS: Crosstabulation X1 × X2 contained no non-missing cases.
+"crosstabs.sps:8.20-8.27: warning: CROSSTABS: Crosstabulation X1 × X2 contained no non-missing cases.
+    8 | CROSSTABS /TABLES= X1 by X2.
+      |                    ^~~~~~~~"
 ])
 AT_CLEANUP
 

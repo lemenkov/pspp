@@ -55,13 +55,16 @@ cmd_split_file (struct lexer *lexer, struct dataset *ds)
                               : SPLIT_LAYERED);
 
       lex_match (lexer, T_BY);
+      int vars_start = lex_ofs (lexer);
       if (!parse_variables (lexer, dataset_dict (ds), &v, &n, PV_NO_DUPLICATE))
 	return CMD_CASCADING_FAILURE;
+      int vars_end = lex_ofs (lexer) - 1;
 
       if (n > MAX_SPLITS)
         {
           verify (MAX_SPLITS == 8);
-          msg (SE, _("At most 8 split variables may be specified."));
+          lex_ofs_error (lexer, vars_start, vars_end,
+                         _("At most 8 split variables may be specified."));
           free (v);
           return CMD_CASCADING_FAILURE;
         }

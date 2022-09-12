@@ -232,7 +232,9 @@ Table: Variables
 Name,Position
 y,1
 
-modify-variables.sps:16: error: MODIFY VARS: MODIFY VARS may not be used to delete all variables from the active dataset dictionary.  Use NEW FILE instead.
+"modify-variables.sps:16.14-16.19: error: MODIFY VARS: MODIFY VARS may not be used to delete all variables from the active dataset dictionary.  Use NEW FILE instead.
+   16 | MODIFY VARS /DROP y.
+      |              ^~~~~~"
 
 modify-variables.sps:17: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
 ])

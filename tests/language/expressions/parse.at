@@ -90,10 +90,12 @@ DATA LIST NOTABLE/x 1(A).
 COMPUTE y='a'.
 ])
 AT_CHECK([pspp parse.sps], [1], [dnl
-parse.sps:2: error: COMPUTE: This command tries to create a new variable y by
+parse.sps:2.9: error: COMPUTE: This command tries to create a new variable y by
 assigning a string value to it, but this is not supported.  Use the STRING
 command to create the new variable with the correct width before assigning to
 it, e.g. STRING y(A20).
+    2 | COMPUTE y='a'.
+      |         ^
 ])
 AT_CLEANUP
 
@@ -208,8 +210,12 @@ this warning, insert parentheses.
     5 | COMPUTE c = 2**3**4.
       |             ^~~~~~~
 
-parse.sps:10: error: INPUT PROGRAM: Input program must contain DATA LIST or END
-FILE.
+parse.sps:1.1-10.17: error: INPUT PROGRAM: Input program does not contain DATA
+LIST or END FILE.
+    1 | INPUT PROGRAM.
+    2 | * These should provoke warnings.
+  ... |
+   10 | END INPUT PROGRAM.
 ])
 AT_CLEANUP
 

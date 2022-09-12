@@ -117,8 +117,9 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 	goto error;
       name = lex_tokcstr (lexer);
       if (dict_lookup_var (dict, name))
-        msg (SW, _("Dummy variable name `%s' hides dictionary variable `%s'."),
-             name, name);
+        lex_msg (lexer, SW,
+                 _("Dummy variable name `%s' hides dictionary variable `%s'."),
+                 name, name);
 
       size_t name_len = strlen (name);
       if (find_dummy_var (dummies, name, name_len))
@@ -423,8 +424,8 @@ parse_strings (struct lexer *lexer, struct dummy_var *dv)
 }
 
 int
-cmd_end_repeat (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
+cmd_end_repeat (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  msg (SE, _("No matching %s."), "DO REPEAT");
+  lex_ofs_error (lexer, 0, 1, _("No matching %s."), "DO REPEAT");
   return CMD_CASCADING_FAILURE;
 }

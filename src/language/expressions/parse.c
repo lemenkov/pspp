@@ -125,11 +125,13 @@ expr_parse_bool (struct lexer *lexer, struct dataset *ds)
 }
 
 /* Parses a numeric expression that is intended to be assigned to newly created
-   variable NEW_VAR_NAME.  (This allows for a better error message if the
-   expression is not numeric.)  Otherwise similar to expr_parse(). */
+   variable NEW_VAR_NAME at NEW_VAR_LOCATION.  (This allows for a better error
+   message if the expression is not numeric.)  Otherwise similar to
+   expr_parse(). */
 struct expression *
 expr_parse_new_variable (struct lexer *lexer, struct dataset *ds,
-                         const char *new_var_name)
+                         const char *new_var_name,
+                         const struct msg_location *new_var_location)
 {
   struct expression *e = expr_create (ds);
   struct expr_node *n = parse_expr (lexer, e);
@@ -142,10 +144,11 @@ expr_parse_new_variable (struct lexer *lexer, struct dataset *ds,
   atom_type actual_type = expr_node_returns (n);
   if (actual_type != OP_number && actual_type != OP_boolean)
     {
-      msg (SE, _("This command tries to create a new variable %s by assigning a "
-                 "string value to it, but this is not supported.  Use "
-                 "the STRING command to create the new variable with the "
-                 "correct width before assigning to it, e.g. STRING %s(A20)."),
+      msg_at (SE, new_var_location,
+              _("This command tries to create a new variable %s by assigning a "
+                "string value to it, but this is not supported.  Use "
+                "the STRING command to create the new variable with the "
+                "correct width before assigning to it, e.g. STRING %s(A20)."),
            new_var_name, new_var_name);
       expr_free (e);
       return NULL;
