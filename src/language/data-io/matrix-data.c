@@ -837,11 +837,13 @@ parse_matrix_data_variables (struct lexer *lexer)
 
   size_t n_names = 0;
   char **names = NULL;
+  int vars_start = lex_ofs (lexer);
   if (!parse_DATA_LIST_vars (lexer, dict, &names, &n_names, PV_NO_DUPLICATE))
     {
       dict_unref (dict);
       return NULL;
     }
+  int vars_end = lex_ofs (lexer) - 1;
 
   for (size_t i = 0; i < n_names; i++)
     if (!strcasecmp (names[i], "ROWTYPE_"))
@@ -858,7 +860,8 @@ parse_matrix_data_variables (struct lexer *lexer)
 
   if (dict_lookup_var (dict, "VARNAME_"))
     {
-      msg (SE, _("VARIABLES may not include VARNAME_."));
+      lex_ofs_error (lexer, vars_start, vars_end,
+                     _("VARIABLES may not include VARNAME_."));
       dict_unref (dict);
       return NULL;
     }
@@ -891,8 +894,9 @@ parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
       bool *tv = &taken_vars[var_get_dict_index (v)];
       if (*tv)
         {
-          msg (SE, _("%s may not appear on both SPLIT and FACTORS."),
-               var_get_name (v));
+          lex_ofs_error (lexer, start_ofs, end_ofs,
+                         _("%s may not appear on both SPLIT and FACTORS."),
+                         var_get_name (v));
           goto error;
         }
       *tv = true;
@@ -914,9 +918,11 @@ error:
 int
 cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
 {
+  int input_vars_start = lex_ofs (lexer);
   struct dictionary *dict = parse_matrix_data_variables (lexer);
   if (!dict)
     return CMD_FAILURE;
+  int input_vars_end = lex_ofs (lexer) - 1;
 
   size_t n_input_vars = dict_get_n_vars (dict);
   struct variable **input_vars = xnmalloc (n_input_vars, sizeof *input_vars);
@@ -954,6 +960,8 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
     taken_vars[var_get_dict_index (rowtype)] = true;
 
   struct file_handle *fh = NULL;
+  int n_start = 0;
+  int n_end = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (!lex_force_match (lexer, T_SLASH))
@@ -961,16 +969,19 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "N"))
 	{
+          n_start = lex_ofs (lexer) - 1;
 	  lex_match (lexer, T_EQUALS);
 
 	  if (!lex_force_int_range (lexer, "N", 0, INT_MAX))
 	    goto error;
 
 	  mf.n = lex_integer (lexer);
+          n_end = lex_ofs (lexer);
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "FORMAT"))
 	{
+          int start_ofs = lex_ofs (lexer) - 1;
 	  lex_match (lexer, T_EQUALS);
 
 	  while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
@@ -995,6 +1006,15 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
 		  goto error;
 		}
 	    }
+          int end_ofs = lex_ofs (lexer) - 1;
+
+          if (mf.diagonal == NO_DIAGONAL && mf.triangle == FULL)
+            {
+              lex_ofs_error (lexer, start_ofs, end_ofs,
+                             _("FORMAT=FULL and FORMAT=NODIAGONAL are "
+                               "mutually exclusive."));
+              goto error;
+            }
 	}
       else if (lex_match_id (lexer, "FILE"))
 	{
@@ -1102,11 +1122,6 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
 	  goto error;
 	}
     }
-  if (mf.diagonal == NO_DIAGONAL && mf.triangle == FULL)
-    {
-      msg (SE, _("FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive."));
-      goto error;
-    }
   if (!mf.input_rowtype)
     {
       if (mf.cells < 0)
@@ -1141,7 +1156,8 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
       }
   if (!mf.n_cvars)
     {
-      msg (SE, _("At least one continuous variable is required."));
+      lex_ofs_error (lexer, input_vars_start, input_vars_end,
+                     _("At least one continuous variable is required."));
       goto error;
     }
   if (mf.input_rowtype)
@@ -1149,15 +1165,18 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
       for (size_t i = 0; i < mf.n_cvars; i++)
         if (mf.cvars[i] != input_vars[n_input_vars - mf.n_cvars + i])
           {
-            msg (SE, _("VARIABLES includes ROWTYPE_ but the continuous "
-                       "variables are not the last ones on VARIABLES."));
+            lex_ofs_error (lexer, input_vars_start, input_vars_end,
+                           _("VARIABLES includes ROWTYPE_ but the continuous "
+                             "variables are not the last ones on VARIABLES."));
             goto error;
           }
     }
   unsigned int rowtype_mask = mf.pooled_rowtype_mask | mf.factor_rowtype_mask;
   if (rowtype_mask & (1u << C_N) && mf.n >= 0)
     {
-      msg (SE, _("Cannot specify N on CONTENTS along with the N subcommand."));
+      lex_ofs_error (lexer, n_start, n_end,
+                     _("Cannot specify N on CONTENTS along with the "
+                       "N subcommand."));
       goto error;
     }
 

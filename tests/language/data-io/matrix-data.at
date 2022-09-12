@@ -1185,7 +1185,9 @@ MATRIX DATA VARIABLES=v/CELLS=-1.
 MATRIX DATA VARIABLES=v/XYZZY.
 ])
 AT_CHECK([pspp matrix-data.sps -O format=csv], [1], [dnl
-matrix-data.sps:1: error: MATRIX DATA: VARIABLES may not include VARNAME_.
+"matrix-data.sps:1.23-1.36: error: MATRIX DATA: VARIABLES may not include VARNAME_.
+    1 | MATRIX DATA VARIABLES=var01 varname_.
+      |                       ^~~~~~~~~~~~~~"
 
 "matrix-data.sps:2.25: error: MATRIX DATA: Variable v appears twice in variable list.
     2 | MATRIX DATA VARIABLES=v v v.
@@ -1199,9 +1201,13 @@ matrix-data.sps:1: error: MATRIX DATA: VARIABLES may not include VARNAME_.
     4 | MATRIX DATA VARIABLES=rowtype_ v1 v2 v3/FACTORS=rowtype_.
       |                                                 ^~~~~~~~"
 
-matrix-data.sps:5: error: MATRIX DATA: v1 may not appear on both SPLIT and FACTORS.
+"matrix-data.sps:5.61-5.62: error: MATRIX DATA: v1 may not appear on both SPLIT and FACTORS.
+    5 | MATRIX DATA VARIABLES=rowtype_ s1 v1 v2 v3/SPLIT=v1/FACTORS=v1.
+      |                                                             ^~"
 
-matrix-data.sps:7: error: MATRIX DATA: FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive.
+"matrix-data.sps:7.32-7.53: error: MATRIX DATA: FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive.
+    7 | MATRIX DATA VARIABLES=v1 v2 v3/FORMAT=FULL NODIAGONAL.
+      |                                ^~~~~~~~~~~~~~~~~~~~~~"
 
 matrix-data.sps:8: error: MATRIX DATA: CELLS is required when factor variables are specified and VARIABLES does not include ROWTYPE_.
 
@@ -1209,9 +1215,13 @@ matrix-data.sps:9: warning: MATRIX DATA: CONTENTS was not specified and VARIABLE
 
 matrix-data.sps:12: error: MATRIX DATA: CELLS is required when factor variables are specified and VARIABLES does not include ROWTYPE_.
 
-matrix-data.sps:13: error: MATRIX DATA: VARIABLES includes ROWTYPE_ but the continuous variables are not the last ones on VARIABLES.
+"matrix-data.sps:13.13-13.39: error: MATRIX DATA: VARIABLES includes ROWTYPE_ but the continuous variables are not the last ones on VARIABLES.
+   13 | MATRIX DATA VARIABLES=v1 v2 v3 ROWTYPE_.
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-matrix-data.sps:14: error: MATRIX DATA: Cannot specify N on CONTENTS along with the N subcommand.
+"matrix-data.sps:14.43-14.45: error: MATRIX DATA: Cannot specify N on CONTENTS along with the N subcommand.
+   14 | MATRIX DATA VARIABLES=v1 v2 v3/CONTENTS=N/N=5.
+      |                                           ^~~"
 
 "matrix-data.sps:15.35-15.39: error: MATRIX DATA: Syntax error expecting one of the following: CORR, COV, MAT, N_MATRIX, PROX, COUNT, DFE, MEAN, MSE, STDDEV, N, N_SCALAR, N_VECTOR, SD.
    15 | MATRIX DATA VARIABLES=v1/CONTENTS=XYZZY.
