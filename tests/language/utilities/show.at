@@ -30,7 +30,8 @@ SHOW N.
 ])
 
 AT_CHECK([pspp -O format=csv show.sps], [0], [dnl
-show.sps:8: note: SHOW: N is 3.
+Table: Settings
+N,3
 ])
 
 AT_CLEANUP
@@ -43,7 +44,8 @@ SHOW N.
 ])
 
 AT_CHECK([pspp -O format=csv shown-empty.sps], [0], [dnl
-shown-empty.sps:1: note: SHOW: N is Unknown.
+Table: Settings
+N,Unknown
 ])
 
 AT_CLEANUP

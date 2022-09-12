@@ -138,9 +138,11 @@ $command 'foo bar baz quux'.
 SHOW $command.
 EOF
     cat >expout <<EOF
-title.sps:2: note: SHOW: $command is foo  bar.
+Table: Settings
+$command,foo  bar
 
-title.sps:5: note: SHOW: $command is foo bar baz quux.
+Table: Settings
+$command,foo bar baz quux
 EOF
     AT_CHECK([pspp -O format=csv title.sps], [0], [expout])
 done

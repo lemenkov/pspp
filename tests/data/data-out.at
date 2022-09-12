@@ -309,7 +309,8 @@ BEGIN DATA.
 END DATA.
 ])
 AT_CHECK([pspp -O format=csv data-out.sps], [0], [dnl
-"data-out.sps:2: note: SHOW: CCA is «,¥,€,»."
+Table: Settings
+CCA,"«,¥,€,»"
 
 1.00   ¥1.00€ @&t@
 

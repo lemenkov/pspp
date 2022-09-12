@@ -102,7 +102,8 @@ Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
 legal,1,Scale,Input,8,Right,F9.2,F9.2
 money,2,Scale,Input,8,Right,DOLLAR6.2,DOLLAR6.2
 
-dump-dict.sps:5: note: SHOW: WEIGHT is money.
+Table: Settings
+WEIGHT,money
 ])
 AT_CLEANUP
 

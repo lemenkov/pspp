@@ -1151,11 +1151,24 @@ show_N (const struct dataset *ds)
 }
 
 static void
-do_show (const struct dataset *ds, const struct setting *s)
+do_show (const struct dataset *ds, const struct setting *s,
+         struct pivot_table **ptp)
 {
-  char *value = s->show (ds);
-  msg (SN, _("%s is %s."), s->name, value ? value : _("empty"));
-  free (value);
+  struct pivot_table *pt = *ptp;
+  if (!pt)
+    {
+      pt = *ptp = pivot_table_create (N_("Settings"));
+      pivot_dimension_create (pt, PIVOT_AXIS_ROW, N_("Setting"));
+    }
+
+  struct pivot_value *name = pivot_value_new_user_text (s->name, SIZE_MAX);
+  char *text = s->show (ds);
+  if (!text)
+    text = xstrdup("empty");
+  struct pivot_value *value = pivot_value_new_user_text_nocopy (text);
+
+  int row = pivot_category_create_leaf (pt->dimensions[0]->root, name);
+  pivot_table_put1 (pt, row, value);
 }
 
 static void
@@ -1287,39 +1300,41 @@ cmd_set (struct lexer *lexer, struct dataset *ds UNUSED)
 }
 
 static void
-show_all (const struct dataset *ds)
+show_all (const struct dataset *ds, struct pivot_table **ptp)
 {
   for (size_t i = 0; i < sizeof settings / sizeof *settings; i++)
     if (settings[i].show)
-      do_show (ds, &settings[i]);
+      do_show (ds, &settings[i], ptp);
 }
 
 static void
-show_all_cc (const struct dataset *ds)
+show_all_cc (const struct dataset *ds, struct pivot_table **ptp)
 {
   for (size_t i = 0; i < sizeof settings / sizeof *settings; i++)
     {
       const struct setting *s = &settings[i];
       if (s->show && !strncmp (s->name, "CC", 2))
-        do_show (ds, s);
+        do_show (ds, s, ptp);
     }
 }
 
 int
 cmd_show (struct lexer *lexer, struct dataset *ds)
 {
+  struct pivot_table *pt = NULL;
   if (lex_token (lexer) == T_ENDCMD)
     {
-      show_all (ds);
+      show_all (ds, &pt);
+      pivot_table_submit (pt);
       return CMD_SUCCESS;
     }
 
   do
     {
       if (lex_match (lexer, T_ALL))
-        show_all (ds);
+        show_all (ds, &pt);
       else if (lex_match_id (lexer, "CC"))
-        show_all_cc (ds);
+        show_all_cc (ds, &pt);
       else if (lex_match_id (lexer, "WARRANTY"))
         show_warranty (ds);
       else if (lex_match_id (lexer, "COPYING") || lex_match_id (lexer, "LICENSE"))
@@ -1329,12 +1344,12 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "TITLE"))
         {
           struct setting s = { .name = "TITLE", .show = show_TITLE };
-          do_show (ds, &s);
+          do_show (ds, &s, &pt);
         }
       else if (lex_match_id (lexer, "SUBTITLE"))
         {
           struct setting s = { .name = "SUBTITLE", .show = show_SUBTITLE };
-          do_show (ds, &s);
+          do_show (ds, &s, &pt);
         }
       else if (lex_token (lexer) == T_ID)
         {
@@ -1345,7 +1360,7 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
               const struct setting *s = &settings[i];
               if (s->show && lex_match_id (lexer, s->name))
                 {
-                  do_show (ds, s);
+                  do_show (ds, s, &pt);
                   goto found;
                 }
               }
@@ -1363,6 +1378,9 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
     }
   while (lex_token (lexer) != T_ENDCMD);
+
+  if (pt)
+    pivot_table_submit (pt);
 
   return CMD_SUCCESS;
 }

@@ -1737,7 +1737,8 @@ $command prefix !paste foo bar suffix.
 SHOW $command.
 EOF
     cat >expout <<EOF
-title.sps:5: note: SHOW: $command is prefix foobar suffix.
+Table: Settings
+$command,prefix foobar suffix
 EOF
     AT_CHECK([pspp -O format=csv title.sps], [0], [expout])
 done

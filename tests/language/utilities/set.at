@@ -131,29 +131,23 @@ restore.
 show mexpand mprint miterate mnest.
 ])
 AT_CHECK([pspp -O format=csv set-macro.sps], [0], [dnl
-set-macro.sps:1: note: SHOW: MEXPAND is ON.
+Table: Settings
+MEXPAND,ON
+MPRINT,OFF
+MITERATE,1000
+MNEST,50
 
-set-macro.sps:1: note: SHOW: MPRINT is OFF.
+Table: Settings
+MEXPAND,OFF
+MPRINT,ON
+MITERATE,10
+MNEST,11
 
-set-macro.sps:1: note: SHOW: MITERATE is 1000.
-
-set-macro.sps:1: note: SHOW: MNEST is 50.
-
-set-macro.sps:4: note: SHOW: MEXPAND is OFF.
-
-set-macro.sps:4: note: SHOW: MPRINT is ON.
-
-set-macro.sps:4: note: SHOW: MITERATE is 10.
-
-set-macro.sps:4: note: SHOW: MNEST is 11.
-
-set-macro.sps:6: note: SHOW: MEXPAND is ON.
-
-set-macro.sps:6: note: SHOW: MPRINT is OFF.
-
-set-macro.sps:6: note: SHOW: MITERATE is 1000.
-
-set-macro.sps:6: note: SHOW: MNEST is 50.
+Table: Settings
+MEXPAND,ON
+MPRINT,OFF
+MITERATE,1000
+MNEST,50
 ])
 AT_CLEANUP
 
@@ -169,10 +163,13 @@ RESTORE.
 SHOW FORMAT.
 ])
 AT_CHECK([pspp -O format=csv set.pspp], [0], [dnl
-set.pspp:1: note: SHOW: FORMAT is F8.2.
+Table: Settings
+FORMAT,F8.2
 
-set.pspp:5: note: SHOW: FORMAT is F10.0.
+Table: Settings
+FORMAT,F10.0
 
-set.pspp:6: note: SHOW: FORMAT is F8.2.
+Table: Settings
+FORMAT,F8.2
 ])
 AT_CLEANUP
