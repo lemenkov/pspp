@@ -71,3 +71,27 @@ number,time,date,datetime,string,filter
 1.625,0 12:00:00,.,.,xyzzy,1
 ])
 AT_CLEANUP
+
+AT_SETUP([SAVE RENAME with TO])
+AT_DATA([save-rename-to.sps], [dnl
+data list notable list /a b c fxo9*.
+begin data
+1 2 3 8
+end data.
+
+SAVE OUTFILE = "renamed.sav"
+ /RENAME=(A B C = fdo9 TO fdo11).
+
+
+NEW FILE.
+GET FILE = "renamed.sav".
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv save-rename-to.sps], [0], [dnl
+Table: Data List
+fdo9,fdo10,fdo11,fxo9
+1.00,2.00,3.00,8.00
+])
+
+AT_CLEANUP

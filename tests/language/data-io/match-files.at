@@ -239,8 +239,158 @@ MATCH FILES/FILE='x.sav'/FILE=*/BY name.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv match-files.sps], [1], [dnl
-"match-files.sps:15: error: MATCH FILES: Variable name in file * has different type or width from the same variable in earlier file.  In file *, name is a string variable with width 7.  In an earlier file, name was a string variable with width 6."
+match-files.sps:15: error: MATCH FILES: Variable name has different type or width in different files.
+
+"match-files.sps:15.13-15.24: note: MATCH FILES: In file `x.sav', name is a string with width 6.
+   15 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+      |             ^~~~~~~~~~~~"
+
+"match-files.sps:15.26-15.31: note: MATCH FILES: In file *, name is a string with width 7.
+   15 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+      |                          ^~~~~~"
 
 match-files.sps:16: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+AT_CLEANUP
+
+AT_SETUP([MATCH FILES syntax errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='match-files.sps' ERROR=IGNORE.
+])
+AT_DATA([match-files.sps], [dnl
+MATCH FILES/FILE=*.
+
+DATA LIST LIST NOTABLE/name (A6) x.
+BEGIN DATA.
+al,7
+brad,8
+carl,9
+END DATA.
+SAVE OUTFILE='x.sav'.
+
+TEMPORARY.
+MATCH FILES/FILE=*.
+
+DATA LIST LIST NOTABLE/name (A7) y.
+BEGIN DATA.
+al,1
+carl,2
+dan,3
+END DATA.
+MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+MATCH FILES/FILE='x.sav'/IN=**.
+MATCH FILES/FILE='x.sav'/IN=x/IN=y.
+MATCH FILES/FILE='x.sav'/BY=x/BY=y.
+MATCH FILES/FILE='x.sav'/BY=**.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/BY y.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/BY x.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST x/FIRST y.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST=**.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST x/LAST y.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=**.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/DROP=xyzzy.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/DROP=ALL.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/KEEP=xyzzy.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x **.
+MATCH FILES/FILE='x.sav'/TABLE=*/RENAME(name=name2).
+MATCH FILES/FILE='x.sav'/SORT/FILE=*/RENAME(name=name2)/SORT.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST=x.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/IN=x.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"match-files.sps:1.18: error: MATCH FILES: Cannot specify the active dataset since none has been defined.
+    1 | MATCH FILES/FILE=*.
+      |                  ^"
+
+"match-files.sps:12.18: error: MATCH FILES: This command may not be used after TEMPORARY when the active dataset is an input source.  Temporary transformations will be made permanent.
+   12 | MATCH FILES/FILE=*.
+      |                  ^"
+
+match-files.sps:20: error: MATCH FILES: Variable name has different type or width in different files.
+
+"match-files.sps:20.13-20.24: note: MATCH FILES: In file `x.sav', name is a string with width 6.
+   20 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+      |             ^~~~~~~~~~~~"
+
+"match-files.sps:20.26-20.31: note: MATCH FILES: In file *, name is a string with width 7.
+   20 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+      |                          ^~~~~~"
+
+"match-files.sps:21.29-21.30: error: MATCH FILES: Syntax error expecting identifier.
+   21 | MATCH FILES/FILE='x.sav'/IN=**.
+      |                             ^~"
+
+"match-files.sps:22.34: error: MATCH FILES: Multiple IN subcommands for a single FILE or TABLE.
+   22 | MATCH FILES/FILE='x.sav'/IN=x/IN=y.
+      |                                  ^"
+
+"match-files.sps:23.31-23.32: error: MATCH FILES: Subcommand BY may only be specified once.
+   23 | MATCH FILES/FILE='x.sav'/BY=x/BY=y.
+      |                               ^~"
+
+"match-files.sps:24.29-24.30: error: MATCH FILES: Syntax error expecting variable name.
+   24 | MATCH FILES/FILE='x.sav'/BY=**.
+      |                             ^~"
+
+"match-files.sps:25.13-25.24: error: MATCH FILES: File `x.sav' lacks BY variable y.
+   25 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/BY y.
+      |             ^~~~~~~~~~~~"
+
+"match-files.sps:26.26-26.31: error: MATCH FILES: File * lacks BY variable x.
+   26 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/BY x.
+      |                          ^~~~~~"
+
+"match-files.sps:27.60-27.64: error: MATCH FILES: Subcommand FIRST may only be specified once.
+   27 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST x/FIRST y.
+      |                                                            ^~~~~"
+
+"match-files.sps:28.58-28.59: error: MATCH FILES: Syntax error expecting identifier.
+   28 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST=**.
+      |                                                          ^~"
+
+"match-files.sps:29.59-29.62: error: MATCH FILES: Subcommand LAST may only be specified once.
+   29 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST x/LAST y.
+      |                                                           ^~~~"
+
+"match-files.sps:30.57-30.58: error: MATCH FILES: Syntax error expecting identifier.
+   30 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=**.
+      |                                                         ^~"
+
+"match-files.sps:31.57-31.61: error: MATCH FILES: xyzzy is not a variable name.
+   31 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/DROP=xyzzy.
+      |                                                         ^~~~~"
+
+"match-files.sps:32.52-32.59: error: MATCH FILES: Cannot DROP all variables from dictionary.
+   32 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/DROP=ALL.
+      |                                                    ^~~~~~~~"
+
+"match-files.sps:33.57-33.61: error: MATCH FILES: xyzzy is not a variable name.
+   33 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/KEEP=xyzzy.
+      |                                                         ^~~~~"
+
+"match-files.sps:34.59-34.60: error: MATCH FILES: Syntax error expecting end of command.
+   34 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x **.
+      |                                                           ^~"
+
+"match-files.sps:35.26-35.32: error: MATCH FILES: BY is required when TABLE is specified.
+   35 | MATCH FILES/FILE='x.sav'/TABLE=*/RENAME(name=name2).
+      |                          ^~~~~~~"
+
+"match-files.sps:36.26-36.29: error: MATCH FILES: BY is required when SORT is specified.
+   36 | MATCH FILES/FILE='x.sav'/SORT/FILE=*/RENAME(name=name2)/SORT.
+      |                          ^~~~"
+
+"match-files.sps:37.58: error: MATCH FILES: Variable name x specified on FIRST subcommand duplicates an existing variable name.
+   37 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST=x.
+      |                                                          ^"
+
+"match-files.sps:38.57: error: MATCH FILES: Variable name x specified on LAST subcommand duplicates an existing variable name.
+   38 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x.
+      |                                                         ^"
+
+"match-files.sps:39.55: error: MATCH FILES: Variable name x specified on IN subcommand duplicates an existing variable name.
+   39 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/IN=x.
+      |                                                       ^"
 ])
 AT_CLEANUP

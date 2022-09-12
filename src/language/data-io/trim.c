@@ -292,10 +292,11 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
 bool
 parse_dict_drop (struct lexer *lexer, struct dictionary *dict)
 {
+  int start_ofs = lex_ofs (lexer) - 1;
+  lex_match (lexer, T_EQUALS);
+
   struct variable **v;
   size_t nv;
-
-  lex_match (lexer, T_EQUALS);
   if (!parse_variables (lexer, dict, &v, &nv, PV_NONE))
     return false;
   dict_delete_vars (dict, v, nv);
@@ -303,7 +304,8 @@ parse_dict_drop (struct lexer *lexer, struct dictionary *dict)
 
   if (dict_get_n_vars (dict) == 0)
     {
-      msg (SE, _("Cannot DROP all variables from dictionary."));
+      lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+                     _("Cannot DROP all variables from dictionary."));
       return false;
     }
   return true;

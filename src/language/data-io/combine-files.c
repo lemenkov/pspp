@@ -41,6 +41,7 @@
 #include "libpspp/taint.h"
 #include "math/sort.h"
 
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
@@ -65,6 +66,7 @@ struct comb_file
   {
     /* Basics. */
     enum comb_file_type type;   /* COMB_FILE or COMB_TABLE. */
+    int start_ofs, end_ofs;     /* Lexer offsets. */
 
     /* Variables. */
     struct subcase by_vars;     /* BY variables in this input file. */
@@ -82,6 +84,7 @@ struct comb_file
 
     /* IN subcommand. */
     char *in_name;
+    int in_ofs;
     struct variable *in_var;
   };
 
@@ -93,6 +96,9 @@ struct comb_proc
     struct dictionary *dict;    /* Dictionary of output file. */
     struct subcase by_vars;     /* BY variables in the output. */
     struct casewriter *output;  /* Destination for output. */
+
+    size_t *var_sources;
+    size_t n_var_sources, allocated_var_sources;
 
     struct case_matcher *matcher;
 
@@ -111,13 +117,15 @@ static int combine_files (enum comb_command_type, struct lexer *,
 static void free_comb_proc (struct comb_proc *);
 
 static void close_all_comb_files (struct comb_proc *);
-static bool merge_dictionary (struct dictionary *const, struct comb_file *);
+static bool merge_dictionary (struct comb_proc *, struct lexer *,
+                              struct comb_file *);
 
 static void execute_update (struct comb_proc *);
 static void execute_match_files (struct comb_proc *);
 static void execute_add_files (struct comb_proc *);
 
-static bool create_flag_var (const char *subcommand_name, const char *var_name,
+static bool create_flag_var (struct lexer *lexer, const char *subcommand_name,
+                             const char *var_name, int var_ofs,
                              struct dictionary *, struct variable **);
 static void output_case (struct comb_proc *, struct ccase *, union value *by);
 static void output_buffered_case (struct comb_proc *);
@@ -144,47 +152,38 @@ static int
 combine_files (enum comb_command_type command,
                struct lexer *lexer, struct dataset *ds)
 {
-  struct comb_proc proc;
+  struct comb_proc proc = {
+    .dict = dict_create (get_default_encoding ()),
+  };
 
   bool saw_by = false;
   bool saw_sort = false;
   struct casereader *active_file = NULL;
 
   char *first_name = NULL;
+  int first_ofs = 0;
   char *last_name = NULL;
+  int last_ofs = 0;
 
   struct taint *taint = NULL;
 
-  size_t n_tables = 0;
+  size_t table_idx = SIZE_MAX;
+  int sort_ofs = INT_MAX;
   size_t allocated_files = 0;
-
-  size_t i;
-
-  proc.files = NULL;
-  proc.n_files = 0;
-  proc.dict = dict_create (get_default_encoding ());
-  proc.output = NULL;
-  proc.matcher = NULL;
-  subcase_init_empty (&proc.by_vars);
-  proc.first = NULL;
-  proc.last = NULL;
-  proc.buffered_case = NULL;
-  proc.prev_BY = NULL;
 
   dict_set_case_limit (proc.dict, dict_get_case_limit (dataset_dict (ds)));
 
   lex_match (lexer, T_SLASH);
   for (;;)
     {
-      struct comb_file *file;
+      int start_ofs = lex_ofs (lexer);
       enum comb_file_type type;
-
       if (lex_match_id (lexer, "FILE"))
         type = COMB_FILE;
       else if (command == COMB_MATCH && lex_match_id (lexer, "TABLE"))
         {
           type = COMB_TABLE;
-          n_tables++;
+          table_idx = MIN (table_idx, proc.n_files);
         }
       else
         break;
@@ -193,19 +192,12 @@ combine_files (enum comb_command_type command,
       if (proc.n_files >= allocated_files)
         proc.files = x2nrealloc (proc.files, &allocated_files,
                                 sizeof *proc.files);
-      file = &proc.files[proc.n_files++];
-      file->type = type;
-      subcase_init_empty (&file->by_vars);
-      subcase_init_empty (&file->src);
-      subcase_init_empty (&file->dst);
-      file->mv = NULL;
-      file->handle = NULL;
-      file->dict = NULL;
-      file->reader = NULL;
-      file->data = NULL;
-      file->is_sorted = true;
-      file->in_name = NULL;
-      file->in_var = NULL;
+      struct comb_file *file = &proc.files[proc.n_files++];
+      *file = (struct comb_file) {
+        .type = type,
+        .start_ofs = start_ofs,
+        .is_sorted = true,
+      };
 
       if (lex_match (lexer, T_ASTERISK))
         {
@@ -237,6 +229,7 @@ combine_files (enum comb_command_type command,
           if (file->reader == NULL)
             goto error;
         }
+      file->end_ofs = lex_ofs (lexer) - 1;
 
       while (lex_match (lexer, T_SLASH))
         if (lex_match_id (lexer, "RENAME"))
@@ -257,15 +250,17 @@ combine_files (enum comb_command_type command,
                 goto error;
               }
             file->in_name = xstrdup (lex_tokcstr (lexer));
+            file->in_ofs = lex_ofs (lexer);
             lex_get (lexer);
           }
         else if (lex_match_id (lexer, "SORT"))
           {
             file->is_sorted = false;
             saw_sort = true;
+            sort_ofs = MIN (sort_ofs, lex_ofs (lexer) - 1);
           }
 
-      if (!merge_dictionary (proc.dict, file))
+      if (!merge_dictionary (&proc, lexer, file))
         goto error;
     }
 
@@ -273,11 +268,7 @@ combine_files (enum comb_command_type command,
     {
       if (lex_match (lexer, T_BY))
 	{
-          const struct variable **by_vars;
-          size_t i;
-          bool ok;
-
-	  if (saw_by)
+          if (saw_by)
 	    {
               lex_sbc_only_once (lexer, "BY");
 	      goto error;
@@ -285,17 +276,17 @@ combine_files (enum comb_command_type command,
           saw_by = true;
 
 	  lex_match (lexer, T_EQUALS);
+
+          const struct variable **by_vars;
           if (!parse_sort_criteria (lexer, proc.dict, &proc.by_vars,
                                     &by_vars, NULL))
 	    goto error;
 
-          ok = true;
-          for (i = 0; i < proc.n_files; i++)
+          bool ok = true;
+          for (size_t i = 0; i < proc.n_files; i++)
             {
               struct comb_file *file = &proc.files[i];
-              size_t j;
-
-              for (j = 0; j < subcase_get_n_fields (&proc.by_vars); j++)
+              for (size_t j = 0; j < subcase_get_n_fields (&proc.by_vars); j++)
                 {
                   const char *name = var_get_name (by_vars[j]);
                   struct variable *var = dict_lookup_var (file->dict, name);
@@ -304,12 +295,11 @@ combine_files (enum comb_command_type command,
                                      subcase_get_direction (&proc.by_vars, j));
                   else
                     {
-                      if (file->handle != NULL)
-                        msg (SE, _("File %s lacks BY variable %s."),
-                             fh_get_name (file->handle), name);
-                      else
-                        msg (SE, _("Active dataset lacks BY variable %s."),
-                             name);
+                      const char *fn
+                        = file->handle ? fh_get_name (file->handle) : "*";
+                      lex_ofs_error (lexer, file->start_ofs, file->end_ofs,
+                                     _("File %s lacks BY variable %s."),
+                                     fn, name);
                       ok = false;
                     }
                 }
@@ -333,6 +323,7 @@ combine_files (enum comb_command_type command,
           if (!lex_force_id (lexer))
             goto error;
           first_name = xstrdup (lex_tokcstr (lexer));
+          first_ofs = lex_ofs (lexer);
           lex_get (lexer);
         }
       else if (command != COMB_UPDATE && lex_match_id (lexer, "LAST"))
@@ -347,6 +338,7 @@ combine_files (enum comb_command_type command,
           if (!lex_force_id (lexer))
             goto error;
           last_name = xstrdup (lex_tokcstr (lexer));
+          last_ofs = lex_ofs (lexer);
           lex_get (lexer);
         }
       else if (lex_match_id (lexer, "MAP"))
@@ -383,27 +375,31 @@ combine_files (enum comb_command_type command,
           lex_sbc_missing (lexer, "BY");
           goto error;
         }
-      if (n_tables)
+      if (table_idx != SIZE_MAX)
         {
-          msg (SE, _("BY is required when %s is specified."), "TABLE");
+          const struct comb_file *table = &proc.files[table_idx];
+          lex_ofs_error (lexer, table->start_ofs, table->end_ofs,
+                         _("BY is required when %s is specified."), "TABLE");
           goto error;
         }
       if (saw_sort)
         {
-          msg (SE, _("BY is required when %s is specified."), "SORT");
+          lex_ofs_error (lexer, sort_ofs, sort_ofs,
+                         _("BY is required when %s is specified."), "SORT");
           goto error;
         }
     }
 
   /* Add IN, FIRST, and LAST variables to master dictionary. */
-  for (i = 0; i < proc.n_files; i++)
+  for (size_t i = 0; i < proc.n_files; i++)
     {
       struct comb_file *file = &proc.files[i];
-      if (!create_flag_var ("IN", file->in_name, proc.dict, &file->in_var))
+      if (!create_flag_var (lexer, "IN", file->in_name, file->in_ofs,
+                            proc.dict, &file->in_var))
         goto error;
     }
-  if (!create_flag_var ("FIRST", first_name, proc.dict, &proc.first)
-      || !create_flag_var ("LAST", last_name, proc.dict, &proc.last))
+  if (!create_flag_var (lexer, "FIRST", first_name, first_ofs, proc.dict, &proc.first)
+      || !create_flag_var (lexer, "LAST", last_name, last_ofs, proc.dict, &proc.last))
     goto error;
 
   dict_delete_scratch_vars (proc.dict);
@@ -411,14 +407,13 @@ combine_files (enum comb_command_type command,
 
   /* Set up mapping from each file's variables to master
      variables. */
-  for (i = 0; i < proc.n_files; i++)
+  for (size_t i = 0; i < proc.n_files; i++)
     {
       struct comb_file *file = &proc.files[i];
       size_t src_n_vars = dict_get_n_vars (file->dict);
-      size_t j;
 
       file->mv = xnmalloc (src_n_vars, sizeof *file->mv);
-      for (j = 0; j < src_n_vars; j++)
+      for (size_t j = 0; j < src_n_vars; j++)
         {
           struct variable *src_var = dict_get_var (file->dict, j);
           struct variable *dst_var = dict_lookup_var (proc.dict,
@@ -438,7 +433,7 @@ combine_files (enum comb_command_type command,
 
   /* Set up case matcher. */
   proc.matcher = case_matcher_create ();
-  for (i = 0; i < proc.n_files; i++)
+  for (size_t i = 0; i < proc.n_files; i++)
     {
       struct comb_file *file = &proc.files[i];
       if (file->reader == NULL)
@@ -497,45 +492,42 @@ combine_files (enum comb_command_type command,
   return CMD_CASCADING_FAILURE;
 }
 
-/* Merge the dictionary for file F into master dictionary M. */
+/* Merge the dictionary for file F into master dictionary for PROC. */
 static bool
-merge_dictionary (struct dictionary *const m, struct comb_file *f)
+merge_dictionary (struct comb_proc *proc, struct lexer *lexer,
+                  struct comb_file *f)
 {
+  struct dictionary *m = proc->dict;
   struct dictionary *d = f->dict;
-  const struct string_array *d_docs, *m_docs;
-  int i;
 
   if (dict_get_label (m) == NULL)
     dict_set_label (m, dict_get_label (d));
-
-  d_docs = dict_get_documents (d);
-  m_docs = dict_get_documents (m);
-
 
   /* FIXME: If the input files have different encodings, then
      the result is undefined.
      The correct thing to do would be to convert to an encoding
      which can cope with all the input files (eg UTF-8).
    */
-  if (0 != strcmp (dict_get_encoding (f->dict), dict_get_encoding (m)))
+  if (strcmp (dict_get_encoding (f->dict), dict_get_encoding (m)))
     msg (MW, _("Combining files with incompatible encodings. String data may "
                "not be represented correctly."));
 
-  if (d_docs != NULL)
+  const struct string_array *d_docs = dict_get_documents (d);
+  const struct string_array *m_docs = dict_get_documents (m);
+  if (d_docs)
     {
-      if (m_docs == NULL)
+      if (!m_docs)
         dict_set_documents (m, d_docs);
       else
         {
-          struct string_array new_docs;
-          size_t i;
-
-          new_docs.n = m_docs->n + d_docs->n;
-          new_docs.strings = xmalloc (new_docs.n * sizeof *new_docs.strings);
-          for (i = 0; i < m_docs->n; i++)
-            new_docs.strings[i] = m_docs->strings[i];
-          for (i = 0; i < d_docs->n; i++)
-            new_docs.strings[m_docs->n + i] = d_docs->strings[i];
+          size_t n = m_docs->n + d_docs->n;
+          struct string_array new_docs = {
+            .strings = xmalloc (n * sizeof *new_docs.strings),
+          };
+          for (size_t i = 0; i < m_docs->n; i++)
+            new_docs.strings[new_docs.n++] = m_docs->strings[i];
+          for (size_t i = 0; i < d_docs->n; i++)
+            new_docs.strings[new_docs.n++] = d_docs->strings[i];
 
           dict_set_documents (m, &new_docs);
 
@@ -543,7 +535,7 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
         }
     }
 
-  for (i = 0; i < dict_get_n_vars (d); i++)
+  for (size_t i = 0; i < dict_get_n_vars (d); i++)
     {
       struct variable *dv = dict_get_var (d, i);
       struct variable *mv = dict_lookup_var (m, var_get_name (dv));
@@ -551,38 +543,40 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
       if (dict_class_from_id (var_get_name (dv)) == DC_SCRATCH)
         continue;
 
-      if (mv != NULL)
+      if (!mv)
+        {
+          mv = dict_clone_var_assert (m, dv);
+          if (proc->n_var_sources >= proc->allocated_var_sources)
+            proc->var_sources = x2nrealloc (proc->var_sources,
+                                            &proc->allocated_var_sources,
+                                            sizeof *proc->var_sources);
+          proc->var_sources[proc->n_var_sources++] = f - proc->files;
+        }
+      else
         {
           if (var_get_width (mv) != var_get_width (dv))
             {
               const char *var_name = var_get_name (dv);
-              struct string s = DS_EMPTY_INITIALIZER;
-              const char *file_name;
+              msg (SE, _("Variable %s has different type or width in different "
+                         "files."), var_name);
 
-              file_name = f->handle ? fh_get_name (f->handle) : "*";
-              ds_put_format (&s,
-                             _("Variable %s in file %s has different "
-                               "type or width from the same variable in "
-                               "earlier file."),
-                             var_name, file_name);
-              ds_put_cstr (&s, "  ");
-              if (var_is_numeric (dv))
-                ds_put_format (&s, _("In file %s, %s is numeric."),
-                               file_name, var_name);
-              else
-                ds_put_format (&s, _("In file %s, %s is a string variable "
-                                     "with width %d."),
-                               file_name, var_name, var_get_width (dv));
-              ds_put_cstr (&s, "  ");
-              if (var_is_numeric (mv))
-                ds_put_format (&s, _("In an earlier file, %s was numeric."),
-                               var_name);
-              else
-                ds_put_format (&s, _("In an earlier file, %s was a string "
-                                     "variable with width %d."),
-                               var_name, var_get_width (mv));
-              msg (SE, "%s", ds_cstr (&s));
-              ds_destroy (&s);
+              for (size_t j = 0; j < 2; j++)
+                {
+                  const struct variable *ev = !j ? mv : dv;
+                  const struct comb_file *ef
+                    = !j ? &proc->files[proc->var_sources[var_get_dict_index (mv)]] : f;
+                  const char *fn = ef->handle ? fh_get_name (ef->handle) : "*";
+
+                  if (var_is_numeric (ev))
+                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                                 _("In file %s, %s is numeric."),
+                                 fn, var_name);
+                  else
+                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                                 _("In file %s, %s is a string with width %d."),
+                                 fn, var_name, var_get_width (ev));
+                }
+
               return false;
             }
 
@@ -593,8 +587,6 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
           if (var_get_label (dv) && !var_get_label (mv))
             var_set_label (mv, var_get_label (dv));
         }
-      else
-        mv = dict_clone_var_assert (m, dv);
     }
 
   return true;
@@ -609,7 +601,8 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
 
    Does nothing and returns true if VAR_NAME is null. */
 static bool
-create_flag_var (const char *subcommand, const char *var_name,
+create_flag_var (struct lexer *lexer, const char *subcommand,
+                 const char *var_name, int var_ofs,
                  struct dictionary *dict, struct variable **var)
 {
   if (var_name != NULL)
@@ -618,9 +611,10 @@ create_flag_var (const char *subcommand, const char *var_name,
       *var = dict_create_var (dict, var_name, 0);
       if (*var == NULL)
         {
-          msg (SE, _("Variable name %s specified on %s subcommand "
-                     "duplicates an existing variable name."),
-               subcommand, var_name);
+          lex_ofs_error (lexer, var_ofs, var_ofs,
+                         _("Variable name %s specified on %s subcommand "
+                           "duplicates an existing variable name."),
+                         var_name, subcommand);
           return false;
         }
       var_set_both_formats (*var, &format);
@@ -634,9 +628,7 @@ create_flag_var (const char *subcommand, const char *var_name,
 static void
 close_all_comb_files (struct comb_proc *proc)
 {
-  size_t i;
-
-  for (i = 0; i < proc->n_files; i++)
+  for (size_t i = 0; i < proc->n_files; i++)
     {
       struct comb_file *file = &proc->files[i];
       subcase_uninit (&file->by_vars);
@@ -670,6 +662,7 @@ free_comb_proc (struct comb_proc *proc)
     }
   subcase_uninit (&proc->by_vars);
   case_unref (proc->buffered_case);
+  free (proc->var_sources);
 }
 
 static bool scan_table (struct comb_file *, union value by[]);
@@ -687,21 +680,17 @@ execute_add_files (struct comb_proc *proc)
   union value *by;
 
   while (case_matcher_match (proc->matcher, &by))
-    {
-      size_t i;
-
-      for (i = 0; i < proc->n_files; i++)
-        {
-          struct comb_file *file = &proc->files[i];
-          while (file->is_minimal)
-            {
-              struct ccase *output = create_output_case (proc);
-              apply_case (file, output);
-              advance_file (file, by);
-              output_case (proc, output, by);
-            }
-        }
-    }
+    for (size_t i = 0; i < proc->n_files; i++)
+      {
+        struct comb_file *file = &proc->files[i];
+        while (file->is_minimal)
+          {
+            struct ccase *output = create_output_case (proc);
+            apply_case (file, output);
+            advance_file (file, by);
+            output_case (proc, output, by);
+          }
+      }
   output_buffered_case (proc);
 }
 
@@ -713,11 +702,8 @@ execute_match_files (struct comb_proc *proc)
 
   while (case_matcher_match (proc->matcher, &by))
     {
-      struct ccase *output;
-      size_t i;
-
-      output = create_output_case (proc);
-      for (i = proc->n_files; i-- > 0;)
+      struct ccase *output = create_output_case (proc);
+      for (size_t i = proc->n_files; i-- > 0;)
         {
           struct comb_file *file = &proc->files[i];
           if (file->type == COMB_FILE)
@@ -822,16 +808,13 @@ static struct ccase *
 create_output_case (const struct comb_proc *proc)
 {
   size_t n_vars = dict_get_n_vars (proc->dict);
-  struct ccase *output;
-  size_t i;
-
-  output = case_create (dict_get_proto (proc->dict));
-  for (i = 0; i < n_vars; i++)
+  struct ccase *output = case_create (dict_get_proto (proc->dict));
+  for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (proc->dict, i);
       value_set_missing (case_data_rw (output, v), var_get_width (v));
     }
-  for (i = 0; i < proc->n_files; i++)
+  for (size_t i = 0; i < proc->n_files; i++)
     {
       struct comb_file *file = &proc->files[i];
       if (file->in_var != NULL)
@@ -863,9 +846,7 @@ apply_case (const struct comb_file *file, struct ccase *output)
 static void
 apply_nonmissing_case (const struct comb_file *file, struct ccase *output)
 {
-  size_t i;
-
-  for (i = 0; i < subcase_get_n_fields (&file->src); i++)
+  for (size_t i = 0; i < subcase_get_n_fields (&file->src); i++)
     {
       const struct subcase_field *src_field = &file->src.fields[i];
       const struct subcase_field *dst_field = &file->dst.fields[i];

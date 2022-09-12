@@ -89,27 +89,32 @@ CHECK_UPDATE([sav], [sav])
 CHECK_UPDATE([sav], [inline])
 CHECK_UPDATE([inline], [sav])
 
-
-AT_SETUP([SAVE RENAME with TO])
-AT_DATA([save-rename-to.sps], [dnl
-data list notable list /a b c fxo9*.
-begin data
-1 2 3 8
-end data.
-
-SAVE OUTFILE = "renamed.sav"
- /RENAME=(A B C = fdo9 TO fdo11).
-
-
-NEW FILE.
-GET FILE = "renamed.sav".
-LIST.
+dnl Far more syntax errors are possible, but the rest are all covered
+dnl by the MATCH FILES tests.
+AT_SETUP([UPDATE syntax errors])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='update.sps' ERROR=IGNORE.
 ])
+AT_DATA([update.sps], [dnl
+DATA LIST LIST NOTABLE/name (A6) x.
+BEGIN DATA.
+al,7
+brad,8
+carl,9
+END DATA.
+SAVE OUTFILE='x.sav'.
 
-AT_CHECK([pspp -O format=csv save-rename-to.sps], [0], [dnl
-Table: Data List
-fdo9,fdo10,fdo11,fxo9
-1.00,2.00,3.00,8.00
+DATA LIST LIST NOTABLE/name (A7) y.
+BEGIN DATA.
+al,1
+carl,2
+dan,3
+END DATA.
+UPDATE/FILE='x.sav'/FILE=*/RENAME(name=name2).
 ])
-
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"update.sps:15.1-15.46: error: UPDATE: Required subcommand BY was not specified.
+   15 | UPDATE/FILE='x.sav'/FILE=*/RENAME(name=name2).
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+])
 AT_CLEANUP
