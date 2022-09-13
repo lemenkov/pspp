@@ -139,7 +139,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
-      if (!parse_dict_trim (lexer, dict, false))
+      if (!parse_dict_trim (lexer, dict))
         goto error;
     }
   dict_compact_values (dict);

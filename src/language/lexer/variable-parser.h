@@ -40,16 +40,16 @@ void var_set_destroy (struct var_set *vs);
 
 enum
   {
-    PV_NONE = 0,		/* No options. */
-    PV_SINGLE = 0001,		/* Restrict to a single name or TO use. */
-    PV_DUPLICATE = 0002,	/* Don't merge duplicates. */
-    PV_APPEND = 0004,		/* Append to existing list. */
-    PV_NO_DUPLICATE = 0010,	/* Error on duplicates. */
-    PV_NUMERIC = 0020,		/* Vars must be numeric. */
-    PV_STRING = 0040,		/* Vars must be string. */
-    PV_SAME_TYPE = 00100,	/* All vars must be the same type. */
-    PV_SAME_WIDTH = 00200,	/* All vars must be the same type and width. */
-    PV_NO_SCRATCH = 00400 	/* Disallow scratch variables. */
+    PV_NONE = 0,                /* No options. */
+    PV_SINGLE = 1 << 0,         /* Restrict to a single name or TO use. */
+    PV_DUPLICATE = 1 << 1,      /* Don't merge duplicates. */
+    PV_APPEND = 1 << 2,         /* Append to existing list. */
+    PV_NO_DUPLICATE = 1 << 3,   /* Error on duplicates. */
+    PV_NUMERIC = 1 << 4,        /* Vars must be numeric. */
+    PV_STRING = 1 << 5,         /* Vars must be string. */
+    PV_SAME_TYPE = 1 << 6,      /* All vars must be the same type. */
+    PV_SAME_WIDTH = 1 << 7,     /* All vars must be the same type and width. */
+    PV_NO_SCRATCH = 1 << 8,     /* Disallow scratch variables. */
   };
 
 struct variable *parse_variable (struct lexer *, const struct dictionary *);

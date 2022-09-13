@@ -21,8 +21,8 @@
 
 struct lexer;
 struct dictionary;
-bool parse_dict_trim (struct lexer *, struct dictionary *, bool);
-bool parse_dict_rename (struct lexer *, struct dictionary *, bool);
+bool parse_dict_trim (struct lexer *, struct dictionary *);
+bool parse_dict_rename (struct lexer *, struct dictionary *);
 bool parse_dict_drop (struct lexer *, struct dictionary *);
 bool parse_dict_keep (struct lexer *, struct dictionary *);
 

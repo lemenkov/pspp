@@ -33,14 +33,12 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Commands that read and write system files share a great deal
-   of common syntactic structure for rearranging and dropping
-   variables.  This function parses this syntax and modifies DICT
-   appropriately.  If RELAX is true, then the modified dictionary
-   need not conform to the usual variable name rules.  Returns
-   true on success, false on failure. */
+/* Commands that read and write system files share a great deal of common
+   syntactic structure for rearranging and dropping variables.  This function
+   parses this syntax and modifies DICT appropriately.  Returns true on
+   success, false on failure. */
 bool
-parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
+parse_dict_trim (struct lexer *lexer, struct dictionary *dict)
 {
   if (lex_match_id (lexer, "MAP"))
     {
@@ -52,7 +50,7 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
   else if (lex_match_id (lexer, "KEEP"))
     return parse_dict_keep (lexer, dict);
   else if (lex_match_id (lexer, "RENAME"))
-    return parse_dict_rename (lexer, dict, relax);
+    return parse_dict_rename (lexer, dict);
   else
     {
       lex_error_expecting (lexer, "MAP", "DROP", "KEEP", "RENAME");
@@ -60,230 +58,81 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
     }
 }
 
-/* Check that OLD_NAME can be renamed to NEW_NAME in DICT.  */
-static bool
-check_rename (struct lexer *lexer, int start_ofs, int end_ofs,
-              const struct dictionary *dict,
-              const char *old_name, const char *new_name)
-{
-  if (dict_lookup_var (dict, new_name) != NULL)
-    {
-      lex_ofs_error (lexer, start_ofs, end_ofs,
-                     _("Cannot rename %s as %s because a variable named %s "
-                       "already exists."),
-                     old_name, new_name, new_name);
-      msg (SN, _("To rename variables with overlapping names, use a single "
-                 "RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or "
-                 "equivalently, `/RENAME (A B C=B C A)'."));
-      return false;
-    }
-  return true;
-}
-
-/* Parse a  "VarX TO VarY" sequence where X and Y are integers
-   such that X >= Y.
-   If successfull, returns a string to the prefix Var and sets FIRST
-   to X and LAST to Y.  Returns NULL on failure.
-   The caller must free the return value.  */
-static char *
-try_to_sequence (struct lexer *lexer, const struct dictionary *dict,
-                 int *first, int *last)
-{
-  /* Check that the next 3 tokens are of the correct type.  */
-  if (lex_token (lexer) != T_ID
-      || lex_next_token (lexer, 1) != T_TO
-      || lex_next_token (lexer, 2) != T_ID)
-    return NULL;
-
-  /* Check that the first and last tokens are suitable as
-     variable names.  */
-  const char *s0 = lex_tokcstr (lexer);
-  char *error = id_is_valid__ (s0, dict_get_encoding (dict));
-  if (error)
-    {
-      lex_error (lexer, "%s", error);
-      free (error);
-      return NULL;
-    }
-
-  const char *s1 = lex_next_tokcstr (lexer, 2);
-  error = id_is_valid__ (s1, dict_get_encoding (dict));
-  if (error)
-    {
-      lex_next_error (lexer, 2, 2, "%s", error);
-      free (error);
-      return NULL;
-    }
-
-  int x0 = strcspn (s0, "0123456789");
-  int x1 = strcspn (s1, "0123456789");
-
-  /* The non-digit parts of s0 and s1 must be the same length.  */
-  if (x0 != x1)
-    return NULL;
-
-  /* Both s0 and s1 must have some digits.  */
-  if (strlen (s0) <= x0)
-    return NULL;
-
-  if (strlen (s1) <= x1)
-    return NULL;
-
-  /* The non-digit parts of s0 and s1 must be identical.  */
-  if (0 != strncmp (s0, s1, x0))
-    return NULL;
-
-  /* Both names must end with digits.  */
-  int len_s0_pfx = strspn (s0 + x0, "0123456789");
-  if (len_s0_pfx + x0 != strlen (s0))
-    return NULL;
-
-  int len_s1_pfx = strspn (s1 + x1, "0123456789");
-  if (len_s1_pfx + x1 != strlen (s1))
-    return NULL;
-
-  const char *n_start = s0 + x0;
-  const char *n_stop = s1 + x1;
-
-  /* The first may not be greater than the last.  */
-  if (atoi (n_start) > atoi (n_stop))
-    return NULL;
-
-  char *prefix = xstrndup (s0, x1);
-
-  *first = atoi (n_start);
-  *last = atoi (n_stop);
-
-  return prefix;
-}
-
-
 /* Parses and performs the RENAME subcommand of GET, SAVE, and
-   related commands.  If RELAX is true, then the new variable
-   names need  not conform to the normal dictionary rules.
-*/
+   related commands. */
 bool
-parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
-		   bool relax)
+parse_dict_rename (struct lexer *lexer, struct dictionary *dict)
 {
-  struct variable **oldvars = NULL;
-  size_t n_newvars = 0;
-  int group = 0;
-  char **newnames = NULL;
   lex_match (lexer, T_EQUALS);
+  int start_ofs = lex_ofs (lexer);
 
+  struct variable **old_vars = NULL;
+  size_t n_old_vars = 0;
+
+  char **new_vars = NULL;
+  size_t n_new_vars = 0;
+
+  bool ok = false;
   while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
-      size_t n_oldvars = 0;
-      oldvars = NULL;
-      n_newvars = 0;
-      n_oldvars = 0;
-      oldvars = NULL;
+      size_t prev_n_old = n_old_vars;
+      size_t prev_n_new = n_new_vars;
 
       bool paren = lex_match (lexer, T_LPAREN);
-      group++;
-      if (!parse_variables (lexer, dict, &oldvars, &n_oldvars, PV_NO_DUPLICATE))
-	goto fail;
+      int pv_opts = PV_NO_DUPLICATE | PV_APPEND | (paren ? 0 : PV_SINGLE);
+
+      int old_vars_start = lex_ofs (lexer);
+      if (!parse_variables (lexer, dict, &old_vars, &n_old_vars, pv_opts))
+        goto done;
+      int old_vars_end = lex_ofs (lexer) - 1;
 
       if (!lex_force_match (lexer, T_EQUALS))
-	goto fail;
+        goto done;
 
-      newnames = xmalloc (sizeof *newnames * n_oldvars);
+      int new_vars_start = lex_ofs (lexer);
+      if (!parse_DATA_LIST_vars (lexer, dict, &new_vars, &n_new_vars, pv_opts))
+        goto done;
+      int new_vars_end = lex_ofs (lexer) - 1;
 
-      char *prefix = NULL;
-      int first, last;
-      /* First attempt to parse v1 TO v10 format.  */
-      if ((prefix = try_to_sequence (lexer, dict, &first, &last)))
-        {
-          /* These 3 tokens have already been checked in the
-             try_to_sequence function.  */
-          int start_ofs = lex_ofs (lexer);
-          lex_get (lexer);
-          lex_get (lexer);
-          lex_get (lexer);
-          int end_ofs = lex_ofs (lexer) - 1;
+      if (paren && !lex_force_match (lexer, T_RPAREN))
+        goto done;
 
-          /* Make sure the new names are suitable.  */
-          for (int i = first; i <= last; ++i)
-            {
-              char *vn = xasprintf ("%s%d", prefix, i);
-
-              if (!check_rename (lexer, start_ofs, end_ofs,
-                                 dict, var_get_name (oldvars[n_newvars]), vn))
-                {
-                  free (vn);
-                  free (prefix);
-                  goto fail;
-                }
-
-              newnames[i - first] = vn;
-              n_newvars++;
-            }
-        }
-      else
-      while (lex_token (lexer) == T_ID || lex_token (lexer) == T_STRING)
-        {
-          if (n_newvars >= n_oldvars)
-            break;
-          const char *new_name = lex_tokcstr (lexer);
-          if (!relax)
-            {
-              char *error = id_is_plausible__ (new_name);
-              if (error)
-                {
-                  lex_error (lexer, "%s", error);
-                  free (error);
-                  goto fail;
-                }
-            }
-
-          int ofs = lex_ofs (lexer);
-          if (!check_rename (lexer, ofs, ofs,
-                             dict, var_get_name (oldvars[n_newvars]), new_name))
-            goto fail;
-          newnames[n_newvars] = xstrdup (new_name);
-          lex_get (lexer);
-          n_newvars++;
-        }
-      free (prefix);
-
-      if (n_newvars != n_oldvars)
+      if (n_new_vars != n_old_vars)
 	{
-	  msg (SE, _("Number of variables on left side of `=' (%zu) does not "
-                     "match number of variables on right side (%zu), in "
-                     "parenthesized group %d of RENAME subcommand."),
-	       n_oldvars, n_newvars, group);
-	  goto fail;
-	}
+          size_t added_old = n_old_vars - prev_n_old;
+          size_t added_new = n_new_vars - prev_n_new;
 
-      if (paren)
-	if (!lex_force_match (lexer, T_RPAREN))
-	  goto fail;
-
-      char *errname = 0;
-      if (!dict_rename_vars (dict, oldvars, newnames, n_newvars, &errname))
-	{
-	  msg (SE,
-	       _("Requested renaming duplicates variable name %s."),
-	       errname);
-	  goto fail;
+          msg (SE, _("Old and new variable counts do not match."));
+          lex_ofs_msg (lexer, SN, old_vars_start, old_vars_end,
+                       ngettext ("There is %zu old variable.",
+                                 "There are %zu old variables.", added_old),
+                       added_old);
+          lex_ofs_msg (lexer, SN, new_vars_start, new_vars_end,
+                       ngettext ("There is %zu new variable name.",
+                                 "There are %zu new variable names.",
+                                 added_new),
+                       added_new);
+	  goto done;
 	}
-      free (oldvars);
-      for (int i = 0; i < n_newvars; ++i)
-	free (newnames[i]);
-      free (newnames);
-      newnames = NULL;
     }
+  int end_ofs = lex_ofs (lexer) - 1;
 
-  return true;
+  char *dup_name = NULL;
+  if (!dict_rename_vars (dict, old_vars, new_vars, n_new_vars, &dup_name))
+    {
+      lex_ofs_error (lexer, start_ofs, end_ofs,
+                     _("Requested renaming duplicates variable name %s."),
+                     dup_name);
+      goto done;
+    }
+  ok = true;
 
- fail:
-  free (oldvars);
-  for (int i = 0; i < n_newvars; ++i)
-    free (newnames[i]);
-  free (newnames);
-  newnames = NULL;
-  return false;
+done:
+  free (old_vars);
+  for (size_t i = 0; i < n_new_vars; ++i)
+    free (new_vars[i]);
+  free (new_vars);
+  return ok;
 }
 
 /* Parses and performs the DROP subcommand of GET, SAVE, and

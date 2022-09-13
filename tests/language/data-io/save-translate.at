@@ -115,6 +115,7 @@ AT_CLEANUP
 
 
 AT_SETUP([CSV output -- KEEP, RENAME bad name ])
+AT_KEYWORDS([SAVE TRANSLATE])
 AT_DATA([bad.sps], [
 data list notable list /Var1 Var2 Var3 Var4 Var5 *.
 begin data
@@ -129,7 +130,7 @@ SAVE TRANSLATE
   /FIELDNAMES
   /Unselected=DELETE
    /RENAME =
-        Var4 = foobar
+        Var4 = Var5
         (Var1 Var2 = one Var3 )
         (Var3 = "The second")
   /CELLS=VALUES
@@ -137,11 +138,13 @@ SAVE TRANSLATE
 ])
 
 AT_CHECK([pspp -O format=csv bad.sps], [1], [dnl
-"bad.sps:16.26-16.29: error: SAVE TRANSLATE: Cannot rename Var2 as Var3 because a variable named Var3 already exists.
+"bad.sps:15.9-17.29: error: SAVE TRANSLATE: Requested renaming duplicates variable name Var5.
+   15 |         Var4 = Var5
+      |         ^~~~~~~~~~~
    16 |         (Var1 Var2 = one Var3 )
-      |                          ^~~~"
-
-"bad.sps:16: note: SAVE TRANSLATE: To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
+      | -------------------------------
+   17 |         (Var3 = ""The second"")
+      | -----------------------------"
 ])
 
 
@@ -161,3 +164,198 @@ number	time	date	datetime	string	filter
 ])
 AT_CLEANUP
 
+AT_SETUP([SAVE TRANSLATE syntax errors])
+: > xyzzy.csv
+AT_DATA([save-translate.sps], [dnl
+DATA LIST LIST NOTABLE /v1 to v10.
+SAVE TRANSLATE **.
+SAVE TRANSLATE/OUTFILE=**.
+SAVE TRANSLATE/OUTFILE='xyzzy.txt'/OUTFILE='xyzzy.txt'.
+SAVE TRANSLATE/TYPE=CSV/TYPE=**.
+SAVE TRANSLATE/TYPE=**.
+SAVE TRANSLATE/MISSING=**.
+SAVE TRANSLATE/CELLS=**.
+SAVE TRANSLATE/TEXTOPTIONS DELIMITER=**.
+SAVE TRANSLATE/TEXTOPTIONS DELIMITER='ab'.
+SAVE TRANSLATE/TEXTOPTIONS QUALIFIER=**.
+SAVE TRANSLATE/TEXTOPTIONS QUALIFIER='ab'.
+SAVE TRANSLATE/TEXTOPTIONS DECIMAL=**.
+SAVE TRANSLATE/UNSELECTED=**.
+SAVE TRANSLATE/ **.
+SAVE TRANSLATE/OUTFILE='xyzzy.csv'.
+SAVE TRANSLATE/TYPE=CSV.
+SAVE TRANSLATE/OUTFILE='xyzzy.csv'/TYPE=CSV.
+SAVE TRANSLATE/RENAME **.
+SAVE TRANSLATE/RENAME v1**.
+SAVE TRANSLATE/RENAME(v1**).
+SAVE TRANSLATE/RENAME v1=.
+SAVE TRANSLATE/RENAME v1=**.
+SAVE TRANSLATE/RENAME v1 to v5=v6.
+SAVE TRANSLATE/RENAME (v1=v2 v3).
+SAVE TRANSLATE/RENAME (v1 v2=v3).
+SAVE TRANSLATE/RENAME (v1=v3**.
+SAVE TRANSLATE/RENAME v1=v5.
+SAVE TRANSLATE/RENAME v1 v5=v5 v1.
+SAVE TRANSLATE/RENAME(v1 v5=v5 v1).
+SAVE TRANSLATE/RENAME(v1 to v10=v01 to v10).
+SAVE TRANSLATE/RENAME=v1=v1.
+SAVE TRANSLATE/DROP=ALL.
+SAVE TRANSLATE/DROP=**.
+SAVE TRANSLATE/KEEP=**.
+])
+AT_CHECK([pspp -O format=csv save-translate.sps], [1], [dnl
+"save-translate.sps:2.16-2.17: error: SAVE TRANSLATE: Syntax error expecting `/'.
+    2 | SAVE TRANSLATE **.
+      |                ^~"
+
+"save-translate.sps:3.24-3.25: error: SAVE TRANSLATE: Syntax error expecting a file name or handle name.
+    3 | SAVE TRANSLATE/OUTFILE=**.
+      |                        ^~"
+
+"save-translate.sps:4.36-4.42: error: SAVE TRANSLATE: Subcommand OUTFILE may only be specified once.
+    4 | SAVE TRANSLATE/OUTFILE='xyzzy.txt'/OUTFILE='xyzzy.txt'.
+      |                                    ^~~~~~~"
+
+"save-translate.sps:5.25-5.28: error: SAVE TRANSLATE: Subcommand TYPE may only be specified once.
+    5 | SAVE TRANSLATE/TYPE=CSV/TYPE=**.
+      |                         ^~~~"
+
+"save-translate.sps:6.21-6.22: error: SAVE TRANSLATE: Syntax error expecting CSV or TAB.
+    6 | SAVE TRANSLATE/TYPE=**.
+      |                     ^~"
+
+"save-translate.sps:7.24-7.25: error: SAVE TRANSLATE: Syntax error expecting IGNORE or RECODE.
+    7 | SAVE TRANSLATE/MISSING=**.
+      |                        ^~"
+
+"save-translate.sps:8.22-8.23: error: SAVE TRANSLATE: Syntax error expecting VALUES or LABELS.
+    8 | SAVE TRANSLATE/CELLS=**.
+      |                      ^~"
+
+"save-translate.sps:9.38-9.39: error: SAVE TRANSLATE: Syntax error expecting string.
+    9 | SAVE TRANSLATE/TEXTOPTIONS DELIMITER=**.
+      |                                      ^~"
+
+"save-translate.sps:10.38-10.41: error: SAVE TRANSLATE: The DELIMITER string must contain exactly one character.
+   10 | SAVE TRANSLATE/TEXTOPTIONS DELIMITER='ab'.
+      |                                      ^~~~"
+
+"save-translate.sps:11.38-11.39: error: SAVE TRANSLATE: Syntax error expecting string.
+   11 | SAVE TRANSLATE/TEXTOPTIONS QUALIFIER=**.
+      |                                      ^~"
+
+"save-translate.sps:12.38-12.41: error: SAVE TRANSLATE: The QUALIFIER string must contain exactly one character.
+   12 | SAVE TRANSLATE/TEXTOPTIONS QUALIFIER='ab'.
+      |                                      ^~~~"
+
+"save-translate.sps:13.36-13.37: error: SAVE TRANSLATE: Syntax error expecting DOT or COMMA.
+   13 | SAVE TRANSLATE/TEXTOPTIONS DECIMAL=**.
+      |                                    ^~"
+
+"save-translate.sps:14.27-14.28: error: SAVE TRANSLATE: Syntax error expecting RETAIN or DELETE.
+   14 | SAVE TRANSLATE/UNSELECTED=**.
+      |                           ^~"
+
+"save-translate.sps:15.17-15.18: error: SAVE TRANSLATE: Syntax error expecting MAP, DROP, KEEP, or RENAME.
+   15 | SAVE TRANSLATE/ **.
+      |                 ^~"
+
+"save-translate.sps:16.1-16.35: error: SAVE TRANSLATE: Required subcommand TYPE was not specified.
+   16 | SAVE TRANSLATE/OUTFILE='xyzzy.csv'.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:17.1-17.24: error: SAVE TRANSLATE: Required subcommand OUTFILE was not specified.
+   17 | SAVE TRANSLATE/TYPE=CSV.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:18.16-18.34: error: SAVE TRANSLATE: Output file `xyzzy.csv' exists but REPLACE was not specified.
+   18 | SAVE TRANSLATE/OUTFILE='xyzzy.csv'/TYPE=CSV.
+      |                ^~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:19.23-19.24: error: SAVE TRANSLATE: Syntax error expecting variable name.
+   19 | SAVE TRANSLATE/RENAME **.
+      |                       ^~"
+
+"save-translate.sps:20.25-20.26: error: SAVE TRANSLATE: Syntax error expecting `='.
+   20 | SAVE TRANSLATE/RENAME v1**.
+      |                         ^~"
+
+"save-translate.sps:21.25-21.26: error: SAVE TRANSLATE: Syntax error expecting `='.
+   21 | SAVE TRANSLATE/RENAME(v1**).
+      |                         ^~"
+
+"save-translate.sps:22.26: error: SAVE TRANSLATE: Syntax error expecting variable name.
+   22 | SAVE TRANSLATE/RENAME v1=.
+      |                          ^"
+
+"save-translate.sps:23.26-23.27: error: SAVE TRANSLATE: Syntax error expecting variable name.
+   23 | SAVE TRANSLATE/RENAME v1=**.
+      |                          ^~"
+
+save-translate.sps:24: error: SAVE TRANSLATE: Old and new variable counts do not match.
+
+"save-translate.sps:24.23-24.30: note: SAVE TRANSLATE: There are 5 old variables.
+   24 | SAVE TRANSLATE/RENAME v1 to v5=v6.
+      |                       ^~~~~~~~"
+
+"save-translate.sps:24.32-24.33: note: SAVE TRANSLATE: There is 1 new variable name.
+   24 | SAVE TRANSLATE/RENAME v1 to v5=v6.
+      |                                ^~"
+
+save-translate.sps:25: error: SAVE TRANSLATE: Old and new variable counts do not match.
+
+"save-translate.sps:25.24-25.25: note: SAVE TRANSLATE: There is 1 old variable.
+   25 | SAVE TRANSLATE/RENAME (v1=v2 v3).
+      |                        ^~"
+
+"save-translate.sps:25.27-25.31: note: SAVE TRANSLATE: There are 2 new variable names.
+   25 | SAVE TRANSLATE/RENAME (v1=v2 v3).
+      |                           ^~~~~"
+
+save-translate.sps:26: error: SAVE TRANSLATE: Old and new variable counts do not match.
+
+"save-translate.sps:26.24-26.28: note: SAVE TRANSLATE: There are 2 old variables.
+   26 | SAVE TRANSLATE/RENAME (v1 v2=v3).
+      |                        ^~~~~"
+
+"save-translate.sps:26.30-26.31: note: SAVE TRANSLATE: There is 1 new variable name.
+   26 | SAVE TRANSLATE/RENAME (v1 v2=v3).
+      |                              ^~"
+
+"save-translate.sps:27.29-27.30: error: SAVE TRANSLATE: Syntax error expecting `)'.
+   27 | SAVE TRANSLATE/RENAME (v1=v3**.
+      |                             ^~"
+
+"save-translate.sps:28.23-28.27: error: SAVE TRANSLATE: Requested renaming duplicates variable name v5.
+   28 | SAVE TRANSLATE/RENAME v1=v5.
+      |                       ^~~~~"
+
+"save-translate.sps:29.26-29.27: error: SAVE TRANSLATE: Syntax error expecting `='.
+   29 | SAVE TRANSLATE/RENAME v1 v5=v5 v1.
+      |                          ^~"
+
+"save-translate.sps:30.1-30.35: error: SAVE TRANSLATE: Required subcommand TYPE was not specified.
+   30 | SAVE TRANSLATE/RENAME(v1 v5=v5 v1).
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:31.1-31.44: error: SAVE TRANSLATE: Required subcommand TYPE was not specified.
+   31 | SAVE TRANSLATE/RENAME(v1 to v10=v01 to v10).
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:32.1-32.28: error: SAVE TRANSLATE: Required subcommand TYPE was not specified.
+   32 | SAVE TRANSLATE/RENAME=v1=v1.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"save-translate.sps:33.16-33.23: error: SAVE TRANSLATE: Cannot DROP all variables from dictionary.
+   33 | SAVE TRANSLATE/DROP=ALL.
+      |                ^~~~~~~~"
+
+"save-translate.sps:34.21-34.22: error: SAVE TRANSLATE: Syntax error expecting variable name.
+   34 | SAVE TRANSLATE/DROP=**.
+      |                     ^~"
+
+"save-translate.sps:35.21-35.22: error: SAVE TRANSLATE: Syntax error expecting variable name.
+   35 | SAVE TRANSLATE/KEEP=**.
+      |                     ^~"
+])
+AT_CLEANUP

@@ -41,48 +41,29 @@
 int
 cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 {
-  enum { CSV_FILE = 1, TAB_FILE } type;
+  enum { CSV_FILE = 1, TAB_FILE } type = 0;
 
-  struct dictionary *dict;
-  struct case_map_stage *stage;
-  struct case_map *map;
-  struct casewriter *writer;
-  struct file_handle *handle;
-
-  bool replace;
-
-  bool retain_unselected;
-  bool recode_user_missing;
-  bool include_var_names;
-  bool use_value_labels;
-  bool use_print_formats;
-  char decimal;
-  char delimiter;
-  char qualifier;
-
-  bool ok;
-
-  type = 0;
-
-  dict = dict_clone (dataset_dict (ds));
+  struct dictionary *dict = dict_clone (dataset_dict (ds));
   dict_set_names_must_be_ids (dict, false);
-  stage = NULL;
-  map = NULL;
 
-  handle = NULL;
-  replace = false;
-
-  retain_unselected = true;
-  recode_user_missing = false;
-  include_var_names = false;
-  use_value_labels = false;
-  use_print_formats = false;
-  decimal = settings_get_fmt_settings ()->decimal;
-  delimiter = 0;
-  qualifier = '"';
-
-  stage = case_map_stage_create (dict);
+  struct case_map_stage *stage = case_map_stage_create (dict);
   dict_delete_scratch_vars (dict);
+
+  struct file_handle *handle = NULL;
+
+  bool replace = false;
+
+  bool retain_unselected = true;
+  bool recode_user_missing = false;
+  bool include_var_names = false;
+  bool use_value_labels = false;
+  bool use_print_formats = false;
+  char decimal = settings_get_fmt_settings ()->decimal;
+  char delimiter = 0;
+  char qualifier = '"';
+
+  int outfile_start = 0;
+  int outfile_end = 0;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -91,6 +72,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "OUTFILE"))
 	{
+          outfile_start = lex_ofs (lexer) - 1;
           if (handle != NULL)
             {
               lex_sbc_only_once (lexer, "OUTFILE");
@@ -102,6 +84,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 	  handle = fh_parse (lexer, FH_REF_FILE, NULL);
 	  if (handle == NULL)
 	    goto error;
+          outfile_end = lex_ofs (lexer) - 1;
 	}
       else if (lex_match_id (lexer, "TYPE"))
         {
@@ -230,7 +213,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
               goto error;
             }
         }
-      else if (!parse_dict_trim (lexer, dict, true))
+      else if (!parse_dict_trim (lexer, dict))
         goto error;
     }
 
@@ -246,8 +229,9 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
     }
   else if (!replace && fn_exists (handle))
     {
-      msg (SE, _("Output file `%s' exists but %s was not specified."),
-           fh_get_file_name (handle), "REPLACE");
+      lex_ofs_error (lexer, outfile_start, outfile_end,
+                     _("Output file `%s' exists but %s was not specified."),
+                     fh_get_file_name (handle), "REPLACE");
       goto error;
     }
 
@@ -266,19 +250,19 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
                   : ';'),
     .qualifier = qualifier,
   };
-  writer = csv_writer_open (handle, dict, &csv_opts);
+  struct casewriter *writer = csv_writer_open (handle, dict, &csv_opts);
   if (writer == NULL)
     goto error;
   fh_unref (handle);
 
-  map = case_map_stage_get_case_map (stage);
+  struct case_map *map = case_map_stage_get_case_map (stage);
   case_map_stage_destroy (stage);
   if (map != NULL)
     writer = case_map_create_output_translator (map, writer);
   dict_unref (dict);
 
   casereader_transfer (proc_open_filtering (ds, !retain_unselected), writer);
-  ok = casewriter_destroy (writer);
+  bool ok = casewriter_destroy (writer);
   ok = proc_commit (ds) && ok;
 
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
@@ -287,6 +271,5 @@ error:
   case_map_stage_destroy (stage);
   fh_unref (handle);
   dict_unref (dict);
-  case_map_destroy (map);
   return CMD_FAILURE;
 }
