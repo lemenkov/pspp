@@ -633,8 +633,7 @@ convert_format (struct pfm_reader *r, const int portable_format[3],
       };
 
       if (fmt_check_output (&format)
-          && fmt_check_width_compat (&format, var_get_name (v),
-                                     var_get_width (v)))
+          && fmt_check_width_compat (&format, var_get_width (v)))
         return format;
 
       if (*report_error)

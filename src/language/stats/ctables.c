@@ -1293,7 +1293,7 @@ parse_ctables_format_specifier (struct lexer *lexer, struct fmt_spec *format,
 
       char *error = fmt_check_output__ (format);
       if (!error)
-        error = fmt_check_type_compat__ (format, VAL_NUMERIC);
+        error = fmt_check_type_compat__ (format, NULL, VAL_NUMERIC);
       if (error)
         {
           lex_next_error (lexer, -1, -1, "%s", error);

@@ -1299,7 +1299,7 @@ no_match (struct expression *e, const char *func_name, struct expr_node *node,
                 char *error = fmt_check__ (f, (ops->args[i] == OP_ni_format
                                                ? FMT_FOR_INPUT : FMT_FOR_OUTPUT));
                 if (!error)
-                  error = fmt_check_type_compat__ (f, VAL_NUMERIC);
+                  error = fmt_check_type_compat__ (f, NULL, VAL_NUMERIC);
                 if (error)
                   {
                     msg_at (SN, expr_location (e, node->args[i]), "%s", error);

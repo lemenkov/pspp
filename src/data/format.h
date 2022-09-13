@@ -95,13 +95,13 @@ bool fmt_check (const struct fmt_spec *, enum fmt_use);
 bool fmt_check_input (const struct fmt_spec *);
 bool fmt_check_output (const struct fmt_spec *);
 bool fmt_check_type_compat (const struct fmt_spec *, enum val_type);
-bool fmt_check_width_compat (const struct fmt_spec *, const char *varname,
-                             int var_width);
+bool fmt_check_width_compat (const struct fmt_spec *, int var_width);
 
 char *fmt_check__ (const struct fmt_spec *, enum fmt_use);
 char *fmt_check_input__ (const struct fmt_spec *);
 char *fmt_check_output__ (const struct fmt_spec *);
-char *fmt_check_type_compat__ (const struct fmt_spec *, enum val_type);
+char *fmt_check_type_compat__ (const struct fmt_spec *, const char *varname,
+                               enum val_type);
 char *fmt_check_width_compat__ (const struct fmt_spec *, const char *varname,
                                 int var_width);
 

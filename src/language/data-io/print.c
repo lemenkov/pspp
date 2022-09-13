@@ -35,7 +35,6 @@
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/i18n.h"
-#include "libpspp/ll.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
@@ -62,10 +61,10 @@ enum field_type
 struct prt_out_spec
   {
     /* All fields. */
-    struct ll ll;               /* In struct print_trns `specs' list. */
     enum field_type type;	/* What type of field this is. */
     int record;                 /* 1-based record number. */
     int first_column;		/* 0-based first column. */
+    int start_ofs, end_ofs;
 
     /* PRT_VAR only. */
     const struct variable *var;	/* Associated variable. */
@@ -74,7 +73,7 @@ struct prt_out_spec
     bool sysmis_as_spaces;      /* Output SYSMIS as spaces? */
 
     /* PRT_LITERAL only. */
-    struct string string;       /* String to output. */
+    struct substring string;    /* String to output. */
     int width;                  /* Width of 'string', in display columns. */
   };
 
@@ -86,7 +85,8 @@ struct print_trns
     bool include_prefix;        /* Prefix lines with space? */
     const char *encoding;       /* Encoding to use for output. */
     struct dfm_writer *writer;	/* Output file, NULL=listing file. */
-    struct ll_list specs;       /* List of struct prt_out_specs. */
+    struct prt_out_spec *specs;
+    size_t n_specs;
     size_t n_records;           /* Number of records to write. */
   };
 
@@ -99,13 +99,16 @@ enum which_formats
 static const struct trns_class print_binary_trns_class;
 static const struct trns_class print_text_trns_class;
 
-static int internal_cmd_print (struct lexer *, struct dataset *ds,
-			       enum which_formats, bool eject);
-static bool parse_specs (struct lexer *, struct pool *tmp_pool, struct print_trns *,
-			 struct dictionary *dict, enum which_formats);
+static int cmd_print__ (struct lexer *, struct dataset *,
+                        enum which_formats, bool eject);
+static bool parse_specs (struct lexer *, struct pool *tmp_pool,
+                         struct print_trns *, int records_ofs,
+                         struct dictionary *, enum which_formats);
 static void dump_table (struct print_trns *);
 
 static bool print_trns_free (void *trns_);
+
+static const struct prt_out_spec *find_binary_spec (const struct print_trns *);
 
 /* Basic parsing. */
 
@@ -113,46 +116,40 @@ static bool print_trns_free (void *trns_);
 int
 cmd_print (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_print (lexer, ds, PRINT, false);
+  return cmd_print__ (lexer, ds, PRINT, false);
 }
 
 /* Parses PRINT EJECT command. */
 int
 cmd_print_eject (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_print (lexer, ds, PRINT, true);
+  return cmd_print__ (lexer, ds, PRINT, true);
 }
 
 /* Parses WRITE command. */
 int
 cmd_write (struct lexer *lexer, struct dataset *ds)
 {
-  return internal_cmd_print (lexer, ds, WRITE, false);
+  return cmd_print__ (lexer, ds, WRITE, false);
 }
 
 /* Parses the output commands. */
 static int
-internal_cmd_print (struct lexer *lexer, struct dataset *ds,
-		    enum which_formats which_formats, bool eject)
+cmd_print__ (struct lexer *lexer, struct dataset *ds,
+             enum which_formats which_formats, bool eject)
 {
   bool print_table = false;
-  const struct prt_out_spec *spec;
-  struct print_trns *trns;
   struct file_handle *fh = NULL;
   char *encoding = NULL;
-  struct pool *tmp_pool;
-  bool binary;
 
   /* Fill in prt to facilitate error-handling. */
-  trns = pool_create_container (struct print_trns, pool);
-  trns->eject = eject;
-  trns->writer = NULL;
-  trns->n_records = 0;
-  ll_init (&trns->specs);
-
-  tmp_pool = pool_create_subpool (trns->pool);
+  struct pool *pool = pool_create ();
+  struct print_trns *trns = pool_alloc (pool, sizeof *trns);
+  *trns = (struct print_trns) { .pool = pool, .eject = eject };
+  struct pool *tmp_pool = pool_create_subpool (trns->pool);
 
   /* Parse the command options. */
+  int records_ofs = 0;
   while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "OUTFILE"))
@@ -181,6 +178,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
 	    goto error;
 	  trns->n_records = lex_integer (lexer);
+          records_ofs = lex_ofs (lexer);
 	  lex_get (lexer);
 	  lex_match (lexer, T_RPAREN);
 	}
@@ -201,7 +199,8 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
   trns->include_prefix = which_formats == PRINT && fh != NULL;
 
   /* Parse variables and strings. */
-  if (!parse_specs (lexer, tmp_pool, trns, dataset_dict (ds), which_formats))
+  if (!parse_specs (lexer, tmp_pool, trns, records_ofs,
+                    dataset_dict (ds), which_formats))
     goto error;
 
   /* Are there any binary formats?
@@ -209,19 +208,12 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
      There are real difficulties figuring out what to do when both binary
      formats and nontrivial encodings enter the picture.  So when binary
      formats are present we fall back to much simpler handling. */
-  binary = false;
-  ll_for_each (spec, struct prt_out_spec, ll, &trns->specs)
+  const struct prt_out_spec *binary_spec = find_binary_spec (trns);
+  if (binary_spec && !fh)
     {
-      if (spec->type == PRT_VAR
-          && fmt_get_category (spec->format.type) == FMT_CAT_BINARY)
-        {
-          binary = true;
-          break;
-        }
-    }
-  if (binary && fh == NULL)
-    {
-      msg (SE, _("%s is required when binary formats are specified."), "OUTFILE");
+      lex_ofs_error (lexer, binary_spec->start_ofs, binary_spec->end_ofs,
+                     _("%s is required when binary formats are specified."),
+                     "OUTFILE");
       goto error;
     }
 
@@ -243,7 +235,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
     dump_table (trns);
 
   /* Put the transformation in the queue. */
-  add_transformation (ds, (binary
+  add_transformation (ds, (binary_spec
                            ? &print_binary_trns_class
                            : &print_text_trns_class), trns);
 
@@ -259,9 +251,11 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 }
 
 static bool parse_string_argument (struct lexer *, struct print_trns *,
+                                   size_t *allocated_specs,
                                    int record, int *column);
 static bool parse_variable_argument (struct lexer *, const struct dictionary *,
 				     struct print_trns *,
+                                     size_t *allocated_specs,
                                      struct pool *tmp_pool,
                                      int *record, int *column,
                                      enum which_formats);
@@ -270,8 +264,8 @@ static bool parse_variable_argument (struct lexer *, const struct dictionary *,
    PRINT, PRINT EJECT, or WRITE command into the prt structure.
    Returns success. */
 static bool
-parse_specs (struct lexer *lexer, struct pool *tmp_pool, struct print_trns *trns,
-	     struct dictionary *dict,
+parse_specs (struct lexer *lexer, struct pool *tmp_pool,
+             struct print_trns *trns, int records_ofs, struct dictionary *dict,
              enum which_formats which_formats)
 {
   int record = 0;
@@ -283,18 +277,18 @@ parse_specs (struct lexer *lexer, struct pool *tmp_pool, struct print_trns *trns
       return true;
     }
 
+  size_t allocated_specs = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
-      bool ok;
-
       if (!parse_record_placement (lexer, &record, &column))
         return false;
 
-      if (lex_is_string (lexer))
-	ok = parse_string_argument (lexer, trns, record, &column);
-      else
-	ok = parse_variable_argument (lexer, dict, trns, tmp_pool, &record,
-                                      &column, which_formats);
+      bool ok = (lex_is_string (lexer)
+                 ? parse_string_argument (lexer, trns, &allocated_specs,
+                                          record, &column)
+                 : parse_variable_argument (lexer, dict, trns, &allocated_specs,
+                                            tmp_pool, &record, &column,
+                                            which_formats));
       if (!ok)
 	return 0;
 
@@ -302,24 +296,37 @@ parse_specs (struct lexer *lexer, struct pool *tmp_pool, struct print_trns *trns
     }
 
   if (trns->n_records != 0 && trns->n_records != record)
-    msg (SW, _("Output calls for %d records but %zu specified on RECORDS "
-               "subcommand."),
-         record, trns->n_records);
+    lex_ofs_error (lexer, records_ofs, records_ofs,
+                   _("Output calls for %d records but %zu specified on RECORDS "
+                     "subcommand."),
+                   record, trns->n_records);
   trns->n_records = record;
 
   return true;
 }
 
+static struct prt_out_spec *
+add_spec (struct print_trns *trns, size_t *allocated_specs)
+{
+  if (trns->n_specs >= *allocated_specs)
+    trns->specs = pool_2nrealloc (trns->pool, trns->specs, allocated_specs,
+                                  sizeof *trns->specs);
+  return &trns->specs[trns->n_specs++];
+}
+
 /* Parses a string argument to the PRINT commands.  Returns success. */
 static bool
-parse_string_argument (struct lexer *lexer, struct print_trns *trns, int record, int *column)
+parse_string_argument (struct lexer *lexer, struct print_trns *trns,
+                       size_t *allocated_specs, int record, int *column)
 {
-  struct prt_out_spec *spec = pool_alloc (trns->pool, sizeof *spec);
-  spec->type = PRT_LITERAL;
-  spec->record = record;
-  spec->first_column = *column;
-  ds_init_substring (&spec->string, lex_tokss (lexer));
-  ds_register_pool (&spec->string, trns->pool);
+  struct prt_out_spec *spec = add_spec (trns, allocated_specs);
+  *spec = (struct prt_out_spec) {
+    .type = PRT_LITERAL,
+    .record = record,
+    .first_column = *column,
+    .string = ss_clone_pool (lex_tokss (lexer), trns->pool),
+    .start_ofs = lex_ofs (lexer),
+  };
   lex_get (lexer);
 
   /* Parse the included column range. */
@@ -334,15 +341,20 @@ parse_string_argument (struct lexer *lexer, struct print_trns *trns, int record,
 
       spec->first_column = first_column;
       if (range_specified)
-        ds_set_length (&spec->string, last_column - first_column + 1, ' ');
+        {
+          struct string s;
+          ds_init_substring (&s, spec->string);
+          ds_set_length (&s, last_column - first_column + 1, ' ');
+          spec->string = ss_clone_pool (s.ss, trns->pool);
+          ds_destroy (&s);
+        }
     }
+  spec->end_ofs = lex_ofs (lexer) - 1;
 
-  spec->width = u8_strwidth (CHAR_CAST (const uint8_t *,
-                                        ds_cstr (&spec->string)),
-                             UTF8);
+  spec->width = u8_width (CHAR_CAST (const uint8_t *, spec->string.string),
+                          spec->string.length, UTF8);
   *column = spec->first_column + spec->width;
 
-  ll_push_tail (&trns->specs, &spec->ll);
   return true;
 }
 
@@ -351,8 +363,8 @@ parse_string_argument (struct lexer *lexer, struct print_trns *trns, int record,
    Returns success. */
 static bool
 parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
-			 struct print_trns *trns, struct pool *tmp_pool,
-                         int *record, int *column,
+			 struct print_trns *trns, size_t *allocated_specs,
+                         struct pool *tmp_pool, int *record, int *column,
                          enum which_formats which_formats)
 {
   const struct variable **vars;
@@ -403,7 +415,7 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
             return false;
           }
 
-        struct prt_out_spec *spec = pool_alloc (trns->pool, sizeof *spec);
+        struct prt_out_spec *spec = add_spec (trns, allocated_specs);
         *spec = (struct prt_out_spec) {
           .type = PRT_VAR,
           .record = *record,
@@ -421,7 +433,6 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
                                && (fmt_get_category (f->type)
                                    != FMT_CAT_BINARY)),
         };
-        ll_push_tail (&trns->specs, &spec->ll);
 
         *column += f->w + add_space;
       }
@@ -443,9 +454,9 @@ dump_table (struct print_trns *trns)
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  struct prt_out_spec *spec;
-  ll_for_each (spec, struct prt_out_spec, ll, &trns->specs)
+  for (size_t i = 0; i < trns->n_specs; i++)
     {
+      const struct prt_out_spec *spec = &trns->specs[i];
       if (spec->type != PRT_VAR)
         continue;
 
@@ -471,6 +482,19 @@ dump_table (struct print_trns *trns)
 
   pivot_table_submit (table);
 }
+
+static const struct prt_out_spec *
+find_binary_spec (const struct print_trns *trns)
+{
+  for (size_t i = 0; i < trns->n_specs; i++)
+    {
+      const struct prt_out_spec *spec = &trns->specs[i];
+      if (spec->type == PRT_VAR
+          && fmt_get_category (spec->format.type) == FMT_CAT_BINARY)
+        return spec;
+    }
+  return NULL;
+}
 
 /* Transformation, for all-text output. */
 
@@ -484,15 +508,15 @@ print_text_trns_proc (void *trns_, struct ccase **c,
                       casenumber case_num UNUSED)
 {
   struct print_trns *trns = trns_;
-  struct prt_out_spec *spec;
   struct u8_line line;
 
   bool eject = trns->eject;
   int record = 1;
 
   u8_line_init (&line);
-  ll_for_each (spec, struct prt_out_spec, ll, &trns->specs)
+  for (size_t i = 0; i < trns->n_specs; i++)
     {
+      const struct prt_out_spec *spec = &trns->specs[i];
       int x0 = spec->first_column;
 
       print_text_flush_records (trns, &line, spec->record, &eject, &record);
@@ -530,10 +554,9 @@ print_text_trns_proc (void *trns_, struct ccase **c,
         }
       else
         {
-          const struct string *s = &spec->string;
+          const struct substring *s = &spec->string;
 
-          u8_line_put (&line, x0, x0 + spec->width,
-                       ds_data (s), ds_length (s));
+          u8_line_put (&line, x0, x0 + spec->width, s->string, s->length);
         }
     }
   print_text_flush_records (trns, &line, trns->n_records + 1,
@@ -600,13 +623,12 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
   bool eject = trns->eject;
   char encoded_space = recode_byte (trns->encoding, C_ENCODING, ' ');
   int record = 1;
-  struct prt_out_spec *spec;
-  struct string line;
+  struct string line = DS_EMPTY_INITIALIZER;
 
-  ds_init_empty (&line);
   ds_put_byte (&line, ' ');
-  ll_for_each (spec, struct prt_out_spec, ll, &trns->specs)
+  for (size_t i = 0; i < trns->n_specs; i++)
     {
+      const struct prt_out_spec *spec = &trns->specs[i];
       print_binary_flush_records (trns, &line, spec->record, &eject, &record);
 
       ds_set_length (&line, spec->first_column, encoded_space);
@@ -624,10 +646,10 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
         }
       else
         {
-          ds_put_substring (&line, ds_ss (&spec->string));
+          ds_put_substring (&line, spec->string);
           if (0 != strcmp (trns->encoding, UTF8))
             {
-              size_t length = ds_length (&spec->string);
+              size_t length = spec->string.length;
               char *data = ss_data (ds_tail (&line, length));
 	      char *s = recode_string (trns->encoding, UTF8, data, length);
 	      memcpy (data, s, length);

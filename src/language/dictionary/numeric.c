@@ -138,7 +138,7 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
           || !parse_format_specifier (lexer, &f))
 	goto fail;
 
-      char *error = fmt_check_type_compat__ (&f, VAL_STRING);
+      char *error = fmt_check_type_compat__ (&f, NULL, VAL_STRING);
       if (!error)
         error = fmt_check_output__ (&f);
       if (error)

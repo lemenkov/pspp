@@ -339,3 +339,60 @@ AT_CHECK([tr '\r' R < crlf.txt], [0], [dnl
  5 R
 ])
 AT_CLEANUP
+
+AT_SETUP([PRINT syntax errors])
+AT_DATA([print.sps], [dnl
+DATA LIST LIST NOTABLE /x.
+PRINT OUTFILE=**.
+PRINT ENCODING=**.
+PRINT RECORDS=-1.
+PRINT **.
+PRINT/ **.
+PRINT/'string' 0.
+PRINT/'string' 5-3.
+PRINT/y.
+PRINT/x 0.
+PRINT/x (A8).
+])
+AT_CHECK([pspp -O format=csv print.sps], [1], [dnl
+"print.sps:2.15-2.16: error: PRINT: Syntax error expecting a file name or handle name.
+    2 | PRINT OUTFILE=**.
+      |               ^~"
+
+"print.sps:3.16-3.17: error: PRINT: Syntax error expecting string.
+    3 | PRINT ENCODING=**.
+      |                ^~"
+
+"print.sps:4.15-4.16: error: PRINT: Syntax error expecting non-negative integer for RECORDS.
+    4 | PRINT RECORDS=-1.
+      |               ^~"
+
+"print.sps:5.7-5.8: error: PRINT: Syntax error expecting OUTFILE, ENCODING, RECORDS, TABLE, or NOTABLE.
+    5 | PRINT **.
+      |       ^~"
+
+"print.sps:6.8-6.9: error: PRINT: Syntax error expecting variable name.
+    6 | PRINT/ **.
+      |        ^~"
+
+"print.sps:7.16: error: PRINT: Column positions for fields must be positive.
+    7 | PRINT/'string' 0.
+      |                ^"
+
+"print.sps:8.16-8.18: error: PRINT: The ending column for a field must be greater than the starting column.
+    8 | PRINT/'string' 5-3.
+      |                ^~~"
+
+"print.sps:9.7: error: PRINT: y is not a variable name.
+    9 | PRINT/y.
+      |       ^"
+
+"print.sps:10.9: error: PRINT: Column positions for fields must be positive.
+   10 | PRINT/x 0.
+      |         ^"
+
+"print.sps:11.9-11.12: error: PRINT: Numeric variable x is not compatible with string format A8.
+   11 | PRINT/x (A8).
+      |         ^~~~"
+])
+AT_CLEANUP
