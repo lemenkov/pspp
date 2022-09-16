@@ -39,28 +39,25 @@
 int
 cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
 {
-  struct file_handle *handle;
-  struct casereader *reader;
-  struct dictionary *dict;
-
-  int n_matched = 0;
-
-  int i;
-
   lex_match_id (lexer, "FROM");
   lex_match (lexer, T_EQUALS);
 
-  handle = fh_parse (lexer, FH_REF_FILE, dataset_session (ds));
+  struct file_handle *handle = fh_parse (lexer, FH_REF_FILE,
+                                         dataset_session (ds));
   if (!handle)
     return CMD_FAILURE;
-  reader = any_reader_open_and_decode (handle, NULL, &dict, NULL);
+
+  struct dictionary *dict;
+  struct casereader *reader = any_reader_open_and_decode (handle, NULL, &dict,
+                                                          NULL);
   fh_unref (handle);
   if (!reader)
     return CMD_FAILURE;
 
   casereader_destroy (reader);
 
-  for (i = 0; i < dict_get_n_vars (dict); i++)
+  size_t n_matched = 0;
+  for (size_t i = 0; i < dict_get_n_vars (dict); i++)
     {
       const struct variable *s = dict_get_var (dict, i);
       struct variable *t = dict_lookup_var (dataset_dict (ds),
