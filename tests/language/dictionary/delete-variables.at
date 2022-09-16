@@ -62,3 +62,27 @@ s2,n1
 2,.  @&t@
 ])
 AT_CLEANUP
+
+AT_SETUP([DELETE VARIABLES syntax errors])
+AT_DATA([delete-variables.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+BEGIN DATA.
+1 2 3
+END DATA.
+TEMPORARY.
+DELETE VARIABLES x.
+DELETE VARIABLES y z.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='delete-variables.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"delete-variables.sps:6.1-6.16: error: DELETE VARIABLES: DELETE VARIABLES may not be used after TEMPORARY.  Temporary transformations will be made permanent.
+    6 | DELETE VARIABLES x.
+      | ^~~~~~~~~~~~~~~~"
+
+"delete-variables.sps:7.1-7.20: error: DELETE VARIABLES: DELETE VARIABLES may not be used to delete all variables from the active dataset dictionary.  Use NEW FILE instead.
+    7 | DELETE VARIABLES y z.
+      | ^~~~~~~~~~~~~~~~~~~~"
+])
+AT_CLEANUP
