@@ -51,6 +51,8 @@ struct missing_values
     union value values[3];      /* Missing values.  [1], [2] are the range. */
   };
 
+#define MV_INIT_EMPTY_NUMERIC { .type = 0 }
+
 /* Classes of missing values.
 
    These are useful as individual values and as masks, and they are used both

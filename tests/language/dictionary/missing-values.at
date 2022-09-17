@@ -183,11 +183,9 @@ AT_CHECK([pspp -O format=csv missing-values.sps], [1], [dnl
    11 | MISSING VALUES str1 ('a' THRU 'z').
       |                          ^~~~"
 
-"missing-values.sps:11.26-11.29: error: MISSING VALUES: THRU is not a variable name.
-   11 | MISSING VALUES str1 ('a' THRU 'z').
-      |                          ^~~~"
-
-missing-values.sps:14: error: MISSING VALUES: Cannot mix numeric variables (e.g. num1) and string variables (e.g. str1) within a single list.
+"missing-values.sps:14.27-14.31: error: MISSING VALUES: Cannot assign string missing values to numeric variable num1.
+   14 | MISSING VALUES str1 num1 ('123').
+      |                           ^~~~~"
 
 "missing-values.sps:17.22-17.31: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
    17 | MISSING VALUES num1 (1, 2, 3, 4).
@@ -208,5 +206,35 @@ missing-values.sps:14: error: MISSING VALUES: Cannot mix numeric variables (e.g.
 "missing-values.sps:23.22-23.29: warning: MISSING VALUES: The high end of the range (1) is below the low end (2).  The range will be treated as if reversed.
    23 | MISSING VALUES num1 (2 THRU 1).
       |                      ^~~~~~~~"
+])
+AT_CLEANUP
+
+AT_SETUP([MISSING VALUES syntax errors])
+AT_DATA([missing-values.sps], [dnl
+DATA LIST LIST NOTABLE/n1 to n10 (F8.2) s1 to s10 (A8).
+MISSING VALUES **.
+MISSING VALUES n1 **.
+MISSING VALUES s1 (1).
+MISSING VALUES n1 (1**).
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='missing-values.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"missing-values.sps:2.16-2.17: error: MISSING VALUES: Syntax error expecting variable name.
+    2 | MISSING VALUES **.
+      |                ^~"
+
+"missing-values.sps:3.19-3.20: error: MISSING VALUES: Syntax error expecting `@{:@'.
+    3 | MISSING VALUES n1 **.
+      |                   ^~"
+
+"missing-values.sps:4.20: error: MISSING VALUES: Syntax error expecting string.
+    4 | MISSING VALUES s1 (1).
+      |                    ^"
+
+"missing-values.sps:5.21-5.22: error: MISSING VALUES: Syntax error expecting number.
+    5 | MISSING VALUES n1 (1**).
+      |                     ^~"
 ])
 AT_CLEANUP

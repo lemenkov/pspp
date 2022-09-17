@@ -41,14 +41,12 @@ int
 cmd_missing_values (struct lexer *lexer, struct dataset *ds)
 {
   struct dictionary *dict = dataset_dict (ds);
-  struct variable **v = NULL;
-  size_t nv;
-
-  bool ok = true;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
-      size_t i;
+      struct missing_values mv = MV_INIT_EMPTY_NUMERIC;
+      struct variable **v = NULL;
+      size_t nv;
 
       if (!parse_variables (lexer, dict, &v, &nv, PV_NONE))
         goto error;
@@ -56,36 +54,19 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
       if (!lex_force_match (lexer, T_LPAREN))
         goto error;
 
-      for (i = 0; i < nv; i++)
-        var_clear_missing_values (v[i]);
-
-      int start_ofs = lex_ofs (lexer);
-      int end_ofs;
-      for (end_ofs = start_ofs; ; end_ofs++)
+      int values_start = lex_ofs (lexer);
+      int values_end;
+      for (values_end = values_start; ; values_end++)
         {
-          enum token_type next = lex_ofs_token (lexer, end_ofs + 1)->type;
+          enum token_type next = lex_ofs_token (lexer, values_end + 1)->type;
           if (next == T_RPAREN || next == T_ENDCMD || next == T_STOP)
             break;
         }
 
       if (!lex_match (lexer, T_RPAREN))
         {
-          struct missing_values mv;
-
-          for (i = 0; i < nv; i++)
-            if (var_get_type (v[i]) != var_get_type (v[0]))
-              {
-                const struct variable *n = var_is_numeric (v[0]) ? v[0] : v[i];
-                const struct variable *s = var_is_numeric (v[0]) ? v[i] : v[0];
-                msg (SE, _("Cannot mix numeric variables (e.g. %s) and "
-                           "string variables (e.g. %s) within a single list."),
-                     var_get_name (n), var_get_name (s));
-                goto error;
-              }
-
           if (var_is_numeric (v[0]))
             {
-              mv_init (&mv, 0);
               while (!lex_match (lexer, T_RPAREN))
                 {
                   enum fmt_type type = var_get_print_format (v[0])->type;
@@ -98,11 +79,11 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                         ? mv_add_num (&mv, x)
                         : mv_add_range (&mv, x, y)))
                     {
-                      lex_ofs_error (lexer, start_ofs, end_ofs,
+                      lex_ofs_error (lexer, values_start, values_end,
                                      _("Too many numeric missing values.  At "
                                        "most three individual values or one "
                                        "value and one range are allowed."));
-                      ok = false;
+                      goto error;
                     }
 
                   lex_match (lexer, T_COMMA);
@@ -115,75 +96,75 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
               mv_init (&mv, MV_MAX_STRING);
               while (!lex_match (lexer, T_RPAREN))
                 {
-                  const char *utf8_s;
-                  size_t utf8_trunc_len;
-                  size_t utf8_len;
-
-                  char *raw_s;
-
                   if (!lex_force_string (lexer))
-                    {
-                      ok = false;
-                      break;
-                    }
+                    goto error;
 
                   /* Truncate the string to fit in 8 bytes in the dictionary
                      encoding. */
-                  utf8_s = lex_tokcstr (lexer);
-                  utf8_len = ss_length (lex_tokss (lexer));
-                  utf8_trunc_len = utf8_encoding_trunc_len (utf8_s, encoding,
-                                                            MV_MAX_STRING);
+                  const char *utf8_s = lex_tokcstr (lexer);
+                  size_t utf8_len = ss_length (lex_tokss (lexer));
+                  size_t utf8_trunc_len = utf8_encoding_trunc_len (
+                    utf8_s, encoding, MV_MAX_STRING);
                   if (utf8_trunc_len < utf8_len)
                     lex_error (lexer, _("Truncating missing value to maximum "
                                         "acceptable length (%d bytes)."),
                                MV_MAX_STRING);
 
                   /* Recode to dictionary encoding and add. */
-                  raw_s = recode_string (encoding, "UTF-8",
-                                         utf8_s, utf8_trunc_len);
-                  if (!mv_add_str (&mv, CHAR_CAST (const uint8_t *, raw_s),
-                                   strlen (raw_s)))
+                  char *raw_s = recode_string (encoding, "UTF-8",
+                                               utf8_s, utf8_trunc_len);
+                  bool ok = mv_add_str (&mv, CHAR_CAST (const uint8_t *, raw_s),
+                                        strlen (raw_s));
+                  free (raw_s);
+                  if (!ok)
                     {
-                      lex_ofs_error (lexer, start_ofs, end_ofs,
+                      lex_ofs_error (lexer, values_start, values_end,
                                      _("Too many string missing values.  "
                                        "At most three individual values "
                                        "are allowed."));
-                      ok = false;
+                      goto error;
                     }
-                  free (raw_s);
 
                   lex_get (lexer);
                   lex_match (lexer, T_COMMA);
                 }
             }
-
-          for (i = 0; i < nv; i++)
-            {
-              if (mv_is_resizable (&mv, var_get_width (v[i])))
-                var_set_missing_values (v[i], &mv);
-              else
-                {
-                  lex_ofs_error (lexer, start_ofs, end_ofs,
-                                 _("Missing values are too long to assign "
-                                   "to variable %s with width %d."),
-                                 var_get_name (v[i]), var_get_width (v[i]));
-                  ok = false;
-                }
-            }
-
-          mv_destroy (&mv);
         }
-
       lex_match (lexer, T_SLASH);
+
+      bool ok = true;
+      for (size_t i = 0; i < nv; i++)
+        {
+          int var_width = var_get_width (v[i]);
+
+          if (mv_is_resizable (&mv, var_width))
+            var_set_missing_values (v[i], &mv);
+          else
+            {
+              ok = false;
+              if (!var_width)
+                lex_ofs_error (lexer, values_start, values_end,
+                               _("Cannot assign string missing values to "
+                                 "numeric variable %s."), var_get_name (v[i]));
+              else
+                lex_ofs_error (lexer, values_start, values_end,
+                               _("Missing values are too long to assign "
+                                 "to variable %s with width %d."),
+                               var_get_name (v[i]), var_get_width (v[i]));
+            }
+        }
+      mv_destroy (&mv);
       free (v);
-      v = NULL;
+      if (!ok)
+        return CMD_FAILURE;
+      continue;
+
+    error:
+      mv_destroy (&mv);
+      free (v);
+      return CMD_FAILURE;
     }
 
-  free (v);
-  return ok ? CMD_SUCCESS : CMD_FAILURE;
-
-error:
-  free (v);
-  return CMD_FAILURE;
+  return CMD_SUCCESS;
 }
 
