@@ -21,7 +21,6 @@ There are several utility commands for examining and adjusting variables.
 * DISPLAY::                     Display information about the active dataset.
 * NUMERIC::                     Create new numeric variables.
 * STRING::                      Create new string variables.
-* MODIFY VARS::                 Rename, reorder, and drop variables.
 * RENAME VARIABLES::            Rename variables.
 * SORT VARIABLES::              Reorder variables.
 * DELETE VARIABLES::            Delete variables.
@@ -168,55 +167,6 @@ STRING firstname (A24).
 STRING lastname (A24).
 STRING address (A80).
 @end example
-
-@node MODIFY VARS
-@section MODIFY VARS
-@vindex MODIFY VARS
-
-You can use @cmd{MODIFY VARS} to reorder, rename, or delete variables.
-
-@display
-MODIFY VARS
-        /REORDER=@{FORWARD,BACKWARD@} @{POSITIONAL,ALPHA@} (@var{var_list})@dots{}
-        /RENAME=(@var{old_names}=@var{new_names})@dots{}
-        /@{DROP,KEEP@}=@var{var_list}
-        /MAP
-@end display
-
-At least one subcommand must be specified, and no subcommand may be
-specified more than once.  @subcmd{DROP} and @subcmd{KEEP} may not both
-be specified.
-
-The @subcmd{REORDER} subcommand changes the order of variables in the active
-dataset.  Specify one or more lists of variable names in parentheses.  By
-default, each list of variables is rearranged into the specified order.
-To put the variables into the reverse of the specified order, put
-keyword @subcmd{BACKWARD} before the parentheses.  To put them into alphabetical
-order in the dictionary, specify keyword @subcmd{ALPHA} before the parentheses.
-@subcmd{BACKWARD} and @subcmd{ALPHA} may also be combined.
-
-To rename variables in the active dataset, specify @subcmd{RENAME}, an equals sign
-(@samp{=}), and lists of the old variable names and new variable names
-separated by another equals sign within parentheses.  There must be the
-same number of old and new variable names.  Each old variable is renamed to
-the corresponding new variable name.  Multiple parenthesized groups of
-variables may be specified.
-
-The @subcmd{DROP} subcommand deletes a specified list of variables
-from the active dataset.  @cmd{MODIFY VARS} may not be used to delete
-all variables from the dictionary; use @cmd{NEW FILE} to do that
-(@pxref{NEW FILE}).
-
-The @subcmd{KEEP} subcommand keeps the specified list of variables in the active
-dataset.  Any unlisted variables are deleted from the active dataset.
-
-@subcmd{MAP} is currently ignored.
-
-If either @subcmd{DROP} or @subcmd{KEEP} is specified, the data is read;
-otherwise it is not.
-
-@cmd{MODIFY VARS} may not be specified following @cmd{TEMPORARY}
-(@pxref{TEMPORARY}).
 
 @node RENAME VARIABLES
 @section RENAME VARIABLES

@@ -17,6 +17,8 @@ Changes after 1.6.2:
 
    - Break variables are now optional.
 
+ * Removed the MODIFY VARS command, which is not in SPSS.
+
  * Building from a Git repository, which previously required GIMP, now
    requires rsvg-convert from librsvg2 instead.
 
