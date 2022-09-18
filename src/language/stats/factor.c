@@ -80,19 +80,19 @@ enum plot_opts
 
 enum print_opts
   {
-    PRINT_UNIVARIATE  = 0x0001,
-    PRINT_DETERMINANT = 0x0002,
-    PRINT_INV         = 0x0004,
-    PRINT_AIC         = 0x0008,
-    PRINT_SIG         = 0x0010,
-    PRINT_COVARIANCE  = 0x0020,
-    PRINT_CORRELATION = 0x0040,
-    PRINT_ROTATION    = 0x0080,
-    PRINT_EXTRACTION  = 0x0100,
-    PRINT_INITIAL     = 0x0200,
-    PRINT_KMO         = 0x0400,
-    PRINT_REPR        = 0x0800,
-    PRINT_FSCORE      = 0x1000
+    PRINT_UNIVARIATE  = 1 << 0,
+    PRINT_DETERMINANT = 1 << 1,
+    PRINT_INV         = 1 << 2,
+    PRINT_AIC         = 1 << 3,
+    PRINT_SIG         = 1 << 4,
+    PRINT_COVARIANCE  = 1 << 5,
+    PRINT_CORRELATION = 1 << 6,
+    PRINT_ROTATION    = 1 << 7,
+    PRINT_EXTRACTION  = 1 << 8,
+    PRINT_INITIAL     = 1 << 9,
+    PRINT_KMO         = 1 << 10,
+    PRINT_REPR        = 1 << 11,
+    PRINT_FSCORE      = 1 << 12
   };
 
 enum rotation_type
@@ -132,8 +132,8 @@ quartimax_coefficients (double *x, double *y,
 		      double a UNUSED, double b UNUSED, double c, double d,
 		      const gsl_matrix *loadings UNUSED)
 {
-  *x = d ;
-  *y = c ;
+  *x = d;
+  *y = c;
 }
 
 static const rotation_coefficients rotation_coeff[] = {
@@ -148,7 +148,6 @@ static const rotation_coefficients rotation_coeff[] = {
 static gsl_matrix *
 diag_rcp_sqrt (const gsl_matrix *C)
 {
-  int j;
   gsl_matrix *d =  gsl_matrix_calloc (C->size1, C->size2);
   gsl_matrix *r =  gsl_matrix_calloc (C->size1, C->size2);
 
@@ -158,7 +157,7 @@ diag_rcp_sqrt (const gsl_matrix *C)
 			  C,  GSL_LINALG_MOD_NONE,
 			  d);
 
-  for (j = 0 ; j < d->size2; ++j)
+  for (int j = 0; j < d->size2; ++j)
     {
       double e = gsl_matrix_get (d, j, j);
       e = 1.0 / sqrt (e);
@@ -176,12 +175,11 @@ diag_rcp_sqrt (const gsl_matrix *C)
 static gsl_matrix *
 diag_rcp_inv_sqrt (const gsl_matrix *CCinv)
 {
-  int j;
   gsl_matrix *r =  gsl_matrix_calloc (CCinv->size1, CCinv->size2);
 
   assert (CCinv->size1 == CCinv->size2);
 
-  for (j = 0 ; j < CCinv->size2; ++j)
+  for (int j = 0; j < CCinv->size2; ++j)
     {
       double e = gsl_matrix_get (CCinv, j, j);
       e = 1.0 / sqrt (e);
@@ -233,12 +231,12 @@ struct idata
 
   gsl_matrix *analysis_matrix; /* A pointer to either mm.corr or mm.cov */
 
-  gsl_vector *eval ;  /* The eigenvalues */
-  gsl_matrix *evec ;  /* The eigenvectors */
+  gsl_vector *eval;  /* The eigenvalues */
+  gsl_matrix *evec;  /* The eigenvectors */
 
   int n_extractions;
 
-  gsl_vector *msr ;  /* Multiple Squared Regressions */
+  gsl_vector *msr;  /* Multiple Squared Regressions */
 
   double detR;  /* The determinant of the correlation matrix */
 
@@ -277,18 +275,13 @@ idata_free (struct idata *id)
 static double
 ssq_row_od_n (const gsl_matrix *m, int j)
 {
-  int i;
-  double ss = 0;
   assert (m->size1 == m->size2);
-
   assert (j < m->size1);
 
-  for (i = 0; i < m->size1; ++i)
-    {
-      if (i == j) continue;
+  double ss = 0;
+  for (int i = 0; i < m->size1; ++i)
+    if (i != j)
       ss += pow2 (gsl_matrix_get (m, i, j));
-    }
-
   return ss;
 }
 
@@ -296,21 +289,14 @@ ssq_row_od_n (const gsl_matrix *m, int j)
 static double
 ssq_od_n (const gsl_matrix *m, int n)
 {
-  int i, j;
-  double ss = 0;
   assert (m->size1 == m->size2);
-
   assert (n < m->size1);
 
-  for (i = 0; i < m->size1; ++i)
-    {
-      for (j = 0; j < m->size2; ++j)
-	{
-	  if (i == j) continue;
-	  ss += pow2 (gsl_matrix_get (m, i, j));
-	}
-    }
-
+  double ss = 0;
+  for (int i = 0; i < m->size1; ++i)
+    for (int j = 0; j < m->size2; ++j)
+      if (i != j)
+        ss += pow2 (gsl_matrix_get (m, i, j));
   return ss;
 }
 
@@ -318,24 +304,19 @@ ssq_od_n (const gsl_matrix *m, int n)
 static gsl_matrix *
 anti_image_corr (const gsl_matrix *m, const struct idata *idata)
 {
-  int i, j;
-  gsl_matrix *a;
   assert (m->size1 == m->size2);
 
-  a = gsl_matrix_alloc (m->size1, m->size2);
+  gsl_matrix *a = gsl_matrix_alloc (m->size1, m->size2);
+  for (int i = 0; i < m->size1; ++i)
+    for (int j = 0; j < m->size2; ++j)
+      {
+        double *p = gsl_matrix_ptr (a, i, j);
+        *p = gsl_matrix_get (m, i, j);
+        *p /= sqrt (gsl_matrix_get (m, i, i) *
+                    gsl_matrix_get (m, j, j));
+      }
 
-  for (i = 0; i < m->size1; ++i)
-    {
-      for (j = 0; j < m->size2; ++j)
-        {
-          double *p = gsl_matrix_ptr (a, i, j);
-          *p = gsl_matrix_get (m, i, j);
-          *p /= sqrt (gsl_matrix_get (m, i, i) *
-                      gsl_matrix_get (m, j, j));
-        }
-    }
-
-  for (i = 0; i < m->size1; ++i)
+  for (int i = 0; i < m->size1; ++i)
     {
       double r = ssq_row_od_n (idata->mm.corr, i);
       double u = ssq_row_od_n (a, i);
@@ -348,22 +329,17 @@ anti_image_corr (const gsl_matrix *m, const struct idata *idata)
 static gsl_matrix *
 anti_image_cov (const gsl_matrix *m)
 {
-  int i, j;
-  gsl_matrix *a;
   assert (m->size1 == m->size2);
 
-  a = gsl_matrix_alloc (m->size1, m->size2);
-
-  for (i = 0; i < m->size1; ++i)
-    {
-      for (j = 0; j < m->size2; ++j)
-	{
-	  double *p = gsl_matrix_ptr (a, i, j);
-	  *p = gsl_matrix_get (m, i, j);
-	  *p /= gsl_matrix_get (m, i, i);
-	  *p /= gsl_matrix_get (m, j, j);
-	}
-    }
+  gsl_matrix *a = gsl_matrix_alloc (m->size1, m->size2);
+  for (int i = 0; i < m->size1; ++i)
+    for (int j = 0; j < m->size2; ++j)
+      {
+        double *p = gsl_matrix_ptr (a, i, j);
+        *p = gsl_matrix_get (m, i, j);
+        *p /= gsl_matrix_get (m, i, i);
+        *p /= gsl_matrix_get (m, j, j);
+      }
 
   return a;
 }
@@ -372,11 +348,9 @@ anti_image_cov (const gsl_matrix *m)
 static void
 dump_matrix (const gsl_matrix *m)
 {
-  size_t i, j;
-
-  for (i = 0 ; i < m->size1; ++i)
+  for (int i = 0; i < m->size1; ++i)
     {
-      for (j = 0 ; j < m->size2; ++j)
+      for (int j = 0; j < m->size2; ++j)
 	printf ("%02f ", gsl_matrix_get (m, i, j));
       printf ("\n");
     }
@@ -385,11 +359,9 @@ dump_matrix (const gsl_matrix *m)
 static void
 dump_matrix_permute (const gsl_matrix *m, const gsl_permutation *p)
 {
-  size_t i, j;
-
-  for (i = 0 ; i < m->size1; ++i)
+  for (int i = 0; i < m->size1; ++i)
     {
-      for (j = 0 ; j < m->size2; ++j)
+      for (int j = 0; j < m->size2; ++j)
 	printf ("%02f ", gsl_matrix_get (m, gsl_permutation_get (p, i), j));
       printf ("\n");
     }
@@ -399,11 +371,8 @@ dump_matrix_permute (const gsl_matrix *m, const gsl_permutation *p)
 static void
 dump_vector (const gsl_vector *v)
 {
-  size_t i;
-  for (i = 0 ; i < v->size; ++i)
-    {
-      printf ("%02f\n", gsl_vector_get (v, i));
-    }
+  for (size_t i = 0; i < v->size; ++i)
+    printf ("%02f\n", gsl_vector_get (v, i));
   printf ("\n");
 }
 #endif
@@ -412,8 +381,6 @@ dump_vector (const gsl_vector *v)
 static int
 n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
 {
-  int i;
-
   /* If there is a cached value, then return that. */
   if (idata->n_extractions != 0)
     return idata->n_extractions;
@@ -427,7 +394,7 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
     }
 
   /* Use the MIN_EIGEN setting. */
-  for (i = 0 ; i < idata->eval->size; ++i)
+  for (int i = 0; i < idata->eval->size; ++i)
     {
       double evali = fabs (gsl_vector_get (idata->eval, i));
 
@@ -448,10 +415,8 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
 static gsl_matrix *
 matrix_dup (const gsl_matrix *m)
 {
-  gsl_matrix *n =  gsl_matrix_alloc (m->size1, m->size2);
-
+  gsl_matrix *n = gsl_matrix_alloc (m->size1, m->size2);
   gsl_matrix_memcpy (n, m);
-
   return n;
 }
 
@@ -506,30 +471,26 @@ squared_multiple_correlation (const gsl_matrix *corr, int var, struct smr_worksp
      http://www.visualstatistics.net/Visual%20Statistics%20Multimedia/multiple_regression_analysis.htm
   */
 
-  int signum = 0;
-  gsl_matrix_view rxx;
-
   gsl_matrix_memcpy (ws->m, corr);
 
   gsl_matrix_swap_rows (ws->m, 0, var);
   gsl_matrix_swap_columns (ws->m, 0, var);
 
-  rxx = gsl_matrix_submatrix (ws->m, 1, 1, ws->m->size1 - 1, ws->m->size1 - 1);
+  gsl_matrix_view rxx = gsl_matrix_submatrix (ws->m, 1, 1, ws->m->size1 - 1, ws->m->size1 - 1);
 
+  int signum = 0;
   gsl_linalg_LU_decomp (&rxx.matrix, ws->perm, &signum);
 
   gsl_linalg_LU_invert (&rxx.matrix, ws->perm, ws->inverse);
 
-  {
-    gsl_matrix_const_view rxy = gsl_matrix_const_submatrix (ws->m, 1, 0, ws->m->size1 - 1, 1);
-    gsl_matrix_const_view ryx = gsl_matrix_const_submatrix (ws->m, 0, 1, 1, ws->m->size1 - 1);
+  gsl_matrix_const_view rxy = gsl_matrix_const_submatrix (ws->m, 1, 0, ws->m->size1 - 1, 1);
+  gsl_matrix_const_view ryx = gsl_matrix_const_submatrix (ws->m, 0, 1, 1, ws->m->size1 - 1);
 
-    gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans,
-		    1.0, ws->inverse, &rxy.matrix, 0.0, ws->result1);
+  gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans,
+                  1.0, ws->inverse, &rxy.matrix, 0.0, ws->result1);
 
-    gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans,
-		    1.0, &ryx.matrix, ws->result1, 0.0, ws->result2);
-  }
+  gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans,
+                  1.0, &ryx.matrix, ws->result1, 0.0, ws->result2);
 
   return gsl_matrix_get (ws->result2, 0, 0);
 }
@@ -544,10 +505,10 @@ struct factor_matrix_workspace
   size_t n_factors;
   gsl_eigen_symmv_workspace *eigen_ws;
 
-  gsl_vector *eval ;
-  gsl_matrix *evec ;
+  gsl_vector *eval;
+  gsl_matrix *evec;
 
-  gsl_matrix *gamma ;
+  gsl_matrix *gamma;
 
   gsl_matrix *r;
 };
@@ -587,14 +548,11 @@ static void
 perm_shift_apply (gsl_permutation *target, const gsl_permutation *p,
 		  size_t offset)
 {
-  size_t i;
   assert (target->size == p->size);
   assert (offset <= target->size);
 
-  for (i = 0; i < target->size - offset; ++i)
-    {
-      target->data[i] = p->data [i + offset];
-    }
+  for (size_t i = 0; i < target->size - offset; ++i)
+    target->data[i] = p->data [i + offset];
 }
 
 
@@ -611,35 +569,27 @@ perm_shift_apply (gsl_permutation *target, const gsl_permutation *p,
 static void
 sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 {
-  const size_t n = perm->size;
-  const size_t m = input->size2;
-  int i, j;
-  gsl_matrix *mat ;
-  int column_n = 0;
-  int row_n = 0;
-  gsl_permutation *p;
-
   assert (perm->size == input->size1);
 
-  p = gsl_permutation_alloc (n);
+  const size_t n = perm->size;
+  const size_t m = input->size2;
+  gsl_permutation *p = gsl_permutation_alloc (n);
 
   /* Copy INPUT into MAT, discarding the sign */
-  mat = gsl_matrix_alloc (n, m);
-  for (i = 0 ; i < mat->size1; ++i)
-    {
-      for (j = 0 ; j < mat->size2; ++j)
-	{
-	  double x = gsl_matrix_get (input, i, j);
-	  gsl_matrix_set (mat, i, j, fabs (x));
-	}
-    }
+  gsl_matrix *mat = gsl_matrix_alloc (n, m);
+  for (int i = 0; i < mat->size1; ++i)
+    for (int j = 0; j < mat->size2; ++j)
+      gsl_matrix_set (mat, i, j, fabs (gsl_matrix_get (input, i, j)));
 
+  int column_n = 0;
+  int row_n = 0;
   while (column_n < m && row_n < n)
     {
       gsl_vector_const_view columni = gsl_matrix_const_column (mat, column_n);
       gsl_sort_vector_index (p, &columni.vector);
 
-      for (i = 0 ; i < n; ++i)
+      int i;
+      for (i = 0; i < n; ++i)
 	{
 	  gsl_vector_view row = gsl_matrix_row (mat, p->data[n - 1 - i]);
 	  size_t maxindex = gsl_vector_max_index (&row.vector);
@@ -649,7 +599,7 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 
 	  /* All subsequent elements of this row, are of no interest.
 	     So set them all to a highly negative value */
-	  for (j = column_n + 1; j < row.vector.size ; ++j)
+	  for (int j = column_n + 1; j < row.vector.size; ++j)
 	    gsl_vector_set (&row.vector, j, -DBL_MAX);
 	}
 
@@ -683,17 +633,11 @@ drot_go (double phi, double *l0, double *l1)
 static gsl_matrix *
 clone_matrix (const gsl_matrix *m)
 {
-  int j, k;
   gsl_matrix *c = gsl_matrix_calloc (m->size1, m->size2);
 
-  for (j = 0 ; j < c->size1; ++j)
-    {
-      for (k = 0 ; k < c->size2; ++k)
-	{
-	  const double *v = gsl_matrix_const_ptr (m, j, k);
-	  gsl_matrix_set (c, j, k, *v);
-	}
-    }
+  for (int j = 0; j < c->size1; ++j)
+    for (int k = 0; k < c->size2; ++k)
+      gsl_matrix_set (c, j, k, gsl_matrix_get (m, j, k));
 
   return c;
 }
@@ -702,15 +646,13 @@ clone_matrix (const gsl_matrix *m)
 static double
 initial_sv (const gsl_matrix *fm)
 {
-  int j, k;
-
   double sv = 0.0;
-  for (j = 0 ; j < fm->size2; ++j)
+  for (int j = 0; j < fm->size2; ++j)
     {
       double l4s = 0;
       double l2s = 0;
 
-      for (k = j + 1 ; k < fm->size2; ++k)
+      for (int k = j + 1; k < fm->size2; ++k)
 	{
 	  double lambda = gsl_matrix_get (fm, k, j);
 	  double lambda_sq = lambda * lambda;
@@ -730,20 +672,15 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 	gsl_matrix *result,
 	gsl_vector *rotated_loadings,
 	gsl_matrix *pattern_matrix,
-	gsl_matrix *factor_correlation_matrix
-	)
+	gsl_matrix *factor_correlation_matrix)
 {
-  int j, k;
-  int i;
-  double prev_sv;
-
   /* First get a normalised version of UNROT */
   gsl_matrix *normalised = gsl_matrix_calloc (unrot->size1, unrot->size2);
   gsl_matrix *h_sqrt = gsl_matrix_calloc (communalities->size, communalities->size);
-  gsl_matrix *h_sqrt_inv ;
+  gsl_matrix *h_sqrt_inv;
 
   /* H is the diagonal matrix containing the absolute values of the communalities */
-  for (i = 0 ; i < communalities->size ; ++i)
+  for (int i = 0; i < communalities->size; ++i)
     {
       double *ptr = gsl_matrix_ptr (h_sqrt, i, i);
       *ptr = fabs (gsl_vector_get (communalities, i));
@@ -751,7 +688,6 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
   /* Take the square root of the communalities */
   gsl_linalg_cholesky_decomp (h_sqrt);
-
 
   /* Save a copy of h_sqrt and invert it */
   h_sqrt_inv = clone_matrix (h_sqrt);
@@ -763,30 +699,24 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
   gsl_matrix_free (h_sqrt_inv);
 
-
   /* Now perform the rotation iterations */
-
-  prev_sv = initial_sv (normalised);
-  for (i = 0 ; i < cf->rotation_iterations ; ++i)
+  double prev_sv = initial_sv (normalised);
+  for (int i = 0; i < cf->rotation_iterations; ++i)
     {
       double sv = 0.0;
-      for (j = 0 ; j < normalised->size2; ++j)
+      for (int j = 0; j < normalised->size2; ++j)
 	{
 	  /* These variables relate to the convergence criterium */
 	  double l4s = 0;
 	  double l2s = 0;
 
-	  for (k = j + 1 ; k < normalised->size2; ++k)
+	  for (int k = j + 1; k < normalised->size2; ++k)
 	    {
-	      int p;
 	      double a = 0.0;
 	      double b = 0.0;
 	      double c = 0.0;
 	      double d = 0.0;
-	      double x, y;
-	      double phi;
-
-	      for (p = 0; p < normalised->size1; ++p)
+	      for (int p = 0; p < normalised->size1; ++p)
 		{
 		  double jv = gsl_matrix_get (normalised, p, j);
 		  double kv = gsl_matrix_get (normalised, p, k);
@@ -799,15 +729,15 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 		  d += 2 * u * v;
 		}
 
+	      double x, y;
 	      rotation_coeff [cf->rotation] (&x, &y, a, b, c, d, normalised);
-
-	      phi = atan2 (x,  y) / 4.0 ;
+	      double phi = atan2 (x,  y) / 4.0;
 
 	      /* Don't bother rotating if the angle is small */
 	      if (fabs (sin (phi)) <= pow (10.0, -15.0))
 		  continue;
 
-	      for (p = 0; p < normalised->size1; ++p)
+	      for (int p = 0; p < normalised->size1; ++p)
 		{
 		  double *lambda0 = gsl_matrix_ptr (normalised, p, j);
 		  double *lambda1 = gsl_matrix_ptr (normalised, p, k);
@@ -815,14 +745,12 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 		}
 
 	      /* Calculate the convergence criterium */
-	      {
-		double lambda = gsl_matrix_get (normalised, k, j);
-		double lambda_sq = lambda * lambda;
-		double lambda_4 = lambda_sq * lambda_sq;
+              double lambda = gsl_matrix_get (normalised, k, j);
+              double lambda_sq = lambda * lambda;
+              double lambda_4 = lambda_sq * lambda_sq;
 
-		l4s += lambda_4;
-		l2s += lambda_sq;
-	      }
+              l4s += lambda_4;
+              l2s += lambda_sq;
 	    }
 	  sv += (normalised->size1 * l4s - (l2s * l2s)) / (normalised->size1 * normalised->size1);
 	}
@@ -852,38 +780,27 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
       gsl_permutation *perm = gsl_permutation_alloc (unrot->size2);
 
-      int signum;
 
-      int i, j;
-
-      /* The following variables follow the notation by SPSS Statistical Algorithms
-	 page 342 */
-      gsl_matrix *L =  gsl_matrix_calloc (unrot->size2, unrot->size2);
+      /* The following variables follow the notation by SPSS Statistical
+	 Algorithms page 342. */
+      gsl_matrix *L = gsl_matrix_calloc (unrot->size2, unrot->size2);
       gsl_matrix *P = clone_matrix (result);
-      gsl_matrix *D ;
-      gsl_matrix *Q ;
-
 
       /* Vector of length p containing (indexed by i)
 	 \Sum^m_j {\lambda^2_{ij}} */
       gsl_vector *rssq = gsl_vector_calloc (unrot->size1);
 
-      for (i = 0; i < P->size1; ++i)
+      for (int i = 0; i < P->size1; ++i)
 	{
 	  double sum = 0;
-	  for (j = 0; j < P->size2; ++j)
-	    {
-	      sum += gsl_matrix_get (result, i, j)
-		* gsl_matrix_get (result, i, j);
-
-	    }
-
+	  for (int j = 0; j < P->size2; ++j)
+            sum += gsl_matrix_get (result, i, j) * gsl_matrix_get (result, i, j);
 	  gsl_vector_set (rssq, i, sqrt (sum));
 	}
 
-      for (i = 0; i < P->size1; ++i)
+      for (int i = 0; i < P->size1; ++i)
 	{
-	  for (j = 0; j < P->size2; ++j)
+	  for (int j = 0; j < P->size2; ++j)
 	    {
 	      double l = gsl_matrix_get (result, i, j);
 	      double r = gsl_vector_get (rssq, i);
@@ -899,6 +816,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 			      GSL_LINALG_MOD_NONE,
 			      mm1);
 
+      int signum;
       gsl_linalg_LU_decomp (mm1, perm, &signum);
       gsl_linalg_LU_invert (mm1, perm, mm2);
 
@@ -910,8 +828,8 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 			      P,   GSL_LINALG_MOD_NONE,
 			      L);
 
-      D = diag_rcp_sqrt (L);
-      Q = gsl_matrix_calloc (unrot->size2, unrot->size2);
+      gsl_matrix *D = diag_rcp_sqrt (L);
+      gsl_matrix *Q = gsl_matrix_calloc (unrot->size2, unrot->size2);
 
       gsl_linalg_matmult_mod (L, GSL_LINALG_MOD_NONE,
 			      D, GSL_LINALG_MOD_NONE,
@@ -928,7 +846,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
 
       gsl_matrix *C = diag_rcp_inv_sqrt (QQinv);
-      gsl_matrix *Cinv =  clone_matrix (C);
+      gsl_matrix *Cinv = clone_matrix (C);
 
       gsl_linalg_cholesky_decomp (Cinv);
       gsl_linalg_cholesky_invert (Cinv);
@@ -977,11 +895,11 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
 
   /* reflect negative sums and populate the rotated loadings vector*/
-  for (i = 0 ; i < result->size2; ++i)
+  for (int i = 0; i < result->size2; ++i)
     {
       double ssq = 0.0;
       double sum = 0.0;
-      for (j = 0 ; j < result->size1; ++j)
+      for (int j = 0; j < result->size1; ++j)
 	{
 	  double s = gsl_matrix_get (result, j, i);
 	  ssq += s * s;
@@ -991,14 +909,13 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
       gsl_vector_set (rotated_loadings, i, ssq);
 
       if (sum < 0)
-	for (j = 0 ; j < result->size1; ++j)
+	for (int j = 0; j < result->size1; ++j)
 	  {
 	    double *lambda = gsl_matrix_ptr (result, j, i);
 	    *lambda = - *lambda;
 	  }
     }
 }
-
 
 /*
   Get an approximation for the factor matrix into FACTORS, and the communalities into COMMUNALITIES.
@@ -1009,9 +926,6 @@ static void
 iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matrix *factors,
 		       struct factor_matrix_workspace *ws)
 {
-  size_t i;
-  gsl_matrix_view mv ;
-
   assert (r->size1 == r->size2);
   assert (r->size1 == communalities->size);
 
@@ -1021,7 +935,7 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
   gsl_matrix_memcpy (ws->r, r);
 
   /* Apply Communalities to diagonal of correlation matrix */
-  for (i = 0 ; i < communalities->size ; ++i)
+  for (size_t i = 0; i < communalities->size; ++i)
     {
       double *x = gsl_matrix_ptr (ws->r, i, i);
       *x = gsl_vector_get (communalities, i);
@@ -1029,10 +943,10 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
 
   gsl_eigen_symmv (ws->r, ws->eval, ws->evec, ws->eigen_ws);
 
-  mv = gsl_matrix_submatrix (ws->evec, 0, 0, ws->evec->size1, ws->n_factors);
+  gsl_matrix_view mv = gsl_matrix_submatrix (ws->evec, 0, 0, ws->evec->size1, ws->n_factors);
 
   /* Gamma is the diagonal matrix containing the absolute values of the eigenvalues */
-  for (i = 0 ; i < ws->n_factors ; ++i)
+  for (size_t i = 0; i < ws->n_factors; ++i)
     {
       double *ptr = gsl_matrix_ptr (ws->gamma, i, i);
       *ptr = fabs (gsl_vector_get (ws->eval, i));
@@ -1043,7 +957,7 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
 
   gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans, 1.0, &mv.matrix, ws->gamma, 0.0, factors);
 
-  for (i = 0 ; i < r->size1 ; ++i)
+  for (size_t i = 0; i < r->size1; ++i)
     {
       double h = the_communality (ws->evec, ws->eval, i, ws->n_factors);
       gsl_vector_set (communalities, i, h);
@@ -1061,67 +975,66 @@ static void do_factor_by_matrix (const struct cmd_factor *factor, struct idata *
 int
 cmd_factor (struct lexer *lexer, struct dataset *ds)
 {
-  struct dictionary *dict = NULL;
   int n_iterations = 25;
-  struct cmd_factor factor;
-  factor.n_vars = 0;
-  factor.vars = NULL;
-  factor.method = METHOD_CORR;
-  factor.missing_type = MISS_LISTWISE;
-  factor.exclude = MV_ANY;
-  factor.print = PRINT_INITIAL | PRINT_EXTRACTION | PRINT_ROTATION;
-  factor.extraction = EXTRACTION_PC;
-  factor.n_factors = 0;
-  factor.min_eigen = SYSMIS;
-  factor.extraction_iterations = 25;
-  factor.rotation_iterations = 25;
-  factor.econverge = 0.001;
 
-  factor.blank = 0;
-  factor.sort = false;
-  factor.plot = 0;
-  factor.rotation = ROT_VARIMAX;
-  factor.wv = NULL;
+  struct cmd_factor factor = {
+    .n_vars = 0,
+    .vars = NULL,
+    .method = METHOD_CORR,
+    .missing_type = MISS_LISTWISE,
+    .exclude = MV_ANY,
+    .print = PRINT_INITIAL | PRINT_EXTRACTION | PRINT_ROTATION,
+    .extraction = EXTRACTION_PC,
+    .n_factors = 0,
+    .min_eigen = SYSMIS,
+    .extraction_iterations = 25,
+    .rotation_iterations = 25,
+    .econverge = 0.001,
 
-  factor.rconverge = 0.0001;
+    .blank = 0,
+    .sort = false,
+    .plot = 0,
+    .rotation = ROT_VARIMAX,
+    .wv = NULL,
+
+    .rconverge = 0.0001,
+  };
 
   lex_match (lexer, T_SLASH);
 
+  struct dictionary *dict = NULL;
   struct matrix_reader *mr = NULL;
   struct casereader *matrix_reader = NULL;
 
+  int vars_start, vars_end;
   if (lex_match_id (lexer, "VARIABLES"))
     {
       lex_match (lexer, T_EQUALS);
       dict = dataset_dict (ds);
       factor.wv = dict_get_weight (dict);
 
+      vars_start = lex_ofs (lexer);
       if (!parse_variables_const (lexer, dict, &factor.vars, &factor.n_vars,
 				  PV_NO_DUPLICATE | PV_NUMERIC))
 	goto error;
+      vars_end = lex_ofs (lexer) - 1;
     }
   else if (lex_match_id (lexer, "MATRIX"))
     {
       lex_match (lexer, T_EQUALS);
-      if (! lex_force_match_id (lexer, "IN"))
+      if (!lex_force_match_id (lexer, "IN"))
 	goto error;
       if (!lex_force_match (lexer, T_LPAREN))
+        goto error;
+      if (!lex_match_id (lexer, "CORR") && !lex_match_id (lexer, "COV"))
 	{
+	  lex_error (lexer, _("Matrix input for %s must be either COV or CORR"),
+                     "FACTOR");
 	  goto error;
 	}
-      if (lex_match_id (lexer, "CORR"))
-	{
-	}
-      else if (lex_match_id (lexer, "COV"))
-	{
-	}
-      else
-	{
-	  lex_error (lexer, _("Matrix input for %s must be either COV or CORR"), "FACTOR");
-	  goto error;
-	}
-      if (! lex_force_match (lexer, T_EQUALS))
+      if (!lex_force_match (lexer, T_EQUALS))
 	goto error;
+      vars_start = lex_ofs (lexer);
       if (lex_match (lexer, T_ASTERISK))
 	{
 	  dict = dataset_dict (ds);
@@ -1133,16 +1046,14 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	  if (fh == NULL)
 	    goto error;
 
-	  matrix_reader
-	    = any_reader_open_and_decode (fh, NULL, &dict, NULL);
+	  matrix_reader = any_reader_open_and_decode (fh, NULL, &dict, NULL);
 
-	  if (! (matrix_reader && dict))
-	    {
-	      goto error;
-	    }
+	  if (!(matrix_reader && dict))
+            goto error;
 	}
+      vars_end = lex_ofs (lexer) - 1;
 
-      if (! lex_force_match (lexer, T_RPAREN))
+      if (!lex_force_match (lexer, T_RPAREN))
 	goto error;
 
       mr = matrix_reader_create (dict, matrix_reader);
@@ -1150,9 +1061,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       factor.n_vars = mr->n_cvars;
     }
   else
-    {
-      goto error;
-    }
+    goto error;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -1163,13 +1072,14 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           struct const_var_set *vs;
           const struct variable **vars;
           size_t n_vars;
-          bool ok;
 
           lex_match (lexer, T_EQUALS);
 
+          vars_start = lex_ofs (lexer);
           vs = const_var_set_create_from_array (factor.vars, factor.n_vars);
-          ok = parse_const_var_set_vars (lexer, vs, &vars, &n_vars,
-                                         PV_NO_DUPLICATE | PV_NUMERIC);
+          vars_end = lex_ofs (lexer) - 1;
+          bool ok = parse_const_var_set_vars (lexer, vs, &vars, &n_vars,
+                                              PV_NO_DUPLICATE | PV_NUMERIC);
           const_var_set_destroy (vs);
 
           if (!ok)
@@ -1213,16 +1123,12 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "COVARIANCE"))
-		{
-		  factor.method = METHOD_COV;
-		}
+                factor.method = METHOD_COV;
 	      else if (lex_match_id (lexer, "CORRELATION"))
-		{
-		  factor.method = METHOD_CORR;
-		}
+                factor.method = METHOD_CORR;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "COVARIANCE", "CORRELATION");
 		  goto error;
 		}
 	    }
@@ -1234,17 +1140,11 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	    {
 	      /* VARIMAX and DEFAULT are defaults */
 	      if (lex_match_id (lexer, "VARIMAX") || lex_match_id (lexer, "DEFAULT"))
-		{
-		  factor.rotation = ROT_VARIMAX;
-		}
+                factor.rotation = ROT_VARIMAX;
 	      else if (lex_match_id (lexer, "EQUAMAX"))
-		{
-		  factor.rotation = ROT_EQUAMAX;
-		}
+                factor.rotation = ROT_EQUAMAX;
 	      else if (lex_match_id (lexer, "QUARTIMAX"))
-		{
-		  factor.rotation = ROT_QUARTIMAX;
-		}
+                factor.rotation = ROT_QUARTIMAX;
 	      else if (lex_match_id (lexer, "PROMAX"))
 		{
 		  factor.promax_power = 5;
@@ -1253,18 +1153,17 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.promax_power = lex_integer (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		  factor.rotation = ROT_PROMAX;
 		}
 	      else if (lex_match_id (lexer, "NOROTATE"))
-		{
-		  factor.rotation = ROT_NONE;
-		}
+                factor.rotation = ROT_NONE;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "DEFAULT", "VARIMAX", "EQUAMAX",
+                                       "QUARTIMAX", "PROMAX", "NOROTATE");
 		  goto error;
 		}
 	    }
@@ -1278,33 +1177,33 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	      if (lex_match_id (lexer, "FACTORS"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN)
-                       && lex_force_int (lexer))
+                      && lex_force_int (lexer))
 		    {
 		      factor.n_factors = lex_integer (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "MINEIGEN"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN)
-                       && lex_force_num (lexer))
+                      && lex_force_num (lexer))
 		    {
 		      factor.min_eigen = lex_number (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "ECONVERGE"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN)
-                       && lex_force_num (lexer))
+                      && lex_force_num (lexer))
 		    {
 		      factor.econverge = lex_number (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		}
@@ -1315,7 +1214,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
                     {
                       factor.rconverge = lex_number (lexer);
                       lex_get (lexer);
-                      if (! lex_force_match (lexer, T_RPAREN))
+                      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
                     }
 		}
@@ -1326,7 +1225,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      n_iterations = lex_integer (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		}
@@ -1338,7 +1237,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "FACTORS", "MINEIGEN",
+                                       "ECONVERGE", "RCONVERGE", "ITERATE",
+                                       "DEFAULT");
 		  goto error;
 		}
 	    }
@@ -1349,24 +1250,16 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "PAF"))
-		{
-		  factor.extraction = EXTRACTION_PAF;
-		}
+                factor.extraction = EXTRACTION_PAF;
 	      else if (lex_match_id (lexer, "PC"))
-		{
-		  factor.extraction = EXTRACTION_PC;
-		}
+                factor.extraction = EXTRACTION_PC;
 	      else if (lex_match_id (lexer, "PA1"))
-		{
-		  factor.extraction = EXTRACTION_PC;
-		}
+                factor.extraction = EXTRACTION_PC;
 	      else if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  factor.extraction = EXTRACTION_PC;
-		}
+                factor.extraction = EXTRACTION_PC;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "PAF", "PC", "PA1", "DEFAULT");
 		  goto error;
 		}
 	    }
@@ -1378,17 +1271,15 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "SORT"))
-		{
-		  factor.sort = true;
-		}
+                factor.sort = true;
 	      else if (lex_match_id (lexer, "BLANK"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN)
-                       && lex_force_num (lexer))
+                      && lex_force_num (lexer))
 		    {
 		      factor.blank = lex_number (lexer);
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		}
@@ -1399,7 +1290,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "SORT", "BLANK", "DEFAULT");
 		  goto error;
 		}
 	    }
@@ -1411,50 +1302,30 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
               if (lex_match_id (lexer, "UNIVARIATE"))
-		{
-		  factor.print |= PRINT_UNIVARIATE;
-		}
+                factor.print |= PRINT_UNIVARIATE;
 	      else if (lex_match_id (lexer, "DET"))
-		{
-		  factor.print |= PRINT_DETERMINANT;
-		}
+                factor.print |= PRINT_DETERMINANT;
 #if FACTOR_FULLY_IMPLEMENTED
 	      else if (lex_match_id (lexer, "INV"))
 		{
 		}
 #endif
 	      else if (lex_match_id (lexer, "AIC"))
-		{
-		  factor.print |= PRINT_AIC;
-		}
+                factor.print |= PRINT_AIC;
 	      else if (lex_match_id (lexer, "SIG"))
-		{
-		  factor.print |= PRINT_SIG;
-		}
+                factor.print |= PRINT_SIG;
 	      else if (lex_match_id (lexer, "CORRELATION"))
-		{
-		  factor.print |= PRINT_CORRELATION;
-		}
+                factor.print |= PRINT_CORRELATION;
 	      else if (lex_match_id (lexer, "COVARIANCE"))
-		{
-		  factor.print |= PRINT_COVARIANCE;
-		}
+                factor.print |= PRINT_COVARIANCE;
 	      else if (lex_match_id (lexer, "ROTATION"))
-		{
-		  factor.print |= PRINT_ROTATION;
-		}
+                factor.print |= PRINT_ROTATION;
 	      else if (lex_match_id (lexer, "EXTRACTION"))
-		{
-		  factor.print |= PRINT_EXTRACTION;
-		}
+                factor.print |= PRINT_EXTRACTION;
 	      else if (lex_match_id (lexer, "INITIAL"))
-		{
-		  factor.print |= PRINT_INITIAL;
-		}
+                factor.print |= PRINT_INITIAL;
 	      else if (lex_match_id (lexer, "KMO"))
-		{
-		  factor.print |= PRINT_KMO;
-		}
+                factor.print |= PRINT_KMO;
 #if FACTOR_FULLY_IMPLEMENTED
 	      else if (lex_match_id (lexer, "REPR"))
 		{
@@ -1464,18 +1335,19 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 #endif
               else if (lex_match (lexer, T_ALL))
-		{
-		  factor.print = 0xFFFF;
-		}
+                factor.print = -1;
 	      else if (lex_match_id (lexer, "DEFAULT"))
 		{
-		  factor.print |= PRINT_INITIAL ;
-		  factor.print |= PRINT_EXTRACTION ;
-		  factor.print |= PRINT_ROTATION ;
+		  factor.print |= PRINT_INITIAL;
+		  factor.print |= PRINT_EXTRACTION;
+		  factor.print |= PRINT_ROTATION;
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "UNIVARIATE", "DET", "AIC", "SIG",
+                                       "CORRELATION", "COVARIANCE", "ROTATION",
+                                       "EXTRACTION", "INITIAL", "KMO", "ALL",
+                                       "DEFAULT");
 		  goto error;
 		}
 	    }
@@ -1486,28 +1358,19 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
 	      if (lex_match_id (lexer, "INCLUDE"))
-		{
-		  factor.exclude = MV_SYSTEM;
-		}
+                factor.exclude = MV_SYSTEM;
 	      else if (lex_match_id (lexer, "EXCLUDE"))
-		{
-		  factor.exclude = MV_ANY;
-		}
+                factor.exclude = MV_ANY;
 	      else if (lex_match_id (lexer, "LISTWISE"))
-		{
-		  factor.missing_type = MISS_LISTWISE;
-		}
+                factor.missing_type = MISS_LISTWISE;
 	      else if (lex_match_id (lexer, "PAIRWISE"))
-		{
-		  factor.missing_type = MISS_PAIRWISE;
-		}
+                factor.missing_type = MISS_PAIRWISE;
 	      else if (lex_match_id (lexer, "MEANSUB"))
-		{
-		  factor.missing_type = MISS_MEANSUB;
-		}
+                factor.missing_type = MISS_MEANSUB;
 	      else
 		{
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE", "LISTWISE",
+                                       "PAIRRWISE", "MEANSUB");
 		  goto error;
 		}
 	    }
@@ -1523,11 +1386,13 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
     factor.print &= ~PRINT_ROTATION;
 
   if (factor.n_vars < 2)
-    msg (MW, _("Factor analysis on a single variable is not useful."));
+    lex_ofs_msg (lexer, SW, vars_start, vars_end,
+                 _("Factor analysis on a single variable is not useful."));
 
   if (factor.n_vars < 1)
     {
-      msg (ME, _("Factor analysis without variables is not possible."));
+      lex_ofs_error (lexer, vars_start, vars_end,
+                     _("Factor analysis without variables is not possible."));
       goto error;
     }
 
@@ -1550,14 +1415,14 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       idata_free (id);
     }
   else
-    if (! run_factor (ds, &factor))
+    if (!run_factor (ds, &factor))
       goto error;
 
   matrix_reader_destroy (mr);
   free (factor.vars);
   return CMD_SUCCESS;
 
- error:
+error:
   matrix_reader_destroy (mr);
   free (factor.vars);
   return CMD_FAILURE;
@@ -1595,16 +1460,13 @@ run_factor (struct dataset *ds, const struct cmd_factor *factor)
 static double
 the_communality (const gsl_matrix *evec, const gsl_vector *eval, int n, int n_factors)
 {
-  size_t i;
-
-  double comm = 0;
-
   assert (n >= 0);
   assert (n < eval->size);
   assert (n < evec->size1);
   assert (n_factors <= eval->size);
 
-  for (i = 0 ; i < n_factors; ++i)
+  double comm = 0;
+  for (size_t i = 0; i < n_factors; ++i)
     {
       double evali = fabs (gsl_vector_get (eval, i));
 
@@ -1628,7 +1490,7 @@ static void
 show_scree (const struct cmd_factor *f, const struct idata *idata)
 {
   struct scree *s;
-  const char *label ;
+  const char *label;
 
   if (!(f->plot & PLOT_SCREE))
     return;
@@ -1660,7 +1522,7 @@ show_communalities (const struct cmd_factor * factor,
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  for (size_t i = 0 ; i < factor->n_vars; ++i)
+  for (size_t i = 0; i < factor->n_vars; ++i)
     {
       int row = pivot_category_create_leaf (
         variables->root, pivot_value_new_variable (factor->vars[i]));
@@ -1684,7 +1546,7 @@ create_numeric_dimension (struct pivot_table *table,
 {
   struct pivot_dimension *d = pivot_dimension_create (table, axis_type, name);
   d->root->show_label = show_label;
-  for (int i = 0 ; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     pivot_category_create_leaf (d->root, pivot_value_new_integer (i + 1));
   return d;
 }
@@ -1709,14 +1571,14 @@ show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, 
   if (factor->sort)
     sort_matrix_indirect (fm, perm);
 
-  for (size_t i = 0 ; i < factor->n_vars; ++i)
+  for (size_t i = 0; i < factor->n_vars; ++i)
     {
       const int matrix_row = perm->data[i];
 
       int var_idx = pivot_category_create_leaf (
         variables->root, pivot_value_new_variable (factor->vars[matrix_row]));
 
-      for (size_t j = 0 ; j < n_factors; ++j)
+      for (size_t j = 0; j < n_factors; ++j)
 	{
 	  double x = gsl_matrix_get (fm, matrix_row, j);
 	  if (fabs (x) < factor->blank)
@@ -1779,7 +1641,7 @@ show_explained_variance (const struct cmd_factor * factor,
     factor->extraction == EXTRACTION_PC ? N_("Component") : N_("Factor"));
 
   double i_total = 0.0;
-  for (size_t i = 0 ; i < initial_eigenvalues->size; ++i)
+  for (size_t i = 0; i < initial_eigenvalues->size; ++i)
     i_total += gsl_vector_get (initial_eigenvalues, i);
 
   double e_total = (factor->extraction == EXTRACTION_PAF
@@ -1789,14 +1651,14 @@ show_explained_variance (const struct cmd_factor * factor,
   double i_cum = 0.0;
   double e_cum = 0.0;
   double r_cum = 0.0;
-  for (size_t i = 0 ; i < factor->n_vars; ++i)
+  for (size_t i = 0; i < factor->n_vars; ++i)
     {
       const double i_lambda = gsl_vector_get (initial_eigenvalues, i);
-      double i_percent = 100.0 * i_lambda / i_total ;
+      double i_percent = 100.0 * i_lambda / i_total;
       i_cum += i_percent;
 
       const double e_lambda = gsl_vector_get (extracted_eigenvalues, i);
-      double e_percent = 100.0 * e_lambda / e_total ;
+      double e_percent = 100.0 * e_lambda / e_total;
       e_cum += e_percent;
 
       int row = pivot_category_create_leaf (
@@ -1816,7 +1678,7 @@ show_explained_variance (const struct cmd_factor * factor,
           if (rotated_loadings != NULL && factor->print & PRINT_ROTATION)
             {
               double r_lambda = gsl_vector_get (rotated_loadings, i);
-              double r_percent = 100.0 * r_lambda / e_total ;
+              double r_percent = 100.0 * r_lambda / e_total;
               if (factor->rotation == ROT_PROMAX)
                 r_lambda = r_percent = SYSMIS;
 
@@ -1844,8 +1706,8 @@ show_factor_correlation (const struct cmd_factor * factor, const gsl_matrix *fcm
   create_numeric_dimension (table, PIVOT_AXIS_COLUMN, N_("Factor 2"),
                             fcm->size1, false);
 
-  for (size_t i = 0 ; i < fcm->size1; ++i)
-    for (size_t j = 0 ; j < fcm->size2; ++j)
+  for (size_t i = 0; i < fcm->size1; ++i)
+    for (size_t j = 0; j < fcm->size2; ++j)
       pivot_table_put2 (table, j, i,
                         pivot_value_new_number (gsl_matrix_get (fcm, i, j)));
 
@@ -2038,10 +1900,9 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   idata->ai_cov = anti_image_cov (r_inv);
   idata->ai_cor = anti_image_corr (r_inv, idata);
 
-  int i;
   double sum_ssq_r = 0;
   double sum_ssq_a = 0;
-  for (i = 0; i < r_inv->size1; ++i)
+  for (int i = 0; i < r_inv->size1; ++i)
     {
       sum_ssq_r += ssq_od_n (idata->mm.corr, i);
       sum_ssq_a += ssq_od_n (idata->ai_cor, i);
@@ -2080,7 +1941,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       struct pivot_dimension *variables = pivot_dimension_create (
         table, PIVOT_AXIS_ROW, N_("Variables"));
 
-      for (i = 0 ; i < factor->n_vars; ++i)
+      for (size_t i = 0; i < factor->n_vars; ++i)
 	{
 	  const struct variable *v = factor->vars[i];
 
@@ -2118,7 +1979,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 	 missing values are involved.  The best thing I can think of
 	 is to take the mean average. */
       double w = 0;
-      for (i = 0; i < idata->mm.n->size1; ++i)
+      for (int i = 0; i < idata->mm.n->size1; ++i)
 	w += gsl_matrix_get (idata->mm.n, i, i);
       w /= idata->mm.n->size1;
 
@@ -2179,7 +2040,6 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     const gsl_vector *extracted_eigenvalues = NULL;
     gsl_vector *initial_communalities = gsl_vector_alloc (factor->n_vars);
     gsl_vector *extracted_communalities = gsl_vector_alloc (factor->n_vars);
-    size_t i;
     struct factor_matrix_workspace *fmw = factor_matrix_workspace_alloc (idata->msr->size, idata->n_extractions);
     gsl_matrix *factor_matrix = gsl_matrix_calloc (factor->n_vars, fmw->n_factors);
 
@@ -2188,7 +2048,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 	gsl_vector *diff = gsl_vector_alloc (idata->msr->size);
 	struct smr_workspace *ws = ws_create (idata->analysis_matrix);
 
-	for (i = 0 ; i < factor->n_vars ; ++i)
+	for (size_t i = 0; i < factor->n_vars; ++i)
 	  {
 	    double r2 = squared_multiple_correlation (idata->analysis_matrix, i, ws);
 
@@ -2198,7 +2058,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 
 	gsl_vector_memcpy (initial_communalities, idata->msr);
 
-	for (i = 0; i < factor->extraction_iterations; ++i)
+	for (size_t i = 0; i < factor->extraction_iterations; ++i)
 	  {
 	    double min, max;
 	    gsl_vector_memcpy (diff, idata->msr);
@@ -2221,7 +2081,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       }
     else if (factor->extraction == EXTRACTION_PC)
       {
-	for (i = 0; i < factor->n_vars; ++i)
+	for (size_t i = 0; i < factor->n_vars; ++i)
 	  gsl_vector_set (initial_communalities, i, communality (idata, i, factor->n_vars));
 
 	gsl_vector_memcpy (extracted_communalities, initial_communalities);
