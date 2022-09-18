@@ -519,18 +519,22 @@ void
 void
 lex_error_expecting_valist (struct lexer *lexer, va_list args)
 {
-  enum { MAX_OPTIONS = 9 };
-  const char *options[MAX_OPTIONS];
-  int n = 0;
-  while (n < MAX_OPTIONS)
+  const char **options = NULL;
+  size_t allocated = 0;
+  size_t n = 0;
+
+  for (;;)
     {
       const char *option = va_arg (args, const char *);
       if (!option)
         break;
 
+      if (n >= allocated)
+        options = x2nrealloc (options, &allocated, sizeof *options);
       options[n++] = option;
     }
   lex_error_expecting_array (lexer, options, n);
+  free (options);
 }
 
 void
