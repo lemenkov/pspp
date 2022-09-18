@@ -1,0 +1,60 @@
+AT_BANNER([STRING])
+
+AT_SETUP([STRING])
+AT_DATA([string.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+STRING s1 (A8)/s2 (A1).
+DISPLAY DICTIONARY.
+])
+AT_CHECK([pspp -O format=csv string.sps], [0], [dnl
+Table: Variables
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Unknown,Input,8,Right,F8.2,F8.2
+y,2,Unknown,Input,8,Right,F8.2,F8.2
+z,3,Unknown,Input,8,Right,F8.2,F8.2
+s1,4,Nominal,Input,8,Left,A8,A8
+s2,5,Nominal,Input,1,Left,A1,A1
+])
+AT_CLEANUP
+
+AT_SETUP([STRING syntax errors])
+AT_DATA([string.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+STRING **.
+STRING s **.
+STRING s (**).
+STRING s (F8).
+STRING s (AHEX1).
+STRING s (A8 **).
+STRING x (A8).
+])
+AT_CHECK([pspp -O format=csv string.sps], [1], [dnl
+"string.sps:2.8-2.9: error: STRING: Syntax error expecting variable name.
+    2 | STRING **.
+      |        ^~"
+
+"string.sps:3.10-3.11: error: STRING: Syntax error expecting `('.
+    3 | STRING s **.
+      |          ^~"
+
+"string.sps:4.11-4.12: error: STRING: Syntax error expecting valid format specifier.
+    4 | STRING s (**).
+      |           ^~"
+
+"string.sps:5.11-5.12: error: STRING: String variables are not compatible with numeric format F8.0.
+    5 | STRING s (F8).
+      |           ^~"
+
+"string.sps:6.11-6.15: error: STRING: Output format AHEX1 specifies width 1, but AHEX requires an even width.
+    6 | STRING s (AHEX1).
+      |           ^~~~~"
+
+"string.sps:7.14-7.15: error: STRING: Syntax error expecting `)'.
+    7 | STRING s (A8 **).
+      |              ^~"
+
+"string.sps:8.8: error: STRING: There is already a variable named x.
+    8 | STRING x (A8).
+      |        ^"
+])
+AT_CLEANUP

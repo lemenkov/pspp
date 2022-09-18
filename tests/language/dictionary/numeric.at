@@ -1,0 +1,60 @@
+AT_BANNER([NUMERIC])
+
+AT_SETUP([NUMERIC])
+AT_DATA([numeric.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+NUMERIC n/k(F5).
+DISPLAY DICTIONARY.
+])
+AT_CHECK([pspp -O format=csv numeric.sps], [0], [dnl
+Table: Variables
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Unknown,Input,8,Right,F8.2,F8.2
+y,2,Unknown,Input,8,Right,F8.2,F8.2
+z,3,Unknown,Input,8,Right,F8.2,F8.2
+n,4,Unknown,Input,8,Right,F8.2,F8.2
+k,5,Unknown,Input,8,Right,F5.0,F5.0
+])
+AT_CLEANUP
+
+AT_SETUP([NUMERIC syntax errors])
+AT_DATA([numeric.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+NUMERIC **.
+NUMERIC n **.
+NUMERIC x.
+NUMERIC n (**).
+NUMERIC n (F50).
+NUMERIC n (A8).
+NUMERIC n (F8.0 **).
+])
+AT_CHECK([pspp -O format=csv numeric.sps], [1], [dnl
+"numeric.sps:2.9-2.10: error: NUMERIC: Syntax error expecting variable name.
+    2 | NUMERIC **.
+      |         ^~"
+
+"numeric.sps:3.11-3.12: error: NUMERIC: Syntax error expecting end of command.
+    3 | NUMERIC n **.
+      |           ^~"
+
+"numeric.sps:4.9: error: NUMERIC: There is already a variable named x.
+    4 | NUMERIC x.
+      |         ^"
+
+"numeric.sps:5.12-5.13: error: NUMERIC: Syntax error expecting valid format specifier.
+    5 | NUMERIC n (**).
+      |            ^~"
+
+"numeric.sps:6.12-6.14: error: NUMERIC: Output format F50.0 specifies width 50, but F requires a width between 1 and 40.
+    6 | NUMERIC n (F50).
+      |            ^~~"
+
+"numeric.sps:7.12-7.13: error: NUMERIC: Format type A8 may not be used with a numeric variable.
+    7 | NUMERIC n (A8).
+      |            ^~"
+
+"numeric.sps:8.17-8.18: error: NUMERIC: Syntax error expecting `@:}@'.
+    8 | NUMERIC n (F8.0 **).
+      |                 ^~"
+])
+AT_CLEANUP

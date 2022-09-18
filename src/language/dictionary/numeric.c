@@ -37,33 +37,31 @@
 int
 cmd_numeric (struct lexer *lexer, struct dataset *ds)
 {
-  size_t i;
-
-  /* Names of variables to create. */
-  char **v;
-  size_t nv;
-
   do
     {
-      /* Format spec for variables to create. */
-      struct fmt_spec f;
-
+      char **v;
+      size_t nv;
+      int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                  &v, &nv, PV_NO_DUPLICATE))
 	return CMD_FAILURE;
+      int vars_end = lex_ofs (lexer) - 1;
+
+      bool ok = false;
 
       /* Get the optional format specification. */
+      struct fmt_spec f = var_default_formats (0);
       if (lex_match (lexer, T_LPAREN))
 	{
 	  if (!parse_format_specifier (lexer, &f))
-	    goto fail;
+	    goto done;
 
           char *error = fmt_check_output__ (&f);
           if (error)
             {
               lex_next_error (lexer, -1, -1, "%s", error);
               free (error);
-              goto fail;
+              goto done;
             }
 
 	  if (fmt_is_string (f.type))
@@ -72,114 +70,99 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	      lex_next_error (lexer, -1, -1,
                               _("Format type %s may not be used with a numeric "
                                 "variable."), fmt_to_string (&f, str));
-	      goto fail;
+	      goto done;
 	    }
 
 	  if (!lex_match (lexer, T_RPAREN))
 	    {
               lex_error_expecting (lexer, "`)'");
-	      goto fail;
+	      goto done;
 	    }
 	}
-      else
-	f = var_default_formats (0);
 
       /* Create each variable. */
-      for (i = 0; i < nv; i++)
+      for (size_t i = 0; i < nv; i++)
 	{
-	  struct variable *new_var = dict_create_var (dataset_dict (ds), v[i], 0);
+	  struct variable *new_var = dict_create_var (dataset_dict (ds),
+                                                      v[i], 0);
 	  if (!new_var)
-	    msg (SE, _("There is already a variable named %s."), v[i]);
+	    lex_ofs_error (lexer, vars_start, vars_end,
+                           _("There is already a variable named %s."), v[i]);
 	  else
             var_set_both_formats (new_var, &f);
 	}
+      ok = true;
 
-      /* Clean up. */
-      for (i = 0; i < nv; i++)
+    done:
+      for (size_t i = 0; i < nv; i++)
 	free (v[i]);
       free (v);
+      if (!ok)
+        return CMD_FAILURE;
     }
   while (lex_match (lexer, T_SLASH));
 
   return CMD_SUCCESS;
-
-  /* If we have an error at a point where cleanup is required,
-     flow-of-control comes here. */
-fail:
-  for (i = 0; i < nv; i++)
-    free (v[i]);
-  free (v);
-  return CMD_FAILURE;
 }
 
 /* Parses the STRING command. */
 int
 cmd_string (struct lexer *lexer, struct dataset *ds)
 {
-  size_t i;
-
-  /* Names of variables to create. */
-  char **v;
-  size_t nv;
-
-  /* Format spec for variables to create. */
-  struct fmt_spec f;
-
-  /* Width of variables to create. */
-  int width;
-
   do
     {
+      char **v;
+      size_t nv;
+      int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                  &v, &nv, PV_NO_DUPLICATE))
 	return CMD_FAILURE;
+      int vars_end = lex_ofs (lexer) - 1;
 
+      bool ok = false;
+
+      struct fmt_spec f;
       if (!lex_force_match (lexer, T_LPAREN)
           || !parse_format_specifier (lexer, &f))
-	goto fail;
+	goto done;
 
       char *error = fmt_check_type_compat__ (&f, NULL, VAL_STRING);
       if (!error)
         error = fmt_check_output__ (&f);
       if (error)
         {
-          lex_next_error (lexer, -2, -2, "%s", error);
+          lex_next_error (lexer, -1, -1, "%s", error);
           free (error);
-          goto fail;
+          goto done;
         }
 
       if (!lex_force_match (lexer, T_RPAREN))
-        goto fail;
-
-      width = fmt_var_width (&f);
+        goto done;
 
       /* Create each variable. */
-      for (i = 0; i < nv; i++)
+      int width = fmt_var_width (&f);
+      for (size_t i = 0; i < nv; i++)
 	{
 	  struct variable *new_var = dict_create_var (dataset_dict (ds), v[i],
                                                       width);
 	  if (!new_var)
-	    msg (SE, _("There is already a variable named %s."), v[i]);
+	    lex_ofs_error (lexer, vars_start, vars_end,
+                           _("There is already a variable named %s."), v[i]);
 	  else
             var_set_both_formats (new_var, &f);
 	}
+      ok = true;
 
-      /* Clean up. */
-      for (i = 0; i < nv; i++)
+    done:
+      for (size_t i = 0; i < nv; i++)
 	free (v[i]);
       free (v);
+      if (!ok)
+        return CMD_FAILURE;
     }
   while (lex_match (lexer, T_SLASH));
 
   return CMD_SUCCESS;
-
-  /* If we have an error at a point where cleanup is required,
-     flow-of-control comes here. */
-fail:
-  for (i = 0; i < nv; i++)
-    free (v[i]);
-  free (v);
-  return CMD_FAILURE;
 }
 
 /* Parses the LEAVE command. */
@@ -189,11 +172,9 @@ cmd_leave (struct lexer *lexer, struct dataset *ds)
   struct variable **v;
   size_t nv;
 
-  size_t i;
-
   if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
     return CMD_CASCADING_FAILURE;
-  for (i = 0; i < nv; i++)
+  for (size_t i = 0; i < nv; i++)
     var_set_leave (v[i], true);
   free (v);
 

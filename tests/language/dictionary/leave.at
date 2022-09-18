@@ -1,0 +1,29 @@
+AT_BANNER([LEAVE])
+
+AT_SETUP([LEAVE])
+AT_DATA([leave.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+LEAVE x y.
+])
+AT_CHECK([pspp -O format=csv leave.sps])
+AT_CLEANUP
+
+AT_SETUP([LEAVE syntax errors])
+AT_DATA([leave.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+LEAVE **.
+LEAVE x **.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='leave.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"leave.sps:2.7-2.8: error: LEAVE: Syntax error expecting variable name.
+    2 | LEAVE **.
+      |       ^~"
+
+"leave.sps:3.9-3.10: error: LEAVE: Syntax error expecting end of command.
+    3 | LEAVE x **.
+      |         ^~"
+])
+AT_CLEANUP
