@@ -1043,3 +1043,220 @@ Total,,4.00,100.0%,,
 ])
 
 AT_CLEANUP
+
+AT_SETUP([FREQUENCIES syntax errors])
+AT_DATA([frequencies.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+FREQUENCIES VARIABLES **.
+FREQUENCIES **.
+FREQUENCIES x/STATISTICS **.
+FREQUENCIES x/PERCENTILES **.
+FREQUENCIES x/FORMAT LIMIT **.
+FREQUENCIES x/FORMAT LIMIT(**).
+FREQUENCIES x/FORMAT LIMIT(5 **).
+FREQUENCIES x/FORMAT **.
+FREQUENCIES x/NTILES **.
+FREQUENCIES x/ALGORITHM **.
+FREQUENCIES x/HISTOGRAM FREQ(**).
+FREQUENCIES x/HISTOGRAM FREQ(5 **).
+FREQUENCIES x/HISTOGRAM PERCENT(**).
+FREQUENCIES x/HISTOGRAM PERCENT(5 **).
+FREQUENCIES x/HISTOGRAM MINIMUM(**).
+FREQUENCIES x/HISTOGRAM MINIMUM(5 **).
+FREQUENCIES x/HISTOGRAM MAXIMUM(**).
+FREQUENCIES x/HISTOGRAM MAXIMUM(5 **).
+FREQUENCIES x/HISTOGRAM MINIMUM(5) MAXIMUM(1).
+FREQUENCIES x/HISTOGRAM MAXIMUM(5) MINIMUM(10).
+FREQUENCIES x/HISTOGRAM **.
+FREQUENCIES x/PIECHART MINIMUM(**).
+FREQUENCIES x/PIECHART MINIMUM(5 **).
+FREQUENCIES x/PIECHART MAXIMUM(**).
+FREQUENCIES x/PIECHART MAXIMUM(5 **).
+FREQUENCIES x/PIECHART MINIMUM(5) MAXIMUM(1).
+FREQUENCIES x/PIECHART MAXIMUM(5) MINIMUM(10).
+FREQUENCIES x/PIECHART **.
+FREQUENCIES x/BARCHART FREQ(**).
+FREQUENCIES x/BARCHART FREQ(5 **).
+FREQUENCIES x/BARCHART PERCENT(**).
+FREQUENCIES x/BARCHART PERCENT(5 **).
+FREQUENCIES x/BARCHART MINIMUM(**).
+FREQUENCIES x/BARCHART MINIMUM(5 **).
+FREQUENCIES x/BARCHART MAXIMUM(**).
+FREQUENCIES x/BARCHART MAXIMUM(5 **).
+FREQUENCIES x/BARCHART MINIMUM(5) MAXIMUM(1).
+FREQUENCIES x/BARCHART MAXIMUM(5) MINIMUM(10).
+FREQUENCIES x/BARCHART **.
+FREQUENCIES x/MISSING **.
+FREQUENCIES x/ORDER **.
+FREQUENCIES x/ **.
+])
+AT_CHECK([pspp -O format=csv frequencies.sps], [1], [dnl
+"frequencies.sps:2.23-2.24: error: FREQUENCIES: Syntax error expecting `='.
+    2 | FREQUENCIES VARIABLES **.
+      |                       ^~"
+
+"frequencies.sps:3.13-3.14: error: FREQUENCIES: Syntax error expecting variable name.
+    3 | FREQUENCIES **.
+      |             ^~"
+
+"frequencies.sps:4.26-4.27: error: FREQUENCIES: Syntax error expecting one of the following: MEAN, SEMEAN, MEDIAN, MODE, STDDEV, VARIANCE, KURTOSIS, SEKURTOSIS, SKEWNESS, SESKEWNESS, RANGE, MINIMUM, MAXIMUM, SUM, DEFAULT, ALL, NONE.
+    4 | FREQUENCIES x/STATISTICS **.
+      |                          ^~"
+
+"frequencies.sps:5.27-5.28: error: FREQUENCIES: Syntax error expecting number between 0 and 100 for PERCENTILES.
+    5 | FREQUENCIES x/PERCENTILES **.
+      |                           ^~"
+
+"frequencies.sps:6.28-6.29: error: FREQUENCIES: Syntax error expecting `('.
+    6 | FREQUENCIES x/FORMAT LIMIT **.
+      |                            ^~"
+
+"frequencies.sps:7.28-7.29: error: FREQUENCIES: Syntax error expecting non-negative integer for LIMIT.
+    7 | FREQUENCIES x/FORMAT LIMIT(**).
+      |                            ^~"
+
+"frequencies.sps:8.30-8.31: error: FREQUENCIES: Syntax error expecting `)'.
+    8 | FREQUENCIES x/FORMAT LIMIT(5 **).
+      |                              ^~"
+
+"frequencies.sps:9.22-9.23: error: FREQUENCIES: Syntax error expecting TABLE, NOTABLE, LIMIT, AVALUE, DVALUE, AFREQ, or DFREQ.
+    9 | FREQUENCIES x/FORMAT **.
+      |                      ^~"
+
+"frequencies.sps:10.22-10.23: error: FREQUENCIES: Syntax error expecting non-negative integer for NTILES.
+   10 | FREQUENCIES x/NTILES **.
+      |                      ^~"
+
+"frequencies.sps:11.25-11.26: error: FREQUENCIES: Syntax error expecting COMPATIBLE or ENHANCED.
+   11 | FREQUENCIES x/ALGORITHM **.
+      |                         ^~"
+
+"frequencies.sps:12.30-12.31: error: FREQUENCIES: Syntax error expecting positive integer for FREQ.
+   12 | FREQUENCIES x/HISTOGRAM FREQ(**).
+      |                              ^~"
+
+"frequencies.sps:13.32-13.33: error: FREQUENCIES: Syntax error expecting `)'.
+   13 | FREQUENCIES x/HISTOGRAM FREQ(5 **).
+      |                                ^~"
+
+"frequencies.sps:14.33-14.34: error: FREQUENCIES: Syntax error expecting positive integer for PERCENT.
+   14 | FREQUENCIES x/HISTOGRAM PERCENT(**).
+      |                                 ^~"
+
+"frequencies.sps:15.35-15.36: error: FREQUENCIES: Syntax error expecting `)'.
+   15 | FREQUENCIES x/HISTOGRAM PERCENT(5 **).
+      |                                   ^~"
+
+"frequencies.sps:16.33-16.34: error: FREQUENCIES: Syntax error expecting number for MINIMUM.
+   16 | FREQUENCIES x/HISTOGRAM MINIMUM(**).
+      |                                 ^~"
+
+"frequencies.sps:17.35-17.36: error: FREQUENCIES: Syntax error expecting `)'.
+   17 | FREQUENCIES x/HISTOGRAM MINIMUM(5 **).
+      |                                   ^~"
+
+"frequencies.sps:18.33-18.34: error: FREQUENCIES: Syntax error expecting number for MAXIMUM.
+   18 | FREQUENCIES x/HISTOGRAM MAXIMUM(**).
+      |                                 ^~"
+
+"frequencies.sps:19.35-19.36: error: FREQUENCIES: Syntax error expecting `)'.
+   19 | FREQUENCIES x/HISTOGRAM MAXIMUM(5 **).
+      |                                   ^~"
+
+"frequencies.sps:20.44: error: FREQUENCIES: Syntax error expecting number 5 or greater for MAXIMUM.
+   20 | FREQUENCIES x/HISTOGRAM MINIMUM(5) MAXIMUM(1).
+      |                                            ^"
+
+"frequencies.sps:21.44-21.45: error: FREQUENCIES: Syntax error expecting number less than or equal to 5 for MINIMUM.
+   21 | FREQUENCIES x/HISTOGRAM MAXIMUM(5) MINIMUM(10).
+      |                                            ^~"
+
+"frequencies.sps:22.25-22.26: error: FREQUENCIES: Syntax error expecting NORMAL, NONORMAL, FREQ, PERCENT, MINIMUM, or MAXIMUM.
+   22 | FREQUENCIES x/HISTOGRAM **.
+      |                         ^~"
+
+"frequencies.sps:23.32-23.33: error: FREQUENCIES: Syntax error expecting number for MINIMUM.
+   23 | FREQUENCIES x/PIECHART MINIMUM(**).
+      |                                ^~"
+
+"frequencies.sps:24.34-24.35: error: FREQUENCIES: Syntax error expecting `)'.
+   24 | FREQUENCIES x/PIECHART MINIMUM(5 **).
+      |                                  ^~"
+
+"frequencies.sps:25.32-25.33: error: FREQUENCIES: Syntax error expecting number for MAXIMUM.
+   25 | FREQUENCIES x/PIECHART MAXIMUM(**).
+      |                                ^~"
+
+"frequencies.sps:26.34-26.35: error: FREQUENCIES: Syntax error expecting `)'.
+   26 | FREQUENCIES x/PIECHART MAXIMUM(5 **).
+      |                                  ^~"
+
+"frequencies.sps:27.43: error: FREQUENCIES: Syntax error expecting number 5 or greater for MAXIMUM.
+   27 | FREQUENCIES x/PIECHART MINIMUM(5) MAXIMUM(1).
+      |                                           ^"
+
+"frequencies.sps:28.43-28.44: error: FREQUENCIES: Syntax error expecting number less than or equal to 5 for MINIMUM.
+   28 | FREQUENCIES x/PIECHART MAXIMUM(5) MINIMUM(10).
+      |                                           ^~"
+
+"frequencies.sps:29.24-29.25: error: FREQUENCIES: Syntax error expecting MINIMUM, MAXIMUM, MISSING, or NOMISSING.
+   29 | FREQUENCIES x/PIECHART **.
+      |                        ^~"
+
+"frequencies.sps:30.29-30.30: error: FREQUENCIES: Syntax error expecting positive number for FREQ.
+   30 | FREQUENCIES x/BARCHART FREQ(**).
+      |                             ^~"
+
+"frequencies.sps:31.31-31.32: error: FREQUENCIES: Syntax error expecting `)'.
+   31 | FREQUENCIES x/BARCHART FREQ(5 **).
+      |                               ^~"
+
+"frequencies.sps:32.32-32.33: error: FREQUENCIES: Syntax error expecting positive number for PERCENT.
+   32 | FREQUENCIES x/BARCHART PERCENT(**).
+      |                                ^~"
+
+"frequencies.sps:33.34-33.35: error: FREQUENCIES: Syntax error expecting `)'.
+   33 | FREQUENCIES x/BARCHART PERCENT(5 **).
+      |                                  ^~"
+
+"frequencies.sps:34.32-34.33: error: FREQUENCIES: Syntax error expecting number for MINIMUM.
+   34 | FREQUENCIES x/BARCHART MINIMUM(**).
+      |                                ^~"
+
+"frequencies.sps:35.34-35.35: error: FREQUENCIES: Syntax error expecting `)'.
+   35 | FREQUENCIES x/BARCHART MINIMUM(5 **).
+      |                                  ^~"
+
+"frequencies.sps:36.32-36.33: error: FREQUENCIES: Syntax error expecting number for MAXIMUM.
+   36 | FREQUENCIES x/BARCHART MAXIMUM(**).
+      |                                ^~"
+
+"frequencies.sps:37.34-37.35: error: FREQUENCIES: Syntax error expecting `)'.
+   37 | FREQUENCIES x/BARCHART MAXIMUM(5 **).
+      |                                  ^~"
+
+"frequencies.sps:38.43: error: FREQUENCIES: Syntax error expecting number 5 or greater for MAXIMUM.
+   38 | FREQUENCIES x/BARCHART MINIMUM(5) MAXIMUM(1).
+      |                                           ^"
+
+"frequencies.sps:39.43-39.44: error: FREQUENCIES: Syntax error expecting number less than or equal to 5 for MINIMUM.
+   39 | FREQUENCIES x/BARCHART MAXIMUM(5) MINIMUM(10).
+      |                                           ^~"
+
+"frequencies.sps:40.24-40.25: error: FREQUENCIES: Syntax error expecting MINIMUM, MAXIMUM, FREQ, or PERCENT.
+   40 | FREQUENCIES x/BARCHART **.
+      |                        ^~"
+
+"frequencies.sps:41.23-41.24: error: FREQUENCIES: Syntax error expecting EXCLUDE or INCLUDE.
+   41 | FREQUENCIES x/MISSING **.
+      |                       ^~"
+
+"frequencies.sps:42.21-42.22: error: FREQUENCIES: Syntax error expecting ANALYSIS or VARIABLE.
+   42 | FREQUENCIES x/ORDER **.
+      |                     ^~"
+
+"frequencies.sps:43.16-43.17: error: FREQUENCIES: Syntax error expecting one of the following: STATISTICS, PERCENTILES, FORMAT, NTILES, ALGORITHM, HISTOGRAM, PIECHART, BARCHART, MISSING, ORDER.
+   43 | FREQUENCIES x/ **.
+      |                ^~"
+])
+AT_CLEANUP

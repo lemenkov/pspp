@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <gsl/gsl_histogram.h>
 
-
 #include "data/case.h"
 #include "data/casegrouper.h"
 #include "data/casereader.h"
@@ -66,37 +65,19 @@
 /* Percentiles to calculate. */
 
 struct percentile
-{
-  double p;        /* the %ile to be calculated */
-  bool show;       /* True to show this percentile in the statistics box. */
-};
+  {
+    double p;        /* The percentile to calculate, between 0 and 1. */
+    bool show;       /* True to show this percentile in the statistics box. */
+  };
 
 static int
-ptile_3way (const void *_p1, const void *_p2)
+percentile_compare_3way (const void *a_, const void *b_)
 {
-  const struct percentile *p1 = _p1;
-  const struct percentile *p2 = _p2;
+  const struct percentile *a = a_;
+  const struct percentile *b = b_;
 
-  if (p1->p < p2->p)
-    return -1;
-
-  if (p1->p == p2->p)
-    {
-      if (p1->show > p2->show)
-	return -1;
-
-      return (p1->show < p2->show);
-    }
-
-  return (p1->p > p2->p);
+  return a->p < b->p ? -1 : a->p > b->p;
 }
-
-
-enum
-  {
-    FRQ_NONORMAL,
-    FRQ_NORMAL
-  };
 
 enum
   {
@@ -112,54 +93,56 @@ enum sortprops
     FRQ_DVALUE
   };
 
-/* Array indices for STATISTICS subcommand. */
-enum
+#define STATISTICS                                      \
+  S(FRQ_ST_MEAN,       "MEAN",      N_("Mean"))         \
+  S(FRQ_ST_SEMEAN,     "SEMEAN",    N_("S.E. Mean"))    \
+  S(FRQ_ST_MEDIAN,     "MEDIAN",    N_("Median"))       \
+  S(FRQ_ST_MODE,       "MODE",      N_("Mode"))         \
+  S(FRQ_ST_STDDEV,     "STDDEV",    N_("Std Dev"))      \
+  S(FRQ_ST_VARIANCE,   "VARIANCE",  N_("Variance"))     \
+  S(FRQ_ST_KURTOSIS,   "KURTOSIS",  N_("Kurtosis"))     \
+  S(FRQ_ST_SEKURTOSIS, "SEKURTOSIS",N_("S.E. Kurt"))    \
+  S(FRQ_ST_SKEWNESS,   "SKEWNESS",  N_("Skewness"))     \
+  S(FRQ_ST_SESKEWNESS, "SESKEWNESS",N_("S.E. Skew"))    \
+  S(FRQ_ST_RANGE,      "RANGE",     N_("Range"))        \
+  S(FRQ_ST_MINIMUM,    "MINIMUM",   N_("Minimum"))      \
+  S(FRQ_ST_MAXIMUM,    "MAXIMUM",   N_("Maximum"))      \
+  S(FRQ_ST_SUM,        "SUM",       N_("Sum"))
+
+enum frq_statistic
   {
-    FRQ_ST_MEAN,
-    FRQ_ST_SEMEAN,
-    FRQ_ST_MEDIAN,
-    FRQ_ST_MODE,
-    FRQ_ST_STDDEV,
-    FRQ_ST_VARIANCE,
-    FRQ_ST_KURTOSIS,
-    FRQ_ST_SEKURTOSIS,
-    FRQ_ST_SKEWNESS,
-    FRQ_ST_SESKEWNESS,
-    FRQ_ST_RANGE,
-    FRQ_ST_MINIMUM,
-    FRQ_ST_MAXIMUM,
-    FRQ_ST_SUM,
-    FRQ_ST_count
+#define S(ENUM, KEYWORD, NAME) ENUM,
+STATISTICS
+#undef S
   };
 
-/* Description of statistics. */
-static const char *st_name[FRQ_ST_count] =
-{
-   N_("Mean"),
-   N_("S.E. Mean"),
-   N_("Median"),
-   N_("Mode"),
-   N_("Std Dev"),
-   N_("Variance"),
-   N_("Kurtosis"),
-   N_("S.E. Kurt"),
-   N_("Skewness"),
-   N_("S.E. Skew"),
-   N_("Range"),
-   N_("Minimum"),
-   N_("Maximum"),
-   N_("Sum")
+enum {
+#define S(ENUM, KEYWORD, NAME) +1
+  FRQ_ST_count = STATISTICS,
+#undef S
+};
+
+static const char *st_keywords[FRQ_ST_count] = {
+#define S(ENUM, KEYWORD, NAME) KEYWORD,
+  STATISTICS
+#undef S
+};
+
+static const char *st_names[FRQ_ST_count] = {
+#define S(ENUM, KEYWORD, NAME) NAME,
+  STATISTICS
+#undef S
 };
 
 struct freq_tab
   {
     struct hmap data;           /* Hash table for accumulating counts. */
     struct freq *valid;         /* Valid freqs. */
-    int n_valid;		/* Number of total freqs. */
+    size_t n_valid;		/* Number of total freqs. */
     const struct dictionary *dict; /* Source of entries in the table. */
 
     struct freq *missing;       /* Missing freqs. */
-    int n_missing;		/* Number of missing freqs. */
+    size_t n_missing;		/* Number of missing freqs. */
 
     /* Statistics. */
     double total_cases;		/* Sum of weights of all cases. */
@@ -211,9 +194,8 @@ struct frq_proc
     int sort;                   /* FRQ_AVALUE or FRQ_DVALUE
                                    or FRQ_AFREQ or FRQ_DFREQ. */
 
-    /* Statistics; number of statistics. */
+    /* Statistics. */
     unsigned long stats;
-    int n_stats;
 
     /* Histogram and pie chart settings. */
     struct frq_chart *hist, *pie, *bar;
@@ -409,20 +391,15 @@ not_missing (const void *f_, const void *v_)
   return !var_is_value_missing (v, f->values);
 }
 
-
 /* Summarizes the frequency table data for variable V. */
 static void
 postprocess_freq_tab (const struct frq_proc *frq, struct var_freqs *vf)
 {
   struct freq_tab *ft = &vf->tab;
-  struct freq_compare_aux aux;
-  size_t count;
-  struct freq *freqs, *f;
-  size_t i;
 
   /* Extract data from hash table. */
-  count = hmap_count (&ft->data);
-  freqs = freq_hmap_extract (&ft->data);
+  size_t count = hmap_count (&ft->data);
+  struct freq *freqs = freq_hmap_extract (&ft->data);
 
   /* Put data into ft. */
   ft->valid = freqs;
@@ -431,29 +408,23 @@ postprocess_freq_tab (const struct frq_proc *frq, struct var_freqs *vf)
   ft->n_missing = count - ft->n_valid;
 
   /* Sort data. */
-  aux.by_freq = frq->sort == FRQ_AFREQ || frq->sort == FRQ_DFREQ;
-  aux.ascending_freq = frq->sort != FRQ_DFREQ;
-  aux.width = vf->width;
-  aux.ascending_value = frq->sort != FRQ_DVALUE;
+  struct freq_compare_aux aux = {
+    .by_freq = frq->sort == FRQ_AFREQ || frq->sort == FRQ_DFREQ,
+    .ascending_freq = frq->sort != FRQ_DFREQ,
+    .width = vf->width,
+    .ascending_value = frq->sort != FRQ_DVALUE,
+  };
   sort (ft->valid, ft->n_valid, sizeof *ft->valid, compare_freq, &aux);
   sort (ft->missing, ft->n_missing, sizeof *ft->missing, compare_freq, &aux);
 
   /* Summary statistics. */
   ft->valid_cases = 0.0;
-  for(i = 0 ;  i < ft->n_valid ; ++i)
-    {
-      f = &ft->valid[i];
-      ft->valid_cases += f->count;
+  for (size_t i = 0; i < ft->n_valid; ++i)
+    ft->valid_cases += ft->valid[i].count;
 
-    }
-
-  ft->total_cases = ft->valid_cases ;
-  for(i = 0 ;  i < ft->n_missing ; ++i)
-    {
-      f = &ft->missing[i];
-      ft->total_cases += f->count;
-    }
-
+  ft->total_cases = ft->valid_cases;
+  for (size_t i = 0; i < ft->n_missing; ++i)
+    ft->total_cases += ft->missing[i].count;
 }
 
 /* Add data from case C to the frequency table. */
@@ -461,9 +432,7 @@ static void
 calc (struct frq_proc *frq, const struct ccase *c, const struct dataset *ds)
 {
   double weight = dict_get_case_weight (dataset_dict (ds), c, &frq->warn);
-  size_t i;
-
-  for (i = 0; i < frq->n_vars; i++)
+  for (size_t i = 0; i < frq->n_vars; i++)
     {
       struct var_freqs *vf = &frq->vars[i];
       const union value *value = case_data (c, vf->var);
@@ -507,7 +476,7 @@ postcalc (struct frq_proc *frq, const struct dataset *ds,
 
   enum split_type st = dict_get_split_type (dict);
   bool need_splits = true;
-  if (frq->n_stats)
+  if (frq->stats)
     {
       if (st != SPLIT_LAYERED)
         output_splits_once (&need_splits, ds, example);
@@ -594,71 +563,49 @@ frq_run (struct frq_proc *frq, struct dataset *ds)
   proc_commit (ds);
 }
 
+static void
+add_percentile (struct frq_proc *frq, double p, bool show,
+                size_t *allocated_percentiles)
+{
+  if (frq->n_percentiles >= *allocated_percentiles)
+    frq->percentiles = x2nrealloc (frq->percentiles, allocated_percentiles,
+                                   sizeof *frq->percentiles);
+  frq->percentiles[frq->n_percentiles++] = (struct percentile) {
+    .p = p,
+    .show = show,
+  };
+}
+
 int
 cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 {
-  int i;
-  struct frq_proc frq;
+  bool ok = false;
   const struct variable **vars = NULL;
 
-  bool sbc_barchart = false;
-  bool sbc_piechart = false;
-  bool sbc_histogram = false;
+  size_t allocated_percentiles = 0;
 
-  double pie_min = -DBL_MAX;
-  double pie_max = DBL_MAX;
-  bool pie_missing = true;
+  const unsigned long DEFAULT_STATS = (BIT_INDEX (FRQ_ST_MEAN)
+                                       | BIT_INDEX (FRQ_ST_STDDEV)
+                                       | BIT_INDEX (FRQ_ST_MINIMUM)
+                                       | BIT_INDEX (FRQ_ST_MAXIMUM));
+  struct frq_proc frq = {
+    .sort = FRQ_AVALUE,
+    .stats = DEFAULT_STATS,
+    .max_categories = LONG_MAX,
+    .median_idx = SIZE_MAX,
+    .warn = true,
+  };
 
-  double bar_min = -DBL_MAX;
-  double bar_max = DBL_MAX;
-  bool bar_freq = true;
-
-  double hi_min = -DBL_MAX;
-  double hi_max = DBL_MAX;
-  int hi_scale = FRQ_FREQ;
-  int hi_freq = INT_MIN;
-  int hi_pcnt = INT_MIN;
-  int hi_norm = FRQ_NONORMAL;
-
-  frq.sort = FRQ_AVALUE;
-
-  frq.vars = NULL;
-  frq.n_vars = 0;
-
-  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
-    | BIT_INDEX (FRQ_ST_STDDEV)
-    | BIT_INDEX (FRQ_ST_MINIMUM)
-    | BIT_INDEX (FRQ_ST_MAXIMUM);
-
-  frq.n_stats = 4;
-
-  frq.max_categories = LONG_MAX;
-
-  frq.percentiles = NULL;
-  frq.n_percentiles = 0;
-
-  frq.hist = NULL;
-  frq.pie = NULL;
-  frq.bar = NULL;
-  frq.warn = true;
-
-
-  /* Accept an optional, completely pointless "/VARIABLES=" */
   lex_match (lexer, T_SLASH);
-  if (lex_match_id  (lexer, "VARIABLES"))
-    {
-      if (! lex_force_match (lexer, T_EQUALS))
-        goto error;
-    }
+  if (lex_match_id (lexer, "VARIABLES") && !lex_force_match (lexer, T_EQUALS))
+    goto done;
 
   if (!parse_variables_const (lexer, dataset_dict (ds),
-			      &vars,
-			      &frq.n_vars,
-			      PV_NO_DUPLICATE))
-    goto error;
+			      &vars, &frq.n_vars, PV_NO_DUPLICATE))
+    goto done;
 
-  frq.vars = xcalloc (frq.n_vars, sizeof (*frq.vars));
-  for (i = 0; i < frq.n_vars; ++i)
+  frq.vars = xcalloc (frq.n_vars, sizeof *frq.vars);
+  for (size_t i = 0; i < frq.n_vars; ++i)
     {
       frq.vars[i].var = vars[i];
       frq.vars[i].width = var_get_width (vars[i]);
@@ -670,117 +617,41 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "STATISTICS"))
 	{
-	  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
-	    | BIT_INDEX (FRQ_ST_STDDEV)
-	    | BIT_INDEX (FRQ_ST_MINIMUM)
-	    | BIT_INDEX (FRQ_ST_MAXIMUM);
+          lex_match (lexer, T_EQUALS);
+	  frq.stats = 0;
 
-	  frq.n_stats = 4;
-
-	  if (lex_match (lexer, T_EQUALS))
-	    {
-	      frq.n_stats = 0;
-	      frq.stats = 0;
-	    }
-
+          int ofs = lex_ofs (lexer);
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
-              if (lex_match_id (lexer, "DEFAULT"))
-                {
-		  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
-		    | BIT_INDEX (FRQ_ST_STDDEV)
-		    | BIT_INDEX (FRQ_ST_MINIMUM)
-		    | BIT_INDEX (FRQ_ST_MAXIMUM);
+              for (int s = 0; s < FRQ_ST_count; s++)
+                if (lex_match_id (lexer, st_keywords[s]))
+                  {
+                    frq.stats |= 1 << s;
+                    goto next;
+                  }
 
-		  frq.n_stats = 4;
-                }
-              else if (lex_match_id (lexer, "MEAN"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MEAN);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "SEMEAN"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_SEMEAN);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "MEDIAN"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MEDIAN);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "MODE"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MODE);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "STDDEV"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_STDDEV);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "VARIANCE"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_VARIANCE);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "KURTOSIS"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_KURTOSIS);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "SKEWNESS"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_SKEWNESS);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "RANGE"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_RANGE);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "MINIMUM"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MINIMUM);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "MAXIMUM"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MAXIMUM);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "SUM"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_SUM);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "SESKEWNESS"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_SESKEWNESS);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "SEKURTOSIS"))
-                {
-		  frq.stats |= BIT_INDEX (FRQ_ST_SEKURTOSIS);
-		  frq.n_stats++;
-                }
-              else if (lex_match_id (lexer, "NONE"))
-                {
-		  frq.stats = 0;
-		  frq.n_stats = 0;
-                }
+              if (lex_match_id (lexer, "DEFAULT"))
+                frq.stats = DEFAULT_STATS;
               else if (lex_match (lexer, T_ALL))
-                {
-		  frq.stats = ~0;
-		  frq.n_stats = FRQ_ST_count;
-                }
+                frq.stats = (1 << FRQ_ST_count) - 1;
+              else if (lex_match_id (lexer, "NONE"))
+                frq.stats = 0;
               else
                 {
-                  lex_error (lexer, NULL);
-                  goto error;
+#define S(ENUM, KEYWORD, NAME) KEYWORD,
+                  lex_error_expecting (lexer,
+                                       STATISTICS
+                                       "DEFAULT", "ALL", "NONE");
+#undef S
+                  goto done;
                 }
+
+            next:;
             }
+
+          if (lex_ofs (lexer) == ofs)
+            frq.stats = DEFAULT_STATS;
         }
       else if (lex_match_id (lexer, "PERCENTILES"))
         {
@@ -788,22 +659,11 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
-	      if (lex_force_num (lexer))
-		{
-		  frq.percentiles =
-		    xrealloc (frq.percentiles,
-			      (frq.n_percentiles + 1)
-			      * sizeof (*frq.percentiles));
-		  frq.percentiles[frq.n_percentiles].p = lex_number (lexer)  / 100.0;
-		  frq.percentiles[frq.n_percentiles].show = true;
-		  lex_get (lexer);
-		  frq.n_percentiles++;
-		}
-	      else
-		{
-		  lex_error (lexer, NULL);
-		  goto error;
-		}
+              if (!lex_force_num_range_closed (lexer, "PERCENTILES", 0, 100))
+                goto done;
+              add_percentile (&frq, lex_number (lexer) / 100.0, true,
+                              &allocated_percentiles);
+              lex_get (lexer);
               lex_match (lexer, T_COMMA);
 	    }
 	}
@@ -817,41 +677,33 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		{
 		}
 	      else if (lex_match_id (lexer, "NOTABLE"))
-		{
-		  frq.max_categories = 0;
-		}
+                frq.max_categories = 0;
               else if (lex_match_id (lexer, "LIMIT"))
                 {
                   if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_int_range (lexer, "LIMIT", 0, INT_MAX))
-                    goto error;
+                    goto done;
 
                   frq.max_categories = lex_integer (lexer);
                   lex_get (lexer);
 
                   if (!lex_force_match (lexer, T_RPAREN))
-                    goto error;
+                    goto done;
                 }
 	      else if (lex_match_id (lexer, "AVALUE"))
-		{
-		  frq.sort = FRQ_AVALUE;
-		}
+                frq.sort = FRQ_AVALUE;
 	      else if (lex_match_id (lexer, "DVALUE"))
-		{
-		  frq.sort = FRQ_DVALUE;
-		}
+                frq.sort = FRQ_DVALUE;
 	      else if (lex_match_id (lexer, "AFREQ"))
-		{
-		  frq.sort = FRQ_AFREQ;
-		}
+                frq.sort = FRQ_AFREQ;
 	      else if (lex_match_id (lexer, "DFREQ"))
-		{
-		  frq.sort = FRQ_DFREQ;
-		}
+                frq.sort = FRQ_DFREQ;
 	      else
 		{
-		  lex_error (lexer, NULL);
-		  goto error;
+		  lex_error_expecting (lexer, "TABLE", "NOTABLE",
+                                       "LIMIT", "AVALUE", "DVALUE",
+                                       "AFREQ", "DFREQ");
+		  goto done;
 		}
 	    }
 	}
@@ -859,75 +711,57 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
         {
 	  lex_match (lexer, T_EQUALS);
 
-	  if (lex_force_int_range (lexer, "NTILES", 0, INT_MAX))
-	    {
-	      int n = lex_integer (lexer);
-	      lex_get (lexer);
-	      for (int i = 0; i < n + 1; ++i)
-		{
-		  frq.percentiles =
-		    xrealloc (frq.percentiles,
-			      (frq.n_percentiles + 1)
-			      * sizeof (*frq.percentiles));
-		  frq.percentiles[frq.n_percentiles].p =
-		    i / (double) n ;
-		  frq.percentiles[frq.n_percentiles].show = true;
+	  if (!lex_force_int_range (lexer, "NTILES", 0, INT_MAX))
+            goto done;
 
-		  frq.n_percentiles++;
-		}
-	    }
-	  else
-	    {
-	      lex_error (lexer, NULL);
-	      goto error;
-	    }
+          int n = lex_integer (lexer);
+          lex_get (lexer);
+          for (int i = 0; i < n + 1; ++i)
+            add_percentile (&frq, i / (double) n, true, &allocated_percentiles);
 	}
       else if (lex_match_id (lexer, "ALGORITHM"))
         {
 	  lex_match (lexer, T_EQUALS);
 
 	  if (lex_match_id (lexer, "COMPATIBLE"))
-	    {
-              settings_set_cmd_algorithm (COMPATIBLE);
-	    }
+            settings_set_cmd_algorithm (COMPATIBLE);
 	  else if (lex_match_id (lexer, "ENHANCED"))
-	    {
-              settings_set_cmd_algorithm (ENHANCED);
-	    }
+            settings_set_cmd_algorithm (ENHANCED);
 	  else
 	    {
-	      lex_error (lexer, NULL);
-	      goto error;
+	      lex_error_expecting (lexer, "COMPATIBLE", "ENHANCED");
+	      goto done;
 	    }
 	}
       else if (lex_match_id (lexer, "HISTOGRAM"))
         {
+          double hi_min = -DBL_MAX;
+          double hi_max = DBL_MAX;
+          int hi_scale = FRQ_FREQ;
+          int hi_freq = INT_MIN;
+          int hi_pcnt = INT_MIN;
+          bool hi_draw_normal = false;
+
 	  lex_match (lexer, T_EQUALS);
-	  sbc_histogram = true;
 
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "NORMAL"))
-		{
-		  hi_norm = FRQ_NORMAL;
-		}
+                hi_draw_normal = true;
 	      else if (lex_match_id (lexer, "NONORMAL"))
-		{
-		  hi_norm = FRQ_NONORMAL;
-		}
+                hi_draw_normal = false;
 	      else if (lex_match_id (lexer, "FREQ"))
 		{
                   hi_scale = FRQ_FREQ;
                   if (lex_match (lexer, T_LPAREN))
                     {
-                      if (lex_force_int_range (lexer, "FREQ", 1, INT_MAX))
-                        {
-			  hi_freq = lex_integer (lexer);
-			  lex_get (lexer);
-			  if (! lex_force_match (lexer, T_RPAREN))
-			    goto error;
-			}
+                      if (!lex_force_int_range (lexer, "FREQ", 1, INT_MAX))
+                        goto done;
+                      hi_freq = lex_integer (lexer);
+                      lex_get (lexer);
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto done;
                     }
 		}
 	      else if (lex_match_id (lexer, "PERCENT"))
@@ -935,133 +769,152 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                   hi_scale = FRQ_PERCENT;
                   if (lex_match (lexer, T_LPAREN))
                     {
-                      if (lex_force_int_range (lexer, "PERCENT", 1, INT_MAX))
-			{
-			  hi_pcnt = lex_integer (lexer);
-			  lex_get (lexer);
-			  if (! lex_force_match (lexer, T_RPAREN))
-			    goto error;
-			}
+                      if (!lex_force_int_range (lexer, "PERCENT", 1, INT_MAX))
+                        goto done;
+                      hi_pcnt = lex_integer (lexer);
+                      lex_get (lexer);
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto done;
                     }
 		}
 	      else if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      hi_min = lex_number (lexer);
-		      lex_get (lexer);
-		    }
-		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MINIMUM",
+                                                      -DBL_MAX, hi_max))
+                    goto done;
+                  hi_min = lex_number (lexer);
+                  lex_get (lexer);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      hi_max = lex_number (lexer);
-		      lex_get (lexer);
-		    }
- 		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MAXIMUM",
+                                                      hi_min, DBL_MAX))
+		    goto done;
+                  hi_max = lex_number (lexer);
+                  lex_get (lexer);
+ 		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
-		  goto error;
+		  lex_error_expecting (lexer, "NORMAL", "NONORMAL",
+                                       "FREQ", "PERCENT", "MINIMUM", "MAXIMUM");
+		  goto done;
 		}
 	    }
+
+          free (frq.hist);
+          frq.hist = xmalloc (sizeof *frq.hist);
+          *frq.hist = (struct frq_chart) {
+            .x_min = hi_min,
+            .x_max = hi_max,
+            .y_scale = hi_scale,
+            .y_max = hi_scale == FRQ_FREQ ? hi_freq : hi_pcnt,
+            .draw_normal = hi_draw_normal,
+            .include_missing = false,
+          };
+
+          add_percentile (&frq, .25, false, &allocated_percentiles);
+          add_percentile (&frq, .75, false, &allocated_percentiles);
 	}
       else if (lex_match_id (lexer, "PIECHART"))
         {
+          double pie_min = -DBL_MAX;
+          double pie_max = DBL_MAX;
+          bool pie_missing = true;
+
 	  lex_match (lexer, T_EQUALS);
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      pie_min = lex_number (lexer);
-		      lex_get (lexer);
-		    }
-		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MINIMUM",
+                                                      -DBL_MAX, pie_max))
+		    goto done;
+                  pie_min = lex_number (lexer);
+                  lex_get (lexer);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      pie_max = lex_number (lexer);
-		      lex_get (lexer);
-		    }
- 		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MAXIMUM",
+                                                      pie_min, DBL_MAX))
+		    goto done;
+                  pie_max = lex_number (lexer);
+                  lex_get (lexer);
+ 		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else if (lex_match_id (lexer, "MISSING"))
-		{
-		  pie_missing = true;
-		}
+                pie_missing = true;
 	      else if (lex_match_id (lexer, "NOMISSING"))
-		{
-		  pie_missing = false;
-		}
+                pie_missing = false;
 	      else
 		{
-		  lex_error (lexer, NULL);
-		  goto error;
+		  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
+                                       "MISSING", "NOMISSING");
+		  goto done;
 		}
 	    }
-	  sbc_piechart = true;
-	}
+
+          free (frq.pie);
+          frq.pie = xmalloc (sizeof *frq.pie);
+          *frq.pie = (struct frq_chart) {
+            .x_min = pie_min,
+            .x_max = pie_max,
+            .include_missing = pie_missing,
+          };
+        }
       else if (lex_match_id (lexer, "BARCHART"))
         {
+          double bar_min = -DBL_MAX;
+          double bar_max = DBL_MAX;
+          bool bar_freq = true;
+
 	  lex_match (lexer, T_EQUALS);
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      bar_min = lex_number (lexer);
-		      lex_get (lexer);
-		    }
-		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MINIMUM",
+                                                      -DBL_MAX, bar_max))
+                    goto done;
+                  bar_min = lex_number (lexer);
+                  lex_get (lexer);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  if (! lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_force_num (lexer))
-		    {
-		      bar_max = lex_number (lexer);
-		      lex_get (lexer);
-		    }
- 		  if (! lex_force_match (lexer, T_RPAREN))
-		    goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_closed (lexer, "MAXIMUM",
+                                                      bar_min, DBL_MAX))
+		    goto done;
+                  bar_max = lex_number (lexer);
+                  lex_get (lexer);
+ 		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto done;
 		}
 	      else if (lex_match_id (lexer, "FREQ"))
 		{
 		  if (lex_match (lexer, T_LPAREN))
 		    {
-		      if (lex_force_num (lexer))
-			{
-			  lex_number (lexer);
-			  lex_get (lexer);
-			}
-		      if (! lex_force_match (lexer, T_RPAREN))
-			goto error;
+                      if (!lex_force_num_range_open (lexer, "FREQ", 0, DBL_MAX))
+                        goto done;
+                      /* XXX TODO */
+                      lex_get (lexer);
+		      if (!lex_force_match (lexer, T_RPAREN))
+			goto done;
 		    }
 		  bar_freq = true;
 		}
@@ -1069,23 +922,32 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		{
 		  if (lex_match (lexer, T_LPAREN))
 		    {
-		      if (lex_force_num (lexer))
-			{
-			  lex_number (lexer);
-			  lex_get (lexer);
-			}
-		      if (! lex_force_match (lexer, T_RPAREN))
-			goto error;
+                      if (!lex_force_num_range_open (lexer, "PERCENT",
+                                                     0, DBL_MAX))
+                        goto done;
+                      /* XXX TODO */
+                      lex_get (lexer);
+		      if (!lex_force_match (lexer, T_RPAREN))
+			goto done;
 		    }
 		  bar_freq = false;
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
-		  goto error;
+		  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
+                                       "FREQ", "PERCENT");
+		  goto done;
 		}
 	    }
-	  sbc_barchart = true;
+
+          free (frq.bar);
+          frq.bar = xmalloc (sizeof *frq.bar);
+          *frq.bar = (struct frq_chart) {
+            .x_min = bar_min,
+            .x_max = bar_max,
+            .include_missing = false,
+            .y_scale = bar_freq ? FRQ_FREQ : FRQ_PERCENT,
+          };
 	}
       else if (lex_match_id (lexer, "MISSING"))
         {
@@ -1096,155 +958,72 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    {
               if (lex_match_id (lexer, "EXCLUDE"))
                 {
+                  /* XXX TODO */
                 }
               else if (lex_match_id (lexer, "INCLUDE"))
                 {
+                  /* XXX TODO */
                 }
               else
                 {
-                  lex_error (lexer, NULL);
-                  goto error;
+                  lex_error_expecting (lexer, "EXCLUDE", "INCLUDE");
+                  goto done;
                 }
             }
         }
       else if (lex_match_id (lexer, "ORDER"))
         {
           lex_match (lexer, T_EQUALS);
-          if (!lex_match_id (lexer, "ANALYSIS"))
-            lex_match_id (lexer, "VARIABLE");
+          /* XXX TODO */
+          if (!lex_match_id (lexer, "ANALYSIS")
+              && !lex_match_id (lexer, "VARIABLE"))
+            {
+              lex_error_expecting (lexer, "ANALYSIS", "VARIABLE");
+              goto done;
+            }
         }
       else
         {
-          lex_error (lexer, NULL);
-          goto error;
+          lex_error_expecting (lexer, "STATISTICS", "PERCENTILES", "FORMAT",
+                               "NTILES", "ALGORITHM", "HISTOGRAM", "PIECHART",
+                               "BARCHART", "MISSING", "ORDER");
+          goto done;
         }
     }
 
   if (frq.stats & BIT_INDEX (FRQ_ST_MEDIAN))
+    add_percentile (&frq, .5, false, &allocated_percentiles);
+
+  if (frq.n_percentiles > 0)
     {
-	frq.percentiles =
-	  xrealloc (frq.percentiles,
-		    (frq.n_percentiles + 1)
-		    * sizeof (*frq.percentiles));
+      qsort (frq.percentiles, frq.n_percentiles, sizeof *frq.percentiles,
+             percentile_compare_3way);
 
-	frq.percentiles[frq.n_percentiles].p = 0.50;
-	frq.percentiles[frq.n_percentiles].show = false;
+      /* Combine equal percentiles. */
+      size_t o = 1;
+      for (int i = 1; i < frq.n_percentiles; ++i)
+        {
+          struct percentile *prev = &frq.percentiles[o - 1];
+          struct percentile *this = &frq.percentiles[i];
+          if (this->p != prev->p)
+            frq.percentiles[o++] = *this;
+          else if (this->show)
+            prev->show = true;
+        }
+      frq.n_percentiles = o;
 
-	frq.n_percentiles++;
+      for (size_t i = 0; i < frq.n_percentiles; i++)
+        if (frq.percentiles[i].p == 0.5)
+          {
+            frq.median_idx = i;
+            break;
+          }
     }
 
-
-/* Figure out which charts the user requested.  */
-
-  {
-    if (sbc_histogram)
-      {
-	struct frq_chart *hist;
-
-	hist = frq.hist = xmalloc (sizeof *frq.hist);
-	hist->x_min = hi_min;
-	hist->x_max = hi_max;
-	hist->y_scale = hi_scale;
-	hist->y_max = hi_scale == FRQ_FREQ ? hi_freq : hi_pcnt;
-	hist->draw_normal = hi_norm != FRQ_NONORMAL;
-	hist->include_missing = false;
-
-	if (hist->x_min != SYSMIS && hist->x_max != SYSMIS
-	    && hist->x_min >= hist->x_max)
-	  {
-	    msg (SE, _("%s for histogram must be greater than or equal to %s, "
-		       "but %s was specified as %.15g and %s as %.15g.  "
-		       "%s and %s will be ignored."),
-		 "MAX", "MIN",
-		 "MIN", hist->x_min,
-		 "MAX", hist->x_max,
-		 "MIN", "MAX");
-	    hist->x_min = hist->x_max = SYSMIS;
-	  }
-
-	frq.percentiles =
-	  xrealloc (frq.percentiles,
-		    (frq.n_percentiles + 2)
-		    * sizeof (*frq.percentiles));
-
-	frq.percentiles[frq.n_percentiles].p = 0.25;
-	frq.percentiles[frq.n_percentiles].show = false;
-
-	frq.percentiles[frq.n_percentiles + 1].p = 0.75;
-	frq.percentiles[frq.n_percentiles + 1].show = false;
-
-	frq.n_percentiles+=2;
-      }
-
-    if (sbc_barchart)
-      {
-	frq.bar = xmalloc (sizeof *frq.bar);
-	frq.bar->x_min = bar_min;
-	frq.bar->x_max = bar_max;
-	frq.bar->include_missing = false;
-	frq.bar->y_scale = bar_freq ? FRQ_FREQ : FRQ_PERCENT;
-      }
-
-    if (sbc_piechart)
-      {
-	struct frq_chart *pie;
-
-	pie = frq.pie = xmalloc (sizeof *frq.pie);
-	pie->x_min = pie_min;
-	pie->x_max = pie_max;
-	pie->include_missing = pie_missing;
-
-	if (pie->x_min != SYSMIS && pie->x_max != SYSMIS
-	    && pie->x_min >= pie->x_max)
-	  {
-	    msg (SE, _("%s for pie chart must be greater than or equal to %s, "
-		       "but %s was specified as %.15g and %s as %.15g.  "
-		       "%s and %s will be ignored."),
-		 "MAX", "MIN",
-		 "MIN", pie->x_min,
-		 "MAX", pie->x_max,
-		 "MIN", "MAX");
-	    pie->x_min = pie->x_max = SYSMIS;
-	  }
-      }
-  }
-
-  {
-    int i,o;
-    double previous_p = -1;
-    qsort (frq.percentiles, frq.n_percentiles,
-	   sizeof (*frq.percentiles),
-	   ptile_3way);
-
-    for (i = o = 0; i < frq.n_percentiles; ++i)
-      {
-        if (frq.percentiles[i].p != previous_p)
-          {
-            frq.percentiles[o].p = frq.percentiles[i].p;
-            frq.percentiles[o].show = frq.percentiles[i].show;
-            o++;
-          }
-        else if (frq.percentiles[i].show &&
-                 !frq.percentiles[o].show)
-          {
-            frq.percentiles[o].show = true;
-          }
-	previous_p = frq.percentiles[i].p;
-      }
-
-    frq.n_percentiles = o;
-
-    frq.median_idx = SIZE_MAX;
-    for (i = 0; i < frq.n_percentiles; i++)
-      if (frq.percentiles[i].p == 0.5)
-        {
-          frq.median_idx = i;
-          break;
-        }
-  }
-
   frq_run (&frq, ds);
+  ok = true;
 
+done:
   free (vars);
   for (size_t i = 0; i < frq.n_vars; i++)
     free (frq.vars[i].percentiles);
@@ -1254,20 +1033,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   free (frq.hist);
   free (frq.percentiles);
 
-  return CMD_SUCCESS;
-
- error:
-
-  free (vars);
-  for (size_t i = 0; i < frq.n_vars; i++)
-    free (frq.vars[i].percentiles);
-  free (frq.vars);
-  free (frq.bar);
-  free (frq.pie);
-  free (frq.hist);
-  free (frq.percentiles);
-
-  return CMD_FAILURE;
+  return ok ? CMD_SUCCESS : CMD_FAILURE;
 }
 
 static double
@@ -1275,11 +1041,10 @@ calculate_iqr (const struct frq_proc *frq, const struct var_freqs *vf)
 {
   double q1 = SYSMIS;
   double q3 = SYSMIS;
-  int i;
 
   /* This cannot work unless the 25th and 75th percentile are calculated */
   assert (frq->n_percentiles >= 2);
-  for (i = 0; i < frq->n_percentiles; i++)
+  for (int i = 0; i < frq->n_percentiles; i++)
     {
       struct percentile *pc = &frq->percentiles[i];
 
@@ -1317,7 +1082,7 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct var_freqs *vf)
   double x_min = DBL_MAX;
   double x_max = -DBL_MAX;
   double valid_freq = 0;
-  for (int i = 0; i < vf->tab.n_valid; i++)
+  for (size_t i = 0; i < vf->tab.n_valid; i++)
     {
       const struct freq *f = &vf->tab.valid[i];
       if (chart_includes_value (frq->hist, vf->var, f->values))
@@ -1342,7 +1107,7 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct var_freqs *vf)
   if (histogram == NULL)
     return NULL;
 
-  for (int i = 0; i < vf->tab.n_valid; i++)
+  for (size_t i = 0; i < vf->tab.n_valid; i++)
     {
       const struct freq *f = &vf->tab.valid[i];
       if (chart_includes_value (frq->hist, vf->var, f->values))
@@ -1364,26 +1129,19 @@ pick_cat_counts (const struct frq_chart *catchart,
 		 int *n_slicesp)
 {
   int n_slices = 0;
-  int i;
   struct freq *slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
 
-  for (i = 0; i < frq_tab->n_valid; i++)
+  for (size_t i = 0; i < frq_tab->n_valid; i++)
     {
-      const struct freq *f = &frq_tab->valid[i];
-      if (f->count > catchart->x_max)
-	continue;
-
-      if (f->count < catchart->x_min)
-	continue;
-
-      slices[n_slices] = *f;
-
-      n_slices++;
+      struct freq *f = &frq_tab->valid[i];
+      if (f->count >= catchart->x_min && f->count <= catchart->x_max)
+        slices[n_slices++] = *f;
     }
+
 
   if (catchart->include_missing)
     {
-      for (i = 0; i < frq_tab->n_missing; i++)
+      for (size_t i = 0; i < frq_tab->n_missing; i++)
 	{
 	  const struct freq *f = &frq_tab->missing[i];
 	  slices[n_slices].count += f->count;
@@ -1412,48 +1170,35 @@ pick_cat_counts_ptr (const struct frq_chart *catchart,
 		     int *n_slicesp)
 {
   int n_slices = 0;
-  int i;
   struct freq **slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
 
-  for (i = 0; i < frq_tab->n_valid; i++)
+  for (size_t i = 0; i < frq_tab->n_valid; i++)
     {
       struct freq *f = &frq_tab->valid[i];
-      if (f->count > catchart->x_max)
-	continue;
-
-      if (f->count < catchart->x_min)
-	continue;
-
-      slices[n_slices] = f;
-
-      n_slices++;
+      if (f->count >= catchart->x_min && f->count <= catchart->x_max)
+        slices[n_slices++] = f;
     }
 
   if (catchart->include_missing)
-    {
-      for (i = 0; i < frq_tab->n_missing; i++)
-	{
-	  const struct freq *f = &frq_tab->missing[i];
-	  if (i == 0)
-	    {
-	      slices[n_slices] = xmalloc (sizeof (struct freq));
-	      slices[n_slices]->values[0] = f->values[0];
-	    }
+    for (size_t i = 0; i < frq_tab->n_missing; i++)
+      {
+        const struct freq *f = &frq_tab->missing[i];
+        if (i == 0)
+          {
+            slices[n_slices] = xmalloc (sizeof *slices[n_slices]);
+            slices[n_slices]->values[0] = f->values[0];
+          }
 
-	  slices[n_slices]->count += f->count;
-
-	}
-    }
+        slices[n_slices]->count += f->count;
+      }
 
   *n_slicesp = n_slices;
   return slices;
 }
 
-
-
 static void
-do_piechart(const struct frq_chart *pie, const struct variable *var,
-            const struct freq_tab *frq_tab)
+do_piechart (const struct frq_chart *pie, const struct variable *var,
+             const struct freq_tab *frq_tab)
 {
   int n_slices;
   struct freq *slices = pick_cat_counts (pie, frq_tab, &n_slices);
@@ -1470,10 +1215,9 @@ do_piechart(const struct frq_chart *pie, const struct variable *var,
   free (slices);
 }
 
-
 static void
-do_barchart(const struct frq_chart *bar, const struct variable **var,
-            const struct freq_tab *frq_tab)
+do_barchart (const struct frq_chart *bar, const struct variable **var,
+             const struct freq_tab *frq_tab)
 {
   int n_slices;
   struct freq **slices = pick_cat_counts_ptr (bar, frq_tab, &n_slices);
@@ -1481,13 +1225,13 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
   if (n_slices < 1)
     msg (SW, _("Omitting bar chart, which has no values."));
   else
-    chart_submit (barchart_create (var, 1,
-                                   (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
-                                   (bar->y_scale == FRQ_PERCENT),
-                                   slices, n_slices));
+    chart_submit (barchart_create (
+                    var, 1,
+                    bar->y_scale == FRQ_FREQ ? _("Count") : _("Percent"),
+                    bar->y_scale == FRQ_PERCENT,
+                    slices, n_slices));
   free (slices);
 }
-
 
 /* Calculates all the pertinent statistics for VF, putting them in array
    D[]. */
@@ -1496,15 +1240,12 @@ calc_stats (const struct frq_proc *frq, const struct var_freqs *vf,
             double d[FRQ_ST_count])
 {
   const struct freq_tab *ft = &vf->tab;
-  double W = ft->valid_cases;
-  const struct freq *f;
-  struct moments *m;
-  int most_often = -1;
-  double X_mode = SYSMIS;
 
   /* Calculate the mode.  If there is more than one mode, we take the
      smallest. */
-  for (f = ft->valid; f < ft->missing; f++)
+  int most_often = -1;
+  double X_mode = SYSMIS;
+  for (const struct freq *f = ft->valid; f < ft->missing; f++)
     if (most_often < f->count)
       {
         most_often = f->count;
@@ -1512,16 +1253,17 @@ calc_stats (const struct frq_proc *frq, const struct var_freqs *vf,
       }
 
   /* Calculate moments. */
-  m = moments_create (MOMENT_KURTOSIS);
-  for (f = ft->valid; f < ft->missing; f++)
+  struct moments *m = moments_create (MOMENT_KURTOSIS);
+  for (const struct freq *f = ft->valid; f < ft->missing; f++)
     moments_pass_one (m, f->values[0].f, f->count);
-  for (f = ft->valid; f < ft->missing; f++)
+  for (const struct freq *f = ft->valid; f < ft->missing; f++)
     moments_pass_two (m, f->values[0].f, f->count);
   moments_calculate (m, NULL, &d[FRQ_ST_MEAN], &d[FRQ_ST_VARIANCE],
                      &d[FRQ_ST_SKEWNESS], &d[FRQ_ST_KURTOSIS]);
   moments_destroy (m);
 
   /* Formulae below are taken from _SPSS Statistical Algorithms_. */
+  double W = ft->valid_cases;
   if (ft->n_valid > 0)
     {
       d[FRQ_ST_MINIMUM] = ft->valid[0].values[0].f;
@@ -1590,7 +1332,7 @@ frq_stats_table_create (const struct frq_proc *frq,
   for (int i = 0; i < FRQ_ST_count; i++)
     if (frq->stats & BIT_INDEX (i))
       pivot_category_create_leaf (statistics->root,
-                                  pivot_value_new_text (st_name[i]));
+                                  pivot_value_new_text (st_names[i]));
   struct pivot_category *percentiles = NULL;
   for (size_t i = 0; i < frq->n_percentiles; i++)
     {
