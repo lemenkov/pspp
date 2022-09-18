@@ -4026,8 +4026,10 @@ matrix.sps:7.1-7.7: error: SAVE: Required subcommand OUTFILE was not specified.
     7 | SAVE 1.
       | ^~~~~~~
 
-matrix.sps:8: warning: SAVE: VARIABLES and NAMES both specified; ignoring
-NAMES.
+matrix.sps:8.35-8.39: warning: SAVE: Ignoring NAMES because VARIABLES was also
+specified.
+    8 | SAVE 1/OUTFILE='matrix.sav'/NAMES={'a'}/VARIABLES=a.
+      |                                   ^~~~~
 
 matrix.sps:10: error: MATRIX: Cannot save 1×2 matrix to `matrix2.sav' because
 the first SAVE to `matrix2.sav' in this matrix program wrote a 1-column matrix.

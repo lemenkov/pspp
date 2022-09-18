@@ -6265,6 +6265,8 @@ matrix_save_parse (struct matrix_state *s)
   if (!save->expression)
     goto error;
 
+  int names_start = 0;
+  int names_end = 0;
   while (lex_match (s->lexer, T_SLASH))
     {
       if (lex_match_id (s->lexer, "OUTFILE"))
@@ -6302,7 +6304,9 @@ matrix_save_parse (struct matrix_state *s)
         {
           lex_match (s->lexer, T_EQUALS);
           matrix_expr_destroy (names);
+          names_start = lex_ofs (s->lexer);
           names = matrix_parse_exp (s);
+          names_end = lex_ofs (s->lexer) - 1;
           if (!names)
             goto error;
         }
@@ -6340,7 +6344,8 @@ matrix_save_parse (struct matrix_state *s)
 
   if (variables.n && names)
     {
-      msg (SW, _("VARIABLES and NAMES both specified; ignoring NAMES."));
+      lex_ofs_msg (s->lexer, SW, names_start, names_end,
+                   _("Ignoring NAMES because VARIABLES was also specified."));
       matrix_expr_destroy (names);
       names = NULL;
     }
