@@ -151,10 +151,12 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
   glm.dump_coding = false;
   glm.ss_type = 3;
 
+  int dep_vars_start = lex_ofs (lexer);
   if (!parse_variables_const (lexer, glm.dict,
 			      &glm.dep_vars, &glm.n_dep_vars,
 			      PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
+  int dep_vars_end = lex_ofs (lexer) - 1;
 
   if (! lex_force_match (lexer, T_BY))
     goto error;
@@ -166,7 +168,8 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 
   if (glm.n_dep_vars > 1)
     {
-      msg (ME, _("Multivariate analysis is not yet implemented"));
+      lex_ofs_error (lexer, dep_vars_start, dep_vars_end,
+                     _("Multivariate analysis is not yet implemented"));
       return CMD_FAILURE;
     }
 
