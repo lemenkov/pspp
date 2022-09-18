@@ -1515,7 +1515,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
       while (iact);
     }
 
-
+  int nototals_ofs = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
@@ -1630,6 +1630,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "NOTOTAL"))
         {
           nototals_seen = true;
+          nototals_ofs = lex_ofs (lexer) - 1;
         }
       else if (lex_match_id (lexer, "MISSING"))
         {
@@ -1758,7 +1759,9 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   if (totals_seen && nototals_seen)
     {
-      msg (SE, _("%s and %s are mutually exclusive."), "TOTAL", "NOTOTAL");
+      lex_ofs_error (lexer, nototals_ofs, nototals_ofs,
+                     _("%s and %s are mutually exclusive."),
+                     "TOTAL", "NOTOTAL");
       goto error;
     }
 
