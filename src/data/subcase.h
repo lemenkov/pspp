@@ -47,6 +47,7 @@ struct subcase
 
     struct caseproto *proto;    /* Created lazily. */
   };
+#define SUBCASE_EMPTY_INITIALIZER { .fields = NULL }
 
 void subcase_init_empty (struct subcase *);
 void subcase_init_vars (struct subcase *,

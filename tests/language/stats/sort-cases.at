@@ -135,3 +135,37 @@ x,mod2
 5.00,1.00
 ])
 AT_CLEANUP
+
+AT_SETUP([SORT CASES syntax errors])
+AT_DATA([sort-cases.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+SORT CASES BY **.
+SORT CASES BY x(**).
+SORT CASES BY x(D**).
+SORT CASES BY x(A) x(D) y(**).
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='sort-cases.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"sort-cases.sps:2.15-2.16: error: SORT CASES: Syntax error expecting variable name.
+    2 | SORT CASES BY **.
+      |               ^~"
+
+"sort-cases.sps:3.17-3.18: error: SORT CASES: Syntax error expecting A or D.
+    3 | SORT CASES BY x(**).
+      |                 ^~"
+
+"sort-cases.sps:4.18-4.19: error: SORT CASES: Syntax error expecting `)'.
+    4 | SORT CASES BY x(D**).
+      |                  ^~"
+
+"sort-cases.sps:5.15-5.23: warning: SORT CASES: Variable x specified twice in sort criteria.
+    5 | SORT CASES BY x(A) x(D) y(**).
+      |               ^~~~~~~~~"
+
+"sort-cases.sps:5.27-5.28: error: SORT CASES: Syntax error expecting A or D.
+    5 | SORT CASES BY x(A) x(D) y(**).
+      |                           ^~"
+])
+AT_CLEANUP

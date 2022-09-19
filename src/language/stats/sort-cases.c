@@ -40,30 +40,29 @@
 int
 cmd_sort_cases (struct lexer *lexer, struct dataset *ds)
 {
-  struct subcase ordering;
-  struct casereader *output;
+  struct subcase ordering = SUBCASE_EMPTY_INITIALIZER;
   bool ok = false;
 
   lex_match (lexer, T_BY);
 
   proc_cancel_temporary_transformations (ds);
-  subcase_init_empty (&ordering);
   if (!parse_sort_criteria (lexer, dataset_dict (ds), &ordering, NULL, NULL))
     return CMD_CASCADING_FAILURE;
 
   if (settings_get_testing_mode () && lex_match (lexer, T_SLASH))
     {
-      if (!lex_force_match_id (lexer, "BUFFERS") || !lex_match (lexer, T_EQUALS)
-          || !lex_force_int_range (lexer, "BUFFERS", 2, INT_MAX))
+      if (!lex_force_match_id (lexer, "BUFFERS"))
         goto done;
-
+      lex_match (lexer, T_EQUALS);
+      if (!lex_force_int_range (lexer, "BUFFERS", 2, INT_MAX))
+        goto done;
       min_buffers = max_buffers = lex_integer (lexer);
-
       lex_get (lexer);
     }
 
   proc_discard_output (ds);
-  output = sort_execute (proc_open_filtering (ds, false), &ordering);
+  struct casereader *output = sort_execute (proc_open_filtering (ds, false),
+                                            &ordering);
   ok = proc_commit (ds);
   ok = dataset_set_source (ds, output) && ok;
 

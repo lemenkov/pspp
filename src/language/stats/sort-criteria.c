@@ -51,18 +51,18 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
   if (saw_direction != NULL)
     *saw_direction = false;
 
+  int start_ofs = lex_ofs (lexer);
   do
     {
       size_t prev_n_vars = n_vars;
-      enum subcase_direction direction;
-      size_t i;
 
       /* Variables. */
       if (!parse_variables_const (lexer, dict, vars, &n_vars,
-                                  PV_APPEND | PV_NO_SCRATCH))
+                                  PV_APPEND | PV_DUPLICATE | PV_NO_SCRATCH))
         goto error;
 
       /* Sort direction. */
+      enum subcase_direction direction;
       if (lex_match (lexer, T_LPAREN))
 	{
 	  if (lex_match_id (lexer, "D") || lex_match_id (lexer, "DOWN"))
@@ -82,12 +82,13 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
       else
         direction = SC_ASCEND;
 
-      for (i = prev_n_vars; i < n_vars; i++)
+      for (size_t i = prev_n_vars; i < n_vars; i++)
         {
           const struct variable *var = (*vars)[i];
           if (!subcase_add_var (ordering, var, direction))
-            msg (SW, _("Variable %s specified twice in sort criteria."),
-                 var_get_name (var));
+            lex_ofs_msg (lexer, SW, start_ofs, lex_ofs (lexer) - 1,
+                         _("Variable %s specified twice in sort criteria."),
+                         var_get_name (var));
         }
     }
   while (lex_token (lexer) == T_ID
@@ -97,6 +98,8 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
   return true;
 
 error:
+  subcase_uninit (ordering);
+  subcase_init_empty (ordering);
   free (local_vars);
   if (vars)
     *vars = NULL;
