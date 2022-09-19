@@ -1926,9 +1926,269 @@ NPAR TESTS
 " CHISQUARE=x y(-2,5)
   /STATISTICS=DESCRIPTIVES
   .
-])
+]) dnl "
 
 AT_CHECK([pspp -O format=csv npar.sps], [1], [ignore])
 
 AT_CLEANUP
 
+AT_SETUP([NPAR TESTS - syntax errors])
+AT_DATA([npar.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+NPAR TESTS COCHRAN **.
+NPAR TESTS FRIEDMAN **.
+NPAR TESTS KENDALL **.
+NPAR TESTS RUNS **.
+NPAR TESTS RUNS (**).
+NPAR TESTS RUNS (MEAN **).
+NPAR TESTS RUNS (MEAN)=**.
+NPAR TESTS CHISQUARE **.
+NPAR TESTS CHISQUARE x **.
+NPAR TESTS CHISQUARE x (**).
+NPAR TESTS CHISQUARE x (1 **).
+NPAR TESTS CHISQUARE x (1, -1).
+NPAR TESTS CHISQUARE x (1, 2 **).
+NPAR TESTS CHISQUARE x /EXPECTED **.
+NPAR TESTS CHISQUARE x /EXPECTED=1* **.
+NPAR TESTS CHISQUARE x (1,5)/EXPECTED=2.
+NPAR TESTS BINOMIAL (**).
+NPAR TESTS BINOMIAL (1 **).
+NPAR TESTS BINOMIAL (1)**.
+NPAR TESTS BINOMIAL x(**).
+NPAR TESTS BINOMIAL x(1,**).
+NPAR TESTS BINOMIAL x(1,2**).
+NPAR TESTS BINOMIAL x(1**).
+NPAR TESTS K-S **.
+NPAR TESTS K-S (**).
+NPAR TESTS K-S (NORMAL **).
+NPAR TESTS K-S (NORMAL)=**.
+NPAR TESTS J-T **.
+NPAR TESTS J-T x **.
+NPAR TESTS J-T x BY **.
+NPAR TESTS J-T x BY y **.
+NPAR TESTS J-T x BY y (**).
+NPAR TESTS J-T x BY y (1, **).
+NPAR TESTS J-T x BY y (1, 2 **).
+NPAR TESTS MCNEMAR **.
+NPAR TESTS MCNEMAR x **.
+NPAR TESTS MCNEMAR x WITH **.
+NPAR TESTS MCNEMAR x WITH y (**).
+NPAR TESTS MCNEMAR x WITH y (PAIRED **).
+NPAR TESTS MCNEMAR x WITH y z (PAIRED).
+NPAR TESTS MEDIAN (**).
+NPAR TESTS MEDIAN (1 **).
+NPAR TESTS MISSING/MISSING.
+NPAR TESTS MISSING **.
+NPAR TESTS METHOD/METHOD.
+NPAR TESTS METHOD EXACT TIMER(**).
+NPAR TESTS METHOD EXACT TIMER(5 **).
+NPAR TESTS STATISTICS **.
+NPAR TESTS ALGORITHM **.
+NPAR TESTS **.
+])
+AT_CHECK([pspp -O format=csv npar.sps], [1], [dnl
+"npar.sps:2.20-2.21: error: NPAR TESTS: Syntax error expecting variable name.
+    2 | NPAR TESTS COCHRAN **.
+      |                    ^~"
+
+"npar.sps:3.21-3.22: error: NPAR TESTS: Syntax error expecting variable name.
+    3 | NPAR TESTS FRIEDMAN **.
+      |                     ^~"
+
+"npar.sps:4.20-4.21: error: NPAR TESTS: Syntax error expecting variable name.
+    4 | NPAR TESTS KENDALL **.
+      |                    ^~"
+
+"npar.sps:5.17-5.18: error: NPAR TESTS: Syntax error expecting `@{:@'.
+    5 | NPAR TESTS RUNS **.
+      |                 ^~"
+
+"npar.sps:6.18-6.19: error: NPAR TESTS: Syntax error expecting MEAN, MEDIAN, MODE or a number.
+    6 | NPAR TESTS RUNS (**).
+      |                  ^~"
+
+"npar.sps:7.23-7.24: error: NPAR TESTS: Syntax error expecting `@:}@'.
+    7 | NPAR TESTS RUNS (MEAN **).
+      |                       ^~"
+
+"npar.sps:8.24-8.25: error: NPAR TESTS: Syntax error expecting variable name.
+    8 | NPAR TESTS RUNS (MEAN)=**.
+      |                        ^~"
+
+"npar.sps:9.22-9.23: error: NPAR TESTS: Syntax error expecting variable name.
+    9 | NPAR TESTS CHISQUARE **.
+      |                      ^~"
+
+"npar.sps:10.24-10.25: error: NPAR TESTS: Syntax error expecting BEGIN.
+   10 | NPAR TESTS CHISQUARE x **.
+      |                        ^~"
+
+"npar.sps:10.24-10.25: error: NPAR TESTS: Syntax error expecting end of command.
+   10 | NPAR TESTS CHISQUARE x **.
+      |                        ^~"
+
+"npar.sps:11.25-11.26: error: NPAR TESTS: Syntax error expecting number.
+   11 | NPAR TESTS CHISQUARE x (**).
+      |                         ^~"
+
+"npar.sps:12.27-12.28: error: NPAR TESTS: Syntax error expecting `,'.
+   12 | NPAR TESTS CHISQUARE x (1 **).
+      |                           ^~"
+
+"npar.sps:13.28-13.29: error: NPAR TESTS: Syntax error expecting number greater than 1 for HI.
+   13 | NPAR TESTS CHISQUARE x (1, -1).
+      |                            ^~"
+
+"npar.sps:14.30-14.31: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   14 | NPAR TESTS CHISQUARE x (1, 2 **).
+      |                              ^~"
+
+"npar.sps:15.34-15.35: error: NPAR TESTS: Syntax error expecting `='.
+   15 | NPAR TESTS CHISQUARE x /EXPECTED **.
+      |                                  ^~"
+
+"npar.sps:16.37-16.38: error: NPAR TESTS: Syntax error expecting number.
+   16 | NPAR TESTS CHISQUARE x /EXPECTED=1* **.
+      |                                     ^~"
+
+"npar.sps:17.39: error: NPAR TESTS: 1 expected values were given, but the specified range (1-5) requires exactly 5 values.
+   17 | NPAR TESTS CHISQUARE x (1,5)/EXPECTED=2.
+      |                                       ^"
+
+"npar.sps:18.22-18.23: error: NPAR TESTS: Syntax error expecting number.
+   18 | NPAR TESTS BINOMIAL (**).
+      |                      ^~"
+
+"npar.sps:19.24-19.25: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   19 | NPAR TESTS BINOMIAL (1 **).
+      |                        ^~"
+
+"npar.sps:20.24-20.25: error: NPAR TESTS: Syntax error expecting `='.
+   20 | NPAR TESTS BINOMIAL (1)**.
+      |                        ^~"
+
+"npar.sps:21.23-21.24: error: NPAR TESTS: Syntax error expecting number.
+   21 | NPAR TESTS BINOMIAL x(**).
+      |                       ^~"
+
+"npar.sps:22.25-22.26: error: NPAR TESTS: Syntax error expecting number.
+   22 | NPAR TESTS BINOMIAL x(1,**).
+      |                         ^~"
+
+"npar.sps:23.26-23.27: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   23 | NPAR TESTS BINOMIAL x(1,2**).
+      |                          ^~"
+
+"npar.sps:24.24-24.25: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   24 | NPAR TESTS BINOMIAL x(1**).
+      |                        ^~"
+
+"npar.sps:25.16-25.17: error: NPAR TESTS: Syntax error expecting `@{:@'.
+   25 | NPAR TESTS K-S **.
+      |                ^~"
+
+"npar.sps:26.17-26.18: error: NPAR TESTS: Syntax error expecting NORMAL, POISSON, UNIFORM, or EXPONENTIAL.
+   26 | NPAR TESTS K-S (**).
+      |                 ^~"
+
+"npar.sps:27.24-27.25: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   27 | NPAR TESTS K-S (NORMAL **).
+      |                        ^~"
+
+"npar.sps:28.25-28.26: error: NPAR TESTS: Syntax error expecting variable name.
+   28 | NPAR TESTS K-S (NORMAL)=**.
+      |                         ^~"
+
+"npar.sps:29.16-29.17: error: NPAR TESTS: Syntax error expecting variable name.
+   29 | NPAR TESTS J-T **.
+      |                ^~"
+
+"npar.sps:30.18-30.19: error: NPAR TESTS: Syntax error expecting `BY'.
+   30 | NPAR TESTS J-T x **.
+      |                  ^~"
+
+"npar.sps:31.21-31.22: error: NPAR TESTS: Syntax error expecting variable name.
+   31 | NPAR TESTS J-T x BY **.
+      |                     ^~"
+
+"npar.sps:32.23-32.24: error: NPAR TESTS: Syntax error expecting `@{:@'.
+   32 | NPAR TESTS J-T x BY y **.
+      |                       ^~"
+
+"npar.sps:33.24-33.25: error: NPAR TESTS: Syntax error expecting number.
+   33 | NPAR TESTS J-T x BY y (**).
+      |                        ^~"
+
+"npar.sps:34.27-34.28: error: NPAR TESTS: Syntax error expecting number.
+   34 | NPAR TESTS J-T x BY y (1, **).
+      |                           ^~"
+
+"npar.sps:35.29-35.30: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   35 | NPAR TESTS J-T x BY y (1, 2 **).
+      |                             ^~"
+
+"npar.sps:36.20-36.21: error: NPAR TESTS: Syntax error expecting variable name.
+   36 | NPAR TESTS MCNEMAR **.
+      |                    ^~"
+
+"npar.sps:37.22-37.23: error: NPAR TESTS: Syntax error expecting end of command.
+   37 | NPAR TESTS MCNEMAR x **.
+      |                      ^~"
+
+"npar.sps:38.27-38.28: error: NPAR TESTS: Syntax error expecting variable name.
+   38 | NPAR TESTS MCNEMAR x WITH **.
+      |                           ^~"
+
+"npar.sps:39.30-39.31: error: NPAR TESTS: Syntax error expecting PAIRED.
+   39 | NPAR TESTS MCNEMAR x WITH y (**).
+      |                              ^~"
+
+"npar.sps:40.37-40.38: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   40 | NPAR TESTS MCNEMAR x WITH y (PAIRED **).
+      |                                     ^~"
+
+"npar.sps:41.20-41.29: error: NPAR TESTS: PAIRED was specified, but the number of variables preceding WITH (1) does not match the number following (2).
+   41 | NPAR TESTS MCNEMAR x WITH y z (PAIRED).
+      |                    ^~~~~~~~~~"
+
+"npar.sps:42.20-42.21: error: NPAR TESTS: Syntax error expecting number.
+   42 | NPAR TESTS MEDIAN (**).
+      |                    ^~"
+
+"npar.sps:43.22-43.23: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   43 | NPAR TESTS MEDIAN (1 **).
+      |                      ^~"
+
+"npar.sps:44.20-44.26: error: NPAR TESTS: Subcommand MISSING may only be specified once.
+   44 | NPAR TESTS MISSING/MISSING.
+      |                    ^~~~~~~"
+
+"npar.sps:45.20-45.21: error: NPAR TESTS: Syntax error expecting ANALYSIS, LISTWISE, INCLUDE, or EXCLUDE.
+   45 | NPAR TESTS MISSING **.
+      |                    ^~"
+
+"npar.sps:46.19-46.24: error: NPAR TESTS: Subcommand METHOD may only be specified once.
+   46 | NPAR TESTS METHOD/METHOD.
+      |                   ^~~~~~"
+
+"npar.sps:47.31-47.32: error: NPAR TESTS: Syntax error expecting number.
+   47 | NPAR TESTS METHOD EXACT TIMER(**).
+      |                               ^~"
+
+"npar.sps:48.33-48.34: error: NPAR TESTS: Syntax error expecting `@:}@'.
+   48 | NPAR TESTS METHOD EXACT TIMER(5 **).
+      |                                 ^~"
+
+"npar.sps:49.23-49.24: error: NPAR TESTS: Syntax error expecting DESCRIPTIVES, QUARTILES, or ALL.
+   49 | NPAR TESTS STATISTICS **.
+      |                       ^~"
+
+"npar.sps:50.22-50.23: error: NPAR TESTS: Syntax error expecting COMPATIBLE or ENHANCED.
+   50 | NPAR TESTS ALGORITHM **.
+      |                      ^~"
+
+"npar.sps:51.12-51.13: error: NPAR TESTS: Syntax error expecting one of the following: COCHRAN, FRIEDMAN, KENDALL, RUNS, CHISQUARE, BINOMIAL, K-S, J-T, K-W, MCNEMAR, M-W, MEDIAN, WILCOXON, SIGN, MISSING, METHOD, STATISTICS, ALGORITHM.
+   51 | NPAR TESTS **.
+      |            ^~"
+])
+AT_CLEANUP
