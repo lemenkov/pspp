@@ -354,3 +354,92 @@ Cronbach's Alpha,N of Items
 .81,3
 ])
 AT_CLEANUP
+
+AT_SETUP([RELIABILITY syntax errors])
+AT_DATA([reliability.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+RELIABILITY **.
+RELIABILITY VARIABLES=**.
+RELIABILITY VARIABLES=x/ **.
+RELIABILITY VARIABLES=x y/SCALE **.
+RELIABILITY VARIABLES=x y/SCALE(**).
+RELIABILITY VARIABLES=x y/SCALE('a' **).
+RELIABILITY VARIABLES=x y/SCALE('a')=**.
+RELIABILITY VARIABLES=x y/MODEL SPLIT(**).
+RELIABILITY VARIABLES=x y/MODEL SPLIT(1 **).
+RELIABILITY VARIABLES=x y/MODEL **.
+RELIABILITY VARIABLES=x y/SUMMARY **.
+RELIABILITY VARIABLES=x y/MISSING=**.
+RELIABILITY VARIABLES=x y/STATISTICS=x y zz y/ **.
+RELIABILITY VARIABLES=x y/MODEL SPLIT(5).
+])
+AT_CHECK([pspp -O format=csv reliability.sps], [1], [dnl
+"reliability.sps:2.13-2.14: error: RELIABILITY: Syntax error expecting VARIABLES.
+    2 | RELIABILITY **.
+      |             ^~"
+
+"reliability.sps:3.23-3.24: error: RELIABILITY: Syntax error expecting variable name.
+    3 | RELIABILITY VARIABLES=**.
+      |                       ^~"
+
+"reliability.sps:4.23: warning: RELIABILITY: Reliability on a single variable is not useful.
+    4 | RELIABILITY VARIABLES=x/ **.
+      |                       ^"
+
+"reliability.sps:4.26-4.27: error: RELIABILITY: Syntax error expecting SCALE, MODEL, SUMMARY, MISSING, or STATISTICS.
+    4 | RELIABILITY VARIABLES=x/ **.
+      |                          ^~"
+
+"reliability.sps:5.33-5.34: error: RELIABILITY: Syntax error expecting `('.
+    5 | RELIABILITY VARIABLES=x y/SCALE **.
+      |                                 ^~"
+
+"reliability.sps:6.33-6.34: error: RELIABILITY: Syntax error expecting string.
+    6 | RELIABILITY VARIABLES=x y/SCALE(**).
+      |                                 ^~"
+
+"reliability.sps:7.37-7.38: error: RELIABILITY: Syntax error expecting `)'.
+    7 | RELIABILITY VARIABLES=x y/SCALE('a' **).
+      |                                     ^~"
+
+"reliability.sps:8.38-8.39: error: RELIABILITY: Syntax error expecting variable name.
+    8 | RELIABILITY VARIABLES=x y/SCALE('a')=**.
+      |                                      ^~"
+
+"reliability.sps:9.39-9.40: error: RELIABILITY: Syntax error expecting number.
+    9 | RELIABILITY VARIABLES=x y/MODEL SPLIT(**).
+      |                                       ^~"
+
+"reliability.sps:10.41-10.42: error: RELIABILITY: Syntax error expecting `@:}@'.
+   10 | RELIABILITY VARIABLES=x y/MODEL SPLIT(1 **).
+      |                                         ^~"
+
+"reliability.sps:11.33-11.34: error: RELIABILITY: Syntax error expecting ALPHA or SPLIT.
+   11 | RELIABILITY VARIABLES=x y/MODEL **.
+      |                                 ^~"
+
+"reliability.sps:12.35-12.36: error: RELIABILITY: Syntax error expecting TOTAL or ALL.
+   12 | RELIABILITY VARIABLES=x y/SUMMARY **.
+      |                                   ^~"
+
+"reliability.sps:13.35-13.36: error: RELIABILITY: Syntax error expecting INCLUDE or EXCLUDE.
+   13 | RELIABILITY VARIABLES=x y/MISSING=**.
+      |                                   ^~"
+
+"reliability.sps:14.27-14.45: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+   14 | RELIABILITY VARIABLES=x y/STATISTICS=x y zz y/ **.
+      |                           ^~~~~~~~~~~~~~~~~~~"
+
+"reliability.sps:14.48-14.49: error: RELIABILITY: Syntax error expecting SCALE, MODEL, SUMMARY, MISSING, or STATISTICS.
+   14 | RELIABILITY VARIABLES=x y/STATISTICS=x y zz y/ **.
+      |                                                ^~"
+
+"reliability.sps:15.39: error: RELIABILITY: The split point must be less than the number of variables.
+   15 | RELIABILITY VARIABLES=x y/MODEL SPLIT(5).
+      |                                       ^"
+
+"reliability.sps:15.23-15.25: note: RELIABILITY: There are 2 variables.
+   15 | RELIABILITY VARIABLES=x y/MODEL SPLIT(5).
+      |                       ^~~"
+])
+AT_CLEANUP
