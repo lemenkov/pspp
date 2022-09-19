@@ -912,8 +912,113 @@ end data.
 
 
 t-test /MISSING=listwise /PAIRS a"b with c d (PA	RED).
-])
+]) dnl "
 
 AT_CHECK([pspp t.sps],[1],[ignore],[ignore])
 
+AT_CLEANUP
+
+AT_SETUP([T-TEST syntax errors])
+AT_DATA([t-test.sps], [dnl
+DATA LIST LIST NOTABLE/x y z * s(a10).
+T-TEST TESTVAL=**.
+T-TEST GROUPS=**.
+T-TEST GROUPS=x(**).
+T-TEST GROUPS=x(1,**).
+T-TEST GROUPS=x(1,2 **).
+T-TEST GROUPS=s('a').
+T-TEST VARIABLES=x y PAIRS.
+T-TEST PAIRS=**.
+T-TEST PAIRS=x WITH **.
+T-TEST PAIRS=x WITH y z (PAIRED).
+T-TEST PAIRS=x WITH y/VARIABLES.
+T-TEST VARIABLES=**.
+T-TEST MISSING=**.
+T-TEST CRITERIA=**.
+T-TEST CRITERIA=CIN**.
+T-TEST CRITERIA=CIN(**).
+T-TEST CRITERIA=CIN(1 **).
+T-TEST **.
+T-TEST MISSING=INCLUDE.
+T-TEST MISSING=INCLUDE/TESTVAL=1.
+])
+AT_CHECK([pspp -O format=csv t-test.sps], [1], [dnl
+"t-test.sps:2.16-2.17: error: T-TEST: Syntax error expecting number.
+    2 | T-TEST TESTVAL=**.
+      |                ^~"
+
+"t-test.sps:3.15-3.16: error: T-TEST: Syntax error expecting variable name.
+    3 | T-TEST GROUPS=**.
+      |               ^~"
+
+"t-test.sps:4.17-4.18: error: T-TEST: Syntax error expecting number.
+    4 | T-TEST GROUPS=x(**).
+      |                 ^~"
+
+"t-test.sps:5.19-5.20: error: T-TEST: Syntax error expecting number.
+    5 | T-TEST GROUPS=x(1,**).
+      |                   ^~"
+
+"t-test.sps:6.21-6.22: error: T-TEST: Syntax error expecting `)'.
+    6 | T-TEST GROUPS=x(1,2 **).
+      |                     ^~"
+
+"t-test.sps:7.15-7.20: error: T-TEST: When applying GROUPS to a string variable, two values must be specified.
+    7 | T-TEST GROUPS=s('a').
+      |               ^~~~~~"
+
+"t-test.sps:8.22-8.26: error: T-TEST: VARIABLES subcommand may not be used with PAIRS.
+    8 | T-TEST VARIABLES=x y PAIRS.
+      |                      ^~~~~"
+
+"t-test.sps:9.14-9.15: error: T-TEST: Syntax error expecting variable name.
+    9 | T-TEST PAIRS=**.
+      |              ^~"
+
+"t-test.sps:10.21-10.22: error: T-TEST: Syntax error expecting variable name.
+   10 | T-TEST PAIRS=x WITH **.
+      |                     ^~"
+
+"t-test.sps:11.14-11.23: error: T-TEST: PAIRED was specified, but the number of variables preceding WITH (1) does not match the number following (2).
+   11 | T-TEST PAIRS=x WITH y z (PAIRED).
+      |              ^~~~~~~~~~"
+
+"t-test.sps:12.23-12.31: error: T-TEST: VARIABLES subcommand may not be used with PAIRS.
+   12 | T-TEST PAIRS=x WITH y/VARIABLES.
+      |                       ^~~~~~~~~"
+
+"t-test.sps:13.18-13.19: error: T-TEST: Syntax error expecting variable name.
+   13 | T-TEST VARIABLES=**.
+      |                  ^~"
+
+"t-test.sps:14.16-14.17: error: T-TEST: Syntax error expecting INCLUDE, EXCLUDE, LISTWISE, or ANALYSIS.
+   14 | T-TEST MISSING=**.
+      |                ^~"
+
+"t-test.sps:15.17-15.18: error: T-TEST: Syntax error expecting CIN or CI.
+   15 | T-TEST CRITERIA=**.
+      |                 ^~"
+
+"t-test.sps:16.20-16.21: error: T-TEST: Syntax error expecting `('.
+   16 | T-TEST CRITERIA=CIN**.
+      |                    ^~"
+
+"t-test.sps:17.21-17.22: error: T-TEST: Syntax error expecting number.
+   17 | T-TEST CRITERIA=CIN(**).
+      |                     ^~"
+
+"t-test.sps:18.23-18.24: error: T-TEST: Syntax error expecting `)'.
+   18 | T-TEST CRITERIA=CIN(1 **).
+      |                       ^~"
+
+"t-test.sps:19.8-19.9: error: T-TEST: Syntax error expecting TESTVAL, GROUPS, PAIRS, VARIABLES, MISSING, or CRITERIA.
+   19 | T-TEST **.
+      |        ^~"
+
+"t-test.sps:20: error: T-TEST: Exactly one of TESTVAL, GROUPS and PAIRS subcommands must be specified."
+
+"t-test.sps:21.1-21.33: error: T-TEST: Required subcommand VARIABLES was not specified.
+   21 | T-TEST MISSING=INCLUDE/TESTVAL=1.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+])
 AT_CLEANUP

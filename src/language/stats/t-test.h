@@ -30,7 +30,6 @@ enum missing_type
 
 enum mode
   {
-    MODE_undef,
     MODE_PAIRED,
     MODE_INDEP,
     MODE_SINGLE,
