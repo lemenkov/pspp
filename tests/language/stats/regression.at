@@ -2460,3 +2460,65 @@ motivation_x2,.453,.125,.499,3.636,.001,.552,1.812
 ])
 
 AT_CLEANUP
+
+AT_SETUP([REGRESSION syntax errors])
+AT_DATA([regression.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+REGRESSION VARIABLES=**.
+REGRESSION METHOD=ENTER x/VARIABLES.
+REGRESSION DEPENDENT=x/VARIABLES.
+REGRESSION DEPENDENT=**.
+REGRESSION METHOD=**.
+REGRESSION METHOD=ENTER **.
+REGRESSION STATISTICS=**.
+REGRESSION STATISTICS=CI(**).
+REGRESSION STATISTICS=CI(1 **).
+REGRESSION SAVE=**.
+REGRESSION **.
+])
+AT_CHECK([pspp -O format=csv regression.sps], [1], [dnl
+"regression.sps:2.22-2.23: error: REGRESSION: Syntax error expecting variable name.
+    2 | REGRESSION VARIABLES=**.
+      |                      ^~"
+
+"regression.sps:3.27-3.35: error: REGRESSION: VARIABLES may not appear after METHOD.
+    3 | REGRESSION METHOD=ENTER x/VARIABLES.
+      |                           ^~~~~~~~~"
+
+"regression.sps:4.24-4.32: error: REGRESSION: VARIABLES may not appear after DEPENDENT.
+    4 | REGRESSION DEPENDENT=x/VARIABLES.
+      |                        ^~~~~~~~~"
+
+"regression.sps:5.22-5.23: error: REGRESSION: Syntax error expecting variable name.
+    5 | REGRESSION DEPENDENT=**.
+      |                      ^~"
+
+"regression.sps:6.19-6.20: error: REGRESSION: Syntax error expecting ENTER.
+    6 | REGRESSION METHOD=**.
+      |                   ^~"
+
+"regression.sps:7.25-7.26: error: REGRESSION: Syntax error expecting variable name.
+    7 | REGRESSION METHOD=ENTER **.
+      |                         ^~"
+
+"regression.sps:8.23-8.24: error: REGRESSION: Syntax error expecting ALL, DEFAULTS, R, COEFF, ANOVA, BCOV, TOL, or CI.
+    8 | REGRESSION STATISTICS=**.
+      |                       ^~"
+
+"regression.sps:9.26-9.27: error: REGRESSION: Syntax error expecting number.
+    9 | REGRESSION STATISTICS=CI(**).
+      |                          ^~"
+
+"regression.sps:10.28-10.29: error: REGRESSION: Syntax error expecting `@:}@'.
+   10 | REGRESSION STATISTICS=CI(1 **).
+      |                            ^~"
+
+"regression.sps:11.17-11.18: error: REGRESSION: Syntax error expecting PRED or RESID.
+   11 | REGRESSION SAVE=**.
+      |                 ^~"
+
+"regression.sps:12.12-12.13: error: REGRESSION: Syntax error expecting VARIABLES, DEPENDENT, ORIGIN, NOORIGIN, METHOD, STATISTICS, or SAVE.
+   12 | REGRESSION **.
+      |            ^~"
+])
+AT_CLEANUP

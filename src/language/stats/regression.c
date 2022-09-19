@@ -53,37 +53,35 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-
-#define STATS_R      1
-#define STATS_COEFF  2
-#define STATS_ANOVA  4
-#define STATS_OUTS   8
-#define STATS_CI    16
-#define STATS_BCOV  32
-#define STATS_TOL   64
+#define STATS_R      (1 << 0)
+#define STATS_COEFF  (1 << 1)
+#define STATS_ANOVA  (1 << 2)
+#define STATS_OUTS   (1 << 3)
+#define STATS_CI     (1 << 4)
+#define STATS_BCOV   (1 << 5)
+#define STATS_TOL    (1 << 6)
 
 #define STATS_DEFAULT  (STATS_R | STATS_COEFF | STATS_ANOVA | STATS_OUTS)
 
 
-
 struct regression
-{
-  struct dataset *ds;
+  {
+    struct dataset *ds;
 
-  const struct variable **vars;
-  size_t n_vars;
+    const struct variable **vars;
+    size_t n_vars;
 
-  const struct variable **dep_vars;
-  size_t n_dep_vars;
+    const struct variable **dep_vars;
+    size_t n_dep_vars;
 
-  unsigned int stats;
-  double ci;
+    unsigned int stats;
+    double ci;
 
-  bool resid;
-  bool pred;
+    bool resid;
+    bool pred;
 
-  bool origin;
-};
+    bool origin;
+  };
 
 struct regression_workspace
 {
@@ -114,37 +112,31 @@ static void run_regression (const struct regression *cmd,
 static char *
 reg_get_name (const struct dictionary *dict, const char *prefix)
 {
-  char *name;
-  int i;
-
-  /* XXX handle too-long prefixes */
-  name = xmalloc (strlen (prefix) + INT_BUFSIZE_BOUND (i) + 1);
-  for (i = 1;; i++)
+  for (size_t i = 1; ; i++)
     {
-      sprintf (name, "%s%d", prefix, i);
-      if (dict_lookup_var (dict, name) == NULL)
+      char *name = xasprintf ("%s%zu", prefix, i);
+      if (!dict_lookup_var (dict, name))
         return name;
+      free (name);
     }
 }
-
 
 static const struct variable *
 create_aux_var (struct dataset *ds, const char *prefix)
 {
-  struct variable *var;
   struct dictionary *dict = dataset_dict (ds);
   char *name = reg_get_name (dict, prefix);
-  var = dict_create_var_assert (dict, name, 0);
+  struct variable *var = dict_create_var_assert (dict, name, 0);
   free (name);
   return var;
 }
 
 /* Auxiliary data for transformation when /SAVE is entered */
 struct save_trans_data
-{
-  int n_dep_vars;
-  struct regression_workspace *ws;
-};
+  {
+    int n_dep_vars;
+    struct regression_workspace *ws;
+  };
 
 static bool
 save_trans_free (void *aux)
@@ -164,14 +156,13 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 {
   struct save_trans_data *save_trans_data = aux;
   struct regression_workspace *ws = save_trans_data->ws;
-  struct ccase *in =  casereader_read (ws->reader);
+  struct ccase *in = casereader_read (ws->reader);
 
   if (in)
     {
-      int k;
       *c = case_unshare (*c);
 
-      for (k = 0; k < save_trans_data->n_dep_vars; ++k)
+      for (size_t k = 0; k < save_trans_data->n_dep_vars; ++k)
         {
           if (ws->pred_idx != -1)
             {
@@ -194,20 +185,16 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 int
 cmd_regression (struct lexer *lexer, struct dataset *ds)
 {
-  struct regression_workspace workspace;
-  struct regression regression;
   const struct dictionary *dict = dataset_dict (ds);
-  bool save;
 
-  memset (&regression, 0, sizeof (struct regression));
-
-  regression.ci = 0.95;
-  regression.stats = STATS_DEFAULT;
-  regression.pred = false;
-  regression.resid = false;
-
-  regression.ds = ds;
-  regression.origin = false;
+  struct regression regression = {
+    .ci = 0.95,
+    .stats = STATS_DEFAULT,
+    .pred = false,
+    .resid = false,
+    .ds = ds,
+    .origin = false,
+  };
 
   bool variables_seen = false;
   bool method_seen = false;
@@ -255,24 +242,18 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
             goto error;
         }
       else if (lex_match_id (lexer, "ORIGIN"))
-        {
-	  regression.origin = true;
-	}
+        regression.origin = true;
       else if (lex_match_id (lexer, "NOORIGIN"))
-        {
-	  regression.origin = false;
-	}
+        regression.origin = false;
       else if (lex_match_id (lexer, "METHOD"))
         {
 	  method_seen = true;
           lex_match (lexer, T_EQUALS);
 
           if (!lex_force_match_id (lexer, "ENTER"))
-            {
-              goto error;
-            }
+            goto error;
 
-	  if (! variables_seen)
+	  if (!variables_seen)
 	    {
 	      if (!parse_variables_const (lexer, dict,
 					  &regression.vars, &regression.n_vars,
@@ -289,56 +270,44 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                  && lex_token (lexer) != T_SLASH)
             {
               if (lex_match (lexer, T_ALL))
-                {
-		  statistics = ~0;
-                }
+                statistics = ~0;
               else if (lex_match_id (lexer, "DEFAULTS"))
-                {
-		  statistics |= STATS_DEFAULT;
-                }
+                statistics |= STATS_DEFAULT;
               else if (lex_match_id (lexer, "R"))
-                {
-		  statistics |= STATS_R;
-                }
+                statistics |= STATS_R;
               else if (lex_match_id (lexer, "COEFF"))
-                {
-		  statistics |= STATS_COEFF;
-                }
+                statistics |= STATS_COEFF;
               else if (lex_match_id (lexer, "ANOVA"))
-                {
-		  statistics |= STATS_ANOVA;
-                }
+                statistics |= STATS_ANOVA;
               else if (lex_match_id (lexer, "BCOV"))
-                {
-		  statistics |= STATS_BCOV;
-                }
+                statistics |= STATS_BCOV;
               else if (lex_match_id (lexer, "TOL"))
-                {
-		  statistics |= STATS_TOL;
-                }
+                statistics |= STATS_TOL;
               else if (lex_match_id (lexer, "CI"))
                 {
 		  statistics |= STATS_CI;
 
-		  if (lex_match (lexer, T_LPAREN) &&
-		      lex_force_num (lexer))
-		    {
+		  if (lex_match (lexer, T_LPAREN))
+                    {
+                      if (!lex_force_num (lexer))
+                        goto error;
 		      regression.ci = lex_number (lexer) / 100.0;
 		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
+
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
                 }
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "ALL", "DEFAULTS", "R", "COEFF",
+                                       "ANOVA", "BCOV", "TOL", "CI");
                   goto error;
                 }
             }
 
 	  if (statistics)
 	    regression.stats = statistics;
-
         }
       else if (lex_match_id (lexer, "SAVE"))
         {
@@ -349,16 +318,12 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                  && lex_token (lexer) != T_SLASH)
             {
               if (lex_match_id (lexer, "PRED"))
-                {
-                  regression.pred = true;
-                }
+                regression.pred = true;
               else if (lex_match_id (lexer, "RESID"))
-                {
-                  regression.resid = true;
-                }
+                regression.resid = true;
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "PRED", "RESID");
                   goto error;
                 }
             }
@@ -366,27 +331,23 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         }
       else
         {
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "VARIABLES", "DEPENDENT", "ORIGIN",
+                               "NOORIGIN", "METHOD", "STATISTICS", "SAVE");
           goto error;
         }
     }
 
   if (!regression.vars)
-    {
-      dict_get_vars (dict, &regression.vars, &regression.n_vars, 0);
-    }
+    dict_get_vars (dict, &regression.vars, &regression.n_vars, 0);
 
-  save = regression.pred || regression.resid;
-  workspace.extras = 0;
-  workspace.res_idx = -1;
-  workspace.pred_idx = -1;
-  workspace.writer = NULL;
-  workspace.reader = NULL;
-  workspace.residvars = NULL;
-  workspace.predvars = NULL;
+  struct regression_workspace workspace = {
+    .res_idx = -1,
+    .pred_idx = -1,
+  };
+
+  bool save = regression.pred || regression.resid;
   if (save)
     {
-      int i;
       struct caseproto *proto = caseproto_create ();
 
       if (regression.resid)
@@ -394,7 +355,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
           workspace.res_idx = workspace.extras ++;
           workspace.residvars = xcalloc (regression.n_dep_vars, sizeof (*workspace.residvars));
 
-          for (i = 0; i < regression.n_dep_vars; ++i)
+          for (size_t i = 0; i < regression.n_dep_vars; ++i)
             {
               workspace.residvars[i] = create_aux_var (ds, "RES");
               proto = caseproto_add_width (proto, 0);
@@ -406,7 +367,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
           workspace.pred_idx = workspace.extras ++;
           workspace.predvars = xcalloc (regression.n_dep_vars, sizeof (*workspace.predvars));
 
-          for (i = 0; i < regression.n_dep_vars; ++i)
+          for (size_t i = 0; i < regression.n_dep_vars; ++i)
             {
               workspace.predvars[i] = create_aux_var (ds, "PRED");
               proto = caseproto_add_width (proto, 0);
@@ -427,25 +388,18 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
       caseproto_unref (proto);
     }
 
+  struct casegrouper *grouper = casegrouper_create_splits (
+    proc_open_filtering (ds, !save), dict);
+  struct casereader *group;
+  while (casegrouper_get_next_group (grouper, &group))
+    {
+      run_regression (&regression,
+                      &workspace,
+                      group);
 
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
-
-    grouper = casegrouper_create_splits (proc_open_filtering (ds, !save), dict);
-
-
-    while (casegrouper_get_next_group (grouper, &group))
-      {
-	run_regression (&regression,
-                        &workspace,
-                        group);
-
-      }
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
+    }
+  bool ok = casegrouper_destroy (grouper);
+  ok = proc_commit (ds) && ok;
 
   if (workspace.writer)
     {
@@ -465,13 +419,11 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
       add_transformation (ds, &trns_class, save_trans_data);
     }
 
-
   free (regression.vars);
   free (regression.dep_vars);
-  return CMD_SUCCESS;
+  return ok ? CMD_SUCCESS : CMD_FAILURE;
 
 error:
-
   free (regression.vars);
   free (regression.dep_vars);
   return CMD_FAILURE;
@@ -481,21 +433,11 @@ error:
 static size_t
 get_n_all_vars (const struct regression *cmd)
 {
-  size_t result = cmd->n_vars;
-  size_t i;
-  size_t j;
-
-  result += cmd->n_dep_vars;
-  for (i = 0; i < cmd->n_dep_vars; i++)
-    {
-      for (j = 0; j < cmd->n_vars; j++)
-        {
-          if (cmd->vars[j] == cmd->dep_vars[i])
-            {
-              result--;
-            }
-        }
-    }
+  size_t result = cmd->n_vars + cmd->n_dep_vars;
+  for (size_t i = 0; i < cmd->n_dep_vars; i++)
+    for (size_t j = 0; j < cmd->n_vars; j++)
+      if (cmd->vars[j] == cmd->dep_vars[i])
+        result--;
   return result;
 }
 
@@ -503,29 +445,21 @@ get_n_all_vars (const struct regression *cmd)
 static void
 fill_all_vars (const struct variable **vars, const struct regression *cmd)
 {
-  size_t x = 0;
-  size_t i;
-  for (i = 0; i < cmd->n_vars; i++)
-    {
-      vars[i] = cmd->vars[i];
-    }
+  for (size_t i = 0; i < cmd->n_vars; i++)
+    vars[i] = cmd->vars[i];
 
-  for (i = 0; i < cmd->n_dep_vars; i++)
+  size_t x = 0;
+  for (size_t i = 0; i < cmd->n_dep_vars; i++)
     {
-      size_t j;
       bool absent = true;
-      for (j = 0; j < cmd->n_vars; j++)
-        {
-          if (cmd->dep_vars[i] == cmd->vars[j])
-            {
-              absent = false;
-              break;
-            }
-        }
+      for (size_t j = 0; j < cmd->n_vars; j++)
+        if (cmd->dep_vars[i] == cmd->vars[j])
+          {
+            absent = false;
+            break;
+          }
       if (absent)
-        {
-          vars[cmd->n_vars + x++] = cmd->dep_vars[i];
-        }
+        vars[cmd->n_vars + x++] = cmd->dep_vars[i];
     }
 }
 
@@ -535,16 +469,10 @@ fill_all_vars (const struct variable **vars, const struct regression *cmd)
 static void
 fill_predictor_x (const struct variable **vars, const struct variable *x, const struct regression *cmd)
 {
-  size_t i;
   size_t n = 0;
-
-  for (i = 0; i < cmd->n_vars; i++)
-    {
-      if (cmd->vars[i] == x)
-	continue;
-
+  for (size_t i = 0; i < cmd->n_vars; i++)
+    if (cmd->vars[i] != x)
       vars[n++] = cmd->vars[i];
-    }
 }
 
 /*
@@ -556,7 +484,6 @@ is_depvar (const struct regression *cmd, size_t k, const struct variable *v)
   return v == cmd->vars[k];
 }
 
-
 /* Identify the explanatory variables in v_variables.  Returns
    the number of independent variables. */
 static int
@@ -565,22 +492,20 @@ identify_indep_vars (const struct regression *cmd,
                      const struct variable *depvar)
 {
   int n_indep_vars = 0;
-  int i;
 
-  for (i = 0; i < cmd->n_vars; i++)
+  for (size_t i = 0; i < cmd->n_vars; i++)
     if (!is_depvar (cmd, i, depvar))
       indep_vars[n_indep_vars++] = cmd->vars[i];
-  if ((n_indep_vars < 1) && is_depvar (cmd, 0, depvar))
+  if (n_indep_vars < 1 && is_depvar (cmd, 0, depvar))
     {
       /*
          There is only one independent variable, and it is the same
          as the dependent variable. Print a warning and continue.
        */
       msg (SW,
-           gettext
-           ("The dependent variable is equal to the independent variable. "
-            "The least squares line is therefore Y=X. "
-            "Standard errors and related statistics may be meaningless."));
+           _("The dependent variable is equal to the independent variable. "
+             "The least squares line is therefore Y=X. "
+             "Standard errors and related statistics may be meaningless."));
       n_indep_vars = 1;
       indep_vars[0] = cmd->vars[0];
     }
@@ -594,45 +519,30 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
                  const struct variable **all_vars, size_t n_all_vars,
                  double *means)
 {
-  size_t i;
-  size_t j;
-  size_t dep_subscript = SIZE_MAX;
-  size_t *rows;
-  const gsl_matrix *ssizes;
-  const gsl_matrix *mean_matrix;
-  const gsl_matrix *ssize_matrix;
-  double result = 0.0;
-
   const gsl_matrix *cm = covariance_calculate_unnormalized (all_cov);
-
-  if (cm == NULL)
+  if (!cm)
     return 0;
 
-  rows = xnmalloc (cov->size1 - 1, sizeof (*rows));
+  size_t *rows = xnmalloc (cov->size1 - 1, sizeof (*rows));
 
-  for (i = 0; i < n_all_vars; i++)
+  size_t dep_subscript = SIZE_MAX;
+  for (size_t i = 0; i < n_all_vars; i++)
     {
-      for (j = 0; j < n_vars; j++)
-        {
-          if (vars[j] == all_vars[i])
-            {
-              rows[j] = i;
-            }
-        }
+      for (size_t j = 0; j < n_vars; j++)
+        if (vars[j] == all_vars[i])
+          rows[j] = i;
       if (all_vars[i] == dep_var)
-        {
-          dep_subscript = i;
-        }
+        dep_subscript = i;
     }
   assert (dep_subscript != SIZE_MAX);
 
-  mean_matrix = covariance_moments (all_cov, MOMENT_MEAN);
-  ssize_matrix = covariance_moments (all_cov, MOMENT_NONE);
-  for (i = 0; i < cov->size1 - 1; i++)
+  const gsl_matrix *mean_matrix = covariance_moments (all_cov, MOMENT_MEAN);
+  const gsl_matrix *ssize_matrix = covariance_moments (all_cov, MOMENT_NONE);
+  for (size_t i = 0; i < cov->size1 - 1; i++)
     {
       means[i] = gsl_matrix_get (mean_matrix, rows[i], 0)
         / gsl_matrix_get (ssize_matrix, rows[i], 0);
-      for (j = 0; j < cov->size2 - 1; j++)
+      for (size_t j = 0; j < cov->size2 - 1; j++)
         {
           gsl_matrix_set (cov, i, j, gsl_matrix_get (cm, rows[i], rows[j]));
           gsl_matrix_set (cov, j, i, gsl_matrix_get (cm, rows[j], rows[i]));
@@ -640,18 +550,16 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
     }
   means[cov->size1 - 1] = gsl_matrix_get (mean_matrix, dep_subscript, 0)
     / gsl_matrix_get (ssize_matrix, dep_subscript, 0);
-  ssizes = covariance_moments (all_cov, MOMENT_NONE);
-  result = gsl_matrix_get (ssizes, dep_subscript, rows[0]);
-  for (i = 0; i < cov->size1 - 1; i++)
+  const gsl_matrix *ssizes = covariance_moments (all_cov, MOMENT_NONE);
+  double result = gsl_matrix_get (ssizes, dep_subscript, rows[0]);
+  for (size_t i = 0; i < cov->size1 - 1; i++)
     {
       gsl_matrix_set (cov, i, cov->size1 - 1,
                       gsl_matrix_get (cm, rows[i], dep_subscript));
       gsl_matrix_set (cov, cov->size1 - 1, i,
                       gsl_matrix_get (cm, rows[i], dep_subscript));
       if (result > gsl_matrix_get (ssizes, rows[i], dep_subscript))
-        {
-          result = gsl_matrix_get (ssizes, rows[i], dep_subscript);
-        }
+        result = gsl_matrix_get (ssizes, rows[i], dep_subscript);
     }
   gsl_matrix_set (cov, cov->size1 - 1, cov->size1 - 1,
                   gsl_matrix_get (cm, dep_subscript, dep_subscript));
@@ -682,7 +590,6 @@ run_regression_get_models (const struct regression *cmd,
 			   struct casereader *input,
 			   bool output)
 {
-  size_t i;
   struct model_container *model_container = XCALLOC (cmd->n_vars, struct model_container);
 
   struct ccase *c;
@@ -690,29 +597,26 @@ run_regression_get_models (const struct regression *cmd,
   struct casereader *reader;
 
   if (cmd->stats & STATS_TOL)
-    {
-      for (i = 0; i < cmd->n_vars; i++)
-	{
-	  struct regression subreg;
-	  subreg.origin = cmd->origin;
-	  subreg.ds = cmd->ds;
-	  subreg.n_vars = cmd->n_vars - 1;
-	  subreg.n_dep_vars = 1;
-	  subreg.vars = xmalloc (sizeof (*subreg.vars) * cmd->n_vars - 1);
-	  subreg.dep_vars = xmalloc (sizeof (*subreg.dep_vars));
-	  fill_predictor_x (subreg.vars, cmd->vars[i], cmd);
-	  subreg.dep_vars[0] = cmd->vars[i];
-	  subreg.stats = STATS_R;
-	  subreg.ci = 0;
-	  subreg.resid = false;
-	  subreg.pred = false;
+    for (size_t i = 0; i < cmd->n_vars; i++)
+      {
+        struct regression subreg = {
+          .origin = cmd->origin,
+          .ds = cmd->ds,
+          .n_vars = cmd->n_vars - 1,
+          .n_dep_vars = 1,
+          .vars = xmalloc ((cmd->n_vars - 1) * sizeof *subreg.vars),
+          .dep_vars = &cmd->vars[i],
+          .stats = STATS_R,
+          .ci = 0,
+          .resid = false,
+          .pred = false,
+        };
+        fill_predictor_x (subreg.vars, cmd->vars[i], cmd);
 
-	  model_container[i].models =
-	    run_regression_get_models (&subreg, input, false);
-	  free (subreg.vars);
-	  free (subreg.dep_vars);
-	}
-    }
+        model_container[i].models =
+          run_regression_get_models (&subreg, input, false);
+        free (subreg.vars);
+      }
 
   size_t n_all_vars = get_n_all_vars (cmd);
   const struct variable **all_vars = xnmalloc (n_all_vars, sizeof (*all_vars));
@@ -722,8 +626,7 @@ run_regression_get_models (const struct regression *cmd,
      However this would result in a buffer overflow so we must
      over-allocate the space required in this malloc call.
      See bug #58599  */
-  double *means = xnmalloc (n_all_vars <= 1 ? 2 : n_all_vars,
-                            sizeof (*means));
+  double *means = xnmalloc (MAX (2, n_all_vars), sizeof *means);
   fill_all_vars (all_vars, cmd);
   cov = covariance_1pass_create (n_all_vars, all_vars,
                                  dict_get_weight (dataset_dict (cmd->ds)),
@@ -732,37 +635,31 @@ run_regression_get_models (const struct regression *cmd,
   reader = casereader_clone (input);
   reader = casereader_create_filter_missing (reader, all_vars, n_all_vars,
                                              MV_ANY, NULL, NULL);
-{
-    struct casereader *r = casereader_clone (reader);
 
-    for (; (c = casereader_read (r)) != NULL; case_unref (c))
-      {
-        covariance_accumulate (cov, c);
-      }
-    casereader_destroy (r);
-  }
+  struct casereader *r = casereader_clone (reader);
+  for (; (c = casereader_read (r)) != NULL; case_unref (c))
+      covariance_accumulate (cov, c);
+  casereader_destroy (r);
 
   struct linreg **models = XCALLOC (cmd->n_dep_vars, struct linreg*);
-
-  for (int k = 0; k < cmd->n_dep_vars; k++)
+  for (size_t k = 0; k < cmd->n_dep_vars; k++)
     {
-      const struct variable **vars = xnmalloc (cmd->n_vars, sizeof (*vars));
+      const struct variable **vars = xnmalloc (cmd->n_vars, sizeof *vars);
       const struct variable *dep_var = cmd->dep_vars[k];
       int n_indep = identify_indep_vars (cmd, vars, dep_var);
       gsl_matrix *cov_matrix = gsl_matrix_alloc (n_indep + 1, n_indep + 1);
       double n_data = fill_covariance (cov_matrix, cov, vars, n_indep,
-                                dep_var, all_vars, n_all_vars, means);
+                                       dep_var, all_vars, n_all_vars, means);
       models[k] = linreg_alloc (dep_var, vars,  n_data, n_indep, cmd->origin);
-      for (i = 0; i < n_indep; i++)
-        {
-          linreg_set_indep_variable_mean (models[k], i, means[i]);
-        }
-      linreg_set_depvar_mean (models[k], means[i]);
+      for (size_t i = 0; i < n_indep; i++)
+        linreg_set_indep_variable_mean (models[k], i, means[i]);
+      linreg_set_depvar_mean (models[k], means[n_indep]);
       if (n_data > 0)
         {
 	  linreg_fit (cov_matrix, models[k]);
 
-          if (output && !taint_has_tainted_successor (casereader_get_taint (input)))
+          if (output
+              && !taint_has_tainted_successor (casereader_get_taint (input)))
             {
 	      /*
 		Find the least-squares estimates and other statistics.
@@ -783,21 +680,17 @@ run_regression_get_models (const struct regression *cmd,
 	    }
         }
       else
-        {
-          msg (SE, _("No valid data found. This command was skipped."));
-        }
+        msg (SE, _("No valid data found. This command was skipped."));
       free (vars);
       gsl_matrix_free (cov_matrix);
     }
 
   casereader_destroy (reader);
 
-  for (int i = 0; i < cmd->n_vars; i++)
+  for (size_t i = 0; i < cmd->n_vars; i++)
     {
       if (model_container[i].models)
-	{
-	  linreg_unref (model_container[i].models[0]);
-	}
+        linreg_unref (model_container[i].models[0]);
       free (model_container[i].models);
     }
   free (model_container);
@@ -816,8 +709,8 @@ run_regression (const struct regression *cmd,
   struct linreg **models = run_regression_get_models (cmd, input, true);
 
   if (ws->extras > 0)
-   {
-     struct ccase *c;
+    {
+      struct ccase *c;
       struct casereader *r = casereader_clone (input);
 
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
@@ -855,10 +748,8 @@ run_regression (const struct regression *cmd,
       casereader_destroy (r);
     }
 
-  for (int k = 0; k < cmd->n_dep_vars; k++)
-    {
-      linreg_unref (models[k]);
-    }
+  for (size_t k = 0; k < cmd->n_dep_vars; k++)
+    linreg_unref (models[k]);
 
   free (models);
   casereader_destroy (input);
