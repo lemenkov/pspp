@@ -330,7 +330,15 @@ list.
 ])
 
 AT_CHECK([pspp -O format=csv recode.sps], [1], [dnl
-"error: Cannot recode because the variable x would require a width of 5 bytes or greater, but it has a width of only 1 bytes."
+recode.sps:9: error: RECODE: At least one target variable is too narrow for the output values.
+
+"recode.sps:9.19-9.25: note: RECODE: This recoding output value has width 5.
+    9 | recode x y (""a"" = ""first"") .
+      |                   ^~~~~~~"
+
+"recode.sps:9.8-9.10: note: RECODE: Target variable x only has width 1.
+    9 | recode x y (""a"" = ""first"") .
+      |        ^~~"
 
 Table: Data List
 x,y,z
@@ -358,8 +366,144 @@ END DATA.
 
 RECODE x (1=9) INTO ".
 EXECUTE.
+dnl "
 ])
 
 AT_CHECK([pspp -O format=csv recode.sps], [1], [ignore])
 
+AT_CLEANUP
+
+
+AT_SETUP([RECODE syntax errors])
+AT_DATA([recode.sps], [dnl
+DATA LIST LIST NOTABLE/n1 to n4 (F8.0) s1 (A1) s2 (A2) s3 (A3) s4 (A4).
+RECODE **.
+RECODE n1 **.
+RECODE n1(**).
+RECODE s1(**).
+RECODE s1('x' THRU 'y').
+RECODE n1(1=**).
+RECODE n1(CONVERT).
+RECODE n1(1=2)(1='x').
+RECODE n1(1='x')(1=2).
+RECODE s1(CONVERT)('1'='1').
+RECODE n1(1=2 **).
+RECODE n1(CONVERT).
+RECODE s1(CONVERT) INTO n1 n2.
+RECODE n1(1='1') INTO xyzzy.
+RECODE n1(1='1').
+RECODE s1('1'=1).
+RECODE n1(1='1') INTO n2.
+RECODE s1(CONVERT) INTO s2.
+RECODE n1 TO n4(1='123456') INTO s1 TO s4.
+])
+AT_CHECK([pspp -O format=csv recode.sps], [1], [dnl
+"recode.sps:2.8-2.9: error: RECODE: Syntax error expecting variable name.
+    2 | RECODE **.
+      |        ^~"
+
+"recode.sps:3.11-3.12: error: RECODE: Syntax error expecting `('.
+    3 | RECODE n1 **.
+      |           ^~"
+
+"recode.sps:4.11-4.12: error: RECODE: Syntax error expecting number.
+    4 | RECODE n1(**).
+      |           ^~"
+
+"recode.sps:5.11-5.12: error: RECODE: Syntax error expecting string.
+    5 | RECODE s1(**).
+      |           ^~"
+
+"recode.sps:6.15-6.18: error: RECODE: THRU is not allowed with string variables.
+    6 | RECODE s1('x' THRU 'y').
+      |               ^~~~"
+
+"recode.sps:7.13-7.14: error: RECODE: Syntax error expecting output value.
+    7 | RECODE n1(1=**).
+      |             ^~"
+
+"recode.sps:8.11-8.17: error: RECODE: CONVERT requires string input values.
+    8 | RECODE n1(CONVERT).
+      |           ^~~~~~~"
+
+recode.sps:9: error: RECODE: Output values must be all numeric or all string.
+
+"recode.sps:9.13: note: RECODE: This output value is numeric.
+    9 | RECODE n1(1=2)(1='x').
+      |             ^"
+
+"recode.sps:9.18-9.20: note: RECODE: This output value is string.
+    9 | RECODE n1(1=2)(1='x').
+      |                  ^~~"
+
+recode.sps:10: error: RECODE: Output values must be all numeric or all string.
+
+"recode.sps:10.20: note: RECODE: This output value is numeric.
+   10 | RECODE n1(1='x')(1=2).
+      |                    ^"
+
+"recode.sps:10.13-10.15: note: RECODE: This output value is string.
+   10 | RECODE n1(1='x')(1=2).
+      |             ^~~"
+
+recode.sps:11: error: RECODE: Output values must be all numeric or all string.
+
+"recode.sps:11.11-11.17: note: RECODE: This output value is numeric.
+   11 | RECODE s1(CONVERT)('1'='1').
+      |           ^~~~~~~"
+
+"recode.sps:11.24-11.26: note: RECODE: This output value is string.
+   11 | RECODE s1(CONVERT)('1'='1').
+      |                        ^~~"
+
+"recode.sps:12.15-12.16: error: RECODE: Syntax error expecting `)'.
+   12 | RECODE n1(1=2 **).
+      |               ^~"
+
+"recode.sps:13.11-13.17: error: RECODE: CONVERT requires string input values.
+   13 | RECODE n1(CONVERT).
+      |           ^~~~~~~"
+
+recode.sps:14: error: RECODE: Source and target variable counts must match.
+
+"recode.sps:14.8-14.9: note: RECODE: There is 1 source variable.
+   14 | RECODE s1(CONVERT) INTO n1 n2.
+      |        ^~"
+
+"recode.sps:14.25-14.29: note: RECODE: There are 2 target variables.
+   14 | RECODE s1(CONVERT) INTO n1 n2.
+      |                         ^~~~~"
+
+recode.sps:15: error: RECODE: All string variables specified on INTO must already exist.  (Use the STRING command to create a string variable.)
+
+"recode.sps:15.23-15.27: note: RECODE: There is no variable named xyzzy.
+   15 | RECODE n1(1='1') INTO xyzzy.
+      |                       ^~~~~"
+
+"recode.sps:16.10-16.16: error: RECODE: INTO is required with numeric input values and string output values.
+   16 | RECODE n1(1='1').
+      |          ^~~~~~~"
+
+"recode.sps:17.10-17.16: error: RECODE: INTO is required with string input values and numeric output values.
+   17 | RECODE s1('1'=1).
+      |          ^~~~~~~"
+
+"recode.sps:18.23-18.24: error: RECODE: Type mismatch: cannot store string data in numeric variable n2.
+   18 | RECODE n1(1='1') INTO n2.
+      |                       ^~"
+
+"recode.sps:19.25-19.26: error: RECODE: Type mismatch: cannot store numeric data in string variable s2.
+   19 | RECODE s1(CONVERT) INTO s2.
+      |                         ^~"
+
+recode.sps:20: error: RECODE: At least one target variable is too narrow for the output values.
+
+"recode.sps:20.19-20.26: note: RECODE: This recoding output value has width 6.
+   20 | RECODE n1 TO n4(1='123456') INTO s1 TO s4.
+      |                   ^~~~~~~~"
+
+"recode.sps:20.29-20.41: note: RECODE: Target variable s1 only has width 1.
+   20 | RECODE n1 TO n4(1='123456') INTO s1 TO s4.
+      |                             ^~~~~~~~~~~~~"
+])
 AT_CLEANUP
