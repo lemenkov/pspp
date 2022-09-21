@@ -73,28 +73,23 @@ static const struct trns_class data_list_trns_class;
 int
 cmd_data_list (struct lexer *lexer, struct dataset *ds)
 {
-  struct dictionary *dict;
-  struct data_parser *parser;
-  struct dfm_reader *reader;
+  struct dictionary *dict = (in_input_program ()
+                             ? dataset_dict (ds)
+                             : dict_create (get_default_encoding ()));
+  struct data_parser *parser = data_parser_create ();
+  struct dfm_reader *reader = NULL;
+
   struct variable *end = NULL;
   struct file_handle *fh = NULL;
+
   char *encoding = NULL;
+  int encoding_start = 0, encoding_end = 0;
 
-  int table;
-  enum data_parser_type type;
-  bool has_type;
-  struct pool *tmp_pool;
-  bool ok;
+  int table = -1;               /* Print table if nonzero, -1=undecided. */
 
-  dict = (in_input_program ()
-          ? dataset_dict (ds)
-          : dict_create (get_default_encoding ()));
-  parser = data_parser_create ();
-  reader = NULL;
+  bool has_type = false;
 
-  table = -1;                /* Print table if nonzero, -1=undecided. */
-  has_type = false;
-
+  int end_start = 0, end_end = 0;
   while (lex_token (lexer) != T_SLASH)
     {
       if (lex_match_id (lexer, "FILE"))
@@ -107,6 +102,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "ENCODING"))
 	{
+          encoding_start = lex_ofs (lexer) - 1;
 	  lex_match (lexer, T_EQUALS);
 	  if (!lex_force_string (lexer))
 	    goto error;
@@ -114,6 +110,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (lexer));
 
+          encoding_end = lex_ofs (lexer);
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "RECORDS"))
@@ -154,9 +151,12 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	      goto error;
 	    }
 
+          end_start = lex_ofs (lexer) - 1;
 	  lex_match (lexer, T_EQUALS);
 	  if (!lex_force_id (lexer))
 	    goto error;
+          end_end = lex_ofs (lexer);
+
 	  end = dict_lookup_var (dict, lex_tokcstr (lexer));
 	  if (!end)
             end = dict_create_var_assert (dict, lex_tokcstr (lexer), 0);
@@ -182,7 +182,9 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
             }
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "FILE", "ENCODING", "RECORDS",
+                                   "SKIP", "END", "NOTABLE", "TABLE",
+                                   "FIXED", "FREE", "LIST");
               goto error;
             }
 
@@ -201,7 +203,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                 {
                   struct string delims = DS_EMPTY_INITIALIZER;
 
-                  while (!lex_match (lexer, T_RPAREN))
+                  do
                     {
                       int delim;
 
@@ -216,7 +218,8 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                       else
                         {
                           /* XXX should support multibyte UTF-8 characters */
-                          lex_error (lexer, NULL);
+                          lex_error (lexer, _("Syntax error expecting TAB "
+                                              "or delimiter string."));
                           ds_destroy (&delims);
                           goto error;
                         }
@@ -224,6 +227,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 
                       lex_match (lexer, T_COMMA);
                     }
+                  while (!lex_match (lexer, T_RPAREN));
 
                   data_parser_set_empty_line_has_field (parser, true);
                   data_parser_set_quotes (parser, ss_empty ());
@@ -245,40 +249,41 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
         }
       else
 	{
-	  lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "FILE", "ENCODING", "RECORDS",
+                               "SKIP", "END", "NOTABLE", "TABLE",
+                               "FIXED", "FREE", "LIST");
 	  goto error;
 	}
     }
-  type = data_parser_get_type (parser);
 
-  if (encoding && NULL == fh)
-    msg (MW, _("Encoding should not be specified for inline data. It will be "
-               "ignored."));
+  if (!fh)
+    {
+      fh = fh_inline_file ();
 
-  if (fh == NULL)
-    fh = fh_inline_file ();
+      if (encoding)
+        lex_ofs_msg (lexer, SW, encoding_start, encoding_end,
+                     _("Encoding should not be specified for inline data. "
+                       "It will be ignored."));
+    }
   fh_set_default_handle (fh);
 
+  enum data_parser_type type = data_parser_get_type (parser);
   if (type != DP_FIXED && end != NULL)
     {
-      msg (SE, _("The %s subcommand may be used only with %s."), "END", "DATA LIST FIXED");
+      lex_ofs_error (lexer, end_start, end_end,
+                     _("The %s subcommand may be used only with %s."),
+                     "END", "DATA LIST FIXED");
       goto error;
     }
 
-  tmp_pool = pool_create ();
-  if (type == DP_FIXED)
-    ok = parse_fixed (lexer, dict, tmp_pool, parser);
-  else
-    ok = parse_free (lexer, dict, tmp_pool, parser);
+  struct pool *tmp_pool = pool_create ();
+  bool ok = (type == DP_FIXED
+             ? parse_fixed (lexer, dict, tmp_pool, parser)
+             : parse_free (lexer, dict, tmp_pool, parser));
   pool_destroy (tmp_pool);
   if (!ok)
     goto error;
-
-  if (!data_parser_any_fields (parser))
-    {
-      msg (SE, _("At least one variable must be specified."));
-      goto error;
-    }
+  assert (data_parser_any_fields (parser));
 
   if (lex_end_of_command (lexer) != CMD_SUCCESS)
     goto error;
@@ -295,10 +300,12 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
   if (in_input_program ())
     {
       struct data_list_trns *trns = xmalloc (sizeof *trns);
-      trns->parser = parser;
-      trns->dict = dict_ref (dict);
-      trns->reader = reader;
-      trns->end = end;
+      *trns = (struct data_list_trns) {
+        .parser = parser,
+        .dict = dict_ref (dict),
+        .reader = reader,
+        .end = end,
+      };
       add_transformation (ds, &data_list_trns_class, trns);
     }
   else
@@ -334,35 +341,36 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
   int record = 0;
   int column = 1;
 
-  while (lex_token (lexer) != T_ENDCMD)
+  do
     {
-      char **names;
-      size_t n_names, name_idx;
-      struct fmt_spec *formats, *f;
-      size_t n_formats;
-
       /* Parse everything. */
-      if (!parse_record_placement (lexer, &record, &column)
-          || !parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
-					 &names, &n_names, PV_NONE)
-          || !parse_var_placements (lexer, tmp_pool, n_names, FMT_FOR_INPUT,
-                                    &formats, &n_formats))
+      int records_start = lex_ofs (lexer);
+      if (!parse_record_placement (lexer, &record, &column))
         return false;
 
+      int vars_start = lex_ofs (lexer);
+      char **names;
+      size_t n_names;
+      if (!parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
+                                      &names, &n_names, PV_NONE))
+        return false;
+      int vars_end = lex_ofs (lexer) - 1;
+      struct fmt_spec *formats;
+      size_t n_formats;
+      if (!parse_var_placements (lexer, tmp_pool, n_names, FMT_FOR_INPUT,
+                                 &formats, &n_formats))
+        return false;
+      int placements_end = lex_ofs (lexer) - 1;
+
       /* Create variables and var specs. */
-      name_idx = 0;
-      for (f = formats; f < &formats[n_formats]; f++)
+      size_t name_idx = 0;
+      for (struct fmt_spec *f = formats; f < &formats[n_formats]; f++)
         if (!execute_placement_format (f, &record, &column))
           {
-            char *name;
-            int width;
-            struct variable *v;
-
-            name = names[name_idx++];
-
             /* Create variable. */
-            width = fmt_var_width (f);
-            v = dict_create_var (dict, name, width);
+            const char *name = names[name_idx++];
+            int width = fmt_var_width (f);
+            struct variable *v = dict_create_var (dict, name, width);
             if (v != NULL)
               {
                 /* Success. */
@@ -379,32 +387,36 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
                    created. */
                 if (!in_input_program ())
                   {
-                    msg (SE, _("%s is a duplicate variable name."), name);
+                    lex_ofs_error (lexer, vars_start, vars_end,
+                                   _("%s is a duplicate variable name."), name);
                     return false;
                   }
 
                 v = dict_lookup_var_assert (dict, name);
                 if ((width != 0) != (var_get_width (v) != 0))
                   {
-                    msg (SE, _("There is already a variable %s of a "
-                               "different type."),
-                         name);
+                    lex_ofs_error (lexer, vars_start, placements_end,
+                                   _("There is already a variable %s of a "
+                                     "different type."), name);
                     return false;
                   }
                 if (width != 0 && width != var_get_width (v))
                   {
-                    msg (SE, _("There is already a string variable %s of a "
-                               "different width."), name);
+                    lex_ofs_error (lexer, vars_start, placements_end,
+                                   _("There is already a string variable %s of "
+                                     "a different width."), name);
                     return false;
                   }
               }
 
             if (max_records && record > max_records)
               {
-                msg (SE, _("Cannot place variable %s on record %d when "
-                           "RECORDS=%d is specified."),
-                     var_get_name (v), record,
-                     data_parser_get_records (parser));
+                lex_ofs_error (lexer, records_start, vars_end,
+                               _("Cannot place variable %s on record %d when "
+                                 "RECORDS=%d is specified."),
+                               var_get_name (v), record,
+                               data_parser_get_records (parser));
+                return false;
               }
 
             data_parser_add_fixed_field (parser, f,
@@ -415,6 +427,7 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
           }
       assert (name_idx == n_names);
     }
+  while (lex_token (lexer) != T_ENDCMD);
 
   return true;
 }
@@ -429,17 +442,18 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
             struct pool *tmp_pool, struct data_parser *parser)
 {
   lex_get (lexer);
-  while (lex_token (lexer) != T_ENDCMD)
+  do
     {
-      struct fmt_spec input, output;
-      char **name;
+      char **names;
       size_t n_names;
-      size_t i;
 
+      int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
-				      &name, &n_names, PV_NONE))
+				      &names, &n_names, PV_NONE))
 	return false;
+      int vars_end = lex_ofs (lexer) - 1;
 
+      struct fmt_spec input, output;
       if (lex_match (lexer, T_LPAREN))
 	{
           char type[FMT_TYPE_LEN_MAX + 1];
@@ -489,14 +503,14 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
 	  output = *settings_get_format ();
 	}
 
-      for (i = 0; i < n_names; i++)
+      for (size_t i = 0; i < n_names; i++)
 	{
-	  struct variable *v;
-
-	  v = dict_create_var (dict, name[i], fmt_var_width (&input));
-	  if (v == NULL)
+	  struct variable *v = dict_create_var (dict, names[i],
+                                                fmt_var_width (&input));
+	  if (!v)
 	    {
-	      msg (SE, _("%s is a duplicate variable name."), name[i]);
+	      lex_ofs_error (lexer, vars_start, vars_end,
+                             _("%s is a duplicate variable name."), names[i]);
 	      return false;
 	    }
           var_set_both_formats (v, &output);
@@ -506,6 +520,7 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
                                            var_get_name (v));
 	}
     }
+  while (lex_token (lexer) != T_ENDCMD);
 
   return true;
 }
