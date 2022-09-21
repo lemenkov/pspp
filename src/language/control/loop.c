@@ -180,15 +180,12 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
 {
   if (loop->index_var != NULL)
     {
-      msg (SE, _("Only one index clause may be specified."));
+      lex_error (lexer, _("Only one index clause may be specified."));
       return false;
     }
 
-  if (lex_token (lexer) != T_ID)
-    {
-      lex_error (lexer, NULL);
-      return false;
-    }
+  if (!lex_force_id (lexer))
+    return false;
 
   loop->index_var = dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer));
   if (!loop->index_var)

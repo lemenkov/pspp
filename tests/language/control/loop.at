@@ -313,9 +313,11 @@ END LOOP.
     3 | END LOOP.
       | ^~~~~~~~
 
-loop.sps:5: error: LOOP: Only one index clause may be specified.
+loop.sps:5.15: error: LOOP: Only one index clause may be specified.
+    5 | LOOP A=1 TO 5 B=1 TO 5.
+      |               ^
 
-loop.sps:7.6: error: LOOP: Syntax error.
+loop.sps:7.6: error: LOOP: Syntax error expecting identifier.
     7 | LOOP 5.
       |      ^
 
@@ -347,7 +349,7 @@ loop.sps:21.1-21.9: error: LOOP: Required subcommand TO was not specified.
    21 | LOOP A=1.
       | ^~~~~~~~~
 
-loop.sps:23.6: error: LOOP: Syntax error.
+loop.sps:23.6: error: LOOP: Syntax error expecting identifier.
    23 | LOOP !.
       |      ^
 
