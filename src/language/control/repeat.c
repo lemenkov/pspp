@@ -34,6 +34,7 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "libpspp/misc.h"
+#include "output/output-item.h"
 
 #include "gl/ftoastr.h"
 #include "gl/minmax.h"
@@ -46,10 +47,10 @@
 struct dummy_var
   {
     struct hmap_node hmap_node;
-    char *name;
-    size_t name_len;
+    struct substring name;
     char **values;
     size_t n_values;
+    int start_ofs, end_ofs;
   };
 
 static bool parse_specification (struct lexer *, struct dictionary *,
@@ -65,33 +66,22 @@ static bool parse_strings (struct lexer *, struct dummy_var *);
 int
 cmd_do_repeat (struct lexer *lexer, struct dataset *ds)
 {
-  struct hmap dummies;
-  bool ok;
-
-  if (!parse_specification (lexer, dataset_dict (ds), &dummies))
-    return CMD_CASCADING_FAILURE;
-
-  ok = parse_commands (lexer, &dummies);
-
+  struct hmap dummies = HMAP_INITIALIZER (dummies);
+  bool ok = parse_specification (lexer, dataset_dict (ds), &dummies);
+  ok = parse_commands (lexer, &dummies) && ok;
   destroy_dummies (&dummies);
 
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 }
 
-static unsigned int
-hash_dummy (const char *name, size_t name_len)
-{
-  return utf8_hash_case_bytes (name, name_len, 0);
-}
-
 static const struct dummy_var *
-find_dummy_var (struct hmap *hmap, const char *name, size_t name_len)
+find_dummy_var (struct hmap *hmap, struct substring name)
 {
   const struct dummy_var *dv;
 
   HMAP_FOR_EACH_WITH_HASH (dv, struct dummy_var, hmap_node,
-                           hash_dummy (name, name_len), hmap)
-    if (!utf8_strncasecmp (dv->name, dv->name_len, name, name_len))
+                           utf8_hash_case_substring (name, 0), hmap)
+    if (!utf8_sscasecmp (dv->name, name))
       return dv;
 
   return NULL;
@@ -105,37 +95,32 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 {
   struct dummy_var *first_dv = NULL;
 
-  hmap_init (dummies);
   do
     {
-      struct dummy_var *dv;
-      const char *name;
-      bool ok;
+      int start_ofs = lex_ofs (lexer);
 
       /* Get a stand-in variable name and make sure it's unique. */
       if (!lex_force_id (lexer))
 	goto error;
-      name = lex_tokcstr (lexer);
-      if (dict_lookup_var (dict, name))
+      struct substring name = lex_tokss (lexer);
+      if (dict_lookup_var (dict, name.string))
         lex_msg (lexer, SW,
                  _("Dummy variable name `%s' hides dictionary variable `%s'."),
-                 name, name);
-
-      size_t name_len = strlen (name);
-      if (find_dummy_var (dummies, name, name_len))
+                 name.string, name.string);
+      if (find_dummy_var (dummies, name))
         {
           lex_error (lexer, _("Dummy variable name `%s' is given twice."),
-                     name);
+                     name.string);
           goto error;
         }
 
       /* Make a new macro. */
-      dv = xmalloc (sizeof *dv);
-      dv->name = xmemdup0 (name, name_len);
-      dv->name_len = name_len;
-      dv->values = NULL;
-      dv->n_values = 0;
-      hmap_insert (dummies, &dv->hmap_node, hash_dummy (name, strlen (name)));
+      struct dummy_var *dv = xmalloc (sizeof *dv);
+      *dv = (struct dummy_var) {
+        .name = ss_clone (name),
+        .start_ofs = start_ofs,
+      };
+      hmap_insert (dummies, &dv->hmap_node, utf8_hash_case_substring (name, 0));
 
       /* Skip equals sign. */
       lex_get (lexer);
@@ -143,6 +128,7 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 	goto error;
 
       /* Get the details of the variable's possible values. */
+      bool ok;
       if (lex_token (lexer) == T_ID || lex_token (lexer) == T_ALL)
 	ok = parse_ids (lexer, dict, dv);
       else if (lex_is_number (lexer))
@@ -151,7 +137,7 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 	ok = parse_strings (lexer, dv);
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error (lexer, _("Syntax error expecting substitution values."));
 	  goto error;
 	}
       if (!ok)
@@ -159,9 +145,10 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
       assert (dv->n_values > 0);
       if (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
         {
-          lex_error (lexer, NULL);
+          lex_error (lexer, _("Syntax error expecting `/' or end of command."));
           goto error;
         }
+      dv->end_ofs = lex_ofs (lexer) - 1;
 
       /* If this is the first variable then it defines how many replacements
 	 there must be; otherwise enforce this number of replacements. */
@@ -169,10 +156,19 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
         first_dv = dv;
       else if (first_dv->n_values != dv->n_values)
 	{
-	  msg (SE, _("Dummy variable `%s' had %zu substitutions, so `%s' must "
-                     "also, but %zu were specified."),
-               first_dv->name, first_dv->n_values,
-               dv->name, dv->n_values);
+          msg (SE, _("Each dummy variable must have the same number of "
+                     "substitutions."));
+
+          lex_ofs_msg (lexer, SN, first_dv->start_ofs, first_dv->end_ofs,
+                       ngettext ("Dummy variable %s had %zu substitution.",
+                                 "Dummy variable %s had %zu substitutions.",
+                                 first_dv->n_values),
+                       first_dv->name.string, first_dv->n_values);
+          lex_ofs_msg (lexer, SN, dv->start_ofs, dv->end_ofs,
+                       ngettext ("Dummy variable %s had %zu substitution.",
+                                 "Dummy variable %s had %zu substitutions.",
+                                 dv->n_values),
+                       dv->name.string, dv->n_values);
 	  goto error;
 	}
 
@@ -186,15 +182,20 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
   return true;
 
 error:
+  lex_discard_rest_of_command (lexer);
+  while (lex_match (lexer, T_ENDCMD))
+    continue;
   destroy_dummies (dummies);
+  hmap_init (dummies);
   return false;
 }
 
 static size_t
 count_values (struct hmap *dummies)
 {
-  const struct dummy_var *dv;
-  dv = HMAP_FIRST (struct dummy_var, hmap_node, dummies);
+  if (hmap_is_empty (dummies))
+    return 0;
+  const struct dummy_var *dv = HMAP_FIRST (struct dummy_var, hmap_node, dummies);
   return dv->n_values;
 }
 
@@ -207,19 +208,15 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
   while (!ss_is_empty (s))
     {
       enum segment_type type;
-      int n;
-
-      n = segmenter_push (&segmenter, s.string, s.length, true, &type);
+      int n = segmenter_push (&segmenter, s.string, s.length, true, &type);
       assert (n >= 0);
 
       if (type == SEG_DO_REPEAT_COMMAND)
         {
           for (;;)
             {
-              int k;
-
-              k = segmenter_push (&segmenter, s.string + n, s.length - n,
-                                  true, &type);
+              int k = segmenter_push (&segmenter, s.string + n, s.length - n,
+                                      true, &type);
               if (type != SEG_NEWLINE && type != SEG_DO_REPEAT_COMMAND)
                 break;
 
@@ -231,13 +228,10 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
         }
       else if (type != SEG_END)
         {
-          const struct dummy_var *dv;
-          size_t i;
-
-          dv = (type == SEG_IDENTIFIER
-                ? find_dummy_var (dummies, s.string, n)
-                : NULL);
-          for (i = 0; i < n_outputs; i++)
+          const struct dummy_var *dv
+            = (type == SEG_IDENTIFIER ? find_dummy_var (dummies, ss_head (s, n))
+               : NULL);
+          for (size_t i = 0; i < n_outputs; i++)
             if (dv != NULL)
               ds_put_cstr (&outputs[i], dv->values[i]);
             else
@@ -251,20 +245,10 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
 static bool
 parse_commands (struct lexer *lexer, struct hmap *dummies)
 {
-  struct string *outputs;
-  struct string input;
-  size_t n_values;
-  char *file_name;
-  bool ok;
-  size_t i;
-
-  if (lex_get_file_name (lexer) != NULL)
-    file_name = xstrdup (lex_get_file_name (lexer));
-  else
-    file_name = NULL;
+  char *file_name = xstrdup_if_nonnull (lex_get_file_name (lexer));
   int line_number = lex_ofs_start_point (lexer, lex_ofs (lexer)).line;
 
-  ds_init_empty (&input);
+  struct string input = DS_EMPTY_INITIALIZER;
   while (lex_is_string (lexer))
     {
       ds_put_substring (&input, lex_tokss (lexer));
@@ -272,9 +256,9 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
       lex_get (lexer);
     }
 
-  n_values = count_values (dummies);
-  outputs = xmalloc (n_values * sizeof *outputs);
-  for (i = 0; i < n_values; i++)
+  size_t n_values = count_values (dummies);
+  struct string *outputs = xmalloc (n_values * sizeof *outputs);
+  for (size_t i = 0; i < n_values; i++)
     ds_init_empty (&outputs[i]);
 
   do_parse_commands (ds_ss (&input), lex_get_syntax_mode (lexer),
@@ -285,16 +269,23 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
   while (lex_match (lexer, T_ENDCMD))
     continue;
 
-  ok = (lex_force_match_id (lexer, "END")
-        && lex_force_match_id (lexer, "REPEAT"));
-  if (ok)
-    lex_match_id (lexer, "PRINT"); /* XXX */
-
+  bool ok = lex_match_phrase (lexer, "END REPEAT");
+  if (!ok)
+    lex_error (lexer, _("Syntax error expecting END REPEAT."));
+  bool print = ok && lex_match_id (lexer, "PRINT");
   lex_discard_rest_of_command (lexer);
 
-  for (i = 0; i < n_values; i++)
+  for (size_t i = 0; i < n_values; i++)
     {
       struct string *output = &outputs[n_values - i - 1];
+      if (print)
+        {
+          struct substring s = output->ss;
+          ss_chomp_byte (&s, '\n');
+          char *label = xasprintf (_("Expansion %zu of %zu"), i + 1, n_values);
+          output_item_submit (
+            text_item_create_nocopy (TEXT_ITEM_LOG, ss_xstrdup (s), label));
+        }
       const char *encoding = lex_get_encoding (lexer);
       struct lex_reader *reader = lex_reader_for_substring_nocopy (ds_ss (output), encoding);
       lex_reader_set_file_name (reader, file_name);
@@ -314,12 +305,10 @@ destroy_dummies (struct hmap *dummies)
 
   HMAP_FOR_EACH_SAFE (dv, next, struct dummy_var, hmap_node, dummies)
     {
-      size_t i;
-
       hmap_delete (dummies, &dv->hmap_node);
 
-      free (dv->name);
-      for (i = 0; i < dv->n_values; i++)
+      ss_dealloc (&dv->name);
+      for (size_t i = 0; i < dv->n_values; i++)
         free (dv->values[i]);
       free (dv->values);
       free (dv);
@@ -409,9 +398,7 @@ parse_strings (struct lexer *lexer, struct dummy_var *dv)
   do
     {
       if (!lex_force_string (lexer))
-	{
-	  return false;
-	}
+        return false;
 
       add_replacement (dv, token_to_string (lex_next (lexer, 0)), &allocated);
 

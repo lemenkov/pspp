@@ -25,13 +25,28 @@ COMPUTE x=xval.
 COMPUTE y=yval.
 COMPUTE var=xval.
 END CASE.
-END REPEAT.
+END REPEAT PRINT.
 END FILE.
 END INPUT PROGRAM.
 LIST.
 ])
 AT_CHECK([pspp -o pspp.csv do-repeat.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
+COMPUTE x=3.
+COMPUTE y='c'.
+COMPUTE c=3.
+END CASE.
+
+COMPUTE x=2.
+COMPUTE y='b'.
+COMPUTE b=2.
+END CASE.
+
+COMPUTE x=1.
+COMPUTE y='a'.
+COMPUTE a=1.
+END CASE.
+
 Table: Data List
 y,x,a,b,c
 a,1.00,1.00,.  ,.  @&t@
@@ -165,6 +180,75 @@ DATA LIST NOTABLE /x 1.
 DO REPEAT y = 1 TO 10.
 ])
 AT_CHECK([pspp -O format=csv do-repeat.sps], [1], [dnl
-error: DO REPEAT: At end of input: Syntax error expecting END.
+error: DO REPEAT: At end of input: Syntax error expecting END REPEAT.
+])
+AT_CLEANUP
+
+AT_SETUP([DO REPEAT -- syntax errors])
+AT_DATA([do-repeat.sps], [dnl
+DATA LIST LIST NOTABLE /x.
+DO REPEAT **.
+END REPEAT.
+DO REPEAT x **.
+END REPEAT.
+DO REPEAT y=1/y=2.
+END REPEAT.
+DO REPEAT y=a b c **.
+END REPEAT.
+DO REPEAT y=1 2 **.
+END REPEAT.
+DO REPEAT y='a' 'b' **.
+END REPEAT.
+DO REPEAT y=**.
+END REPEAT.
+DO REPEAT y=1 2 3/z=4.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='do-repeat.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"do-repeat.sps:2.11-2.12: error: DO REPEAT: Syntax error expecting identifier.
+    2 | DO REPEAT **.
+      |           ^~"
+
+"do-repeat.sps:4.11: warning: DO REPEAT: Dummy variable name `x' hides dictionary variable `x'.
+    4 | DO REPEAT x **.
+      |           ^"
+
+"do-repeat.sps:4.13-4.14: error: DO REPEAT: Syntax error expecting `='.
+    4 | DO REPEAT x **.
+      |             ^~"
+
+"do-repeat.sps:6.15: error: DO REPEAT: Dummy variable name `y' is given twice.
+    6 | DO REPEAT y=1/y=2.
+      |               ^"
+
+"do-repeat.sps:8.19-8.20: error: DO REPEAT: Syntax error expecting `/' or end of command.
+    8 | DO REPEAT y=a b c **.
+      |                   ^~"
+
+"do-repeat.sps:10.17-10.18: error: DO REPEAT: Syntax error expecting number.
+   10 | DO REPEAT y=1 2 **.
+      |                 ^~"
+
+"do-repeat.sps:12.21-12.22: error: DO REPEAT: Syntax error expecting string.
+   12 | DO REPEAT y='a' 'b' **.
+      |                     ^~"
+
+"do-repeat.sps:14.13-14.14: error: DO REPEAT: Syntax error expecting substitution values.
+   14 | DO REPEAT y=**.
+      |             ^~"
+
+do-repeat.sps:16: error: DO REPEAT: Each dummy variable must have the same number of substitutions.
+
+"do-repeat.sps:16.11-16.17: note: DO REPEAT: Dummy variable y had 3 substitutions.
+   16 | DO REPEAT y=1 2 3/z=4.
+      |           ^~~~~~~"
+
+"do-repeat.sps:16.19-16.21: note: DO REPEAT: Dummy variable z had 1 substitution.
+   16 | DO REPEAT y=1 2 3/z=4.
+      |                   ^~~"
+
+error: DO REPEAT: At end of input: Syntax error expecting END REPEAT.
 ])
 AT_CLEANUP
