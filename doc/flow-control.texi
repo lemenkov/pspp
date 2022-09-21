@@ -194,10 +194,11 @@ DESCRIPTIVES !vars.
 FREQUENCIES /VARIABLES=!vars.
 !ENDDEFINE.
 
+* Initially define the 'vars' macro to analyze v1...v3.
 DEFINE !vars() v1 v2 v3 !ENDDEFINE.
 !commands
 
-* We can redefine the variables macro to analyze different variables:
+* Redefine 'vars' macro to analyze different variables.
 DEFINE !vars() v4 v5 !ENDDEFINE.
 !commands
 @end example
