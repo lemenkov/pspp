@@ -410,42 +410,34 @@ fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
         return (use == FMT_FOR_INPUT
                 ? xasprintf (ngettext (
                                "Input format %s specifies %d decimal place, "
-                               "but the given width allows at most "
-                               "%d decimals.",
+                               "but width %d allows at most %d decimals.",
                                "Input format %s specifies %d decimal places, "
-                               "but the given width allows at most "
-                               "%d decimals.",
+                               "but width %d allows at most %d decimals.",
                                spec->d),
-                             str, spec->d, max_d)
+                             str, spec->d, spec->w, max_d)
                 : xasprintf (ngettext (
                                "Output format %s specifies %d decimal place, "
-                               "but the given width allows at most "
-                               "%d decimals.",
+                               "but width %d allows at most %d decimals.",
                                "Output format %s specifies %d decimal places, "
-                               "but the given width allows at most "
-                               "%d decimals.",
+                               "but width %d allows at most %d decimals.",
                                spec->d),
-                             str, spec->d, max_d));
+                             str, spec->d, spec->w, max_d));
       else
         return (use == FMT_FOR_INPUT
                 ? xasprintf (ngettext (
                                "Input format %s specifies %d decimal place, "
-                               "but the given width does not allow "
-                               "for any decimals.",
+                               "but width %d does not allow for any decimals.",
                                "Input format %s specifies %d decimal places, "
-                               "but the given width does not allow "
-                               "for any decimals.",
+                               "but width %d does not allow for any decimals.",
                                spec->d),
-                             str, spec->d)
+                             str, spec->d, spec->w)
                 : xasprintf (ngettext (
                                "Output format %s specifies %d decimal place, "
-                               "but the given width does not allow "
-                               "for any decimals.",
+                               "but width %d does not allow for any decimals.",
                                "Output format %s specifies %d decimal places, "
-                               "but the given width does not allow "
-                               "for any decimals.",
+                               "but width %d does not allow for any decimals.",
                                spec->d),
-                             str, spec->d));
+                             str, spec->d, spec->w));
     }
 
   return NULL;

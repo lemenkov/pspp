@@ -84,7 +84,7 @@ x,A1
 y,A2
 z,A3
 
-"formats.sps:2.12-2.15: error: FORMATS: Output format E6.1 specifies 1 decimal place, but the given width does not allow for any decimals.
+"formats.sps:2.12-2.15: error: FORMATS: Output format E6.1 specifies 1 decimal place, but width 6 does not allow for any decimals.
     2 | FORMATS a (E6.1).
       |            ^~~~"
 
