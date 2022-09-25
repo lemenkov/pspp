@@ -127,6 +127,7 @@ bool lex_match_id_n (struct lexer *, const char *, size_t n);
 bool lex_match_int (struct lexer *, int);
 bool lex_at_phrase (struct lexer *, const char *s);
 bool lex_match_phrase (struct lexer *, const char *s);
+bool lex_force_match_phrase (struct lexer *, const char *s);
 
 /* Forcible matching functions. */
 bool lex_force_match (struct lexer *, enum token_type) WARN_UNUSED_RESULT;

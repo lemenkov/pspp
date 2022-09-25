@@ -293,9 +293,7 @@ cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
       return CMD_FAILURE;
     }
 
-  if (!lex_force_match_id (lexer, "COMMAND")
-      || !lex_force_match (lexer, T_EQUALS)
-      || !lex_force_match (lexer, T_LBRACK)
+  if (!lex_force_match_phrase (lexer, "COMMAND=[")
       || !lex_force_string (lexer))
     return CMD_FAILURE;
 

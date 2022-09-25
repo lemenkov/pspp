@@ -423,8 +423,7 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
       return false;
     }
 
-  if (!lex_force_match (lexer, T_RPAREN)
-      || !lex_force_match (lexer, T_EQUALS))
+  if (!lex_force_match_phrase (lexer, ")="))
     return false;
 
   if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
@@ -756,8 +755,7 @@ parse_two_sample_related_test (struct lexer *lexer,
 
       if (lex_match (lexer, T_LPAREN))
         {
-          if (!lex_force_match_id (lexer, "PAIRED")
-              || !lex_force_match (lexer, T_RPAREN))
+          if (!lex_force_match_phrase (lexer, "PAIRED)"))
             return false;
           paired = true;
 

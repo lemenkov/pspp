@@ -216,8 +216,7 @@ read_inline_record (struct dfm_reader *r)
       while (lex_token (r->lexer) == T_ENDCMD)
         lex_get (r->lexer);
 
-      if (!lex_force_match_id (r->lexer, "BEGIN")
-          || !lex_force_match_id (r->lexer, "DATA"))
+      if (!lex_force_match_phrase (r->lexer, "BEGIN DATA"))
         return false;
 
       lex_match (r->lexer, T_ENDCMD);

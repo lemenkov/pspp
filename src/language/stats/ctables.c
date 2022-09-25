@@ -5710,9 +5710,7 @@ ctables_parse_pcompute (struct lexer *lexer, struct dictionary *dict,
   char *name = ss_xstrdup (lex_tokss (lexer));
 
   lex_get (lexer);
-  if (!lex_force_match (lexer, T_EQUALS)
-      || !lex_force_match_id (lexer, "EXPR")
-      || !lex_force_match (lexer, T_LPAREN))
+  if (!lex_force_match_phrase (lexer, "=EXPR("))
     {
       free (name);
       return false;

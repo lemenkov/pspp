@@ -147,8 +147,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
         }
       else if (type == MRSET_MD && lex_match_id (lexer, "LABELSOURCE"))
         {
-          if (!lex_force_match (lexer, T_EQUALS)
-              || !lex_force_match_id (lexer, "VARLABEL"))
+          if (!lex_force_match_phrase (lexer, "=VARLABEL"))
             goto error;
 
           labelsource_varlabel = true;
@@ -504,8 +503,7 @@ static bool
 parse_mrset_names (struct lexer *lexer, struct dictionary *dict,
                    struct stringi_set *mrset_names)
 {
-  if (!lex_force_match_id (lexer, "NAME")
-      || !lex_force_match (lexer, T_EQUALS))
+  if (!lex_force_match_phrase (lexer, "NAME="))
     return false;
 
   stringi_set_init (mrset_names);

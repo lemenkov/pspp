@@ -85,7 +85,8 @@ static struct msg_point lex_token_start_point (const struct lex_source *,
 static struct msg_point lex_token_end_point (const struct lex_source *,
                                              const struct lex_token *);
 
-static size_t lex_ofs_at_phrase__ (struct lexer *, int ofs, const char *s);
+static bool lex_ofs_at_phrase__ (struct lexer *, int ofs, const char *s,
+                                 size_t *n_matchedp);
 
 /* Source offset of the last byte in TOKEN. */
 static size_t
@@ -618,7 +619,7 @@ lex_sbc_only_once (struct lexer *lexer, const char *sbc)
 
   /* lex_ofs_at_phrase__() handles subcommand names that are keywords, such as
      BY. */
-  if (lex_ofs_at_phrase__ (lexer, ofs, sbc))
+  if (lex_ofs_at_phrase__ (lexer, ofs, sbc, NULL))
     lex_ofs_error (lexer, ofs, ofs,
                    _("Subcommand %s may only be specified once."), sbc);
   else
@@ -1634,22 +1635,31 @@ lex_tokens_match (const struct token *actual, const struct token *expected)
     }
 }
 
-static size_t
-lex_ofs_at_phrase__ (struct lexer *lexer, int ofs, const char *s)
+static bool
+lex_ofs_at_phrase__ (struct lexer *lexer, int ofs, const char *s,
+                     size_t *n_matchedp)
 {
   struct string_lexer slex;
   struct token token;
 
-  size_t i = 0;
+  size_t n_matched = 0;
+  bool all_matched = true;
   string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE, true);
   while (string_lexer_next (&slex, &token))
     {
-      bool match = lex_tokens_match (lex_ofs_token (lexer, ofs + i++), &token);
+      bool match = lex_tokens_match (lex_ofs_token (lexer, ofs + n_matched),
+                                     &token);
       token_uninit (&token);
       if (!match)
-        return 0;
+        {
+          all_matched = false;
+          break;
+        }
+      n_matched++;
     }
-  return i;
+  if (n_matchedp)
+    *n_matchedp = n_matched;
+  return all_matched;
 }
 
 /* If LEXER is positioned at the sequence of tokens that may be parsed from S,
@@ -1661,7 +1671,7 @@ lex_ofs_at_phrase__ (struct lexer *lexer, int ofs, const char *s)
 bool
 lex_at_phrase (struct lexer *lexer, const char *s)
 {
-  return lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s) > 0;
+  return lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s, NULL);
 }
 
 /* If LEXER is positioned at the sequence of tokens that may be parsed from S,
@@ -1673,10 +1683,29 @@ lex_at_phrase (struct lexer *lexer, const char *s)
 bool
 lex_match_phrase (struct lexer *lexer, const char *s)
 {
-  size_t n = lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s);
-  if (n > 0)
-    lex_get_n (lexer, n);
-  return n > 0;
+  size_t n_matched;
+  if (!lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s, &n_matched))
+    return false;
+  lex_get_n (lexer, n_matched);
+  return true;
+}
+
+/* If LEXER is positioned at the sequence of tokens that may be parsed from S,
+   skips it and returns true.  Otherwise, issues an error and returns false.
+
+   S may consist of an arbitrary sequence of tokens, e.g. "KRUSKAL-WALLIS",
+   "2SLS", or "END INPUT PROGRAM".  Identifiers may be abbreviated to their
+   first three letters. */
+bool
+lex_force_match_phrase (struct lexer *lexer, const char *s)
+{
+  size_t n_matched;
+  bool ok = lex_ofs_at_phrase__ (lexer, lex_ofs (lexer), s, &n_matched);
+  if (ok)
+    lex_get_n (lexer, n_matched);
+  else
+    lex_next_error (lexer, 0, n_matched, _("Syntax error expecting `%s'."), s);
+  return ok;
 }
 
 /* Returns the 1-based line number of the source text at the byte OFFSET in

@@ -2007,7 +2007,7 @@ AT_CHECK([pspp -O format=csv npar.sps], [1], [dnl
     6 | NPAR TESTS RUNS (**).
       |                  ^~"
 
-"npar.sps:7.23-7.24: error: NPAR TESTS: Syntax error expecting `@:}@'.
+"npar.sps:7.23-7.24: error: NPAR TESTS: Syntax error expecting `@:}@='.
     7 | NPAR TESTS RUNS (MEAN **).
       |                       ^~"
 
@@ -2019,7 +2019,7 @@ AT_CHECK([pspp -O format=csv npar.sps], [1], [dnl
     9 | NPAR TESTS CHISQUARE **.
       |                      ^~"
 
-"npar.sps:10.24-10.25: error: NPAR TESTS: Syntax error expecting BEGIN.
+"npar.sps:10.24-10.25: error: NPAR TESTS: Syntax error expecting `BEGIN DATA'.
    10 | NPAR TESTS CHISQUARE x **.
       |                        ^~"
 
@@ -2139,13 +2139,13 @@ AT_CHECK([pspp -O format=csv npar.sps], [1], [dnl
    38 | NPAR TESTS MCNEMAR x WITH **.
       |                           ^~"
 
-"npar.sps:39.30-39.31: error: NPAR TESTS: Syntax error expecting PAIRED.
+"npar.sps:39.30-39.31: error: NPAR TESTS: Syntax error expecting `PAIRED@:}@'.
    39 | NPAR TESTS MCNEMAR x WITH y (**).
       |                              ^~"
 
-"npar.sps:40.37-40.38: error: NPAR TESTS: Syntax error expecting `@:}@'.
+"npar.sps:40.30-40.38: error: NPAR TESTS: Syntax error expecting `PAIRED)'.
    40 | NPAR TESTS MCNEMAR x WITH y (PAIRED **).
-      |                                     ^~"
+      |                              ^~~~~~~~~"
 
 "npar.sps:41.20-41.29: error: NPAR TESTS: PAIRED was specified, but the number of variables preceding WITH (1) does not match the number following (2).
    41 | NPAR TESTS MCNEMAR x WITH y z (PAIRED).

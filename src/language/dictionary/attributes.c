@@ -59,8 +59,7 @@ cmd_variable_attribute (struct lexer *lexer, struct dataset *ds)
       size_t n_vars, i;
       bool ok;
 
-      if (!lex_force_match_id (lexer, "VARIABLES")
-          || !lex_force_match (lexer, T_EQUALS)
+      if (!lex_force_match_phrase (lexer, "VARIABLES=")
           || !parse_variables (lexer, dict, &vars, &n_vars, PV_NONE))
         return CMD_FAILURE;
 

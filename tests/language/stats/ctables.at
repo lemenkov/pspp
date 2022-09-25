@@ -413,17 +413,17 @@ ctables.sps:42.20: error: CTABLES: Syntax error expecting identifier.
    42 | CTABLES /PCOMPUTE &1.
       |                    ^
 
-ctables.sps:43.21-43.22: error: CTABLES: Syntax error expecting `='.
+ctables.sps:43.21-43.22: error: CTABLES: Syntax error expecting `=EXPR@{:@'.
    43 | CTABLES /PCOMPUTE &k**.
       |                     ^~
 
-ctables.sps:44.22-44.23: error: CTABLES: Syntax error expecting EXPR.
+ctables.sps:44.21-44.23: error: CTABLES: Syntax error expecting `=EXPR@{:@'.
    44 | CTABLES /PCOMPUTE &k=**.
-      |                      ^~
+      |                     ^~~
 
-ctables.sps:45.26-45.27: error: CTABLES: Syntax error expecting `@{:@'.
+ctables.sps:45.21-45.27: error: CTABLES: Syntax error expecting `=EXPR@{:@'.
    45 | CTABLES /PCOMPUTE &k=EXPR**.
-      |                          ^~
+      |                     ^~~~~~~
 
 ctables.sps:46.28: error: CTABLES: Syntax error expecting `@:}@'.
    46 | CTABLES /PCOMPUTE &k=EXPR(1x).

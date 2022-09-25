@@ -46,7 +46,7 @@ END INPUT PROGRAM.
 DESCRIPTIVES x.
 ])
 AT_CHECK([pspp -O format=csv input-program.sps], [1], [dnl
-error: DESCRIPTIVES: At end of input: Syntax error expecting BEGIN.
+error: DESCRIPTIVES: At end of input: Syntax error expecting `BEGIN DATA'.
 ])
 AT_CLEANUP
 

@@ -502,7 +502,7 @@ aggregate.sps:16: error: AGGREGATE: Number of source variables (1) does not matc
    17 | AGGREGATE /y=pin(x, 2, 1).
       |                     ^~~~"
 
-"aggregate.sps:18.1-18.9: error: AGGREGATE: Syntax error expecting BEGIN.
+"aggregate.sps:18.1-18.9: error: AGGREGATE: Syntax error expecting `BEGIN DATA'.
    18 | AGGREGATE /y=mean(x)**.
       | ^~~~~~~~~"
 
