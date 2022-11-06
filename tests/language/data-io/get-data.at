@@ -1,0 +1,302 @@
+AT_BANNER([GET DATA])
+
+AT_SETUP([GET DATA syntax errors])
+AT_DATA([get-data.sps], [dnl
+GET DATA **.
+GET DATA / **.
+GET DATA /TYPE **.
+
+GET DATA /TYPE=TXT **.
+GET DATA /TYPE=TXT/ **.
+GET DATA /TYPE=TXT/FILE **.
+GET DATA /TYPE=TXT/FILE='x.txt' **.
+GET DATA /TYPE=TXT/FILE='x.txt' /ENCODING=**.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=**.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /ARRANGEMENT=DELIMITED.
+GET DATA /TYPE=TXT/FILE='x.txt' /FIRSTCASE=**.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELCASE=LINE.
+GET DATA /TYPE=TXT/FILE='x.txt' /DELCASE=VARIABLES **.
+GET DATA /TYPE=TXT/FILE='x.txt' /DELCASE=**.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=DELIMITED /FIXCASE=1.
+GET DATA /TYPE=TXT/FILE='x.txt' /FIXCASE=**.
+GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=FIRST **.
+GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=PERCENT **.
+GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=ALL.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELIMITERS=' '.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /QUALIFIER='"'.
+GET DATA /TYPE=TXT/FILE='x.txt' /QUALIFIER='"' + "'".
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES / **.
+GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES **.
+GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES a_very_long_name_that_exceeds_the_64_byte_limit_for_variable_names.
+GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES x **.
+GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES x F1.2.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x **.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 **.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 FOO.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 DATE.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 DOLLAR1.2.
+GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 F x 6-10 F.
+
+GET DATA /TYPE=PSQL **.
+GET DATA /TYPE=PSQL/ **.
+GET DATA /TYPE=PSQL/CONNECT **.
+GET DATA /TYPE=PSQL/CONNECT='db'/ASSUMEDSTRWIDTH=**.
+GET DATA /TYPE=PSQL/CONNECT='db'/BSIZE=**.
+GET DATA /TYPE=PSQL/CONNECT='db'/SQL=**.
+
+GET DATA /TYPE=GNM **.
+GET DATA /TYPE=GNM/ **.
+GET DATA /TYPE=GNM/FILE **.
+GET DATA /TYPE=GNM/FILE= **.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/ASSUMEDSTRWIDTH=**.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=NAME **.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=INDEX **.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=**.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/CELLRANGE=RANGE **.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/CELLRANGE=**.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/READNAMES=**.
+GET DATA /TYPE=GNM/FILE='x.gnumeric'/ **.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='get-data.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp -x compatible --testing-mode -O format=csv insert.sps], [1], [dnl
+"get-data.sps:1.10-1.11: error: GET DATA: Syntax error expecting `/TYPE='.
+    1 | GET DATA **.
+      |          ^~"
+
+"get-data.sps:2.10-2.13: error: GET DATA: Syntax error expecting `/TYPE='.
+    2 | GET DATA / **.
+      |          ^~~~"
+
+"get-data.sps:3.10-3.17: error: GET DATA: Syntax error expecting `/TYPE='.
+    3 | GET DATA /TYPE **.
+      |          ^~~~~~~~"
+
+"get-data.sps:5.20-5.21: error: GET DATA: Syntax error expecting `/FILE='.
+    5 | GET DATA /TYPE=TXT **.
+      |                    ^~"
+
+"get-data.sps:6.19-6.22: error: GET DATA: Syntax error expecting `/FILE='.
+    6 | GET DATA /TYPE=TXT/ **.
+      |                   ^~~~"
+
+"get-data.sps:7.19-7.26: error: GET DATA: Syntax error expecting `/FILE='.
+    7 | GET DATA /TYPE=TXT/FILE **.
+      |                   ^~~~~~~~"
+
+"get-data.sps:8.33-8.34: error: GET DATA: Syntax error expecting `/'.
+    8 | GET DATA /TYPE=TXT/FILE='x.txt' **.
+      |                                 ^~"
+
+"get-data.sps:9.43-9.44: error: GET DATA: Syntax error expecting string.
+    9 | GET DATA /TYPE=TXT/FILE='x.txt' /ENCODING=**.
+      |                                           ^~"
+
+"get-data.sps:10.46-10.47: error: GET DATA: Syntax error expecting FIXED or DELIMITED.
+   10 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=**.
+      |                                              ^~"
+
+get-data.sps:11: error: GET DATA: FIXED and DELIMITED arrangements are mutually exclusive.
+
+"get-data.sps:11.53-11.73: note: GET DATA: This syntax requires DELIMITED arrangement.
+   11 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /ARRANGEMENT=DELIMITED.
+      |                                                     ^~~~~~~~~~~~~~~~~~~~~"
+
+"get-data.sps:11.34-11.50: note: GET DATA: This syntax requires FIXED arrangement.
+   11 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /ARRANGEMENT=DELIMITED.
+      |                                  ^~~~~~~~~~~~~~~~~"
+
+"get-data.sps:12.44-12.45: error: GET DATA: Syntax error expecting positive integer for FIRSTCASE.
+   12 | GET DATA /TYPE=TXT/FILE='x.txt' /FIRSTCASE=**.
+      |                                            ^~"
+
+get-data.sps:13: error: GET DATA: FIXED and DELIMITED arrangements are mutually exclusive.
+
+"get-data.sps:13.53-13.59: note: GET DATA: This syntax requires DELIMITED arrangement.
+   13 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELCASE=LINE.
+      |                                                     ^~~~~~~"
+
+"get-data.sps:13.34-13.50: note: GET DATA: This syntax requires FIXED arrangement.
+   13 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELCASE=LINE.
+      |                                  ^~~~~~~~~~~~~~~~~"
+
+"get-data.sps:14.52-14.53: error: GET DATA: Syntax error expecting integer.
+   14 | GET DATA /TYPE=TXT/FILE='x.txt' /DELCASE=VARIABLES **.
+      |                                                    ^~"
+
+"get-data.sps:15.42-15.43: error: GET DATA: Syntax error expecting LINE or VARIABLES.
+   15 | GET DATA /TYPE=TXT/FILE='x.txt' /DELCASE=**.
+      |                                          ^~"
+
+get-data.sps:16: error: GET DATA: FIXED and DELIMITED arrangements are mutually exclusive.
+
+"get-data.sps:16.57-16.63: note: GET DATA: This syntax requires FIXED arrangement.
+   16 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=DELIMITED /FIXCASE=1.
+      |                                                         ^~~~~~~"
+
+"get-data.sps:16.34-16.54: note: GET DATA: This syntax requires DELIMITED arrangement.
+   16 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=DELIMITED /FIXCASE=1.
+      |                                  ^~~~~~~~~~~~~~~~~~~~~"
+
+"get-data.sps:17.42-17.43: error: GET DATA: Syntax error expecting positive integer for FIXCASE.
+   17 | GET DATA /TYPE=TXT/FILE='x.txt' /FIXCASE=**.
+      |                                          ^~"
+
+"get-data.sps:18.52-18.53: error: GET DATA: Syntax error expecting integer.
+   18 | GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=FIRST **.
+      |                                                    ^~"
+
+"get-data.sps:19.54-19.55: error: GET DATA: Syntax error expecting integer.
+   19 | GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=PERCENT **.
+      |                                                      ^~"
+
+"get-data.sps:20.34-20.48: warning: GET DATA: Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.).
+   20 | GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=ALL.
+      |                                  ^~~~~~~~~~~~~~~"
+
+"get-data.sps:20.49: error: GET DATA: Syntax error expecting `/'.
+   20 | GET DATA /TYPE=TXT/FILE='x.txt' /IMPORTCASES=ALL.
+      |                                                 ^"
+
+get-data.sps:21: error: GET DATA: FIXED and DELIMITED arrangements are mutually exclusive.
+
+"get-data.sps:21.53-21.62: note: GET DATA: This syntax requires DELIMITED arrangement.
+   21 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELIMITERS=' '.
+      |                                                     ^~~~~~~~~~"
+
+"get-data.sps:21.34-21.50: note: GET DATA: This syntax requires FIXED arrangement.
+   21 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /DELIMITERS=' '.
+      |                                  ^~~~~~~~~~~~~~~~~"
+
+get-data.sps:22: error: GET DATA: FIXED and DELIMITED arrangements are mutually exclusive.
+
+"get-data.sps:22.53-22.61: note: GET DATA: This syntax requires DELIMITED arrangement.
+   22 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /QUALIFIER='""'.
+      |                                                     ^~~~~~~~~"
+
+"get-data.sps:22.34-22.50: note: GET DATA: This syntax requires FIXED arrangement.
+   22 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /QUALIFIER='""'.
+      |                                  ^~~~~~~~~~~~~~~~~"
+
+"get-data.sps:23.44-23.52: error: GET DATA: In compatible syntax mode, the QUALIFIER string must contain exactly one character.
+   23 | GET DATA /TYPE=TXT/FILE='x.txt' /QUALIFIER='""' + ""'"".
+      |                                            ^~~~~~~~~"
+
+"get-data.sps:24.65-24.66: error: GET DATA: Syntax error expecting integer.
+   24 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES / **.
+      |                                                                 ^~"
+
+"get-data.sps:25.44-25.45: error: GET DATA: Syntax error expecting identifier.
+   25 | GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES **.
+      |                                            ^~"
+
+"get-data.sps:26.44-26.109: error: GET DATA: Identifier `a_very_long_name_that_exceeds_the_64_byte_limit_for_variable_names' exceeds 64-byte limit.
+   26 | GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES a_very_long_name_that_exceeds_the_64_byte_limit_for_variable_names.
+      |                                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"get-data.sps:27.46-27.47: error: GET DATA: Syntax error expecting valid format specifier.
+   27 | GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES x **.
+      |                                              ^~"
+
+"get-data.sps:28.46-28.49: error: GET DATA: Input format F1.2 specifies 2 decimal places, but width 1 allows at most 1 decimals.
+   28 | GET DATA /TYPE=TXT/FILE='x.txt' /VARIABLES x F1.2.
+      |                                              ^~~~"
+
+"get-data.sps:29.65-29.66: error: GET DATA: Syntax error expecting integer.
+   29 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x **.
+      |                                                                 ^~"
+
+"get-data.sps:30.69-30.70: error: GET DATA: Syntax error expecting valid format specifier.
+   30 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 **.
+      |                                                                     ^~"
+
+"get-data.sps:31.69-31.71: error: GET DATA: Unknown format type `FOO'.
+   31 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 FOO.
+      |                                                                     ^~~"
+
+"get-data.sps:32.65-32.72: error: GET DATA: Input format DATE5 specifies width 5, but DATE requires a width between 8 and 40.
+   32 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 DATE.
+      |                                                                 ^~~~~~~~"
+
+"get-data.sps:33.65-33.77: error: GET DATA: Output format DOLLAR1.2 specifies width 1, but DOLLAR requires a width between 2 and 40.
+   33 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 DOLLAR1.2.
+      |                                                                 ^~~~~~~~~~~~~"
+
+"get-data.sps:34.71: error: GET DATA: x is a duplicate variable name.
+   34 | GET DATA /TYPE=TXT/FILE='x.txt' /ARRANGEMENT=FIXED /VARIABLES x 1-5 F x 6-10 F.
+      |                                                                       ^"
+
+"get-data.sps:36.21-36.22: error: GET DATA: Syntax error expecting `/CONNECT='.
+   36 | GET DATA /TYPE=PSQL **.
+      |                     ^~"
+
+"get-data.sps:37.20-37.23: error: GET DATA: Syntax error expecting `/CONNECT='.
+   37 | GET DATA /TYPE=PSQL/ **.
+      |                    ^~~~"
+
+"get-data.sps:38.20-38.30: error: GET DATA: Syntax error expecting `/CONNECT='.
+   38 | GET DATA /TYPE=PSQL/CONNECT **.
+      |                    ^~~~~~~~~~~"
+
+"get-data.sps:39.50-39.51: error: GET DATA: Syntax error expecting integer between 1 and 32767 for ASSUMEDSTRWIDTH.
+   39 | GET DATA /TYPE=PSQL/CONNECT='db'/ASSUMEDSTRWIDTH=**.
+      |                                                  ^~"
+
+"get-data.sps:40.40-40.41: error: GET DATA: Syntax error expecting positive integer for BSIZE.
+   40 | GET DATA /TYPE=PSQL/CONNECT='db'/BSIZE=**.
+      |                                        ^~"
+
+"get-data.sps:41.38-41.39: error: GET DATA: Syntax error expecting string.
+   41 | GET DATA /TYPE=PSQL/CONNECT='db'/SQL=**.
+      |                                      ^~"
+
+"get-data.sps:43.20-43.21: error: GET DATA: Syntax error expecting `/FILE='.
+   43 | GET DATA /TYPE=GNM **.
+      |                    ^~"
+
+"get-data.sps:44.19-44.22: error: GET DATA: Syntax error expecting `/FILE='.
+   44 | GET DATA /TYPE=GNM/ **.
+      |                   ^~~~"
+
+"get-data.sps:45.19-45.26: error: GET DATA: Syntax error expecting `/FILE='.
+   45 | GET DATA /TYPE=GNM/FILE **.
+      |                   ^~~~~~~~"
+
+"get-data.sps:46.26-46.27: error: GET DATA: Syntax error expecting string.
+   46 | GET DATA /TYPE=GNM/FILE= **.
+      |                          ^~"
+
+"get-data.sps:47.54-47.55: error: GET DATA: Syntax error expecting integer between 1 and 32767 for ASSUMEDSTRWIDTH.
+   47 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/ASSUMEDSTRWIDTH=**.
+      |                                                      ^~"
+
+"get-data.sps:48.49-48.50: error: GET DATA: Syntax error expecting string.
+   48 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=NAME **.
+      |                                                 ^~"
+
+"get-data.sps:49.50-49.51: error: GET DATA: Syntax error expecting positive integer for INDEX.
+   49 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=INDEX **.
+      |                                                  ^~"
+
+"get-data.sps:50.44-50.45: error: GET DATA: Syntax error expecting NAME or INDEX.
+   50 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/SHEET=**.
+      |                                            ^~"
+
+"get-data.sps:51.54-51.55: error: GET DATA: Syntax error expecting string.
+   51 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/CELLRANGE=RANGE **.
+      |                                                      ^~"
+
+"get-data.sps:52.48-52.49: error: GET DATA: Syntax error expecting FULL or RANGE.
+   52 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/CELLRANGE=**.
+      |                                                ^~"
+
+"get-data.sps:53.48-53.49: error: GET DATA: Syntax error expecting ON or OFF.
+   53 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/READNAMES=**.
+      |                                                ^~"
+
+"get-data.sps:54.39-54.40: error: GET DATA: Syntax error expecting ASSUMEDSTRWIDTH, SHEET, CELLRANGE, or READNAMES.
+   54 | GET DATA /TYPE=GNM/FILE='x.gnumeric'/ **.
+      |                                       ^~"
+])
+AT_CLEANUP

@@ -357,6 +357,7 @@ TESTSUITE_AT = \
 	tests/language/data-io/data-reader.at \
 	tests/language/data-io/dataset.at \
 	tests/language/data-io/file-handle.at \
+	tests/language/data-io/get-data.at \
 	tests/language/data-io/get-data-spreadsheet.at \
 	tests/language/data-io/get-data-psql.at \
 	tests/language/data-io/get-data-txt.at \

@@ -25,7 +25,7 @@ struct casereader;
 struct psql_read_info
 {
   char *conninfo ;
-  struct string sql;
+  char * sql;
   bool allow_clear;
   int str_width;
   int bsize;

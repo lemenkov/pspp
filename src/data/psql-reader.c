@@ -234,7 +234,6 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   const char *encoding;
 
   struct psql_reader *r = XZALLOC (struct psql_reader);
-  struct string query ;
 
   r->conn = PQconnectdb (info->conninfo);
   if (NULL == r->conn)
@@ -305,21 +304,19 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   }
 
   const int version = PQserverVersion (r->conn);
-  ds_init_empty (&query);
   /*
     Versions before 9.1 don't have the REPEATABLE READ isolation level.
     However according to <a12321aabb@gmail.com> if the server is in the
     "hot standby" mode then SERIALIZABLE won't work.
    */
-  ds_put_c_format (&query,
-		   "BEGIN READ ONLY ISOLATION LEVEL %s; "
-		   "DECLARE  pspp BINARY CURSOR FOR ",
-		   (version < 90100) ? "SERIALIZABLE" : "REPEATABLE READ");
+  char *query = xasprintf (
+    "BEGIN READ ONLY ISOLATION LEVEL %s; "
+    "DECLARE  pspp BINARY CURSOR FOR %s",
+    (version < 90100) ? "SERIALIZABLE" : "REPEATABLE READ",
+    info->sql);
+  qres = PQexec (r->conn, query);
+  free (query);
 
-  ds_put_substring (&query, info->sql.ss);
-
-  qres = PQexec (r->conn, ds_cstr (&query));
-  ds_destroy (&query);
   if (PQresultStatus (qres) != PGRES_COMMAND_OK)
     {
       msg (ME, _("Error from psql source: %s."),
@@ -339,12 +336,11 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
      On the other hand, most PSPP functions don't need to know this.
      The GUI is the notable exception.
   */
-  ds_init_cstr (&query, "SELECT count (*) FROM (");
-  ds_put_substring (&query, info->sql.ss);
-  ds_put_cstr (&query, ") stupid_sql_standard");
+  query = xasprintf ("SELECT count (*) FROM (%s) stupid_sql_standard",
+                     info->sql);
+  qres = PQexec (r->conn, query);
+  free (query);
 
-  qres = PQexec (r->conn, ds_cstr (&query));
-  ds_destroy (&query);
   if (PQresultStatus (qres) != PGRES_TUPLES_OK)
     {
       msg (ME, _("Error from psql source: %s."),
