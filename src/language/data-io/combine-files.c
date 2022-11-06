@@ -357,7 +357,11 @@ combine_files (enum comb_command_type command,
         }
       else
 	{
-	  lex_error (lexer, NULL);
+          if (command == COMB_UPDATE)
+            lex_error_expecting (lexer, "BY", "MAP", "DROP", "KEEP");
+          else
+            lex_error_expecting (lexer, "BY", "FIRST", "LAST",
+                                 "MAP", "DROP", "KEEP");
 	  goto error;
 	}
 

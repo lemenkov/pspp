@@ -132,6 +132,6 @@ AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
    20 | DO IF !.
       |       ^"
 
-error: DO IF: At end of input: Syntax error.
+error: DO IF: At end of input: Syntax error expecting END IF.
 ])
 AT_CLEANUP

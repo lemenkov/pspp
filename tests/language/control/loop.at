@@ -369,6 +369,6 @@ loop.sps:36.10: error: LOOP: Syntax error expecting end of command.
    36 | END LOOP !.
       |          ^
 
-error: LOOP: At end of input: Syntax error.
+error: LOOP: At end of input: Syntax error expecting END LOOP.
 ])
 AT_CLEANUP

@@ -120,7 +120,7 @@ cmd_do_if (struct lexer *lexer, struct dataset *ds)
     {
       if (lex_token (lexer) == T_STOP)
         {
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "END IF");
           break;
         }
       else if (lex_match_phrase (lexer, "ELSE IF"))
