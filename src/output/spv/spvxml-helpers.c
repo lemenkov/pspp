@@ -77,7 +77,13 @@ xml_element_type_to_string (xmlElementType type)
     case XML_NAMESPACE_DECL: return "namespace declaration";
     case XML_XINCLUDE_START: return "XInclude start";
     case XML_XINCLUDE_END: return "XInclude end";
+
+#ifndef XML_DOCB_DOCUMENT_NODE
+      /* libxml2 removed this value from the enum and redefined it as a macro
+         for backward compatibility.  When it's not in the enum, it's best not
+         to have a 'case' for it because that provokes a compiler warning. */
     case XML_DOCB_DOCUMENT_NODE: return "docb document";
+#endif
     default: return "<error>";
     }
 }
