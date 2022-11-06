@@ -45,19 +45,27 @@ parse_window (struct lexer *lexer, unsigned int allowed,
   else if (allowed & (1 << DATASET_HIDDEN) && lex_match_id (lexer, "HIDDEN"))
     return DATASET_HIDDEN;
 
-  lex_error (lexer, NULL);
+  const char *allowed_s[4];
+  size_t n_allowed = 0;
+  if (allowed & (1 << DATASET_MINIMIZED))
+    allowed_s[n_allowed++] = "MINIMIZED";
+  if (allowed & (1 << DATASET_ASIS))
+    allowed_s[n_allowed++] = "ASIS";
+  if (allowed & (1 << DATASET_FRONT))
+    allowed_s[n_allowed++] = "FRONT";
+  if (allowed & (1 << DATASET_HIDDEN))
+    allowed_s[n_allowed++] = "HIDDEN";
+  lex_error_expecting_array (lexer, allowed_s, n_allowed);
   return -1;
 }
 
 static struct dataset *
 parse_dataset_name (struct lexer *lexer, struct session *session)
 {
-  struct dataset *ds;
-
   if (!lex_force_id (lexer))
     return NULL;
 
-  ds = session_lookup_dataset (session, lex_tokcstr (lexer));
+  struct dataset *ds = session_lookup_dataset (session, lex_tokcstr (lexer));
   if (ds != NULL)
     lex_get (lexer);
   else
@@ -68,15 +76,13 @@ parse_dataset_name (struct lexer *lexer, struct session *session)
 int
 cmd_dataset_name (struct lexer *lexer, struct dataset *active)
 {
-  int display;
-
   if (!lex_force_id (lexer))
     return CMD_FAILURE;
   dataset_set_name (active, lex_tokcstr (lexer));
   lex_get (lexer);
 
-  display = parse_window (lexer, (1 << DATASET_ASIS) | (1 << DATASET_FRONT),
-                          DATASET_ASIS);
+  int display = parse_window (lexer, (1 << DATASET_ASIS) | (1 << DATASET_FRONT),
+                              DATASET_ASIS);
   if (display < 0)
     return CMD_FAILURE;
   else if (display != DATASET_ASIS)
@@ -119,28 +125,26 @@ int
 cmd_dataset_copy (struct lexer *lexer, struct dataset *old)
 {
   struct session *session = dataset_session (old);
-  struct dataset *new;
-  int display;
-  char *name;
 
   /* Parse the entire command first.  proc_execute() can attempt to parse
      BEGIN DATA...END DATA and it will fail confusingly if we are in the
      middle of the command at the point.  */
   if (!lex_force_id (lexer))
     return CMD_FAILURE;
-  name = xstrdup (lex_tokcstr (lexer));
+  char *name = xstrdup (lex_tokcstr (lexer));
   lex_get (lexer);
 
-  display = parse_window (lexer, ((1 << DATASET_MINIMIZED)
-                                  | (1 << DATASET_HIDDEN)
-                                  | (1 << DATASET_FRONT)),
-                          DATASET_MINIMIZED);
+  int display = parse_window (lexer, ((1 << DATASET_MINIMIZED)
+                                      | (1 << DATASET_HIDDEN)
+                                      | (1 << DATASET_FRONT)),
+                              DATASET_MINIMIZED);
   if (display < 0)
     {
       free (name);
       return CMD_FAILURE;
     }
 
+  struct dataset *new;
   if (session_lookup_dataset (session, name) == old)
     {
       new = old;
@@ -161,18 +165,16 @@ int
 cmd_dataset_declare (struct lexer *lexer, struct dataset *ds)
 {
   struct session *session = dataset_session (ds);
-  struct dataset *new;
-  int display;
 
   if (!lex_force_id (lexer))
     return CMD_FAILURE;
 
-  new = session_lookup_dataset (session, lex_tokcstr (lexer));
+  struct dataset *new = session_lookup_dataset (session, lex_tokcstr (lexer));
   if (new == NULL)
     new = dataset_create (session, lex_tokcstr (lexer));
   lex_get (lexer);
 
-  display = parse_window (lexer, ((1 << DATASET_MINIMIZED)
+  int display = parse_window (lexer, ((1 << DATASET_MINIMIZED)
                                   | (1 << DATASET_HIDDEN)
                                   | (1 << DATASET_FRONT)),
                           DATASET_MINIMIZED);

@@ -331,3 +331,66 @@ y,1,2-4,F3.0
 ])
 
 AT_CLEANUP
+
+AT_SETUP([DATASET syntax errors])
+AT_DATA([dataset.sps], [dnl
+DATASET NAME **.
+DATASET NAME xyzzy WINDOW **.
+
+DATASET NAME xyzzy.
+DATASET ACTIVATE **.
+DATASET ACTIVATE xyzzy WINDOW **.
+
+DATASET COPY **.
+DATASET COPY quux WINDOW **.
+
+DATASET DECLARE **.
+DATASET DECLARE foo WINDOW **.
+
+DATASET CLOSE **.
+])
+AT_CHECK([pspp dataset.sps], [1], [dnl
+dataset.sps:1.14-1.15: error: DATASET NAME: Syntax error expecting identifier.
+    1 | DATASET NAME **.
+      |              ^~
+
+dataset.sps:2.27-2.28: error: DATASET NAME: Syntax error expecting ASIS or
+FRONT.
+    2 | DATASET NAME xyzzy WINDOW **.
+      |                           ^~
+
+dataset.sps:5.18-5.19: error: DATASET ACTIVATE: Syntax error expecting
+identifier.
+    5 | DATASET ACTIVATE **.
+      |                  ^~
+
+dataset.sps:6.31-6.32: error: DATASET ACTIVATE: Syntax error expecting ASIS or
+FRONT.
+    6 | DATASET ACTIVATE xyzzy WINDOW **.
+      |                               ^~
+
+dataset.sps:8.14-8.15: error: DATASET COPY: Syntax error expecting identifier.
+    8 | DATASET COPY **.
+      |              ^~
+
+dataset.sps:9.26-9.27: error: DATASET COPY: Syntax error expecting MINIMIZED,
+FRONT, or HIDDEN.
+    9 | DATASET COPY quux WINDOW **.
+      |                          ^~
+
+dataset.sps:11.17-11.18: error: DATASET DECLARE: Syntax error expecting
+identifier.
+   11 | DATASET DECLARE **.
+      |                 ^~
+
+dataset.sps:12.28-12.29: error: DATASET DECLARE: Syntax error expecting
+MINIMIZED, FRONT, or HIDDEN.
+   12 | DATASET DECLARE foo WINDOW **.
+      |                            ^~
+
+dataset.sps:14.15-14.16: error: DATASET CLOSE: Syntax error expecting
+identifier.
+   14 | DATASET CLOSE **.
+      |               ^~
+])
+AT_CLEANUP
