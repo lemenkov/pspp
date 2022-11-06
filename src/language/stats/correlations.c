@@ -254,7 +254,7 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
 }
 
 int
-cmd_correlation (struct lexer *lexer, struct dataset *ds)
+cmd_correlations (struct lexer *lexer, struct dataset *ds)
 {
   int i;
   int n_all_vars = 0; /* Total number of variables involved in this command */
