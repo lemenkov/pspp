@@ -205,9 +205,7 @@ fh_from_id (const char *id)
   HMAP_FOR_EACH_WITH_HASH (handle, struct file_handle, name_node,
                            utf8_hash_case_string (id, 0), &named_handles)
     if (!utf8_strcasecmp (id, handle->id))
-      {
-	return fh_ref (handle);
-      }
+      return fh_ref (handle);
 
   return NULL;
 }
@@ -222,19 +220,18 @@ static struct file_handle *
 create_handle (const char *id, char *handle_name, enum fh_referent referent,
                const char *encoding)
 {
-  struct file_handle *handle = XZALLOC (struct file_handle);
+  struct file_handle *handle = xmalloc (sizeof *handle);
+  *handle = (struct file_handle) {
+    .ref_cnt = 1,
+    .id = xstrdup_if_nonnull (id),
+    .name = handle_name,
+    .referent = referent,
+    .encoding = xstrdup (encoding),
+  };
 
-  handle->ref_cnt = 1;
-  handle->id = xstrdup_if_nonnull (id);
-  handle->name = handle_name;
-  handle->referent = referent;
-  handle->encoding = xstrdup (encoding);
-
-  if (id != NULL)
-    {
-      hmap_insert (&named_handles, &handle->name_node,
-                   utf8_hash_case_string (handle->id, 0));
-    }
+  if (id)
+    hmap_insert (&named_handles, &handle->name_node,
+                 utf8_hash_case_string (handle->id, 0));
 
   return handle;
 }
@@ -256,11 +253,9 @@ struct file_handle *
 fh_create_file (const char *id, const char *file_name, const char *file_name_encoding,
                 const struct fh_properties *properties)
 {
-  char *handle_name;
-  struct file_handle *handle;
-
-  handle_name = id != NULL ? xstrdup (id) : xasprintf ("`%s'", file_name);
-  handle = create_handle (id, handle_name, FH_REF_FILE, properties->encoding);
+  char *handle_name = id ? xstrdup (id) : xasprintf ("`%s'", file_name);
+  struct file_handle *handle = create_handle (id, handle_name, FH_REF_FILE,
+                                              properties->encoding);
   handle->file_name = xstrdup (file_name);
   handle->file_name_encoding = xstrdup_if_nonnull (file_name_encoding);
   handle->mode = properties->mode;
