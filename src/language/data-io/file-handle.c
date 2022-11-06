@@ -56,8 +56,10 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
     goto exit;
 
   handle_name = xstrdup (lex_tokcstr (lexer));
-  if (fh_from_id (handle_name))
+  struct file_handle *fh = fh_from_id (handle_name);
+  if (fh)
     {
+      fh_unref (fh);
       lex_error (lexer, _("File handle %s is already defined.  "
                           "Use %s before redefining a file handle."),
                  handle_name, "CLOSE FILE HANDLE");
@@ -68,6 +70,8 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
   if (!lex_force_match (lexer, T_SLASH))
     goto exit;
 
+  int mode_start = 0;
+  int mode_end = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "NAME"))
@@ -120,6 +124,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
               lex_sbc_only_once (lexer, "MODE");
               goto exit;
             }
+          mode_start = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
 
           if (lex_match_id (lexer, "CHARACTER"))
@@ -132,9 +137,11 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
             mode = MODE_360;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "CHARACTER", "BINARY",
+                                   "IMAGE", "360");
               goto exit;
             }
+          mode_end = lex_ofs (lexer) - 1;
         }
       else if (lex_match_id (lexer, "ENDS"))
         {
@@ -151,7 +158,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
             ends = FH_END_CRLF;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "LF", "CRLF");
               goto exit;
             }
         }
@@ -173,7 +180,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
             recform = RECFORM_SPANNED;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "FIXED", "VARIABLE", "SPANNED");
               goto exit;
             }
         }
@@ -238,7 +245,9 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         }
       else
         {
-          msg (SE, _("%s must be specified with %s."), "RECFORM", "MODE=360");
+          lex_ofs_error (lexer, mode_start, mode_end,
+                         _("%s must be specified with %s."),
+                         "RECFORM", "MODE=360");
           goto exit;
         }
       break;

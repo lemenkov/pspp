@@ -42,3 +42,107 @@ x
 ])
 AT_CLEANUP
 
+AT_SETUP([FILE HANDLE syntax errors])
+AT_DATA([file-handle.sps], [dnl
+FILE HANDLE **.
+FILE HANDLE x/NAME='x.txt'.
+FILE HANDLE x/NAME='x.txt'.
+FILE HANDLE y **.
+FILE HANDLE y/NAME=**.
+FILE HANDLE y/LRECL=8/LRECL=8.
+FILE HANDLE y/LRECL=**.
+FILE HANDLE y/TABWIDTH=8/TABWIDTH=8.
+FILE HANDLE y/TABWIDTH=**.
+FILE HANDLE y/MODE=CHARACTER/MODE=CHARACTER.
+FILE HANDLE y/MODE=**.
+FILE HANDLE y/ENDS=LF/ENDS=LF.
+FILE HANDLE y/ENDS=**.
+FILE HANDLE y/RECFORM=FIXED/RECFORM=FIXED.
+FILE HANDLE y/RECFORM=**.
+FILE HANDLE y/ENCODING='UTF-8'/ENCODING='UTF-8'.
+FILE HANDLE y/ENCODING=**.
+FILE HANDLE y/TABWIDTH=8.
+FILE HANDLE y/NAME='x.txt'/MODE=360.
+FILE HANDLE y/NAME='x.txt'/MODE=FIXED.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='file-handle.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"file-handle.sps:1.13-1.14: error: FILE HANDLE: Syntax error expecting identifier.
+    1 | FILE HANDLE **.
+      |             ^~"
+
+"file-handle.sps:3.13: error: FILE HANDLE: File handle x is already defined.  Use CLOSE FILE HANDLE before redefining a file handle.
+    3 | FILE HANDLE x/NAME='x.txt'.
+      |             ^"
+
+"file-handle.sps:4.15-4.16: error: FILE HANDLE: Syntax error expecting `/'.
+    4 | FILE HANDLE y **.
+      |               ^~"
+
+"file-handle.sps:5.20-5.21: error: FILE HANDLE: Syntax error expecting string.
+    5 | FILE HANDLE y/NAME=**.
+      |                    ^~"
+
+"file-handle.sps:6.23-6.27: error: FILE HANDLE: Subcommand LRECL may only be specified once.
+    6 | FILE HANDLE y/LRECL=8/LRECL=8.
+      |                       ^~~~~"
+
+"file-handle.sps:7.21-7.22: error: FILE HANDLE: Syntax error expecting positive integer for LRECL.
+    7 | FILE HANDLE y/LRECL=**.
+      |                     ^~"
+
+"file-handle.sps:8.26-8.33: error: FILE HANDLE: Subcommand TABWIDTH may only be specified once.
+    8 | FILE HANDLE y/TABWIDTH=8/TABWIDTH=8.
+      |                          ^~~~~~~~"
+
+"file-handle.sps:9.24-9.25: error: FILE HANDLE: Syntax error expecting positive integer for TABWIDTH.
+    9 | FILE HANDLE y/TABWIDTH=**.
+      |                        ^~"
+
+"file-handle.sps:10.30-10.33: error: FILE HANDLE: Subcommand MODE may only be specified once.
+   10 | FILE HANDLE y/MODE=CHARACTER/MODE=CHARACTER.
+      |                              ^~~~"
+
+"file-handle.sps:11.20-11.21: error: FILE HANDLE: Syntax error expecting CHARACTER, BINARY, IMAGE, or 360.
+   11 | FILE HANDLE y/MODE=**.
+      |                    ^~"
+
+"file-handle.sps:12.23-12.26: error: FILE HANDLE: Subcommand ENDS may only be specified once.
+   12 | FILE HANDLE y/ENDS=LF/ENDS=LF.
+      |                       ^~~~"
+
+"file-handle.sps:13.20-13.21: error: FILE HANDLE: Syntax error expecting LF or CRLF.
+   13 | FILE HANDLE y/ENDS=**.
+      |                    ^~"
+
+"file-handle.sps:14.29-14.35: error: FILE HANDLE: Subcommand RECFORM may only be specified once.
+   14 | FILE HANDLE y/RECFORM=FIXED/RECFORM=FIXED.
+      |                             ^~~~~~~"
+
+"file-handle.sps:15.23-15.24: error: FILE HANDLE: Syntax error expecting FIXED, VARIABLE, or SPANNED.
+   15 | FILE HANDLE y/RECFORM=**.
+      |                       ^~"
+
+"file-handle.sps:16.32-16.39: error: FILE HANDLE: Subcommand ENCODING may only be specified once.
+   16 | FILE HANDLE y/ENCODING='UTF-8'/ENCODING='UTF-8'.
+      |                                ^~~~~~~~"
+
+"file-handle.sps:17.24-17.25: error: FILE HANDLE: Syntax error expecting string.
+   17 | FILE HANDLE y/ENCODING=**.
+      |                        ^~"
+
+"file-handle.sps:18.1-18.25: error: FILE HANDLE: Required subcommand NAME was not specified.
+   18 | FILE HANDLE y/TABWIDTH=8.
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"file-handle.sps:19.28-19.35: error: FILE HANDLE: RECFORM must be specified with MODE=360.
+   19 | FILE HANDLE y/NAME='x.txt'/MODE=360.
+      |                            ^~~~~~~~"
+
+"file-handle.sps:20.33-20.37: error: FILE HANDLE: Syntax error expecting CHARACTER, BINARY, IMAGE, or 360.
+   20 | FILE HANDLE y/NAME='x.txt'/MODE=FIXED.
+      |                                 ^~~~~"
+])
+AT_CLEANUP
