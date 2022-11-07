@@ -293,13 +293,9 @@ struct reread_trns
 int
 cmd_reread (struct lexer *lexer, struct dataset *ds)
 {
-  struct file_handle *fh;       /* File to be re-read. */
-  struct expression *e;         /* Expression for column to set. */
-  struct reread_trns *t;        /* Created transformation. */
   char *encoding = NULL;
-
-  fh = fh_get_default_handle ();
-  e = NULL;
+  struct file_handle *fh = fh_get_default_handle ();
+  struct expression *e = NULL;
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "COLUMN"))
@@ -337,14 +333,16 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
 	}
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "COLUMN", "FILE", "ENCODING");
           goto error;
 	}
     }
 
-  t = xmalloc (sizeof *t);
-  t->reader = dfm_open_reader (fh, lexer, encoding);
-  t->column = e;
+  struct reread_trns *t = xmalloc (sizeof *t);
+  *t = (struct reread_trns) {
+    .reader = dfm_open_reader (fh, lexer, encoding),
+    .column = e,
+  };
   add_transformation (ds, &reread_trns_class, t);
 
   fh_unref (fh);

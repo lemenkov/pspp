@@ -352,3 +352,51 @@ any variables.
     3 | END INPUT PROGRAM.
 ])
 AT_CLEANUP
+
+AT_SETUP([REREAD syntax errors])
+AT_DATA([reread.sps], [dnl
+INPUT PROGRAM.
+REREAD COLUMN=1 COLUMN=**.
+END INPUT PROGRAM.
+
+INPUT PROGRAM.
+REREAD COLUMN=**.
+END INPUT PROGRAM.
+
+INPUT PROGRAM.
+REREAD FILE=**.
+END INPUT PROGRAM.
+
+INPUT PROGRAM.
+REREAD ENCODING=**.
+END INPUT PROGRAM.
+
+INPUT PROGRAM.
+REREAD **.
+END INPUT PROGRAM.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='reread.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"reread.sps:2.17-2.22: error: REREAD: Subcommand COLUMN may only be specified once.
+    2 | REREAD COLUMN=1 COLUMN=**.
+      |                 ^~~~~~"
+
+"reread.sps:6.15-6.16: error: REREAD: Syntax error.
+    6 | REREAD COLUMN=**.
+      |               ^~"
+
+"reread.sps:10.13-10.14: error: REREAD: Syntax error expecting a file name or handle name.
+   10 | REREAD FILE=**.
+      |             ^~"
+
+"reread.sps:14.17-14.18: error: REREAD: Syntax error expecting string.
+   14 | REREAD ENCODING=**.
+      |                 ^~"
+
+"reread.sps:18.8-18.9: error: REREAD: Syntax error expecting COLUMN, FILE, or ENCODING.
+   18 | REREAD **.
+      |        ^~"
+])
+AT_CLEANUP
