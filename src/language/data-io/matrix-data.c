@@ -1002,7 +1002,9 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
                 mf.diagonal = NO_DIAGONAL;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "LIST", "FREE",
+                                       "UPPER", "LOWER", "FULL",
+                                       "DIAGONAL", "NODIAGONAL");
 		  goto error;
 		}
 	    }
@@ -1118,7 +1120,8 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
         }
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "N", "FORMAT", "FILE", "SPLIT", "FACTORS",
+                               "CELLS", "CONTENTS");
 	  goto error;
 	}
     }

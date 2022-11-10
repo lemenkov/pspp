@@ -1251,7 +1251,7 @@ matrix-data.sps:12: error: MATRIX DATA: CELLS is required when factor variables 
    21 | MATRIX DATA VARIABLES=v/N=-1.
       |                           ^~"
 
-"matrix-data.sps:22.32-22.36: error: MATRIX DATA: Syntax error.
+"matrix-data.sps:22.32-22.36: error: MATRIX DATA: Syntax error expecting LIST, FREE, UPPER, LOWER, FULL, DIAGONAL, or NODIAGONAL.
    22 | MATRIX DATA VARIABLES=v/FORMAT=XYZZY.
       |                                ^~~~~"
 
@@ -1267,7 +1267,7 @@ matrix-data.sps:12: error: MATRIX DATA: CELLS is required when factor variables 
    25 | MATRIX DATA VARIABLES=v/CELLS=-1.
       |                               ^~"
 
-"matrix-data.sps:26.25-26.29: error: MATRIX DATA: Syntax error.
+"matrix-data.sps:26.25-26.29: error: MATRIX DATA: Syntax error expecting N, FORMAT, FILE, SPLIT, FACTORS, CELLS, or CONTENTS.
    26 | MATRIX DATA VARIABLES=v/XYZZY.
       |                         ^~~~~"
 ])
