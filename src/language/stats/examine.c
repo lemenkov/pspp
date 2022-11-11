@@ -21,46 +21,38 @@
 #include <math.h>
 #include <gsl/gsl_cdf.h>
 
-#include "libpspp/assertion.h"
-#include "libpspp/message.h"
-#include "libpspp/pool.h"
-
-
-#include "data/dataset.h"
-#include "data/dictionary.h"
 #include "data/casegrouper.h"
+#include "data/caseproto.h"
 #include "data/casereader.h"
 #include "data/casewriter.h"
-#include "data/caseproto.h"
-#include "data/subcase.h"
-
-
+#include "data/dataset.h"
+#include "data/dictionary.h"
 #include "data/format.h"
-
-#include "math/interaction.h"
-#include "math/box-whisker.h"
-#include "math/categoricals.h"
-#include "math/chart-geometry.h"
-#include "math/histogram.h"
-#include "math/moments.h"
-#include "math/np.h"
-#include "math/sort.h"
-#include "math/order-stats.h"
-#include "math/percentiles.h"
-#include "math/shapiro-wilk.h"
-#include "math/tukey-hinges.h"
-#include "math/trimmed-mean.h"
-
-#include "output/charts/boxplot.h"
-#include "output/charts/np-plot.h"
-#include "output/charts/spreadlevel-plot.h"
-#include "output/charts/plot-hist.h"
-
+#include "data/subcase.h"
 #include "language/command.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/value-parser.h"
 #include "language/lexer/variable-parser.h"
-
+#include "libpspp/assertion.h"
+#include "libpspp/message.h"
+#include "libpspp/pool.h"
+#include "math/box-whisker.h"
+#include "math/categoricals.h"
+#include "math/chart-geometry.h"
+#include "math/histogram.h"
+#include "math/interaction.h"
+#include "math/moments.h"
+#include "math/np.h"
+#include "math/order-stats.h"
+#include "math/percentiles.h"
+#include "math/shapiro-wilk.h"
+#include "math/sort.h"
+#include "math/trimmed-mean.h"
+#include "math/tukey-hinges.h"
+#include "output/charts/boxplot.h"
+#include "output/charts/np-plot.h"
+#include "output/charts/plot-hist.h"
+#include "output/charts/spreadlevel-plot.h"
 #include "output/pivot-table.h"
 
 #include "gettext.h"
@@ -81,7 +73,6 @@ enum bp_mode
     BP_VARIABLES
   };
 
-
 /* Indices for the ex_proto member (below) */
 enum
   {
@@ -90,11 +81,6 @@ enum
     EX_WT    /* weight */
   };
 
-
-#define PLOT_HISTOGRAM      0x1
-#define PLOT_BOXPLOT        0x2
-#define PLOT_NPPLOT         0x4
-#define PLOT_SPREADLEVEL    0x8
 
 struct examine
 {
@@ -134,7 +120,10 @@ struct examine
   double *ptiles;
   size_t n_percentiles;
 
-  unsigned int plot;
+  bool plot_histogram;
+  bool plot_boxplot;
+  bool plot_npplot;
+  bool plot_spreadlevel;
   float sl_power;
 
   enum bp_mode boxplot_mode;
@@ -875,7 +864,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
                                                            iact_idx, i);
           const struct exploratory_stats *es = ess + v;
 
-          for (int e = 0 ; e < cmd->disp_extremes; ++e)
+          for (int e = 0; e < cmd->disp_extremes; ++e)
             {
               indexes[1] = e;
 
@@ -988,25 +977,21 @@ summary_report (const struct examine *cmd, int iact_idx)
 static struct interaction *
 parse_interaction (struct lexer *lexer, struct examine *ex)
 {
-  const struct variable *v = NULL;
-  struct interaction *iact = NULL;
+  const struct variable *v;
+  if (!lex_match_variable (lexer, ex->dict, &v))
+    return NULL;
 
-  if (lex_match_variable (lexer, ex->dict, &v))
+  struct interaction *iact = interaction_create (v);
+  while (lex_match (lexer, T_BY))
     {
-      iact = interaction_create (v);
-
-      while (lex_match (lexer, T_BY))
+      if (!lex_match_variable (lexer, ex->dict, &v))
         {
-          if (!lex_match_variable (lexer, ex->dict, &v))
-            {
-              interaction_destroy (iact);
-              return NULL;
-            }
-          interaction_add_variable (iact, v);
+          interaction_destroy (iact);
+          return NULL;
         }
-      lex_match (lexer, T_COMMA);
+      interaction_add_variable (iact, v);
     }
-
+  lex_match (lexer, T_COMMA);
   return iact;
 }
 
@@ -1067,7 +1052,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
 
   for (v = 0; v < examine->n_dep_vars; v++)
     {
-      struct ccase *outcase ;
+      struct ccase *outcase;
       const struct variable *var = examine->dep_vars[v];
       const double x = case_num (c, var);
 
@@ -1121,12 +1106,11 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       struct casereader *reader;
       struct ccase *c;
 
-      if (examine->plot & PLOT_HISTOGRAM && es[v].non_missing > 0)
+      if (examine->plot_histogram && es[v].non_missing > 0)
         {
           /* Sturges Rule */
           double bin_width = fabs (es[v].minimum - es[v].maximum)
-            / (1 + log2 (es[v].cc))
-            ;
+            / (1 + log2 (es[v].cc));
 
           es[v].histogram =
             histogram_create (bin_width, es[v].minimum, es[v].maximum);
@@ -1141,8 +1125,8 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       es[v].minima = pool_calloc (examine->pool, examine->calc_extremes, sizeof (*es[v].minima));
       for (i = 0; i < examine->calc_extremes; ++i)
         {
-          value_init_pool (examine->pool, &es[v].maxima[i].identity, examine->id_width) ;
-          value_init_pool (examine->pool, &es[v].minima[i].identity, examine->id_width) ;
+          value_init_pool (examine->pool, &es[v].maxima[i].identity, examine->id_width);
+          value_init_pool (examine->pool, &es[v].minima[i].identity, examine->id_width);
         }
 
       bool warn = true;
@@ -1230,7 +1214,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 	free (os);
       }
 
-      if (examine->plot & PLOT_BOXPLOT)
+      if (examine->plot_boxplot)
         {
           struct order_stats *os;
 
@@ -1243,7 +1227,8 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 				      EX_WT, EX_VAL);
         }
 
-      if (examine->plot)
+      if (examine->plot_boxplot || examine->plot_histogram
+          || examine->plot_npplot || examine->plot_spreadlevel)
         {
 	  double mean;
 
@@ -1260,7 +1245,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 	    }
         }
 
-      if (examine->plot & PLOT_NPPLOT)
+      if (examine->plot_npplot)
         {
           double n, mean, var;
           struct order_stats *os;
@@ -1301,14 +1286,14 @@ cleanup_exploratory_stats (struct examine *cmd)
 	      struct statistic  *stat = &os->parent;
 	      stat->destroy (stat);
 
-	      for (q = 0; q < 3 ; q++)
+	      for (q = 0; q < 3; q++)
 		{
 		  os = &es[v].quartiles[q]->parent;
 		  stat = &os->parent;
 		  stat->destroy (stat);
 		}
 
-	      for (q = 0; q < cmd->n_percentiles ; q++)
+	      for (q = 0; q < cmd->n_percentiles; q++)
 		{
 		  os = &es[v].percentiles[q]->parent;
 		  stat = &os->parent;
@@ -1400,7 +1385,7 @@ run_examine (struct examine *cmd, struct casereader *input)
       if (cmd->n_percentiles > 0)
         percentiles_report (cmd, i);
 
-      if (cmd->plot & PLOT_BOXPLOT)
+      if (cmd->plot_boxplot)
         {
           switch (cmd->boxplot_mode)
             {
@@ -1416,19 +1401,20 @@ run_examine (struct examine *cmd, struct casereader *input)
             }
         }
 
-      if (cmd->plot & PLOT_HISTOGRAM)
+      if (cmd->plot_histogram)
         show_histogram (cmd, i);
 
-      if (cmd->plot & PLOT_NPPLOT)
+      if (cmd->plot_npplot)
         show_npplot (cmd, i);
 
-      if (cmd->plot & PLOT_SPREADLEVEL)
+      if (cmd->plot_spreadlevel)
         show_spreadlevel (cmd, i);
 
       if (cmd->descriptives)
         descriptives_report (cmd, i);
 
-      if (cmd->plot)
+      if (cmd->plot_histogram || cmd->plot_npplot
+          || cmd->plot_spreadlevel || cmd->plot_boxplot)
 	normality_report (cmd, i);
     }
 
@@ -1436,59 +1422,51 @@ run_examine (struct examine *cmd, struct casereader *input)
   categoricals_destroy (cmd->cats);
 }
 
+static void
+add_interaction (struct examine *examine, struct interaction *iact,
+                 size_t *allocated_iacts)
+{
+  if (examine->n_iacts >= *allocated_iacts)
+    examine->iacts = pool_2nrealloc (examine->pool, examine->iacts,
+                                     allocated_iacts, sizeof *examine->iacts);
+  examine->iacts[examine->n_iacts++] = iact;
+}
 
 int
 cmd_examine (struct lexer *lexer, struct dataset *ds)
 {
-  int i;
   bool nototals_seen = false;
   bool totals_seen = false;
 
-  struct interaction **iacts_mem = NULL;
-  struct examine examine;
   bool percentiles_seen = false;
 
-  examine.missing_pw = false;
-  examine.disp_extremes = 0;
-  examine.calc_extremes = 0;
-  examine.descriptives = false;
-  examine.conf = 0.95;
-  examine.pc_alg = PC_HAVERAGE;
-  examine.ptiles = NULL;
-  examine.n_percentiles = 0;
-  examine.id_idx = -1;
-  examine.id_width = 0;
-  examine.id_var = NULL;
-  examine.boxplot_mode = BP_GROUPS;
+  size_t allocated_iacts = 0;
+  struct examine examine = {
+    .pool = pool_create (),
+    .dict = dataset_dict (ds),
 
-  examine.ex_proto = caseproto_create ();
+    .conf = 0.95,
+    .pc_alg = PC_HAVERAGE,
+    .id_idx = -1,
+    .boxplot_mode = BP_GROUPS,
 
-  examine.pool = pool_create ();
+    .ex_proto = caseproto_create (),
+
+    .dep_excl = MV_ANY,
+    .fctr_excl = MV_ANY,
+  };
 
   /* Allocate space for the first interaction.
      This is interaction is an empty one (for the totals).
      If no totals are requested, we will simply ignore this
      interaction.
   */
-  examine.n_iacts = 1;
-  examine.iacts = iacts_mem = pool_zalloc (examine.pool, sizeof (struct interaction *));
-  examine.iacts[0] = interaction_create (NULL);
-
-  examine.dep_excl = MV_ANY;
-  examine.fctr_excl = MV_ANY;
-  examine.plot = 0;
-  examine.sl_power = 0;
-  examine.dep_vars = NULL;
-  examine.n_dep_vars = 0;
-  examine.dict = dataset_dict (ds);
+  add_interaction (&examine, interaction_create (NULL), &allocated_iacts);
 
   /* Accept an optional, completely pointless "/VARIABLES=" */
   lex_match (lexer, T_SLASH);
-  if (lex_match_id  (lexer, "VARIABLES"))
-    {
-      if (! lex_force_match (lexer, T_EQUALS))
-        goto error;
-    }
+  if (lex_match_id (lexer, "VARIABLES") && !lex_force_match (lexer, T_EQUALS))
+    goto error;
 
   if (!parse_variables_const (lexer, examine.dict,
 			      &examine.dep_vars, &examine.n_dep_vars,
@@ -1497,22 +1475,14 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   if (lex_match (lexer, T_BY))
     {
-      struct interaction *iact = NULL;
-      do
+      for (;;)
         {
-          iact = parse_interaction (lexer, &examine);
-          if (iact)
-            {
-              examine.n_iacts++;
-              iacts_mem =
-                pool_nrealloc (examine.pool, iacts_mem,
-			       examine.n_iacts,
-			       sizeof (*iacts_mem));
+          struct interaction *iact = parse_interaction (lexer, &examine);
+          if (!iact)
+            break;
 
-              iacts_mem[examine.n_iacts - 1] = iact;
-            }
+          add_interaction (&examine, iact, &allocated_iacts);
         }
-      while (iact);
     }
 
   int nototals_ofs = 0;
@@ -1528,9 +1498,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
               if (lex_match_id (lexer, "DESCRIPTIVES"))
-                {
-                  examine.descriptives = true;
-                }
+                examine.descriptives = true;
               else if (lex_match_id (lexer, "EXTREME"))
                 {
                   int extr = 5;
@@ -1541,10 +1509,10 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                       extr = lex_integer (lexer);
 
                       lex_get (lexer);
-                      if (! lex_force_match (lexer, T_RPAREN))
+                      if (!lex_force_match (lexer, T_RPAREN))
                         goto error;
                     }
-                  examine.disp_extremes  = extr;
+                  examine.disp_extremes = extr;
                 }
               else if (lex_match_id (lexer, "NONE"))
                 {
@@ -1556,7 +1524,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 }
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "DESCRIPTIVES", "EXTREME",
+                                       "NONE", "ALL");
                   goto error;
                 }
             }
@@ -1566,19 +1535,18 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
           percentiles_seen = true;
           if (lex_match (lexer, T_LPAREN))
             {
+              size_t allocated_percentiles = examine.n_percentiles;
               while (lex_is_number (lexer))
                 {
                   if (!lex_force_num_range_open (lexer, "PERCENTILES", 0, 100))
                     goto error;
                   double p = lex_number (lexer);
 
-                  examine.n_percentiles++;
-                  examine.ptiles =
-                    xrealloc (examine.ptiles,
-                              sizeof (*examine.ptiles) *
-                              examine.n_percentiles);
-
-                  examine.ptiles[examine.n_percentiles - 1] = p;
+                  if (examine.n_percentiles >= allocated_percentiles)
+                    examine.ptiles = x2nrealloc (examine.ptiles,
+                                                 &allocated_percentiles,
+                                                 sizeof *examine.ptiles);
+                  examine.ptiles[examine.n_percentiles++] = p;
 
                   lex_get (lexer);
                   lex_match (lexer, T_COMMA);
@@ -1593,40 +1561,28 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
               if (lex_match_id (lexer, "HAVERAGE"))
-                {
-                  examine.pc_alg = PC_HAVERAGE;
-                }
+                examine.pc_alg = PC_HAVERAGE;
               else if (lex_match_id (lexer, "WAVERAGE"))
-                {
-                  examine.pc_alg = PC_WAVERAGE;
-                }
+                examine.pc_alg = PC_WAVERAGE;
               else if (lex_match_id (lexer, "ROUND"))
-                {
-                  examine.pc_alg = PC_ROUND;
-                }
+                examine.pc_alg = PC_ROUND;
               else if (lex_match_id (lexer, "EMPIRICAL"))
-                {
-                  examine.pc_alg = PC_EMPIRICAL;
-                }
+                examine.pc_alg = PC_EMPIRICAL;
               else if (lex_match_id (lexer, "AEMPIRICAL"))
-                {
-                  examine.pc_alg = PC_AEMPIRICAL;
-                }
+                examine.pc_alg = PC_AEMPIRICAL;
               else if (lex_match_id (lexer, "NONE"))
-                {
-                  examine.pc_alg = PC_NONE;
-                }
+                examine.pc_alg = PC_NONE;
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "HAVERAGE", "WAVERAGE",
+                                       "ROUND", "EMPIRICAL", "AEMPIRICAL",
+                                       "NONE");
                   goto error;
                 }
             }
         }
       else if (lex_match_id (lexer, "TOTAL"))
-        {
-          totals_seen = true;
-        }
+        totals_seen = true;
       else if (lex_match_id (lexer, "NOTOTAL"))
         {
           nototals_seen = true;
@@ -1640,32 +1596,22 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
               if (lex_match_id (lexer, "LISTWISE"))
-                {
-                  examine.missing_pw = false;
-                }
+                examine.missing_pw = false;
               else if (lex_match_id (lexer, "PAIRWISE"))
-                {
-                  examine.missing_pw = true;
-                }
+                examine.missing_pw = true;
               else if (lex_match_id (lexer, "EXCLUDE"))
-                {
-                  examine.dep_excl = MV_ANY;
-                }
+                examine.dep_excl = MV_ANY;
               else if (lex_match_id (lexer, "INCLUDE"))
-                {
-                  examine.dep_excl = MV_SYSTEM;
-                }
+                examine.dep_excl = MV_SYSTEM;
               else if (lex_match_id (lexer, "REPORT"))
-                {
-                  examine.fctr_excl = 0;
-                }
+                examine.fctr_excl = 0;
               else if (lex_match_id (lexer, "NOREPORT"))
-                {
-                  examine.fctr_excl = MV_ANY;
-                }
+                examine.fctr_excl = MV_ANY;
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "LISTWISE", "PAIRWISE",
+                                       "EXCLUDE", "INCLUDE", "REPORT",
+                                       "NOREPORT");
                   goto error;
                 }
             }
@@ -1674,16 +1620,12 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
         {
 	  lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "VARIABLES"))
-            {
-              examine.boxplot_mode = BP_VARIABLES;
-            }
+            examine.boxplot_mode = BP_VARIABLES;
           else if (lex_match_id (lexer, "GROUPS"))
-            {
-              examine.boxplot_mode = BP_GROUPS;
-            }
+            examine.boxplot_mode = BP_GROUPS;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "VARIABLES", "GROUPS");
               goto error;
             }
         }
@@ -1695,41 +1637,35 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
               if (lex_match_id (lexer, "BOXPLOT"))
-                {
-                  examine.plot |= PLOT_BOXPLOT;
-                }
+                examine.plot_boxplot = true;
               else if (lex_match_id (lexer, "NPPLOT"))
-                {
-                  examine.plot |= PLOT_NPPLOT;
-                }
+                examine.plot_npplot = true;
               else if (lex_match_id (lexer, "HISTOGRAM"))
-                {
-                  examine.plot |= PLOT_HISTOGRAM;
-                }
+                examine.plot_histogram = true;
               else if (lex_match_id (lexer, "SPREADLEVEL"))
                 {
-                  examine.plot |= PLOT_SPREADLEVEL;
+                  examine.plot_spreadlevel = true;
 		  examine.sl_power = 0;
 		  if (lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
 		    {
                       examine.sl_power = lex_number (lexer);
 
                       lex_get (lexer);
-                      if (! lex_force_match (lexer, T_RPAREN))
+                      if (!lex_force_match (lexer, T_RPAREN))
                         goto error;
 		    }
                 }
               else if (lex_match_id (lexer, "NONE"))
-                {
-                  examine.plot = 0;
-                }
+                examine.plot_boxplot = examine.plot_npplot
+                  = examine.plot_histogram = examine.plot_spreadlevel = false;
               else if (lex_match (lexer, T_ALL))
-                {
-                  examine.plot = ~0;
-                }
+                examine.plot_boxplot = examine.plot_npplot
+                  = examine.plot_histogram = examine.plot_spreadlevel = true;
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "BOXPLOT", "NPPLOT",
+                                       "HISTOGRAM", "SPREADLEVEL",
+                                       "NONE", "ALL");
                   goto error;
                 }
               lex_match (lexer, T_COMMA);
@@ -1748,10 +1684,14 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
 
           examine.id_var = parse_variable_const (lexer, examine.dict);
+          if (!examine.id_var)
+            goto error;
         }
       else
         {
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "STATISTICS", "PERCENTILES",
+                               "TOTAL", "NOTOTAL", "MISSING", "COMPARE",
+                               "PLOT", "CINTERVAL", "ID");
           goto error;
         }
     }
@@ -1767,17 +1707,12 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   /* If totals have been requested or if there are no factors
      in this analysis, then the totals need to be included. */
-  if (!nototals_seen || examine.n_iacts == 1)
+  if (nototals_seen && examine.n_iacts > 1)
     {
-      examine.iacts = &iacts_mem[0];
-    }
-  else
-    {
+      interaction_destroy (examine.iacts[0]);
+      examine.iacts++;
       examine.n_iacts--;
-      examine.iacts = &iacts_mem[1];
-      interaction_destroy (iacts_mem[0]);
     }
-
 
   if (examine.id_var)
     {
@@ -1789,11 +1724,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   examine.ex_proto = caseproto_add_width (examine.ex_proto, examine.id_width);   /* id */
   examine.ex_proto = caseproto_add_width (examine.ex_proto, 0); /* weight */
 
-
   if (examine.disp_extremes > 0)
-    {
-      examine.calc_extremes = examine.disp_extremes;
-    }
+    examine.calc_extremes = examine.disp_extremes;
 
   if (examine.descriptives && examine.calc_extremes == 0)
     {
@@ -1804,7 +1736,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   if (percentiles_seen && examine.n_percentiles == 0)
     {
       examine.n_percentiles = 7;
-      examine.ptiles = xcalloc (examine.n_percentiles, sizeof (*examine.ptiles));
+      examine.ptiles = xmalloc (examine.n_percentiles * sizeof *examine.ptiles);
 
       examine.ptiles[0] = 5;
       examine.ptiles[1] = 10;
@@ -1816,21 +1748,17 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
     }
 
   assert (examine.calc_extremes >= examine.disp_extremes);
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
 
-    grouper = casegrouper_create_splits (proc_open (ds), examine.dict);
-    while (casegrouper_get_next_group (grouper, &group))
-      run_examine (&examine, group);
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
+  struct casegrouper *grouper = casegrouper_create_splits (proc_open (ds), examine.dict);
+  struct casereader *group;
+  while (casegrouper_get_next_group (grouper, &group))
+    run_examine (&examine, group);
+  bool ok = casegrouper_destroy (grouper);
+  ok = proc_commit (ds) && ok;
 
   caseproto_unref (examine.ex_proto);
 
-  for (i = 0; i < examine.n_iacts; ++i)
+  for (size_t i = 0; i < examine.n_iacts; ++i)
     interaction_destroy (examine.iacts[i]);
   free (examine.ptiles);
   free (examine.dep_vars);
@@ -1840,8 +1768,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
  error:
   caseproto_unref (examine.ex_proto);
-  examine.iacts = iacts_mem;
-  for (i = 0; i < examine.n_iacts; ++i)
+  for (size_t i = 0; i < examine.n_iacts; ++i)
     interaction_destroy (examine.iacts[i]);
   free (examine.dep_vars);
   free (examine.ptiles);

@@ -1363,3 +1363,99 @@ x,.971,12,.922
 ])
 
 AT_CLEANUP
+
+AT_SETUP([EXAMINE syntax errors])
+AT_DATA([examine.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+EXAMINE VARIABLES **.
+EXAMINE **.
+EXAMINE x BY **.
+EXAMINE x/STATISTICS EXTREME (**).
+EXAMINE x/STATISTICS EXTREME (5 **).
+EXAMINE x/STATISTICS **.
+EXAMINE x/PERCENTILES(111).
+EXAMINE x/PERCENTILES(**).
+EXAMINE x/PERCENTILES **.
+EXAMINE x/MISSING **.
+EXAMINE x/COMPARE **.
+EXAMINE x/PLOT SPREADLEVEL(**).
+EXAMINE x/PLOT SPREADLEVEL(123 **).
+EXAMINE x/PLOT **.
+EXAMINE x/CINTERVAL **.
+EXAMINE x/ **.
+EXAMINE x/TOTAL/NOTOTAL.
+])
+AT_CHECK([pspp -O format=csv examine.sps], [1], [dnl
+"examine.sps:2.19-2.20: error: EXAMINE: Syntax error expecting `='.
+    2 | EXAMINE VARIABLES **.
+      |                   ^~"
+
+"examine.sps:3.9-3.10: error: EXAMINE: Syntax error expecting variable name.
+    3 | EXAMINE **.
+      |         ^~"
+
+"examine.sps:4.14-4.15: error: EXAMINE: Syntax error expecting one of the following: STATISTICS, PERCENTILES, TOTAL, NOTOTAL, MISSING, COMPARE, PLOT, CINTERVAL, ID.
+    4 | EXAMINE x BY **.
+      |              ^~"
+
+"examine.sps:5.31-5.32: error: EXAMINE: Syntax error expecting non-negative integer for EXTREME.
+    5 | EXAMINE x/STATISTICS EXTREME (**).
+      |                               ^~"
+
+"examine.sps:6.33-6.34: error: EXAMINE: Syntax error expecting `@:}@'.
+    6 | EXAMINE x/STATISTICS EXTREME (5 **).
+      |                                 ^~"
+
+"examine.sps:7.22-7.23: error: EXAMINE: Syntax error expecting DESCRIPTIVES, EXTREME, NONE, or ALL.
+    7 | EXAMINE x/STATISTICS **.
+      |                      ^~"
+
+"examine.sps:8.23-8.25: error: EXAMINE: Syntax error expecting number in (0,100) for PERCENTILES.
+    8 | EXAMINE x/PERCENTILES(111).
+      |                       ^~~"
+
+"examine.sps:9.23-9.24: error: EXAMINE: Syntax error expecting `@:}@'.
+    9 | EXAMINE x/PERCENTILES(**).
+      |                       ^~"
+
+"examine.sps:10.23-10.24: error: EXAMINE: Syntax error expecting HAVERAGE, WAVERAGE, ROUND, EMPIRICAL, AEMPIRICAL, or NONE.
+   10 | EXAMINE x/PERCENTILES **.
+      |                       ^~"
+
+"examine.sps:11.19-11.20: error: EXAMINE: Syntax error expecting LISTWISE, PAIRWISE, EXCLUDE, INCLUDE, REPORT, or NOREPORT.
+   11 | EXAMINE x/MISSING **.
+      |                   ^~"
+
+"examine.sps:12.19-12.20: error: EXAMINE: Syntax error expecting VARIABLES or GROUPS.
+   12 | EXAMINE x/COMPARE **.
+      |                   ^~"
+
+"examine.sps:13.28-13.29: error: EXAMINE: Syntax error expecting number.
+   13 | EXAMINE x/PLOT SPREADLEVEL(**).
+      |                            ^~"
+
+"examine.sps:13.28-13.29: error: EXAMINE: Syntax error expecting BOXPLOT, NPPLOT, HISTOGRAM, SPREADLEVEL, NONE, or ALL.
+   13 | EXAMINE x/PLOT SPREADLEVEL(**).
+      |                            ^~"
+
+"examine.sps:14.32-14.33: error: EXAMINE: Syntax error expecting `@:}@'.
+   14 | EXAMINE x/PLOT SPREADLEVEL(123 **).
+      |                                ^~"
+
+"examine.sps:15.16-15.17: error: EXAMINE: Syntax error expecting BOXPLOT, NPPLOT, HISTOGRAM, SPREADLEVEL, NONE, or ALL.
+   15 | EXAMINE x/PLOT **.
+      |                ^~"
+
+"examine.sps:16.21-16.22: error: EXAMINE: Syntax error expecting number.
+   16 | EXAMINE x/CINTERVAL **.
+      |                     ^~"
+
+"examine.sps:17.12-17.13: error: EXAMINE: Syntax error expecting one of the following: STATISTICS, PERCENTILES, TOTAL, NOTOTAL, MISSING, COMPARE, PLOT, CINTERVAL, ID.
+   17 | EXAMINE x/ **.
+      |            ^~"
+
+"examine.sps:18.17-18.23: error: EXAMINE: TOTAL and NOTOTAL are mutually exclusive.
+   18 | EXAMINE x/TOTAL/NOTOTAL.
+      |                 ^~~~~~~"
+])
+AT_CLEANUP
