@@ -408,3 +408,40 @@ correlations.sps:13: error: CORRELATIONS: The data for the chosen variables are 
 ])
 
 AT_CLEANUP
+
+AT_SETUP([CORRELATIONS -- syntax errors])
+AT_DATA([correlations.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+CORRELATIONS MISSING=**.
+CORRELATIONS PRINT=**.
+CORRELATIONS STATISTICS=**.
+CORRELATIONS **.
+CORRELATIONS x y z WITH **.
+CORRELATIONS.
+])
+AT_CHECK([pspp -O format=csv correlations.sps], [1], [dnl
+"correlations.sps:2.22-2.23: error: CORRELATIONS: Syntax error expecting PAIRWISE, LISTWISE, INCLUDE, or EXCLUDE.
+    2 | CORRELATIONS MISSING=**.
+      |                      ^~"
+
+"correlations.sps:3.20-3.21: error: CORRELATIONS: Syntax error expecting TWOTAIL, ONETAIL, SIG, or NOSIG.
+    3 | CORRELATIONS PRINT=**.
+      |                    ^~"
+
+"correlations.sps:4.25-4.26: error: CORRELATIONS: Syntax error expecting DESCRIPTIVES, XPROD, or ALL.
+    4 | CORRELATIONS STATISTICS=**.
+      |                         ^~"
+
+"correlations.sps:5.14-5.15: error: CORRELATIONS: Syntax error expecting variable name.
+    5 | CORRELATIONS **.
+      |              ^~"
+
+"correlations.sps:6.25-6.26: error: CORRELATIONS: Syntax error expecting variable name.
+    6 | CORRELATIONS x y z WITH **.
+      |                         ^~"
+
+"correlations.sps:7.1-7.12: error: CORRELATIONS: No variables specified.
+    7 | CORRELATIONS.
+      | ^~~~~~~~~~~~"
+])
+AT_CLEANUP

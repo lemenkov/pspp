@@ -47,26 +47,19 @@
 
 
 struct corr
-{
-  size_t n_vars_total;
-  size_t n_vars1;
+  {
+    size_t n_vars_total;
+    size_t n_vars1;
 
-  const struct variable **vars;
-};
+    const struct variable **vars;
+  };
 
 
 /* Handling of missing values. */
 enum corr_missing_type
   {
-    CORR_PAIRWISE,       /* Handle missing values on a per-variable-pair basis. */
-    CORR_LISTWISE        /* Discard entire case if any variable is missing. */
-  };
-
-enum stats_opts
-  {
-    STATS_DESCRIPTIVES = 0x01,
-    STATS_XPROD = 0x02,
-    STATS_ALL = STATS_XPROD | STATS_DESCRIPTIVES
+    CORR_PAIRWISE,    /* Handle missing values on a per-variable-pair basis. */
+    CORR_LISTWISE     /* Discard entire case if any variable is missing. */
   };
 
 struct corr_opts
@@ -76,7 +69,8 @@ struct corr_opts
 
   bool sig;   /* Flag significant values or not */
   int tails;  /* Report significance with how many tails ? */
-  enum stats_opts statistics;
+  bool descriptive_stats;
+  bool xprod_stats;
 
   const struct variable *wv;  /* The weight variable (if any) */
 };
@@ -99,7 +93,7 @@ output_descriptives (const struct corr *corr, const struct corr_opts *opts,
   struct pivot_dimension *variables = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  for (size_t r = 0 ; r < corr->n_vars_total ; ++r)
+  for (size_t r = 0; r < corr->n_vars_total; ++r)
     {
       const struct variable *v = corr->vars[r];
 
@@ -130,10 +124,10 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
   struct pivot_dimension *columns = pivot_dimension_create (
     table, PIVOT_AXIS_COLUMN, N_("Variables"));
 
-  int matrix_cols = (corr->n_vars_total > corr->n_vars1
-                     ? corr->n_vars_total - corr->n_vars1
-                     : corr->n_vars1);
-  for (int c = 0; c < matrix_cols; c++)
+  size_t matrix_cols = (corr->n_vars_total > corr->n_vars1
+                        ? corr->n_vars_total - corr->n_vars1
+                        : corr->n_vars1);
+  for (size_t c = 0; c < matrix_cols; c++)
     {
       const struct variable *v = corr->n_vars_total > corr->n_vars1 ?
 	corr->vars[corr->n_vars1 + c] : corr->vars[c];
@@ -147,7 +141,7 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
     opts->tails == 2 ? N_("Sig. (2-tailed)") : N_("Sig. (1-tailed)"),
     PIVOT_RC_SIGNIFICANCE);
 
-  if (opts->statistics & STATS_XPROD)
+  if (opts->xprod_stats)
     pivot_category_create_leaves (statistics->root, N_("Cross-products"),
                                   N_("Covariance"));
 
@@ -164,8 +158,8 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
   struct pivot_footnote *sig_footnote = pivot_table_create_footnote (
     table, pivot_value_new_text (N_("Significant at .05 level")));
 
-  for (int r = 0; r < corr->n_vars1; r++)
-    for (int c = 0; c < matrix_cols; c++)
+  for (size_t r = 0; r < corr->n_vars1; r++)
+    for (size_t c = 0; c < matrix_cols; c++)
       {
         const int col_index = (corr->n_vars_total > corr->n_vars1
                                ? corr->n_vars1 + c
@@ -178,7 +172,7 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
         int n = 0;
         entries[n++] = pearson;
         entries[n++] = col_index != r ? sig : SYSMIS;
-        if (opts->statistics & STATS_XPROD)
+        if (opts->xprod_stats)
           {
             double cov = gsl_matrix_get (cv, r, col_index);
             const double xprod_dev = cov * w;
@@ -207,47 +201,36 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
 static void
 run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr *corr)
 {
-  struct ccase *c;
-  const gsl_matrix *var_matrix,  *samples_matrix, *mean_matrix;
-  gsl_matrix *cov_matrix = NULL;
-  gsl_matrix *corr_matrix = NULL;
-  struct covariance *cov = covariance_2pass_create (corr->n_vars_total, corr->vars,
-						    NULL,
-						    opts->wv, opts->exclude,
-						    true);
+  struct covariance *cov = covariance_2pass_create (
+    corr->n_vars_total, corr->vars, NULL,opts->wv, opts->exclude, true);
 
   struct casereader *rc = casereader_clone (r);
+  struct ccase *c;
   for (; (c = casereader_read (r)); case_unref (c))
-    {
-      covariance_accumulate_pass1 (cov, c);
-    }
-
+    covariance_accumulate_pass1 (cov, c);
   for (; (c = casereader_read (rc)); case_unref (c))
-    {
-      covariance_accumulate_pass2 (cov, c);
-    }
+    covariance_accumulate_pass2 (cov, c);
   casereader_destroy (rc);
 
-  cov_matrix = covariance_calculate (cov);
-  if (! cov_matrix)
+  gsl_matrix *cov_matrix = covariance_calculate (cov);
+  if (!cov_matrix)
     {
       msg (SE, _("The data for the chosen variables are all missing or empty."));
-      goto error;
+      covariance_destroy (cov);
+      return;
     }
 
-  samples_matrix = covariance_moments (cov, MOMENT_NONE);
-  var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
-  mean_matrix = covariance_moments (cov, MOMENT_MEAN);
+  const gsl_matrix *samples_matrix = covariance_moments (cov, MOMENT_NONE);
+  const gsl_matrix *var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
+  const gsl_matrix *mean_matrix = covariance_moments (cov, MOMENT_MEAN);
 
-  corr_matrix = correlation_from_covariance (cov_matrix, var_matrix);
+  gsl_matrix *corr_matrix = correlation_from_covariance (cov_matrix, var_matrix);
 
-  if (opts->statistics & STATS_DESCRIPTIVES)
+  if (opts->descriptive_stats)
     output_descriptives (corr, opts, mean_matrix, var_matrix, samples_matrix);
 
-  output_correlation (corr, opts, corr_matrix,
-		      samples_matrix, cov_matrix);
+  output_correlation (corr, opts, corr_matrix, samples_matrix, cov_matrix);
 
- error:
   covariance_destroy (cov);
   gsl_matrix_free (corr_matrix);
   gsl_matrix_free (cov_matrix);
@@ -256,25 +239,19 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
 int
 cmd_correlations (struct lexer *lexer, struct dataset *ds)
 {
-  int i;
-  int n_all_vars = 0; /* Total number of variables involved in this command */
-  const struct variable **all_vars ;
+  size_t n_all_vars = 0; /* Total number of variables involved in this command */
   const struct dictionary *dict = dataset_dict (ds);
-  bool ok = true;
 
-  struct casegrouper *grouper;
-  struct casereader *group;
-
-  struct corr *corr = NULL;
+  struct corr *corrs = NULL;
   size_t n_corrs = 0;
+  size_t allocated_corrs = 0;
 
-  struct corr_opts opts;
-  opts.missing_type = CORR_PAIRWISE;
-  opts.wv = dict_get_weight (dict);
-  opts.tails = 2;
-  opts.sig = false;
-  opts.exclude = MV_ANY;
-  opts.statistics = 0;
+  struct corr_opts opts = {
+    .missing_type = CORR_PAIRWISE,
+    .wv = dict_get_weight (dict),
+    .tails = 2,
+    .exclude = MV_ANY,
+  };
 
   /* Parse CORRELATIONS. */
   while (lex_token (lexer) != T_ENDCMD)
@@ -289,14 +266,14 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
                 opts.missing_type = CORR_PAIRWISE;
               else if (lex_match_id (lexer, "LISTWISE"))
                 opts.missing_type = CORR_LISTWISE;
-
               else if (lex_match_id (lexer, "INCLUDE"))
                 opts.exclude = MV_SYSTEM;
               else if (lex_match_id (lexer, "EXCLUDE"))
 		opts.exclude = MV_ANY;
               else
                 {
-                  lex_error (lexer, NULL);
+                  lex_error_expecting (lexer, "PAIRWISE", "LISTWISE",
+                                       "INCLUDE", "EXCLUDE");
                   goto error;
                 }
               lex_match (lexer, T_COMMA);
@@ -317,7 +294,8 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
 		opts.sig = true;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "TWOTAIL", "ONETAIL",
+                                       "SIG", "NOSIG");
 		  goto error;
 		}
 
@@ -330,17 +308,17 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "DESCRIPTIVES"))
-		opts.statistics = STATS_DESCRIPTIVES;
+		opts.descriptive_stats = true;
 	      else if (lex_match_id (lexer, "XPROD"))
-		opts.statistics = STATS_XPROD;
+		opts.xprod_stats = true;
 	      else if (lex_token (lexer) == T_ALL)
 		{
-		  opts.statistics = STATS_ALL;
+		  opts.descriptive_stats = opts.xprod_stats = true;
 		  lex_get (lexer);
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "DESCRIPTIVES", "XPROD", "ALL");
 		  goto error;
 		}
 
@@ -350,68 +328,51 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
       else
 	{
 	  if (lex_match_id (lexer, "VARIABLES"))
-	    {
-	      lex_match (lexer, T_EQUALS);
-	    }
+            lex_match (lexer, T_EQUALS);
 
-	  corr = xrealloc (corr, sizeof (*corr) * (n_corrs + 1));
-	  corr[n_corrs].n_vars_total = corr[n_corrs].n_vars1 = 0;
+          const struct variable **vars;
+          size_t n_vars1;
+	  if (!parse_variables_const (lexer, dict, &vars, &n_vars1, PV_NUMERIC))
+            goto error;
 
-	  if (! parse_variables_const (lexer, dict, &corr[n_corrs].vars,
-					&corr[n_corrs].n_vars_total,
-					PV_NUMERIC))
-	    {
-	      ok = false;
-	      break;
-	    }
+          size_t n_vars_total = n_vars1;
+	  if (lex_match (lexer, T_WITH)
+              && !parse_variables_const (lexer, dict, &vars, &n_vars_total,
+                                         PV_NUMERIC | PV_APPEND))
+            goto error;
 
+          if (n_corrs >= allocated_corrs)
+            corrs = x2nrealloc (corrs, &allocated_corrs, sizeof *corrs);
+          corrs[n_corrs++] = (struct corr) {
+            .n_vars1 = n_vars1,
+            .n_vars_total = n_vars_total,
+            .vars = vars,
+          };
 
-	  corr[n_corrs].n_vars1 = corr[n_corrs].n_vars_total;
-
-	  if (lex_match (lexer, T_WITH))
-	    {
-	      if (! parse_variables_const (lexer, dict,
-					    &corr[n_corrs].vars, &corr[n_corrs].n_vars_total,
-					    PV_NUMERIC | PV_APPEND))
-		{
-		  ok = false;
-		  break;
-		}
-	    }
-
-	  n_all_vars += corr[n_corrs].n_vars_total;
-
-	  n_corrs++;
+	  n_all_vars += n_vars_total;
 	}
     }
-
   if (n_corrs == 0)
     {
-      msg (SE, _("No variables specified."));
+      lex_ofs_error (lexer, 0, lex_ofs (lexer) - 1,
+                     _("No variables specified."));
       goto error;
     }
 
+  const struct variable **all_vars = xmalloc (n_all_vars * sizeof *all_vars);
+  const struct variable **vv = all_vars;
+  for (size_t i = 0; i < n_corrs; ++i)
+    {
+      const struct corr *c = &corrs[i];
+      for (size_t v = 0; v < c->n_vars_total; ++v)
+        *vv++ = c->vars[v];
+    }
 
-  all_vars = xmalloc (sizeof (*all_vars) * n_all_vars);
-
-  {
-    /* FIXME:  Using a hash here would make more sense */
-    const struct variable **vv = all_vars;
-
-    for (i = 0 ; i < n_corrs; ++i)
-      {
-	int v;
-	const struct corr *c = &corr[i];
-	for (v = 0 ; v < c->n_vars_total; ++v)
-	  *vv++ = c->vars[v];
-      }
-  }
-
-  grouper = casegrouper_create_splits (proc_open (ds), dict);
-
+  struct casegrouper *grouper = casegrouper_create_splits (proc_open (ds), dict);
+  struct casereader *group;
   while (casegrouper_get_next_group (grouper, &group))
     {
-      for (i = 0 ; i < n_corrs; ++i)
+      for (size_t i = 0; i < n_corrs; ++i)
 	{
 	  /* FIXME: No need to iterate the data multiple times */
 	  struct casereader *r = casereader_clone (group);
@@ -421,27 +382,26 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
 						  opts.exclude, NULL, NULL);
 
 
-	  run_corr (r, &opts,  &corr[i]);
+	  run_corr (r, &opts, &corrs[i]);
 	  casereader_destroy (r);
 	}
       casereader_destroy (group);
     }
-
-  ok = casegrouper_destroy (grouper);
+  bool ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
 
   free (all_vars);
 
-
   /* Done. */
-  free (corr->vars);
-  free (corr);
+  for (size_t i = 0; i < n_corrs; i++)
+    free (corrs[i].vars);
+  free (corrs);
 
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 
- error:
-  if (corr)
-    free (corr->vars);
-  free (corr);
+error:
+  for (size_t i = 0; i < n_corrs; i++)
+    free (corrs[i].vars);
+  free (corrs);
   return CMD_FAILURE;
 }
