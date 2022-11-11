@@ -1939,3 +1939,93 @@ AT_CHECK([test -e xxx-2.png], [0], [ignore])
 AT_CHECK([diff xxx-1.png xxx-2.png], [0], [ignore])
 
 AT_CLEANUP
+
+AT_SETUP([CROSSTABS syntax errors])
+AT_DATA([crosstabs.sps], [dnl
+DATA LIST LIST NOTABLE/x y v1 to v100.
+CROSSTABS TABLES=x BY y/VARIABLES **.
+CROSSTABS VARIABLES=**.
+CROSSTABS VARIABLES=x **.
+CROSSTABS VARIABLES=x (**).
+CROSSTABS VARIABLES=x (1,**).
+CROSSTABS VARIABLES=x (1,5**).
+CROSSTABS MISSING=**.
+CROSSTABS COUNT=**.
+CROSSTABS FORMAT=**.
+CROSSTABS CELLS=**.
+CROSSTABS STATISTICS=**.
+CROSSTABS **.
+CROSSTABS
+       v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+    BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+    BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+    BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+    BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+    BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100.
+CROSSTABS BARCHART.
+CROSSTABS x BY y/MISSING=REPORT.
+])
+AT_CHECK([pspp -O format=csv crosstabs.sps], [1], [dnl
+"crosstabs.sps:2.25-2.33: error: CROSSTABS: VARIABLES must be specified before TABLES.
+    2 | CROSSTABS TABLES=x BY y/VARIABLES **.
+      |                         ^~~~~~~~~"
+
+"crosstabs.sps:3.21-3.22: error: CROSSTABS: Syntax error expecting variable name.
+    3 | CROSSTABS VARIABLES=**.
+      |                     ^~"
+
+"crosstabs.sps:4.23-4.24: error: CROSSTABS: Syntax error expecting `('.
+    4 | CROSSTABS VARIABLES=x **.
+      |                       ^~"
+
+"crosstabs.sps:5.24-5.25: error: CROSSTABS: Syntax error expecting integer.
+    5 | CROSSTABS VARIABLES=x (**).
+      |                        ^~"
+
+"crosstabs.sps:6.26-6.27: error: CROSSTABS: Syntax error expecting positive integer.
+    6 | CROSSTABS VARIABLES=x (1,**).
+      |                          ^~"
+
+"crosstabs.sps:7.27-7.28: error: CROSSTABS: Syntax error expecting `)'.
+    7 | CROSSTABS VARIABLES=x (1,5**).
+      |                           ^~"
+
+"crosstabs.sps:8.19-8.20: error: CROSSTABS: Syntax error expecting TABLE, INCLUDE, or REPORT.
+    8 | CROSSTABS MISSING=**.
+      |                   ^~"
+
+"crosstabs.sps:9.17-9.18: error: CROSSTABS: Syntax error expecting ASIS, CASE, CELL, ROUND, or TRUNCATE.
+    9 | CROSSTABS COUNT=**.
+      |                 ^~"
+
+"crosstabs.sps:10.18-10.19: error: CROSSTABS: Syntax error expecting AVALUE, DVALUE, TABLES, or NOTABLES.
+   10 | CROSSTABS FORMAT=**.
+      |                  ^~"
+
+"crosstabs.sps:11.17-11.18: error: CROSSTABS: Syntax error expecting COUNT, EXPECTED, ROW, COLUMN, TOTAL, RESIDUAL, SRESIDUAL, or ASRESIDUAL.
+   11 | CROSSTABS CELLS=**.
+      |                 ^~"
+
+"crosstabs.sps:12.22-12.23: error: CROSSTABS: Syntax error expecting one of the following: CHISQ, PHI, CC, LAMBDA, UC, BTAU, CTAU, RISK, GAMMA, D, KAPPA, ETA, CORR.
+   12 | CROSSTABS STATISTICS=**.
+      |                      ^~"
+
+"crosstabs.sps:13.11-13.12: error: CROSSTABS: Syntax error expecting subcommand name or variable name.
+   13 | CROSSTABS **.
+      |           ^~"
+
+"crosstabs.sps:15.8-16.59: error: CROSSTABS: Too many cross-tabulation variables or dimensions.
+   15 |        v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   16 |     BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
+      | -----------------------------------------------------------"
+
+crosstabs.sps:21: error: CROSSTABS: At least one crosstabulation must be requested (using the TABLES subcommand).
+
+"crosstabs.sps:22.26-22.31: warning: CROSSTABS: Missing mode REPORT not allowed in general mode.  Assuming MISSING=TABLE.
+   22 | CROSSTABS x BY y/MISSING=REPORT.
+      |                          ^~~~~~"
+
+error: CROSSTABS: At end of input: Syntax error expecting `BEGIN DATA'.
+])
+AT_CLEANUP
