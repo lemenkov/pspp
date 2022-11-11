@@ -64,7 +64,8 @@ cmd_mrsets (struct lexer *lexer, struct dataset *ds)
       else
         {
           ok = false;
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "MDGROUP", "MCGROUP",
+                               "DELETE", "DISPLAY");
         }
 
       if (!ok)
@@ -128,9 +129,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
           if (mrset->n_vars < 2)
             {
               lex_ofs_error (lexer, vars_start, vars_end,
-                             _("VARIABLES specified only variable %s on %s, but "
-                               "at least two variables are required."),
-                   var_get_name (mrset->vars[0]), subcommand_name);
+                             _("At least two variables are required."));
               goto error;
             }
         }
@@ -195,7 +194,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             }
           else
             {
-              lex_error (lexer, NULL);
+              lex_error (lexer, _("Syntax error expecting integer or string."));
               goto error;
             }
           lex_get (lexer);
@@ -211,13 +210,17 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             mrset->cat_source = MRSET_COUNTEDVALUES;
           else
             {
-              lex_error (lexer, NULL);
+              lex_error_expecting (lexer, "VARLABELS", "COUNTEDVALUES");
               goto error;
             }
         }
       else
         {
-          lex_error (lexer, NULL);
+          if (type == MRSET_MD)
+            lex_error_expecting (lexer, "NAME", "VARIABLES", "LABEL",
+                                 "LABELSOURCE", "VALUE", "CATEGORYLABELS");
+          else
+            lex_error_expecting (lexer, "NAME", "VARIABLES", "LABEL");
           goto error;
         }
     }
@@ -241,56 +244,48 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
           lex_spec_missing (lexer, subcommand_name, "VALUE");
           goto error;
         }
-      else if (var_is_alpha (mrset->vars[0]))
-        {
-          if (mrset->width == 0)
-            {
-              lex_ofs_error (lexer, value_ofs, value_ofs,
-                             _("MDGROUP subcommand for group %s specifies a "
-                               "string VALUE, but the variables specified for "
-                               "this group are numeric."),
-                             mrset->name);
-              goto error;
-            }
-          else {
-            const struct variable *shortest_var;
-            int min_width;
-            size_t i;
 
-            shortest_var = NULL;
-            min_width = INT_MAX;
-            for (i = 0; i < mrset->n_vars; i++)
-              {
-                int width = var_get_width (mrset->vars[i]);
-                if (width < min_width)
-                  {
-                    shortest_var = mrset->vars[i];
-                    min_width = width;
-                  }
-              }
-            if (mrset->width > min_width)
-              {
-                lex_ofs_error (lexer, value_ofs, value_ofs,
-                               _("VALUE string on MDGROUP subcommand for "
-                                 "group %s is %d bytes long, but it must be "
-                                 "no longer than the narrowest variable in "
-                                 "the group, which is %s with a width of "
-                                 "%d bytes."),
-                               mrset->name, mrset->width,
-                               var_get_name (shortest_var), min_width);
-                goto error;
-              }
-          }
-        }
-      else
+      if (var_is_alpha (mrset->vars[0]) != (mrset->width > 0))
         {
-          if (mrset->width != 0)
+          msg (SE, _("VARIABLES and VALUE must have the same type."));
+          if (var_is_alpha (mrset->vars[0]))
+            lex_ofs_msg (lexer, SN, vars_start, vars_end,
+                         _("These are string variables."));
+          else
+            lex_ofs_msg (lexer, SN, vars_start, vars_end,
+                         _("These are numeric variables."));
+          if (mrset->width > 0)
+            lex_ofs_msg (lexer, SN, value_ofs, value_ofs,
+                         _("This is a string value."));
+          else
+            lex_ofs_msg (lexer, SN, value_ofs, value_ofs,
+                         _("This is a numeric value."));
+          goto error;
+        }
+      if (var_is_alpha (mrset->vars[0]))
+        {
+          const struct variable *shortest_var = NULL;
+          int min_width = INT_MAX;
+
+          for (size_t i = 0; i < mrset->n_vars; i++)
             {
-              lex_ofs_error (lexer, value_ofs, value_ofs,
-                             _("MDGROUP subcommand for group %s specifies a "
-                               "string VALUE, but the variables specified for "
-                               "this group are numeric."),
-                   mrset->name);
+              int width = var_get_width (mrset->vars[i]);
+              if (width < min_width)
+                {
+                  shortest_var = mrset->vars[i];
+                  min_width = width;
+                }
+            }
+          if (mrset->width > min_width)
+            {
+              msg (SE, _("The VALUE string must be no longer than the "
+                         "narrowest variable in the group."));
+              lex_ofs_msg (lexer, SN, value_ofs, value_ofs,
+                           _("The VALUE string is %d bytes long."),
+                           mrset->width);
+              lex_ofs_msg (lexer, SN, vars_start, vars_end,
+                           _("Variable %s has a width of %d bytes."),
+                           var_get_name (shortest_var), min_width);
               goto error;
             }
         }
@@ -319,10 +314,8 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
             }
           else
             {
-              size_t i;
-
               mrset->label_from_var_label = true;
-              for (i = 0; mrset->label == NULL && i < mrset->n_vars; i++)
+              for (size_t i = 0; mrset->label == NULL && i < mrset->n_vars; i++)
                 {
                   const char *label = var_get_label (mrset->vars[i]);
                   if (label != NULL)
@@ -366,23 +359,18 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
         }
       else
         {
-          struct stringi_map seen;
-          size_t i;
-
-          stringi_map_init (&seen);
-          for (i = 0; i < mrset->n_vars; i++)
+          struct stringi_map seen = STRINGI_MAP_INITIALIZER (seen);
+          for (size_t i = 0; i < mrset->n_vars; i++)
             {
               const struct variable *var = mrset->vars[i];
               const char *name = var_get_name (var);
-              const struct val_labs *val_labs;
-              union value value;
-              const char *label;
 
+              union value value;
               value_clone (&value, &mrset->counted, mrset->width);
               value_resize (&value, mrset->width, var_get_width (var));
 
-              val_labs = var_get_value_labels (var);
-              label = val_labs_find (val_labs, &value);
+              const struct val_labs *val_labs = var_get_value_labels (var);
+              const char *label = val_labs_find (val_labs, &value);
               if (label == NULL)
                 lex_ofs_msg (lexer, SW, vars_start, vars_end,
                              _("Variable %s specified as part of multiple "
@@ -407,6 +395,8 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                                    "distinguishable in output."),
                                  other_name, name, mrset->name);
                 }
+
+              value_destroy (&value, var_get_width (var));
             }
           stringi_map_destroy (&seen);
         }
@@ -424,20 +414,15 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
           bool warned;
         };
 
-      struct category *c, *next;
-      struct hmap categories;
-      size_t i;
-
-      hmap_init (&categories);
-      for (i = 0; i < mrset->n_vars; i++)
+      struct hmap categories = HMAP_INITIALIZER (categories);
+      for (size_t i = 0; i < mrset->n_vars; i++)
         {
           const struct variable *var = mrset->vars[i];
           const char *name = var_get_name (var);
           int width = var_get_width (var);
-          const struct val_labs *val_labs;
-          const struct val_lab *vl;
+          const struct val_labs *val_labs = var_get_value_labels (var);
 
-          val_labs = var_get_value_labels (var);
+          const struct val_lab *vl;
           for (vl = val_labs_first (val_labs); vl != NULL;
                vl = val_labs_next (val_labs, vl))
             {
@@ -445,6 +430,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
               const char *label = val_lab_get_label (vl);
               unsigned int hash = value_hash (value, width, 0);
 
+              struct category *c;
               HMAP_FOR_EACH_WITH_HASH (c, struct category, hmap_node,
                                        hash, &categories)
                 {
@@ -471,17 +457,20 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                 }
 
               c = xmalloc (sizeof *c);
+              *c = (struct category) {
+                .width = width,
+                .label = label,
+                .var_name = name,
+                .warned = false,
+              };
               value_clone (&c->value, value, width);
-              c->width = width;
-              c->label = label;
-              c->var_name = name;
-              c->warned = false;
               hmap_insert (&categories, &c->hmap_node, hash);
 
             found: ;
             }
         }
 
+      struct category *c, *next;
       HMAP_FOR_EACH_SAFE (c, next, struct category, hmap_node, &categories)
         {
           value_destroy (&c->value, c->width);
@@ -532,6 +521,11 @@ parse_mrset_names (struct lexer *lexer, struct dictionary *dict,
       for (i = 0; i < n_sets; i++)
         stringi_set_insert (mrset_names, dict_get_mrset (dict, i)->name);
     }
+  else
+    {
+      lex_error_expecting (lexer, "`['", "ALL");
+      return false;
+    }
 
   return true;
 }
@@ -539,13 +533,12 @@ parse_mrset_names (struct lexer *lexer, struct dictionary *dict,
 static bool
 parse_delete (struct lexer *lexer, struct dictionary *dict)
 {
-  const struct stringi_set_node *node;
   struct stringi_set mrset_names;
   const char *name;
-
   if (!parse_mrset_names (lexer, dict, &mrset_names))
     return false;
 
+  const struct stringi_set_node *node;
   STRINGI_SET_FOR_EACH (name, node, &mrset_names)
     dict_delete_mrset (dict, name);
   stringi_set_destroy (&mrset_names);
