@@ -890,7 +890,8 @@ ctables_pcexpr_parse_primary (struct lexer *lexer, struct dictionary *dict)
         }
       else
         {
-          lex_error (lexer, NULL);
+          lex_error (lexer,
+                     _("Syntax error expecting number or string or range."));
           return NULL;
         }
 
@@ -920,7 +921,7 @@ ctables_pcexpr_parse_primary (struct lexer *lexer, struct dictionary *dict)
     }
   else
     {
-      lex_error (lexer, NULL);
+      lex_error (lexer, _("Syntax error in postcompute expression."));
       return NULL;
     }
 
@@ -1883,7 +1884,7 @@ ctables_table_parse_explicit_category (struct lexer *lexer,
     }
   else
     {
-      lex_error (lexer, NULL);
+      lex_error (lexer, _("Syntax error expecting category specification."));
       return false;
     }
 

@@ -833,11 +833,11 @@ ctables.sps:17.35: error: CTABLES: Syntax error expecting `/'.
    17 | CTABLES /PCOMPUTE &x=EXPR(1**2**3).
       |                                   ^
 
-ctables.sps:18.28-18.29: error: CTABLES: Syntax error.
+ctables.sps:18.28-18.29: error: CTABLES: Syntax error expecting number or string or range.
    18 | CTABLES /PCOMPUTE &x=EXPR([**]).
       |                            ^~
 
-ctables.sps:19.27-19.28: error: CTABLES: Syntax error.
+ctables.sps:19.27-19.28: error: CTABLES: Syntax error in postcompute expression.
    19 | CTABLES /PCOMPUTE &x=EXPR(**).
       |                           ^~
 
