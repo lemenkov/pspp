@@ -395,6 +395,9 @@ pool_memdup0 (struct pool *pool, const char *string, size_t size)
 char *
 pool_vasprintf (struct pool *pool, const char *format, va_list args_)
 {
+  if (!pool)
+    return xvasprintf (format, args_);
+
   struct pool_block *b;
   va_list args;
   int needed, avail;
