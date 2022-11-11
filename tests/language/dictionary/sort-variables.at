@@ -76,3 +76,30 @@ test_sort 'az ax ay ab' \
      VARIABLE ATTRIBUTE VARIABLES=ab ATTRIBUTE=key("b").' \
     'ATTRIBUTE key' 'ab ax ay az'
 AT_CLEANUP
+
+AT_SETUP([SORT VARIABLES syntax errors])
+AT_DATA([sort-variables.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+SORT VARIABLES BY **.
+SORT VARIABLES BY ATTRIBUTE **.
+SORT VARIABLES BY NAME (**).
+SORT VARIABLES BY NAME (A **).
+])
+AT_CHECK([pspp -O format=csv sort-variables.sps], [1], [dnl
+"sort-variables.sps:2.19-2.20: error: SORT VARIABLES: Syntax error expecting one of the following: NAME, TYPE, FORMAT, LABEL, VALUES, MISSING, MEASURE, ROLE, COLUMNS, ALIGNMENT, ATTRIBUTE.
+    2 | SORT VARIABLES BY **.
+      |                   ^~"
+
+"sort-variables.sps:3.29-3.30: error: SORT VARIABLES: Syntax error expecting identifier.
+    3 | SORT VARIABLES BY ATTRIBUTE **.
+      |                             ^~"
+
+"sort-variables.sps:4.25-4.26: error: SORT VARIABLES: Syntax error expecting A or D.
+    4 | SORT VARIABLES BY NAME (**).
+      |                         ^~"
+
+"sort-variables.sps:5.27-5.28: error: SORT VARIABLES: Syntax error expecting `)'.
+    5 | SORT VARIABLES BY NAME (A **).
+      |                           ^~"
+])
+AT_CLEANUP

@@ -240,6 +240,13 @@ cmd_sort_variables (struct lexer *lexer, struct dataset *ds)
       c.attr_name = xstrdup (lex_tokcstr (lexer));
       lex_get (lexer);
     }
+  else
+    {
+      lex_error_expecting (lexer, "NAME", "TYPE", "FORMAT", "LABEL",
+                           "VALUES", "MISSING", "MEASURE", "ROLE",
+                           "COLUMNS", "ALIGNMENT", "ATTRIBUTE");
+      return CMD_FAILURE;
+    }
 
   /* Parse sort direction. */
   if (lex_match (lexer, T_LPAREN))
@@ -250,7 +257,7 @@ cmd_sort_variables (struct lexer *lexer, struct dataset *ds)
         c.descending = true;
       else
         {
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "A", "D");
           goto exit;
         }
       if (!lex_force_match (lexer, T_RPAREN))
