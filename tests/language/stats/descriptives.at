@@ -447,25 +447,60 @@ Missing N (listwise),0,,,,
 ])
 AT_CLEANUP
 
-dnl Check for regression for a bad error message that cited the
-dnl token following the bad statistic name.
-AT_SETUP([DESCRIPTIVES -- negative])
+AT_SETUP([DESCRIPTIVES syntax errors])
 AT_DATA([descriptives.sps], [dnl
-DATA LIST NOTABLE/V0 to V16 1-17.
-BEGIN DATA.
-12128989012389023
-END DATA.
-DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
+DATA LIST LIST NOTABLE /x y z.
+DESCRIPTIVES MISSING=**.
+DESCRIPTIVES FORMAT=**.
+DESCRIPTIVES STATISTICS=**.
+DESCRIPTIVES SORT=**.
+DESCRIPTIVES SORT=NAME (**).
+DESCRIPTIVES SORT=NAME (A **).
+DESCRIPTIVES **.
+DESCRIPTIVES x/ **.
+DESCRIPTIVES MISSING=INCLUDE.
+TEMPORARY.
+NUMERIC Zx ZSC001 TO ZSC099 STDZ01 TO STDZ09 ZZZZ01 TO ZZZZ09 ZQZQ01 TO ZQZQ09.
+DESCRIPTIVES x/SAVE.
 ])
 AT_CHECK([pspp descriptives.sps], [1], [dnl
-descriptives.sps:5.29-5.33: error: DESCRIPTIVES: Syntax error expecting one of
-the following: MEAN, SEMEAN, STDDEV, VARIANCE, KURTOSIS, SEKURTOSIS, SKEWNESS,
-SESKEWNESS, RANGE, MINIMUM, MAXIMUM, SUM.
-    5 | DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
-      |                             ^~~~~
+descriptives.sps:2.22-2.23: error: DESCRIPTIVES: Syntax error expecting
+VARIABLE, LISTWISE, or INCLUDE.
+    2 | DESCRIPTIVES MISSING=**.
+      |                      ^~
 
-descriptives.sps:5.35-5.38: error: DESCRIPTIVES: Syntax error.
-    5 | DESCRIPTIVES ALL/STATISTICS=COUNT MEAN.
-      |                                   ^~~~
+descriptives.sps:3.21-3.22: error: DESCRIPTIVES: Syntax error expecting LABELS,
+NOLABELS, INDEX, NOINDEX, LINE, or SERIAL.
+    3 | DESCRIPTIVES FORMAT=**.
+      |                     ^~
+
+descriptives.sps:5.19-5.20: error: DESCRIPTIVES: Syntax error expecting
+variable name.
+    5 | DESCRIPTIVES SORT=**.
+      |                   ^~
+
+descriptives.sps:6.25-6.26: error: DESCRIPTIVES: Syntax error expecting A or D.
+    6 | DESCRIPTIVES SORT=NAME (**).
+      |                         ^~
+
+descriptives.sps:7.27-7.28: error: DESCRIPTIVES: Syntax error expecting `)'.
+    7 | DESCRIPTIVES SORT=NAME (A **).
+      |                           ^~
+
+descriptives.sps:8.14-8.15: error: DESCRIPTIVES: Syntax error expecting
+variable name.
+    8 | DESCRIPTIVES **.
+      |              ^~
+
+descriptives.sps:9.17-9.18: error: DESCRIPTIVES: Syntax error expecting
+MISSING, SAVE, FORMAT, STATISTICS, SORT, or VARIABLES.
+    9 | DESCRIPTIVES x/ **.
+      |                 ^~
+
+descriptives.sps:10: error: DESCRIPTIVES: No variables specified.
+
+descriptives.sps:13: error: DESCRIPTIVES: Ran out of generic names for Z-score
+variables.  There are only 126 generic names: ZSC001-ZSC099, STDZ01-STDZ09,
+ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09.
 ])
 AT_CLEANUP
