@@ -100,3 +100,79 @@ c,1,u,F1.0
 ,5,z,F1.0
 ])
 AT_CLEANUP
+
+AT_SETUP([VECTOR syntax errors])
+AT_DATA([vector.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+VECTOR **.
+VECTOR aslkdfjaklsdjfklasdjfklasjdfklasjdfkajsdlkfajsdkfjaksdjfaklsdkasdjfklasdjfklasjdfkldkl.
+VECTOR dup=x y z.
+VECTOR dup.
+VECTOR v v.
+VECTOR u v=x y z.
+VECTOR v(1, 2).
+VECTOR v(0).
+VECTOR v(F8.2, F8.2).
+VECTOR v(asdf).
+VECTOR v(**).
+VECTOR v(F8.2).
+VECTOR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(5).
+VECTOR v **.
+])
+AT_DATA([insert.sps], [dnl
+INSERT FILE='vector.sps' ERROR=IGNORE.
+])
+AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
+"vector.sps:2.8-2.9: error: VECTOR: Syntax error expecting identifier.
+    2 | VECTOR **.
+      |        ^~"
+
+"vector.sps:3.8-3.93: error: VECTOR: Identifier `aslkdfjaklsdjfklasdjfklasjdfklasjdfkajsdlkfajsdkfjaksdjfaklsdkasdjfklasdjfklasjdfkldkl' exceeds 64-byte limit.
+    3 | VECTOR aslkdfjaklsdjfklasdjfklasjdfklasjdfkajsdlkfajsdkfjaksdjfaklsdkasdjfklasdjfklasjdfkldkl.
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"vector.sps:5.8-5.10: error: VECTOR: A vector named dup already exists.
+    5 | VECTOR dup.
+      |        ^~~"
+
+"vector.sps:6.8-6.10: error: VECTOR: Vector name v is given twice.
+    6 | VECTOR v v.
+      |        ^~~"
+
+"vector.sps:7.8-7.11: error: VECTOR: Only a single vector name may be specified when a list of variables is given.
+    7 | VECTOR u v=x y z.
+      |        ^~~~"
+
+"vector.sps:8.9-8.13: error: VECTOR: Vector length may only be specified once.
+    8 | VECTOR v(1, 2).
+      |         ^~~~~"
+
+"vector.sps:9.10: error: VECTOR: Syntax error expecting positive integer.
+    9 | VECTOR v(0).
+      |          ^"
+
+"vector.sps:10.9-10.19: error: VECTOR: Only one format may be specified.
+   10 | VECTOR v(F8.2, F8.2).
+      |         ^~~~~~~~~~~"
+
+"vector.sps:11.10-11.13: error: VECTOR: Unknown format type `asdf'.
+   11 | VECTOR v(asdf).
+      |          ^~~~"
+
+"vector.sps:12.10-12.11: error: VECTOR: Syntax error expecting vector length or format.
+   12 | VECTOR v(**).
+      |          ^~"
+
+"vector.sps:13.9-13.14: error: VECTOR: Vector length is required.
+   13 | VECTOR v(F8.2).
+      |         ^~~~~~"
+
+"vector.sps:14.8-14.74: error: VECTOR: Identifier `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1' exceeds 64-byte limit.
+   14 | VECTOR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(5).
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"vector.sps:15.10-15.11: error: VECTOR: Syntax error expecting `=' or `@{:@'.
+   15 | VECTOR v **.
+      |          ^~"
+])
+AT_CLEANUP
