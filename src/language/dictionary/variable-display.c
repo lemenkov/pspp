@@ -33,10 +33,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Set variables' alignment
-   This is the alignment for GUI display only.
-   It affects nothing but GUIs
-*/
 int
 cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
 {
@@ -45,87 +41,75 @@ cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
       struct variable **v;
       size_t nv;
 
-      size_t i;
-      enum alignment align;
-
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      if (lex_force_match (lexer, T_LPAREN))
-	{
-	  if (lex_match_id (lexer, "LEFT"))
-	    align = ALIGN_LEFT;
-	  else if (lex_match_id (lexer, "RIGHT"))
-	    align = ALIGN_RIGHT;
-	  else if (lex_match_id (lexer, "CENTER"))
-	    align = ALIGN_CENTRE;
-	  else
-            {
-              free (v);
-              return CMD_FAILURE;
-            }
+      if (!lex_force_match (lexer, T_LPAREN))
+        goto error;
 
-	  if (!lex_force_match (lexer, T_RPAREN))
-	    return CMD_FAILURE;
-	}
+      enum alignment align;
+      if (lex_match_id (lexer, "LEFT"))
+        align = ALIGN_LEFT;
+      else if (lex_match_id (lexer, "RIGHT"))
+        align = ALIGN_RIGHT;
+      else if (lex_match_id (lexer, "CENTER"))
+        align = ALIGN_CENTRE;
       else
         {
-          free (v);
-          return CMD_FAILURE;
+          lex_error_expecting (lexer, "LEFT", "RIGHT", "CENTER");
+          goto error;
         }
 
-      for(i = 0 ; i < nv ; ++i)
+      if (!lex_force_match (lexer, T_RPAREN))
+        goto error;
+
+      for (size_t i = 0; i < nv; ++i)
         var_set_alignment (v[i], align);
 
       while (lex_token (lexer) == T_SLASH)
 	lex_get (lexer);
       free (v);
+      continue;
 
+    error:
+      free (v);
+      return CMD_FAILURE;
     }
   while (lex_token (lexer) != T_ENDCMD);
   return CMD_SUCCESS;
 }
 
-/* Set variables' display width.
-   This is the width for GUI display only.
-   It affects nothing but GUIs
-*/
 int
 cmd_variable_width (struct lexer *lexer, struct dataset *ds)
 {
   do
     {
       struct variable **v;
-      long int width;
       size_t nv;
-      size_t i;
-
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
       if (!lex_force_match (lexer, T_LPAREN)
           || !lex_force_int_range (lexer, NULL, 1, INT_MAX))
-        {
-          free (v);
-          return CMD_FAILURE;
-        }
-      width = lex_integer (lexer);
+        goto error;
+      long width = lex_integer (lexer);
       lex_get (lexer);
       if (!lex_force_match (lexer, T_RPAREN))
-        {
-          free (v);
-          return CMD_FAILURE;
-        }
+        goto error;
 
       width = MIN (width, 2 * MAX_STRING);
 
-      for(i = 0 ; i < nv ; ++i)
+      for (size_t i = 0; i < nv; ++i)
         var_set_display_width (v[i], width);
 
       while (lex_token (lexer) == T_SLASH)
 	lex_get (lexer);
       free (v);
+      continue;
 
+    error:
+      free (v);
+      return CMD_FAILURE;
     }
   while (lex_token (lexer) != T_ENDCMD);
   return CMD_SUCCESS;
@@ -139,59 +123,54 @@ cmd_variable_level (struct lexer *lexer, struct dataset *ds)
     {
       struct variable **v;
       size_t nv;
-      enum measure level;
-      size_t i;
 
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      if (lex_force_match (lexer, T_LPAREN))
-	{
-	  if (lex_match_id (lexer, "SCALE"))
-	    level = MEASURE_SCALE;
-	  else if (lex_match_id (lexer, "ORDINAL"))
-	    level = MEASURE_ORDINAL;
-	  else if (lex_match_id (lexer, "NOMINAL"))
-	    level = MEASURE_NOMINAL;
-	  else
-            {
-              free (v);
-              return CMD_FAILURE;
-            }
+      if (!lex_force_match (lexer, T_LPAREN))
+        goto error;
 
-	  if (!lex_force_match (lexer, T_RPAREN))
-	    return CMD_FAILURE;
-	}
+      enum measure level;
+      if (lex_match_id (lexer, "SCALE"))
+        level = MEASURE_SCALE;
+      else if (lex_match_id (lexer, "ORDINAL"))
+        level = MEASURE_ORDINAL;
+      else if (lex_match_id (lexer, "NOMINAL"))
+        level = MEASURE_NOMINAL;
       else
         {
-          free (v);
-          return CMD_FAILURE;
+          lex_error_expecting (lexer, "SCALE", "ORDINAL", "NOMINAL");
+          goto error;
         }
 
-      for(i = 0 ; i < nv ; ++i)
-	var_set_measure (v[i], level);
+      if (!lex_force_match (lexer, T_RPAREN))
+        goto error;
 
+      for (size_t i = 0; i < nv; ++i)
+	var_set_measure (v[i], level);
 
       while (lex_token (lexer) == T_SLASH)
 	lex_get (lexer);
       free (v);
+      continue;
 
+    error:
+      free (v);
+      return CMD_FAILURE;
     }
   while (lex_token (lexer) != T_ENDCMD);
   return CMD_SUCCESS;
 }
 
-/* Set variables' role */
 int
 cmd_variable_role (struct lexer *lexer, struct dataset *ds)
 {
-  while (lex_match (lexer, T_SLASH))
+  do
     {
-      struct variable **v;
-      size_t nv;
-      enum var_role role;
-      size_t i;
+      if (!lex_force_match (lexer, T_SLASH))
+        return CMD_FAILURE;
 
+      enum var_role role;
       if (lex_match_id (lexer, "INPUT"))
         role = ROLE_INPUT;
       else if (lex_match_id (lexer, "TARGET"))
@@ -206,17 +185,22 @@ cmd_variable_role (struct lexer *lexer, struct dataset *ds)
         role = ROLE_SPLIT;
       else
         {
-          lex_error (lexer, NULL);
+          lex_error_expecting (lexer, "INPUT", "TARGET", "BOTH",
+                               "NONE", "PARTITION", "SPLIT");
           return CMD_FAILURE;
         }
 
+      struct variable **v;
+      size_t nv;
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      for (i = 0; i < nv; i++)
+      for (size_t i = 0; i < nv; i++)
 	var_set_role (v[i], role);
+
       free (v);
     }
+  while (lex_token (lexer) != T_ENDCMD);
 
   return CMD_SUCCESS;
 }

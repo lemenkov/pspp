@@ -17,6 +17,10 @@ dnl
 AT_BANNER([variable display attributes])
 
 AT_SETUP([variable display attribute commands])
+AT_KEYWORDS([VARIABLE ALIGNMENT])
+AT_KEYWORDS([VARIABLE WIDTH])
+AT_KEYWORDS([VARIABLE LEVEL])
+AT_KEYWORDS([VARIABLE ROLE])
 AT_DATA([var-display.sps], [dnl
 DATA LIST FREE /x y z.
 VARIABLE ALIGNMENT x (LEFT)/y (RIGHT)/z (CENTER).
@@ -32,6 +36,97 @@ Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
 x,1,Scale,Output,10,Left,F8.2,F8.2
 y,2,Ordinal,Both,12,Right,F8.2,F8.2
 z,3,Nominal,None,14,Center,F8.2,F8.2
+])
+AT_CLEANUP
+
+AT_SETUP([variable display attribute syntax errors])
+AT_KEYWORDS([VARIABLE ALIGNMENT])
+AT_KEYWORDS([VARIABLE WIDTH])
+AT_KEYWORDS([VARIABLE LEVEL])
+AT_KEYWORDS([VARIABLE ROLE])
+AT_DATA([var-display.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+VARIABLE ALIGNMENT **.
+VARIABLE ALIGNMENT x **.
+VARIABLE ALIGNMENT x (**).
+VARIABLE ALIGNMENT x (LEFT **).
+VARIABLE WIDTH **.
+VARIABLE WIDTH x **.
+VARIABLE WIDTH x (**).
+VARIABLE WIDTH x (10 **).
+VARIABLE LEVEL **.
+VARIABLE LEVEL x **.
+VARIABLE LEVEL x (**).
+VARIABLE LEVEL x (SCALE **).
+VARIABLE ROLE **.
+VARIABLE ROLE / **.
+VARIABLE ROLE /INPUT **.
+VARIABLE ROLE /INPUT x **.
+])
+AT_CHECK([pspp -O format=csv var-display.sps], [1], [dnl
+"var-display.sps:2.20-2.21: error: VARIABLE ALIGNMENT: Syntax error expecting variable name.
+    2 | VARIABLE ALIGNMENT **.
+      |                    ^~"
+
+"var-display.sps:3.22-3.23: error: VARIABLE ALIGNMENT: Syntax error expecting `('.
+    3 | VARIABLE ALIGNMENT x **.
+      |                      ^~"
+
+"var-display.sps:4.23-4.24: error: VARIABLE ALIGNMENT: Syntax error expecting LEFT, RIGHT, or CENTER.
+    4 | VARIABLE ALIGNMENT x (**).
+      |                       ^~"
+
+"var-display.sps:5.28-5.29: error: VARIABLE ALIGNMENT: Syntax error expecting `)'.
+    5 | VARIABLE ALIGNMENT x (LEFT **).
+      |                            ^~"
+
+"var-display.sps:6.16-6.17: error: VARIABLE WIDTH: Syntax error expecting variable name.
+    6 | VARIABLE WIDTH **.
+      |                ^~"
+
+"var-display.sps:7.18-7.19: error: VARIABLE WIDTH: Syntax error expecting `('.
+    7 | VARIABLE WIDTH x **.
+      |                  ^~"
+
+"var-display.sps:8.19-8.20: error: VARIABLE WIDTH: Syntax error expecting positive integer.
+    8 | VARIABLE WIDTH x (**).
+      |                   ^~"
+
+"var-display.sps:9.22-9.23: error: VARIABLE WIDTH: Syntax error expecting `)'.
+    9 | VARIABLE WIDTH x (10 **).
+      |                      ^~"
+
+"var-display.sps:10.16-10.17: error: VARIABLE LEVEL: Syntax error expecting variable name.
+   10 | VARIABLE LEVEL **.
+      |                ^~"
+
+"var-display.sps:11.18-11.19: error: VARIABLE LEVEL: Syntax error expecting `('.
+   11 | VARIABLE LEVEL x **.
+      |                  ^~"
+
+"var-display.sps:12.19-12.20: error: VARIABLE LEVEL: Syntax error expecting SCALE, ORDINAL, or NOMINAL.
+   12 | VARIABLE LEVEL x (**).
+      |                   ^~"
+
+"var-display.sps:13.25-13.26: error: VARIABLE LEVEL: Syntax error expecting `)'.
+   13 | VARIABLE LEVEL x (SCALE **).
+      |                         ^~"
+
+"var-display.sps:14.15-14.16: error: VARIABLE ROLE: Syntax error expecting `/'.
+   14 | VARIABLE ROLE **.
+      |               ^~"
+
+"var-display.sps:15.17-15.18: error: VARIABLE ROLE: Syntax error expecting INPUT, TARGET, BOTH, NONE, PARTITION, or SPLIT.
+   15 | VARIABLE ROLE / **.
+      |                 ^~"
+
+"var-display.sps:16.22-16.23: error: VARIABLE ROLE: Syntax error expecting variable name.
+   16 | VARIABLE ROLE /INPUT **.
+      |                      ^~"
+
+"var-display.sps:17.24-17.25: error: VARIABLE ROLE: Syntax error expecting `/'.
+   17 | VARIABLE ROLE /INPUT x **.
+      |                        ^~"
 ])
 AT_CLEANUP
 
