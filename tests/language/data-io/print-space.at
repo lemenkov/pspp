@@ -117,7 +117,7 @@ AT_CHECK([pspp -O format=csv print-space.sps], [1], [dnl
     3 | PRINT SPACE OUTFILE='out.txt' ENCODING=**.
       |                                        ^~"
 
-"print-space.sps:4.13-4.14: error: PRINT SPACE: Syntax error.
+"print-space.sps:4.13-4.14: error: PRINT SPACE: Syntax error parsing expression.
     4 | PRINT SPACE **.
       |             ^~"
 

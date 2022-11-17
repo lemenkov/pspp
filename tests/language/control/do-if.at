@@ -128,7 +128,7 @@ AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
    15 | DO IF 0.
       | ^~~~~~~~"
 
-"do-if.sps:20.7: error: DO IF: Syntax error.
+"do-if.sps:20.7: error: DO IF: Syntax error parsing expression.
    20 | DO IF !.
       |       ^"
 

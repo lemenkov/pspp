@@ -383,7 +383,7 @@ AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
     2 | REREAD COLUMN=1 COLUMN=**.
       |                 ^~~~~~"
 
-"reread.sps:6.15-6.16: error: REREAD: Syntax error.
+"reread.sps:6.15-6.16: error: REREAD: Syntax error parsing expression.
     6 | REREAD COLUMN=**.
       |               ^~"
 

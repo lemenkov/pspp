@@ -993,7 +993,7 @@ parse_primary__ (struct lexer *lexer, struct expression *e)
       }
 
     default:
-      lex_error (lexer, NULL);
+      lex_error (lexer, _("Syntax error parsing expression."));
       return NULL;
     }
 }

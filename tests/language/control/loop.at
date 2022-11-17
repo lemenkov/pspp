@@ -325,15 +325,15 @@ loop.sps:9.8: error: LOOP: Syntax error expecting `='.
     9 | LOOP B !.
       |        ^
 
-loop.sps:11.8: error: LOOP: Syntax error.
+loop.sps:11.8: error: LOOP: Syntax error parsing expression.
    11 | LOOP B=!.
       |        ^
 
-loop.sps:13.13: error: LOOP: Syntax error.
+loop.sps:13.13: error: LOOP: Syntax error parsing expression.
    13 | LOOP A=1 TO !.
       |             ^
 
-loop.sps:15.13: error: LOOP: Syntax error.
+loop.sps:15.13: error: LOOP: Syntax error parsing expression.
    15 | LOOP A=1 BY !.
       |             ^
 
@@ -357,11 +357,11 @@ loop.sps:26.11-26.12: error: LOOP: Subcommand IF may only be specified once.
    26 | LOOP IF 1 IF 0.
       |           ^~
 
-loop.sps:29.9: error: LOOP: Syntax error.
+loop.sps:29.9: error: LOOP: Syntax error parsing expression.
    29 | LOOP IF !.
       |         ^
 
-loop.sps:33.13: error: LOOP: Syntax error.
+loop.sps:33.13: error: LOOP: Syntax error parsing expression.
    33 | END LOOP IF !.
       |             ^
 

@@ -751,7 +751,7 @@ c').  To disable this warning, insert parentheses.
 
 2 le 2 => true
 
-evaluate.sps:25.21: error: DEBUG EVALUATE: Syntax error.
+evaluate.sps:25.21: error: DEBUG EVALUATE: Syntax error parsing expression.
    25 | DEBUG EVALUATE /2 < = 2.
       |                     ^
 
@@ -954,7 +954,7 @@ for opt in OPT NOOPT; do
 
 2 ge 2 => true
 
-evaluate.sps:8.21: error: DEBUG EVALUATE: Syntax error.
+evaluate.sps:8.21: error: DEBUG EVALUATE: Syntax error parsing expression.
     8 | DEBUG EVALUATE /2 > = 2.
       |                     ^
 
@@ -1124,7 +1124,7 @@ evaluate.sps:36.27-36.30: note: DEBUG EVALUATE: This operand has type 'number'.
 
 'asdf       ' ~= "asdf   " => false
 
-evaluate.sps:41.21: error: DEBUG EVALUATE: Syntax error.
+evaluate.sps:41.21: error: DEBUG EVALUATE: Syntax error parsing expression.
    41 | DEBUG EVALUATE /1 < > 1.
       |                     ^
 
