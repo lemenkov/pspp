@@ -44,7 +44,7 @@ static bool buffer_case (struct casereader_shim *s);
    Returns the new shim.  The only legitimate use of the returned
    casereader_shim is for calling casereader_shim_slurp().  If READER has no
    clones already (which the caller should ensure, if it plans to use the
-   return value), then the returned casreader_shim is valid for that purpose
+   return value), then the returned casereader_shim is valid for that purpose
    until, and only until, the READER's 'destroy' function is called. */
 struct casereader_shim *
 casereader_shim_insert (struct casereader *reader)
