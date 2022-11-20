@@ -159,16 +159,4 @@ const_var_set_destroy (struct const_var_set *vs)
 bool
 lex_match_variable (struct lexer *lexer, const struct dictionary *dict, const struct variable **var);
 
-struct interaction;
-
-/* Parse an interaction.
-   If not successful return false.
-   Otherwise, a newly created interaction will be placed in IACT.
-   It is the caller's responsibility to destroy this interaction.
- */
-bool
-parse_design_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact);
-
-
-
 #endif /* variable-parser.h */

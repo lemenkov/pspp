@@ -834,15 +834,17 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "CATEGORICAL"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  do
-	    {
-	      lr.cat_predictors = xrealloc (lr.cat_predictors,
-				  sizeof (*lr.cat_predictors) * ++lr.n_cat_predictors);
-	      lr.cat_predictors[lr.n_cat_predictors - 1] = 0;
-	    }
-	  while (parse_design_interaction (lexer, lr.dict,
-					   lr.cat_predictors + lr.n_cat_predictors - 1));
-	  lr.n_cat_predictors--;
+          struct variable **cats;
+          size_t n_cats;
+          if (!parse_variables (lexer, lr.dict, &cats, &n_cats, PV_NO_DUPLICATE))
+            goto error;
+
+          lr.cat_predictors = xrealloc (lr.cat_predictors,
+                                        sizeof *lr.cat_predictors
+                                        * (n_cats + lr.n_cat_predictors));
+          for (size_t i = 0; i < n_cats; i++)
+            lr.cat_predictors[lr.n_cat_predictors++] = interaction_create (cats[i]);
+          free (cats);
 	}
       else if (lex_match_id (lexer, "PRINT"))
 	{

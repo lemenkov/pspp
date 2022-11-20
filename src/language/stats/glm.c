@@ -797,6 +797,61 @@ parse_nested_variable (struct lexer *lexer, struct glm_spec *glm)
   return false;
 }
 
+/* An interaction is a variable followed by {*, BY} followed by an interaction */
+static bool
+parse_internal_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact, struct interaction **it)
+{
+  const struct variable *v = NULL;
+  assert (iact);
+
+  switch  (lex_next_token (lexer, 1))
+    {
+    case T_ENDCMD:
+    case T_SLASH:
+    case T_COMMA:
+    case T_ID:
+    case T_BY:
+    case T_ASTERISK:
+      break;
+    default:
+      return false;
+      break;
+    }
+
+  if (! lex_match_variable (lexer, dict, &v))
+    {
+      if (it)
+	interaction_destroy (*it);
+      *iact = NULL;
+      return false;
+    }
+
+  assert (v);
+
+  if (*iact == NULL)
+    *iact = interaction_create (v);
+  else
+    interaction_add_variable (*iact, v);
+
+  if (lex_match (lexer, T_ASTERISK) || lex_match (lexer, T_BY))
+    {
+      return parse_internal_interaction (lexer, dict, iact, iact);
+    }
+
+  return true;
+}
+
+/* Parse an interaction.
+   If not successful return false.
+   Otherwise, a newly created interaction will be placed in IACT.
+   It is the caller's responsibility to destroy this interaction.
+ */
+static bool
+parse_design_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact)
+{
+  return parse_internal_interaction (lexer, dict, iact, NULL);
+}
+
 /* A design term is an interaction OR a nested variable */
 static bool
 parse_design_term (struct lexer *lexer, struct glm_spec *glm)

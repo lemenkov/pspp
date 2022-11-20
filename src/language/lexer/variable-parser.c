@@ -1128,63 +1128,9 @@ var_set_create_from_array (struct variable *const *var, size_t n_vars)
 bool
 lex_match_variable (struct lexer *lexer, const struct dictionary *dict, const struct variable **var)
 {
-  if (lex_token (lexer) !=  T_ID)
+  if (lex_token (lexer) != T_ID)
     return false;
 
-  *var = parse_variable_const  (lexer, dict);
-
-  if (*var == NULL)
-    return false;
-  return true;
+  *var = parse_variable_const (lexer, dict);
+  return *var != NULL;
 }
-
-/* An interaction is a variable followed by {*, BY} followed by an interaction */
-static bool
-parse_internal_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact, struct interaction **it)
-{
-  const struct variable *v = NULL;
-  assert (iact);
-
-  switch  (lex_next_token (lexer, 1))
-    {
-    case T_ENDCMD:
-    case T_SLASH:
-    case T_COMMA:
-    case T_ID:
-    case T_BY:
-    case T_ASTERISK:
-      break;
-    default:
-      return false;
-      break;
-    }
-
-  if (! lex_match_variable (lexer, dict, &v))
-    {
-      if (it)
-	interaction_destroy (*it);
-      *iact = NULL;
-      return false;
-    }
-
-  assert (v);
-
-  if (*iact == NULL)
-    *iact = interaction_create (v);
-  else
-    interaction_add_variable (*iact, v);
-
-  if (lex_match (lexer, T_ASTERISK) || lex_match (lexer, T_BY))
-    {
-      return parse_internal_interaction (lexer, dict, iact, iact);
-    }
-
-  return true;
-}
-
-bool
-parse_design_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact)
-{
-  return parse_internal_interaction (lexer, dict, iact, NULL);
-}
-
