@@ -1088,7 +1088,7 @@ matrix_parse_primary__ (struct matrix_state *s)
         return retval;
     }
 
-  lex_error (s->lexer, NULL);
+  lex_error (s->lexer, _("Syntax error expecting matrix expression."));
   return NULL;
 }
 
@@ -7479,7 +7479,8 @@ matrix_get_parse (struct matrix_state *s)
             }
           else
             {
-              lex_error (s->lexer, NULL);
+              lex_error (s->lexer, _("Syntax error expecting ACCEPT or OMIT or "
+                                     "a number for MISSING."));
               goto error;
             }
         }
@@ -7496,7 +7497,8 @@ matrix_get_parse (struct matrix_state *s)
             }
           else
             {
-              lex_error (s->lexer, NULL);
+              lex_error (s->lexer, _("Syntax error expecting OMIT or a number "
+                                     "for SYSMIS."));
               goto error;
             }
         }

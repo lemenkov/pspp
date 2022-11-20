@@ -934,7 +934,7 @@ matrix.sps:2.10: error: COMPUTE: Syntax error expecting `='.
     2 | COMPUTE x.
       |          ^
 
-matrix.sps:3.11: error: COMPUTE: Syntax error.
+matrix.sps:3.11: error: COMPUTE: Syntax error expecting matrix expression.
     3 | COMPUTE x=.
       |           ^
 
@@ -3358,7 +3358,7 @@ matrix.sps:10.25: note: READ: This syntax specifies the field width.
    10 | READ x/FIELD=1 TO 10 BY 6.
       |                         ^
 
-matrix.sps:11.13: error: READ: Syntax error.
+matrix.sps:11.13: error: READ: Syntax error expecting matrix expression.
    11 | READ x/SIZE=!.
       |             ^
 
@@ -3539,7 +3539,7 @@ WRITE {1,2}/FIELD=1 TO 10/OUTFILE='matrix.txt'/MODE=TRIANGULAR.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.7: error: WRITE: Syntax error.
+matrix.sps:2.7: error: WRITE: Syntax error expecting matrix expression.
     2 | WRITE !.
       |       ^
 
@@ -3871,11 +3871,13 @@ matrix.sps:16.13: error: GET: Syntax error expecting identifier.
    16 | GET x/NAMES=!.
       |             ^
 
-matrix.sps:17.15: error: GET: Syntax error.
+matrix.sps:17.15: error: GET: Syntax error expecting ACCEPT or OMIT or a number
+for MISSING.
    17 | GET x/MISSING=!.
       |               ^
 
-matrix.sps:18.14: error: GET: Syntax error.
+matrix.sps:18.14: error: GET: Syntax error expecting OMIT or a number for
+SYSMIS.
    18 | GET x/SYSMIS=!.
       |              ^
 
@@ -4000,7 +4002,7 @@ SAVE {1,2}/OUTFILE='matrix5.sav'/STRINGS=a, b.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.6: error: SAVE: Syntax error.
+matrix.sps:2.6: error: SAVE: Syntax error expecting matrix expression.
     2 | SAVE !.
       |      ^
 
@@ -4013,7 +4015,7 @@ matrix.sps:4.18: error: SAVE: Syntax error expecting variable name.
     4 | SAVE 1/VARIABLES=!.
       |                  ^
 
-matrix.sps:5.14: error: SAVE: Syntax error.
+matrix.sps:5.14: error: SAVE: Syntax error expecting matrix expression.
     5 | SAVE 1/NAMES=!.
       |              ^
 
@@ -4757,7 +4759,7 @@ MSAVE 1/TYPE=COV/OUTFILE='matrix7.sav'/VARIABLES=ROWTYPE_.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
-matrix.sps:2.7: error: MSAVE: Syntax error.
+matrix.sps:2.7: error: MSAVE: Syntax error expecting matrix expression.
     2 | MSAVE !.
       |       ^
 
@@ -4783,11 +4785,11 @@ matrix.sps:7.16: error: MSAVE: Syntax error expecting variable name.
     7 | MSAVE 1/SNAMES=!.
       |                ^
 
-matrix.sps:8.15: error: MSAVE: Syntax error.
+matrix.sps:8.15: error: MSAVE: Syntax error expecting matrix expression.
     8 | MSAVE 1/SPLIT=!.
       |               ^
 
-matrix.sps:9.16: error: MSAVE: Syntax error.
+matrix.sps:9.16: error: MSAVE: Syntax error expecting matrix expression.
     9 | MSAVE 1/FACTOR=!.
       |                ^
 
