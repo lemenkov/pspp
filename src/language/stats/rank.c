@@ -39,7 +39,7 @@
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
-#include "libpspp/string-set.h"
+#include "libpspp/stringi-set.h"
 #include "libpspp/taint.h"
 #include "output/pivot-table.h"
 
@@ -159,15 +159,17 @@ struct rank_spec
 
 /* If NEW_NAME exists in DICT or NEW_NAMES, returns NULL without changing
    anything.  Otherwise, inserts NEW_NAME in NEW_NAMES and returns the copy of
-   NEW_NAME now in NEW_NAMES. */
+   NEW_NAME now in NEW_NAMES.  In any case, frees NEW_NAME. */
 static const char *
-try_new_name (const char *new_name,
-              const struct dictionary *dict, struct string_set *new_names)
+try_new_name (char *new_name,
+              const struct dictionary *dict, struct stringi_set *new_names)
 {
-  return (!dict_lookup_var (dict, new_name)
-          && string_set_insert (new_names, new_name)
-          ? string_set_find_node (new_names, new_name)->string
-          : NULL);
+  const char *retval = (!dict_lookup_var (dict, new_name)
+                        && stringi_set_insert (new_names, new_name)
+                        ? stringi_set_find_node (new_names, new_name)->string
+                        : NULL);
+  free (new_name);
+  return retval;
 }
 
 /* Returns a variable name for storing ranks of a variable named SRC_NAME
@@ -177,38 +179,34 @@ try_new_name (const char *new_name,
    If successful, adds the new name to NEW_NAMES and returns the name added.
    If no name can be generated, returns NULL. */
 static const char *
-rank_choose_dest_name (struct dictionary *dict, struct string_set *new_names,
+rank_choose_dest_name (struct dictionary *dict, struct stringi_set *new_names,
                        enum rank_func f, const char *src_name)
 {
-  char *src_name_7;
-  char name[128];
-  const char *s;
-  int i;
-
   /* Try the first character of the ranking function followed by the first 7
      bytes of the srcinal variable name. */
-  src_name_7 = utf8_encoding_trunc (src_name, dict_get_encoding (dict), 7);
-  snprintf (name, sizeof name, "%c%s", function_name[f][0], src_name_7);
+  char *src_name_7 = utf8_encoding_trunc (src_name, dict_get_encoding (dict),
+                                          7);
+  const char *s = try_new_name (
+    xasprintf ("%c%s", function_name[f][0], src_name_7), dict, new_names);
   free (src_name_7);
-  s = try_new_name (name, dict, new_names);
-  if (s != NULL)
+  if (s)
     return s;
 
   /* Try "fun###". */
-  for (i = 1; i <= 999; i++)
+  for (int i = 1; i <= 999; i++)
     {
-      sprintf (name, "%.3s%03d", function_name[f], i);
-      s = try_new_name (name, dict, new_names);
-      if (s != NULL)
+      s = try_new_name (xasprintf ("%.3s%03d", function_name[f], i),
+                        dict, new_names);
+      if (s)
         return s;
     }
 
   /* Try "RNKfn##". */
-  for (i = 1; i <= 99; i++)
+  for (int i = 1; i <= 99; i++)
     {
-      sprintf (name, "RNK%.2s%02d", function_name[f], i);
-      s = try_new_name (name, dict, new_names);
-      if (s != NULL)
+      s = try_new_name (xasprintf ("RNK%.2s%02d", function_name[f], i),
+                        dict, new_names);
+      if (s)
         return s;
     }
 
@@ -251,56 +249,35 @@ struct rank
 static void
 destroy_rank (struct rank *rank)
 {
- free (rank->vars);
- free (rank->group_vars);
- subcase_uninit (&rank->sc);
- pool_destroy (rank->pool);
+  free (rank->vars);
+  free (rank->group_vars);
+  subcase_uninit (&rank->sc);
+  pool_destroy (rank->pool);
 }
 
 static bool
 parse_into (struct lexer *lexer, struct rank *cmd,
-            struct string_set *new_names)
+            struct stringi_set *new_names)
 {
-  int var_count = 0;
-  struct rank_spec *rs = NULL;
-
-  cmd->rs = pool_realloc (cmd->pool, cmd->rs, sizeof (*cmd->rs) * (cmd->n_rs + 1));
-  rs = &cmd->rs[cmd->n_rs];
-
+  enum rank_func rfunc;
   if (lex_match_id (lexer, "RANK"))
-    {
-      rs->rfunc = RANK;
-    }
+    rfunc = RANK;
   else if (lex_match_id (lexer, "NORMAL"))
-    {
-      rs->rfunc = NORMAL;
-    }
+    rfunc = NORMAL;
   else if (lex_match_id (lexer, "RFRACTION"))
-    {
-      rs->rfunc = RFRACTION;
-    }
+    rfunc = RFRACTION;
   else if (lex_match_id (lexer, "N"))
-    {
-      rs->rfunc = N;
-    }
+    rfunc = N;
   else if (lex_match_id (lexer, "SAVAGE"))
-    {
-      rs->rfunc = SAVAGE;
-    }
+    rfunc = SAVAGE;
   else if (lex_match_id (lexer, "PERCENT"))
-    {
-      rs->rfunc = PERCENT;
-    }
+    rfunc = PERCENT;
   else if (lex_match_id (lexer, "PROPORTION"))
-    {
-      rs->rfunc = PROPORTION;
-    }
+    rfunc = PROPORTION;
   else if (lex_match_id (lexer, "NTILES"))
     {
-      if (!lex_force_match (lexer, T_LPAREN))
-	return false;
-
-      if (! lex_force_int_range (lexer, "NTILES", 1, INT_MAX))
+      if (!lex_force_match (lexer, T_LPAREN)
+          || !lex_force_int_range (lexer, "NTILES", 1, INT_MAX))
 	return false;
 
       cmd->k_ntiles = lex_integer (lexer);
@@ -309,33 +286,41 @@ parse_into (struct lexer *lexer, struct rank *cmd,
       if (!lex_force_match (lexer, T_RPAREN))
 	return false;
 
-      rs->rfunc = NTILES;
+      rfunc = NTILES;
     }
   else
     {
-      lex_error (lexer, NULL);
+      lex_error_expecting (lexer, "RANK", "NORMAL", "RFRACTION", "N",
+                           "SAVAGE", "PERCENT", "PROPORTION", "NTILES");
       return false;
     }
 
-  cmd->n_rs++;
-  rs->dest_names = pool_calloc (cmd->pool, cmd->n_vars,
-                                sizeof *rs->dest_names);
+  cmd->rs = pool_realloc (cmd->pool, cmd->rs, sizeof (*cmd->rs) * (cmd->n_rs + 1));
+  struct rank_spec *rs = &cmd->rs[cmd->n_rs++];
+  *rs = (struct rank_spec) {
+    .rfunc = rfunc,
+    .dest_names = pool_calloc (cmd->pool, cmd->n_vars,
+                               sizeof *rs->dest_names),
+  };
 
   if (lex_match_id (lexer, "INTO"))
     {
-      while(lex_token (lexer) == T_ID)
+      int vars_start = lex_ofs (lexer);
+      size_t var_count = 0;
+      while (lex_token (lexer) == T_ID)
 	{
 	  const char *name = lex_tokcstr (lexer);
 
 	  if (var_count >= subcase_get_n_fields (&cmd->sc))
-            lex_error (lexer, _("Too many variables in %s clause."), "INTO");
+            lex_ofs_error (lexer, vars_start, lex_ofs (lexer),
+                           _("Too many variables in %s clause."), "INTO");
 	  else if (dict_lookup_var (cmd->dict, name) != NULL)
             lex_error (lexer, _("Variable %s already exists."), name);
-          else if (string_set_contains (new_names, name))
+          else if (stringi_set_contains (new_names, name))
             lex_error (lexer, _("Duplicate variable name %s."), name);
           else
             {
-              string_set_insert (new_names, name);
+              stringi_set_insert (new_names, name);
               rs->dest_names[var_count++] = pool_strdup (cmd->pool, name);
               lex_get (lexer);
               continue;
@@ -349,14 +334,13 @@ parse_into (struct lexer *lexer, struct rank *cmd,
   return true;
 }
 
-/* Hardly a rank function !! */
+/* Hardly a rank function. */
 static double
 rank_n (const struct rank *cmd UNUSED, double c UNUSED, double cc UNUSED, double cc_1 UNUSED,
 	int i UNUSED, double w)
 {
   return w;
 }
-
 
 static double
 rank_rank (const struct rank *cmd, double c, double cc, double cc_1,
@@ -395,7 +379,7 @@ rank_rank (const struct rank *cmd, double c, double cc, double cc_1,
 	  rank = cc;
 	  break;
 	case TIES_MEAN:
-	  rank = cc_1 + c / 2.0 ;
+	  rank = cc_1 + c / 2.0;
 	  break;
 	case TIES_CONDENSE:
 	  rank = i;
@@ -413,7 +397,7 @@ static double
 rank_rfraction (const struct rank *cmd, double c, double cc, double cc_1,
 		int i, double w)
 {
-  return rank_rank (cmd, c, cc, cc_1, i, w) / w ;
+  return rank_rank (cmd, c, cc, cc_1, i, w) / w;
 }
 
 
@@ -421,7 +405,7 @@ static double
 rank_percent (const struct rank *cmd, double c, double cc, double cc_1,
 	      int i, double w)
 {
-  return rank_rank (cmd, c, cc, cc_1, i, w) * 100.0 / w ;
+  return rank_rank (cmd, c, cc, cc_1, i, w) * 100.0 / w;
 }
 
 
@@ -429,7 +413,7 @@ static double
 rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
 		 int i, double w)
 {
-  const double r =  rank_rank (cmd, c, cc, cc_1, i, w) ;
+  const double r =  rank_rank (cmd, c, cc, cc_1, i, w);
 
   double f;
 
@@ -439,7 +423,7 @@ rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
       f =  (r - 3.0/8.0) / (w + 0.25);
       break;
     case FRAC_RANKIT:
-      f = (r - 0.5) / w ;
+      f = (r - 0.5) / w;
       break;
     case FRAC_TUKEY:
       f = (r - 1.0/3.0) / (w + 1.0/3.0);
@@ -478,10 +462,9 @@ rank_ntiles (const struct rank *cmd, double c, double cc, double cc_1,
 static double
 ee (int j, double w_star)
 {
-  int k;
   double sum = 0.0;
 
-  for (k = 1 ; k <= j; k++)
+  for (int k = 1; k <= j; k++)
     sum += 1.0 / (w_star + 1 - k);
 
   return sum;
@@ -504,7 +487,7 @@ rank_savage (const struct rank *cmd UNUSED, double c, double cc, double cc_1,
   /* The second factor is infinite, when the first is zero.
      Therefore, evaluate the second, only when the first is non-zero */
   const double expr1 =  (1 - g_1) ? (1 - g_1) * ee(i_1+1, w_star) : (1 - g_1);
-  const double expr2 =  g_2 ? g_2 * ee (i_2+1, w_star) : g_2 ;
+  const double expr2 =  g_2 ? g_2 * ee (i_2+1, w_star) : g_2;
 
   if (i_1 == i_2)
     return ee (i_1 + 1, w_star) - 1;
@@ -514,14 +497,13 @@ rank_savage (const struct rank *cmd UNUSED, double c, double cc, double cc_1,
 
   if (i_1 + 2 <= i_2)
     {
-      int j;
       double sigma = 0.0;
-      for (j = i_1 + 2 ; j <= i_2; ++j)
+      for (int j = i_1 + 2; j <= i_2; ++j)
 	sigma += ee (j, w_star);
       return ((expr1 + expr2 + sigma) / c) -1;
     }
 
-  NOT_REACHED();
+  NOT_REACHED ();
 }
 
 static double
@@ -529,20 +511,16 @@ sum_weights (const struct casereader *input, int weight_idx)
 {
   if (weight_idx == -1)
     return casereader_count_cases (input);
-  else
-    {
-      struct casereader *pass;
-      struct ccase *c;
-      double w;
 
-      w = 0.0;
-      pass = casereader_clone (input);
-      for (; (c = casereader_read (pass)) != NULL; case_unref (c))
-        w += case_num_idx (c, weight_idx);
-      casereader_destroy (pass);
+  double w = 0.0;
 
-      return w;
-    }
+  struct casereader *pass = casereader_clone (input);
+  struct ccase *c;
+  for (; (c = casereader_read (pass)) != NULL; case_unref (c))
+    w += case_num_idx (c, weight_idx);
+  casereader_destroy (pass);
+
+  return w;
 }
 
 static void
@@ -551,21 +529,19 @@ rank_sorted_file (struct casereader *input,
                   int weight_idx,
 		  const struct rank *cmd)
 {
-  struct casegrouper *tie_grouper;
-  struct casereader *tied_cases;
-  struct subcase input_var;
   int tie_group = 1;
-  struct ccase *c;
   double cc = 0.0;
-  double w;
 
   /* Get total group weight. */
-  w = sum_weights (input, weight_idx);
+  double w = sum_weights (input, weight_idx);
 
   /* Do ranking. */
-  subcase_init (&input_var, 0, 0, SC_ASCEND);
-  tie_grouper = casegrouper_create_subcase (input, &input_var);
+  struct subcase input_var = SUBCASE_EMPTY_INITIALIZER;
+  subcase_add (&input_var, 0, 0, SC_ASCEND);
+  struct casegrouper *tie_grouper = casegrouper_create_subcase (input, &input_var);
   subcase_uninit (&input_var);
+
+  struct casereader *tied_cases;
   for (; casegrouper_get_next_group (tie_grouper, &tied_cases);
        casereader_destroy (tied_cases))
     {
@@ -577,14 +553,12 @@ rank_sorted_file (struct casereader *input,
                        casewriter_get_taint (output));
 
       /* Rank tied cases. */
+      struct ccase *c;
       for (; (c = casereader_read (tied_cases)) != NULL; case_unref (c))
         {
-          struct ccase *out_case;
-          size_t i;
-
-          out_case = case_create (casewriter_get_proto (output));
+          struct ccase *out_case = case_create (casewriter_get_proto (output));
           *case_num_rw_idx (out_case, 0) = case_num_idx (c, 1);
-          for (i = 0; i < cmd->n_rs; ++i)
+          for (size_t i = 0; i < cmd->n_rs; ++i)
             {
               rank_function_t func = rank_func[cmd->rs[i].rfunc];
               double rank = func (cmd, tw, cc, cc_1, tie_group, w);
@@ -620,175 +594,123 @@ static const char *
 create_var_label (struct rank *cmd, const struct variable *src_var,
                   enum rank_func f)
 {
-  struct string label;
-  const char *pool_label;
-
-  ds_init_empty (&label);
-
   if (cmd->n_group_vars > 0)
     {
-      struct string group_var_str;
-      int g;
-
-      ds_init_empty (&group_var_str);
-
-      for (g = 0 ; g < cmd->n_group_vars ; ++g)
+      struct string group_var_str = DS_EMPTY_INITIALIZER;
+      for (size_t g = 0; g < cmd->n_group_vars; ++g)
 	{
-	  if (g > 0) ds_put_cstr (&group_var_str, " ");
+	  if (g > 0)
+            ds_put_cstr (&group_var_str, " ");
 	  ds_put_cstr (&group_var_str, var_get_name (cmd->group_vars[g]));
 	}
 
-      ds_put_format (&label, _("%s of %s by %s"), function_name[f],
-		     var_get_name (src_var), ds_cstr (&group_var_str));
+      const char *label = pool_asprintf (
+        cmd->pool, _("%s of %s by %s"), function_name[f],
+        var_get_name (src_var), ds_cstr (&group_var_str));
       ds_destroy (&group_var_str);
+      return label;
     }
   else
-    ds_put_format (&label, _("%s of %s"),
-                   function_name[f], var_get_name (src_var));
-
-  pool_label = pool_strdup (cmd->pool, ds_cstr (&label));
-
-  ds_destroy (&label);
-
-  return pool_label;
+    return pool_asprintf (cmd->pool, _("%s of %s"),
+                          function_name[f], var_get_name (src_var));
 }
 
 int
 cmd_rank (struct lexer *lexer, struct dataset *ds)
 {
-  struct string_set new_names;
-  struct rank rank;
-  struct rank_spec *rs;
+  struct stringi_set new_names = STRINGI_SET_INITIALIZER (new_names);
+  struct rank rank = {
+    .sc = SUBCASE_EMPTY_INITIALIZER,
+    .exclude = MV_ANY,
+    .dict = dataset_dict (ds),
+    .ties = TIES_MEAN,
+    .fraction = FRAC_BLOM,
+    .print = true,
+    .pool = pool_create (),
+  };
 
-  subcase_init_empty (&rank.sc);
-
-  rank.rs = NULL;
-  rank.n_rs = 0;
-  rank.exclude = MV_ANY;
-  rank.n_group_vars = 0;
-  rank.group_vars = NULL;
-  rank.dict = dataset_dict (ds);
-  rank.ties = TIES_MEAN;
-  rank.fraction = FRAC_BLOM;
-  rank.print = true;
-  rank.vars = NULL;
-  rank.pool = pool_create ();
-
-  string_set_init (&new_names);
-
-  if (lex_match_id (lexer, "VARIABLES"))
-    if (! lex_force_match (lexer, T_EQUALS))
-      goto error;
-
-  if (!parse_sort_criteria (lexer, rank.dict,
-			    &rank.sc,
-			    &rank.vars, NULL))
+  if (lex_match_id (lexer, "VARIABLES") && !lex_force_match (lexer, T_EQUALS))
     goto error;
 
+  if (!parse_sort_criteria (lexer, rank.dict, &rank.sc, &rank.vars, NULL))
+    goto error;
   rank.n_vars = rank.sc.n_fields;
 
-  if (lex_match (lexer, T_BY))
-    {
-      if (! parse_variables_const (lexer, rank.dict,
-				    &rank.group_vars, &rank.n_group_vars,
-				    PV_NO_DUPLICATE | PV_NO_SCRATCH))
-	goto error;
-    }
-
+  if (lex_match (lexer, T_BY)
+      && !parse_variables_const (lexer, rank.dict,
+                                 &rank.group_vars, &rank.n_group_vars,
+                                 PV_NO_DUPLICATE | PV_NO_SCRATCH))
+    goto error;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
-      if (! lex_force_match (lexer, T_SLASH))
+      if (!lex_force_match (lexer, T_SLASH))
 	goto error;
       if (lex_match_id (lexer, "TIES"))
 	{
-	  if (! lex_force_match (lexer, T_EQUALS))
+	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 	  if (lex_match_id (lexer, "MEAN"))
-	    {
-	      rank.ties = TIES_MEAN;
-	    }
+            rank.ties = TIES_MEAN;
 	  else if (lex_match_id (lexer, "LOW"))
-	    {
-	      rank.ties = TIES_LOW;
-	    }
+            rank.ties = TIES_LOW;
 	  else if (lex_match_id (lexer, "HIGH"))
-	    {
-	      rank.ties = TIES_HIGH;
-	    }
+            rank.ties = TIES_HIGH;
 	  else if (lex_match_id (lexer, "CONDENSE"))
-	    {
-	      rank.ties = TIES_CONDENSE;
-	    }
+            rank.ties = TIES_CONDENSE;
 	  else
 	    {
-	      lex_error (lexer, NULL);
+	      lex_error_expecting (lexer, "MEAN", "LOW", "HIGH", "CONDENSE");
 	      goto error;
 	    }
 	}
       else if (lex_match_id (lexer, "FRACTION"))
 	{
-	  if (! lex_force_match (lexer, T_EQUALS))
+	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 	  if (lex_match_id (lexer, "BLOM"))
-	    {
-	      rank.fraction = FRAC_BLOM;
-	    }
+            rank.fraction = FRAC_BLOM;
 	  else if (lex_match_id (lexer, "TUKEY"))
-	    {
-	      rank.fraction = FRAC_TUKEY;
-	    }
+            rank.fraction = FRAC_TUKEY;
 	  else if (lex_match_id (lexer, "VW"))
-	    {
-	      rank.fraction = FRAC_VW;
-	    }
+            rank.fraction = FRAC_VW;
 	  else if (lex_match_id (lexer, "RANKIT"))
-	    {
-	      rank.fraction = FRAC_RANKIT;
-	    }
+            rank.fraction = FRAC_RANKIT;
 	  else
 	    {
-	      lex_error (lexer, NULL);
+	      lex_error_expecting (lexer, "BLOM", "TUKEY", "VW", "RANKIT");
 	      goto error;
 	    }
 	}
       else if (lex_match_id (lexer, "PRINT"))
 	{
-	  if (! lex_force_match (lexer, T_EQUALS))
+	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 	  if (lex_match_id (lexer, "YES"))
-	    {
-	      rank.print = true;
-	    }
+            rank.print = true;
 	  else if (lex_match_id (lexer, "NO"))
-	    {
-	      rank.print = false;
-	    }
+            rank.print = false;
 	  else
 	    {
-	      lex_error (lexer, NULL);
+	      lex_error_expecting (lexer, "YES", "NO");
 	      goto error;
 	    }
 	}
       else if (lex_match_id (lexer, "MISSING"))
 	{
-	  if (! lex_force_match (lexer, T_EQUALS))
+	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 	  if (lex_match_id (lexer, "INCLUDE"))
-	    {
-	      rank.exclude = MV_SYSTEM;
-	    }
+            rank.exclude = MV_SYSTEM;
 	  else if (lex_match_id (lexer, "EXCLUDE"))
-	    {
-	      rank.exclude = MV_ANY;
-	    }
+            rank.exclude = MV_ANY;
 	  else
 	    {
-	      lex_error (lexer, NULL);
+	      lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
 	      goto error;
 	    }
 	}
-      else if (! parse_into (lexer, &rank, &new_names))
+      else if (!parse_into (lexer, &rank, &new_names))
 	goto error;
     }
 
@@ -796,12 +718,12 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   /* If no rank specs are given, then apply a default */
   if (rank.n_rs == 0)
     {
-      struct rank_spec *rs;
-
-      rs = pool_calloc (rank.pool, 1, sizeof *rs);
-      rs->rfunc = RANK;
-      rs->dest_names = pool_calloc (rank.pool, rank.n_vars,
-                                    sizeof *rs->dest_names);
+      struct rank_spec *rs = pool_malloc (rank.pool, sizeof *rs);
+      *rs = (struct rank_spec) {
+        .rfunc = RANK,
+        .dest_names = pool_calloc (rank.pool, rank.n_vars,
+                                   sizeof *rs->dest_names),
+      };
 
       rank.rs = rs;
       rank.n_rs = 1;
@@ -809,11 +731,11 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 
   /* Choose variable names for all rank destinations which haven't already been
      created with INTO. */
-  for (rs = rank.rs; rs < &rank.rs[rank.n_rs]; rs++)
+  for (struct rank_spec *rs = rank.rs; rs < &rank.rs[rank.n_rs]; rs++)
     {
       rs->dest_labels = pool_calloc (rank.pool, rank.n_vars,
                                      sizeof *rs->dest_labels);
-      for (int v = 0 ; v < rank.n_vars ;  v ++)
+      for (int v = 0; v < rank.n_vars;  v ++)
         {
           const char **dst_name = &rs->dest_names[v];
           if (*dst_name == NULL)
@@ -844,15 +766,15 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
         N_("Existing Variable"));
       variables->root->show_label = true;
 
-      for (size_t i = 0 ; i <  rank.n_rs ; ++i)
+      for (size_t i = 0; i <  rank.n_rs; ++i)
 	{
-	  for (size_t v = 0 ; v < rank.n_vars ;  v ++)
+	  for (size_t v = 0; v < rank.n_vars;  v ++)
 	    {
               int row_idx = pivot_category_create_leaf (
                 variables->root, pivot_value_new_variable (rank.vars[v]));
 
               struct string group_vars = DS_EMPTY_INITIALIZER;
-              for (int g = 0 ; g < rank.n_group_vars ; ++g)
+              for (int g = 0; g < rank.n_group_vars; ++g)
                 {
                   if (g)
                     ds_put_byte (&group_vars, ' ');
@@ -886,13 +808,12 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   rank_cmd (ds, &rank);
 
   destroy_rank (&rank);
-  string_set_destroy (&new_names);
+  stringi_set_destroy (&new_names);
   return CMD_SUCCESS;
 
  error:
-
   destroy_rank (&rank);
-  string_set_destroy (&new_names);
+  stringi_set_destroy (&new_names);
   return CMD_FAILURE;
 }
 
@@ -982,52 +903,35 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
 {
   struct dictionary *d = dataset_dict (ds);
   struct variable *weight_var = dict_get_weight (d);
-  struct casewriter **outputs;
-  struct variable *order_var;
-  struct casereader *input;
-  struct rank_trns *trns;
   bool ok = true;
-  int i;
 
-  order_var = add_permanent_ordering_transformation (ds);
+  struct variable *order_var = add_permanent_ordering_transformation (ds);
 
   /* Create output files. */
-  {
-    struct caseproto *output_proto;
-    struct subcase by_order;
+  struct caseproto *output_proto = caseproto_create ();
+  for (size_t i = 0; i < cmd->n_rs + 1; i++)
+    output_proto = caseproto_add_width (output_proto, 0);
 
-    output_proto = caseproto_create ();
-    for (i = 0; i < cmd->n_rs + 1; i++)
-      output_proto = caseproto_add_width (output_proto, 0);
+  struct subcase by_order;
+  subcase_init (&by_order, 0, 0, SC_ASCEND);
 
-    subcase_init (&by_order, 0, 0, SC_ASCEND);
+  struct casewriter **outputs = xnmalloc (cmd->n_vars, sizeof *outputs);
+  for (size_t i = 0; i < cmd->n_vars; i++)
+    outputs[i] = sort_create_writer (&by_order, output_proto);
 
-    outputs = xnmalloc (cmd->n_vars, sizeof *outputs);
-    for (i = 0; i < cmd->n_vars; i++)
-      outputs[i] = sort_create_writer (&by_order, output_proto);
-
-    subcase_uninit (&by_order);
-    caseproto_unref (output_proto);
-  }
+  subcase_uninit (&by_order);
+  caseproto_unref (output_proto);
 
   /* Open the active file and make one pass per input variable. */
-  input = proc_open (ds);
+  struct casereader *input = proc_open (ds);
   input = casereader_create_filter_weight (input, d, NULL, NULL);
-  for (i = 0 ; i < cmd->n_vars ; ++i)
+  for (size_t i = 0; i < cmd->n_vars; ++i)
     {
       const struct variable *input_var = cmd->vars[i];
-      struct casereader *input_pass;
-      struct casegrouper *split_grouper;
-      struct casereader *split_group;
-      struct subcase rank_ordering;
-      struct subcase projection;
-      struct subcase split_vars;
-      struct subcase group_vars;
-      int weight_idx;
-      int j;
 
       /* Discard cases that have missing values of input variable. */
-      input_pass = i == cmd->n_vars - 1 ? input : casereader_clone (input);
+      struct casereader *input_pass
+        = i == cmd->n_vars - 1 ? input : casereader_clone (input);
       input_pass = casereader_create_filter_missing (input_pass, &input_var, 1,
                                                      cmd->exclude, NULL, NULL);
 
@@ -1042,13 +946,14 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
            - 2 + cmd->n_group_vars and up: split variables
            - 2 + cmd->n_group_vars + n_split_vars: weight var
       */
-      subcase_init_empty (&projection);
+      struct subcase projection = SUBCASE_EMPTY_INITIALIZER;
       subcase_add_var_always (&projection, input_var, SC_ASCEND);
       subcase_add_var_always (&projection, order_var, SC_ASCEND);
       subcase_add_vars_always (&projection,
                                cmd->group_vars, cmd->n_group_vars);
       subcase_add_vars_always (&projection, dict_get_split_vars (d),
                                dict_get_n_splits (d));
+      int weight_idx;
       if (weight_var != NULL)
         {
           subcase_add_var_always (&projection, weight_var, SC_ASCEND);
@@ -1060,25 +965,30 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
       subcase_uninit (&projection);
 
       /* Prepare 'group_vars' as the set of grouping variables. */
-      subcase_init_empty (&group_vars);
-      for (j = 0; j < cmd->n_group_vars; j++)
+      struct subcase group_vars = SUBCASE_EMPTY_INITIALIZER;
+      for (size_t j = 0; j < cmd->n_group_vars; j++)
         subcase_add_always (&group_vars,
                             j + 2, var_get_width (cmd->group_vars[j]),
                             SC_ASCEND);
 
       /* Prepare 'rank_ordering' for sorting with the group variables as
          primary key and the input variable as secondary key. */
+      struct subcase rank_ordering;
       subcase_clone (&rank_ordering, &group_vars);
       subcase_add (&rank_ordering, 0, 0, subcase_get_direction (&cmd->sc, i));
 
       /* Group by split variables */
-      subcase_init_empty (&split_vars);
-      for (j = 0; j < dict_get_n_splits (d); j++)
+      struct subcase split_vars = SUBCASE_EMPTY_INITIALIZER;
+      for (size_t j = 0; j < dict_get_n_splits (d); j++)
         subcase_add_always (&split_vars, 2 + j + cmd->n_group_vars,
                             var_get_width (dict_get_split_vars (d)[j]),
                             SC_ASCEND);
-      split_grouper = casegrouper_create_subcase (input_pass, &split_vars);
+
+      struct casegrouper *split_grouper
+        = casegrouper_create_subcase (input_pass, &split_vars);
       subcase_uninit (&split_vars);
+
+      struct casereader *split_group;
       while (casegrouper_get_next_group (split_grouper, &split_group))
         {
           struct casereader *ordered;
@@ -1105,20 +1015,19 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
 
   /* Merge the original data set with the ranks (which we already sorted on
      $ORDER). */
-  trns = xmalloc (sizeof *trns);
+  struct rank_trns *trns = xmalloc (sizeof *trns);
   trns->order_case_idx = var_get_case_index (order_var);
   trns->input_vars = xnmalloc (cmd->n_vars, sizeof *trns->input_vars);
   trns->n_input_vars = cmd->n_vars;
   trns->n_funcs = cmd->n_rs;
-  for (i = 0; i < trns->n_input_vars; i++)
+  for (size_t i = 0; i < trns->n_input_vars; i++)
     {
       struct rank_trns_input_var *iv = &trns->input_vars[i];
-      int j;
 
       iv->input = casewriter_make_reader (outputs[i]);
       iv->current = casereader_read (iv->input);
       iv->output_vars = xnmalloc (trns->n_funcs, sizeof *iv->output_vars);
-      for (j = 0; j < trns->n_funcs; j++)
+      for (size_t j = 0; j < trns->n_funcs; j++)
         {
           struct rank_spec *rs = &cmd->rs[j];
           struct variable *var;

@@ -561,54 +561,99 @@ rank.sps:14: error: RANK: DEBUG XFORM FAIL transformation executed
 ])
 AT_CLEANUP
 
-AT_SETUP([RANK handling of invalid syntax])
+AT_SETUP([RANK syntax errors])
 AT_DATA([rank.sps], [dnl
-DATA LIST LIST NOTABLE /x * a (a2).
-BEGIN DATA.
--1 s
-0  s
-1  s
-2  s
-2  s
-4  s
-5  s
-END DATA.
-
-* invalid NTILES (no parameter)
-RANK x
-  /NTILES
-.
-
-* invalid NTILES (not an integer)
-RANK x
-  /NTILES(d)
-.
-
-
-* destination variable already exists
-RANK x
- /RANK INTO x.
-
-
-* Too many variables in INTO
-RANK x
- /RANK INTO foo  bar wiz.
+DATA LIST LIST NOTABLE /x y z * a b c (a2).
+RANK VARIABLES **.
+RANK **.
+RANK x BY **.
+RANK x/TIES **.
+RANK x/TIES=**.
+RANK x/FRACTION **.
+RANK x/FRACTIO=**.
+RANK x/PRINT **.
+RANK x/PRINT=**.
+RANK x/MISSING **.
+RANK x/MISSING=**.
+RANK x/NTILES **.
+RANK x/NTILES(**).
+RANK x/NTILES(5 **).
+RANK x/ **.
+RANK x/N INTO v w.
+RANK x/N INTO y.
+RANK x y/N INTO v v.
 ])
 AT_CHECK([pspp -O format=csv rank.sps], [1], [dnl
-"rank.sps:15.1: error: RANK: Syntax error expecting `@{:@'.
-   15 | .
-      | ^"
+"rank.sps:2.16-2.17: error: RANK: Syntax error expecting `='.
+    2 | RANK VARIABLES **.
+      |                ^~"
 
-"rank.sps:19.11: error: RANK: Syntax error expecting positive integer for NTILES.
-   19 |   /NTILES(d)
-      |           ^"
+"rank.sps:3.6-3.7: error: RANK: Syntax error expecting variable name.
+    3 | RANK **.
+      |      ^~"
 
-"rank.sps:25.13: error: RANK: Variable x already exists.
-   25 |  /RANK INTO x.
-      |             ^"
+"rank.sps:4.11-4.12: error: RANK: Syntax error expecting variable name.
+    4 | RANK x BY **.
+      |           ^~"
 
-"rank.sps:30.18-30.20: error: RANK: Too many variables in INTO clause.
-   30 |  /RANK INTO foo  bar wiz.
-      |                  ^~~"
+"rank.sps:5.13-5.14: error: RANK: Syntax error expecting `='.
+    5 | RANK x/TIES **.
+      |             ^~"
+
+"rank.sps:6.13-6.14: error: RANK: Syntax error expecting MEAN, LOW, HIGH, or CONDENSE.
+    6 | RANK x/TIES=**.
+      |             ^~"
+
+"rank.sps:7.17-7.18: error: RANK: Syntax error expecting `='.
+    7 | RANK x/FRACTION **.
+      |                 ^~"
+
+"rank.sps:8.16-8.17: error: RANK: Syntax error expecting BLOM, TUKEY, VW, or RANKIT.
+    8 | RANK x/FRACTIO=**.
+      |                ^~"
+
+"rank.sps:9.14-9.15: error: RANK: Syntax error expecting `='.
+    9 | RANK x/PRINT **.
+      |              ^~"
+
+"rank.sps:10.14-10.15: error: RANK: Syntax error expecting YES or NO.
+   10 | RANK x/PRINT=**.
+      |              ^~"
+
+"rank.sps:11.16-11.17: error: RANK: Syntax error expecting `='.
+   11 | RANK x/MISSING **.
+      |                ^~"
+
+"rank.sps:12.16-12.17: error: RANK: Syntax error expecting INCLUDE or EXCLUDE.
+   12 | RANK x/MISSING=**.
+      |                ^~"
+
+"rank.sps:13.15-13.16: error: RANK: Syntax error expecting `('.
+   13 | RANK x/NTILES **.
+      |               ^~"
+
+"rank.sps:14.15-14.16: error: RANK: Syntax error expecting positive integer for NTILES.
+   14 | RANK x/NTILES(**).
+      |               ^~"
+
+"rank.sps:15.17-15.18: error: RANK: Syntax error expecting `)'.
+   15 | RANK x/NTILES(5 **).
+      |                 ^~"
+
+"rank.sps:16.9-16.10: error: RANK: Syntax error expecting RANK, NORMAL, RFRACTION, N, SAVAGE, PERCENT, PROPORTION, or NTILES.
+   16 | RANK x/ **.
+      |         ^~"
+
+"rank.sps:17.15-17.17: error: RANK: Too many variables in INTO clause.
+   17 | RANK x/N INTO v w.
+      |               ^~~"
+
+"rank.sps:18.15: error: RANK: Variable y already exists.
+   18 | RANK x/N INTO y.
+      |               ^"
+
+"rank.sps:19.19: error: RANK: Duplicate variable name v.
+   19 | RANK x y/N INTO v v.
+      |                   ^"
 ])
 AT_CLEANUP
