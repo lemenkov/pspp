@@ -270,7 +270,7 @@ end data.
 QUICK CLUSTER x y /UNSUPPORTED.
 ])
 AT_CHECK([pspp -O format=csv quick-cluster.sps], [1], [dnl
-"quick-cluster.sps:7.20-7.30: error: QUICK CLUSTER: Syntax error.
+"quick-cluster.sps:7.20-7.30: error: QUICK CLUSTER: Syntax error expecting MISSING, PRINT, SAVE, or CRITERIA.
     7 | QUICK CLUSTER x y /UNSUPPORTED.
       |                    ^~~~~~~~~~~"
 ])
@@ -582,8 +582,105 @@ quick cluster x
   .
 
 list.
-])
+]) dnl "
 
 AT_CHECK([pspp -O format=csv badn.sps], [1], [ignore])
 
+AT_CLEANUP
+
+AT_SETUP([QUICK CLUSTER syntax errors])
+AT_DATA([quick-cluster.sps], [dnl
+DATA LIST LIST NOTABLE /x y.
+QUICK CLUSTER **.
+QUICK CLUSTER x/MISSING=**.
+QUICK CLUSTER x/PRINT=**.
+QUICK CLUSTER x/SAVE=CLUSTER(**).
+QUICK CLUSTER x/SAVE=CLUSTER(x).
+QUICK CLUSTER x/SAVE=CLUSTER(c **).
+QUICK CLUSTER x/SAVE=DISTANCE(**).
+QUICK CLUSTER x/SAVE=DISTANCE(x).
+QUICK CLUSTER x/SAVE=DISTANCE(d **).
+QUICK CLUSTER x/SAVE=**.
+QUICK CLUSTER x/CRITERIA=CLUSTERS **.
+QUICK CLUSTER x/CRITERIA=CLUSTERS(**).
+QUICK CLUSTER x/CRITERIA=CLUSTERS(5 **).
+QUICK CLUSTER x/CRITERIA=CONVERGE **.
+QUICK CLUSTER x/CRITERIA=CONVERGE(**).
+QUICK CLUSTER x/CRITERIA=CONVERGE(5 **).
+QUICK CLUSTER x/CRITERIA=**.
+QUICK CLUSTER x/ **.
+])
+AT_CHECK([pspp -O format=csv quick-cluster.sps], [1], [dnl
+"quick-cluster.sps:2.15-2.16: error: QUICK CLUSTER: Syntax error expecting variable name.
+    2 | QUICK CLUSTER **.
+      |               ^~"
+
+"quick-cluster.sps:3.25-3.26: error: QUICK CLUSTER: Syntax error expecting LISTWISE, DEFAULT, PAIRWISE, INCLUDE, or EXCLUDE.
+    3 | QUICK CLUSTER x/MISSING=**.
+      |                         ^~"
+
+"quick-cluster.sps:4.23-4.24: error: QUICK CLUSTER: Syntax error expecting CLUSTER or INITIAL.
+    4 | QUICK CLUSTER x/PRINT=**.
+      |                       ^~"
+
+"quick-cluster.sps:5.30-5.31: error: QUICK CLUSTER: Syntax error expecting identifier.
+    5 | QUICK CLUSTER x/SAVE=CLUSTER(**).
+      |                              ^~"
+
+"quick-cluster.sps:6.30: error: QUICK CLUSTER: A variable called `x' already exists.
+    6 | QUICK CLUSTER x/SAVE=CLUSTER(x).
+      |                              ^"
+
+"quick-cluster.sps:7.32-7.33: error: QUICK CLUSTER: Syntax error expecting `@:}@'.
+    7 | QUICK CLUSTER x/SAVE=CLUSTER(c **).
+      |                                ^~"
+
+"quick-cluster.sps:8.31-8.32: error: QUICK CLUSTER: Syntax error expecting identifier.
+    8 | QUICK CLUSTER x/SAVE=DISTANCE(**).
+      |                               ^~"
+
+"quick-cluster.sps:9.31: error: QUICK CLUSTER: A variable called `x' already exists.
+    9 | QUICK CLUSTER x/SAVE=DISTANCE(x).
+      |                               ^"
+
+"quick-cluster.sps:10.33-10.34: error: QUICK CLUSTER: Syntax error expecting `@:}@'.
+   10 | QUICK CLUSTER x/SAVE=DISTANCE(d **).
+      |                                 ^~"
+
+"quick-cluster.sps:11.22-11.23: error: QUICK CLUSTER: Syntax error expecting CLUSTER or DISTANCE.
+   11 | QUICK CLUSTER x/SAVE=**.
+      |                      ^~"
+
+"quick-cluster.sps:12.35-12.36: error: QUICK CLUSTER: Syntax error expecting `('.
+   12 | QUICK CLUSTER x/CRITERIA=CLUSTERS **.
+      |                                   ^~"
+
+"quick-cluster.sps:13.35-13.36: error: QUICK CLUSTER: Syntax error expecting positive integer for CLUSTERS.
+   13 | QUICK CLUSTER x/CRITERIA=CLUSTERS(**).
+      |                                   ^~"
+
+"quick-cluster.sps:14.37-14.38: error: QUICK CLUSTER: Syntax error expecting `)'.
+   14 | QUICK CLUSTER x/CRITERIA=CLUSTERS(5 **).
+      |                                     ^~"
+
+"quick-cluster.sps:15.35-15.36: error: QUICK CLUSTER: Syntax error expecting `('.
+   15 | QUICK CLUSTER x/CRITERIA=CONVERGE **.
+      |                                   ^~"
+
+"quick-cluster.sps:16.35-16.36: error: QUICK CLUSTER: Syntax error expecting positive number for CONVERGE.
+   16 | QUICK CLUSTER x/CRITERIA=CONVERGE(**).
+      |                                   ^~"
+
+"quick-cluster.sps:17.37-17.38: error: QUICK CLUSTER: Syntax error expecting `)'.
+   17 | QUICK CLUSTER x/CRITERIA=CONVERGE(5 **).
+      |                                     ^~"
+
+"quick-cluster.sps:18.26-18.27: error: QUICK CLUSTER: Syntax error expecting CLUSTERS, CONVERGE, MXITER, NOINITIAL, or NOUPDATE.
+   18 | QUICK CLUSTER x/CRITERIA=**.
+      |                          ^~"
+
+"quick-cluster.sps:19.18-19.19: error: QUICK CLUSTER: Syntax error expecting MISSING, PRINT, SAVE, or CRITERIA.
+   19 | QUICK CLUSTER x/ **.
+      |                  ^~"
+])
 AT_CLEANUP
