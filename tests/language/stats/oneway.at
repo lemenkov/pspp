@@ -1141,5 +1141,71 @@ relieftime,Assume equal variances,1,-1.800,3.040,-.592,16.000,.562
 ,,2,10.800,1.421,7.599,10.158,.000
 ,,3,4.400,.990,4.445,7.315,.003
 ])
+AT_CLEANUP
 
+AT_SETUP([ONEWAY syntax errors])
+AT_DATA([oneway.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+ONEWAY/ **.
+ONEWAY **.
+ONEWAY x **.
+ONEWAY x BY **.
+ONEWAY x BY y/STATISTICS=**.
+ONEWAY x BY y/POSTHOC=ALPHA **.
+ONEWAY x BY y/POSTHOC=ALPHA(**).
+ONEWAY x BY y/POSTHOC=ALPHA(123 **).
+ONEWAY x BY y/POSTHOC=**.
+ONEWAY x BY y/CONTRAST=**.
+ONEWAY x BY y/MISSING=**.
+ONEWAY x BY y/ **.
+])
+AT_CHECK([pspp -O format=csv oneway.sps], [1], [dnl
+"oneway.sps:2.9-2.10: error: ONEWAY: Syntax error expecting VARIABLES.
+    2 | ONEWAY/ **.
+      |         ^~"
+
+"oneway.sps:3.8-3.9: error: ONEWAY: Syntax error expecting variable name.
+    3 | ONEWAY **.
+      |        ^~"
+
+"oneway.sps:4.10-4.11: error: ONEWAY: Syntax error expecting `BY'.
+    4 | ONEWAY x **.
+      |          ^~"
+
+"oneway.sps:5.13-5.14: error: ONEWAY: Syntax error expecting variable name.
+    5 | ONEWAY x BY **.
+      |             ^~"
+
+"oneway.sps:6.26-6.27: error: ONEWAY: Syntax error expecting DESCRIPTIVES or HOMOGENEITY.
+    6 | ONEWAY x BY y/STATISTICS=**.
+      |                          ^~"
+
+"oneway.sps:7.29-7.30: error: ONEWAY: Syntax error expecting `('.
+    7 | ONEWAY x BY y/POSTHOC=ALPHA **.
+      |                             ^~"
+
+"oneway.sps:8.29-8.30: error: ONEWAY: Syntax error expecting number.
+    8 | ONEWAY x BY y/POSTHOC=ALPHA(**).
+      |                             ^~"
+
+"oneway.sps:9.33-9.34: error: ONEWAY: Syntax error expecting `)'.
+    9 | ONEWAY x BY y/POSTHOC=ALPHA(123 **).
+      |                                 ^~"
+
+"oneway.sps:10.23-10.24: error: ONEWAY: Unknown post hoc analysis method.
+   10 | ONEWAY x BY y/POSTHOC=**.
+      |                       ^~"
+
+"oneway.sps:11.24-11.25: error: ONEWAY: Syntax error expecting number.
+   11 | ONEWAY x BY y/CONTRAST=**.
+      |                        ^~"
+
+"oneway.sps:12.23-12.24: error: ONEWAY: Syntax error expecting INCLUDE, EXCLUDE, LISTWISE, or ANALYSIS.
+   12 | ONEWAY x BY y/MISSING=**.
+      |                       ^~"
+
+"oneway.sps:13.16-13.17: error: ONEWAY: Syntax error expecting STATISTICS, POSTHOC, CONTRAST, or MISSING.
+   13 | ONEWAY x BY y/ **.
+      |                ^~"
+])
 AT_CLEANUP
