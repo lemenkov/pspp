@@ -89,16 +89,14 @@ struct glm_workspace
     gsl_vector *ssq;
   };
 
-
 /* Default design: all possible interactions */
 static void
 design_full (struct glm_spec *glm)
 {
-  glm->n_interactions = (1 << glm->n_factor_vars) - 1;
-  glm->interactions = xcalloc (glm->n_interactions, sizeof *glm->interactions);
+  size_t n = (1 << glm->n_factor_vars) - 1;
+  glm->interactions = xnmalloc (n, sizeof *glm->interactions);
 
   /* All subsets, with exception of the empty set, of [0, glm->n_factor_vars) */
-  size_t i = 0;
   for (size_t sz = 1; sz <= glm->n_factor_vars; ++sz)
     {
       gsl_combination *c = gsl_combination_calloc (glm->n_factor_vars, sz);
@@ -106,16 +104,17 @@ design_full (struct glm_spec *glm)
       do
 	{
 	  struct interaction *iact = interaction_create (NULL);
-	  int e;
-	  for (e = 0; e < gsl_combination_k (c); ++e)
-	    interaction_add_variable (iact, glm->factor_vars [gsl_combination_get (c, e)]);
+          for (int e = 0; e < gsl_combination_k (c); ++e)
+	    interaction_add_variable (
+              iact, glm->factor_vars [gsl_combination_get (c, e)]);
 
-	  glm->interactions[i++] = iact;
+	  glm->interactions[glm->n_interactions++] = iact;
 	}
       while (gsl_combination_next (c) == GSL_SUCCESS);
 
       gsl_combination_free (c);
     }
+  assert (glm->n_interactions == n);
 }
 
 static void output_glm (const struct glm_spec *,
@@ -123,9 +122,8 @@ static void output_glm (const struct glm_spec *,
 static void run_glm (struct glm_spec *cmd, struct casereader *input,
 		     const struct dataset *ds);
 
-
-static bool parse_design_spec (struct lexer *lexer, struct glm_spec *glm);
-
+static struct interaction *parse_design_term (struct lexer *,
+                                              const struct dictionary *);
 
 int
 cmd_glm (struct lexer *lexer, struct dataset *ds)
@@ -160,12 +158,13 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
   if (glm.n_dep_vars > 1)
     {
       lex_ofs_error (lexer, dep_vars_start, dep_vars_end,
-                     _("Multivariate analysis is not yet implemented"));
-      return CMD_FAILURE;
+                     _("Multivariate analysis is not yet implemented."));
+      goto error;
     }
 
   factors = const_var_set_create_from_array (glm.factor_vars, glm.n_factor_vars);
 
+  size_t allocated_interactions = 0;
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
@@ -232,8 +231,21 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 	{
 	  lex_match (lexer, T_EQUALS);
 
-	  if (!parse_design_spec (lexer, &glm))
-	    goto error;
+          do
+            {
+              struct interaction *iact = parse_design_term (lexer, glm.dict);
+              if (!iact)
+                goto error;
+
+              if (glm.n_interactions >= allocated_interactions)
+                glm.interactions = x2nrealloc (glm.interactions,
+                                               &allocated_interactions,
+                                               sizeof *glm.interactions);
+              glm.interactions[glm.n_interactions++] = iact;
+
+              lex_match (lexer, T_COMMA);
+            }
+          while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH);
 
 	  if (glm.n_interactions > 0)
 	    design = true;
@@ -349,9 +361,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
       n_dropped_submodel = n_dropped_model;
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
-	{
-	  submodel_dropped[i] = model_dropped[i];
-	}
+        submodel_dropped[i] = model_dropped[i];
 
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
@@ -394,19 +404,17 @@ static void
 ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 {
   const gsl_matrix *cm = covariance_calculate_unnormalized (cov);
-  size_t i;
-  size_t k;
   bool *model_dropped = XCALLOC (covariance_dim (cov), bool);
   bool *submodel_dropped = XCALLOC (covariance_dim (cov), bool);
   const struct categoricals *cats = covariance_get_categoricals (cov);
 
-  for (k = 0; k < cmd->n_interactions; k++)
+  for (size_t k = 0; k < cmd->n_interactions; k++)
     {
       gsl_matrix *model_cov = NULL;
       gsl_matrix *submodel_cov = NULL;
       size_t n_dropped_model = 0;
       size_t n_dropped_submodel = 0;
-      for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
+      for (size_t i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
 	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
@@ -457,26 +465,21 @@ static void
 ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 {
   const gsl_matrix *cm = covariance_calculate_unnormalized (cov);
-  size_t i;
-  size_t k;
   bool *model_dropped = XCALLOC (covariance_dim (cov), bool);
   bool *submodel_dropped = XCALLOC (covariance_dim (cov), bool);
   const struct categoricals *cats = covariance_get_categoricals (cov);
 
-  double ss0;
   gsl_matrix *submodel_cov = gsl_matrix_alloc (cm->size1, cm->size2);
   fill_submatrix (cm, submodel_cov, submodel_dropped);
   reg_sweep (submodel_cov, 0);
-  ss0 = gsl_matrix_get (submodel_cov, 0, 0);
+  double ss0 = gsl_matrix_get (submodel_cov, 0, 0);
   gsl_matrix_free (submodel_cov);
   free (submodel_dropped);
 
-  for (k = 0; k < cmd->n_interactions; k++)
+  for (size_t k = 0; k < cmd->n_interactions; k++)
     {
-      gsl_matrix *model_cov = NULL;
       size_t n_dropped_model = 0;
-
-      for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
+      for (size_t i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
 	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
@@ -491,67 +494,59 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 	    }
 	}
 
-      model_cov = gsl_matrix_alloc (cm->size1 - n_dropped_model, cm->size2 - n_dropped_model);
+      gsl_matrix *model_cov = gsl_matrix_alloc (cm->size1 - n_dropped_model,
+                                                cm->size2 - n_dropped_model);
 
-      fill_submatrix (cm, model_cov,    model_dropped);
+      fill_submatrix (cm, model_cov, model_dropped);
 
       reg_sweep (model_cov, 0);
 
-      gsl_vector_set (ssq, k + 1,
-		      gsl_matrix_get (model_cov, 0, 0) - ss0);
+      gsl_vector_set (ssq, k + 1, gsl_matrix_get (model_cov, 0, 0) - ss0);
 
       gsl_matrix_free (model_cov);
     }
   free (model_dropped);
 }
 
-
-
-//static  void dump_matrix (const gsl_matrix *m);
-
 static void
 run_glm (struct glm_spec *cmd, struct casereader *input,
 	 const struct dataset *ds)
 {
   bool warn_bad_weight = true;
-  int v;
-  struct taint *taint;
   struct dictionary *dict = dataset_dict (ds);
-  struct casereader *reader;
-  struct ccase *c;
 
-  struct glm_workspace ws;
-  struct covariance *cov;
 
-  input  = casereader_create_filter_missing (input,
-					     cmd->dep_vars, cmd->n_dep_vars,
-					     cmd->exclude,
-					     NULL,  NULL);
+  input = casereader_create_filter_missing (input,
+                                            cmd->dep_vars, cmd->n_dep_vars,
+                                            cmd->exclude,
+                                            NULL,  NULL);
 
-  input  = casereader_create_filter_missing (input,
-					     cmd->factor_vars, cmd->n_factor_vars,
-					     cmd->exclude,
-					     NULL,  NULL);
+  input = casereader_create_filter_missing (input,
+                                            cmd->factor_vars, cmd->n_factor_vars,
+                                            cmd->exclude,
+                                            NULL,  NULL);
 
-  ws.cats = categoricals_create (cmd->interactions, cmd->n_interactions,
-				 cmd->wv, MV_ANY);
+  struct glm_workspace ws = {
+    .cats = categoricals_create (cmd->interactions, cmd->n_interactions,
+				 cmd->wv, MV_ANY)
+  };
 
-  cov = covariance_2pass_create (cmd->n_dep_vars, cmd->dep_vars,
-				 ws.cats, cmd->wv, cmd->exclude, true);
+  struct covariance *cov = covariance_2pass_create (
+    cmd->n_dep_vars, cmd->dep_vars, ws.cats, cmd->wv, cmd->exclude, true);
 
   output_split_file_values_peek (ds, input);
 
-
-  taint = taint_clone (casereader_get_taint (input));
+  struct taint *taint = taint_clone (casereader_get_taint (input));
 
   ws.totals = moments_create (MOMENT_VARIANCE);
 
-  for (reader = casereader_clone (input);
-       (c = casereader_read (reader)) != NULL; case_unref (c))
+  struct casereader *reader = casereader_clone (input);
+  struct ccase *c;
+  for (; (c = casereader_read (reader)) != NULL; case_unref (c))
     {
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
-      for (v = 0; v < cmd->n_dep_vars; ++v)
+      for (int v = 0; v < cmd->n_dep_vars; ++v)
 	moments_pass_one (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass1 (cov, c);
@@ -563,12 +558,11 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
   else
     reader = input;
 
-  for (;
-       (c = casereader_read (reader)) != NULL; case_unref (c))
+  for (; (c = casereader_read (reader)) != NULL; case_unref (c))
     {
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
-      for (v = 0; v < cmd->n_dep_vars; ++v)
+      for (size_t v = 0; v < cmd->n_dep_vars; ++v)
 	moments_pass_two (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass2 (cov, c);
@@ -770,116 +764,29 @@ dump_matrix (const gsl_matrix * m)
 
 
 
-static bool
-parse_nested_variable (struct lexer *lexer, struct glm_spec *glm)
+static struct interaction *
+parse_design_term (struct lexer *lexer, const struct dictionary *dict)
 {
-  const struct variable *v = NULL;
-  if (!lex_match_variable (lexer, glm->dict, &v))
-    return false;
-
-  if (lex_match (lexer, T_LPAREN))
+  struct interaction *iact = interaction_create (NULL);
+  do
     {
-      if (!parse_nested_variable (lexer, glm))
-	return false;
+      struct variable *var = parse_variable (lexer, dict);
+      if (!var)
+        goto error;
+      interaction_add_variable (iact, var);
 
-      if (!lex_force_match (lexer, T_RPAREN))
-	return false;
+      if (lex_match (lexer, T_LPAREN) || lex_match_id (lexer, "WITHIN"))
+        {
+          lex_next_error (lexer, -1, -1,
+                          "Nested variables are not yet implemented.");
+          goto error;
+        }
     }
+  while (lex_match (lexer, T_ASTERISK));
 
-  lex_error (lexer, "Nested variables are not yet implemented");
-  return false;
-}
+  return iact;
 
-/* An interaction is a variable followed by {*, BY} followed by an interaction */
-static bool
-parse_internal_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact, struct interaction **it)
-{
-  const struct variable *v = NULL;
-  assert (iact);
-
-  switch  (lex_next_token (lexer, 1))
-    {
-    case T_ENDCMD:
-    case T_SLASH:
-    case T_COMMA:
-    case T_ID:
-    case T_BY:
-    case T_ASTERISK:
-      break;
-    default:
-      return false;
-      break;
-    }
-
-  if (! lex_match_variable (lexer, dict, &v))
-    {
-      if (it)
-	interaction_destroy (*it);
-      *iact = NULL;
-      return false;
-    }
-
-  assert (v);
-
-  if (*iact == NULL)
-    *iact = interaction_create (v);
-  else
-    interaction_add_variable (*iact, v);
-
-  if (lex_match (lexer, T_ASTERISK) || lex_match (lexer, T_BY))
-    {
-      return parse_internal_interaction (lexer, dict, iact, iact);
-    }
-
-  return true;
-}
-
-/* Parse an interaction.
-   If not successful return false.
-   Otherwise, a newly created interaction will be placed in IACT.
-   It is the caller's responsibility to destroy this interaction.
- */
-static bool
-parse_design_interaction (struct lexer *lexer, const struct dictionary *dict, struct interaction **iact)
-{
-  return parse_internal_interaction (lexer, dict, iact, NULL);
-}
-
-/* A design term is an interaction OR a nested variable */
-static bool
-parse_design_term (struct lexer *lexer, struct glm_spec *glm)
-{
-  struct interaction *iact = NULL;
-  if (parse_design_interaction (lexer, glm->dict, &iact))
-    {
-      /* Interaction parsing successful.  Add to list of interactions */
-      glm->interactions = xrealloc (glm->interactions, sizeof (*glm->interactions) * ++glm->n_interactions);
-      glm->interactions[glm->n_interactions - 1] = iact;
-      return true;
-    }
-
-  if (parse_nested_variable (lexer, glm))
-    return true;
-
-  return false;
-}
-
-
-
-/* Parse a complete DESIGN specification.
-   A design spec is a design term, optionally followed by a comma,
-   and another design spec.
-*/
-static bool
-parse_design_spec (struct lexer *lexer, struct glm_spec *glm)
-{
-  if  (lex_token (lexer) == T_ENDCMD || lex_token (lexer) == T_SLASH)
-    return true;
-
-  if (!parse_design_term (lexer, glm))
-    return false;
-
-  lex_match (lexer, T_COMMA);
-
-  return parse_design_spec (lexer, glm);
+error:
+  interaction_destroy (iact);
+  return NULL;
 }

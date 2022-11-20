@@ -472,3 +472,99 @@ Corrected Total,305.874,29,,,
 
 AT_CLEANUP
 
+AT_SETUP([GLM syntax errors])
+AT_DATA([glm.sps], [dnl
+DATA LIST LIST NOTABLE /x y z.
+GLM **.
+GLM x **.
+GLM x BY **.
+GLM x BY y.
+GLM x y BY z.
+GLM x BY y/MISSING=**.
+GLM x BY y/INTERCEPT=**.
+GLM x BY y/CRITERIA=**.
+GLM x BY y/CRITERIA=ALPHA **.
+GLM x BY y/CRITERIA=ALPHA(**).
+GLM x BY y/CRITERIA=ALPHA(123 **).
+GLM x BY y/METHOD=**.
+GLM x BY y/METHOD=SSTYPE **.
+GLM x BY y/METHOD=SSTYPE(4).
+GLM x BY y/METHOD=SSTYPE(2 **).
+GLM x BY y/DESIGN=**.
+GLM x BY y/DESIGN=x(y).
+GLM x BY y/DESIGN=x WITHIN y.
+])
+AT_CHECK([pspp -O format=csv glm.sps], [1], [dnl
+"glm.sps:2.5-2.6: error: GLM: Syntax error expecting variable name.
+    2 | GLM **.
+      |     ^~"
+
+"glm.sps:3.7-3.8: error: GLM: Syntax error expecting `BY'.
+    3 | GLM x **.
+      |       ^~"
+
+"glm.sps:4.10-4.11: error: GLM: Syntax error expecting variable name.
+    4 | GLM x BY **.
+      |          ^~"
+
+"glm.sps:6.1-6.3: error: GLM: Syntax error expecting `BEGIN DATA'.
+    6 | GLM x y BY z.
+      | ^~~"
+
+"glm.sps:6.1-6.3: error: GLM: Syntax error expecting end of command.
+    6 | GLM x y BY z.
+      | ^~~"
+
+"glm.sps:7.20-7.21: error: GLM: Syntax error expecting INCLUDE or EXCLUDE.
+    7 | GLM x BY y/MISSING=**.
+      |                    ^~"
+
+"glm.sps:8.22-8.23: error: GLM: Syntax error expecting INCLUDE or EXCLUDE.
+    8 | GLM x BY y/INTERCEPT=**.
+      |                      ^~"
+
+"glm.sps:9.21-9.22: error: GLM: Syntax error expecting `ALPHA@{:@'.
+    9 | GLM x BY y/CRITERIA=**.
+      |                     ^~"
+
+"glm.sps:10.21-10.28: error: GLM: Syntax error expecting `ALPHA@{:@'.
+   10 | GLM x BY y/CRITERIA=ALPHA **.
+      |                     ^~~~~~~~"
+
+"glm.sps:11.27-11.28: error: GLM: Syntax error expecting number.
+   11 | GLM x BY y/CRITERIA=ALPHA(**).
+      |                           ^~"
+
+"glm.sps:12.31-12.32: error: GLM: Syntax error expecting `@:}@'.
+   12 | GLM x BY y/CRITERIA=ALPHA(123 **).
+      |                               ^~"
+
+"glm.sps:13.19-13.20: error: GLM: Syntax error expecting `SSTYPE@{:@'.
+   13 | GLM x BY y/METHOD=**.
+      |                   ^~"
+
+"glm.sps:14.19-14.27: error: GLM: Syntax error expecting `SSTYPE@{:@'.
+   14 | GLM x BY y/METHOD=SSTYPE **.
+      |                   ^~~~~~~~~"
+
+"glm.sps:15.26: error: GLM: Syntax error expecting integer between 1 and 3 for SSTYPE.
+   15 | GLM x BY y/METHOD=SSTYPE(4).
+      |                          ^"
+
+"glm.sps:16.28-16.29: error: GLM: Syntax error expecting `@:}@'.
+   16 | GLM x BY y/METHOD=SSTYPE(2 **).
+      |                            ^~"
+
+"glm.sps:17.19-17.20: error: GLM: Syntax error expecting variable name.
+   17 | GLM x BY y/DESIGN=**.
+      |                   ^~"
+
+"glm.sps:18.20: error: GLM: Nested variables are not yet implemented.
+   18 | GLM x BY y/DESIGN=x(y).
+      |                    ^"
+
+"glm.sps:19.21-19.26: error: GLM: Nested variables are not yet implemented.
+   19 | GLM x BY y/DESIGN=x WITHIN y.
+      |                     ^~~~~~"
+])
+AT_CLEANUP
