@@ -17,6 +17,8 @@
 #ifndef SPLIT_FILE_H
 #define SPLIT_FILE_H 1
 
-void output_split_file_values (const struct dataset *ds, const struct ccase *);
+void output_split_file_values (const struct dataset *, const struct ccase *);
+void output_split_file_values_peek (const struct dataset *,
+                                    const struct casereader *);
 
 #endif /* split-file.h */

@@ -508,13 +508,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   struct casereader *group;
   while (casegrouper_get_next_group (grouper, &group))
     {
-      /* Output SPLIT FILE variables. */
-      struct ccase *c = casereader_peek (group, 0);
-      if (c != NULL)
-        {
-          output_split_file_values (ds, c);
-          case_unref (c);
-        }
+      output_split_file_values_peek (ds, group);
 
       /* Initialize hash tables. */
       for (struct crosstabulation *xt = &proc.pivots[0];
@@ -522,6 +516,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
         hmap_init (&xt->data);
 
       /* Tabulate. */
+      struct ccase *c;
       for (; (c = casereader_read (group)) != NULL; case_unref (c))
         for (struct crosstabulation *xt = &proc.pivots[0];
              xt < &proc.pivots[proc.n_pivots]; xt++)

@@ -72,13 +72,7 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
   grouper = casegrouper_create_splits (proc_open (ds), dict);
   while (casegrouper_get_next_group (grouper, &group))
     {
-      struct ccase *c = casereader_peek (group, 0);
-      if (c != NULL)
-        {
-          output_split_file_values (ds, c);
-          case_unref (c);
-        }
-
+      output_split_file_values_peek (ds, group);
       group = casereader_project (group, &sc);
       group = casereader_select (group, lcmd->first - 1,
                                  (lcmd->last != LONG_MAX ? lcmd->last
@@ -101,6 +95,7 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
         cases->hide_all_labels = true;
 
       casenumber case_num = lcmd->first;
+      struct ccase *c;
       for (; (c = casereader_read (group)) != NULL; case_unref (c))
         {
           int case_idx = pivot_category_create_leaf (

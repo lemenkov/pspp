@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "data/case.h"
+#include "data/casereader.h"
 #include "data/data-out.h"
 #include "data/dataset.h"
 #include "data/dictionary.h"
@@ -103,4 +104,18 @@ output_split_file_values (const struct dataset *ds, const struct ccase *c)
     }
 
   pivot_table_submit (table);
+}
+
+/* Dumps out the values of all the split variables for the first case in
+   READER. */
+void
+output_split_file_values_peek (const struct dataset *ds,
+                               const struct casereader *reader)
+{
+  struct ccase *c = casereader_peek (reader, 0);
+  if (c)
+    {
+      output_split_file_values (ds, c);
+      case_unref (c);
+    }
 }

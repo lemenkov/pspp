@@ -539,15 +539,8 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
   cov = covariance_2pass_create (cmd->n_dep_vars, cmd->dep_vars,
 				 ws.cats, cmd->wv, cmd->exclude, true);
 
+  output_split_file_values_peek (ds, input);
 
-  c = casereader_peek (input, 0);
-  if (c == NULL)
-    {
-      casereader_destroy (input);
-      return;
-    }
-  output_split_file_values (ds, c);
-  case_unref (c);
 
   taint = taint_clone (casereader_get_taint (input));
 

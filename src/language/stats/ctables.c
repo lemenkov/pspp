@@ -5627,14 +5627,7 @@ ctables_execute (struct dataset *ds, struct casereader *input,
   while (casegrouper_get_next_group (grouper, &group))
     {
       if (splitting)
-        {
-          struct ccase *c = casereader_peek (group, 0);
-          if (c != NULL)
-            {
-              output_split_file_values (ds, c);
-              case_unref (c);
-            }
-        }
+        output_split_file_values_peek (ds, group);
 
       bool warn_on_invalid = true;
       for (struct ccase *c = casereader_read (group); c;

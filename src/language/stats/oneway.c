@@ -705,7 +705,6 @@ run_oneway (const struct oneway_spec *cmd,
   struct taint *taint;
   struct dictionary *dict = dataset_dict (ds);
   struct casereader *reader;
-  struct ccase *c;
 
   struct oneway_workspace ws;
 
@@ -741,14 +740,7 @@ run_oneway (const struct oneway_spec *cmd,
       ws.vws[v].nl = levene_create (var_get_width (cmd->indep_var), NULL);
     }
 
-  c = casereader_peek (input, 0);
-  if (c == NULL)
-    {
-      casereader_destroy (input);
-      goto finish;
-    }
-  output_split_file_values (ds, c);
-  case_unref (c);
+  output_split_file_values_peek (ds, input);
 
   taint = taint_clone (casereader_get_taint (input));
 
@@ -760,6 +752,7 @@ run_oneway (const struct oneway_spec *cmd,
   input = casereader_create_filter_weight (input, dict, NULL, NULL);
 
   reader = casereader_clone (input);
+  struct ccase *c;
   for (; (c = casereader_read (reader)) != NULL; case_unref (c))
     {
       int i;
@@ -886,8 +879,6 @@ run_oneway (const struct oneway_spec *cmd,
     output_oneway (cmd, &ws);
 
   taint_destroy (taint);
-
- finish:
 
   for (v = 0; v < cmd->n_vars; ++v)
     {

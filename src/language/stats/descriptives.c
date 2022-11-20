@@ -759,15 +759,7 @@ static void
 calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
                    struct dataset *ds)
 {
-  struct ccase *c = casereader_peek (group, 0);
-  if (c == NULL)
-    {
-      casereader_destroy (group);
-      return;
-    }
-  output_split_file_values (ds, c);
-  case_unref (c);
-
+  output_split_file_values_peek (ds, group);
   group = casereader_create_filter_weight (group, dataset_dict (ds),
                                            NULL, NULL);
 
@@ -790,6 +782,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
   /* First pass to handle most of the work. */
   casenumber count = 0;
   const struct variable *filter = dict_get_filter (dataset_dict (ds));
+  struct ccase *c;
   for (; (c = casereader_read (pass1)) != NULL; case_unref (c))
     {
       double weight = dict_get_case_weight (dataset_dict (ds), c, NULL);
