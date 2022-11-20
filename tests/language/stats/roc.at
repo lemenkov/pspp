@@ -217,3 +217,135 @@ roc x y by a (1)
 AT_CHECK([pspp -O format=csv roc.sps], [1], [ignore])
 
 AT_CLEANUP
+
+AT_SETUP([ROC syntax errors])
+AT_DATA([roc.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+ROC **.
+ROC x **.
+ROC x BY **.
+ROC x BY y **.
+ROC x BY y(**).
+ROC x BY y(5 **).
+ROC x BY y(5)/MISSING=**.
+ROC x BY y(5)/PLOT=CURVE(**).
+ROC x BY y(5)/PLOT=CURVE(REFERENCE **).
+ROC x BY y(5)/PLOT=**.
+ROC x BY y(5)/PRINT=**.
+ROC x BY y(5)/CRITERIA=CUTOFF **.
+ROC x BY y(5)/CRITERIA=CUTOFF(**).
+ROC x BY y(5)/CRITERIA=CUTOFF(INCLUDE **).
+ROC x BY y(5)/CRITERIA=TESTPOS **.
+ROC x BY y(5)/CRITERIA=TESTPOS(**).
+ROC x BY y(5)/CRITERIA=TESTPOS(LARGE **).
+ROC x BY y(5)/CRITERIA=CI **.
+ROC x BY y(5)/CRITERIA=CI(**).
+ROC x BY y(5)/CRITERIA=CI(5 **).
+ROC x BY y(5)/CRITERIA=DISTRIBUTION **.
+ROC x BY y(5)/CRITERIA=DISTRIBUTION(**).
+ROC x BY y(5)/CRITERIA=DISTRIBUTION(FREE **).
+ROC x BY y(5)/CRITERIA=**.
+ROC x BY y(5)/ **.
+])
+AT_CHECK([pspp -O format=csv roc.sps], [1], [dnl
+"roc.sps:2.5-2.6: error: ROC: Syntax error expecting variable name.
+    2 | ROC **.
+      |     ^~"
+
+"roc.sps:3.7-3.8: error: ROC: Syntax error expecting `BY'.
+    3 | ROC x **.
+      |       ^~"
+
+"roc.sps:4.10-4.11: error: ROC: Syntax error expecting variable name.
+    4 | ROC x BY **.
+      |          ^~"
+
+"roc.sps:5.12-5.13: error: ROC: Syntax error expecting `('.
+    5 | ROC x BY y **.
+      |            ^~"
+
+"roc.sps:6.12-6.13: error: ROC: Syntax error expecting number.
+    6 | ROC x BY y(**).
+      |            ^~"
+
+"roc.sps:7.14-7.15: error: ROC: Syntax error expecting `)'.
+    7 | ROC x BY y(5 **).
+      |              ^~"
+
+"roc.sps:8.23-8.24: error: ROC: Syntax error expecting INCLUDE or EXCLUDE.
+    8 | ROC x BY y(5)/MISSING=**.
+      |                       ^~"
+
+"roc.sps:9.26-9.27: error: ROC: Syntax error expecting REFERENCE.
+    9 | ROC x BY y(5)/PLOT=CURVE(**).
+      |                          ^~"
+
+"roc.sps:10.36-10.37: error: ROC: Syntax error expecting `@:}@'.
+   10 | ROC x BY y(5)/PLOT=CURVE(REFERENCE **).
+      |                                    ^~"
+
+"roc.sps:11.20-11.21: error: ROC: Syntax error expecting CURVE or NONE.
+   11 | ROC x BY y(5)/PLOT=**.
+      |                    ^~"
+
+"roc.sps:12.21-12.22: error: ROC: Syntax error expecting SE or COORDINATES.
+   12 | ROC x BY y(5)/PRINT=**.
+      |                     ^~"
+
+"roc.sps:13.31-13.32: error: ROC: Syntax error expecting `('.
+   13 | ROC x BY y(5)/CRITERIA=CUTOFF **.
+      |                               ^~"
+
+"roc.sps:14.31-14.32: error: ROC: Syntax error expecting INCLUDE or EXCLUDE.
+   14 | ROC x BY y(5)/CRITERIA=CUTOFF(**).
+      |                               ^~"
+
+"roc.sps:15.39-15.40: error: ROC: Syntax error expecting `)'.
+   15 | ROC x BY y(5)/CRITERIA=CUTOFF(INCLUDE **).
+      |                                       ^~"
+
+"roc.sps:16.32-16.33: error: ROC: Syntax error expecting `('.
+   16 | ROC x BY y(5)/CRITERIA=TESTPOS **.
+      |                                ^~"
+
+"roc.sps:17.32-17.33: error: ROC: Syntax error expecting LARGE or SMALL.
+   17 | ROC x BY y(5)/CRITERIA=TESTPOS(**).
+      |                                ^~"
+
+"roc.sps:18.38-18.39: error: ROC: Syntax error expecting `)'.
+   18 | ROC x BY y(5)/CRITERIA=TESTPOS(LARGE **).
+      |                                      ^~"
+
+"roc.sps:19.27-19.28: error: ROC: Syntax error expecting `('.
+   19 | ROC x BY y(5)/CRITERIA=CI **.
+      |                           ^~"
+
+"roc.sps:20.27-20.28: error: ROC: Syntax error expecting number.
+   20 | ROC x BY y(5)/CRITERIA=CI(**).
+      |                           ^~"
+
+"roc.sps:21.29-21.30: error: ROC: Syntax error expecting `)'.
+   21 | ROC x BY y(5)/CRITERIA=CI(5 **).
+      |                             ^~"
+
+"roc.sps:22.37-22.38: error: ROC: Syntax error expecting `('.
+   22 | ROC x BY y(5)/CRITERIA=DISTRIBUTION **.
+      |                                     ^~"
+
+"roc.sps:23.37-23.38: error: ROC: Syntax error expecting FREE or NEGEXPO.
+   23 | ROC x BY y(5)/CRITERIA=DISTRIBUTION(**).
+      |                                     ^~"
+
+"roc.sps:24.42-24.43: error: ROC: Syntax error expecting `)'.
+   24 | ROC x BY y(5)/CRITERIA=DISTRIBUTION(FREE **).
+      |                                          ^~"
+
+"roc.sps:25.24-25.25: error: ROC: Syntax error expecting CUTOFF, TESTPOS, CI, or DISTRIBUTION.
+   25 | ROC x BY y(5)/CRITERIA=**.
+      |                        ^~"
+
+"roc.sps:26.16-26.17: error: ROC: Syntax error expecting MISSING, PLOT, PRINT, or CRITERIA.
+   26 | ROC x BY y(5)/ **.
+      |                ^~"
+])
+AT_CLEANUP
