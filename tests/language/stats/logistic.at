@@ -1490,3 +1490,134 @@ Step 1,age,.027,.009,8.647,1,.003,1.027,1.009,1.045
 
 AT_CLEANUP
 
+AT_SETUP([LOGISTIC REGRESSION syntax errors])
+AT_DATA([logistic.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+LOGISTIC REGRESSION **.
+LOGISTIC REGRESSION x **.
+LOGISTIC REGRESSION x WITH **.
+LOGISTIC REGRESSION x WITH y/MISSING=**.
+LOGISTIC REGRESSION x WITH y/CATEGORICAL=**.
+LOGISTIC REGRESSION x WITH y/PRINT=CI **.
+LOGISTIC REGRESSION x WITH y/PRINT=CI(**).
+LOGISTIC REGRESSION x WITH y/PRINT=CI(123 **).
+LOGISTIC REGRESSION x WITH y/PRINT=**.
+LOGISTIC REGRESSION x WITH y/CRITERIA=BCON **.
+LOGISTIC REGRESSION x WITH y/CRITERIA=BCON(**).
+LOGISTIC REGRESSION x WITH y/CRITERIA=BCON(123 **).
+LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE **.
+LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE(**).
+LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE(123 **).
+LOGISTIC REGRESSION x WITH y/CRITERIA=LCON **.
+LOGISTIC REGRESSION x WITH y/CRITERIA=LCON(**).
+LOGISTIC REGRESSION x WITH y/CRITERIA=LCON(123 **).
+LOGISTIC REGRESSION x WITH y/CRITERIA=EPS **.
+LOGISTIC REGRESSION x WITH y/CRITERIA=EPS(**).
+LOGISTIC REGRESSION x WITH y/CRITERIA=EPS(123 **).
+LOGISTIC REGRESSION x WITH y/CRITERIA=CUT **.
+LOGISTIC REGRESSION x WITH y/CRITERIA=CUT(**).
+LOGISTIC REGRESSION x WITH y/CRITERIA=CUT(0.5 **).
+LOGISTIC REGRESSION x WITH y/CRITERIA=**.
+])
+AT_CHECK([pspp -O format=csv logistic.sps], [1], [dnl
+"logistic.sps:2.21-2.22: error: LOGISTIC REGRESSION: Syntax error expecting variable name.
+    2 | LOGISTIC REGRESSION **.
+      |                     ^~"
+
+"logistic.sps:3.23-3.24: error: LOGISTIC REGRESSION: Syntax error expecting `WITH'.
+    3 | LOGISTIC REGRESSION x **.
+      |                       ^~"
+
+"logistic.sps:4.28-4.29: error: LOGISTIC REGRESSION: Syntax error expecting variable name.
+    4 | LOGISTIC REGRESSION x WITH **.
+      |                            ^~"
+
+"logistic.sps:5.38-5.39: error: LOGISTIC REGRESSION: Syntax error expecting INCLUDE or EXCLUDE.
+    5 | LOGISTIC REGRESSION x WITH y/MISSING=**.
+      |                                      ^~"
+
+"logistic.sps:6.42-6.43: error: LOGISTIC REGRESSION: Syntax error expecting variable name.
+    6 | LOGISTIC REGRESSION x WITH y/CATEGORICAL=**.
+      |                                          ^~"
+
+"logistic.sps:7.39-7.40: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+    7 | LOGISTIC REGRESSION x WITH y/PRINT=CI **.
+      |                                       ^~"
+
+"logistic.sps:8.39-8.40: error: LOGISTIC REGRESSION: Syntax error expecting number.
+    8 | LOGISTIC REGRESSION x WITH y/PRINT=CI(**).
+      |                                       ^~"
+
+"logistic.sps:9.43-9.44: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+    9 | LOGISTIC REGRESSION x WITH y/PRINT=CI(123 **).
+      |                                           ^~"
+
+"logistic.sps:10.36-10.37: error: LOGISTIC REGRESSION: Syntax error expecting DEFAULT, SUMMARY, CI, or ALL.
+   10 | LOGISTIC REGRESSION x WITH y/PRINT=**.
+      |                                    ^~"
+
+"logistic.sps:11.44-11.45: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+   11 | LOGISTIC REGRESSION x WITH y/CRITERIA=BCON **.
+      |                                            ^~"
+
+"logistic.sps:12.44-12.45: error: LOGISTIC REGRESSION: Syntax error expecting number.
+   12 | LOGISTIC REGRESSION x WITH y/CRITERIA=BCON(**).
+      |                                            ^~"
+
+"logistic.sps:13.48-13.49: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+   13 | LOGISTIC REGRESSION x WITH y/CRITERIA=BCON(123 **).
+      |                                                ^~"
+
+"logistic.sps:14.47-14.48: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+   14 | LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE **.
+      |                                               ^~"
+
+"logistic.sps:15.47-15.48: error: LOGISTIC REGRESSION: Syntax error expecting non-negative integer for ITERATE.
+   15 | LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE(**).
+      |                                               ^~"
+
+"logistic.sps:16.51-16.52: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+   16 | LOGISTIC REGRESSION x WITH y/CRITERIA=ITERATE(123 **).
+      |                                                   ^~"
+
+"logistic.sps:17.44-17.45: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+   17 | LOGISTIC REGRESSION x WITH y/CRITERIA=LCON **.
+      |                                            ^~"
+
+"logistic.sps:18.44-18.45: error: LOGISTIC REGRESSION: Syntax error expecting number.
+   18 | LOGISTIC REGRESSION x WITH y/CRITERIA=LCON(**).
+      |                                            ^~"
+
+"logistic.sps:19.48-19.49: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+   19 | LOGISTIC REGRESSION x WITH y/CRITERIA=LCON(123 **).
+      |                                                ^~"
+
+"logistic.sps:20.43-20.44: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+   20 | LOGISTIC REGRESSION x WITH y/CRITERIA=EPS **.
+      |                                           ^~"
+
+"logistic.sps:21.43-21.44: error: LOGISTIC REGRESSION: Syntax error expecting number.
+   21 | LOGISTIC REGRESSION x WITH y/CRITERIA=EPS(**).
+      |                                           ^~"
+
+"logistic.sps:22.47-22.48: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+   22 | LOGISTIC REGRESSION x WITH y/CRITERIA=EPS(123 **).
+      |                                               ^~"
+
+"logistic.sps:23.43-23.44: error: LOGISTIC REGRESSION: Syntax error expecting `('.
+   23 | LOGISTIC REGRESSION x WITH y/CRITERIA=CUT **.
+      |                                           ^~"
+
+"logistic.sps:24.43-24.44: error: LOGISTIC REGRESSION: Syntax error expecting number between 0 and 1 for CUT.
+   24 | LOGISTIC REGRESSION x WITH y/CRITERIA=CUT(**).
+      |                                           ^~"
+
+"logistic.sps:25.47-25.48: error: LOGISTIC REGRESSION: Syntax error expecting `)'.
+   25 | LOGISTIC REGRESSION x WITH y/CRITERIA=CUT(0.5 **).
+      |                                               ^~"
+
+"logistic.sps:26.39-26.40: error: LOGISTIC REGRESSION: Syntax error expecting BCON, ITERATE, LCON, EPS, or CUT.
+   26 | LOGISTIC REGRESSION x WITH y/CRITERIA=**.
+      |                                       ^~"
+])
+AT_CLEANUP

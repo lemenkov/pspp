@@ -517,9 +517,9 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
 	}
       else
 	{
-	  if (! value_equal (&res->y0, depval, width)
+	  if (!value_equal (&res->y0, depval, width)
 	      &&
-	      ! value_equal (&res->y1, depval, width)
+	      !value_equal (&res->y1, depval, width)
 	)
 	    {
 	      msg (ME, _("Dependent variable's values are not dichotomous."));
@@ -599,7 +599,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
   /* Get the initial estimates of \beta and their standard errors.
      And perform other auxiliary initialisation.  */
-  if (! initial_pass (cmd, &work, input))
+  if (!initial_pass (cmd, &work, input))
     goto error;
 
   for (i = 0; i < cmd->n_cat_predictors; ++i)
@@ -640,10 +640,10 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
   work.hessian = gsl_matrix_calloc (work.beta_hat->size, work.beta_hat->size);
 
   /* Start the Newton Raphson iteration process... */
-  for(i = 0 ; i < cmd->max_iter ; ++i)
+  for(i = 0; i < cmd->max_iter; ++i)
     {
       double min, max;
-      gsl_vector *v ;
+      gsl_vector *v;
 
 
       hessian (cmd, &work, input,
@@ -697,7 +697,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 
 
-  if (! converged)
+  if (!converged)
     msg (MW, _("Estimation terminated at iteration number %d because maximum iterations has been reached"), i);
 
 
@@ -734,61 +734,62 @@ struct variable_node
 static struct variable_node *
 lookup_variable (const struct hmap *map, const struct variable *var, unsigned int hash)
 {
-  struct variable_node *vn = NULL;
+  struct variable_node *vn;
   HMAP_FOR_EACH_WITH_HASH (vn, struct variable_node, node, hash, map)
-    {
-      if (vn->var == var)
-	break;
-    }
+    if (vn->var == var)
+      return vn;
 
-  return vn;
+  return NULL;
 }
 
+static void
+insert_variable (struct hmap *map, const struct variable *var, unsigned int hash)
+{
+  if (!lookup_variable (map, var, hash))
+    {
+      struct variable_node *vn = xmalloc (sizeof *vn);
+      *vn = (struct variable_node) { .var = var };
+      hmap_insert (map, &vn->node, hash);
+    }
+}
 
 /* Parse the LOGISTIC REGRESSION command syntax */
 int
 cmd_logistic (struct lexer *lexer, struct dataset *ds)
 {
-  int i;
   /* Temporary location for the predictor variables.
      These may or may not include the categorical predictors */
-  const struct variable **pred_vars;
-  size_t n_pred_vars;
+  const struct variable **pred_vars = NULL;
+  size_t n_pred_vars = 0;
   double cp = 0.5;
 
-  int v, x;
-  struct lr_spec lr;
-  lr.dict = dataset_dict (ds);
-  lr.n_predictor_vars = 0;
-  lr.predictor_vars = NULL;
-  lr.exclude = MV_ANY;
-  lr.wv = dict_get_weight (lr.dict);
-  lr.max_iter = 20;
-  lr.lcon = 0.0000;
-  lr.bcon = 0.001;
-  lr.min_epsilon = 0.00000001;
-  lr.constant = true;
-  lr.confidence = 95;
-  lr.print = PRINT_DEFAULT;
-  lr.cat_predictors = NULL;
-  lr.n_cat_predictors = 0;
-  lr.indep_vars = NULL;
-
+  struct dictionary *dict = dataset_dict (ds);
+  struct lr_spec lr = {
+    .dict = dict,
+    .exclude = MV_ANY,
+    .wv = dict_get_weight (dict),
+    .max_iter = 20,
+    .lcon = 0.0000,
+    .bcon = 0.001,
+    .min_epsilon = 0.00000001,
+    .constant = true,
+    .confidence = 95,
+    .print = PRINT_DEFAULT,
+  };
 
   if (lex_match_id (lexer, "VARIABLES"))
     lex_match (lexer, T_EQUALS);
 
-  if (! (lr.dep_var = parse_variable_const (lexer, lr.dict)))
+  lr.dep_var = parse_variable_const (lexer, lr.dict);
+  if (!lr.dep_var)
     goto error;
 
-  if (! lex_force_match (lexer, T_WITH))
+  if (!lex_force_match (lexer, T_WITH))
     goto error;
 
-  if (!parse_variables_const (lexer, lr.dict,
-			      &pred_vars, &n_pred_vars,
+  if (!parse_variables_const (lexer, lr.dict, &pred_vars, &n_pred_vars,
 			      PV_NO_DUPLICATE))
     goto error;
-
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -801,32 +802,22 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "INCLUDE"))
-		{
-		  lr.exclude = MV_SYSTEM;
-		}
+                lr.exclude = MV_SYSTEM;
 	      else if (lex_match_id (lexer, "EXCLUDE"))
-		{
-		  lr.exclude = MV_ANY;
-		}
+                lr.exclude = MV_ANY;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
 		  goto error;
 		}
 	    }
 	}
       else if (lex_match_id (lexer, "ORIGIN"))
-	{
-	  lr.constant = false;
-	}
+        lr.constant = false;
       else if (lex_match_id (lexer, "NOORIGIN"))
-	{
-	  lr.constant = true;
-	}
+        lr.constant = true;
       else if (lex_match_id (lexer, "NOCONST"))
-	{
-	  lr.constant = false;
-	}
+        lr.constant = false;
       else if (lex_match_id (lexer, "EXTERNAL"))
 	{
 	  /* This is for compatibility.  It does nothing */
@@ -852,53 +843,37 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  lr.print |= PRINT_DEFAULT;
-		}
+                lr.print |= PRINT_DEFAULT;
 	      else if (lex_match_id (lexer, "SUMMARY"))
-		{
-		  lr.print |= PRINT_SUMMARY;
-		}
+                lr.print |= PRINT_SUMMARY;
 #if 0
 	      else if (lex_match_id (lexer, "CORR"))
-		{
-		  lr.print |= PRINT_CORR;
-		}
+                lr.print |= PRINT_CORR;
 	      else if (lex_match_id (lexer, "ITER"))
-		{
-		  lr.print |= PRINT_ITER;
-		}
+                lr.print |= PRINT_ITER;
 	      else if (lex_match_id (lexer, "GOODFIT"))
-		{
-		  lr.print |= PRINT_GOODFIT;
-		}
+                lr.print |= PRINT_GOODFIT;
 #endif
 	      else if (lex_match_id (lexer, "CI"))
 		{
 		  lr.print |= PRINT_CI;
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-		      if (! lex_force_num (lexer))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		      lr.confidence = lex_number (lexer);
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  lr.confidence = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "ALL"))
-		{
-		  lr.print = ~0x0000;
-		}
+                lr.print = ~0x0000;
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "DEFAULT", "SUMMARY",
+#if 0
+                                       "CORR", "ITER", "GOODFIT",
+#endif
+                                       "CI", "ALL");
 		  goto error;
 		}
 	    }
@@ -910,212 +885,153 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "BCON"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-		      if (! lex_force_num (lexer))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		      lr.bcon = lex_number (lexer);
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  lr.bcon = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "ITERATE"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-		      if (! lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		      lr.max_iter = lex_integer (lexer);
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
+                    goto error;
+                  lr.max_iter = lex_integer (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "LCON"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-		      if (! lex_force_num (lexer))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		      lr.lcon = lex_number (lexer);
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  lr.lcon = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "EPS"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-		      if (! lex_force_num (lexer))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		      lr.min_epsilon = lex_number (lexer);
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  lr.min_epsilon = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "CUT"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
-		    {
-                      if (!lex_force_num_range_closed (lexer, "CUT", 0, 1))
-                        goto error;
+		  if (!lex_force_match (lexer, T_LPAREN)
+                       || !lex_force_num_range_closed (lexer, "CUT", 0, 1))
+                    goto error;
 
-		      cp = lex_number (lexer);
+                  cp = lex_number (lexer);
 
-		      lex_get (lexer);
-		      if (! lex_force_match (lexer, T_RPAREN))
-			{
-			  lex_error (lexer, NULL);
-			  goto error;
-			}
-		    }
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "BCON", "ITERATE", "LCON", "EPS",
+                                       "CUT");
 		  goto error;
 		}
 	    }
 	}
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "MISSING", "ORIGIN", "NOORIGIN",
+                               "NOCONST", "EXTERNAL", "CATEGORICAL",
+                               "PRINT", "CRITERIA");
 	  goto error;
 	}
     }
 
   lr.ilogit_cut_point = - log (1/cp - 1);
 
-
   /* Copy the predictor variables from the temporary location into the
      final one, dropping any categorical variables which appear there.
      FIXME: This is O(NxM).
   */
-  {
-  struct variable_node *vn, *next;
-  struct hmap allvars;
-  hmap_init (&allvars);
-  for (v = x = 0; v < n_pred_vars; ++v)
+  struct hmap allvars = HMAP_INITIALIZER (allvars);
+  size_t allocated_predictor_vars = 0;
+  for (size_t v = 0; v < n_pred_vars; ++v)
     {
       bool drop = false;
       const struct variable *var = pred_vars[v];
-      int cv = 0;
 
       unsigned int hash = hash_pointer (var, 0);
-      struct variable_node *vn = lookup_variable (&allvars, var, hash);
-      if (vn == NULL)
-	{
-	  vn = xmalloc (sizeof *vn);
-	  vn->var = var;
-	  hmap_insert (&allvars, &vn->node,  hash);
-	}
+      insert_variable (&allvars, var, hash);
 
-      for (cv = 0; cv < lr.n_cat_predictors ; ++cv)
+      for (size_t cv = 0; cv < lr.n_cat_predictors; ++cv)
 	{
-	  int iv;
 	  const struct interaction *iact = lr.cat_predictors[cv];
-	  for (iv = 0 ; iv < iact->n_vars ; ++iv)
+	  for (size_t iv = 0; iv < iact->n_vars; ++iv)
 	    {
 	      const struct variable *ivar = iact->vars[iv];
 	      unsigned int hash = hash_pointer (ivar, 0);
-	      struct variable_node *vn = lookup_variable (&allvars, ivar, hash);
-	      if (vn == NULL)
-		{
-		  vn = xmalloc (sizeof *vn);
-		  vn->var = ivar;
-
-		  hmap_insert (&allvars, &vn->node,  hash);
-		}
+	      insert_variable (&allvars, ivar, hash);
 
 	      if (var == ivar)
-		{
-		  drop = true;
-		}
+                drop = true;
 	    }
 	}
 
       if (drop)
 	continue;
 
-      lr.predictor_vars = xrealloc (lr.predictor_vars, sizeof *lr.predictor_vars * (x + 1));
-      lr.predictor_vars[x++] = var;
-      lr.n_predictor_vars++;
+      if (lr.n_predictor_vars >= allocated_predictor_vars)
+        lr.predictor_vars = x2nrealloc (lr.predictor_vars,
+                                        &allocated_predictor_vars,
+                                        sizeof *lr.predictor_vars);
+      lr.predictor_vars[lr.n_predictor_vars++] = var;
     }
-  free (pred_vars);
 
   lr.n_indep_vars = hmap_count (&allvars);
   lr.indep_vars = xmalloc (lr.n_indep_vars * sizeof *lr.indep_vars);
 
   /* Interate over each variable and push it into the array */
-  x = 0;
+  size_t x = 0;
+  struct variable_node *vn, *next;
   HMAP_FOR_EACH_SAFE (vn, next, struct variable_node, node, &allvars)
     {
       lr.indep_vars[x++] = vn->var;
+      hmap_delete (&allvars, &vn->node);
       free (vn);
     }
+  assert (x == lr.n_indep_vars);
   hmap_destroy (&allvars);
-  }
 
+  /* Run logistical regression for each split group. */
+  struct casegrouper *grouper = casegrouper_create_splits (proc_open (ds), lr.dict);
+  struct casereader *group;
+  bool ok = true;
+  while (casegrouper_get_next_group (grouper, &group))
+    ok = run_lr (&lr, group, ds) && ok;
+  ok = casegrouper_destroy (grouper) && ok;
+  ok = proc_commit (ds) && ok;
 
-  /* logistical regression for each split group */
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
-
-    grouper = casegrouper_create_splits (proc_open (ds), lr.dict);
-    while (casegrouper_get_next_group (grouper, &group))
-      ok = run_lr (&lr, group, ds);
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
-
-  for (i = 0 ; i < lr.n_cat_predictors; ++i)
-    {
-      interaction_destroy (lr.cat_predictors[i]);
-    }
+  for (size_t i = 0; i < lr.n_cat_predictors; ++i)
+    interaction_destroy (lr.cat_predictors[i]);
   free (lr.predictor_vars);
   free (lr.cat_predictors);
   free (lr.indep_vars);
+  free (pred_vars);
 
   return CMD_SUCCESS;
 
  error:
-
-  for (i = 0 ; i < lr.n_cat_predictors; ++i)
-    {
-      interaction_destroy (lr.cat_predictors[i]);
-    }
+  for (size_t i = 0; i < lr.n_cat_predictors; ++i)
+    interaction_destroy (lr.cat_predictors[i]);
   free (lr.predictor_vars);
   free (lr.cat_predictors);
   free (lr.indep_vars);
+  free (pred_vars);
 
   return CMD_FAILURE;
 }
@@ -1398,7 +1314,7 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
         categories->root,
         pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
-      for (cat = 0; cat < categoricals_n_count (res->cats, v) ; ++cat)
+      for (cat = 0; cat < categoricals_n_count (res->cats, v); ++cat)
 	{
 	  const struct ccase *c = categoricals_get_case_by_category_real (
             res->cats, v, cat);
