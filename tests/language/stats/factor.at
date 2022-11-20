@@ -2400,3 +2400,188 @@ piatc,.774,.122,-.368,.365,-.322
 ])
 
 AT_CLEANUP
+
+AT_SETUP([FACTOR syntax errors])
+AT_DATA([factor.sps], [dnl
+DATA LIST LIST NOTABLE /x y.
+FACTOR VARIABLES=**.
+FACTOR MATRIX=**.
+FACTOR MATRIX=IN **.
+FACTOR MATRIX=IN(**).
+FACTOR MATRIX=IN(CORR **).
+FACTOR MATRIX=IN(CORR=**).
+FACTOR MATRIX=IN(CORR=* **).
+FACTOR **.
+FACTOR VARIABLES=x/ANALYSIS=**.
+FACTOR VARIABLES=x/PLOT=**.
+FACTOR VARIABLES=x/METHOD=**.
+FACTOR VARIABLES=x/ROTATION=PROMAX(**).
+FACTOR VARIABLES=x/ROTATION=PROMAX(123 **).
+FACTOR VARIABLES=x/ROTATION=**.
+FACTOR VARIABLES=x/CRITERIA=FACTORS **.
+FACTOR VARIABLES=x/CRITERIA=FACTORS(**).
+FACTOR VARIABLES=x/CRITERIA=FACTORS(123 **).
+FACTOR VARIABLES=x/CRITERIA=MINEIGEN **.
+FACTOR VARIABLES=x/CRITERIA=MINEIGEN(**).
+FACTOR VARIABLES=x/CRITERIA=MINEIGEN(123 **).
+FACTOR VARIABLES=x/CRITERIA=ECONVERGE **.
+FACTOR VARIABLES=x/CRITERIA=ECONVERGE(**).
+FACTOR VARIABLES=x/CRITERIA=ECONVERGE(123 **).
+FACTOR VARIABLES=x/CRITERIA=RCONVERGE **.
+FACTOR VARIABLES=x/CRITERIA=RCONVERGE(**).
+FACTOR VARIABLES=x/CRITERIA=RCONVERGE(123 **).
+FACTOR VARIABLES=x/CRITERIA=**.
+FACTOR VARIABLES=x/EXTRACTION=**.
+FACTOR VARIABLES=x/FORMAT=BLANK **.
+FACTOR VARIABLES=x/FORMAT=BLANK(**).
+FACTOR VARIABLES=x/FORMAT=BLANK(123 **).
+FACTOR VARIABLES=x/FORMAT=**.
+FACTOR VARIABLES=x/PRINT=**.
+FACTOR VARIABLES=x/MISSING=**.
+FACTOR VARIABLES=x/ **.
+FACTOR VARIABLES=x.
+])
+AT_CHECK([pspp -O format=csv factor.sps], [1], [dnl
+"factor.sps:2.18-2.19: error: FACTOR: Syntax error expecting variable name.
+    2 | FACTOR VARIABLES=**.
+      |                  ^~"
+
+"factor.sps:3.15-3.16: error: FACTOR: Syntax error expecting `IN('.
+    3 | FACTOR MATRIX=**.
+      |               ^~"
+
+"factor.sps:4.15-4.19: error: FACTOR: Syntax error expecting `IN('.
+    4 | FACTOR MATRIX=IN **.
+      |               ^~~~~"
+
+"factor.sps:5.18-5.19: error: FACTOR: Matrix input for FACTOR must be either COV or CORR.
+    5 | FACTOR MATRIX=IN(**).
+      |                  ^~"
+
+"factor.sps:6.23-6.24: error: FACTOR: Syntax error expecting `='.
+    6 | FACTOR MATRIX=IN(CORR **).
+      |                       ^~"
+
+"factor.sps:7.23-7.24: error: FACTOR: Syntax error expecting a file name or handle name.
+    7 | FACTOR MATRIX=IN(CORR=**).
+      |                       ^~"
+
+"factor.sps:8.25-8.26: error: FACTOR: Syntax error expecting `)'.
+    8 | FACTOR MATRIX=IN(CORR=* **).
+      |                         ^~"
+
+"factor.sps:10.29-10.30: error: FACTOR: Syntax error expecting variable name.
+   10 | FACTOR VARIABLES=x/ANALYSIS=**.
+      |                             ^~"
+
+"factor.sps:11.25-11.26: error: FACTOR: Syntax error expecting EIGEN.
+   11 | FACTOR VARIABLES=x/PLOT=**.
+      |                         ^~"
+
+"factor.sps:12.27-12.28: error: FACTOR: Syntax error expecting COVARIANCE or CORRELATION.
+   12 | FACTOR VARIABLES=x/METHOD=**.
+      |                           ^~"
+
+"factor.sps:13.36-13.37: error: FACTOR: Syntax error expecting integer.
+   13 | FACTOR VARIABLES=x/ROTATION=PROMAX(**).
+      |                                    ^~"
+
+"factor.sps:14.40-14.41: error: FACTOR: Syntax error expecting `)'.
+   14 | FACTOR VARIABLES=x/ROTATION=PROMAX(123 **).
+      |                                        ^~"
+
+"factor.sps:15.29-15.30: error: FACTOR: Syntax error expecting DEFAULT, VARIMAX, EQUAMAX, QUARTIMAX, PROMAX, or NOROTATE.
+   15 | FACTOR VARIABLES=x/ROTATION=**.
+      |                             ^~"
+
+"factor.sps:16.37-16.38: error: FACTOR: Syntax error expecting `('.
+   16 | FACTOR VARIABLES=x/CRITERIA=FACTORS **.
+      |                                     ^~"
+
+"factor.sps:17.37-17.38: error: FACTOR: Syntax error expecting integer.
+   17 | FACTOR VARIABLES=x/CRITERIA=FACTORS(**).
+      |                                     ^~"
+
+"factor.sps:18.41-18.42: error: FACTOR: Syntax error expecting `)'.
+   18 | FACTOR VARIABLES=x/CRITERIA=FACTORS(123 **).
+      |                                         ^~"
+
+"factor.sps:19.38-19.39: error: FACTOR: Syntax error expecting `('.
+   19 | FACTOR VARIABLES=x/CRITERIA=MINEIGEN **.
+      |                                      ^~"
+
+"factor.sps:20.38-20.39: error: FACTOR: Syntax error expecting number.
+   20 | FACTOR VARIABLES=x/CRITERIA=MINEIGEN(**).
+      |                                      ^~"
+
+"factor.sps:21.42-21.43: error: FACTOR: Syntax error expecting `)'.
+   21 | FACTOR VARIABLES=x/CRITERIA=MINEIGEN(123 **).
+      |                                          ^~"
+
+"factor.sps:22.39-22.40: error: FACTOR: Syntax error expecting `('.
+   22 | FACTOR VARIABLES=x/CRITERIA=ECONVERGE **.
+      |                                       ^~"
+
+"factor.sps:23.39-23.40: error: FACTOR: Syntax error expecting number.
+   23 | FACTOR VARIABLES=x/CRITERIA=ECONVERGE(**).
+      |                                       ^~"
+
+"factor.sps:24.43-24.44: error: FACTOR: Syntax error expecting `)'.
+   24 | FACTOR VARIABLES=x/CRITERIA=ECONVERGE(123 **).
+      |                                           ^~"
+
+"factor.sps:25.39-25.40: error: FACTOR: Syntax error expecting `('.
+   25 | FACTOR VARIABLES=x/CRITERIA=RCONVERGE **.
+      |                                       ^~"
+
+"factor.sps:26.39-26.40: error: FACTOR: Syntax error expecting number.
+   26 | FACTOR VARIABLES=x/CRITERIA=RCONVERGE(**).
+      |                                       ^~"
+
+"factor.sps:27.43-27.44: error: FACTOR: Syntax error expecting `)'.
+   27 | FACTOR VARIABLES=x/CRITERIA=RCONVERGE(123 **).
+      |                                           ^~"
+
+"factor.sps:28.29-28.30: error: FACTOR: Syntax error expecting FACTORS, MINEIGEN, ECONVERGE, RCONVERGE, ITERATE, or DEFAULT.
+   28 | FACTOR VARIABLES=x/CRITERIA=**.
+      |                             ^~"
+
+"factor.sps:29.31-29.32: error: FACTOR: Syntax error expecting PAF, PC, PA1, or DEFAULT.
+   29 | FACTOR VARIABLES=x/EXTRACTION=**.
+      |                               ^~"
+
+"factor.sps:30.33-30.34: error: FACTOR: Syntax error expecting `('.
+   30 | FACTOR VARIABLES=x/FORMAT=BLANK **.
+      |                                 ^~"
+
+"factor.sps:31.33-31.34: error: FACTOR: Syntax error expecting number.
+   31 | FACTOR VARIABLES=x/FORMAT=BLANK(**).
+      |                                 ^~"
+
+"factor.sps:32.37-32.38: error: FACTOR: Syntax error expecting `)'.
+   32 | FACTOR VARIABLES=x/FORMAT=BLANK(123 **).
+      |                                     ^~"
+
+"factor.sps:33.27-33.28: error: FACTOR: Syntax error expecting SORT, BLANK, or DEFAULT.
+   33 | FACTOR VARIABLES=x/FORMAT=**.
+      |                           ^~"
+
+"factor.sps:34.26-34.27: error: FACTOR: Syntax error expecting one of the following: UNIVARIATE, DET, AIC, SIG, CORRELATION, COVARIANCE, ROTATION, EXTRACTION, INITIAL, KMO, ALL, DEFAULT.
+   34 | FACTOR VARIABLES=x/PRINT=**.
+      |                          ^~"
+
+"factor.sps:35.28-35.29: error: FACTOR: Syntax error expecting INCLUDE, EXCLUDE, LISTWISE, PAIRRWISE, or MEANSUB.
+   35 | FACTOR VARIABLES=x/MISSING=**.
+      |                            ^~"
+
+"factor.sps:36.21-36.22: error: FACTOR: Syntax error expecting one of the following: ANALYSIS, PLOT, METHOD, ROTATION, CRITERIA, EXTRACTION, FORMAT, PRINT, MISSING.
+   36 | FACTOR VARIABLES=x/ **.
+      |                     ^~"
+
+"factor.sps:37.18: warning: FACTOR: Factor analysis on a single variable is not useful.
+   37 | FACTOR VARIABLES=x.
+      |                  ^"
+
+error: FACTOR: At end of input: Syntax error expecting `BEGIN DATA'.
+])
+AT_CLEANUP

@@ -1022,10 +1022,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   else if (lex_match_id (lexer, "MATRIX"))
     {
       lex_match (lexer, T_EQUALS);
-      if (!lex_force_match_id (lexer, "IN"))
+      if (!lex_force_match_phrase (lexer, "IN("))
 	goto error;
-      if (!lex_force_match (lexer, T_LPAREN))
-        goto error;
       if (!lex_match_id (lexer, "CORR") && !lex_match_id (lexer, "COV"))
 	{
 	  lex_error (lexer, _("Matrix input for %s must be either COV or CORR"),
@@ -1054,7 +1052,10 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       vars_end = lex_ofs (lexer) - 1;
 
       if (!lex_force_match (lexer, T_RPAREN))
-	goto error;
+        {
+          casereader_destroy (matrix_reader);
+          goto error;
+        }
 
       mr = matrix_reader_create (dict, matrix_reader);
       factor.vars = xmemdup (mr->cvars, mr->n_cvars * sizeof *mr->cvars);
@@ -1112,7 +1113,11 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 #endif
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "EIGEN"
+#if FACTOR_FULLY_IMPLEMENTED
+                                       , "ROTATION"
+#endif
+                                       );
 		  goto error;
 		}
 	    }
@@ -1148,9 +1153,10 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	      else if (lex_match_id (lexer, "PROMAX"))
 		{
 		  factor.promax_power = 5;
-		  if (lex_match (lexer, T_LPAREN)
-                      && lex_force_int (lexer))
-		    {
+		  if (lex_match (lexer, T_LPAREN))
+                    {
+                      if (!lex_force_int (lexer))
+                        goto error;
 		      factor.promax_power = lex_integer (lexer);
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
@@ -1176,58 +1182,53 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "FACTORS"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_int (lexer))
-		    {
-		      factor.n_factors = lex_integer (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int (lexer))
+                    goto error;
+                  factor.n_factors = lex_integer (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "MINEIGEN"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_num (lexer))
-		    {
-		      factor.min_eigen = lex_number (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  factor.min_eigen = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "ECONVERGE"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_num (lexer))
-		    {
-		      factor.econverge = lex_number (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  factor.econverge = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "RCONVERGE"))
                 {
-                  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_num (lexer))
-                    {
-                      factor.rconverge = lex_number (lexer);
-                      lex_get (lexer);
-                      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-                    }
+                  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  factor.rconverge = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "ITERATE"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
-		    {
-		      n_iterations = lex_integer (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
+                    goto error;
+                  n_iterations = lex_integer (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "DEFAULT"))
 		{
@@ -1274,14 +1275,13 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
                 factor.sort = true;
 	      else if (lex_match_id (lexer, "BLANK"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN)
-                      && lex_force_num (lexer))
-		    {
-		      factor.blank = lex_number (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+		  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num (lexer))
+                    goto error;
+                  factor.blank = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
 		}
 	      else if (lex_match_id (lexer, "DEFAULT"))
 		{
@@ -1377,7 +1377,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	}
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "ANALYSIS", "PLOT", "METHOD", "ROTATION",
+                               "CRITERIA", "EXTRACTION", "FORMAT", "PRINT",
+                               "MISSING");
 	  goto error;
 	}
     }
@@ -1385,16 +1387,10 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   if (factor.rotation == ROT_NONE)
     factor.print &= ~PRINT_ROTATION;
 
+  assert (factor.n_vars > 0);
   if (factor.n_vars < 2)
     lex_ofs_msg (lexer, SW, vars_start, vars_end,
                  _("Factor analysis on a single variable is not useful."));
-
-  if (factor.n_vars < 1)
-    {
-      lex_ofs_error (lexer, vars_start, vars_end,
-                     _("Factor analysis without variables is not possible."));
-      goto error;
-    }
 
   if (matrix_reader)
     {
