@@ -67,8 +67,8 @@ struct casereader *casereader_clone (const struct casereader *);
 struct casereader *casereader_rename (struct casereader *);
 void casereader_swap (struct casereader *, struct casereader *);
 
-struct ccase *casereader_peek (struct casereader *, casenumber);
-bool casereader_is_empty (struct casereader *);
+struct ccase *casereader_peek (const struct casereader *, casenumber);
+bool casereader_is_empty (const struct casereader *);
 
 bool casereader_error (const struct casereader *);
 void casereader_force_error (struct casereader *);

@@ -147,8 +147,9 @@ casereader_swap (struct casereader *a, struct casereader *b)
    when it is no longer needed.  Returns a null pointer if cases
    have been exhausted or upon detection of an I/O error. */
 struct ccase *
-casereader_peek (struct casereader *reader, casenumber idx)
+casereader_peek (const struct casereader *reader_, casenumber idx)
 {
+  struct casereader *reader = CONST_CAST (struct casereader *, reader_);
   if (idx < reader->n_cases)
     {
       struct ccase *c;
@@ -171,7 +172,7 @@ casereader_peek (struct casereader *reader, casenumber idx)
    casereader_read will return true, because an error can occur
    in the meantime.) */
 bool
-casereader_is_empty (struct casereader *reader)
+casereader_is_empty (const struct casereader *reader)
 {
   if (reader->n_cases == 0)
     return true;
