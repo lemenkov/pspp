@@ -228,3 +228,49 @@ AT_DATA([insert.sps], [INSERT FILE=7bar.sps' CD=NO.
 AT_CHECK([pspp -O format=csv insert.sps], [1], [ignore])
 
 AT_CLEANUP
+
+AT_SETUP([INSERT syntax errors])
+AT_KEYWORDS([INCLUDE])
+: >inner.sps
+AT_DATA([insert.sps], [dnl
+INSERT **.
+INSERT 'nonexistent.sps'.
+INSERT 'inner.sps' ENCODING=**.
+INSERT 'inner.sps' SYNTAX=**.
+INSERT 'inner.sps' CD=**.
+INSERT 'inner.sps' ERROR=**.
+INSERT 'inner.sps' **.
+INCLUDE 'inner.sps' **.
+])
+AT_CHECK([pspp -O format=csv insert.sps], [1], [dnl
+"insert.sps:1.8-1.9: error: INSERT: Syntax error expecting string.
+    1 | INSERT **.
+      |        ^~"
+
+insert.sps:2: error: INSERT: Can't find `nonexistent.sps' in include file search path.
+
+"insert.sps:3.29-3.30: error: INSERT: Syntax error expecting string.
+    3 | INSERT 'inner.sps' ENCODING=**.
+      |                             ^~"
+
+"insert.sps:4.27-4.28: error: INSERT: Syntax error expecting BATCH, INTERACTIVE, or AUTO.
+    4 | INSERT 'inner.sps' SYNTAX=**.
+      |                           ^~"
+
+"insert.sps:5.23-5.24: error: INSERT: Syntax error expecting YES or NO.
+    5 | INSERT 'inner.sps' CD=**.
+      |                       ^~"
+
+"insert.sps:6.26-6.27: error: INSERT: Syntax error expecting CONTINUE or STOP.
+    6 | INSERT 'inner.sps' ERROR=**.
+      |                          ^~"
+
+"insert.sps:7.20-7.21: error: INSERT: Syntax error expecting ENCODING, SYNTAX, CD, or ERROR.
+    7 | INSERT 'inner.sps' **.
+      |                    ^~"
+
+"insert.sps:8.21-8.22: error: INCLUDE: Syntax error expecting ENCODING.
+    8 | INCLUDE 'inner.sps' **.
+      |                     ^~"
+])
+AT_CLEANUP

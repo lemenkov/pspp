@@ -46,14 +46,6 @@ enum variant
 static int
 do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 {
-  enum segmenter_mode syntax_mode;
-  enum lex_error_mode error_mode;
-  char *relative_name;
-  char *filename;
-  char *encoding;
-  int status;
-  bool cd;
-
   /* Skip optional FILE=. */
   if (lex_match_id (lexer, "FILE"))
     lex_match (lexer, T_EQUALS);
@@ -61,14 +53,11 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
   if (!lex_force_string_or_id (lexer))
     return CMD_FAILURE;
 
-  relative_name = utf8_to_filename (lex_tokcstr (lexer));
-  if (NULL == relative_name)
-    return CMD_FAILURE;
-
-  filename = include_path_search (relative_name);
+  char *relative_name = utf8_to_filename (lex_tokcstr (lexer));
+  char *filename = include_path_search (relative_name);
   free (relative_name);
 
-  if (! filename)
+  if (!filename)
     {
       msg (SE, _("Can't find `%s' in include file search path."),
            lex_tokcstr (lexer));
@@ -76,12 +65,12 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
     }
   lex_get (lexer);
 
-  syntax_mode = SEG_MODE_INTERACTIVE;
-  error_mode = LEX_ERROR_CONTINUE;
-  cd = false;
-  status = CMD_FAILURE;
-  encoding = xstrdup (session_get_default_syntax_encoding (
-                        dataset_session (ds)));
+  enum segmenter_mode syntax_mode = SEG_MODE_INTERACTIVE;
+  enum lex_error_mode error_mode = LEX_ERROR_CONTINUE;
+  bool cd = false;
+  int status = CMD_FAILURE;
+  char *encoding = xstrdup (session_get_default_syntax_encoding (
+                              dataset_session (ds)));
   while (T_ENDCMD != lex_token (lexer))
     {
       if (lex_match_id (lexer, "ENCODING"))
@@ -113,13 +102,9 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 	{
 	  lex_match (lexer, T_EQUALS);
 	  if (lex_match_id (lexer, "YES"))
-	    {
-	      cd = true;
-	    }
+            cd = true;
 	  else if (lex_match_id (lexer, "NO"))
-	    {
-	      cd = false;
-	    }
+            cd = false;
 	  else
 	    {
 	      lex_error_expecting (lexer, "YES", "NO");
@@ -142,10 +127,12 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 	      goto exit;
 	    }
 	}
-
       else
 	{
-	  lex_error (lexer, NULL);
+          if (variant == INSERT)
+            lex_error_expecting (lexer, "ENCODING", "SYNTAX", "CD", "ERROR");
+          else
+            lex_error_expecting (lexer, "ENCODING");
 	  goto exit;
 	}
     }
@@ -153,10 +140,8 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 
   if (status == CMD_SUCCESS)
     {
-      struct lex_reader *reader;
-
-      reader = lex_reader_for_file (filename, encoding,
-                                    syntax_mode, error_mode);
+      struct lex_reader *reader = lex_reader_for_file (filename, encoding,
+                                                       syntax_mode, error_mode);
       if (reader != NULL)
         {
           lex_discard_rest_of_command (lexer);
@@ -165,8 +150,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
           if (cd)
             {
               char *directory = dir_name (filename);
-              int ret = chdir (directory);
-              if (0 != ret)
+              if (chdir (directory))
                 {
                   int err = errno;
                   msg (SE, _("Cannot change directory to %s: %s"), directory,
