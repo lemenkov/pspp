@@ -426,6 +426,7 @@ TESTSUITE_AT = \
 	tests/language/utilities/date.at \
 	tests/language/utilities/host.at \
 	tests/language/utilities/insert.at \
+	tests/language/utilities/output.at \
 	tests/language/utilities/permissions.at \
 	tests/language/utilities/set.at \
 	tests/language/utilities/show.at \

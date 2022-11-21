@@ -1,0 +1,47 @@
+AT_BANNER([OUTPUT MODIFY])
+
+AT_SETUP([OUTPUT MODIFY syntax errors])
+AT_DATA([output.sps], [dnl
+OUTPUT MODIFY/SELECT **.
+OUTPUT MODIFY/TABLECELLS SELECT **.
+OUTPUT MODIFY/TABLECELLS SELECT=**.
+OUTPUT MODIFY/TABLECELLS SELECT=[[**]].
+OUTPUT MODIFY/TABLECELLS FORMAT **.
+OUTPUT MODIFY/TABLECELLS FORMAT=ASDF5.
+OUTPUT MODIFY/TABLECELLS **.
+OUTPUT MODIFY/TABLECELLS SELECT="xyzzy" FORMAT=F8.2.
+])
+AT_CHECK([pspp -O format=csv output.sps], [1], [dnl
+"output.sps:1.22-1.23: error: OUTPUT MODIFY: Syntax error expecting TABLES.
+    1 | OUTPUT MODIFY/SELECT **.
+      |                      ^~"
+
+"output.sps:2.33-2.34: error: OUTPUT MODIFY: Syntax error expecting `='.
+    2 | OUTPUT MODIFY/TABLECELLS SELECT **.
+      |                                 ^~"
+
+"output.sps:3.33-3.34: error: OUTPUT MODIFY: Syntax error expecting `[['.
+    3 | OUTPUT MODIFY/TABLECELLS SELECT=**.
+      |                                 ^~"
+
+"output.sps:4.34-4.35: error: OUTPUT MODIFY: Syntax error expecting `]]'.
+    4 | OUTPUT MODIFY/TABLECELLS SELECT=[[**]].
+      |                                  ^~"
+
+"output.sps:5.33-5.34: error: OUTPUT MODIFY: Syntax error expecting `='.
+    5 | OUTPUT MODIFY/TABLECELLS FORMAT **.
+      |                                 ^~"
+
+"output.sps:6.38: error: OUTPUT MODIFY: Unknown format type `ASDF'.
+    6 | OUTPUT MODIFY/TABLECELLS FORMAT=ASDF5.
+      |                                      ^"
+
+"output.sps:7.26-7.27: error: OUTPUT MODIFY: Syntax error expecting SELECT or FORMAT.
+    7 | OUTPUT MODIFY/TABLECELLS **.
+      |                          ^~"
+
+"output.sps:8.33-8.39: error: OUTPUT MODIFY: Syntax error expecting `@<:@'.
+    8 | OUTPUT MODIFY/TABLECELLS SELECT=""xyzzy"" FORMAT=F8.2.
+      |                                 ^~~~~~~"
+])
+AT_CLEANUP

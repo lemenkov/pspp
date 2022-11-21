@@ -36,15 +36,9 @@
 #define _(msgid) gettext (msgid)
 
 int
-cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
+cmd_output_modify (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   struct string_set rc_names = STRING_SET_INITIALIZER (rc_names);
-
-  if (!lex_force_match_id (lexer, "MODIFY"))
-    {
-      lex_error (lexer, NULL);
-      goto error;
-    }
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -52,11 +46,8 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 
       if (lex_match_id (lexer, "SELECT"))
 	{
-	  if (!lex_match_id (lexer, "TABLES"))
-	    {
-	      lex_error (lexer, NULL);
-	      goto error;
-	    }
+	  if (!lex_force_match_id (lexer, "TABLES"))
+            goto error;
 	}
       else if (lex_match_id (lexer, "TABLECELLS"))
 	{
@@ -68,10 +59,10 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	    {
 	      if (lex_match_id (lexer, "SELECT"))
 		{
-		  if (! lex_force_match (lexer, T_EQUALS))
+		  if (!lex_force_match (lexer, T_EQUALS))
 		    goto error;
 
-		  if (! lex_force_match (lexer, T_LBRACK))
+		  if (!lex_force_match (lexer, T_LBRACK))
 		    goto error;
 
 		  while (lex_token (lexer) == T_ID)
@@ -80,7 +71,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
                       lex_get (lexer);
                     }
 
-		  if (! lex_force_match (lexer, T_RBRACK))
+		  if (!lex_force_match (lexer, T_RBRACK))
 		    goto error;
 		}
 	      else if (lex_match_id (lexer, "FORMAT"))
@@ -89,13 +80,10 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  uint16_t width;
 		  uint8_t decimals;
 
-		  if (! lex_force_match (lexer, T_EQUALS))
-		    goto error;
-		  if (! parse_abstract_format_specifier (lexer, type, &width, &decimals))
-		    {
-		      lex_error (lexer, NULL);
-		      goto error;
-		    }
+		  if (!lex_force_match (lexer, T_EQUALS)
+                      || !parse_abstract_format_specifier (lexer, type,
+                                                           &width, &decimals))
+                    goto error;
 
 		  if (width <= 0)
 		    {
@@ -114,7 +102,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		}
 	      else
 		{
-		  lex_error (lexer, NULL);
+		  lex_error_expecting (lexer, "SELECT", "FORMAT");
 		  goto error;
 		}
 	    }
@@ -130,7 +118,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	}
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "SELECT", "TABLECELLS");
 	  goto error;
 	}
     }
@@ -140,5 +128,5 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 
  error:
   string_set_destroy (&rc_names);
-  return CMD_SUCCESS;
+  return CMD_FAILURE;
 }
