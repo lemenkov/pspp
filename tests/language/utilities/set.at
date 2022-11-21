@@ -156,6 +156,265 @@ MITERATE,1000
 MNEST,50
 ])
 AT_CLEANUP
+
+AT_SETUP([SET syntax errors])
+AT_DATA([set.sps], [dnl
+SET **.
+SET BASETEXTDIRECTION=**.
+SET BLANKS=**.
+SET BOX=**.
+SET CACHE=**.
+SET CCA=**.
+SET CELLSBREAK=**.
+SET CMPTRANS=**.
+SET COMPRESSION=**.
+SET CTEMPLATE=**.
+SET DECIMAL=**.
+SET EPOCH=**.
+SET EPOCH=1234.
+SET ERRORS=**.
+SET FORMAT=**.
+SET FORMAT=A8.
+SET FORMAT=F1.2.
+SET FUZZBITS=40.
+SET HEADER=**.
+SET INCLUDE=**.
+SET JOURNAL=**.
+SET LEADZERO=**.
+SET LENGTH=**.
+SET LOCALE='Neverland'.
+SET LOCALE=**.
+SET MDISPLAY=**.
+SET MESSAGES=**.
+SET MEXPAND=**.
+SET MITERATE=0.
+SET MNEST=0.
+SET MPRINT=**.
+SET MXERRS=0.
+SET MXLOOPS=0.
+SET MXWARNS=-1.
+SET PRINTBACK=**.
+SET RESULTS=**.
+SET RIB=**.
+SET RRB=**.
+SET SAFER=**.
+SET SCOMPRESSION=**.
+SET SEED=**.
+SET SMALL=**.
+SET SUBTITLE=**.
+SET TNUMBERS=**.
+SET TVARS=**.
+SET TLOOK='nonexistent.xml'.
+SET UNDEFINED=**.
+SET WIB=**.
+SET WRB=**.
+SET WIDTH=**.
+SET WORKSPACE=**.
+])
+AT_CHECK([pspp -O format=csv set.sps], [1], [dnl
+"set.sps:1.5-1.6: error: SET: Syntax error expecting the name of a setting.
+    1 | SET **.
+      |     ^~"
+
+"set.sps:2.5-2.24: warning: SET: BASETEXTDIRECTION is not yet implemented.
+    2 | SET BASETEXTDIRECTION=**.
+      |     ^~~~~~~~~~~~~~~~~~~~"
+
+"set.sps:3.12-3.13: error: SET: Syntax error expecting number.
+    3 | SET BLANKS=**.
+      |            ^~"
+
+"set.sps:4.5-4.10: warning: SET: BOX is not yet implemented.
+    4 | SET BOX=**.
+      |     ^~~~~~"
+
+"set.sps:5.5-5.12: warning: SET: CACHE is not yet implemented.
+    5 | SET CACHE=**.
+      |     ^~~~~~~~"
+
+"set.sps:6.9-6.10: error: SET: Syntax error expecting string.
+    6 | SET CCA=**.
+      |         ^~"
+
+"set.sps:7.5-7.17: warning: SET: CELLSBREAK is not yet implemented.
+    7 | SET CELLSBREAK=**.
+      |     ^~~~~~~~~~~~~"
+
+"set.sps:8.5-8.15: warning: SET: CMPTRANS is not yet implemented.
+    8 | SET CMPTRANS=**.
+      |     ^~~~~~~~~~~"
+
+"set.sps:9.5-9.18: warning: SET: COMPRESSION is not yet implemented.
+    9 | SET COMPRESSION=**.
+      |     ^~~~~~~~~~~~~~"
+
+"set.sps:10.5-10.16: warning: SET: CTEMPLATE is not yet implemented.
+   10 | SET CTEMPLATE=**.
+      |     ^~~~~~~~~~~~"
+
+"set.sps:11.13-11.14: error: SET: Syntax error expecting DOT or COMMA.
+   11 | SET DECIMAL=**.
+      |             ^~"
+
+"set.sps:12.11-12.12: error: SET: Syntax error expecting AUTOMATIC or year.
+   12 | SET EPOCH=**.
+      |           ^~"
+
+"set.sps:13.11-13.14: error: SET: Syntax error expecting integer 1500 or greater for EPOCH.
+   13 | SET EPOCH=1234.
+      |           ^~~~"
+
+"set.sps:14.12-14.13: error: SET: Syntax error expecting ON, BOTH, TERMINAL, LISTING, OFF, or NONE.
+   14 | SET ERRORS=**.
+      |            ^~"
+
+"set.sps:15.12-15.13: error: SET: Syntax error expecting valid format specifier.
+   15 | SET FORMAT=**.
+      |            ^~"
+
+"set.sps:16.5-16.13: error: SET: FORMAT requires numeric output format as an argument.  Specified format A8 is of type string.
+   16 | SET FORMAT=A8.
+      |     ^~~~~~~~~"
+
+"set.sps:17.12-17.15: error: SET: Output format F1.2 specifies 2 decimal places, but width 1 does not allow for any decimals.
+   17 | SET FORMAT=F1.2.
+      |            ^~~~"
+
+"set.sps:18.14-18.15: error: SET: Syntax error expecting integer between 0 and 20 for FUZZBITS.
+   18 | SET FUZZBITS=40.
+      |              ^~"
+
+"set.sps:19.5-19.13: warning: SET: HEADER is not yet implemented.
+   19 | SET HEADER=**.
+      |     ^~~~~~~~~"
+
+"set.sps:20.13-20.14: error: SET: Syntax error expecting ON, YES, OFF, or NO.
+   20 | SET INCLUDE=**.
+      |             ^~"
+
+"set.sps:21.13-21.14: error: SET: Syntax error expecting ON or OFF or a file name.
+   21 | SET JOURNAL=**.
+      |             ^~"
+
+"set.sps:22.14-22.15: error: SET: Syntax error expecting ON, YES, OFF, or NO.
+   22 | SET LEADZERO=**.
+      |              ^~"
+
+"set.sps:23.12-23.13: error: SET: Syntax error expecting positive integer for LENGTH.
+   23 | SET LENGTH=**.
+      |            ^~"
+
+"set.sps:24.12-24.22: error: SET: Neverland is not a recognized encoding or locale name.
+   24 | SET LOCALE='Neverland'.
+      |            ^~~~~~~~~~~"
+
+"set.sps:25.12-25.13: error: SET: Syntax error expecting string.
+   25 | SET LOCALE=**.
+      |            ^~"
+
+"set.sps:26.14-26.15: error: SET: Syntax error expecting TEXT or TABLES.
+   26 | SET MDISPLAY=**.
+      |              ^~"
+
+"set.sps:27.14-27.15: error: SET: Syntax error expecting ON, BOTH, TERMINAL, LISTING, OFF, or NONE.
+   27 | SET MESSAGES=**.
+      |              ^~"
+
+"set.sps:28.13-28.14: error: SET: Syntax error expecting ON, YES, OFF, or NO.
+   28 | SET MEXPAND=**.
+      |             ^~"
+
+"set.sps:29.14: error: SET: Syntax error expecting positive integer for MITERATE.
+   29 | SET MITERATE=0.
+      |              ^"
+
+"set.sps:30.11: error: SET: Syntax error expecting positive integer for MNEST.
+   30 | SET MNEST=0.
+      |           ^"
+
+"set.sps:31.12-31.13: error: SET: Syntax error expecting ON, YES, OFF, or NO.
+   31 | SET MPRINT=**.
+      |            ^~"
+
+"set.sps:32.12: error: SET: Syntax error expecting positive integer for MXERRS.
+   32 | SET MXERRS=0.
+      |            ^"
+
+"set.sps:33.13: error: SET: Syntax error expecting positive integer for MXLOOPS.
+   33 | SET MXLOOPS=0.
+      |             ^"
+
+"set.sps:34.13-34.14: error: SET: Syntax error expecting non-negative integer for MXWARNS.
+   34 | SET MXWARNS=-1.
+      |             ^~"
+
+"set.sps:35.15-35.16: error: SET: Syntax error expecting ON, BOTH, TERMINAL, LISTING, OFF, or NONE.
+   35 | SET PRINTBACK=**.
+      |               ^~"
+
+"set.sps:36.13-36.14: error: SET: Syntax error expecting ON, BOTH, TERMINAL, LISTING, OFF, or NONE.
+   36 | SET RESULTS=**.
+      |             ^~"
+
+"set.sps:37.9-37.10: error: SET: Syntax error expecting MSBFIRST, LSBFIRST, VAX, or NATIVE.
+   37 | SET RIB=**.
+      |         ^~"
+
+"set.sps:38.9-38.10: error: SET: Syntax error expecting one of the following: NATIVE, ISL, ISB, IDL, IDB, VF, VD, VG, ZS.
+   38 | SET RRB=**.
+      |         ^~"
+
+"set.sps:39.11-39.12: error: SET: Syntax error expecting ON or YES.
+   39 | SET SAFER=**.
+      |           ^~"
+
+"set.sps:40.18-40.19: error: SET: Syntax error expecting ON, YES, OFF, or NO.
+   40 | SET SCOMPRESSION=**.
+      |                  ^~"
+
+"set.sps:41.10-41.11: error: SET: Syntax error expecting number.
+   41 | SET SEED=**.
+      |          ^~"
+
+"set.sps:42.11-42.12: error: SET: Syntax error expecting number.
+   42 | SET SMALL=**.
+      |           ^~"
+
+"set.sps:43.5-43.12: error: SET: Syntax error expecting the name of a setting.
+   43 | SET SUBTITLE=**.
+      |     ^~~~~~~~"
+
+"set.sps:44.14-44.15: error: SET: Syntax error expecting LABELS, VALUES, or BOTH.
+   44 | SET TNUMBERS=**.
+      |              ^~"
+
+"set.sps:45.11-45.12: error: SET: Syntax error expecting LABELS, NAMES, or BOTH.
+   45 | SET TVARS=**.
+      |           ^~"
+
+set.sps:46: error: SET: nonexistent.xml: not found
+
+"set.sps:47.15-47.16: error: SET: Syntax error expecting WARN or NOWARN.
+   47 | SET UNDEFINED=**.
+      |               ^~"
+
+"set.sps:48.9-48.10: error: SET: Syntax error expecting MSBFIRST, LSBFIRST, VAX, or NATIVE.
+   48 | SET WIB=**.
+      |         ^~"
+
+"set.sps:49.9-49.10: error: SET: Syntax error expecting one of the following: NATIVE, ISL, ISB, IDL, IDB, VF, VD, VG, ZS.
+   49 | SET WRB=**.
+      |         ^~"
+
+"set.sps:50.11-50.12: error: SET: Syntax error expecting integer 40 or greater for WIDTH.
+   50 | SET WIDTH=**.
+      |           ^~"
+
+"set.sps:51.15-51.16: error: SET: Syntax error expecting integer 1024 or greater for WORKSPACE.
+   51 | SET WORKSPACE=**.
+      |               ^~"
+])
+AT_CLEANUP
 
 AT_BANNER([PRESERVE and RESTORE])
 

@@ -178,7 +178,8 @@ parse_output_routing (struct lexer *lexer, enum settings_output_type type)
     devices = 0;
   else
     {
-      lex_error (lexer, NULL);
+      lex_error_expecting (lexer, "ON", "BOTH", "TERMINAL", "LISTING",
+                           "OFF", "NONE");
       return false;
     }
 
@@ -563,7 +564,7 @@ show_FORMAT (const struct dataset *ds UNUSED)
 static bool
 parse_FUZZBITS (struct lexer *lexer)
 {
-  if (!lex_force_int_range (lexer, "FUZZITS", 0, 20))
+  if (!lex_force_int_range (lexer, "FUZZBITS", 0, 20))
     return false;
   settings_set_fuzzbits (lex_integer (lexer));
   lex_get (lexer);
@@ -615,7 +616,7 @@ parse_JOURNAL (struct lexer *lexer)
     }
   else
     {
-      lex_error (lexer, NULL);
+      lex_error (lexer, _("Syntax error expecting ON or OFF or a file name."));
       return false;
     }
   return true;
@@ -1289,9 +1290,9 @@ parse_setting (struct lexer *lexer)
 {
   for (size_t i = 0; i < N_SETTINGS; i++)
     if (settings[i].set && match_subcommand (lexer, settings[i].name))
-        return settings[i].set (lexer);
+      return settings[i].set (lexer);
 
-  lex_error (lexer, NULL);
+  lex_error (lexer, _("Syntax error expecting the name of a setting."));
   return false;
 }
 
@@ -1374,14 +1375,14 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
                   goto found;
                 }
               }
-          lex_error (lexer, NULL);
+          lex_error (lexer, _("Syntax error expecting the name of a setting."));
           return CMD_FAILURE;
 
         found: ;
         }
       else
         {
-          lex_error (lexer, NULL);
+          lex_error (lexer, _("Syntax error expecting the name of a setting."));
           return CMD_FAILURE;
         }
 
