@@ -111,10 +111,15 @@ carl,2
 dan,3
 END DATA.
 UPDATE/FILE='x.sav'/FILE=*/RENAME(name=name2).
+UPDATE/xyzzy.
 ])
 AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
 "update.sps:15.1-15.46: error: UPDATE: Required subcommand BY was not specified.
    15 | UPDATE/FILE='x.sav'/FILE=*/RENAME(name=name2).
       | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+"update.sps:16.8-16.12: error: UPDATE: Syntax error expecting BY, MAP, DROP, or KEEP.
+   16 | UPDATE/xyzzy.
+      |        ^~~~~"
 ])
 AT_CLEANUP
