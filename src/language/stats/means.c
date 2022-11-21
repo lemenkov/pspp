@@ -31,6 +31,7 @@
 #include "libpspp/pool.h"
 
 #include "language/command.h"
+#include "language/lexer/lexer.h"
 
 #include "count-one-bits.h"
 #include "count-leading-zeros.h"
@@ -234,7 +235,7 @@ dump_cell (const struct cell *cell, const struct mtable *mt, int level)
 static void
 dump_indeces (const size_t *indexes, int n)
 {
-  for (int i = 0 ; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     {
       printf ("%ld; ", indexes[i]);
     }
@@ -601,7 +602,7 @@ create_table_structure (const struct mtable *mt, struct pivot_table *pt,
   int * lindexes = ws->control_idx;
   /* The inner layers are situated rightmost in the table.
      So this iteration is in reverse order.  */
-  for (int l = mt->n_layers -1; l >=0 ; --l)
+  for (int l = mt->n_layers - 1; l >= 0; --l)
     {
       const struct layer *layer = mt->layers[l];
       const struct cell_container *instances = ws->instances + l;
@@ -1102,28 +1103,18 @@ run_means (struct means *cmd, struct casereader *input,
   post_means (cmd);
 }
 
-struct lexer;
-
 int
 cmd_means (struct lexer *lexer, struct dataset *ds)
 {
-  struct means means;
-  means.pool = pool_create ();
+  struct means means = {
+    .pool = pool_create (),
+    .ctrl_exclude = MV_ANY,
+    .dep_exclude = MV_ANY,
+    .dict = dataset_dict (ds),
+  };
+  means_set_default_statistics (&means);
 
-  means.ctrl_exclude = MV_ANY;
-  means.dep_exclude = MV_ANY;
-  means.table = NULL;
-  means.n_tables = 0;
-
-  means.dict = dataset_dict (ds);
-
-  means.n_statistics = 3;
-  means.statistics = pool_calloc (means.pool, 3, sizeof *means.statistics);
-  means.statistics[0] = MEANS_MEAN;
-  means.statistics[1] = MEANS_N;
-  means.statistics[2] = MEANS_STDDEV;
-
-  if (! means_parse (lexer, &means))
+  if (!means_parse (lexer, &means))
     goto error;
 
   /* Calculate some constant data for each table.  */
@@ -1135,62 +1126,58 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	mt->n_combinations *= mt->layers[l]->n_factor_vars;
     }
 
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
-
-    grouper = casegrouper_create_splits (proc_open (ds), means.dict);
-    while (casegrouper_get_next_group (grouper, &group))
-      {
-	/* Allocate the workspaces.  */
-	for (int t = 0; t < means.n_tables; ++t)
+  struct casegrouper *grouper
+    = casegrouper_create_splits (proc_open (ds), means.dict);
+  struct casereader *group;
+  while (casegrouper_get_next_group (grouper, &group))
+    {
+      /* Allocate the workspaces.  */
+      for (int t = 0; t < means.n_tables; ++t)
 	{
 	  struct mtable *mt = means.table + t;
 	  mt->summ = xcalloc (mt->n_combinations * mt->n_dep_vars,
-			      sizeof (*mt->summ));
-	  mt->ws = xcalloc (mt->n_combinations, sizeof (*mt->ws));
+			      sizeof *mt->summ);
+	  mt->ws = xcalloc (mt->n_combinations, sizeof *mt->ws);
 	}
-      	run_means (&means, group, ds);
-	for (int t = 0; t < means.n_tables; ++t)
-	  {
-	    const struct mtable *mt = means.table + t;
+      run_means (&means, group, ds);
+      for (int t = 0; t < means.n_tables; ++t)
+        {
+          const struct mtable *mt = means.table + t;
 
-	    means_case_processing_summary (mt);
-	    means_shipout (mt, &means);
+          means_case_processing_summary (mt);
+          means_shipout (mt, &means);
 
-	    for (int i = 0; i < mt->n_combinations; ++i)
-	      {
-		struct workspace *ws = mt->ws + i;
-		if (ws->root_cell == NULL)
-		  continue;
+          for (int i = 0; i < mt->n_combinations; ++i)
+            {
+              struct workspace *ws = mt->ws + i;
+              if (ws->root_cell)
+                means_destroy_cells (&means, ws->root_cell, mt);
+            }
+        }
 
-		means_destroy_cells (&means, ws->root_cell, mt);
-	      }
-	  }
+      /* Destroy the workspaces.  */
+      for (int t = 0; t < means.n_tables; ++t)
+        {
+          struct mtable *mt = means.table + t;
+          free (mt->summ);
+          for (int i = 0; i < mt->n_combinations; ++i)
+            {
+              struct workspace *ws = mt->ws + i;
+              destroy_workspace (mt, ws);
+            }
+          free (mt->ws);
+        }
+    }
 
-	/* Destroy the workspaces.  */
-	for (int t = 0; t < means.n_tables; ++t)
-	  {
-	    struct mtable *mt = means.table + t;
-	    free (mt->summ);
-	    for (int i = 0; i < mt->n_combinations; ++i)
-	      {
-		struct workspace *ws = mt->ws + i;
-		destroy_workspace (mt, ws);
-	      }
-	    free (mt->ws);
-	  }
-      }
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
+  bool ok = casegrouper_destroy (grouper);
+  ok = proc_commit (ds) && ok;
+  if (!ok)
+    goto error;
 
   pool_destroy (means.pool);
   return CMD_SUCCESS;
 
  error:
-
   pool_destroy (means.pool);
   return CMD_FAILURE;
 }

@@ -73,52 +73,67 @@ static bool
 lex_is_variable (struct lexer *lexer, const struct dictionary *dict,
 		 int n)
 {
-  const char *tstr;
-  if (lex_next_token (lexer, n) !=  T_ID)
+  if (lex_next_token (lexer, n) != T_ID)
     return false;
 
-  tstr = lex_next_tokcstr (lexer, n);
+  const char *tstr = lex_next_tokcstr (lexer, n);
+  return dict_lookup_var (dict, tstr) != NULL;
+}
 
-  if (NULL == dict_lookup_var (dict, tstr))
-    return false;
+static const struct cell_spec *
+match_cell (struct lexer *lexer)
+{
+  for (size_t i = 0; i < n_MEANS_STATISTICS; ++i)
+    {
+      const struct cell_spec *cs = &cell_spec[i];
+      if (lex_match_id (lexer, cs->keyword))
+        return cs;
+    }
+  return NULL;
+}
 
-  return true;
+static void
+add_statistic (struct means *means, int statistic)
+{
+  if (means->n_statistics >= means->allocated_statistics)
+    means->statistics = pool_2nrealloc (means->pool, means->statistics,
+                                        &means->allocated_statistics,
+                                        sizeof *means->statistics);
+  means->statistics[means->n_statistics++] = statistic;
+}
+
+void
+means_set_default_statistics (struct means *means)
+{
+  means->n_statistics = 0;
+  add_statistic (means, MEANS_MEAN);
+  add_statistic (means, MEANS_N);
+  add_statistic (means, MEANS_STDDEV);
 }
 
 bool
 means_parse (struct lexer *lexer, struct means *means)
 {
-  /*   Optional TABLES =   */
-  if (lex_match_id (lexer, "TABLES"))
-    {
-      if (! lex_force_match (lexer, T_EQUALS))
-	return false;
-    }
+  /* Optional TABLES=. */
+  if (lex_match_id (lexer, "TABLES") && !lex_force_match (lexer, T_EQUALS))
+    return false;
 
-  bool more_tables = true;
   /* Parse the "tables" */
-  while (more_tables)
+  for (;;)
     {
       means->table = pool_realloc (means->pool, means->table,
-				   (means->n_tables + 1) * sizeof (*means->table));
+				   (means->n_tables + 1) * sizeof *means->table);
 
-      if (! parse_means_table_syntax (lexer, means,
-				      &means->table[means->n_tables]))
-	{
-	  return false;
-	}
-      means->n_tables ++;
+      if (!parse_means_table_syntax (lexer, means,
+                                     &means->table[means->n_tables]))
+        return false;
+      means->n_tables++;
 
       /* Look ahead to see if there are more tables to be parsed */
-      more_tables = false;
-      if (T_SLASH == lex_next_token (lexer, 0))
-	{
-	  if (lex_is_variable (lexer, means->dict, 1))
-	    {
-	      more_tables = true;
-	      lex_match (lexer, T_SLASH);
-	    }
-	}
+      if (lex_next_token (lexer, 0) != T_SLASH
+          || !lex_is_variable (lexer, means->dict, 1))
+        break;
+      lex_match (lexer, T_SLASH);
     }
 
   /* /MISSING subcommand */
@@ -128,43 +143,36 @@ means_parse (struct lexer *lexer, struct means *means)
 
       if (lex_match_id (lexer, "MISSING"))
 	{
-	  /*
-	    If no MISSING subcommand is specified, each combination of
-	    a dependent variable and categorical variables is handled
-	    separately.
-	  */
+	  /* If no MISSING subcommand is specified, each combination of a
+             dependent variable and categorical variables is handled
+             separately. */
 	  lex_match (lexer, T_EQUALS);
 	  if (lex_match_id (lexer, "INCLUDE"))
 	    {
-	      /*
-		Use the subcommand  "/MISSING=INCLUDE" to include user-missing
-		values in the analysis.
-	      */
+	      /* Use the subcommand "/MISSING=INCLUDE" to include user-missing
+                 values in the analysis. */
 
 	      means->ctrl_exclude = MV_SYSTEM;
 	      means->dep_exclude = MV_SYSTEM;
 	    }
 	  else if (lex_match_id (lexer, "DEPENDENT"))
-	    /*
-	      Use the command "/MISSING=DEPENDENT" to
-	      include user-missing values for the categorical variables,
-	      while excluding them for the dependent variables.
+	    /* Use the command "/MISSING=DEPENDENT" to include user-missing
+               values for the categorical variables, while excluding them for
+               the dependent variables.
 
-	      Cases are dropped only when user-missing values
-	      appear in dependent  variables.  User-missing
-	      values for categorical variables are treated according to
-	      their face value.
+               Cases are dropped only when user-missing values appear in
+               dependent variables.  User-missing values for categorical
+               variables are treated according to their face value.
 
-	      Cases are ALWAYS dropped when System Missing values appear
-	      in the categorical variables.
-	    */
+               Cases are ALWAYS dropped when System Missing values appear in
+               the categorical variables. */
 	    {
 	      means->dep_exclude = MV_ANY;
 	      means->ctrl_exclude = MV_SYSTEM;
 	    }
 	  else
 	    {
-	      lex_error (lexer, NULL);
+	      lex_error_expecting (lexer, "INCLUDE", "DEPENDENT");
 	      return false;
 	    }
 	}
@@ -174,63 +182,30 @@ means_parse (struct lexer *lexer, struct means *means)
 
 	  /* The default values become overwritten */
 	  means->n_statistics = 0;
-	  pool_free (means->pool, means->statistics);
-	  means->statistics = 0;
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
+	  while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match (lexer, T_ALL))
 	      	{
-		  pool_free (means->pool, means->statistics);
-		  means->statistics = pool_calloc (means->pool,
-						   n_MEANS_STATISTICS,
-						   sizeof (*means->statistics));
-		  means->n_statistics = n_MEANS_STATISTICS;
-		  int i;
-		  for (i = 0; i < n_MEANS_STATISTICS; ++i)
-		    {
-		      means->statistics[i] = i;
-		    }
+		  means->n_statistics = 0;
+		  for (int i = 0; i < n_MEANS_STATISTICS; ++i)
+                    add_statistic (means, i);
 	      	}
 	      else if (lex_match_id (lexer, "NONE"))
-		{
-		  means->n_statistics = 0;
-		  pool_free (means->pool, means->statistics);
-		  means->statistics = 0;
-		}
+                means->n_statistics = 0;
 	      else if (lex_match_id (lexer, "DEFAULT"))
+                means_set_default_statistics (means);
+              else
 		{
-		  pool_free (means->pool, means->statistics);
-		  means->statistics = pool_calloc (means->pool,
-						   3,
-						   sizeof *means->statistics);
-		  means->statistics[0] = MEANS_MEAN;
-		  means->statistics[1] = MEANS_N;
-		  means->statistics[2] = MEANS_STDDEV;
-		}
-	      else
-		{
-		  int i;
-		  for (i = 0; i < n_MEANS_STATISTICS; ++i)
+                  const struct cell_spec *cs = match_cell (lexer);
+                  if (cs)
+                    add_statistic (means, cs - cell_spec);
+                  else
 		    {
-		      const struct cell_spec *cs = cell_spec + i;
-		      if (lex_match_id (lexer, cs->keyword))
-			{
-			  means->statistics
-			    = pool_realloc (means->pool,
-					   means->statistics,
-					   (means->n_statistics + 1)
-					   * sizeof (*means->statistics));
-
-			  means->statistics[means->n_statistics] = i;
-			  means->n_statistics++;
-			  break;
-			}
-		    }
-
-		  if (i >= n_MEANS_STATISTICS)
-		    {
-		      lex_error (lexer, NULL);
+                      const char *keywords[n_MEANS_STATISTICS];
+                      for (int i = 0; i < n_MEANS_STATISTICS; ++i)
+                        keywords[i] = cell_spec[i].keyword;
+		      lex_error_expecting_array (lexer, keywords,
+                                                 n_MEANS_STATISTICS);
 		      return false;
 		    }
 		}
@@ -238,7 +213,7 @@ means_parse (struct lexer *lexer, struct means *means)
 	}
       else
 	{
-	  lex_error (lexer, NULL);
+	  lex_error_expecting (lexer, "MISSING", "CELLS");
 	  return false;
 	}
     }

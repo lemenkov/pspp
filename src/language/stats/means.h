@@ -21,6 +21,10 @@
 #include "libpspp/bt.h"
 #include "libpspp/compiler.h"
 
+struct casereader;
+struct dataset;
+struct lexer;
+
 struct cell_container
 {
   /* A hash table containing the cells.  The table is indexed by a hash
@@ -127,6 +131,7 @@ struct means
   /* The statistics to be calculated for each cell.  */
   int *statistics;
   int n_statistics;
+  size_t allocated_statistics;
 
   /* Pool on which cell functions may allocate data.  */
   struct pool *pool;
@@ -148,15 +153,8 @@ enum
     MEANS_STDDEV
   };
 
-
-
-struct dataset;
-struct casereader;
-void run_means (struct means *cmd, struct casereader *input, const struct dataset *ds UNUSED);
-
-struct lexer;
-bool means_parse (struct lexer *lexer, struct means *means);
-
-
+void run_means (struct means *, struct casereader *, const struct dataset *);
+bool means_parse (struct lexer *, struct means *);
+void means_set_default_statistics (struct means *);
 
 #endif
