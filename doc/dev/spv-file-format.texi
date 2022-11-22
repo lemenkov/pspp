@@ -1547,7 +1547,7 @@ X3 =>
     double[small] 01
     (string[dataset] string[datafile] i0 int32[date] i0)?
     Y2
-    (int32[x22] i0)?
+    (int32[x22] i0 01?)?
 @end example
 
 @code{small} is a small real number.  In the corpus, it overwhelmingly
