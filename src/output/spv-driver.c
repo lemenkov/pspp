@@ -62,6 +62,7 @@ spv_create (struct file_handle *fh, enum settings_output_devices device_type,
   if (spv->writer == NULL)
     {
       msg (ME, "%s", error);
+      free (error);
       goto error;
     }
 
