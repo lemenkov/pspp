@@ -1,4 +1,4 @@
 GET FILE='nhtsa.sav'.
 CTABLES
-    /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT]
+    /TABLE ageGroup BY gender [ROWPCT, COLPCT]
     /CLABELS COLLABELS=OPPOSITE.

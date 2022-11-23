@@ -1,4 +1,4 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE (qn105ba + qn105bb) [COLPCT].
-CTABLES /TABLE (qn105ba + qn105bb) [ROWPCT]
+CTABLES /TABLE (likelihoodOfBeingStoppedByPolice + likelihoodOfHavingAnAccident) [COLPCT].
+CTABLES /TABLE (likelihoodOfBeingStoppedByPolice + likelihoodOfHavingAnAccident) [ROWPCT]
   /CLABELS ROW=OPPOSITE.

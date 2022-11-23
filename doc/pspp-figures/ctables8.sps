@@ -1,2 +1,2 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE qns3a > qnd1 BY lang.
+CTABLES /TABLE gender > age BY lang.

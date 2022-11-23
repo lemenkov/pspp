@@ -1,3 +1,3 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE qn1.
-CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [1, 2, 3].
+CTABLES /TABLE freqOfDriving.
+CTABLES /TABLE freqOfDriving /CATEGORIES VARIABLES=freqOfDriving [1, 2, 3].

@@ -316,6 +316,7 @@ EXTRA_DIST += \
 	tests/language/data-io/test.ods \
 	tests/language/data-io/newone.ods \
 	tests/language/data-io/readnames.ods \
+	tests/language/stats/nhtsa.sav \
 	tests/language/stats/llz.zsav \
 	tests/utilities/regress.spv
 

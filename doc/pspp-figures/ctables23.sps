@@ -1,2 +1,2 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT].
+CTABLES /TABLE ageGroup BY gender [ROWPCT, COLPCT].

@@ -1,2 +1,2 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE=AgeGroup.
+CTABLES /TABLE=ageGroup.

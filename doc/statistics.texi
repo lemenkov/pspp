@@ -999,7 +999,7 @@ This section's examples use data from the 2008 (USA) National Survey
 of Drinking and Driving Attitudes and Behaviors, a public domain data
 set from the (USA) National Highway Traffic Administration and
 available at @url{https://data.transportation.gov}.  @pspp{} includes
-this data set, with a slightly modified dictionary, as
+this data set, with a modified dictionary, as
 @file{examples/nhtsa.sav}.
 
 @node CTABLES Basics
@@ -1026,7 +1026,7 @@ variable yields a frequency table, much like the output of the
 @code{FREQUENCIES} command (@pxref{FREQUENCIES}):
 
 @example
-CTABLES /TABLE=AgeGroup.
+CTABLES /TABLE=ageGroup.
 @end example
 @psppoutput {ctables1}
 
@@ -1036,7 +1036,7 @@ crosstabulation, much like the output of the @code{CROSSTABS} command
 (@pxref{CROSSTABS}):
 
 @example
-CTABLES /TABLE=AgeGroup BY qns3a.
+CTABLES /TABLE=ageGroup BY gender.
 @end example
 @psppoutput {ctables2}
 
@@ -1045,7 +1045,7 @@ The @samp{>} ``nesting'' operator nests multiple variables on a single
 axis, e.g.:
 
 @example
-CTABLES /TABLE qn105ba BY AgeGroup > qns3a.
+CTABLES /TABLE likelihoodOfBeingStoppedByPolice BY ageGroup > gender.
 @end example
 @psppoutput {ctables3}
 
@@ -1057,7 +1057,7 @@ an analysis of the full data set.  For example, the following command
 separately tabulates age group and driving frequency by gender:
 
 @example
-CTABLES /TABLE AgeGroup + qn1 BY qns3a.
+CTABLES /TABLE ageGroup + freqOfDriving BY gender.
 @end example
 @psppoutput {ctables4}
 
@@ -1066,8 +1066,8 @@ When @samp{+} and @samp{>} are used together, @samp{>} binds more
 tightly.  Use parentheses to override operator precedence.  Thus:
 
 @example
-CTABLES /TABLE qn26 + qn27 > qns3a.
-CTABLES /TABLE (qn26 + qn27) > qns3a.
+CTABLES /TABLE hasConsideredReduction + hasBeenCriticized > gender.
+CTABLES /TABLE (hasConsideredReduction + hasBeenCriticized) > gender.
 @end example
 @psppoutput {ctables5}
 
@@ -1082,7 +1082,7 @@ scalar variable, then the output is a single cell that holds the mean
 of all of the data:
 
 @example
-CTABLES /TABLE qnd1.
+CTABLES /TABLE age.
 @end example
 @psppoutput {ctables6}
 
@@ -1091,7 +1091,7 @@ example shows the mean age of survey respondents across gender and
 language groups:
 
 @example
-CTABLES /TABLE qns3a > qnd1 BY region.
+CTABLES /TABLE gender > age BY region.
 @end example
 @psppoutput {ctables7}
 
@@ -1101,7 +1101,7 @@ following example shows how the output changes when the nesting order
 of the scalar and categorical variable are interchanged:
 
 @example
-CTABLES /TABLE qnd1 > qns3a BY region.
+CTABLES /TABLE age > gender BY region.
 @end example
 @psppoutput {ctables8}
 
@@ -1129,13 +1129,13 @@ variable's measurement level (@pxref{VARIABLE LEVEL}).
 To treat a variable as categorical or scalar only for one use on
 @code{CTABLES}, add @samp{[C]} or @samp{[S]}, respectively, after the
 variable name.  The following example shows the output when variable
-@code{qn20} is analyzed as scalar (the default for its measurement
+@code{monthDaysMin1drink} is analyzed as scalar (the default for its measurement
 level) and as categorical:
 
 @example
 CTABLES
-    /TABLE qn20 BY qns3a
-    /TABLE qn20 [C] BY qns3a.
+    /TABLE monthDaysMin1drink BY gender
+    /TABLE monthDaysMin1drink [C] BY gender.
 @end example
 @psppoutput {ctables9}
 
@@ -1165,8 +1165,8 @@ scalar variable:
 
 @example
 CTABLES
-    /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a
-    /TABLE=AgeGroup [COLPCT, ROWPCT] BY qns3a.
+    /TABLE=age [MEAN, MEDIAN] BY gender
+    /TABLE=ageGroup [COLPCT, ROWPCT] BY gender.
 @end example
 @psppoutput {ctables10}
 
@@ -1175,9 +1175,9 @@ appending a string or format specification or both (in that order) to
 the summary function name.  For example:
 
 @example
-CTABLES /TABLE=AgeGroup [COLPCT 'Gender %' PCT5.0,
+CTABLES /TABLE=ageGroup [COLPCT 'Gender %' PCT5.0,
                          ROWPCT 'Age Group %' PCT5.0]
-               BY qns3a.
+               BY gender.
 @end example
 @psppoutput {ctables11}
 
@@ -1210,8 +1210,8 @@ Parentheses provide a shorthand to apply summary specifications to
 multiple variables.  For example, both of these commands:
 
 @example
-CTABLES /TABLE=AgeGroup[COLPCT] + qns1[COLPCT] BY qns3a.
-CTABLES /TABLE=(AgeGroup + qns1)[COLPCT] BY qns3a.
+CTABLES /TABLE=ageGroup[COLPCT] + membersOver16[COLPCT] BY gender.
+CTABLES /TABLE=(ageGroup + membersOver16)[COLPCT] BY gender.
 @end example
 
 @noindent
@@ -1331,13 +1331,16 @@ A @dfn{subtable}, whose contents are the cells that pair an innermost
 row variable and an innermost column variable within a single layer.
 @end table
 
-The following shows how the output for the table expression @code{qn61
-> qn57 BY qnd7a > qn86 + qn64b BY qns3a}@footnote{This is not
-necessarily a meaningful table, so for clarity variable labels are
-omitted.} is divided up into @code{TABLE}, @code{LAYER}, and
-@code{SUBTABLE} areas.  Each unique value for Table ID is one section,
-and similarly for Layer ID and Subtable ID.  Thus, this output has two
-@code{TABLE} areas (one for @code{qnd7a} and one for @code{qn64b}),
+The following shows how the output for the table expression
+@code{hasBeenPassengerOfDesignatedDriver >
+hasBeenPassengerOfDrunkDriver BY isLicensedDriver >
+hasHostedEventWithAlcohol + hasBeenDesignatedDriver BY
+gender}@footnote{This is not necessarily a meaningful table.  To make
+it easier to read, short variable labels are used.} is divided up into
+@code{TABLE}, @code{LAYER}, and @code{SUBTABLE} areas.  Each unique
+value for Table ID is one section, and similarly for Layer ID and
+Subtable ID.  Thus, this output has two @code{TABLE} areas (one for
+@code{isLicensedDriver} and one for @code{hasBeenDesignatedDriver}),
 four @code{LAYER} areas (for those two variables, per layer), and 12
 @code{SUBTABLE} areas.
 @psppoutput {ctables22}
@@ -1472,7 +1475,7 @@ With @t{POSITION=COLUMN}, which is the default, each summary statistic
 appears in a column.  For example:
 
 @example
-CTABLES /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a.
+CTABLES /TABLE=age [MEAN, MEDIAN] BY gender.
 @end example
 @psppoutput {ctables13}
 
@@ -1481,7 +1484,7 @@ With @t{POSITION=ROW}, each summary statistic appears in a row, as
 shown below:
 
 @example
-CTABLES /TABLE=qnd1 [MEAN, MEDIAN] BY qns3a /SLABELS POSITION=ROW.
+CTABLES /TABLE=age [MEAN, MEDIAN] BY gender /SLABELS POSITION=ROW.
 @end example
 @psppoutput {ctables14}
 
@@ -1495,7 +1498,7 @@ confusion, it should only be considered if the meaning of the data is
 evident, as in a simple case like this:
 
 @example
-CTABLES /TABLE=AgeGroup [TABLEPCT] /SLABELS VISIBLE=NO.
+CTABLES /TABLE=ageGroup [TABLEPCT] /SLABELS VISIBLE=NO.
 @end example
 @psppoutput {ctables15}
 
@@ -1515,7 +1518,7 @@ variable on the rows axis and gender categories within the gender
 variable on the columns axis:
 
 @example
-CTABLES /TABLE AgeGroup BY qns3a.
+CTABLES /TABLE ageGroup BY gender.
 @end example
 @psppoutput {ctables16}
 
@@ -1525,8 +1528,8 @@ setting affects only the innermost variable or variables, which must
 be categorical, on the given axis.  For example:
 
 @example
-CTABLES /TABLE AgeGroup BY qns3a /CLABELS ROWLABELS=OPPOSITE.
-CTABLES /TABLE AgeGroup BY qns3a /CLABELS COLLABELS=OPPOSITE.
+CTABLES /TABLE ageGroup BY gender /CLABELS ROWLABELS=OPPOSITE.
+CTABLES /TABLE ageGroup BY gender /CLABELS COLLABELS=OPPOSITE.
 @end example
 @psppoutput {ctables17}
 
@@ -1546,7 +1549,7 @@ change the definitions of these areas.
 For example, consider the following syntax and output:
 
 @example
-CTABLES /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT].
+CTABLES /TABLE ageGroup BY gender [ROWPCT, COLPCT].
 @end example
 @psppoutput {ctables23}
 
@@ -1558,7 +1561,7 @@ there is only one cell per row):
 
 @example
 CTABLES
-    /TABLE AgeGroup BY qns3a [ROWPCT, COLPCT]
+    /TABLE ageGroup BY gender [ROWPCT, COLPCT]
     /CLABELS COLLABELS=OPPOSITE.
 @end example
 @psppoutput {ctables24}
@@ -1574,8 +1577,10 @@ The following shows both moving stacked category variables and
 adapting to the changing definitions of rows and columns:
 
 @example
-CTABLES /TABLE (qn105ba + qn105bb) [COLPCT].
-CTABLES /TABLE (qn105ba + qn105bb) [ROWPCT]
+CTABLES /TABLE (likelihoodOfBeingStoppedByPolice
+                + likelihoodOfHavingAnAccident) [COLPCT].
+CTABLES /TABLE (likelihoodOfBeingStoppedByPolice
+                + likelihoodOfHavingAnAccident) [ROWPCT]
   /CLABELS ROW=OPPOSITE.
 @end example
 @psppoutput {ctables25}
@@ -1663,8 +1668,8 @@ The following example syntax and output show how an explicit category
 can limit the displayed categories:
 
 @example
-CTABLES /TABLE qn1.
-CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [1, 2, 3].
+CTABLES /TABLE freqOfDriving.
+CTABLES /TABLE freqOfDriving /CATEGORIES VARIABLES=freqOfDriving [1, 2, 3].
 @end example
 @psppoutput {ctables27}
 
@@ -1681,10 +1686,10 @@ also be sorted by value label, with @code{KEY=LABEL}, or by the value
 of a summary function, e.g.@: @code{KEY=COUNT}.
 @ignore  @c Not yet implemented
 For summary functions, a variable name may be specified in
-parentheses, e.g.@: @code{KEY=MAXIUM(qnd1)}, and this is required for
+parentheses, e.g.@: @code{KEY=MAXIUM(age)}, and this is required for
 functions that apply only to scalar variables.  The @code{PTILE}
 function also requires a percentage argument, e.g.@:
-@code{KEY=PTILE(qnd1, 90)}.  Only summary functions used in the table
+@code{KEY=PTILE(age, 90)}.  Only summary functions used in the table
 may be used, except that @code{COUNT} is always allowed.
 @end ignore
 
@@ -1700,8 +1705,9 @@ The following example syntax and output show how
 category list.
 
 @example
-CTABLES /TABLE qn1.
-CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 MISSING=INCLUDE.
+CTABLES /TABLE freqOfDriving.
+CTABLES /TABLE freqOfDriving
+        /CATEGORIES VARIABLES=freqOfDriving MISSING=INCLUDE.
 @end example
 @psppoutput {ctables28}
 
@@ -1727,10 +1733,10 @@ The following example syntax and output show how to use
 
 @example
 CTABLES
-    /TABLE qn1
-    /CATEGORIES VARIABLES=qn1 [OTHERNM, SUBTOTAL='Valid Total',
-                               MISSING, SUBTOTAL='Missing Total']
-			      TOTAL=YES LABEL='Overall Total'.
+    /TABLE freqOfDriving
+    /CATEGORIES VARIABLES=freqOfDriving [OTHERNM, SUBTOTAL='Valid Total',
+                                         MISSING, SUBTOTAL='Missing Total']
+                                        TOTAL=YES LABEL='Overall Total'.
 @end example
 @psppoutput {ctables29}
 
@@ -1747,7 +1753,7 @@ count, and valid count across all data by adding a total on the
 categorical @code{region} variable, as shown:
 
 @example
-CTABLES /TABLE=region > qn20 [MEAN, VALIDN]
+CTABLES /TABLE=region > monthDaysMin1drink [MEAN, VALIDN]
     /CATEGORIES VARIABLES=region TOTAL=YES LABEL='All regions'.
 @end example
 @psppoutput {ctables30}
@@ -1762,8 +1768,8 @@ for totals, as shown:
 
 @example
 CTABLES
-    /TABLE qnd7a [COUNT, TOTALS[COUNT, VALIDN]]
-    /CATEGORIES VARIABLES=qnd7a TOTAL=YES MISSING=INCLUDE.
+    /TABLE isLicensedDriver [COUNT, TOTALS[COUNT, VALIDN]]
+    /CATEGORIES VARIABLES=isLicensedDriver TOTAL=YES MISSING=INCLUDE.
 @end example
 @psppoutput {ctables26}
 
@@ -1783,12 +1789,12 @@ values with value labels that are covered by ranges or @code{MISSING}
 or @code{OTHERNM}.
 
 The following example syntax and output show the effect of
-@code{EMPTY=EXCLUDE} for the @code{qns1} variable, in which 0 is labeled
-``None'' but no cases exist with that value:
+@code{EMPTY=EXCLUDE} for the @code{membersOver16} variable, in which 0
+is labeled ``None'' but no cases exist with that value:
 
 @example
-CTABLES /TABLE=qns1.
-CTABLES /TABLE=qns1 /CATEGORIES VARIABLES=qns1 EMPTY=EXCLUDE.
+CTABLES /TABLE=membersOver16.
+CTABLES /TABLE=membersOver16 /CATEGORIES VARIABLES=membersOver16 EMPTY=EXCLUDE.
 @end example
 @psppoutput {ctables31}
 
@@ -2145,11 +2151,12 @@ CTABLES
     /PPROPERTIES &all_drivers LABEL='All Drivers'
     /PCOMPUTE &pct_never=EXPR([5] / ([1 THRU 2] + [3 THRU 4] + [5]) * 100)
     /PPROPERTIES &pct_never LABEL='% Not Drivers' FORMAT=COUNT PCT40.1
-    /TABLE=qn1 BY qns3a
-    /CATEGORIES VARIABLES=qn1 [1 THRU 2, SUBTOTAL='Frequent Drivers',
-                               3 THRU 4, SUBTOTAL='Infrequent Drivers',
-			       &all_drivers, 5, &pct_never,
-			       MISSING, SUBTOTAL='Not Drivers or Missing'].
+    /TABLE=freqOfDriving BY gender
+    /CATEGORIES VARIABLES=freqOfDriving
+                             [1 THRU 2, SUBTOTAL='Frequent Drivers',
+                              3 THRU 4, SUBTOTAL='Infrequent Drivers',
+                              &all_drivers, 5, &pct_never,
+                              MISSING, SUBTOTAL='Not Drivers or Missing'].
 @end example
 @psppoutput{ctables35}
 
@@ -2223,7 +2230,7 @@ The following syntax and example shows how to use
 @code{HIDESMALLCOUNTS}:
 
 @example
-CTABLES /HIDESMALLCOUNTS COUNT=10 /TABLE qn37.
+CTABLES /HIDESMALLCOUNTS COUNT=10 /TABLE placeOfLastDrinkBeforeDrive.
 @end example
 @psppoutput{ctables36}
 

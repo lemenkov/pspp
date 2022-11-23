@@ -1,2 +1,2 @@
 GET FILE='nhtsa.sav'.
-CTABLES /TABLE qnd1.
+CTABLES /TABLE age.

@@ -1,5 +1,12 @@
 GET FILE='nhtsa.sav'.
+VARIABLE LABELS
+   hasBeenPassengerOfDesignatedDriver 'desPas'
+   hasBeenPassengerOfDrunkDriver 'druPas'
+   isLicensedDriver 'licensed'
+   hasHostedEventWithAlcohol 'hostAlc'
+   hasBeenDesignatedDriver 'desDrv'.
 CTABLES
-    /VLABELS VARIABLES=ALL DISPLAY=NAME
-    /TABLE qn61 > qn57 BY qnd7a > qn86 + qn64b BY qns3a[TABLEID, LAYERID, SUBTABLEID]
+    /TABLE hasBeenPassengerOfDesignatedDriver > hasBeenPassengerOfDrunkDriver
+        BY isLicensedDriver > hasHostedEventWithAlcohol + hasBeenDesignatedDriver
+	BY gender[TABLEID, LAYERID, SUBTABLEID]
     /SLABELS POSITION=ROW.
