@@ -3303,13 +3303,14 @@ AT_DATA([ctables.sps],
 CTABLES
     /VLABELS VARIABLES=qn1 DISPLAY=NONE
     /TABLE ((qn1[c][COUNT])) BY qns3a[c] > qnd5
-    /TITLES TITLE='How often do you drive?'
+    /TITLES TITLE='How often do you drive?' 'second line of title'
             CAPTION='Generated )TIME on )DATE'
 	    CORNER=')TABLE'.
 ]])
 AT_CHECK([pspp ctables.sps -O box=unicode | sed 's/..:..:../HH:MM:SS/
 s&../../..&MM/DD/YY&'], [0], [dnl
                             How often do you drive?
+                              second line of title
 ╭───────────────────────────────────┬─────────────────────────────────────────╮
 │                                   │               S3a. GENDER:              │
 │                                   ├────────────────────┬────────────────────┤

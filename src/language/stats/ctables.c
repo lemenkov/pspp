@@ -6537,7 +6537,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
                   while (lex_is_string (lexer))
                     {
                       if (!ds_is_empty (&s))
-                        ds_put_byte (&s, ' ');
+                        ds_put_byte (&s, '\n');
                       put_title_text (&s, lex_tokss (lexer), now,
                                       lexer, dataset_dict (ds),
                                       expr_start, expr_end);
