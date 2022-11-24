@@ -1545,7 +1545,6 @@ struct ctables_categories
     size_t n_refs;
     struct ctables_category *cats;
     size_t n_cats;
-    bool show_empty;
   };
 
 struct ctables_category
@@ -1734,7 +1733,7 @@ static bool
 ctables_categories_equal (const struct ctables_categories *a,
                           const struct ctables_categories *b)
 {
-  if (a->n_cats != b->n_cats || a->show_empty != b->show_empty)
+  if (a->n_cats != b->n_cats)
     return false;
 
   for (size_t i = 0; i < a->n_cats; i++)
@@ -2995,6 +2994,7 @@ struct ctables_table
     /* Indexed by variable dictionary index. */
     struct ctables_categories **categories;
     size_t n_categories;
+    bool *show_empty;
 
     double cilevel;
 
@@ -3504,8 +3504,9 @@ ctables_sort_clabels_values (struct ctables_table *t)
   const struct variable *v0 = t->clabels_example;
   int width = var_get_width (v0);
 
-  struct ctables_categories *c0 = t->categories[var_get_dict_index (v0)];
-  if (c0->show_empty)
+  size_t i0 = var_get_dict_index (v0);
+  struct ctables_categories *c0 = t->categories[i0];
+  if (t->show_empty[i0])
     {
       const struct val_labs *val_labs = var_get_value_labels (v0);
       for (const struct val_lab *vl = val_labs_first (val_labs); vl;
@@ -3954,6 +3955,7 @@ ctables_table_destroy (struct ctables_table *t)
   for (size_t i = 0; i < t->n_categories; i++)
     ctables_categories_unref (t->categories[i]);
   free (t->categories);
+  free (t->show_empty);
 
   for (enum pivot_axis_type a = 0; a < PIVOT_N_AXES; a++)
     {
@@ -4063,20 +4065,16 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
            & (FMT_CAT_DATE | FMT_CAT_TIME | FMT_CAT_DATE_COMPONENT)));
 
   struct ctables_categories *c = xmalloc (sizeof *c);
-  *c = (struct ctables_categories) { .n_refs = n_vars, .show_empty = true };
-  for (size_t i = 0; i < n_vars; i++)
-    {
-      struct ctables_categories **cp
-        = &t->categories[var_get_dict_index (vars[i])];
-      ctables_categories_unref (*cp);
-      *cp = c;
-    }
+  *c = (struct ctables_categories) { .n_refs = 1 };
+
+  bool set_categories = false;
 
   size_t allocated_cats = 0;
   int cats_start_ofs = -1;
   int cats_end_ofs = -1;
   if (lex_match (lexer, T_LBRACK))
     {
+      set_categories = true;
       cats_start_ofs = lex_ofs (lexer);
       do
         {
@@ -4110,6 +4108,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
     {
       if (!c->n_cats && lex_match_id (lexer, "ORDER"))
         {
+          set_categories = true;
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "A"))
             cat.sort_ascending = true;
@@ -4123,6 +4122,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
         }
       else if (!c->n_cats && lex_match_id (lexer, "KEY"))
         {
+          set_categories = true;
           key_start_ofs = lex_ofs (lexer) - 1;
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "VALUE"))
@@ -4172,6 +4172,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
         }
       else if (!c->n_cats && lex_match_id (lexer, "MISSING"))
         {
+          set_categories = true;
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "INCLUDE"))
             cat.include_missing = true;
@@ -4185,6 +4186,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
         }
       else if (lex_match_id (lexer, "TOTAL"))
         {
+          set_categories = true;
           lex_match (lexer, T_EQUALS);
           if (!parse_bool (lexer, &show_totals))
             goto error;
@@ -4214,15 +4216,20 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
       else if (lex_match_id (lexer, "EMPTY"))
         {
           lex_match (lexer, T_EQUALS);
+
+          bool show_empty;
           if (lex_match_id (lexer, "INCLUDE"))
-            c->show_empty = true;
+            show_empty = true;
           else if (lex_match_id (lexer, "EXCLUDE"))
-            c->show_empty = false;
+            show_empty = false;
           else
             {
               lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
               goto error;
             }
+
+          for (size_t i = 0; i < n_vars; i++)
+            t->show_empty[var_get_dict_index (vars[i])] = show_empty;
         }
       else
         {
@@ -4392,10 +4399,22 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
         }
     }
 
+  if (set_categories)
+    for (size_t i = 0; i < n_vars; i++)
+      {
+        struct ctables_categories **cp
+          = &t->categories[var_get_dict_index (vars[i])];
+        ctables_categories_unref (*cp);
+        *cp = c;
+        c->n_refs++;
+      }
+
+  ctables_categories_unref (c);
   free (vars);
   return true;
 
 error:
+  ctables_categories_unref (c);
   free (vars);
   return false;
 }
@@ -5472,9 +5491,9 @@ ctables_section_add_empty_categories (struct ctables_section *s)
         if (k != s->nests[a]->scale_idx)
           {
             const struct variable *var = s->nests[a]->vars[k];
-            const struct ctables_categories *cats = s->table->categories[
-              var_get_dict_index (var)];
-            if (cats->show_empty)
+            size_t idx = var_get_dict_index (var);
+            const struct ctables_categories *cats = s->table->categories[idx];
+            if (s->table->show_empty[idx])
               {
                 show_empty = true;
                 ctables_add_category_occurrences (var, &s->occurrences[a][k], cats);
@@ -6260,13 +6279,15 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
         .n_refs = n_vars,
         .cats = cat,
         .n_cats = 1,
-        .show_empty = true,
       };
 
       struct ctables_categories **categories = xnmalloc (n_vars,
                                                          sizeof *categories);
       for (size_t i = 0; i < n_vars; i++)
         categories[i] = c;
+
+      bool *show_empty = xmalloc (n_vars);
+      memset (show_empty, true, n_vars);
 
       struct ctables_table *t = xmalloc (sizeof *t);
       *t = (struct ctables_table) {
@@ -6283,6 +6304,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
         .clabels_to_axis = PIVOT_AXIS_LAYER,
         .categories = categories,
         .n_categories = n_vars,
+        .show_empty = show_empty,
         .cilevel = 95,
       };
       ct->tables[ct->n_tables++] = t;

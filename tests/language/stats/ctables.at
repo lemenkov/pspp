@@ -1234,6 +1234,67 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 ])
 AT_CLEANUP
 
+AT_SETUP([CTABLES categories and EMPTY])
+AT_CHECK([ln $top_srcdir/tests/language/stats/nhtsa.sav . || cp $top_srcdir/tests/language/stats/nhtsa.sav .])
+AT_DATA([ctables.sps],
+DATA LIST LIST NOTABLE /class datum size.
+BEGIN DATA
+1 1 1
+2 2 1
+1 3 1
+2 4 2
+1 5 2
+2 6 2
+END DATA.
+VARIABLE LEVEL class datum size (NOMINAL).
+FORMATS class datum size (F1.0).
+
+* The following are the same except for the order of the CATEGORIES commands.
+* The test checks that they produce the same resuls.
+CTABLES /TABLE=class > datum BY size
+   /CATEGORIES VARIABLES=ALL EMPTY=EXCLUDE
+   /CATEGORIES VARIABLES=size TOTAL=YES.
+CTABLES /TABLE=class > datum BY size
+   /CATEGORIES VARIABLES=size TOTAL=YES
+   /CATEGORIES VARIABLES=ALL EMPTY=EXCLUDE.
+])
+AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
+           Custom Tables
+╭───────────────┬─────────────────╮
+│               │       size      │
+│               ├─────┬─────┬─────┤
+│               │  1  │  2  │Total│
+│               ├─────┼─────┼─────┤
+│               │Count│Count│Count│
+├───────────────┼─────┼─────┼─────┤
+│class 1 datum 1│    1│     │    1│
+│              3│    1│     │    1│
+│              5│     │    1│    1│
+│     ╶─────────┼─────┼─────┼─────┤
+│      2 datum 2│    1│     │    1│
+│              4│     │    1│    1│
+│              6│     │    1│    1│
+╰───────────────┴─────┴─────┴─────╯
+
+           Custom Tables
+╭───────────────┬─────────────────╮
+│               │       size      │
+│               ├─────┬─────┬─────┤
+│               │  1  │  2  │Total│
+│               ├─────┼─────┼─────┤
+│               │Count│Count│Count│
+├───────────────┼─────┼─────┼─────┤
+│class 1 datum 1│    1│     │    1│
+│              3│    1│     │    1│
+│              5│     │    1│    1│
+│     ╶─────────┼─────┼─────┼─────┤
+│      2 datum 2│    1│     │    1│
+│              4│     │    1│    1│
+│              6│     │    1│    1│
+╰───────────────┴─────┴─────┴─────╯
+])
+AT_CLEANUP
+
 AT_SETUP([CTABLES sorting categories])
 AT_CHECK([ln $top_srcdir/tests/language/stats/nhtsa.sav . || cp $top_srcdir/tests/language/stats/nhtsa.sav .])
 AT_DATA([ctables.sps],
