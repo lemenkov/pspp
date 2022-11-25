@@ -1964,7 +1964,10 @@ compose_headings (const struct pivot_table *pt,
                 {
                   headings[row][column] = pivot_value_to_string (c->name, pt);
                   if (!*headings[row][column])
-                    headings[row][column] = xstrdup ("<blank>");
+                    {
+                      free (headings[row][column]);
+                      headings[row][column] = xstrdup ("<blank>");
+                    }
                   row--;
                 }
             }
