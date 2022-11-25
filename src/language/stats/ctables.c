@@ -4889,7 +4889,7 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
                   {
                     int leaf = cell->axes[a].leaf;
                     if (a == t->summary_axis && !summary_dimension)
-                      leaf += j;
+                      leaf += specs->specs[j].axis_idx;
                     dindexes[n_dindexes++] = leaf;
                   }
 

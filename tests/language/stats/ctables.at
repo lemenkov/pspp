@@ -1765,6 +1765,79 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 ])
 AT_CLEANUP
 
+AT_SETUP([CTABLES SLABELS with stacking different summaries])
+AT_CHECK([ln $top_srcdir/tests/language/stats/nhtsa.sav . || cp $top_srcdir/tests/language/stats/nhtsa.sav .])
+AT_DATA([ctables.sps],
+[[GET 'nhtsa.sav'.
+CTABLES
+    /VLABELS VARIABLES=ALL DISPLAY=NAME
+    /TABLE qn1 [COUNT] + qnd1 [MEAN] + qn17 [UCOUNT] BY qns3a
+    /SLABELS POSITION=ROW.
+]])
+AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
+                         Custom Tables
+╭─────────────────────────────────────────────────┬───────────╮
+│                                                 │   QNS3A   │
+│                                                 ├────┬──────┤
+│                                                 │Male│Female│
+├─────────────────────────────────────────────────┼────┼──────┤
+│QN1  Every day                   Count           │2305│  2362│
+│                                 Unweighted Count│    │      │
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Several days a week         Count           │ 440│   834│
+│                                 Unweighted Count│    │      │
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Once a week or less         Count           │ 125│   236│
+│                                 Unweighted Count│    │      │
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Only certain times a year   Count           │  58│    72│
+│                                 Unweighted Count│    │      │
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Never                       Count           │ 192│   348│
+│                                 Unweighted Count│    │      │
+│                                 Mean            │    │      │
+├─────────────────────────────────────────────────┼────┼──────┤
+│qnd1 Count                                       │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Unweighted Count                            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Mean                                        │  46│    50│
+├─────────────────────────────────────────────────┼────┼──────┤
+│QN17 OR, something else          Count           │    │      │
+│                                 Unweighted Count│   1│     1│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Beer                        Count           │    │      │
+│                                 Unweighted Count│ 817│   256│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Light beer                  Count           │    │      │
+│                                 Unweighted Count│ 406│   214│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Wine                        Count           │    │      │
+│                                 Unweighted Count│ 390│  1028│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Wine coolers                Count           │    │      │
+│                                 Unweighted Count│  20│   117│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Hard liquor or mixed drinks Count           │    │      │
+│                                 Unweighted Count│ 392│   496│
+│                                 Mean            │    │      │
+│    ╶────────────────────────────────────────────┼────┼──────┤
+│     Flavored malt drinks        Count           │    │      │
+│                                 Unweighted Count│  20│    63│
+│                                 Mean            │    │      │
+╰─────────────────────────────────────────────────┴────┴──────╯
+])
+AT_CLEANUP
+
 AT_SETUP([CTABLES simple totals])
 AT_CHECK([ln $top_srcdir/tests/language/stats/nhtsa.sav . || cp $top_srcdir/tests/language/stats/nhtsa.sav .])
 AT_DATA([ctables.sps],
