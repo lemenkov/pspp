@@ -20,7 +20,7 @@
 
 #include "data/case.h"
 #include "data/casereader.h"
-#include "language/stats/roc.h"
+#include "language/commands/roc.h"
 #include "output/cairo-chart.h"
 
 #include "gettext.h"

@@ -29,7 +29,7 @@
 #include "gl/xalloc.h"
 #include "data/variable.h"
 #include "data/settings.h"
-#include "language/stats/freq.h"
+#include "language/commands/freq.h"
 
 
 static int

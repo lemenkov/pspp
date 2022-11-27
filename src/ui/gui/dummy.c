@@ -33,8 +33,8 @@
 
 #include "psppire-data-store.h"
 #include "t-test-options.h"
-#include "src/language/stats/chart-category.h"
-#include "src/language/stats/aggregate.h"
+#include "src/language/commands/chart-category.h"
+#include "src/language/commands/aggregate.h"
 
 const GEnumValue align[1];
 const GEnumValue measure[1];

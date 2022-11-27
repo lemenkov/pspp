@@ -21,7 +21,7 @@
 
 #include "dialog-common.h"
 
-#include <language/stats/aggregate.h>
+#include <language/commands/aggregate.h>
 
 #include "psppire-var-view.h"
 #include "psppire-selector.h"

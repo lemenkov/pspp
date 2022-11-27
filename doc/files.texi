@@ -507,7 +507,7 @@ The following syntax reads a file in the format used by
 @samp{/etc/passwd}:
 
 @c If you change this example, change the regression test in
-@c tests/language/data-io/get-data.at to match.
+@c tests/language/commands/get-data.at to match.
 @example
 GET DATA /TYPE=TXT /FILE='/etc/passwd' /DELIMITERS=':'
         /VARIABLES=username A20
@@ -534,7 +534,7 @@ Accord  2002    26613   17900   EX      1
 The following syntax can be used to read the used car data:
 
 @c If you change this example, change the regression test in
-@c tests/language/data-io/get-data.at to match.
+@c tests/language/commands/get-data.at to match.
 @example
 GET DATA /TYPE=TXT /FILE='cars.data' /DELIMITERS=' ' /FIRSTCASE=2
         /VARIABLES=model A8
@@ -561,7 +561,7 @@ Consider the following information on animals in a pet store:
 The following syntax can be used to read the pet store data:
 
 @c If you change this example, change the regression test in
-@c tests/language/data-io/get-data.at to match.
+@c tests/language/commands/get-data.at to match.
 @example
 GET DATA /TYPE=TXT /FILE='pets.data' /DELIMITERS=', ' /QUALIFIER='''"' /ESCAPE
         /FIRSTCASE=3
@@ -635,7 +635,7 @@ Accord  2002    26613   17900   EX      1
 The following syntax can be used to read the used car data:
 
 @c If you change this example, change the regression test in
-@c tests/language/data-io/get-data.at to match.
+@c tests/language/commands/get-data.at to match.
 @example
 GET DATA /TYPE=TXT /FILE='cars.data' /ARRANGEMENT=FIXED /FIRSTCASE=2
         /VARIABLES=model 0-7 A

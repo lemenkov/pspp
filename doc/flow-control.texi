@@ -459,7 +459,7 @@ In the examples below, @samp{_} stands in for a space to make the
 results visible.
 
 @c Keep these examples in sync with the test for !BLANKS in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !BLANKS(0)                  @expansion{} @r{empty}
 !BLANKS(1)                  @expansion{} _
@@ -475,7 +475,7 @@ concatenation, each quoted string argument is unquoted, as if
 combining two (or more) tokens into a single one:
 
 @c Keep these examples in sync with the test for !CONCAT in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !CONCAT(x, y)                @expansion{} xy
 !CONCAT('x', 'y')            @expansion{} xy
@@ -488,7 +488,7 @@ variable names from a prefix followed by a number and perhaps a
 suffix.  For example:
 
 @c Keep these examples in sync with the test for !CONCAT in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !CONCAT(x, 0)                @expansion{} x0
 !CONCAT(x, 0, y)             @expansion{} x0y
@@ -500,7 +500,7 @@ part of an identifier will produce a pair of distinct tokens rather
 than a single one.  For example:
 
 @c Keep these examples in sync with the test for !CONCAT in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !CONCAT(0, x)                @expansion{} 0 x
 !CONCAT(0, x, y)             @expansion{} 0 xy
@@ -590,7 +590,7 @@ Expands to a number token representing the number of characters in
 Expands to an empty character sequence.
 
 @c Keep these examples in sync with the test for !NULL in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !NULL                        @expansion{} @r{empty}
 !QUOTE(!NULL)                @expansion{} ''
@@ -610,7 +610,7 @@ quote marks reduced to singletons.  If the argument was not a quoted
 string, @code{!UNQUOTE} expands to the argument unchanged.
 
 @c Keep these examples in sync with the test for !QUOTE and !UNQUOTE in
-@c tests/language/control/define.at:
+@c tests/language/commands/define.at:
 @example
 !QUOTE(123.0)                @expansion{} '123.0'
 !QUOTE( 123 )                @expansion{} '123'

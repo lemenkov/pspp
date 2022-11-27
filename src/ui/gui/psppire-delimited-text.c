@@ -21,7 +21,7 @@
 
 #include "psppire-delimited-text.h"
 #include "psppire-text-file.h"
-#include "language/data-io/data-parser.h"
+#include "language/commands/data-parser.h"
 #include "libpspp/str.h"
 #include "libpspp/string-array.h"
 #include "libpspp/i18n.h"

@@ -30,7 +30,7 @@
 #include "psppire-dict.h"
 #include "libpspp/str.h"
 
-#include "language/stats/chart-category.h"
+#include "language/commands/chart-category.h"
 
 static void
 psppire_dialog_action_barchart_class_init (PsppireDialogActionBarchartClass *class);

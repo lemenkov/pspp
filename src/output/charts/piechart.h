@@ -19,7 +19,7 @@
 
 #include "libpspp/str.h"
 #include "output/chart.h"
-#include "language/stats/freq.h"
+#include "language/commands/freq.h"
 
 struct piechart
   {

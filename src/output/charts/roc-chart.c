@@ -19,7 +19,7 @@
 #include "output/charts/roc-chart.h"
 
 #include "data/casereader.h"
-#include "language/stats/roc.h"
+#include "language/commands/roc.h"
 #include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
