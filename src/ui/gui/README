@@ -1,0 +1,19 @@
+The GUI uses the Gtk+ library.  Many parts are defined using
+GtkBuilder files, which have a '.ui' prefix.  These are XML files and
+as such can be editied using a text editor, which is often easiest
+when making small changes.  More substantial changes however are best
+done using Glade.  Since however PSPP has many custom defined widgets,
+Glade must be started with certain environment variables set.  The
+easiest way to run Glade with the correct variables is as follows:
+
+    make src/ui/gui/glade-wrapper
+    ./src/ui/gui/glade-wrapper <name-of-gtk-builder-file>
+
+If you create new custom widgets for use in PSPP you must do the following to
+make sure they are available to Glade:
+
+* Add a call to its '_get_type' function to preregister_widgets(),
+  which is found in widgets.c.
+
+* Add the name of the module to
+  src_ui_gui_libwidgets_essential_la_SOURCES in automake.mk.

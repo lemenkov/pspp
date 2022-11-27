@@ -9,11 +9,14 @@
 @c
 
 @node System File Format
-@appendix System File Format
+@chapter System File Format
 
-A system file encapsulates a set of cases and dictionary information
-that describes how they may be interpreted.  This chapter describes
-the format of a system file.
+An SPSS system file holds a set of cases and dictionary information
+that describes how they may be interpreted.  The system file format
+dates back 40+ years and has evolved greatly over that time to support
+new features, but in a way to facilitate interchange between even the
+oldest and newest versions of software.  This chapter describes the
+system file format.
 
 System files use four data types: 8-bit characters, 32-bit integers,
 64-bit integers,

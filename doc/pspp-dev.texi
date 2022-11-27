@@ -39,7 +39,7 @@
 
 @dircategory Math
 @direntry
-* PSPP Developers Guide: (pspp-dev). Tutorial and reference for PSPP developers.
+* PSPP Developers Guide: (pspp-dev). Reference for PSPP developers.
 @end direntry
 
 @copying
@@ -79,45 +79,25 @@ Free Documentation License".
 @insertcopying
 @end ifnottex
 
+This manual describes the file formats that PSPP supports.
+
 @menu
-* Introduction::                Introduction to PSPP development.
-* Basic Concepts::              Data structures and concepts.
-* Parsing Command Syntax::      How to parse command syntax.
-* Processing Data::             Data input, output, and processing.
-* Presenting Output::           Producing machine- and human-readable output.
-* Internationalisation::        Dealing with locale issues.
-* Graphic User Interface::      Hacking the GUI
-
-* Function Index::              Index of PSPP functions.
-* Concept Index::               Index of concepts.
-
-* Portable File Format::        Format of PSPP portable files.
 * System File Format::          Format of PSPP system files.
-* SPSS/PC+ System File Format:: Format of SPSS/PC+ system files.
 * SPSS Viewer File Format::     Format of SPSS Viewer (SPV) files.
 * SPSS TableLook File Formats:: Formats of .stt and .tlo files.
 * Encrypted File Wrappers::     Common wrapper for encrypted SPSS files.
+* Portable File Format::        Format of PSPP portable files.
+* SPSS/PC+ System File Format:: Format of SPSS/PC+ system files.
 
 * GNU Free Documentation License:: License for copying this manual.
 @end menu
 
-@include dev/intro.texi
-@include dev/concepts.texi
-@include dev/syntax.texi
-@include dev/data.texi
-@include dev/output.texi
-@include dev/i18n.texi
-@include dev/gui.texi
-
-@include function-index.texi
-@include concept-index.texi
-
-@include dev/portable-file-format.texi
 @include dev/system-file-format.texi
-@include dev/pc+-file-format.texi
 @include dev/spv-file-format.texi
 @include dev/tlo-file-format.texi
 @include dev/encrypted-file-wrappers.texi
+@include dev/portable-file-format.texi
+@include dev/pc+-file-format.texi
 
 @include fdl.texi
 

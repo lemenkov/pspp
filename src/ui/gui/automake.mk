@@ -72,6 +72,7 @@ UI_FILES = \
 if building_gui
 
 EXTRA_DIST += \
+	src/ui/gui/README \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg \
 	src/ui/gui/pspp.rc.in

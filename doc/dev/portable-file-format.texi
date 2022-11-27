@@ -9,13 +9,16 @@
 @c
 
 @node Portable File Format
-@appendix Portable File Format
+@chapter Portable File Format
 
 These days, most computers use the same internal data formats for
 integer and floating-point data, if one ignores little differences like
 big- versus little-endian byte ordering.  However, occasionally it is
 necessary to exchange data between systems with incompatible data
 formats.  This is what portable files are designed to do.
+
+The portable file format is mostly obsolete.  System files
+(@pxref{System File Format}) are a better alternative.
 
 @strong{Please note:} This information is gleaned from examination of
 ASCII-formatted portable files only, so some of it may be incorrect

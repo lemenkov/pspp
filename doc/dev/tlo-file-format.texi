@@ -9,7 +9,7 @@
 @c
 
 @node SPSS TableLook File Formats
-@appendix SPSS TableLook File Formats
+@chapter SPSS TableLook File Formats
 
 SPSS has a concept called a TableLook to control the styling of pivot
 tables in output.  SPSS 15 and earlier used @file{.tlo} files with a
@@ -18,7 +18,7 @@ use @file{.stt} files in an XML format to save them.  Both formats
 expose roughly the same features, although the older @file{.tlo}
 format does have some features that @file{.stt} does not.
 
-This appendix describes both formats.
+This chapter describes both formats.
 
 @menu
 * SPSS TableLook STT Format::

@@ -9,7 +9,7 @@
 @c
 
 @node SPSS/PC+ System File Format
-@appendix SPSS/PC+ System File Format
+@chapter SPSS/PC+ System File Format
 
 SPSS/PC+, first released in 1984, was a simplified version of SPSS for
 IBM PC and compatible computers.  It used a data file format related

@@ -50,13 +50,6 @@ doc_pspp_TEXINFOS = doc/version.texi \
 	doc/fdl.texi
 
 doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
-	doc/dev/intro.texi \
-	doc/dev/concepts.texi \
-	doc/dev/gui.texi \
-	doc/dev/syntax.texi \
-	doc/dev/data.texi \
-	doc/dev/i18n.texi \
-	doc/dev/output.texi \
 	doc/dev/system-file-format.texi \
 	doc/dev/pc+-file-format.texi \
 	doc/dev/portable-file-format.texi \
