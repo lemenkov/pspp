@@ -41,7 +41,6 @@
 #include "libpspp/u8-line.h"
 #include "output/driver.h"
 #include "output/pivot-table.h"
-#include "output/table.h"
 #include "output/output-item.h"
 
 #include "gl/xalloc.h"

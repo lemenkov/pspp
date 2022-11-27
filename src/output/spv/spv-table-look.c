@@ -28,7 +28,6 @@
 #include "output/spv/structure-xml-parser.h"
 #include "output/spv/tlo-parser.h"
 #include "output/pivot-table.h"
-#include "output/table.h"
 
 #include "gl/read-file.h"
 #include "gl/xalloc.h"

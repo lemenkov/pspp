@@ -30,7 +30,6 @@
 #include "output/ascii.h"
 #include "output/driver.h"
 #include "output/output-item.h"
-#include "output/table.h"
 
 #include "gl/error.h"
 #include "gl/progname.h"
