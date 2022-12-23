@@ -253,8 +253,6 @@ struct table *table_create (int nc, int nr, int hl, int hr, int ht, int hb);
 /* Rules. */
 void table_hline (struct table *, int style, int x1, int x2, int y);
 void table_vline (struct table *, int style, int x, int y1, int y2);
-void table_box (struct table *, int f_h, int f_v, int i_h, int i_v,
-                int x1, int y1, int x2, int y2);
 
 /* Cells. */
 void table_put (struct table *, int x1, int y1, int x2, int y2,

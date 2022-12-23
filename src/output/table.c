@@ -349,81 +349,6 @@ table_hline (struct table *t, int style, int x1, int x2, int y)
         t->rh[x + t->n[H] * y] = style;
     }
 }
-
-/* Draws a box around cells (X1,Y1)-(X2,Y2) inclusive with horizontal
-   lines of style F_H and vertical lines of style F_V.  Fills the
-   interior of the box with horizontal lines of style I_H and vertical
-   lines of style I_V.  Any of the line styles may be -1 to avoid
-   drawing those lines.  This is distinct from 0, which draws a null
-   line. */
-void
-table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
-           int x1, int y1, int x2, int y2)
-{
-  if (debugging)
-    {
-      if (x1 < 0 || x1 >= t->n[H]
-          || x2 < 0 || x2 >= t->n[H]
-          || y1 < 0 || y1 >= t->n[V]
-          || y2 < 0 || y2 >= t->n[V])
-        {
-          printf ("bad box: (%d,%d)-(%d,%d) in table size (%d,%d)\n",
-                  x1, y1, x2, y2, t->n[H], t->n[V]);
-          NOT_REACHED ();
-        }
-    }
-
-  assert (x2 >= x1);
-  assert (y2 >= y1);
-  assert (x1 >= 0);
-  assert (y1 >= 0);
-  assert (x2 < t->n[H]);
-  assert (y2 < t->n[V]);
-
-  if (f_h != -1)
-    {
-      int x;
-      for (x = x1; x <= x2; x++)
-        {
-          t->rh[x + t->n[H] * y1] = f_h;
-          t->rh[x + t->n[H] * (y2 + 1)] = f_h;
-        }
-    }
-  if (f_v != -1)
-    {
-      int y;
-      for (y = y1; y <= y2; y++)
-        {
-          t->rv[x1 + (t->n[H] + 1) * y] = f_v;
-          t->rv[(x2 + 1) + (t->n[H] + 1) * y] = f_v;
-        }
-    }
-
-  if (i_h != -1)
-    {
-      int y;
-
-      for (y = y1 + 1; y <= y2; y++)
-        {
-          int x;
-
-          for (x = x1; x <= x2; x++)
-            t->rh[x + t->n[H] * y] = i_h;
-        }
-    }
-  if (i_v != -1)
-    {
-      int x;
-
-      for (x = x1 + 1; x <= x2; x++)
-        {
-          int y;
-
-          for (y = y1; y <= y2; y++)
-            t->rv[x + (t->n[H] + 1) * y] = i_v;
-        }
-    }
-}
 
 /* Cells. */
 
@@ -442,9 +367,6 @@ table_put (struct table *table, int x1, int y1, int x2, int y2,
     }
   else
     {
-      table_box (table, -1, -1, TABLE_STROKE_NONE, TABLE_STROKE_NONE,
-                 x1, y1, x2, y2);
-
       struct table_cell *cell = pool_alloc (table->container, sizeof *cell);
       *cell = (struct table_cell) {
         .d = { [H] = { x1, x2 + 1 }, [V] = { y1, y2 + 1 } },
