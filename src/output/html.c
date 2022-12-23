@@ -516,7 +516,7 @@ html_put_table_cell (struct html_driver *html, const struct pivot_table *pt,
       break;
     }
 
-  if (cell->options & TAB_ROTATE)
+  if (cell->options & TABLE_CELL_ROTATE)
     put_style (&style, "writing-mode", "sideways-lr");
 
   if (cell->cell_style->valign != TABLE_VALIGN_TOP)

@@ -272,7 +272,7 @@ table_create (int nc, int nr, int hl, int hr, int ht, int hb)
   t->ref_cnt = 1;
 
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
-  t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
+  t->cp = pool_calloc (t->container, nr * nc, sizeof *t->cp);
 
   t->rh = pool_nmalloc (t->container, nc, nr + 1);
   memset (t->rh, TABLE_STROKE_NONE, nc * (nr + 1));
@@ -341,7 +341,7 @@ table_hline (struct table *t, int style, int x1, int x2, int y)
 /* Fill TABLE cells (X1,X2)-(Y1,Y2), inclusive, with VALUE and OPT. */
 void
 table_put (struct table *table, int x1, int y1, int x2, int y2,
-           unsigned opt, const struct pivot_value *value)
+           unsigned int opt, const struct pivot_value *value)
 {
   assert (0 <= x1 && x1 <= x2 && x2 < table->n[H]);
   assert (0 <= y1 && y1 <= y2 && y2 < table->n[V]);
@@ -349,7 +349,7 @@ table_put (struct table *table, int x1, int y1, int x2, int y2,
   if (x1 == x2 && y1 == y2)
     {
       table->cc[x1 + y1 * table->n[H]] = CONST_CAST (struct pivot_value *, value);
-      table->ct[x1 + y1 * table->n[H]] = opt;
+      table->cp[x1 + y1 * table->n[H]] = opt;
     }
   else
     {
@@ -364,11 +364,11 @@ table_put (struct table *table, int x1, int y1, int x2, int y2,
         {
           size_t ofs = x1 + y * table->n[H];
           void **cc = &table->cc[ofs];
-          unsigned short *ct = &table->ct[ofs];
+          unsigned char *ct = &table->cp[ofs];
           for (int x = x1; x <= x2; x++)
             {
               *cc++ = cell;
-              *ct++ = opt | TAB_JOIN;
+              *ct++ = opt | TABLE_CELL_JOIN;
             }
         }
     }
@@ -405,11 +405,11 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   assert (y >= 0 && y < t->n[TABLE_VERT]);
 
   int index = x + y * t->n[H];
-  unsigned short opt = t->ct[index];
+  unsigned char opt = t->cp[index];
   const void *cc = t->cc[index];
 
   struct table_area_style *style
-    = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
+    = t->styles[(opt & TABLE_CELL_STYLE_MASK) >> TABLE_CELL_STYLE_SHIFT];
 
   static const struct pivot_value empty_value = {
     .text = {
@@ -421,7 +421,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
     },
   };
 
-  if (opt & TAB_JOIN)
+  if (opt & TABLE_CELL_JOIN)
     {
       const struct table_cell *jc = cc;
       *cell = *jc;

@@ -45,7 +45,7 @@ struct table_cell
        or both. */
     int d[TABLE_N_AXES][2];
 
-    unsigned int options;       /* TAB_*. */
+    unsigned char options;       /* TABLE_CELL_*. */
     const struct pivot_value *value;
     const struct font_style *font_style;
     const struct cell_style *cell_style;

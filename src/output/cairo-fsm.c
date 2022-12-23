@@ -637,9 +637,9 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   const struct cell_style *cell_style = cell->cell_style;
   unsigned int options = cell->options;
 
-  enum table_axis X = options & TAB_ROTATE ? V : H;
+  enum table_axis X = options & TABLE_CELL_ROTATE ? V : H;
   enum table_axis Y = !X;
-  int R = options & TAB_ROTATE ? 0 : 1;
+  int R = options & TABLE_CELL_ROTATE ? 0 : 1;
 
   PangoFontDescription *desc = NULL;
   if (font_style->typeface)
@@ -665,7 +665,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
     cell->cell_style->halign, numeric);
 
   if (cell_style->halign == TABLE_HALIGN_DECIMAL
-      && !(cell->options & TAB_ROTATE))
+      && !(cell->options & TABLE_CELL_ROTATE))
     {
       int margin_adjustment = -px_to_xr (cell_style->decimal_offset);
 
@@ -716,7 +716,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
           /* XXX should we report the error? */
         }
     }
-  else if (options & TAB_ROTATE || bb[H][1] != INT_MAX)
+  else if (options & TABLE_CELL_ROTATE || bb[H][1] != INT_MAX)
     {
       const char *text = ds_cstr (&body);
       const char *decimal = text + strcspn (text, ".,");
@@ -789,7 +789,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
           int footnote_adjustment = MIN (footnote_width, right_margin);
 
           /* Adjust the bounding box. */
-          if (options & TAB_ROTATE)
+          if (options & TABLE_CELL_ROTATE)
             footnote_adjustment = -footnote_adjustment;
           bb[X][R] += footnote_adjustment;
 
@@ -840,9 +840,9 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   if (clip[H][0] != clip[H][1])
     {
       cairo_save (xr->cairo);
-      if (!(options & TAB_ROTATE))
+      if (!(options & TABLE_CELL_ROTATE))
         xr_clip (xr, clip);
-      if (options & TAB_ROTATE)
+      if (options & TABLE_CELL_ROTATE)
         {
           int extra = bb[H][1] - bb[H][0] - size[V];
           int halign_offset = extra > 0 ? extra / 2 : 0;
@@ -890,7 +890,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   int h = pango_to_xr (size[Y]);
   if (w > *widthp)
     *widthp = w;
-  if (bb[V][0] + h >= bb[V][1] && !(options & TAB_ROTATE))
+  if (bb[V][0] + h >= bb[V][1] && !(options & TABLE_CELL_ROTATE))
     {
       PangoLayoutIter *iter;
       int best = 0;

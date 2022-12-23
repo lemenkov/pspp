@@ -116,9 +116,9 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
            int style_idx, const struct pivot_value *value,
            bool rotate_label)
 {
-  int options = style_idx << TAB_STYLE_SHIFT;
+  int options = style_idx << TABLE_CELL_STYLE_SHIFT;
   if (rotate_label)
-    options |= TAB_ROTATE;
+    options |= TABLE_CELL_ROTATE;
 
   table_put (t, x1, y1, x2, y2, options, value);
 }
@@ -127,9 +127,9 @@ static void
 fill_cell_owned (struct table *t, int x1, int y1, int x2, int y2,
                  int style_idx, struct string *s, bool rotate_label)
 {
-  int options = style_idx << TAB_STYLE_SHIFT;
+  int options = style_idx << TABLE_CELL_STYLE_SHIFT;
   if (rotate_label)
-    options |= TAB_ROTATE;
+    options |= TABLE_CELL_ROTATE;
 
   table_put_owned (t, x1, y1, x2, y2, options,
                    pivot_value_new_user_text_nocopy (ds_steal_cstr (s)));

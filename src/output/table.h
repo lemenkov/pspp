@@ -178,17 +178,13 @@ void table_area_style_copy (struct pool *, struct table_area_style *,
 void table_area_style_uninit (struct table_area_style *);
 void table_area_style_free (struct table_area_style *);
 
-/* Properties of a table cell. */
+/* Cell properties. */
 enum
   {
-    TAB_NONE = 0,
-    TAB_ROTATE     = 1 << 4,    /* Rotate cell contents 90 degrees. */
-
-    TAB_STYLE_SHIFT = 5,
-    TAB_STYLE_MASK = 7 << TAB_STYLE_SHIFT,
-
-    /* Internal use by tab.c only. */
-    TAB_JOIN = 1 << 14,
+    TABLE_CELL_ROTATE     = 1 << 0,    /* Rotate cell contents 90 degrees. */
+    TABLE_CELL_JOIN       = 1 << 1,    /* Joined cell (internal use only). */
+    TABLE_CELL_STYLE_SHIFT = 2,
+    TABLE_CELL_STYLE_MASK = 7 << TABLE_CELL_STYLE_SHIFT,
   };
 
 /* A table. */
@@ -222,12 +218,12 @@ struct table
 
     /* Table contents.
 
-       Each array element in cc[] is ordinarily a "struct pivot_value *".
-       If TAB_JOIN (defined in table.c) is set in ct[] for the element,
-       however, it is a joined cell and the corresponding element of cc[]
-       points to a struct table_cell. */
+       Each array element in cc[] is ordinarily a "struct pivot_value *".  If
+       TABLE_CELL_JOIN is set in cp[] for the element, however, it is a joined
+       cell and the corresponding element of cc[] points to a struct
+       table_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
-    unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
+    unsigned char *cp;		/* Cell properties; unsigned char[nr][nc]. */
     struct table_area_style *styles[8];
 
     /* Rules. */
