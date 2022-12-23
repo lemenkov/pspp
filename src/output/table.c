@@ -289,7 +289,7 @@ table_create (int nc, int nr, int hl, int hr, int ht, int hb)
 /* Rules. */
 
 /* Draws a vertical line to the left of cells at horizontal position X
-   from Y1 to Y2 inclusive in style STYLE, if style is not -1. */
+   from Y1 to Y2 inclusive in style STYLE. */
 void
 table_vline (struct table *t, int style, int x, int y1, int y2)
 {
@@ -305,22 +305,15 @@ table_vline (struct table *t, int style, int x, int y1, int y2)
         }
     }
 
-  assert (x >= 0);
-  assert (x <= t->n[H]);
-  assert (y1 >= 0);
-  assert (y2 >= y1);
-  assert (y2 <= t->n[V]);
+  assert (0 <= x && x <= t->n[H]);
+  assert (0 <= y1 && y1 <= y2 && y2 <= t->n[V]);
 
-  if (style != -1)
-    {
-      int y;
-      for (y = y1; y <= y2; y++)
-        t->rv[x + (t->n[H] + 1) * y] = style;
-    }
+  for (int y = y1; y <= y2; y++)
+    t->rv[x + (t->n[H] + 1) * y] = style;
 }
 
 /* Draws a horizontal line above cells at vertical position Y from X1
-   to X2 inclusive in style STYLE, if style is not -1. */
+   to X2 inclusive in style STYLE. */
 void
 table_hline (struct table *t, int style, int x1, int x2, int y)
 {
@@ -336,18 +329,11 @@ table_hline (struct table *t, int style, int x1, int x2, int y)
         }
     }
 
-  assert (y >= 0);
-  assert (y <= t->n[V]);
-  assert (x2 >= x1);
-  assert (x1 >= 0);
-  assert (x2 < t->n[H]);
+  assert (0 <= y && y <= t->n[V]);
+  assert (0 <= x1 && x1 <= x2 && x2 < t->n[H]);
 
-  if (style != -1)
-    {
-      int x;
-      for (x = x1; x <= x2; x++)
-        t->rh[x + t->n[H] * y] = style;
-    }
+  for (int x = x1; x <= x2; x++)
+    t->rh[x + t->n[H] * y] = style;
 }
 
 /* Cells. */
