@@ -1313,7 +1313,7 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
   j_family->root->show_label = true;
 
   struct pivot_dimension *i_family = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("(J) Family"));
+    table, PIVOT_AXIS_ROW, N_("(I) Family"));
   i_family->root->show_label = true;
 
   const struct per_var_ws *pvw = &ws->vws[v];
