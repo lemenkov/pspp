@@ -77,7 +77,7 @@ void cell_color_dump (const struct cell_color *);
 
 enum table_stroke
   {
-    TABLE_STROKE_NONE,
+    TABLE_STROKE_NONE = 0,      /* Must be zero. */
     TABLE_STROKE_SOLID,
     TABLE_STROKE_DASHED,
     TABLE_STROKE_THICK,

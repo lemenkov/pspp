@@ -194,18 +194,18 @@ xr_draw_line (struct xr_fsm *xr, int x0, int y0, int x1, int y1, int style,
   cairo_new_path (xr->cairo);
   cairo_set_line_width (
     xr->cairo,
-    xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
-              : style == RENDER_LINE_THIN ? XR_LINE_WIDTH / 2
+    xr_to_pt (style == TABLE_STROKE_THICK ? XR_LINE_WIDTH * 2
+              : style == TABLE_STROKE_THIN ? XR_LINE_WIDTH / 2
               : XR_LINE_WIDTH));
   cairo_move_to (xr->cairo, xr_to_pt (x0), xr_to_pt (y0));
   cairo_line_to (xr->cairo, xr_to_pt (x1), xr_to_pt (y1));
 
   if (!xr->style->use_system_colors)
     xr_set_source_rgba (xr->cairo, color);
-  if (style == RENDER_LINE_DASHED)
+  if (style == TABLE_STROKE_DASHED)
     cairo_set_dash (xr->cairo, (double[]) { 2 }, 1, 0);
   cairo_stroke (xr->cairo);
-  if (style == RENDER_LINE_DASHED)
+  if (style == TABLE_STROKE_DASHED)
     cairo_set_dash (xr->cairo, NULL, 0, 0);
 }
 
@@ -239,19 +239,19 @@ fill_rectangle (struct xr_fsm *xr, int x0, int y0, int x1, int y1)
    shortening it to X2...X3 if SHORTEN is true. */
 static void
 xr_draw_horz_line (struct xr_fsm *xr, int x0, int x1, int x2, int x3, int y,
-                   enum render_line_style left, enum render_line_style right,
+                   enum table_stroke left, enum table_stroke right,
                    const struct cell_color *left_color,
                    const struct cell_color *right_color,
                    bool shorten)
 {
-  if (left != RENDER_LINE_NONE && right != RENDER_LINE_NONE && !shorten
+  if (left != TABLE_STROKE_NONE && right != TABLE_STROKE_NONE && !shorten
       && cell_color_equal (left_color, right_color))
     xr_draw_line (xr, x0, y, x3, y, left, left_color);
   else
     {
-      if (left != RENDER_LINE_NONE)
+      if (left != TABLE_STROKE_NONE)
         xr_draw_line (xr, x0, y, shorten ? x1 : x2, y, left, left_color);
-      if (right != RENDER_LINE_NONE)
+      if (right != TABLE_STROKE_NONE)
         xr_draw_line (xr, shorten ? x2 : x1, y, x3, y, right, right_color);
     }
 }
@@ -262,26 +262,26 @@ xr_draw_horz_line (struct xr_fsm *xr, int x0, int x1, int x2, int x3, int y,
    shortening it to Y2...Y3 if SHORTEN is true. */
 static void
 xr_draw_vert_line (struct xr_fsm *xr, int y0, int y1, int y2, int y3, int x,
-                   enum render_line_style top, enum render_line_style bottom,
+                   enum table_stroke top, enum table_stroke bottom,
                    const struct cell_color *top_color,
                    const struct cell_color *bottom_color,
                    bool shorten)
 {
-  if (top != RENDER_LINE_NONE && bottom != RENDER_LINE_NONE && !shorten
+  if (top != TABLE_STROKE_NONE && bottom != TABLE_STROKE_NONE && !shorten
       && cell_color_equal (top_color, bottom_color))
     xr_draw_line (xr, x, y0, x, y3, top, top_color);
   else
     {
-      if (top != RENDER_LINE_NONE)
+      if (top != TABLE_STROKE_NONE)
         xr_draw_line (xr, x, y0, x, shorten ? y1 : y2, top, top_color);
-      if (bottom != RENDER_LINE_NONE)
+      if (bottom != TABLE_STROKE_NONE)
         xr_draw_line (xr, x, shorten ? y2 : y1, x, y3, bottom, bottom_color);
     }
 }
 
 static void
 xrr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
-               enum render_line_style styles[TABLE_N_AXES][2],
+               enum table_stroke styles[TABLE_N_AXES][2],
                struct cell_color colors[TABLE_N_AXES][2])
 {
   const int x0 = bb[H][0];
@@ -337,8 +337,8 @@ xrr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   /* Are the lines along each axis single or double?
      (It doesn't make sense to have different kinds of line on the
      same axis, so we don't try to gracefully handle that case.) */
-  bool double_vert = top == RENDER_LINE_DOUBLE || bottom == RENDER_LINE_DOUBLE;
-  bool double_horz = start_of_line == RENDER_LINE_DOUBLE || end_of_line == RENDER_LINE_DOUBLE;
+  bool double_vert = top == TABLE_STROKE_DOUBLE || bottom == TABLE_STROKE_DOUBLE;
+  bool double_horz = start_of_line == TABLE_STROKE_DOUBLE || end_of_line == TABLE_STROKE_DOUBLE;
 
   /* When horizontal lines are doubled,
      the left-side line along y1 normally runs from x0 to x2,
@@ -365,16 +365,16 @@ xrr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
      single.  We actually choose to cut off the line anyhow, as
      shown in the first diagram above.
   */
-  bool shorten_y1_lines = top == RENDER_LINE_DOUBLE;
-  bool shorten_y2_lines = bottom == RENDER_LINE_DOUBLE;
+  bool shorten_y1_lines = top == TABLE_STROKE_DOUBLE;
+  bool shorten_y2_lines = bottom == TABLE_STROKE_DOUBLE;
   bool shorten_yc_line = shorten_y1_lines && shorten_y2_lines;
   int horz_line_ofs = double_vert ? double_line_ofs : 0;
   int xc = (x0 + x3) / 2;
   int x1 = xc - horz_line_ofs;
   int x2 = xc + horz_line_ofs;
 
-  bool shorten_x1_lines = start_of_line == RENDER_LINE_DOUBLE;
-  bool shorten_x2_lines = end_of_line == RENDER_LINE_DOUBLE;
+  bool shorten_x1_lines = start_of_line == TABLE_STROKE_DOUBLE;
+  bool shorten_x2_lines = end_of_line == TABLE_STROKE_DOUBLE;
   bool shorten_xc_line = shorten_x1_lines && shorten_x2_lines;
   int vert_line_ofs = double_horz ? double_line_ofs : 0;
   int yc = (y0 + y3) / 2;
@@ -930,7 +930,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
           if (best)
             xr_draw_line (xr, 0, best,
                           xr->style->size[H], best,
-                          RENDER_LINE_SINGLE,
+                          TABLE_STROKE_SOLID,
                           &(struct cell_color) CELL_COLOR (0, 255, 0));
         }
     }
@@ -1032,14 +1032,14 @@ xr_fsm_create (const struct output_item *item_,
   };
 
   enum { LW = XR_LINE_WIDTH, LS = XR_LINE_SPACE };
-  static const int xr_line_widths[RENDER_N_LINES] =
+  static const int xr_line_widths[TABLE_N_STROKES] =
     {
-      [RENDER_LINE_NONE] = 0,
-      [RENDER_LINE_SINGLE] = LW,
-      [RENDER_LINE_DASHED] = LW,
-      [RENDER_LINE_THICK] = LW * 2,
-      [RENDER_LINE_THIN] = LW / 2,
-      [RENDER_LINE_DOUBLE] = 2 * LW + LS,
+      [TABLE_STROKE_NONE] = 0,
+      [TABLE_STROKE_SOLID] = LW,
+      [TABLE_STROKE_DASHED] = LW,
+      [TABLE_STROKE_THICK] = LW * 2,
+      [TABLE_STROKE_THIN] = LW / 2,
+      [TABLE_STROKE_DOUBLE] = 2 * LW + LS,
     };
 
   struct xr_fsm *fsm = xmalloc (sizeof *fsm);

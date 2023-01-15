@@ -464,29 +464,6 @@ calculate_table_width (int n, const struct render_row *rows, int *rules)
 
 /* Rendering utility functions. */
 
-/* Returns the line style to use for drawing a rule of the given TYPE. */
-static enum render_line_style
-rule_to_render_type (unsigned char type)
-{
-  switch (type)
-    {
-    case TABLE_STROKE_NONE:
-      return RENDER_LINE_NONE;
-    case TABLE_STROKE_SOLID:
-      return RENDER_LINE_SINGLE;
-    case TABLE_STROKE_DASHED:
-      return RENDER_LINE_DASHED;
-    case TABLE_STROKE_THICK:
-      return RENDER_LINE_THICK;
-    case TABLE_STROKE_THIN:
-      return RENDER_LINE_THIN;
-    case TABLE_STROKE_DOUBLE:
-      return RENDER_LINE_DOUBLE;
-    default:
-      NOT_REACHED ();
-    }
-}
-
 /* Returns the width of the rule in TABLE that is at offset Z along axis A, if
    rendered with PARAMS.  */
 static int
@@ -519,7 +496,7 @@ measure_rule (const struct render_params *params, const struct table *table,
   int width = 0;
   for (size_t i = 0; i < TABLE_N_STROKES; i++)
     if (rules & (1u << i))
-      width = MAX (width, params->line_widths[rule_to_render_type (i)]);
+      width = MAX (width, params->line_widths[i]);
   return width;
 }
 
@@ -949,8 +926,8 @@ render_page_get_best_breakpoint (const struct render_page *page, int height)
    - D is in terms of the page's rows and column rather than the underlying
      table's.
 
-   - The result is in the form of a render_line_style. */
-static enum render_line_style
+   - The result is in the form of a table_stroke. */
+static enum table_stroke
 get_rule (const struct render_page *page, enum table_axis axis,
           const int d_[TABLE_N_AXES], struct cell_color *color)
 {
@@ -984,7 +961,7 @@ get_rule (const struct render_page *page, enum table_axis axis,
       int r2 = table_get_rule (page->table, axis, d[H], d[V], color);
       r = table_stroke_combine (r, r2);
     }
-  return rule_to_render_type (r);
+  return r;
 }
 
 static bool
@@ -1015,14 +992,14 @@ static void
 render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
              const int d[TABLE_N_AXES])
 {
-  enum render_line_style styles[TABLE_N_AXES][2];
+  enum table_stroke styles[TABLE_N_AXES][2];
   struct cell_color colors[TABLE_N_AXES][2];
 
   for (enum table_axis a = 0; a < TABLE_N_AXES; a++)
     {
       enum table_axis b = !a;
 
-      styles[a][0] = styles[a][1] = RENDER_LINE_NONE;
+      styles[a][0] = styles[a][1] = TABLE_STROKE_NONE;
 
       if (!is_rule (d[a])
           || (page->is_edge_cutoff[a][0] && d[a] == 0)
@@ -1050,8 +1027,8 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
         }
     }
 
-  if (styles[H][0] != RENDER_LINE_NONE || styles[H][1] != RENDER_LINE_NONE
-      || styles[V][0] != RENDER_LINE_NONE || styles[V][1] != RENDER_LINE_NONE)
+  if (styles[H][0] != TABLE_STROKE_NONE || styles[H][1] != TABLE_STROKE_NONE
+      || styles[V][0] != TABLE_STROKE_NONE || styles[V][1] != TABLE_STROKE_NONE)
     {
       int bb[TABLE_N_AXES][2];
 

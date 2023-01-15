@@ -23,17 +23,6 @@
 
 struct table_item;
 
-enum render_line_style
-  {
-    RENDER_LINE_NONE,
-    RENDER_LINE_SINGLE,
-    RENDER_LINE_DASHED,
-    RENDER_LINE_THICK,
-    RENDER_LINE_THIN,
-    RENDER_LINE_DOUBLE,
-    RENDER_N_LINES
-  };
-
 /* Parameters for rendering a table_item to a device.
 
 
@@ -123,7 +112,7 @@ struct render_ops
        STYLES[TABLE_VERT][0]: style of line from left of BB to its center.
        STYLES[TABLE_VERT][1]: style of line from right of BB to its center. */
     void (*draw_line) (void *aux, int bb[TABLE_N_AXES][2],
-                       enum render_line_style styles[TABLE_N_AXES][2],
+                       enum table_stroke styles[TABLE_N_AXES][2],
                        struct cell_color colors[TABLE_N_AXES][2]);
 
     /* Draws CELL within bounding box BB.  CLIP is the same as BB (the common

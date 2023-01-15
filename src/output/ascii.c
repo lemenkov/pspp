@@ -245,18 +245,18 @@ ascii_line_from_render_line (int render_line)
 {
   switch (render_line)
     {
-    case RENDER_LINE_NONE:
+    case TABLE_STROKE_NONE:
       return ASCII_LINE_NONE;
 
-    case RENDER_LINE_DASHED:
+    case TABLE_STROKE_DASHED:
       return ASCII_LINE_DASHED;
 
-    case RENDER_LINE_SINGLE:
-    case RENDER_LINE_THICK:
-    case RENDER_LINE_THIN:
+    case TABLE_STROKE_SOLID:
+    case TABLE_STROKE_THICK:
+    case TABLE_STROKE_THIN:
       return ASCII_LINE_SINGLE;
 
-    case RENDER_LINE_DOUBLE:
+    case TABLE_STROKE_DOUBLE:
       return ASCII_LINE_DOUBLE;
 
     default:
@@ -326,7 +326,7 @@ static bool update_page_size (struct ascii_driver *, bool issue_error);
 static int parse_page_size (struct driver_option *);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
-                             enum render_line_style styles[TABLE_N_AXES][2],
+                             enum table_stroke styles[TABLE_N_AXES][2],
                              struct cell_color colors[TABLE_N_AXES][2]);
 static void ascii_measure_cell_width (void *, const struct table_cell *,
                                       int *min, int *max);
@@ -420,13 +420,13 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->params.font_size[H] = 1;
   a->params.font_size[V] = 1;
 
-  static const int ascii_line_widths[RENDER_N_LINES] = {
-    [RENDER_LINE_NONE] = 0,
-    [RENDER_LINE_SINGLE] = 1,
-    [RENDER_LINE_DASHED] = 1,
-    [RENDER_LINE_THICK] = 1,
-    [RENDER_LINE_THIN] = 1,
-    [RENDER_LINE_DOUBLE] = 1,
+  static const int ascii_line_widths[TABLE_N_STROKES] = {
+    [TABLE_STROKE_NONE] = 0,
+    [TABLE_STROKE_SOLID] = 1,
+    [TABLE_STROKE_DASHED] = 1,
+    [TABLE_STROKE_THICK] = 1,
+    [TABLE_STROKE_THIN] = 1,
+    [TABLE_STROKE_DOUBLE] = 1,
   };
   a->params.line_widths = ascii_line_widths;
   a->params.supports_margins = false;
@@ -673,7 +673,7 @@ static void ascii_layout_cell (struct ascii_driver *,
 
 static void
 ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
-                 enum render_line_style styles[TABLE_N_AXES][2],
+                 enum table_stroke styles[TABLE_N_AXES][2],
                  struct cell_color colors[TABLE_N_AXES][2] UNUSED)
 {
   struct ascii_driver *a = a_;
