@@ -474,12 +474,11 @@ measure_rule (const struct render_params *params, const struct table *table,
 
   /* Determine all types of rules that are present, as a bitmap in 'rules'
      where rule type 't' is present if bit 2**t is set. */
-  struct cell_color color;
   unsigned int rules = 0;
   int d[TABLE_N_AXES];
   d[a] = z;
   for (d[b] = 0; d[b] < table->n[b]; d[b]++)
-    rules |= 1u << table_get_rule (table, a, d[H], d[V], &color);
+    rules |= 1u << table_get_rule (table, a, d[H], d[V]).stroke;
 
   /* Turn off TABLE_STROKE_NONE because it has width 0 and we needn't bother.
      However, if the device doesn't support margins, make sure that there is at
@@ -921,15 +920,11 @@ render_page_get_best_breakpoint (const struct render_page *page, int height)
 
 /* Drawing render_pages. */
 
-/* This is like table_get_rule() except:
-
-   - D is in terms of the page's rows and column rather than the underlying
-     table's.
-
-   - The result is in the form of a table_stroke. */
-static enum table_stroke
+/* This is like table_get_rule() except that D is in terms of the page's rows
+   and column rather than the underlying table's. */
+static struct table_border_style
 get_rule (const struct render_page *page, enum table_axis axis,
-          const int d_[TABLE_N_AXES], struct cell_color *color)
+          const int d_[TABLE_N_AXES])
 {
   int d[TABLE_N_AXES] = { d_[0] / 2, d_[1] / 2 };
   int d2 = -1;
@@ -954,14 +949,16 @@ get_rule (const struct render_page *page, enum table_axis axis,
   get_map (page, b, d[b], &m);
   d[b] += m.t0 - m.p0;
 
-  int r = table_get_rule (page->table, axis, d[H], d[V], color);
+  struct table_border_style border
+    = table_get_rule (page->table, axis, d[H], d[V]);
   if (d2 >= 0)
     {
       d[a] = d2;
-      int r2 = table_get_rule (page->table, axis, d[H], d[V], color);
-      r = table_stroke_combine (r, r2);
+      struct table_border_style border2 = table_get_rule (page->table, axis,
+                                                          d[H], d[V]);
+      border.stroke = table_stroke_combine (border.stroke, border2.stroke);
     }
-  return r;
+  return border;
 }
 
 static bool
@@ -992,21 +989,18 @@ static void
 render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
              const int d[TABLE_N_AXES])
 {
-  enum table_stroke styles[TABLE_N_AXES][2];
-  struct cell_color colors[TABLE_N_AXES][2];
+  const struct table_border_style none = { .stroke = TABLE_STROKE_NONE };
+  struct table_border_style styles[TABLE_N_AXES][2];
 
   for (enum table_axis a = 0; a < TABLE_N_AXES; a++)
     {
       enum table_axis b = !a;
 
-      styles[a][0] = styles[a][1] = TABLE_STROKE_NONE;
-
       if (!is_rule (d[a])
           || (page->is_edge_cutoff[a][0] && d[a] == 0)
           || (page->is_edge_cutoff[a][1] && d[a] == page->n[a] * 2))
-        continue;
-
-      if (is_rule (d[b]))
+        styles[a][0] = styles[a][1] = none;
+      else if (is_rule (d[b]))
         {
           if (d[b] > 0)
             {
@@ -1014,21 +1008,24 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
               e[H] = d[H];
               e[V] = d[V];
               e[b]--;
-              styles[a][0] = get_rule (page, a, e, &colors[a][0]);
+              styles[a][0] = get_rule (page, a, e);
             }
+          else
+            styles[a][0] = none;
 
           if (d[b] / 2 < page->n[b])
-            styles[a][1] = get_rule (page, a, d, &colors[a][1]);
+            styles[a][1] = get_rule (page, a, d);
+          else
+            styles[a][1] = none;
         }
       else
-        {
-          styles[a][0] = styles[a][1] = get_rule (page, a, d, &colors[a][0]);
-          colors[a][1] = colors[a][0];
-        }
+        styles[a][0] = styles[a][1] = get_rule (page, a, d);
     }
 
-  if (styles[H][0] != TABLE_STROKE_NONE || styles[H][1] != TABLE_STROKE_NONE
-      || styles[V][0] != TABLE_STROKE_NONE || styles[V][1] != TABLE_STROKE_NONE)
+  if (styles[H][0].stroke != TABLE_STROKE_NONE
+      || styles[H][1].stroke != TABLE_STROKE_NONE
+      || styles[V][0].stroke != TABLE_STROKE_NONE
+      || styles[V][1].stroke != TABLE_STROKE_NONE)
     {
       int bb[TABLE_N_AXES][2];
 
@@ -1042,7 +1039,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
 	}
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
-      page->params->ops->draw_line (page->params->aux, bb, styles, colors);
+      page->params->ops->draw_line (page->params->aux, bb, styles);
     }
 }
 

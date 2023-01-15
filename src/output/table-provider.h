@@ -78,7 +78,7 @@ table_cell_is_joined (const struct table_cell *cell)
 /* For use primarily by output drivers. */
 
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
-int table_get_rule (const struct table *, enum table_axis, int x, int y,
-                    struct cell_color *);
+struct table_border_style table_get_rule (const struct table *,
+                                          enum table_axis, int x, int y);
 
 #endif /* output/table-provider.h */

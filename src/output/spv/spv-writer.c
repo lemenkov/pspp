@@ -905,8 +905,8 @@ put_light_table (struct buf *buf, uint64_t table_id,
       put_color (buf, &a->font_style.bg[0]);
 
       bool alt
-        = (!cell_color_equal (&a->font_style.fg[0], &a->font_style.fg[1])
-           || !cell_color_equal (&a->font_style.bg[0], &a->font_style.bg[1]));
+        = (!cell_color_equal (a->font_style.fg[0], a->font_style.fg[1])
+           || !cell_color_equal (a->font_style.bg[0], a->font_style.bg[1]));
       put_bool (buf, alt);
       if (alt)
         {

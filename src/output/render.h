@@ -112,8 +112,7 @@ struct render_ops
        STYLES[TABLE_VERT][0]: style of line from left of BB to its center.
        STYLES[TABLE_VERT][1]: style of line from right of BB to its center. */
     void (*draw_line) (void *aux, int bb[TABLE_N_AXES][2],
-                       enum table_stroke styles[TABLE_N_AXES][2],
-                       struct cell_color colors[TABLE_N_AXES][2]);
+                       const struct table_border_style styles[TABLE_N_AXES][2]);
 
     /* Draws CELL within bounding box BB.  CLIP is the same as BB (the common
        case) or a subregion enclosed by BB.  In the latter case only the part

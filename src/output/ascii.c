@@ -326,8 +326,7 @@ static bool update_page_size (struct ascii_driver *, bool issue_error);
 static int parse_page_size (struct driver_option *);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
-                             enum table_stroke styles[TABLE_N_AXES][2],
-                             struct cell_color colors[TABLE_N_AXES][2]);
+                             const struct table_border_style[TABLE_N_AXES][2]);
 static void ascii_measure_cell_width (void *, const struct table_cell *,
                                       int *min, int *max);
 static int ascii_measure_cell_height (void *, const struct table_cell *,
@@ -673,8 +672,7 @@ static void ascii_layout_cell (struct ascii_driver *,
 
 static void
 ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
-                 enum table_stroke styles[TABLE_N_AXES][2],
-                 struct cell_color colors[TABLE_N_AXES][2] UNUSED)
+                 const struct table_border_style styles[TABLE_N_AXES][2])
 {
   struct ascii_driver *a = a_;
   char mbchar[6];
@@ -692,7 +690,11 @@ ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
     return;
 
   /* Draw. */
-  uc = box_get (a->box, styles[V][0], styles[V][1], styles[H][0], styles[H][1]);
+  enum table_stroke v0 = styles[V][0].stroke;
+  enum table_stroke v1 = styles[V][1].stroke;
+  enum table_stroke h0 = styles[H][0].stroke;
+  enum table_stroke h1 = styles[H][1].stroke;
+  uc = box_get (a->box, v0, v1, h0, h1);
   mblen = u8_uctomb (CHAR_CAST (uint8_t *, mbchar), uc, 6);
   for (y = y0; y < y1; y++)
     {

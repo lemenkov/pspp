@@ -646,8 +646,8 @@ spv_table_look_write (const char *filename, const struct pivot_table_look *look)
 
       start_elem (xml, pivot_area_names[a]);
       if (a == PIVOT_AREA_DATA
-          && (!cell_color_equal (&font->fg[0], &font->fg[1])
-              || !cell_color_equal (&font->bg[0], &font->bg[1])))
+          && (!cell_color_equal (font->fg[0], font->fg[1])
+              || !cell_color_equal (font->bg[0], font->bg[1])))
         {
           write_attr_color (xml, "alternatingColor", &font->bg[1]);
           write_attr_color (xml, "alternatingTextColor", &font->fg[1]);

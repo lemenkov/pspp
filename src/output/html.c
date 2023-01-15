@@ -454,7 +454,7 @@ format_color (const struct cell_color color,
               const struct cell_color default_color,
               char *buf, size_t bufsize)
 {
-  bool retval = !cell_color_equal (&color, &default_color);
+  bool retval = !cell_color_equal (color, default_color);
   if (retval)
     {
       if (color.alpha == 255)
@@ -472,16 +472,16 @@ put_border (const struct table *table, const struct table_cell *cell,
             enum table_axis axis, int h, int v,
             const char *border_name)
 {
-  struct cell_color color;
-  const char *css = border_to_css (
-    table_get_rule (table, axis, cell->d[H][h], cell->d[V][v], &color));
+  struct table_border_style border
+    = table_get_rule (table, axis, cell->d[H][h], cell->d[V][v]);
+  const char *css = border_to_css (border.stroke);
   if (css)
     {
       next_style (style);
       fprintf (style->file, "border-%s: %s", border_name, css);
 
       char buf[32];
-      if (format_color (color, (struct cell_color) CELL_COLOR_BLACK,
+      if (format_color (border.color, (struct cell_color) CELL_COLOR_BLACK,
                         buf, sizeof buf))
         fprintf (style->file, " %s", buf);
     }

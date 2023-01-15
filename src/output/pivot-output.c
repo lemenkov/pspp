@@ -135,23 +135,14 @@ fill_cell_owned (struct table *t, int x1, int y1, int x2, int y2,
                    pivot_value_new_user_text_nocopy (ds_steal_cstr (s)));
 }
 
-static int
-get_table_rule (const struct table_border_style *styles,
-                enum pivot_border style_idx)
-{
-  return styles[style_idx].stroke | (style_idx << TAB_RULE_STYLE_SHIFT);
-}
-
 static void
-draw_line (struct table *t, const struct table_border_style *styles,
-           enum pivot_border style_idx,
+draw_line (struct table *t, enum pivot_border border_idx,
            enum table_axis axis, int a, int b0, int b1)
 {
-  int rule = get_table_rule (styles, style_idx);
   if (axis == H)
-    table_hline (t, rule, b0, b1, a);
+    table_hline (t, border_idx, b0, b1, a);
   else
-    table_vline (t, rule, a, b0, b1);
+    table_vline (t, border_idx, a, b0, b1);
 }
 
 /* Fills row or column headings into T.
@@ -165,7 +156,6 @@ static void
 compose_headings (struct table *t,
                   const struct pivot_axis *h_axis, enum table_axis h,
                   const struct pivot_axis *v_axis,
-                  const struct table_border_style *borders,
                   enum pivot_border dim_col_horz,
                   enum pivot_border dim_col_vert,
                   enum pivot_border cat_col_horz,
@@ -302,14 +292,12 @@ compose_headings (struct table *t,
                     = (y1 == v_size - 1 ? cat_col_vert : dim_col_vert);
                   if (!vrules[x2])
                     {
-                      draw_line (t, borders, style, v, x2 + h_ofs, y1,
-                                 t->n[v] - 1);
+                      draw_line (t, style, v, x2 + h_ofs, y1, t->n[v] - 1);
                       vrules[x2] = true;
                     }
                   if (!vrules[x1])
                     {
-                      draw_line (t, borders, style, v, x1 + h_ofs, y1,
-                                 t->n[v] - 1);
+                      draw_line (t, style, v, x1 + h_ofs, y1, t->n[v] - 1);
                       vrules[x1] = true;
                     }
                 }
@@ -331,8 +319,7 @@ compose_headings (struct table *t,
                  +-----+-----+-----+-----+-----+-----+-----+-----+-----+
               */
               if (c->parent && c->parent->show_label)
-                draw_line (t, borders, cat_col_horz, h, y1,
-                           x1 + h_ofs, x2 + h_ofs - 1);
+                draw_line (t, cat_col_horz, h, y1, x1 + h_ofs, x2 + h_ofs - 1);
               x1 = x2;
             }
         }
@@ -361,8 +348,7 @@ compose_headings (struct table *t,
          +-----+-----+-----+-----+-----+-----+-----+-----+-----+
       */
       if (dim_index != h_axis->n_dimensions - 1)
-        draw_line (t, borders, dim_col_horz, h, top_row, h_ofs,
-                   t->n[h] - 1);
+        draw_line (t, dim_col_horz, h, top_row, h_ofs, t->n[h] - 1);
       top_row += d->label_depth;
     }
   free (vrules);
@@ -477,24 +463,21 @@ pivot_output (const struct pivot_table *pt,
     body->styles[i] = table_area_style_override (
       body->container, &pt->look->areas[i], NULL, NULL, false);
 
-  struct table_border_style borders[PIVOT_N_BORDERS];
-  memcpy (borders, pt->look->borders, sizeof borders);
-  if (!printing && pt->show_grid_lines)
-    for (int b = 0; b < PIVOT_N_BORDERS; b++)
-      if (borders[b].stroke == TABLE_STROKE_NONE)
-        borders[b].stroke = TABLE_STROKE_DASHED;
-
+  body->n_borders = PIVOT_N_BORDERS;
+  body->borders = pool_nmalloc (body->container, PIVOT_N_BORDERS,
+                                sizeof *body->borders);
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
-      const struct table_border_style *in = &pt->look->borders[i];
-      body->rule_colors[i] = pool_alloc (body->container,
-                                         sizeof *body->rule_colors[i]);
-      *body->rule_colors[i] = in->color;
+      const struct table_border_style *src = &pt->look->borders[i];
+      struct table_border_style *dst = &body->borders[i];
+      *dst = (!printing && pt->show_grid_lines && src->stroke == TABLE_STROKE_NONE
+              ? (struct table_border_style) { .stroke = TABLE_STROKE_DASHED,
+                                              .color = CELL_COLOR_BLACK }
+              : *src);
     }
 
   compose_headings (body,
                     &pt->axes[PIVOT_AXIS_COLUMN], H, &pt->axes[PIVOT_AXIS_ROW],
-                    borders,
                     PIVOT_BORDER_DIM_COL_HORZ,
                     PIVOT_BORDER_DIM_COL_VERT,
                     PIVOT_BORDER_CAT_COL_HORZ,
@@ -505,7 +488,6 @@ pivot_output (const struct pivot_table *pt,
 
   compose_headings (body,
                     &pt->axes[PIVOT_AXIS_ROW], V, &pt->axes[PIVOT_AXIS_COLUMN],
-                    borders,
                     PIVOT_BORDER_DIM_ROW_VERT,
                     PIVOT_BORDER_DIM_ROW_HORZ,
                     PIVOT_BORDER_CAT_ROW_VERT,
@@ -543,27 +525,17 @@ pivot_output (const struct pivot_table *pt,
 
   if (body->n[H] && body->n[V])
     {
-      table_hline (
-        body, get_table_rule (borders, PIVOT_BORDER_INNER_TOP),
-        0, body->n[H] - 1, 0);
-      table_hline (
-        body, get_table_rule (borders, PIVOT_BORDER_INNER_BOTTOM),
-        0, body->n[H] - 1, body->n[V]);
-      table_vline (
-        body, get_table_rule (borders, PIVOT_BORDER_INNER_LEFT),
-        0, 0, body->n[V] - 1);
-      table_vline (
-        body, get_table_rule (borders, PIVOT_BORDER_INNER_RIGHT),
-        body->n[H], 0, body->n[V] - 1);
+      table_hline (body, PIVOT_BORDER_INNER_TOP, 0, body->n[H] - 1, 0);
+      table_hline (body, PIVOT_BORDER_INNER_BOTTOM, 0, body->n[H] - 1,
+                   body->n[V]);
+      table_vline (body, PIVOT_BORDER_INNER_LEFT, 0, 0, body->n[V] - 1);
+      table_vline (body, PIVOT_BORDER_INNER_RIGHT, body->n[H], 0,
+                   body->n[V] - 1);
 
       if (stub[V])
-        table_hline (
-          body, get_table_rule (borders, PIVOT_BORDER_DATA_TOP),
-          0, body->n[H] - 1, stub[V]);
+        table_hline (body, PIVOT_BORDER_DATA_TOP, 0, body->n[H] - 1, stub[V]);
       if (stub[H])
-        table_vline (
-          body, get_table_rule (borders, PIVOT_BORDER_DATA_LEFT),
-          stub[H], 0, body->n[V] - 1);
+        table_vline (body, PIVOT_BORDER_DATA_LEFT, stub[H], 0, body->n[V] - 1);
 
     }
   free (column_enumeration);

@@ -201,8 +201,8 @@ font_style_dump (const struct font_style *f)
   cell_color_dump (&f->fg[0]);
   putchar ('/');
   cell_color_dump (&f->bg[0]);
-  if (!cell_color_equal (&f->fg[0], &f->fg[1])
-      || !cell_color_equal (&f->bg[0], &f->bg[1]))
+  if (!cell_color_equal (f->fg[0], f->fg[1])
+      || !cell_color_equal (f->bg[0], f->bg[1]))
     {
       printf (" alt=");
       cell_color_dump (&f->fg[1]);
@@ -224,10 +224,10 @@ font_style_equal (const struct font_style *a, const struct font_style *b)
           && a->italic == b->italic
           && a->underline == b->underline
           && a->markup == b->markup
-          && cell_color_equal (&a->fg[0], &b->fg[0])
-          && cell_color_equal (&a->fg[1], &b->fg[1])
-          && cell_color_equal (&a->bg[0], &b->bg[0])
-          && cell_color_equal (&a->bg[1], &b->bg[1])
+          && cell_color_equal (a->fg[0], b->fg[0])
+          && cell_color_equal (a->fg[1], b->fg[1])
+          && cell_color_equal (a->bg[0], b->bg[0])
+          && cell_color_equal (a->bg[1], b->bg[1])
           && !strcmp (a->typeface ? a->typeface : "",
                       b->typeface ? b->typeface : "")
           && a->size == b->size);
@@ -260,29 +260,18 @@ static const bool debugging = true;
 struct table *
 table_create (int nc, int nr, int hl, int hr, int ht, int hb)
 {
-  struct table *t;
-
-  t = pool_create_container (struct table, container);
-  t->n[TABLE_HORZ] = nc;
-  t->n[TABLE_VERT] = nr;
-  t->h[TABLE_HORZ][0] = hl;
-  t->h[TABLE_HORZ][1] = hr;
-  t->h[TABLE_VERT][0] = ht;
-  t->h[TABLE_VERT][1] = hb;
-  t->ref_cnt = 1;
-
-  t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
-  t->cp = pool_calloc (t->container, nr * nc, sizeof *t->cp);
-
-  t->rh = pool_nmalloc (t->container, nc, nr + 1);
-  memset (t->rh, TABLE_STROKE_NONE, nc * (nr + 1));
-
-  t->rv = pool_nmalloc (t->container, nr, nc + 1);
-  memset (t->rv, TABLE_STROKE_NONE, nr * (nc + 1));
-
-  memset (t->styles, 0, sizeof t->styles);
-  memset (t->rule_colors, 0, sizeof t->rule_colors);
-
+  struct pool *pool = pool_create ();
+  struct table *t = pool_alloc (pool, sizeof *t);
+  *t = (struct table) {
+    .container = pool,
+    .n = { [H] = nc, [V] = nr },
+    .h = { [H] = { hl, hr }, [V] = { ht, hb } },
+    .ref_cnt = 1,
+    .cc = pool_calloc (pool, nr * nc, sizeof *t->cc),
+    .cp = pool_calloc (pool, nr * nc, sizeof *t->cp),
+    .rh = pool_calloc (pool, nc, nr + 1),
+    .rv = pool_nmalloc (pool, nr, nc + 1),
+  };
   return t;
 }
 
@@ -449,8 +438,9 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   assert (cell->cell_style);
 }
 
-/* Returns one of the TAL_* enumeration constants (declared in output/table.h)
-   representing a rule running alongside one of the cells in TABLE.
+/* Returns one of the TABLE_STROKE_* enumeration constants (declared in
+   output/table.h) representing a rule running alongside one of the cells in
+   TABLE.
 
    Suppose NC is the number of columns in TABLE and NR is the number of rows.
    Then, if AXIS is TABLE_HORZ, then 0 <= X <= NC and 0 <= Y < NR.  If (X,Y) =
@@ -486,18 +476,17 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
    the top of cell (0,0); if (X,Y) = (0,1), it is the horizontal rule
    between that cell and cell (0,1); and so on, up to (0,NR), which runs
    horizontally below cell (0,NR-1). */
-int
-table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
-                struct cell_color *color)
+struct table_border_style
+table_get_rule (const struct table *table, enum table_axis axis, int x, int y)
 {
   assert (x >= 0 && x < table->n[TABLE_HORZ] + (axis == TABLE_HORZ));
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
 
-  uint8_t raw = (axis == TABLE_VERT
-                 ? table->rh[x + table->n[H] * y]
-                 : table->rv[x + (table->n[H] + 1) * y]);
-  struct cell_color *p = table->rule_colors[(raw & TAB_RULE_STYLE_MASK)
-                                            >> TAB_RULE_STYLE_SHIFT];
-  *color = p ? *p : (struct cell_color) CELL_COLOR_BLACK;
-  return (raw & TAB_RULE_TYPE_MASK) >> TAB_RULE_TYPE_SHIFT;
+  size_t border_idx = (axis == TABLE_VERT
+                      ? table->rh[x + table->n[H] * y]
+                      : table->rv[x + (table->n[H] + 1) * y]);
+  return (border_idx < table->n_borders
+          ? table->borders[border_idx]
+          : (struct table_border_style) { TABLE_STROKE_NONE,
+                                          CELL_COLOR_BLACK });
 }

@@ -180,16 +180,16 @@ xr_layout_cell (struct xr_fsm *, const struct table_cell *,
                 int *width, int *height, int *brk);
 
 static void
-xr_set_source_rgba (cairo_t *cairo, const struct cell_color *color)
+xr_set_source_rgba (cairo_t *cairo, const struct cell_color color)
 {
   cairo_set_source_rgba (cairo,
-                         color->r / 255., color->g / 255., color->b / 255.,
-                         color->alpha / 255.);
+                         color.r / 255., color.g / 255., color.b / 255.,
+                         color.alpha / 255.);
 }
 
 static void
 xr_draw_line (struct xr_fsm *xr, int x0, int y0, int x1, int y1, int style,
-              const struct cell_color *color)
+              const struct cell_color color)
 {
   cairo_new_path (xr->cairo);
   cairo_set_line_width (
@@ -240,8 +240,8 @@ fill_rectangle (struct xr_fsm *xr, int x0, int y0, int x1, int y1)
 static void
 xr_draw_horz_line (struct xr_fsm *xr, int x0, int x1, int x2, int x3, int y,
                    enum table_stroke left, enum table_stroke right,
-                   const struct cell_color *left_color,
-                   const struct cell_color *right_color,
+                   const struct cell_color left_color,
+                   const struct cell_color right_color,
                    bool shorten)
 {
   if (left != TABLE_STROKE_NONE && right != TABLE_STROKE_NONE && !shorten
@@ -263,8 +263,8 @@ xr_draw_horz_line (struct xr_fsm *xr, int x0, int x1, int x2, int x3, int y,
 static void
 xr_draw_vert_line (struct xr_fsm *xr, int y0, int y1, int y2, int y3, int x,
                    enum table_stroke top, enum table_stroke bottom,
-                   const struct cell_color *top_color,
-                   const struct cell_color *bottom_color,
+                   const struct cell_color top_color,
+                   const struct cell_color bottom_color,
                    bool shorten)
 {
   if (top != TABLE_STROKE_NONE && bottom != TABLE_STROKE_NONE && !shorten
@@ -281,24 +281,23 @@ xr_draw_vert_line (struct xr_fsm *xr, int y0, int y1, int y2, int y3, int x,
 
 static void
 xrr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
-               enum table_stroke styles[TABLE_N_AXES][2],
-               struct cell_color colors[TABLE_N_AXES][2])
+               const struct table_border_style styles[TABLE_N_AXES][2])
 {
   const int x0 = bb[H][0];
   const int y0 = bb[V][0];
   const int x3 = bb[H][1];
   const int y3 = bb[V][1];
-  const int top = styles[H][0];
-  const int bottom = styles[H][1];
+  const enum table_stroke top = styles[H][0].stroke;
+  const enum table_stroke bottom = styles[H][1].stroke;
 
   int start_side = render_direction_rtl();
   int end_side = !start_side;
-  const int start_of_line = styles[V][start_side];
-  const int end_of_line   = styles[V][end_side];
-  const struct cell_color *top_color = &colors[H][0];
-  const struct cell_color *bottom_color = &colors[H][1];
-  const struct cell_color *start_color = &colors[V][start_side];
-  const struct cell_color *end_color = &colors[V][end_side];
+  const int start_of_line = styles[V][start_side].stroke;
+  const int end_of_line   = styles[V][end_side].stroke;
+  const struct cell_color top_color = styles[H][0].color;
+  const struct cell_color bottom_color = styles[H][1].color;
+  const struct cell_color start_color = styles[V][start_side].color;
+  const struct cell_color end_color = styles[V][end_side].color;
 
   /* The algorithm here is somewhat subtle, to allow it to handle
      all the kinds of intersections that we need.
@@ -463,8 +462,8 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   struct xr_fsm *xr = xr_;
   int w, h, brk;
 
-  const struct cell_color *bg = &cell->font_style->bg[color_idx];
-  if ((bg->r != 255 || bg->g != 255 || bg->b != 255) && bg->alpha)
+  const struct cell_color bg = cell->font_style->bg[color_idx];
+  if ((bg.r != 255 || bg.g != 255 || bg.b != 255) && bg.alpha)
     {
       cairo_save (xr->cairo);
       int bg_clip[TABLE_N_AXES][2];
@@ -489,7 +488,7 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
     }
   cairo_save (xr->cairo);
   if (!xr->style->use_system_colors)
-    xr_set_source_rgba (xr->cairo, &cell->font_style->fg[color_idx]);
+    xr_set_source_rgba (xr->cairo, cell->font_style->fg[color_idx]);
 
   bb[V][0] += valign_offset;
 
@@ -931,7 +930,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
             xr_draw_line (xr, 0, best,
                           xr->style->size[H], best,
                           TABLE_STROKE_SOLID,
-                          &(struct cell_color) CELL_COLOR (0, 255, 0));
+                          (struct cell_color) CELL_COLOR (0, 255, 0));
         }
     }
 

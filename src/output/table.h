@@ -68,9 +68,9 @@ struct cell_color
 #define CELL_COLOR_WHITE CELL_COLOR (255, 255, 255)
 
 static inline bool
-cell_color_equal (const struct cell_color *a, const struct cell_color *b)
+cell_color_equal (const struct cell_color a, const struct cell_color b)
 {
-  return a->alpha == b->alpha && a->r == b->r && a->g == b->g && a->b == b->b;
+  return a.alpha == b.alpha && a.r == b.r && a.g == b.g && a.b == b.b;
 }
 
 void cell_color_dump (const struct cell_color *);
@@ -229,19 +229,14 @@ struct table
     /* Rules. */
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
     unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
-    struct cell_color *rule_colors[32];
+    struct table_border_style *borders;
+    size_t n_borders;
   };
 
 /* Reference counting. */
 struct table *table_ref (const struct table *);
 void table_unref (struct table *);
 bool table_is_shared (const struct table *);
-
-/* Rule masks. */
-#define TAB_RULE_TYPE_MASK   7
-#define TAB_RULE_TYPE_SHIFT  0
-#define TAB_RULE_STYLE_MASK  (31 << TAB_RULE_STYLE_SHIFT)
-#define TAB_RULE_STYLE_SHIFT 3
 
 /* Tables. */
 struct table *table_create (int nc, int nr, int hl, int hr, int ht, int hb);
