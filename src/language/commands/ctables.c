@@ -5120,7 +5120,7 @@ ctables_prepare_table (struct ctables_table *t, struct lexer *lexer)
                     ata = PIVOT_AXIS_ROW;
                     atb = PIVOT_AXIS_COLUMN;
                   }
-                else if (at == CTAT_COL || at == CTAT_LAYERCOL)
+                else /* at == CTAT_COL || at == CTAT_LAYERCOL */
                   {
                     ata = PIVOT_AXIS_COLUMN;
                     atb = PIVOT_AXIS_ROW;
