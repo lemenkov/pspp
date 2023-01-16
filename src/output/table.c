@@ -270,7 +270,7 @@ table_create (int nc, int nr, int hl, int hr, int ht, int hb)
     .cc = pool_calloc (pool, nr * nc, sizeof *t->cc),
     .cp = pool_calloc (pool, nr * nc, sizeof *t->cp),
     .rh = pool_calloc (pool, nc, nr + 1),
-    .rv = pool_nmalloc (pool, nr, nc + 1),
+    .rv = pool_calloc (pool, nr, nc + 1),
   };
   return t;
 }
