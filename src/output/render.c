@@ -609,7 +609,7 @@ set_join_crossings (struct render_page *page, enum table_axis axis,
 }
 
 /* Maps a contiguous range of cells from a page to the underlying table along
-   the horizpntal or vertical dimension. */
+   the horizontal or vertical dimension. */
 struct map
   {
     int p0;                     /* First ordinate in the page. */
