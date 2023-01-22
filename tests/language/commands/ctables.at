@@ -1660,9 +1660,9 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 │            had too  Somewhat│     .│ 38.3%│ 41.9%│ 38.6%│ 37.5%│ 36.4%│ 23.8%│
 │            much to  likely  │      │      │      │      │      │      │      │
 │            drink to         │      │      │      │      │      │      │      │
-│            drive            │      │      │      │      │      │      │      │
-│            safely   Somewhat│     .│ 18.1%│ 21.7%│ 16.8%│ 16.7%│ 10.9%│  9.5%│
-│            will A.  unlikely│      │      │      │      │      │      │      │
+│            drive    Somewhat│     .│ 18.1%│ 21.7%│ 16.8%│ 16.7%│ 10.9%│  9.5%│
+│            safely   unlikely│      │      │      │      │      │      │      │
+│            will A.          │      │      │      │      │      │      │      │
 │            Get              │      │      │      │      │      │      │      │
 │            stopped  Very    │     .│  9.2%│  9.7%│  8.2%│  9.4%│  7.3%│  9.5%│
 │            by the   unlikely│      │      │      │      │      │      │      │

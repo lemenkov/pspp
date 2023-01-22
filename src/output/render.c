@@ -806,8 +806,10 @@ render_page_create (const struct render_params *params, struct table *table,
             params->ops->measure_cell_width (params->aux, &cell,
                                              &w[MIN], &w[MAX]);
             for (int i = 0; i < 2; i++)
-              distribute_spanned_width (w[i], &columns[i][cell.d[H][0]],
-                                        rules[H], table_cell_colspan (&cell));
+              distribute_spanned_width (w[i],
+                                        &columns[i][cell.d[H][0]],
+                                        &rules[H][cell.d[H][0]],
+                                        table_cell_colspan (&cell));
           }
         x = cell.d[H][1];
       }
@@ -891,7 +893,9 @@ render_page_create (const struct render_params *params, struct table *table,
           {
             int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
             int h = params->ops->measure_cell_height (params->aux, &cell, w);
-            distribute_spanned_width (h, &rows[cell.d[V][0]], rules[V],
+            distribute_spanned_width (h,
+                                      &rows[cell.d[V][0]],
+                                      &rules[V][cell.d[V][0]],
                                       table_cell_rowspan (&cell));
           }
         x = cell.d[H][1];
