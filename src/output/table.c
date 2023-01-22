@@ -245,9 +245,6 @@ cell_style_dump (const struct cell_style *c)
           c->margin[TABLE_VERT][0], c->margin[TABLE_VERT][1]);
 }
 
-
-static const bool debugging = true;
-
 /* Creates and returns a new table with NC columns and NR rows and initially no
    header rows or columns.
 
@@ -282,20 +279,12 @@ table_create (int nc, int nr, int hl, int hr, int ht, int hb)
 void
 table_vline (struct table *t, int style, int x, int y1, int y2)
 {
-  if (debugging)
+  if (x < 0 || x > t->n[H] || y1 < 0 || y1 > y2 || y2 >= t->n[V])
     {
-      if (x < 0 || x > t->n[H]
-          || y1 < 0 || y1 >= t->n[V]
-          || y2 < 0 || y2 >= t->n[V])
-        {
-          printf ("bad vline: x=%d y=(%d,%d) in table size (%d,%d)\n",
-                  x, y1, y2, t->n[H], t->n[V]);
-          return;
-        }
+      printf ("bad vline: x=%d y=(%d,%d) in table size (%d,%d)\n",
+              x, y1, y2, t->n[H], t->n[V]);
+      abort ();
     }
-
-  assert (0 <= x && x <= t->n[H]);
-  assert (0 <= y1 && y1 <= y2 && y2 <= t->n[V]);
 
   for (int y = y1; y <= y2; y++)
     t->rv[x + (t->n[H] + 1) * y] = style;
@@ -306,20 +295,12 @@ table_vline (struct table *t, int style, int x, int y1, int y2)
 void
 table_hline (struct table *t, int style, int x1, int x2, int y)
 {
-  if (debugging)
+  if (y < 0 || y > t->n[V] || x1 < 0 || x1 > x2 || x2 >= t->n[H])
     {
-      if (y < 0 || y > t->n[V]
-          || x1 < 0 || x1 >= t->n[H]
-          || x2 < 0 || x2 >= t->n[H])
-        {
-          printf ("bad hline: x=(%d,%d) y=%d in table size (%d,%d)\n",
-                  x1, x2, y, t->n[H], t->n[V]);
-          return;
-        }
+      printf ("bad hline: x=(%d,%d) y=%d in table size (%d,%d)\n",
+              x1, x2, y, t->n[H], t->n[V]);
+      abort ();
     }
-
-  assert (0 <= y && y <= t->n[V]);
-  assert (0 <= x1 && x1 <= x2 && x2 < t->n[H]);
 
   for (int x = x1; x <= x2; x++)
     t->rh[x + t->n[H] * y] = style;
