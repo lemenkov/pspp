@@ -316,6 +316,25 @@ table_put (struct table *table, int x1, int y1, int x2, int y2,
   assert (0 <= x1 && x1 <= x2 && x2 < table->n[H]);
   assert (0 <= y1 && y1 <= y2 && y2 < table->n[V]);
 
+  const bool debugging = false;
+  if (debugging)
+    {
+      printf ("put ");
+      if (x1 == x2)
+        printf ("%d", x1);
+      else
+        printf ("%d-%d", x1, x2);
+      printf (",");
+      if (y1 == y2)
+        printf ("%d", y1);
+      else
+        printf ("%d-%d", y1, y2);
+
+      char *value_s = value ? pivot_value_to_string (value, NULL) : NULL;
+      printf (": \"%s\"\n", value_s ? value_s : "");
+      free (value_s);
+    }
+
   if (x1 == x2 && y1 == y2)
     {
       table->cc[x1 + y1 * table->n[H]] = CONST_CAST (struct pivot_value *, value);

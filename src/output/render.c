@@ -1047,6 +1047,25 @@ static void
 render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
              const struct table_cell *cell)
 {
+  const bool debugging = false;
+  if (debugging)
+    {
+      printf ("render ");
+      if (cell->d[H][0] + 1 == cell->d[H][1])
+        printf ("%d", cell->d[H][0]);
+      else
+        printf ("%d-%d", cell->d[H][0], cell->d[H][1] - 1);
+      printf (",");
+      if (cell->d[V][0] + 1 == cell->d[V][1])
+        printf ("%d", cell->d[V][0]);
+      else
+        printf ("%d-%d", cell->d[V][0], cell->d[V][1] - 1);
+
+      char *value = pivot_value_to_string (cell->value, NULL);
+      printf (": \"%s\"\n", value);
+      free (value);
+    }
+
   int bb[TABLE_N_AXES][2];
   int clip[TABLE_N_AXES][2];
 
