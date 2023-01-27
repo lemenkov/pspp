@@ -2028,6 +2028,20 @@ pivot_table_sizing_dump (const char *name,
     }
 }
 
+static void
+dump_leaf (const struct pivot_table *table, const struct pivot_category *c)
+{
+  if (c)
+    {
+      dump_leaf (table, c->parent);
+      if (pivot_category_is_leaf (c) || c->show_label)
+        {
+          putchar (' ');
+          pivot_value_dump (c->name, table);
+        }
+    }
+}
+
 void
 pivot_table_dump (const struct pivot_table *table, int indentation)
 {
@@ -2113,23 +2127,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
           pivot_value_dump (d->root->name, table);
           fputs (" =", stdout);
 
-          struct pivot_value **names = xnmalloc (d->n_leaves, sizeof *names);
-          size_t n_names = 0;
-          for (const struct pivot_category *c
-                 = d->presentation_leaves[layer_indexes[i]];
-               c;
-               c = c->parent)
-            {
-              if (pivot_category_is_leaf (c) || c->show_label)
-                names[n_names++] = c->name;
-            }
-
-          for (size_t i = n_names; i-- > 0;)
-            {
-              putchar (' ');
-              pivot_value_dump (names[i], table);
-            }
-          free (names);
+          dump_leaf (table, d->presentation_leaves[layer_indexes[i]]);
         }
       putchar ('\n');
 
