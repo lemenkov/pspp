@@ -481,10 +481,16 @@ struct pivot_table
     bool show_grid_lines;
     bool show_title;
     bool show_caption;
-    size_t *current_layer; /* axes[PIVOT_AXIS_LAYER].n_dimensions elements. */
     enum settings_value_show show_values;
     enum settings_value_show show_variables;
     struct fmt_spec weight_format;
+
+    /* Current layer indexes, with axes[PIVOT_AXIS_LAYER].n_dimensions
+       elements.  current_layer[i] is an offset into
+       axes[PIVOT_AXIS_LAYER].dimensions[i]->data_leaves[], EXCEPT that a
+       dimension can have zero leaves, in which case current_layer[i] is zero
+       and there's no corresponding leaf. */
+    size_t *current_layer;
 
     /* Column and row sizing and page breaks.
        sizing[TABLE_HORZ] is for columns, sizing[TABLE_VERT] is for rows. */

@@ -2101,11 +2101,17 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
         {
           const struct pivot_dimension *d = layer_axis->dimensions[i];
           char *name = pivot_value_to_string (d->root->name, table);
-          char *value = pivot_value_to_string (
-            d->data_leaves[table->current_layer[i]]->name, table);
-          printf (" %s=%s", name, value);
-          free (value);
+          printf (" %s", name);
           free (name);
+
+          size_t ofs = table->current_layer[i];
+          if (ofs < d->n_leaves)
+            {
+              char *value = pivot_value_to_string (d->data_leaves[ofs]->name,
+                                                   table);
+              printf ("=%s", value);
+              free (value);
+            }
         }
 
       putchar ('\n');
