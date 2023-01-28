@@ -432,10 +432,70 @@ collect_footnotes (const struct pivot_table *pt,
   return footnotes;
 }
 
+static enum pivot_border
+pivot_border_fallback (enum pivot_border border)
+{
+  switch (border)
+    {
+    case PIVOT_BORDER_TITLE:
+    case PIVOT_BORDER_OUTER_LEFT:
+    case PIVOT_BORDER_OUTER_TOP:
+    case PIVOT_BORDER_OUTER_RIGHT:
+    case PIVOT_BORDER_OUTER_BOTTOM:
+    case PIVOT_BORDER_INNER_LEFT:
+    case PIVOT_BORDER_INNER_TOP:
+    case PIVOT_BORDER_INNER_RIGHT:
+    case PIVOT_BORDER_INNER_BOTTOM:
+    case PIVOT_BORDER_DATA_LEFT:
+    case PIVOT_BORDER_DATA_TOP:
+      return border;
+
+    /* Dimensions. */
+    case PIVOT_BORDER_DIM_ROW_HORZ:
+      return PIVOT_BORDER_CAT_ROW_HORZ;
+    case PIVOT_BORDER_DIM_ROW_VERT:
+      return PIVOT_BORDER_CAT_ROW_VERT;
+    case PIVOT_BORDER_DIM_COL_HORZ:
+      return PIVOT_BORDER_CAT_COL_HORZ;
+    case PIVOT_BORDER_DIM_COL_VERT:
+      return PIVOT_BORDER_CAT_COL_VERT;
+
+    /* Categories. */
+    case PIVOT_BORDER_CAT_ROW_HORZ:
+    case PIVOT_BORDER_CAT_ROW_VERT:
+    case PIVOT_BORDER_CAT_COL_HORZ:
+    case PIVOT_BORDER_CAT_COL_VERT:
+      return border;
+
+    case PIVOT_N_BORDERS:
+    default:
+      NOT_REACHED ();
+    }
+}
+
+static struct table_border_style
+resolve_border_style (const struct pivot_table_look *look, enum pivot_border b,
+                      bool show_grid_lines)
+{
+  struct table_border_style style = look->borders[b];
+  if (style.stroke != TABLE_STROKE_NONE)
+    return style;
+
+  style = look->borders[pivot_border_fallback (b)];
+  if (style.stroke != TABLE_STROKE_NONE)
+    return style;
+
+  if (show_grid_lines)
+    return (struct table_border_style) { .stroke = TABLE_STROKE_DASHED,
+                                         .color = CELL_COLOR_BLACK };
+
+  return style;
+}
+
 void
 pivot_output (const struct pivot_table *pt,
               const size_t *layer_indexes,
-              bool printing UNUSED,
+              bool printing,
               struct table **titlep,
               struct table **layersp,
               struct table **bodyp,
@@ -467,14 +527,8 @@ pivot_output (const struct pivot_table *pt,
   body->borders = pool_nmalloc (body->container, PIVOT_N_BORDERS,
                                 sizeof *body->borders);
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    {
-      const struct table_border_style *src = &pt->look->borders[i];
-      struct table_border_style *dst = &body->borders[i];
-      *dst = (!printing && pt->show_grid_lines && src->stroke == TABLE_STROKE_NONE
-              ? (struct table_border_style) { .stroke = TABLE_STROKE_DASHED,
-                                              .color = CELL_COLOR_BLACK }
-              : *src);
-    }
+    body->borders[i] = resolve_border_style (pt->look, i,
+                                             printing && pt->show_grid_lines);
 
   compose_headings (body,
                     &pt->axes[PIVOT_AXIS_COLUMN], H, &pt->axes[PIVOT_AXIS_ROW],
