@@ -29,8 +29,8 @@ Header =>
    bool[rotate-outer-row-labels]
    bool[x2]
    int32[x3]
-   int32[min-col-width] int32[max-col-width]
-   int32[min-row-height] int32[max-row-height]
+   int32[min-col-heading-width] int32[max-col-heading-width]
+   int32[min-row-heading-width] int32[max-row-heading-width]
    int64[table-id]
 
 Titles =>

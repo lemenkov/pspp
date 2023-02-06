@@ -1793,8 +1793,8 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
                   &min_width, &max_width, &n)
           && v->graph->cell_style->width[n] == '\0')
         {
-          table->look->width_ranges[TABLE_HORZ][0] = min_width;
-          table->look->width_ranges[TABLE_HORZ][1] = max_width;
+          table->look->col_heading_width_range[0] = min_width;
+          table->look->col_heading_width_range[1] = max_width;
         }
     }
 

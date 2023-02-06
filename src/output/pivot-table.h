@@ -429,10 +429,18 @@ struct pivot_table_look
 
     char *name;                 /* May be null. */
 
-    /* General properties. */
+    /* General properties.
+
+       col_heading_width_range and row_heading_width_range is minimum and
+       maximum width of columns based on their column heading labels, in 1/96"
+       units.  row_heading_width_range is for columns in the row headings and
+       corner, and col_heading_width_range is for columns in the column
+       headings.
+    */
     bool omit_empty;
     bool row_labels_in_corner;
-    int width_ranges[TABLE_N_AXES][2];      /* In 1/96" units. */
+    int row_heading_width_range[2];
+    int col_heading_width_range[2];
 
     /* Footnote display settings. */
     bool show_numeric_markers;

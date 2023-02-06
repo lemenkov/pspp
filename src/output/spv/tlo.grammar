@@ -76,6 +76,6 @@ AreaStyle =>
 V2Styles =>
    Separator*11[sep3]
    byte[continuation-len] byte*[continuation-len][continuation]
-   int32[min-col-width] int32[max-col-width]
-   int32[min-row-height] int32[max-row-height]
+   int32[min-col-heading-width] int32[max-col-heading-width]
+   int32[min-row-heading-width] int32[max-row-heading-width]
 

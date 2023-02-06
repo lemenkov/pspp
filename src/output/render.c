@@ -142,10 +142,40 @@ struct render_page
        so no part of the cell's content is lost (and in fact it is duplicated
        across both pages). */
     int *join_crossing[TABLE_N_AXES];
+
+    /* Minimum and maximum widths of columns based on headings.
+
+       For this purpose, a table has the following three regions:
+
+       +------------------+-------------------------------------------------+
+       |                  |                  column headings                |
+       |                  +-------------------------------------------------+
+       |      corner      |                                                 |
+       |       and        |                                                 |
+       |   row headings   |                      data                       |
+       |                  |                                                 |
+       |                  |                                                 |
+       +------------------+-------------------------------------------------+
+
+       - width_ranges[TABLE_HORZ] controls the minimum and maximum width that
+         columns in the column headings will be based on the column headings
+         themselves.  That is, these columns will have width at least
+         width_ranges[TABLE_HORZ][0] wide, and no more than
+         width_ranges[TABLE_HORZ][1] unless the data requires it.
+
+       - width_ranges[TABLE_VERT] controls the minimum and maximum width that
+         columns in the corner and row headings will be based on the corner and
+         row headings themselves.  That is, these columns will have width at
+         least width_ranges[TABLE_VERT][0] wide, and no more than
+         width_ranges[TABLE_VERT][1].  (The corner and row headings don't have
+         data in their columns so data can't affect their widths.)
+    */
+    int width_ranges[TABLE_N_AXES][2];
   };
 
 static struct render_page *render_page_create (const struct render_params *,
-                                               struct table *, int min_width);
+                                               struct table *, int min_width,
+                                               const struct pivot_table_look *);
 
 struct render_page *render_page_ref (const struct render_page *page_);
 static void render_page_unref (struct render_page *);
@@ -677,15 +707,15 @@ render_get_cell (const struct render_page *page, int x, int y,
     }
 }
 
-/* Creates and returns a new render_page for rendering TABLE on a device
-   described by PARAMS.
+/* Creates and returns a new render_page for rendering TABLE with the given
+   LOOK on a device described by PARAMS.
 
    The new render_page will be suitable for rendering on a device whose page
    size is PARAMS->size, but the caller is responsible for actually breaking it
    up to fit on such a device, using the render_break abstraction.  */
 static struct render_page *
 render_page_create (const struct render_params *params, struct table *table,
-                    int min_width)
+                    int min_width, const struct pivot_table_look *look)
 {
   enum { MIN, MAX };
 
@@ -702,6 +732,13 @@ render_page_create (const struct render_params *params, struct table *table,
       for (int z = 0; z < n; z++)
         rules[axis][z] = measure_rule (params, table, axis, z);
     }
+
+  int col_heading_width_range[2];
+  int row_heading_width_range[2];
+  for (int i = 0; i < 2; i++)
+    col_heading_width_range[i] = look->col_heading_width_range[i] * params->px_size;
+  for (int i = 0; i < 2; i++)
+    row_heading_width_range[i] = look->row_heading_width_range[i] * params->px_size;
 
   /* Calculate minimum and maximum widths of cells that do not
      span multiple columns. */
@@ -721,6 +758,29 @@ render_page_create (const struct render_params *params, struct table *table,
                 int w[2];
                 params->ops->measure_cell_width (params->aux, &cell,
                                                  &w[MIN], &w[MAX]);
+
+                if (params->px_size)
+                  {
+                    const int *wr = (x < table->h[H][0] ? row_heading_width_range
+                                     : y < table->h[V][0] ? col_heading_width_range
+                                     : NULL);
+                    if (wr)
+                      {
+                        if (w[0] < wr[0])
+                          {
+                            w[0] = wr[0];
+                            if (w[0] > w[1])
+                              w[1] = w[0];
+                          }
+                        else if (w[1] > wr[1])
+                          {
+                            w[1] = wr[1];
+                            if (w[1] < w[0])
+                              w[0] = w[1];
+                          }
+                      }
+                  }
+
                 for (int i = 0; i < 2; i++)
                   if (columns[i][x].unspanned < w[i])
                     columns[i][x].unspanned = w[i];
@@ -1488,10 +1548,11 @@ struct render_pager
 
 static void
 render_pager_add_table (struct render_pager *p, struct table *table,
-                        int min_width)
+                        int min_width, const struct pivot_table_look *look)
 {
   if (table)
-    p->pages[p->n_pages++] = render_page_create (p->params, table, min_width);
+    p->pages[p->n_pages++] = render_page_create (p->params, table, min_width,
+                                                 look);
 }
 
 static void
@@ -1518,7 +1579,7 @@ render_pager_create (const struct render_params *params,
 
   /* Figure out the width of the body of the table.  Use this to determine the
      base scale. */
-  struct render_page *body_page = render_page_create (params, body, 0);
+  struct render_page *body_page = render_page_create (params, body, 0, pt->look);
   int body_width = table_width (body_page, H);
   double scale = 1.0;
   if (body_width > params->size[H])
@@ -1540,11 +1601,11 @@ render_pager_create (const struct render_params *params,
   /* Create the pager. */
   struct render_pager *p = xmalloc (sizeof *p);
   *p = (struct render_pager) { .params = params, .scale = scale };
-  render_pager_add_table (p, title, body_width);
-  render_pager_add_table (p, layers, body_width);
+  render_pager_add_table (p, title, body_width, pt->look);
+  render_pager_add_table (p, layers, body_width, pt->look);
   p->pages[p->n_pages++] = body_page;
-  render_pager_add_table (p, caption, 0);
-  render_pager_add_table (p, footnotes, 0);
+  render_pager_add_table (p, caption, 0, pt->look);
+  render_pager_add_table (p, footnotes, 0, pt->look);
   assert (p->n_pages <= sizeof p->pages / sizeof *p->pages);
 
   /* If we're shrinking tables to fit the page length, then adjust the scale

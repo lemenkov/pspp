@@ -218,10 +218,8 @@ pivot_table_look_builtin_default (void)
 
     .omit_empty = true,
     .row_labels_in_corner = true,
-    .width_ranges = {
-      [TABLE_HORZ] = { 36, 72 },
-      [TABLE_VERT] = { 36, 120 },
-    },
+    .col_heading_width_range = { 36, 72 },
+    .row_heading_width_range = { 36, 120 },
 
     .areas = {
 #define AREA(BOLD, H, V, L, R, T, B) {                         \
@@ -2069,9 +2067,9 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
   indent (indentation);
   printf ("sizing:\n");
-  pivot_table_sizing_dump ("column", table->look->width_ranges[TABLE_HORZ],
+  pivot_table_sizing_dump ("column", table->look->col_heading_width_range,
                            &table->sizing[TABLE_HORZ], indentation + 1);
-  pivot_table_sizing_dump ("row", table->look->width_ranges[TABLE_VERT],
+  pivot_table_sizing_dump ("row", table->look->row_heading_width_range,
                            &table->sizing[TABLE_VERT], indentation + 1);
 
   indent (indentation);

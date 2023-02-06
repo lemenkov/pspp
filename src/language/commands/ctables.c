@@ -6137,7 +6137,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
           for (size_t i = 0; i < 2; i++)
             if (widths[i] != SYSMIS)
               {
-                int *wr = ct->look->width_ranges[TABLE_HORZ];
+                int *wr = ct->look->col_heading_width_range;
                 wr[i] = widths[i] / units_per_inch * 96.0;
                 if (wr[0] > wr[1])
                   wr[!i] = wr[i];

@@ -55,6 +55,11 @@ struct render_params
     /* Width of different kinds of lines. */
     const int *line_widths;           /* RENDER_N_LINES members. */
 
+    /* 1/96" of an inch (1px) in the rendering unit.  Currently used only for
+       column width ranges (as specified in width_ranges in struct
+       pivot_table_look).  Set to 0 to disable this feature. */
+    int px_size;
+
     /* Minimum cell width or height before allowing the cell to be broken
        across two pages.  (Joined cells may always be broken at join
        points.) */

@@ -134,10 +134,10 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
 
   const struct spvsx_general_properties *g = in->general_properties;
   out->omit_empty = g->hide_empty_rows != 0;
-  out->width_ranges[TABLE_HORZ][0] = optional_pt (g->minimum_column_width, -1);
-  out->width_ranges[TABLE_HORZ][1] = optional_pt (g->maximum_column_width, -1);
-  out->width_ranges[TABLE_VERT][0] = optional_pt (g->minimum_row_width, -1);
-  out->width_ranges[TABLE_VERT][1] = optional_pt (g->maximum_row_width, -1);
+  out->col_heading_width_range[0] = optional_pt (g->minimum_column_width, -1);
+  out->col_heading_width_range[1] = optional_pt (g->maximum_column_width, -1);
+  out->row_heading_width_range[0] = optional_pt (g->minimum_row_width, -1);
+  out->row_heading_width_range[1] = optional_pt (g->maximum_row_width, -1);
   out->row_labels_in_corner
     = g->row_dimension_labels != SPVSX_ROW_DIMENSION_LABELS_NESTED;
 
@@ -380,17 +380,17 @@ tlo_decode (const struct tlo_table_look *in)
   out->row_labels_in_corner = !in->tl->nested_row_labels;
   if (in->v2_styles)
     {
-      out->width_ranges[TABLE_HORZ][0] = in->v2_styles->min_col_width;
-      out->width_ranges[TABLE_HORZ][1] = in->v2_styles->max_col_width;
-      out->width_ranges[TABLE_VERT][0] = in->v2_styles->min_row_height;
-      out->width_ranges[TABLE_VERT][1] = in->v2_styles->max_row_height;
+      out->col_heading_width_range[0] = in->v2_styles->min_col_heading_width;
+      out->col_heading_width_range[1] = in->v2_styles->max_col_heading_width;
+      out->row_heading_width_range[0] = in->v2_styles->min_row_heading_width;
+      out->row_heading_width_range[1] = in->v2_styles->max_row_heading_width;
     }
   else
     {
-      out->width_ranges[TABLE_HORZ][0] = 36;
-      out->width_ranges[TABLE_HORZ][1] = 72;
-      out->width_ranges[TABLE_VERT][0] = 36;
-      out->width_ranges[TABLE_VERT][1] = 120;
+      out->col_heading_width_range[0] = 36;
+      out->col_heading_width_range[1] = 72;
+      out->row_heading_width_range[0] = 36;
+      out->row_heading_width_range[1] = 120;
     }
 
   out->show_numeric_markers = flags & 0x04;
@@ -621,11 +621,12 @@ spv_table_look_write (const char *filename, const struct pivot_table_look *look)
 
   start_elem (xml, "generalProperties");
   write_attr_bool (xml, "hideEmptyRows", look->omit_empty);
-  const int (*wr)[2] = look->width_ranges;
-  write_attr_format (xml, "maximumColumnWidth", "%d", wr[TABLE_HORZ][1]);
-  write_attr_format (xml, "maximumRowWidth", "%d", wr[TABLE_VERT][1]);
-  write_attr_format (xml, "minimumColumnWidth", "%d", wr[TABLE_HORZ][0]);
-  write_attr_format (xml, "minimumRowWidth", "%d", wr[TABLE_VERT][0]);
+  const int *chwr = look->col_heading_width_range;
+  const int *rhwr = look->row_heading_width_range;
+  write_attr_format (xml, "maximumColumnWidth", "%d", chwr[1]);
+  write_attr_format (xml, "maximumRowWidth", "%d", rhwr[1]);
+  write_attr_format (xml, "minimumColumnWidth", "%d", chwr[0]);
+  write_attr_format (xml, "minimumRowWidth", "%d", rhwr[0]);
   write_attr (xml, "rowDimensionLabels",
               look->row_labels_in_corner ? "inCorner" : "nested");
   end_elem (xml);

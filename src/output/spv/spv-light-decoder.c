@@ -876,10 +876,10 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
     }
 
   /* Column and row display settings. */
-  out->look->width_ranges[TABLE_VERT][0] = in->header->min_row_height;
-  out->look->width_ranges[TABLE_VERT][1] = in->header->max_row_height;
-  out->look->width_ranges[TABLE_HORZ][0] = in->header->min_col_width;
-  out->look->width_ranges[TABLE_HORZ][1] = in->header->max_col_width;
+  out->look->row_heading_width_range[0] = in->header->min_row_heading_width;
+  out->look->row_heading_width_range[1] = in->header->max_row_heading_width;
+  out->look->col_heading_width_range[0] = in->header->min_col_heading_width;
+  out->look->col_heading_width_range[1] = in->header->max_col_heading_width;
 
   convert_widths (in->formats->widths, in->formats->n_widths,
                   &out->sizing[TABLE_HORZ].widths,

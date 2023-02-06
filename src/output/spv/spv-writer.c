@@ -862,10 +862,10 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_bool (buf, table->rotate_outer_row_labels);
   put_bool (buf, true);
   put_u32 (buf, 0x15);
-  put_u32 (buf, table->look->width_ranges[H][0]);
-  put_u32 (buf, table->look->width_ranges[H][1]);
-  put_u32 (buf, table->look->width_ranges[V][0]);
-  put_u32 (buf, table->look->width_ranges[V][1]);
+  put_u32 (buf, table->look->col_heading_width_range[0]);
+  put_u32 (buf, table->look->col_heading_width_range[1]);
+  put_u32 (buf, table->look->row_heading_width_range[0]);
+  put_u32 (buf, table->look->row_heading_width_range[1]);
   put_u64 (buf, table_id);
 
   /* Titles. */

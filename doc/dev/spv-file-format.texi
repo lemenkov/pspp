@@ -1051,8 +1051,8 @@ Header =>
     bool[rotate-outer-row-labels]
     bool[x2]
     int32[x3]
-    int32[min-col-width] int32[max-col-width]
-    int32[min-row-width] int32[max-row-width]
+    int32[min-col-heading-width] int32[max-col-heading-width]
+    int32[min-row-heading-width] int32[max-row-heading-width]
     int64[table-id]
 @end example
 
@@ -1069,12 +1069,37 @@ If @code{rotate-outer-row-labels} is 1, then row labels farthest from
 the data are rotated 90° counterclockwise; otherwise, they are shown
 in the normal way.
 
-@code{min-col-width} is the minimum width that a column will be
-assigned automatically.  @code{max-col-width} is the maximum width
-that a column will be assigned to accommodate a long column label.
-@code{min-row-width} and @code{max-row-width} are a similar range for
-the width of row labels.  All of these measurements are in 1/96 inch
-units (called a ``device independent pixel'' unit in Windows).
+@code{min-col-heading-width}, @code{max-col-heading-width}, @code{min-row-heading-width}, and
+@code{max-row-heading-width} are measurements in 1/96 inch units (called
+``device independent pixel'' units in Windows) whose values influence
+column widths.  For the purpose of interpreting these values, a table
+is divided into the three regions shown below:
+
+@example
++------------------+-------------------------------------------------+
+|                  |                  column headings                |
+|                  +-------------------------------------------------+
+|      corner      |                                                 |
+|       and        |                                                 |
+|   row headings   |                      data                       |
+|                  |                                                 |
+|                  |                                                 |
++------------------+-------------------------------------------------+
+@end example
+
+@code{min-col-heading-width} and @code{max-col-heading-width} apply to the columns in
+the column headings region.  @code{min-col-heading-width} is the minimum width
+that any of these columns will be given automatically.  In addition,
+@code{max-col-heading-width} is the maximum width that a column will be
+assigned to accommodate a long label in the column headings cells.
+These columns will still be made wider to accommodate wide data values
+in the data region.
+
+@code{min-row-heading-width} is the minimum width that a column in the corner
+and row headings region will be given automatically.
+@code{max-col-heading-width} is the maximum width that a column in this region
+will be assigned to accomodate a long label.  This region doesn't
+include data, so data values don't affect column widths.
 
 @code{table-id} is a binary version of the @code{tableId} attribute in
 the structure member that refers to the detail member.  For example,
