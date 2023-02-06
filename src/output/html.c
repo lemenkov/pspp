@@ -85,10 +85,9 @@ html_driver_cast (struct output_driver *driver)
 }
 
 static struct driver_option *
-opt (struct output_driver *d, struct string_map *options, const char *key,
-     const char *default_value)
+opt (struct string_map *options, const char *key, const char *default_value)
 {
-  return driver_option_get (d, options, key, default_value);
+  return driver_option_get ("html", options, key, default_value);
 }
 
 static void
@@ -179,37 +178,37 @@ static struct output_driver *
 html_create (struct file_handle *fh, enum settings_output_devices device_type,
              struct string_map *o)
 {
-  struct output_driver *d;
-  struct html_driver *html = XZALLOC (struct html_driver);
-  d = &html->driver;
-  output_driver_init (&html->driver, &html_driver_class, fh_get_file_name (fh),
-                      device_type);
-  html->bare = parse_boolean (opt (d, o, "bare", "false"));
-  html->css = parse_boolean (opt (d, o, "css", "true"));
-  html->borders = parse_boolean (opt (d, o, "borders", "true"));
-
-  html->handle = fh;
-  html->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
-                                                      fh_get_file_name (fh)));
-  html->file = NULL;
-  html->n_charts = 1;
-  html->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
-  html->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
-  html->file = fn_open (html->handle, "w");
-  if (html->file == NULL)
+  FILE *file = fn_open (fh, "w");
+  if (!file)
     {
-      msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (html->handle));
-      goto error;
+      msg_error (errno, _("error opening output file `%s'"),
+                 fh_get_file_name (fh));
+      return NULL;
     }
+
+  struct html_driver *html = xmalloc (sizeof *html);
+  *html = (struct html_driver) {
+    .driver = {
+      .class = &html_driver_class,
+      .name = xstrdup (fh_get_file_name (fh)),
+      .device_type = device_type
+    },
+    .bare = parse_boolean (opt (o, "bare", "false")),
+    .css = parse_boolean (opt (o, "css", "true")),
+    .borders = parse_boolean (opt (o, "borders", "true")),
+    .handle = fh,
+    .chart_file_name = parse_chart_file_name (opt (o, "charts",
+                                                   fh_get_file_name (fh))),
+    .file = file,
+    .n_charts = 1,
+    .bg = parse_color (opt (o, "background-color", "#FFFFFFFFFFFF")),
+    .fg = parse_color (opt (o, "foreground-color", "#000000000000")),
+  };
 
   if (!html->bare)
     put_header (html);
 
-  return d;
-
- error:
-  output_driver_destroy (d);
-  return NULL;
+  return &html->driver;
 }
 
 /* Emits <NAME>CONTENT</NAME> to the output, escaping CONTENT as

@@ -278,13 +278,20 @@ box_get (const struct box_chars *box,
   return box->c[right][bottom][left][top];
 }
 
+/* How the page width is determined. */
+enum ascii_width_mode
+  {
+    FIXED_WIDTH,              /* Specified by configuration. */
+    VIEW_WIDTH,               /* From SET WIDTH. */
+    TERMINAL_WIDTH            /* From the terminal's width. */
+  };
+
 /* ASCII output driver. */
 struct ascii_driver
   {
     struct output_driver driver;
 
     /* User parameters. */
-    bool append;                /* Append if output file already exists? */
     bool emphasis;              /* Enable bold and underline in output? */
     char *chart_file_name;      /* Name of files used for charts. */
 
@@ -293,11 +300,7 @@ struct ascii_driver
     struct cell_color bg;
 
     /* How the page width is determined: */
-    enum {
-      FIXED_WIDTH,              /* Specified by configuration. */
-      VIEW_WIDTH,               /* From SET WIDTH. */
-      TERMINAL_WIDTH            /* From the terminal's width. */
-    } width_mode;
+    enum ascii_width_mode width_mode;
     int width;                  /* Page width. */
 
     int min_hbreak;             /* Min cell size to break across pages. */
@@ -344,10 +347,9 @@ ascii_driver_cast (struct output_driver *driver)
 }
 
 static struct driver_option *
-opt (struct output_driver *d, struct string_map *options, const char *key,
-     const char *default_value)
+opt (struct string_map *options, const char *key, const char *default_value)
 {
-  return driver_option_get (d, options, key, default_value);
+  return driver_option_get ("ascii", options, key, default_value);
 }
 
 /* Return true iff the terminal appears to be an xterm with
@@ -367,43 +369,25 @@ static struct output_driver *
 ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
               struct string_map *o)
 {
-  enum { BOX_ASCII, BOX_UNICODE } box;
-  struct output_driver *d;
-  struct ascii_driver *a = XZALLOC (struct ascii_driver);
-  d = &a->driver;
-  output_driver_init (&a->driver, &ascii_driver_class, fh_get_file_name (fh), device_type);
-  a->append = parse_boolean (opt (d, o, "append", "false"));
-  a->emphasis = parse_boolean (opt (d, o, "emphasis", "false"));
+  bool append = parse_boolean (opt (o, "append", "false"));
+  FILE *file = fn_open (fh, append ? "a" : "w");
+  if (!file)
+    {
+      msg_error (errno, _("ascii: opening output file `%s'"),
+                 fh_get_file_name (fh));
+      return NULL;
+    }
 
-  a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", fh_get_file_name (fh)));
-  a->handle = fh;
-
-
+  int width = parse_page_size (opt (o, "width", "-1"));
   bool terminal = !strcmp (fh_get_file_name (fh), "-") && isatty (1);
-  a->width = parse_page_size (opt (d, o, "width", "-1"));
-  a->width_mode = (a->width > 0 ? FIXED_WIDTH
-                   : terminal ? TERMINAL_WIDTH
-                   : VIEW_WIDTH);
-  a->min_hbreak = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
-
-  a->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
-  a->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
 
   const char *default_box = (terminal && (!strcmp (locale_charset (), "UTF-8")
                                           || term_is_utf8_xterm ())
                              ? "unicode" : "ascii");
-  box = parse_enum (opt (d, o, "box", default_box),
-                    "ascii", BOX_ASCII,
-                    "unicode", BOX_UNICODE,
-                    NULL_SENTINEL);
-  a->box = box == BOX_ASCII ? get_ascii_box () : get_unicode_box ();
-
-  a->file = NULL;
-  a->error = false;
-  a->lines = NULL;
-  a->allocated_lines = 0;
-  a->n_charts = 0;
-  a->n_objects = 0;
+  enum { BOX_ASCII, BOX_UNICODE } box = parse_enum (opt (o, "box", default_box),
+                                                    "ascii", BOX_ASCII,
+                                                    "unicode", BOX_UNICODE,
+                                                    NULL_SENTINEL);
 
   static const struct render_ops ascii_render_ops = {
     .draw_line = ascii_draw_line,
@@ -412,12 +396,6 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
     .adjust_break = NULL,
     .draw_cell = ascii_draw_cell,
   };
-  a->params.ops = &ascii_render_ops;
-  a->params.aux = a;
-  a->params.size[H] = a->width;
-  a->params.size[V] = INT_MAX;
-  a->params.font_size[H] = 1;
-  a->params.font_size[V] = 1;
 
   static const int ascii_line_widths[TABLE_N_STROKES] = {
     [TABLE_STROKE_NONE] = 0,
@@ -427,26 +405,52 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
     [TABLE_STROKE_THIN] = 1,
     [TABLE_STROKE_DOUBLE] = 1,
   };
-  a->params.line_widths = ascii_line_widths;
-  a->params.supports_margins = false;
-  a->params.rtl = render_direction_rtl ();
-  a->params.printing = true;
+
+  struct ascii_driver *a = xmalloc (sizeof *a);
+  *a = (struct ascii_driver) {
+    .driver = {
+      .class = &ascii_driver_class,
+      .name = xstrdup (fh_get_file_name (fh)),
+      .device_type = device_type
+    },
+
+    .emphasis = parse_boolean (opt (o, "emphasis", "false")),
+    .chart_file_name = parse_chart_file_name (opt (o, "charts",
+                                                   fh_get_file_name (fh))),
+
+    .fg = parse_color (opt (o, "foreground-color", "#000000000000")),
+    .bg = parse_color (opt (o, "background-color", "#FFFFFFFFFFFF")),
+
+    .width_mode = (width > 0 ? FIXED_WIDTH
+                   : terminal ? TERMINAL_WIDTH
+                   : VIEW_WIDTH),
+    .width = width,
+
+    .min_hbreak = parse_int (opt (o, "min-hbreak", "-1"), -1, INT_MAX),
+
+    .box = box == BOX_ASCII ? get_ascii_box () : get_unicode_box (),
+
+    .handle = fh,
+    .file = file,
+
+    .params = (struct render_params) {
+      .ops = &ascii_render_ops,
+      .aux = a,
+      .size = { [H] = a->width, [V] = INT_MAX },
+      .font_size = { [H] = 1, [V] = 1 },
+      .line_widths = ascii_line_widths,
+      .rtl = render_direction_rtl (),
+      .printing = true,
+    },
+  };
 
   if (!update_page_size (a, true))
     goto error;
 
-  a->file = fn_open (a->handle, a->append ? "a" : "w");
-  if (!a->file)
-    {
-      msg_error (errno, _("ascii: opening output file `%s'"),
-                 fh_get_file_name (a->handle));
-      goto error;
-    }
-
-  return d;
+  return &a->driver;
 
 error:
-  output_driver_destroy (d);
+  output_driver_destroy (&a->driver);
   return NULL;
 }
 

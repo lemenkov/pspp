@@ -140,16 +140,16 @@ static const struct output_driver_class journal_class =
 void
 journal_init (void)
 {
-  /* Create journal driver. */
-  output_driver_init (&journal.driver, &journal_class, "journal",
-		      SETTINGS_DEVICE_UNFILTERED);
-  journal.file = NULL;
+  journal = (struct journal_driver) {
+    .driver = {
+      .class = &journal_class,
+      .name = xstrdup ("journal"),
+      .device_type = SETTINGS_DEVICE_UNFILTERED,
+    }
+  };
 
-  /* Register journal driver. */
   output_driver_register (&journal.driver);
-
   journal_enable ();
-  journal.destroyed = false;
 }
 
 /* Disables journaling. */

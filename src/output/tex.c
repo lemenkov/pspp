@@ -109,45 +109,42 @@ tex_driver_cast (struct output_driver *driver)
 }
 
 static struct driver_option *
-opt (struct output_driver *d, struct string_map *options, const char *key,
-     const char *default_value)
+opt (struct string_map *options, const char *key, const char *default_value)
 {
-  return driver_option_get (d, options, key, default_value);
+  return driver_option_get ("tex", options, key, default_value);
 }
 
 static struct output_driver *
 tex_create (struct file_handle *fh, enum settings_output_devices device_type,
              struct string_map *o)
 {
-  struct output_driver *d;
-  struct tex_driver *tex = XZALLOC (struct tex_driver);
-  hmap_init (&tex->macros);
-  ll_init (&tex->preamble_list);
-  ll_init (&tex->token_list);
-
-  d = &tex->driver;
-  output_driver_init (&tex->driver, &tex_driver_class, fh_get_file_name (fh),
-                      device_type);
-  tex->handle = fh;
-  tex->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
-                                                      fh_get_file_name (fh)));
-  tex->n_charts = 1;
-  tex->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
-  tex->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
-
-  tex->file = fn_open (tex->handle, "w");
-  if (tex->file == NULL)
+  FILE *file = fn_open (fh, "w");
+  if (!file)
     {
       msg_error (errno, _("error opening output file `%s'"),
-                 fh_get_file_name (tex->handle));
-      goto error;
+                 fh_get_file_name (fh));
+      return NULL;
     }
 
-  return d;
-
- error:
-  output_driver_destroy (d);
-  return NULL;
+  struct tex_driver *tex = xmalloc (sizeof *tex);
+  *tex = (struct tex_driver) {
+    .driver = {
+      .class = &tex_driver_class,
+      .name = xstrdup (fh_get_file_name (fh)),
+      .device_type = device_type,
+    },
+    .macros = HMAP_INITIALIZER (tex->macros),
+    .bg = parse_color (opt (o, "background-color", "#FFFFFFFFFFFF")),
+    .fg = parse_color (opt (o, "foreground-color", "#000000000000")),
+    .handle = fh,
+    .chart_file_name = parse_chart_file_name (opt (o, "charts",
+                                                   fh_get_file_name (fh))),
+    .file = file,
+    .n_charts = 1,
+    .preamble_list = LL_INITIALIZER (tex->preamble_list),
+    .token_list = LL_INITIALIZER (tex->token_list),
+  };
+  return &tex->driver;
 }
 
 

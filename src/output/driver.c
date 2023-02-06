@@ -412,16 +412,6 @@ output_set_filename (const char *filename)
 }
 
 void
-output_driver_init (struct output_driver *driver,
-                    const struct output_driver_class *class,
-                    const char *name, enum settings_output_devices type)
-{
-  driver->class = class;
-  driver->name = xstrdup (name);
-  driver->device_type = type;
-}
-
-void
 output_driver_destroy (struct output_driver *driver)
 {
   if (driver != NULL)

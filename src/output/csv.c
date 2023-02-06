@@ -66,42 +66,45 @@ csv_driver_cast (struct output_driver *driver)
 }
 
 static struct driver_option *
-opt (struct output_driver *d, struct string_map *options, const char *key,
-     const char *default_value)
+opt (struct string_map *options, const char *key, const char *default_value)
 {
-  return driver_option_get (d, options, key, default_value);
+  return driver_option_get ("csv", options, key, default_value);
 }
 
 static struct output_driver *
 csv_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o)
 {
-  struct output_driver *d;
-  char *quote;
-
-  struct csv_driver *csv = XZALLOC (struct csv_driver);
-  d = &csv->driver;
-  output_driver_init (&csv->driver, &csv_driver_class, fh_get_file_name (fh), device_type);
-
-  csv->separator = parse_string (opt (d, o, "separator", ","));
-  quote = parse_string (opt (d, o, "quote", "\""));
-  csv->quote = quote[0];
-  free (quote);
-  csv->quote_set = xasprintf ("\n\r\t%s%c", csv->separator, csv->quote);
-  csv->titles = parse_boolean (opt (d, o, "titles", "true"));
-  csv->captions = parse_boolean (opt (d, o, "captions", "true"));
-  csv->handle = fh;
-  csv->file = fn_open (fh, "w");
-  csv->n_items = 0;
-
-  if (csv->file == NULL)
+  FILE *file = fn_open (fh, "w");
+  if (!file)
     {
       msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (fh));
-      output_driver_destroy (d);
       return NULL;
     }
 
-  return d;
+  char *quote_s = parse_string (opt (o, "quote", "\""));
+  int quote = quote_s[0];
+  free (quote_s);
+
+  char *separator = parse_string (opt (o, "separator", ","));
+
+  struct csv_driver *csv = xmalloc (sizeof *csv);
+  *csv = (struct csv_driver) {
+    .driver = {
+      .class = &csv_driver_class,
+      .name = xstrdup (fh_get_file_name (fh)),
+      .device_type = device_type,
+    },
+    .separator = separator,
+    .quote = quote,
+    .quote_set = xasprintf ("\n\r\t%s%c", separator, quote),
+    .titles = parse_boolean (opt (o, "titles", "true")),
+    .captions = parse_boolean (opt (o, "captions", "true")),
+    .handle = fh,
+    .file = file,
+  };
+
+  return &csv->driver;
 }
 
 static void

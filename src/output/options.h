@@ -34,11 +34,7 @@ struct driver_option
     char *default_value;        /* Default value supplied by driver. */
   };
 
-struct driver_option *driver_option_create (const char *driver_name,
-                                            const char *name,
-                                            const char *value,
-                                            const char *default_value);
-struct driver_option *driver_option_get (struct output_driver *,
+struct driver_option *driver_option_get (const char *driver_name,
                                          struct string_map *,
                                          const char *name,
                                          const char *default_value);

@@ -72,13 +72,17 @@ msglog_create (const char *file_name)
           ? SETTINGS_DEVICE_TERMINAL
           : SETTINGS_DEVICE_UNFILTERED);
 
-  struct msglog_driver *ml = XZALLOC (struct msglog_driver);
-  ml->handle = handle;
-  output_driver_init (&ml->driver, &msglog_class, file_name, type);
-  ml->file = file;
-
+  struct msglog_driver *ml = xmalloc (sizeof *ml);
+  *ml = (struct msglog_driver) {
+    .driver = {
+      .class = &msglog_class,
+      .name = xstrdup (file_name),
+      .device_type = type,
+    },
+    .file = file,
+    .handle = handle,
+  };
   output_driver_register (&ml->driver);
-
   return &ml->driver;
 }
 

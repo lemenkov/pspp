@@ -51,26 +51,26 @@ static struct output_driver *
 spv_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o UNUSED)
 {
-  struct output_driver *d;
-  struct spv_driver *spv = XZALLOC (struct spv_driver);
-  d = &spv->driver;
-  spv->handle = fh;
-  output_driver_init (&spv->driver, &spv_driver_class, fh_get_file_name (fh),
-                      device_type);
-
-  char *error = spv_writer_open (fh_get_file_name (fh), &spv->writer);
-  if (spv->writer == NULL)
+  struct spv_writer *writer;
+  char *error = spv_writer_open (fh_get_file_name (fh), &writer);
+  if (!writer)
     {
       msg (ME, "%s", error);
       free (error);
-      goto error;
+      return NULL;
     }
 
-  return d;
-
-error:
-  output_driver_destroy (d);
-  return NULL;
+  struct spv_driver *spv = xmalloc (sizeof *spv);
+  *spv = (struct spv_driver) {
+    .driver = {
+      .class = &spv_driver_class,
+      .name = xstrdup (fh_get_file_name (fh)),
+      .device_type = device_type,
+    },
+    .handle = fh,
+    .writer = writer,
+  };
+  return &spv->driver;
 }
 
 static void

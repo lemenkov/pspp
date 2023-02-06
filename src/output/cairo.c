@@ -130,10 +130,9 @@ xr_driver_cast (struct output_driver *driver)
 }
 
 static struct driver_option *
-opt (struct output_driver *d, struct string_map *options, const char *key,
-     const char *default_value)
+opt (struct string_map *options, const char *key, const char *default_value)
 {
-  return driver_option_get (d, options, key, default_value);
+  return driver_option_get ("cairo", options, key, default_value);
 }
 
 static PangoFontDescription *
@@ -163,11 +162,11 @@ parse_font (const char *font, int default_size, bool bold, bool italic)
 }
 
 static PangoFontDescription *
-parse_font_option (struct output_driver *d, struct string_map *options,
+parse_font_option (struct string_map *options,
                    const char *key, const char *default_value,
                    int default_size, bool bold, bool italic)
 {
-  char *string = parse_string (opt (d, options, key, default_value));
+  char *string = parse_string (opt (options, key, default_value));
   PangoFontDescription *desc = parse_font (string, default_size, bold, italic);
   if (!desc)
     {
@@ -187,55 +186,49 @@ static struct xr_driver *
 xr_allocate (const char *name, int device_type,
              enum xr_output_type output_type, struct string_map *o)
 {
-  struct xr_driver *xr = XZALLOC (struct xr_driver);
-  struct output_driver *d = &xr->driver;
-
-  output_driver_init (d, &cairo_driver_class, name, device_type);
-  xr->output_type = output_type;
-
   /* Scale factor from inch/72000 to inch/(72 * XR_POINT). */
   const double scale = XR_POINT / 1000.;
 
   int paper[TABLE_N_AXES];
-  parse_paper_size (opt (d, o, "paper-size", ""), &paper[H], &paper[V]);
+  parse_paper_size (opt (o, "paper-size", ""), &paper[H], &paper[V]);
   for (int a = 0; a < TABLE_N_AXES; a++)
     paper[a] *= scale;
 
   int margins[TABLE_N_AXES][2];
-  margins[H][0] = parse_dimension (opt (d, o, "left-margin", ".5in")) * scale;
-  margins[H][1] = parse_dimension (opt (d, o, "right-margin", ".5in")) * scale;
-  margins[V][0] = parse_dimension (opt (d, o, "top-margin", ".5in")) * scale;
-  margins[V][1] = parse_dimension (opt (d, o, "bottom-margin", ".5in")) * scale;
+  margins[H][0] = parse_dimension (opt (o, "left-margin", ".5in")) * scale;
+  margins[H][1] = parse_dimension (opt (o, "right-margin", ".5in")) * scale;
+  margins[V][0] = parse_dimension (opt (o, "top-margin", ".5in")) * scale;
+  margins[V][1] = parse_dimension (opt (o, "bottom-margin", ".5in")) * scale;
 
   int size[TABLE_N_AXES];
   for (int a = 0; a < TABLE_N_AXES; a++)
     size[a] = paper[a] - margins[a][0] - margins[a][1];
 
   int min_break[TABLE_N_AXES];
-  min_break[H] = parse_dimension (opt (d, o, "min-hbreak", NULL)) * scale;
-  min_break[V] = parse_dimension (opt (d, o, "min-vbreak", NULL)) * scale;
+  min_break[H] = parse_dimension (opt (o, "min-hbreak", NULL)) * scale;
+  min_break[V] = parse_dimension (opt (o, "min-vbreak", NULL)) * scale;
   for (int a = 0; a < TABLE_N_AXES; a++)
     if (min_break[a] <= 0)
       min_break[a] = size[a] / 2;
 
-  int font_size = parse_int (opt (d, o, "font-size", "10000"), 1000, 1000000);
+  int font_size = parse_int (opt (o, "font-size", "10000"), 1000, 1000000);
   PangoFontDescription *font = parse_font_option (
-    d, o, "prop-font", "Sans Serif", font_size, false, false);
+    o, "prop-font", "Sans Serif", font_size, false, false);
 
-  struct cell_color fg = parse_color (opt (d, o, "foreground-color", "black"));
+  struct cell_color fg = parse_color (opt (o, "foreground-color", "black"));
 
-  bool systemcolors = parse_boolean (opt (d, o, "systemcolors", "false"));
+  bool systemcolors = parse_boolean (opt (o, "systemcolors", "false"));
 
   int object_spacing
-    = parse_dimension (opt (d, o, "object-spacing", NULL)) * scale;
+    = parse_dimension (opt (o, "object-spacing", NULL)) * scale;
   if (object_spacing <= 0)
     object_spacing = XR_POINT * 12;
 
   const char *default_resolution = (output_type == XR_PNG ? "96" : "72");
-  int font_resolution = parse_int (opt (d, o, "font-resolution",
+  int font_resolution = parse_int (opt (o, "font-resolution",
                                         default_resolution), 10, 1000);
 
-  xr->trim = parse_boolean (opt (d, o, "trim", "false"));
+  bool trim = parse_boolean (opt (o, "trim", "false"));
 
   /* Cairo 1.16.0 has a bug that causes crashes if outlines are enabled at the
      same time as trimming:
@@ -243,10 +236,10 @@ xr_allocate (const char *name, int device_type,
      For now, just disable the outline if trimming is enabled. */
   bool include_outline
     = (output_type == XR_PDF
-       && parse_boolean (opt (d, o, "outline", xr->trim ? "false" : "true")));
+       && parse_boolean (opt (o, "outline", trim ? "false" : "true")));
 
-  xr->page_style = xmalloc (sizeof *xr->page_style);
-  *xr->page_style = (struct xr_page_style) {
+  struct xr_page_style *page_style = xmalloc (sizeof *page_style);
+  *page_style = (struct xr_page_style) {
     .ref_cnt = 1,
 
     .margins = {
@@ -258,8 +251,8 @@ xr_allocate (const char *name, int device_type,
     .include_outline = include_outline,
   };
 
-  xr->fsm_style = xmalloc (sizeof *xr->fsm_style);
-  *xr->fsm_style = (struct xr_fsm_style) {
+  struct xr_fsm_style *fsm_style = xmalloc (sizeof *fsm_style);
+  *fsm_style = (struct xr_fsm_style) {
     .ref_cnt = 1,
     .size = { [H] = size[H], [V] = size[V] },
     .min_break = { [H] = min_break[H], [V] = min_break[V] },
@@ -268,6 +261,19 @@ xr_allocate (const char *name, int device_type,
     .use_system_colors = systemcolors,
     .object_spacing = object_spacing,
     .font_resolution = font_resolution,
+  };
+
+  struct xr_driver *xr = xmalloc (sizeof *xr);
+  *xr = (struct xr_driver) {
+    .driver = {
+      .class = &cairo_driver_class,
+      .name = xstrdup (name),
+      .device_type = device_type,
+    },
+    .output_type = output_type,
+    .fsm_style = fsm_style,
+    .page_style = page_style,
+    .trim = trim,
   };
 
   return xr;

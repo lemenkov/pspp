@@ -284,22 +284,22 @@ static struct output_driver *
 odt_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o UNUSED)
 {
-  struct output_driver *d;
-  struct zip_writer *zip;
   const char *file_name = fh_get_file_name (fh);
-
-  zip = zip_writer_create (file_name);
+  struct zip_writer *zip = zip_writer_create (file_name);
   if (zip == NULL)
     return NULL;
 
-  struct odt_driver *odt = XZALLOC (struct odt_driver);
-  d = &odt->driver;
-
-  output_driver_init (d, &odt_driver_class, file_name, device_type);
-
-  odt->zip = zip;
-  odt->handle = fh;
-  odt->file_name = xstrdup (file_name);
+  struct odt_driver *odt = xmalloc (sizeof *odt);
+  *odt = (struct odt_driver) {
+    .driver = {
+      .class = &odt_driver_class,
+      .name = xstrdup (file_name),
+      .device_type = device_type,
+    },
+    .zip = zip,
+    .handle = fh,
+    .file_name = xstrdup (file_name),
+  };
 
   zip_writer_add_string (zip, "mimetype",
                          "application/vnd.oasis.opendocument.text");
@@ -351,7 +351,7 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
   zip_writer_add (odt->zip, odt->manifest_file, "META-INF/manifest.xml");
   close_temp_file (odt->manifest_file);
 
-  return d;
+  return &odt->driver;
 }
 
 static void

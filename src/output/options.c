@@ -38,40 +38,19 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Creates and returns a new struct driver_option that contains copies of
-   all of the supplied arguments.  All of the arguments must be nonnull,
-   except that VALUE may be NULL (if the user did not supply a value for this
-   option).
-
-   Refer to struct driver_option for the meaning of each argument. */
+/* Creates and returns a new struct driver_option for driver DRIVER_NAME (which
+   is used only in error messages).  The option named NAME is extracted from
+   OPTIONS.  DEFAULT_VALUE is the default value of the option, used if the
+   given option was not supplied or was invalid. */
 struct driver_option *
-driver_option_create (const char *driver_name, const char *name,
-                      const char *value, const char *default_value)
-{
-  struct driver_option *o = xmalloc (sizeof *o);
-  o->driver_name = xstrdup (driver_name);
-  o->name = xstrdup (name);
-  o->value = xstrdup_if_nonnull (value);
-  o->default_value = xstrdup_if_nonnull (default_value);
-  return o;
-}
-
-/* Creates and returns a new struct driver_option for output driver DRIVER
-   (which is needed only to the extent that its name will be used in error
-   messages).  The option named NAME is extracted from OPTIONS.  DEFAULT_VALUE
-   is the default value of the option, used if the given option was not
-   supplied or was invalid. */
-struct driver_option *
-driver_option_get (struct output_driver *driver, struct string_map *options,
+driver_option_get (const char *driver_name, struct string_map *options,
                    const char *name, const char *default_value)
 {
-  struct driver_option *option;
-  char *value;
-
-  value = string_map_find_and_delete (options, name);
-  option = driver_option_create (output_driver_get_name (driver), name, value,
-                                 default_value);
-  free (value);
+  struct driver_option *option = xmalloc (sizeof *option);
+  option->driver_name = xstrdup (driver_name);
+  option->name = xstrdup (name);
+  option->value = string_map_find_and_delete (options, name);
+  option->default_value = xstrdup_if_nonnull (default_value);
   return option;
 }
 

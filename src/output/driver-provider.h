@@ -37,10 +37,6 @@ struct output_driver
     enum settings_output_devices device_type; /* One of SETTINGS_DEVICE_*. */
   };
 
-void output_driver_init (struct output_driver *,
-                         const struct output_driver_class *,
-                         const char *, enum settings_output_devices);
-
 void output_driver_destroy (struct output_driver *);
 
 const char *output_driver_get_name (const struct output_driver *);
