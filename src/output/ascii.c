@@ -386,8 +386,7 @@ ascii_create (struct file_handle *fh, enum settings_output_devices device_type,
                              ? "unicode" : "ascii");
   enum { BOX_ASCII, BOX_UNICODE } box = parse_enum (opt (o, "box", default_box),
                                                     "ascii", BOX_ASCII,
-                                                    "unicode", BOX_UNICODE,
-                                                    NULL_SENTINEL);
+                                                    "unicode", BOX_UNICODE);
 
   static const struct render_ops ascii_render_ops = {
     .draw_line = ascii_draw_line,

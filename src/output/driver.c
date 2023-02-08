@@ -563,7 +563,6 @@ output_driver_create (struct string_map *options)
   if (file_name == NULL)
     file_name = xstrdup (f->default_file_name);
 
-  /* XXX should use parse_enum(). */
   enum settings_output_devices default_type = default_device_type (file_name);
   const char *default_type_string = (default_type == SETTINGS_DEVICE_TERMINAL
                                 ? "terminal" : "listing");
