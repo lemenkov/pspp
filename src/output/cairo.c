@@ -129,10 +129,10 @@ xr_driver_cast (struct output_driver *driver)
   return UP_CAST (driver, struct xr_driver, driver);
 }
 
-static struct driver_option *
-opt (struct string_map *options, const char *key, const char *default_value)
+static struct driver_option
+opt (struct driver_options *options, const char *key, const char *default_value)
 {
-  return driver_option_get ("cairo", options, key, default_value);
+  return driver_option_get (options, key, default_value);
 }
 
 static PangoFontDescription *
@@ -162,7 +162,7 @@ parse_font (const char *font, int default_size, bool bold, bool italic)
 }
 
 static PangoFontDescription *
-parse_font_option (struct string_map *options,
+parse_font_option (struct driver_options *options,
                    const char *key, const char *default_value,
                    int default_size, bool bold, bool italic)
 {
@@ -184,7 +184,7 @@ parse_font_option (struct string_map *options,
 
 static struct xr_driver *
 xr_allocate (const char *name, int device_type,
-             enum xr_output_type output_type, struct string_map *o)
+             enum xr_output_type output_type, struct driver_options *o)
 {
   /* Scale factor from inch/72000 to inch/(72 * XR_POINT). */
   const double scale = XR_POINT / 1000.;
@@ -281,7 +281,7 @@ xr_allocate (const char *name, int device_type,
 
 static struct output_driver *
 xr_create (struct file_handle *fh, enum settings_output_devices device_type,
-           struct string_map *o, enum xr_output_type output_type)
+           struct driver_options *o, enum xr_output_type output_type)
 {
   const char *file_name = fh_get_file_name (fh);
   struct xr_driver *xr = xr_allocate (file_name, device_type, output_type, o);
@@ -328,29 +328,29 @@ xr_create (struct file_handle *fh, enum settings_output_devices device_type,
 }
 
 static struct output_driver *
-xr_pdf_create (struct  file_handle *fh, enum settings_output_devices device_type,
-               struct string_map *o)
+xr_pdf_create (struct file_handle *fh, enum settings_output_devices device_type,
+               struct driver_options *o)
 {
   return xr_create (fh, device_type, o, XR_PDF);
 }
 
 static struct output_driver *
-xr_ps_create (struct  file_handle *fh, enum settings_output_devices device_type,
-               struct string_map *o)
+xr_ps_create (struct file_handle *fh, enum settings_output_devices device_type,
+              struct driver_options *o)
 {
   return xr_create (fh, device_type, o, XR_PS);
 }
 
 static struct output_driver *
 xr_svg_create (struct file_handle *fh, enum settings_output_devices device_type,
-               struct string_map *o)
+               struct driver_options *o)
 {
   return xr_create (fh, device_type, o, XR_SVG);
 }
 
 static struct output_driver *
 xr_png_create (struct file_handle *fh, enum settings_output_devices device_type,
-               struct string_map *o)
+               struct driver_options *o)
 {
   return xr_create (fh, device_type, o, XR_PNG);
 }

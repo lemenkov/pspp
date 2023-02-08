@@ -49,7 +49,7 @@ spv_driver_cast (struct output_driver *driver)
 
 static struct output_driver *
 spv_create (struct file_handle *fh, enum settings_output_devices device_type,
-            struct string_map *o UNUSED)
+            struct driver_options *o UNUSED)
 {
   struct spv_writer *writer;
   char *error = spv_writer_open (fh_get_file_name (fh), &writer);

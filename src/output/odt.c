@@ -282,7 +282,7 @@ write_meta_data (struct odt_driver *odt)
 
 static struct output_driver *
 odt_create (struct file_handle *fh, enum settings_output_devices device_type,
-            struct string_map *o UNUSED)
+            struct driver_options *o UNUSED)
 {
   const char *file_name = fh_get_file_name (fh);
   struct zip_writer *zip = zip_writer_create (file_name);

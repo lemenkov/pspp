@@ -108,15 +108,15 @@ tex_driver_cast (struct output_driver *driver)
   return UP_CAST (driver, struct tex_driver, driver);
 }
 
-static struct driver_option *
-opt (struct string_map *options, const char *key, const char *default_value)
+static struct driver_option
+opt (struct driver_options *options, const char *key, const char *default_value)
 {
-  return driver_option_get ("tex", options, key, default_value);
+  return driver_option_get (options, key, default_value);
 }
 
 static struct output_driver *
 tex_create (struct file_handle *fh, enum settings_output_devices device_type,
-             struct string_map *o)
+            struct driver_options *o)
 {
   FILE *file = fn_open (fh, "w");
   if (!file)

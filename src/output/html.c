@@ -84,10 +84,10 @@ html_driver_cast (struct output_driver *driver)
   return UP_CAST (driver, struct html_driver, driver);
 }
 
-static struct driver_option *
-opt (struct string_map *options, const char *key, const char *default_value)
+static struct driver_option
+opt (struct driver_options *options, const char *key, const char *default_value)
 {
-  return driver_option_get ("html", options, key, default_value);
+  return driver_option_get (options, key, default_value);
 }
 
 static void
@@ -176,7 +176,7 @@ put_header (struct html_driver *html)
 
 static struct output_driver *
 html_create (struct file_handle *fh, enum settings_output_devices device_type,
-             struct string_map *o)
+             struct driver_options *o)
 {
   FILE *file = fn_open (fh, "w");
   if (!file)

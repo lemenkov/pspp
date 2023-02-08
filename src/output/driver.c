@@ -18,6 +18,7 @@
 
 #include "output/driver.h"
 #include "output/driver-provider.h"
+#include "output/options.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -538,19 +539,11 @@ default_device_type (const char *file_name)
 struct output_driver *
 output_driver_create (struct string_map *options)
 {
-  enum settings_output_devices device_type;
-  const struct output_driver_factory *f;
-  struct output_driver *driver;
-  char *device_string;
-  char *file_name;
-  char *format;
-
-  format = string_map_find_and_delete (options, "format");
-  file_name = string_map_find_and_delete (options, "output-file");
-
-  if (format == NULL)
+  char *format = string_map_find_and_delete (options, "format");
+  char *file_name = string_map_find_and_delete (options, "output-file");
+  if (!format)
     {
-      if (file_name != NULL)
+      if (file_name)
         {
           const char *extension = strrchr (file_name, '.');
           format = xstrdup (extension != NULL ? extension + 1 : "");
@@ -558,42 +551,45 @@ output_driver_create (struct string_map *options)
       else
         format = xstrdup ("txt");
     }
-  f = find_factory (format);
+  const struct output_driver_factory *f = find_factory (format);
+
+  struct driver_options o = {
+    .driver_name = f->extension,
+    .map = STRING_MAP_INITIALIZER (o.map),
+    .garbage = STRING_ARRAY_INITIALIZER,
+  };
+  string_map_swap (&o.map, options);
 
   if (file_name == NULL)
     file_name = xstrdup (f->default_file_name);
 
   /* XXX should use parse_enum(). */
-  device_string = string_map_find_and_delete (options, "device");
-  if (device_string == NULL || device_string[0] == '\0')
-    device_type = default_device_type (file_name);
-  else if (!strcmp (device_string, "terminal"))
-    device_type = SETTINGS_DEVICE_TERMINAL;
-  else if (!strcmp (device_string, "listing"))
-    device_type = SETTINGS_DEVICE_LISTING;
-  else
-    {
-      msg (MW, _("%s is not a valid device type (the choices are `%s' and `%s')"),
-                     device_string, "terminal", "listing");
-      device_type = default_device_type (file_name);
-    }
+  enum settings_output_devices default_type = default_device_type (file_name);
+  const char *default_type_string = (default_type == SETTINGS_DEVICE_TERMINAL
+                                ? "terminal" : "listing");
+  enum settings_output_devices device_type = parse_enum (
+    driver_option_get (&o, "device", default_type_string),
+    "terminal", SETTINGS_DEVICE_TERMINAL,
+    "listing", SETTINGS_DEVICE_LISTING,
+    NULL_SENTINEL);
 
-  struct file_handle *fh = fh_create_file (NULL, file_name, NULL, fh_default_properties ());
-
-  driver = f->create (fh, device_type, options);
-  if (driver != NULL)
+  struct file_handle *fh = fh_create_file (NULL, file_name, NULL,
+                                           fh_default_properties ());
+  struct output_driver *driver = f->create (fh, device_type, &o);
+  if (driver)
     {
       const struct string_map_node *node;
       const char *key;
 
-      STRING_MAP_FOR_EACH_KEY (key, node, options)
+      STRING_MAP_FOR_EACH_KEY (key, node, &o.map)
         msg (MW, _("%s: unknown option `%s'"), file_name, key);
     }
-  string_map_clear (options);
+
+  string_map_destroy (&o.map);
+  string_array_destroy (&o.garbage);
 
   free (file_name);
   free (format);
-  free (device_string);
 
   return driver;
 }

@@ -21,34 +21,41 @@
 
 #include <stdbool.h>
 #include "libpspp/compiler.h"
+#include "libpspp/string-map.h"
+#include "libpspp/string-array.h"
 
 struct output_driver;
 struct string_map;
 
+struct driver_options
+  {
+    const char *driver_name;
+    struct string_map map;
+    struct string_array garbage;
+  };
+
 /* An option being parsed. */
 struct driver_option
   {
-    char *driver_name;          /* Driver's name, for use in error messages. */
-    char *name;                 /* Option name, for use in error messages.  */
-    char *value;                /* Value supplied by user (NULL if none). */
-    char *default_value;        /* Default value supplied by driver. */
+    const char *driver_name;    /* Driver's name, for use in error messages. */
+    const char *name;           /* Option name, for use in error messages.  */
+    const char *value;          /* Value supplied by user (NULL if none). */
+    const char *default_value;  /* Default value supplied by driver. */
   };
 
-struct driver_option *driver_option_get (const char *driver_name,
-                                         struct string_map *,
-                                         const char *name,
-                                         const char *default_value);
-void driver_option_destroy (struct driver_option *);
+struct driver_option driver_option_get (struct driver_options *,
+                                        const char *name,
+                                        const char *default_value);
 
-void parse_paper_size (struct driver_option *, int *h, int *v);
-bool parse_boolean (struct driver_option *);
-int parse_enum (struct driver_option *, ...) SENTINEL(0);
-int parse_int (struct driver_option *, int min_value, int max_value);
-int parse_dimension (struct driver_option *);
-char *parse_string (struct driver_option *);
-char *parse_chart_file_name (struct driver_option *);
+void parse_paper_size (struct driver_option, int *h, int *v);
+bool parse_boolean (struct driver_option);
+int parse_enum (struct driver_option, ...) SENTINEL(0);
+int parse_int (struct driver_option, int min_value, int max_value);
+int parse_dimension (struct driver_option);
+char *parse_string (struct driver_option);
+char *parse_chart_file_name (struct driver_option);
 
-struct cell_color parse_color (struct driver_option *);
+struct cell_color parse_color (struct driver_option);
 bool parse_color__ (const char *, struct cell_color *);
 
 #endif /* output/options.h */

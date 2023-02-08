@@ -28,6 +28,7 @@ struct output_iterator;
 struct string_map;
 struct file_handle;
 struct page_setup;
+struct driver_options;
 
 /* A configured output driver. */
 struct output_driver
@@ -113,7 +114,7 @@ struct output_driver_factory
        is desirable). */
     struct output_driver *(*create) (struct file_handle *,
                                      enum settings_output_devices type,
-                                     struct string_map *options);
+                                     struct driver_options *);
   };
 
 #endif /* output/driver-provider.h */

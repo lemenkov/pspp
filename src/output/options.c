@@ -42,42 +42,28 @@
    is used only in error messages).  The option named NAME is extracted from
    OPTIONS.  DEFAULT_VALUE is the default value of the option, used if the
    given option was not supplied or was invalid. */
-struct driver_option *
-driver_option_get (const char *driver_name, struct string_map *options,
+struct driver_option
+driver_option_get (struct driver_options *options,
                    const char *name, const char *default_value)
 {
-  struct driver_option *option = xmalloc (sizeof *option);
-  option->driver_name = xstrdup (driver_name);
-  option->name = xstrdup (name);
-  option->value = string_map_find_and_delete (options, name);
-  option->default_value = xstrdup_if_nonnull (default_value);
-  return option;
-}
-
-/* Frees driver option O. */
-void
-driver_option_destroy (struct driver_option *o)
-{
-  if (o != NULL)
-    {
-      free (o->driver_name);
-      free (o->name);
-      free (o->value);
-      free (o->default_value);
-      free (o);
-    }
+  char *value = string_map_find_and_delete (&options->map, name);
+  if (value)
+    string_array_append_nocopy (&options->garbage, value);
+  return (struct driver_option) {
+    .driver_name = options->driver_name,
+    .name = name,
+    .value = value,
+    .default_value = default_value,
+  };
 }
 
 /* Stores the paper size of the value of option O into *H and *V, in 1/72000"
-   units.  Any syntax accepted by measure_paper() may be used.
-
-   Destroys O. */
+   units.  Any syntax accepted by measure_paper() may be used. */
 void
-parse_paper_size (struct driver_option *o, int *h, int *v)
+parse_paper_size (struct driver_option o, int *h, int *v)
 {
-  if (o->value == NULL || !measure_paper (o->value, h, v))
-    measure_paper (o->default_value, h, v);
-  driver_option_destroy (o);
+  if (!o.value || !measure_paper (o.value, h, v))
+    measure_paper (o.default_value, h, v);
 }
 
 static int
@@ -99,23 +85,17 @@ do_parse_boolean (const char *driver_name, const char *key,
 }
 
 /* Parses and return O's value as a Boolean value.  "true" and "false", "yes"
-   and "no", "on" and "off", and "1" and "0" are acceptable boolean strings.
-
-   Destroys O. */
+   and "no", "on" and "off", and "1" and "0" are acceptable boolean strings. */
 bool
-parse_boolean (struct driver_option *o)
+parse_boolean (struct driver_option o)
 {
-  bool retval;
-
-  retval = do_parse_boolean (o->driver_name, o->name, o->default_value) > 0;
-  if (o->value != NULL)
+  bool retval = do_parse_boolean (o.driver_name, o.name, o.default_value) > 0;
+  if (o.value)
     {
-      int value = do_parse_boolean (o->driver_name, o->name, o->value);
+      int value = do_parse_boolean (o.driver_name, o.name, o.value);
       if (value >= 0)
         retval = value;
     }
-
-  driver_option_destroy (o);
 
   return retval;
 }
@@ -128,39 +108,30 @@ parse_boolean (struct driver_option *o)
    way.  If the default value still does not match, parse_enum() returns 0.
 
    Example: parse_enum (o, "a", 1, "b", 2, NULL_SENTINEL) returns 1 if O's
-   value if "a", 2 if O's value is "b".
-
-   Destroys O. */
+   value if "a", 2 if O's value is "b". */
 int
-parse_enum (struct driver_option *o, ...)
+parse_enum (struct driver_option o, ...)
 {
   va_list args;
-  int retval;
-
-  retval = 0;
   va_start (args, o);
+
+  int retval = 0;
   for (;;)
     {
-      const char *s;
-      int value;
-
-      s = va_arg (args, const char *);
-      if (s == NULL)
+      const char *s = va_arg (args, const char *);
+      if (!s)
         {
-          if (o->value != NULL)
+          if (o.value)
             {
-              struct string choices;
-              int i;
-
-              ds_init_empty (&choices);
+              struct string choices = DS_EMPTY_INITIALIZER;
               va_end (args);
               va_start (args, o);
-              for (i = 0; ; i++)
+              for (int i = 0; ; i++)
                 {
                   s = va_arg (args, const char *);
-                  if (s == NULL)
+                  if (!s)
                     break;
-                  value = va_arg (args, int);
+                  va_arg (args, int);
 
                   if (i > 0)
                     ds_put_cstr (&choices, ", ");
@@ -169,43 +140,39 @@ parse_enum (struct driver_option *o, ...)
 
               msg (MW, _("%s: `%s' is `%s' but one of the following "
                              "is required: %s"),
-                     o->driver_name, o->name, o->value, ds_cstr (&choices));
+                     o.driver_name, o.name, o.value, ds_cstr (&choices));
               ds_destroy (&choices);
             }
           break;
         }
-      value = va_arg (args, int);
 
-      if (o->value != NULL && !strcmp (s, o->value))
+      int value = va_arg (args, int);
+      if (o.value && !strcmp (s, o.value))
         {
           retval = value;
           break;
         }
-      else if (!strcmp (s, o->default_value))
+      else if (!strcmp (s, o.default_value))
         retval = value;
     }
   va_end (args);
-  driver_option_destroy (o);
   return retval;
 }
 
 /* Parses O's value as an integer in the range MIN_VALUE to MAX_VALUE
-   (inclusive) and returns the integer.
-
-   Destroys O. */
+   (inclusive) and returns the integer. */
 int
-parse_int (struct driver_option *o, int min_value, int max_value)
+parse_int (struct driver_option o, int min_value, int max_value)
 {
-  int retval = strtol (o->default_value, NULL, 0);
+  int retval = strtol (o.default_value, NULL, 0);
 
-  if (o->value != NULL)
+  if (o.value)
     {
-      int value;
-      char *tail;
-
       errno = 0;
-      value = strtol (o->value, &tail, 0);
-      if (tail != o->value && *tail == '\0' && errno != ERANGE
+
+      char *tail;
+      int value = strtol (o.value, &tail, 0);
+      if (tail != o.value && *tail == '\0' && errno != ERANGE
           && value >= min_value && value <= max_value)
         retval = value;
       else if (max_value == INT_MAX)
@@ -213,68 +180,53 @@ parse_int (struct driver_option *o, int min_value, int max_value)
           if (min_value == 0)
             msg (MW, _("%s: `%s' is `%s' but a non-negative integer "
                            "is required"),
-                   o->driver_name, o->name, o->value);
+                   o.driver_name, o.name, o.value);
           else if (min_value == 1)
             msg (MW, _("%s: `%s' is `%s' but a positive integer is "
-                           "required"), o->driver_name, o->name, o->value);
+                           "required"), o.driver_name, o.name, o.value);
           else if (min_value == INT_MIN)
             msg (MW, _("%s: `%s' is `%s' but an integer is required"),
-                   o->driver_name, o->name, o->value);
+                   o.driver_name, o.name, o.value);
           else
             msg (MW, _("%s: `%s' is `%s' but an integer greater "
                            "than %d is required"),
-                   o->driver_name, o->name, o->value, min_value - 1);
+                   o.driver_name, o.name, o.value, min_value - 1);
         }
       else
         msg (MW, _("%s: `%s' is `%s'  but an integer between %d and "
                        "%d is required"),
-               o->driver_name, o->name, o->value, min_value, max_value);
+               o.driver_name, o.name, o.value, min_value, max_value);
     }
-
-  driver_option_destroy (o);
   return retval;
 }
 
 /* Parses O's value as a dimension, as understood by measure_dimension(), and
-   returns its length in units of 1/72000".
-
-   Destroys O. */
+   returns its length in units of 1/72000". */
 int
-parse_dimension (struct driver_option *o)
+parse_dimension (struct driver_option o)
 {
-  int retval;
-
-  retval = (o->value != NULL ? measure_dimension (o->value)
-            : o->default_value != NULL ? measure_dimension (o->default_value)
-            : -1);
-
-  driver_option_destroy (o);
-  return retval;
+  return (o.value ? measure_dimension (o.value)
+          : o.default_value ? measure_dimension (o.default_value)
+          : -1);
 }
 
 /* Parses O's value as a string and returns it as a malloc'd string that the
-   caller is responsible for freeing.
-
-   Destroys O. */
+   caller is responsible for freeing. */
 char *
-parse_string (struct driver_option *o)
+parse_string (struct driver_option o)
 {
-  char *retval = xstrdup (o->value != NULL ? o->value : o->default_value);
-  driver_option_destroy (o);
-  return retval;
+  return xstrdup (o.value ? o.value : o.default_value);
 }
 
 static char *
 default_chart_file_name (const char *file_name)
 {
-  if (strcmp (file_name, "-"))
-    {
-      const char *extension = strrchr (file_name, '.');
-      int stem_length = extension ? extension - file_name : strlen (file_name);
-      return xasprintf ("%.*s-#", stem_length, file_name);
-    }
-  else
+  if (!strcmp (file_name, "-"))
     return NULL;
+
+  const char *extension = strrchr (file_name, '.');
+  int stem_length = extension ? extension - file_name : strlen (file_name);
+  return xasprintf ("%.*s-#", stem_length, file_name);
 }
 
 /* Parses and returns a chart file name, or NULL if no charts should be output.
@@ -282,41 +234,31 @@ default_chart_file_name (const char *file_name)
    which the client will presumably replace by a number as part of writing
    charts to separate files.
 
-   If O->value is "none", then this function returns NULL.
+   If o.value is "none", then this function returns NULL.
 
-   If O->value is non-NULL but not "none", returns a copy of that string (if it
+   If o.value is non-NULL but not "none", returns a copy of that string (if it
    contains '#').
 
-   If O->value is NULL, then O's default_value should be the name of the main
+   If o.value is NULL, then O's default_value should be the name of the main
    output file.  Returns NULL if default_value is "-", and otherwise returns a
-   copy of string string with its extension stripped off and "-#.png" appended.
-
-   Destroys O. */
+   copy of string string with its extension stripped off and "-#.png"
+   appended. */
 char *
-parse_chart_file_name (struct driver_option *o)
+parse_chart_file_name (struct driver_option o)
 {
-  char *chart_file_name;
-
-  if (o->value != NULL)
-    {
-      if (!strcmp (o->value, "none"))
-        chart_file_name = NULL;
-      else if (strchr (o->value, '#') != NULL)
-        chart_file_name = xstrdup (o->value);
-      else
-        {
-          msg (MW, _("%s: `%s' is `%s' but a file name that contains "
-                         "`#' is required."),
-               o->driver_name, o->name, o->value);
-          chart_file_name = default_chart_file_name (o->default_value);
-        }
-    }
+  if (!o.value)
+    return default_chart_file_name (o.default_value);
+  else if (!strcmp (o.value, "none"))
+    return NULL;
+  else if (strchr (o.value, '#') != NULL)
+    return xstrdup (o.value);
   else
-    chart_file_name = default_chart_file_name (o->default_value);
-
-  driver_option_destroy (o);
-
-  return chart_file_name;
+    {
+      msg (MW, _("%s: `%s' is `%s' but a file name that contains "
+                 "`#' is required."),
+           o.driver_name, o.name, o.value);
+      return default_chart_file_name (o.default_value);
+    }
 }
 
 static int
@@ -584,17 +526,13 @@ parse_color__ (const char *s, struct cell_color *color)
 
 /* Parses and returns color information from O. */
 struct cell_color
-parse_color (struct driver_option *o)
+parse_color (struct driver_option o)
 {
   struct cell_color color = CELL_COLOR_BLACK;
-  parse_color__ (o->default_value, &color);
-  if (o->value)
-    {
-      if (!parse_color__ (o->value, &color))
-        msg (MW, _("%s: `%s' is `%s', which could not be parsed as a color"),
-             o->driver_name, o->name, o->value);
-    }
-  driver_option_destroy (o);
+  parse_color__ (o.default_value, &color);
+  if (o.value && !parse_color__ (o.value, &color))
+    msg (MW, _("%s: `%s' is `%s', which could not be parsed as a color"),
+         o.driver_name, o.name, o.value);
   return color;
 }
 

@@ -326,7 +326,7 @@ static void ascii_submit (struct output_driver *, const struct output_item *);
 static int get_terminal_width (void);
 
 static bool update_page_size (struct ascii_driver *, bool issue_error);
-static int parse_page_size (struct driver_option *);
+static int parse_page_size (struct driver_option);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
                              const struct table_border_style[TABLE_N_AXES][2]);
@@ -346,10 +346,10 @@ ascii_driver_cast (struct output_driver *driver)
   return UP_CAST (driver, struct ascii_driver, driver);
 }
 
-static struct driver_option *
-opt (struct string_map *options, const char *key, const char *default_value)
+static struct driver_option
+opt (struct driver_options *options, const char *key, const char *default_value)
 {
-  return driver_option_get ("ascii", options, key, default_value);
+  return driver_option_get (options, key, default_value);
 }
 
 /* Return true iff the terminal appears to be an xterm with
@@ -366,8 +366,8 @@ term_is_utf8_xterm (void)
 }
 
 static struct output_driver *
-ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
-              struct string_map *o)
+ascii_create (struct file_handle *fh, enum settings_output_devices device_type,
+              struct driver_options *o)
 {
   bool append = parse_boolean (opt (o, "append", "false"));
   FILE *file = fn_open (fh, append ? "a" : "w");
@@ -455,13 +455,13 @@ error:
 }
 
 static int
-parse_page_size (struct driver_option *option)
+parse_page_size (struct driver_option option)
 {
-  int dim = atol (option->default_value);
+  int dim = atol (option.default_value);
 
-  if (option->value != NULL)
+  if (option.value != NULL)
     {
-      if (!strcmp (option->value, "auto"))
+      if (!strcmp (option.value, "auto"))
         dim = -1;
       else
         {
@@ -469,16 +469,14 @@ parse_page_size (struct driver_option *option)
           char *tail;
 
           errno = 0;
-          value = strtol (option->value, &tail, 0);
+          value = strtol (option.value, &tail, 0);
           if (value >= 1 && errno != ERANGE && *tail == '\0')
             dim = value;
           else
             msg (MW, _("%s: %s must be positive integer or `auto'"),
-                   option->driver_name, option->name);
+                   option.driver_name, option.name);
         }
     }
-
-  driver_option_destroy (option);
 
   return dim;
 }
