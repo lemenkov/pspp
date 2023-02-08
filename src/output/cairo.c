@@ -182,34 +182,33 @@ parse_font_option (struct driver_options *options,
   return desc;
 }
 
+/* Scale INCHES into inch/(72 * XR_POINT). */
+static int
+scale (double inches)
+{
+  return inches * 72 * XR_POINT + 0.5;
+}
+
 static struct xr_driver *
 xr_allocate (const char *name, int device_type,
              enum xr_output_type output_type, struct driver_options *o)
 {
-  /* Scale factor from inch/72000 to inch/(72 * XR_POINT). */
-  const double scale = XR_POINT / 1000.;
-
-  int paper[TABLE_N_AXES];
-  parse_paper_size (opt (o, "paper-size", ""), &paper[H], &paper[V]);
-  for (int a = 0; a < TABLE_N_AXES; a++)
-    paper[a] *= scale;
-
-  int margins[TABLE_N_AXES][2];
-  margins[H][0] = parse_dimension (opt (o, "left-margin", ".5in")) * scale;
-  margins[H][1] = parse_dimension (opt (o, "right-margin", ".5in")) * scale;
-  margins[V][0] = parse_dimension (opt (o, "top-margin", ".5in")) * scale;
-  margins[V][1] = parse_dimension (opt (o, "bottom-margin", ".5in")) * scale;
+  struct page_setup *ps = page_setup_parse (o);
 
   int size[TABLE_N_AXES];
   for (int a = 0; a < TABLE_N_AXES; a++)
-    size[a] = paper[a] - margins[a][0] - margins[a][1];
+    size[a] = scale (ps->paper[a] - ps->margins[a][0] - ps->margins[a][1]);
 
   int min_break[TABLE_N_AXES];
-  min_break[H] = parse_dimension (opt (o, "min-hbreak", NULL)) * scale;
-  min_break[V] = parse_dimension (opt (o, "min-vbreak", NULL)) * scale;
+  min_break[H] = scale (parse_dimension (opt (o, "min-hbreak", NULL)));
+  min_break[V] = scale (parse_dimension (opt (o, "min-vbreak", NULL)));
   for (int a = 0; a < TABLE_N_AXES; a++)
     if (min_break[a] <= 0)
       min_break[a] = size[a] / 2;
+
+  int object_spacing = scale (ps->object_spacing);
+  if (object_spacing <= 0)
+    object_spacing = scale (12.0 / 72.0);
 
   int font_size = parse_int (opt (o, "font-size", "10000"), 1000, 1000000);
   PangoFontDescription *font = parse_font_option (
@@ -218,11 +217,6 @@ xr_allocate (const char *name, int device_type,
   struct cell_color fg = parse_color (opt (o, "foreground-color", "black"));
 
   bool systemcolors = parse_boolean (opt (o, "systemcolors", "false"));
-
-  int object_spacing
-    = parse_dimension (opt (o, "object-spacing", NULL)) * scale;
-  if (object_spacing <= 0)
-    object_spacing = XR_POINT * 12;
 
   const char *default_resolution = (output_type == XR_PNG ? "96" : "72");
   int font_resolution = parse_int (opt (o, "font-resolution",
@@ -243,8 +237,8 @@ xr_allocate (const char *name, int device_type,
     .ref_cnt = 1,
 
     .margins = {
-      [H] = { margins[H][0], margins[H][1], },
-      [V] = { margins[V][0], margins[V][1], },
+      [H] = { scale (ps->margins[H][0]), scale (ps->margins[H][1]) },
+      [V] = { scale (ps->margins[V][0]), scale (ps->margins[V][1]) },
     },
 
     .initial_page_number = 1,
@@ -275,6 +269,8 @@ xr_allocate (const char *name, int device_type,
     .page_style = page_style,
     .trim = trim,
   };
+
+  page_setup_destroy (ps);
 
   return xr;
 }

@@ -25,6 +25,8 @@
 #include <stdbool.h>
 #include "table.h"
 
+struct driver_options;
+
 enum page_orientation
   {
     PAGE_PORTRAIT,
@@ -83,5 +85,7 @@ struct page_setup
 
 struct page_setup *page_setup_clone (const struct page_setup *);
 void page_setup_destroy (struct page_setup *);
+
+struct page_setup *page_setup_parse (struct driver_options *);
 
 #endif /* output/page-setup.h */

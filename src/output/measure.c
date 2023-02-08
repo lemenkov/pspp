@@ -37,28 +37,26 @@
 #define _(msgid) gettext (msgid)
 
 static double parse_unit (const char *);
-static bool parse_paper_size (const char *, int *h, int *v);
-static bool get_standard_paper_size (struct substring name, int *h, int *v);
-static bool read_paper_conf (const char *file_name, int *h, int *v);
-static bool get_default_paper_size (int *h, int *v);
+static bool parse_paper_size (const char *, double *h, double *v);
+static bool get_standard_paper_size (struct substring name,
+                                     double *h, double *v);
+static bool read_paper_conf (const char *file_name, double *h, double *v);
+static bool get_default_paper_size (double *h, double *v);
 
-/* Determines the size of a dimensional measurement and returns
-   the size in units of 1/72000".  Units are assumed to be
-   millimeters unless otherwise specified.  Returns -1 on
-   error. */
-int
+/* Determines the size of a dimensional measurement and returns the size in
+   inches.  Units are assumed to be millimeters unless otherwise specified.
+   Returns -1 on error. */
+double
 measure_dimension (const char *dimen)
 {
-  double raw, factor;
-  char *tail;
-
   /* Number. */
-  raw = c_strtod (dimen, &tail);
+  char *tail;
+  double raw = c_strtod (dimen, &tail);
   if (raw < 0.0)
     goto syntax_error;
 
   /* Unit. */
-  factor = parse_unit (tail);
+  double factor = parse_unit (tail);
   if (factor == 0.0)
     goto syntax_error;
 
@@ -69,13 +67,12 @@ syntax_error:
   return -1;
 }
 
-/* Stores the dimensions, in 1/72000" units, of paper identified
-   by SIZE into *H and *V.  SIZE can be the name of a kind of
-   paper ("a4", "letter", ...) or a pair of dimensions
-   ("210x297", "8.5x11in", ...).  Returns true on success, false
+/* Stores the dimensions, in inches, of paper identified by SIZE into *H and
+   *V.  SIZE can be the name of a kind of paper ("a4", "letter", ...) or a pair
+   of dimensions ("210x297", "8.5x11in", ...).  Returns true on success, false
    on failure.  On failure, *H and *V are set for A4 paper. */
 bool
-measure_paper (const char *size, int *h, int *v)
+measure_paper (const char *size, double *h, double *v)
 {
   struct substring s;
   bool ok;
@@ -104,16 +101,15 @@ measure_paper (const char *size, int *h, int *v)
   /* Default to A4 on error. */
   if (!ok)
     {
-      *h = 210 * (72000 / 25.4);
-      *v = 297 * (72000 / 25.4);
+      *h = 210 / 25.4;
+      *v = 297 / 25.4;
     }
   return ok;
 }
 
-/* Parses UNIT as a dimensional unit.  Returns the multiplicative
-   factor needed to change a quantity measured in that unit into
-   1/72000" units.  If UNIT is empty, it is treated as
-   millimeters.  If the unit is unrecognized, returns 0. */
+/* Parses UNIT as a dimensional unit.  Returns the multiplicative factor needed
+   to change a quantity measured in that unit into inches.  If UNIT is empty,
+   it is treated as millimeters.  If the unit is unrecognized, returns 0. */
 static double
 parse_unit (const char *unit)
 {
@@ -125,12 +121,12 @@ parse_unit (const char *unit)
 
   static const struct unit units[] =
     {
-      {"pt", 72000 / 72},
-      {"pc", 72000 / 72 * 12.0},
-      {"in", 72000},
-      {"cm", 72000 / 2.54},
-      {"mm", 72000 / 25.4},
-      {"", 72000 / 25.4},
+      {"pt", 1.0 / 72.0},
+      {"pc", 12.0 / 72.0},
+      {"in", 1.0},
+      {"cm", 1.0 / 2.54},
+      {"mm", 1.0 / 25.4},
+      {"", 1.0 / 25.4},
     };
 
   const struct unit *p;
@@ -142,18 +138,15 @@ parse_unit (const char *unit)
   return 0.0;
 }
 
-/* Stores the dimensions in 1/72000" units of paper identified by
-   SIZE, which is of form `HORZ x VERT [UNIT]' where HORZ and
-   VERT are numbers and UNIT is an optional unit of measurement,
-   into *H and *V.  Return true on success. */
+/* Stores the dimensions, in inches, identified by SIZE, which is of form `HORZ
+   x VERT [UNIT]' where HORZ and VERT are numbers and UNIT is an optional unit
+   of measurement, into *H and *V.  Return true on success. */
 static bool
-parse_paper_size (const char *size, int *h, int *v)
+parse_paper_size (const char *size, double *h, double *v)
 {
-  double raw_h, raw_v, factor;
-  char *tail;
-
   /* Width. */
-  raw_h = c_strtod (size, &tail);
+  char *tail;
+  double raw_h = c_strtod (size, &tail);
   if (raw_h <= 0.0)
     return false;
 
@@ -161,22 +154,22 @@ parse_paper_size (const char *size, int *h, int *v)
   tail += strspn (tail, CC_SPACES "x,");
 
   /* Length. */
-  raw_v = c_strtod (tail, &tail);
+  double raw_v = c_strtod (tail, &tail);
   if (raw_v <= 0.0)
     return false;
 
   /* Unit. */
-  factor = parse_unit (tail);
+  double factor = parse_unit (tail);
   if (factor == 0.0)
     return false;
 
-  *h = raw_h * factor + .5;
-  *v = raw_v * factor + .5;
+  *h = raw_h * factor;
+  *v = raw_v * factor;
   return true;
 }
 
 static bool
-get_standard_paper_size (struct substring name, int *h, int *v)
+get_standard_paper_size (struct substring name, double *h, double *v)
 {
   static const char *sizes[][2] =
     {
@@ -235,11 +228,10 @@ get_standard_paper_size (struct substring name, int *h, int *v)
   return false;
 }
 
-/* Reads file FILE_NAME to find a paper size.  Stores the
-   dimensions, in 1/72000" units, into *H and *V.  Returns true
-   on success, false on failure. */
+/* Reads file FILE_NAME to find a paper size.  Stores the dimensions, in
+   inches, into *H and *V.  Returns true on success, false on failure. */
 static bool
-read_paper_conf (const char *file_name, int *h, int *v)
+read_paper_conf (const char *file_name, double *h, double *v)
 {
   struct string line = DS_EMPTY_INITIALIZER;
   int line_number = 0;
@@ -280,12 +272,11 @@ read_paper_conf (const char *file_name, int *h, int *v)
   return false;
 }
 
-/* The user didn't specify a paper size, so let's choose a
-   default based on his environment.  Stores the
-   dimensions, in 1/72000" units, into *H and *V.  Returns true
-   on success, false on failure. */
+/* The user didn't specify a paper size, so let's choose a default based on his
+   environment.  Stores the dimensions, in inches, into *H and *V.  Returns
+   true on success, false on failure. */
 static bool
-get_default_paper_size (int *h, int *v)
+get_default_paper_size (double *h, double *v)
 {
   /* libpaper in Debian (and other distributions?) allows the
      paper size to be specified in $PAPERSIZE or in a file
@@ -300,8 +291,8 @@ get_default_paper_size (int *h, int *v)
      The (int)(intptr_t) cast is for 64 Bit Systems where intptr_t
      translates to 64 Bit long int but the upper 32 Bits have wrong
      values. The result from nl_langinfo is integer (32 Bit) */
-  *h = (int)(intptr_t) nl_langinfo(_NL_PAPER_WIDTH) * (72000 / 25.4);
-  *v = (int)(intptr_t) nl_langinfo(_NL_PAPER_HEIGHT) * (72000 / 25.4);
+  *h = (int)(intptr_t) nl_langinfo(_NL_PAPER_WIDTH) / 25.4;
+  *v = (int)(intptr_t) nl_langinfo(_NL_PAPER_HEIGHT) / 25.4;
   if (*h > 0 && *v > 0)
      return true;
 #endif

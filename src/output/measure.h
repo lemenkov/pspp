@@ -19,7 +19,7 @@
 
 #include <stdbool.h>
 
-int measure_dimension (const char *dimen);
-bool measure_paper (const char *size, int *h, int *v);
+double measure_dimension (const char *dimen);
+bool measure_paper (const char *size, double *h, double *v);
 
 #endif /* output/measure.h */

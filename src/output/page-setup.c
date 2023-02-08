@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "output/options.h"
+
 #include "gl/xalloc.h"
 
 bool
@@ -94,4 +96,31 @@ page_setup_destroy (struct page_setup *ps)
       free (ps->file_name);
       free (ps);
     }
+}
+
+static struct driver_option
+opt (struct driver_options *options, const char *key, const char *default_value)
+{
+  return driver_option_get (options, key, default_value);
+}
+
+struct page_setup *
+page_setup_parse (struct driver_options *o)
+{
+  struct page_setup *ps = xmalloc (sizeof *ps);
+  *ps = (struct page_setup) PAGE_SETUP_INITIALIZER;
+
+  enum { H = TABLE_HORZ, V = TABLE_VERT };
+  parse_paper_size (opt (o, "paper-size", ""), &ps->paper[H], &ps->paper[V]);
+
+  ps->margins[H][0] = parse_dimension (opt (o, "left-margin", ".5in"));
+  ps->margins[H][1] = parse_dimension (opt (o, "right-margin", ".5in"));
+  ps->margins[V][0] = parse_dimension (opt (o, "top-margin", ".5in"));
+  ps->margins[V][1] = parse_dimension (opt (o, "bottom-margin", ".5in"));
+
+  ps->object_spacing = parse_dimension (opt (o, "object-spacing", NULL));
+  if (ps->object_spacing <= 0)
+    ps->object_spacing = 12.0 / 72.0;
+
+  return ps;
 }

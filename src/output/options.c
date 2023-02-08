@@ -57,10 +57,10 @@ driver_option_get (struct driver_options *options,
   };
 }
 
-/* Stores the paper size of the value of option O into *H and *V, in 1/72000"
-   units.  Any syntax accepted by measure_paper() may be used. */
+/* Stores the paper size of the value of option O into *H and *V, in inches.
+   Any syntax accepted by measure_paper() may be used. */
 void
-parse_paper_size (struct driver_option o, int *h, int *v)
+parse_paper_size (struct driver_option o, double *h, double *v)
 {
   if (!o.value || !measure_paper (o.value, h, v))
     measure_paper (o.default_value, h, v);
@@ -201,8 +201,8 @@ parse_int (struct driver_option o, int min_value, int max_value)
 }
 
 /* Parses O's value as a dimension, as understood by measure_dimension(), and
-   returns its length in units of 1/72000". */
-int
+   returns its length in inches. */
+double
 parse_dimension (struct driver_option o)
 {
   return (o.value ? measure_dimension (o.value)

@@ -47,14 +47,14 @@ struct driver_option driver_option_get (struct driver_options *,
                                         const char *name,
                                         const char *default_value);
 
-void parse_paper_size (struct driver_option, int *h, int *v);
+void parse_paper_size (struct driver_option, double *h, double *v);
 bool parse_boolean (struct driver_option);
 
 int parse_enum (struct driver_option, ...) SENTINEL(0);
 #define parse_enum(...) parse_enum(__VA_ARGS__, NULL_SENTINEL)
 
 int parse_int (struct driver_option, int min_value, int max_value);
-int parse_dimension (struct driver_option);
+double parse_dimension (struct driver_option);
 char *parse_string (struct driver_option);
 char *parse_chart_file_name (struct driver_option);
 
