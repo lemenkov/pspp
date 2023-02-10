@@ -24,6 +24,7 @@ interface.
 * Main Options::
 * PDF PostScript SVG and PNG Output Options::
 * Plain Text Output Options::
+* SPV Output Options::
 * TeX Output Options::
 * HTML Output Options::
 * OpenDocument Output Options::
@@ -238,7 +239,7 @@ the output format.
 PDF, PostScript, and SVG use real units: each dimension among the
 options listed below may have a suffix @samp{mm} for millimeters,
 @samp{in} for inches, or @samp{pt} for points.  Lacking a suffix,
-numbers below 50 are assumed to be in inches and those about 50 are
+numbers below 50 are assumed to be in inches and those above 50 are
 assumed to be in millimeters.
 
 PNG files are pixel-based, so dimensions in PNG output must ultimately
@@ -283,7 +284,11 @@ Either @code{portrait} or @code{landscape}.  Default: @code{portrait}.
 @itemx @option{-O top-margin=@var{dimension}}
 @itemx @option{-O bottom-margin=@var{dimension}}
 Sets the margins around the page.  See
-below for the allowed forms of @var{dimension} Default: @code{0.5in}.
+below for the allowed forms of @var{dimension}. Default: @code{0.5in}.
+
+@item @option{-O object-spacing=@var{dimension}}
+Sets the amount of vertical space between objects (such as headings or
+tables).
 
 @item @option{-O prop-font=@var{font-name}}
 Sets the default font used for ordinary text.  Most systems support
@@ -361,9 +366,9 @@ the WIDTH setting (@pxref{SET}), for output to a file.
 @item @option{-O box=@{ascii|unicode@}}
 Sets the characters used for lines in tables.
 If set to
-@code{ascii} the characters @samp{-}, @samp{|}, and @samp{+} for single-width
-lines and @samp{=} and @samp{#} for double-width lines are used.
-If set to @code{unicode} then  Unicode box drawing characters will be used.
+@code{ascii}, output uses use the characters @samp{-}, @samp{|}, and @samp{+} for single-width
+lines and @samp{=} and @samp{#} for double-width lines.
+If set to @code{unicode} then, output uses Unicode box drawing characters.
 The default is @code{unicode} if the locale's character encoding is "UTF-8"
 or @code{ascii} otherwise.
 
@@ -371,6 +376,30 @@ or @code{ascii} otherwise.
 How to emphasize text.  Bold and underline emphasis are achieved with
 overstriking, which may not be supported by all the software to which
 you might pass the output.  Default: @code{none}.
+@end table
+
+@node SPV Output Options
+@section SPV Output Options
+
+SPSS 16 and later write @file{.spv} files to represent the contents of
+its output editor.  To produce output in @file{.spv} format, specify
+@option{-o @var{file}} on the @pspp{} command line, optionally
+followed by any of the options shown in the table below to customize
+the output format.
+
+@table @asis
+@item @option{-O format=spv}
+Specify the output format.  This is only necessary if the file name
+given on @option{-o} does not end in @file{.spv}.
+
+@item @option{-O paper-size=@var{paper-size}}
+@itemx @option{-O left-margin=@var{dimension}}
+@itemx @option{-O right-margin=@var{dimension}}
+@itemx @option{-O top-margin=@var{dimension}}
+@itemx @option{-O bottom-margin=@var{dimension}}
+@itemx @option{-O object-spacing=@var{dimension}}
+These have the same syntax and meaning as for PDF output.  @xref{PDF
+PostScript SVG and PNG Output Options}, for details.
 @end table
 
 @node TeX Output Options

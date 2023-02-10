@@ -24,6 +24,7 @@
 #include "libpspp/cast.h"
 #include "output/cairo-chart.h"
 #include "output/output-item.h"
+#include "output/page-setup.h"
 #include "output/spv/spv-writer.h"
 
 #include "gl/xalloc.h"
@@ -49,7 +50,7 @@ spv_driver_cast (struct output_driver *driver)
 
 static struct output_driver *
 spv_create (struct file_handle *fh, enum settings_output_devices device_type,
-            struct driver_options *o UNUSED)
+            struct driver_options *o)
 {
   struct spv_writer *writer;
   char *error = spv_writer_open (fh_get_file_name (fh), &writer);
@@ -59,6 +60,10 @@ spv_create (struct file_handle *fh, enum settings_output_devices device_type,
       free (error);
       return NULL;
     }
+
+  struct page_setup *ps = page_setup_parse (o);
+  spv_writer_set_page_setup (writer, ps);
+  page_setup_destroy (ps);
 
   struct spv_driver *spv = xmalloc (sizeof *spv);
   *spv = (struct spv_driver) {
