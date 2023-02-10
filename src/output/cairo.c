@@ -119,6 +119,8 @@ struct xr_driver
 
 static const struct output_driver_class cairo_driver_class;
 
+static void xr_update_page_setup (struct output_driver *,
+                                  const struct page_setup *);
 
 /* Output driver basics. */
 
@@ -193,23 +195,6 @@ static struct xr_driver *
 xr_allocate (const char *name, int device_type,
              enum xr_output_type output_type, struct driver_options *o)
 {
-  struct page_setup *ps = page_setup_parse (o);
-
-  int size[TABLE_N_AXES];
-  for (int a = 0; a < TABLE_N_AXES; a++)
-    size[a] = scale (ps->paper[a] - ps->margins[a][0] - ps->margins[a][1]);
-
-  int min_break[TABLE_N_AXES];
-  min_break[H] = scale (parse_dimension (opt (o, "min-hbreak", NULL)));
-  min_break[V] = scale (parse_dimension (opt (o, "min-vbreak", NULL)));
-  for (int a = 0; a < TABLE_N_AXES; a++)
-    if (min_break[a] <= 0)
-      min_break[a] = size[a] / 2;
-
-  int object_spacing = scale (ps->object_spacing);
-  if (object_spacing <= 0)
-    object_spacing = scale (12.0 / 72.0);
-
   int font_size = parse_int (opt (o, "font-size", "10000"), 1000, 1000000);
   PangoFontDescription *font = parse_font_option (
     o, "prop-font", "Sans Serif", font_size, false, false);
@@ -235,12 +220,6 @@ xr_allocate (const char *name, int device_type,
   struct xr_page_style *page_style = xmalloc (sizeof *page_style);
   *page_style = (struct xr_page_style) {
     .ref_cnt = 1,
-
-    .margins = {
-      [H] = { scale (ps->margins[H][0]), scale (ps->margins[H][1]) },
-      [V] = { scale (ps->margins[V][0]), scale (ps->margins[V][1]) },
-    },
-
     .initial_page_number = 1,
     .include_outline = include_outline,
   };
@@ -248,12 +227,9 @@ xr_allocate (const char *name, int device_type,
   struct xr_fsm_style *fsm_style = xmalloc (sizeof *fsm_style);
   *fsm_style = (struct xr_fsm_style) {
     .ref_cnt = 1,
-    .size = { [H] = size[H], [V] = size[V] },
-    .min_break = { [H] = min_break[H], [V] = min_break[V] },
     .font = font,
     .fg = fg,
     .use_system_colors = systemcolors,
-    .object_spacing = object_spacing,
     .font_resolution = font_resolution,
   };
 
@@ -270,8 +246,6 @@ xr_allocate (const char *name, int device_type,
     .trim = trim,
   };
 
-  page_setup_destroy (ps);
-
   return xr;
 }
 
@@ -282,10 +256,13 @@ xr_create (struct file_handle *fh, enum settings_output_devices device_type,
   const char *file_name = fh_get_file_name (fh);
   struct xr_driver *xr = xr_allocate (file_name, device_type, output_type, o);
 
+  struct page_setup *ps = page_setup_parse (o);
+  xr_update_page_setup (&xr->driver, ps);
+
   double paper[TABLE_N_AXES];
   for (int a = 0; a < TABLE_N_AXES; a++)
-    paper[a] = xr_to_pt (xr_page_style_paper_size (xr->page_style,
-                                                   xr->fsm_style, a));
+    paper[a] = ps->paper[a] * 72.0;
+  page_setup_destroy (ps);
 
   xr->dest_surface
     = (output_type == XR_PDF
@@ -556,15 +533,17 @@ xr_destroy (struct output_driver *driver)
 
 static void
 xr_update_page_setup (struct output_driver *driver,
-                      const struct page_setup *setup)
+                      const struct page_setup *ps)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
 
-  const double scale = 72 * XR_POINT;
-
-  int swap = setup->orientation == PAGE_LANDSCAPE;
+  int swap = ps->orientation == PAGE_LANDSCAPE;
   enum table_axis h = H ^ swap;
   enum table_axis v = V ^ swap;
+
+  int size[TABLE_N_AXES];
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    size[a] = scale (ps->paper[a] - ps->margins[a][0] - ps->margins[a][1]);
 
   struct xr_page_style *old_ps = xr->page_style;
   xr->page_style = xmalloc (sizeof *xr->page_style);
@@ -572,36 +551,38 @@ xr_update_page_setup (struct output_driver *driver,
     .ref_cnt = 1,
 
     .margins = {
-      [H] = { setup->margins[h][0] * scale, setup->margins[h][1] * scale },
-      [V] = { setup->margins[v][0] * scale, setup->margins[v][1] * scale },
+      [H] = { scale (ps->margins[h][0]), scale (ps->margins[h][1]) },
+      [V] = { scale (ps->margins[v][0]), scale (ps->margins[v][1]) },
     },
 
-    .initial_page_number = setup->initial_page_number,
+    .initial_page_number = ps->initial_page_number,
     .include_outline = old_ps->include_outline,
   };
   for (size_t i = 0; i < 2; i++)
-    page_heading_copy (&xr->page_style->headings[i], &setup->headings[i]);
+    page_heading_copy (&xr->page_style->headings[i], &ps->headings[i]);
   xr_page_style_unref (old_ps);
 
   struct xr_fsm_style *old_fs = xr->fsm_style;
   xr->fsm_style = xmalloc (sizeof *xr->fsm_style);
   *xr->fsm_style = (struct xr_fsm_style) {
     .ref_cnt = 1,
-    .size = { [H] = setup->paper[H] * scale, [V] = setup->paper[V] * scale },
+    .size = { [H] = size[H], [V] = size[V] },
     .min_break = {
-      [H] = setup->paper[H] * scale / 2,
-      [V] = setup->paper[V] * scale / 2,
+      [H] = size[H] / 2,
+      [V] = size[V] / 2,
     },
     .font = pango_font_description_copy (old_fs->font),
     .fg = old_fs->fg,
     .use_system_colors = old_fs->use_system_colors,
-    .object_spacing = setup->object_spacing * 72 * XR_POINT,
+    .object_spacing = scale (ps->object_spacing),
     .font_resolution = old_fs->font_resolution,
   };
   xr_fsm_style_unref (old_fs);
 
-  xr_set_surface_size (xr->dest_surface, xr->output_type,
-                       setup->paper[H] * 72.0, setup->paper[V] * 72.0);
+  if (xr->dest_surface
+      && (xr->output_type == XR_PDF || xr->output_type == XR_PS))
+    xr_set_surface_size (xr->dest_surface, xr->output_type,
+                         ps->paper[H] * 72.0, ps->paper[V] * 72.0);
 }
 
 static void
