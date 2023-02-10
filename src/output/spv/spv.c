@@ -321,6 +321,9 @@ decode_page_paragraph (const struct spvsx_page_paragraph *page_paragraph,
 {
   memset (ph, 0, sizeof *ph);
 
+  if (!page_paragraph)
+    return;
+
   const struct spvsx_page_paragraph_text *page_paragraph_text
     = page_paragraph->page_paragraph_text;
   if (!page_paragraph_text)
