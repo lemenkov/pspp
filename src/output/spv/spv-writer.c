@@ -144,10 +144,10 @@ write_page_heading (struct spv_writer *w, const struct page_heading *h,
   start_elem (w, name);
   if (h->n)
     {
-      start_elem (w, "pageParagraph");
+      start_elem (w, "vps:pageParagraph");
       for (size_t i = 0; i < h->n; i++)
         {
-          start_elem (w, "text");
+          start_elem (w, "vtx:text");
           write_attr (w, "type", "title");
           write_text (w, h->paragraphs[i].markup); /* XXX */
           end_elem (w);
@@ -160,7 +160,7 @@ write_page_heading (struct spv_writer *w, const struct page_heading *h,
 static void
 write_page_setup (struct spv_writer *w, const struct page_setup *ps)
 {
-  start_elem (w, "pageSetup");
+  start_elem (w, "vps:pageSetup");
   write_attr_format (w, "initial-page-number", "%d", ps->initial_page_number);
   write_attr (w, "chart-size",
               (ps->chart_size == PAGE_CHART_AS_IS ? "as-is"
@@ -176,8 +176,8 @@ write_page_setup (struct spv_writer *w, const struct page_setup *ps)
   write_attr (w, "reference-orientation",
               ps->orientation == PAGE_PORTRAIT ? "portrait" : "landscape");
   write_attr_format (w, "space-after", "%.1fpt", ps->object_spacing * 72.0);
-  write_page_heading (w, &ps->headings[0], "pageHeader");
-  write_page_heading (w, &ps->headings[1], "pageFooter");
+  write_page_heading (w, &ps->headings[0], "vps:pageHeader");
+  write_page_heading (w, &ps->headings[1], "vps:pageFooter");
   end_elem (w);
 }
 
