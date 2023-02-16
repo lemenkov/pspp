@@ -137,12 +137,18 @@ configure_drivers (int width, int length UNUSED, int min_break)
   string_map_insert (&options, "trim", "true");
   register_driver (&options, "%s.pdf", output_base);
 
+  /* Render to <base>-paged.pdf. */
+  register_driver (&options, "%s-paged.pdf", output_base);
+
+  /* Render to <base>.txt. */
   string_map_insert (&options, "box", "unicode");
   register_driver (&options, "%s.txt", output_base);
 
+  /* Render to <base>-ascii.txt. */
   string_map_insert (&options, "box", "ascii");
   register_driver (&options, "%s-ascii.txt", output_base);
 
+  /* Render additional versions. */
   register_driver (&options, "%s.csv", output_base);
   register_driver (&options, "%s.odt", output_base);
   register_driver (&options, "%s.spv", output_base);
