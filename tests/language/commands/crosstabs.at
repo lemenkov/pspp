@@ -1896,9 +1896,9 @@ N of Valid Cases,250,,,,
 Table: Risk Estimate
 ,Value,95% Confidence Interval,
 ,,Lower,Upper
-Odds Ratio for factor (Placebo / Aspirin),2.25,2.25,2.25
-For cohort disease = Yes,1.08,1.08,1.08
-For cohort disease = No,.99,.99,.99
+Odds Ratio for factor (Placebo / Aspirin),2.25,1.09,4.64
+For cohort disease = Yes,2.00,1.08,3.72
+For cohort disease = No,.89,.80,.99
 N of Valid Cases,250.00,,
 ])
 AT_CLEANUP

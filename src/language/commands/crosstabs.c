@@ -1974,7 +1974,7 @@ display_risk (struct crosstabulation *xt, struct pivot_table *risk,
         {
           indexes[0] = j;
           pivot_table_put (risk, indexes, risk->n_dimensions,
-                           pivot_value_new_number (entries[i]));
+                           pivot_value_new_number (entries[j]));
         }
     }
   indexes[1] = pivot_category_create_leaf (
