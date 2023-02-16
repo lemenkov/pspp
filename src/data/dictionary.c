@@ -416,19 +416,21 @@ dict_set_split_vars__ (struct dictionary *d,
   assert (n == 0 || split != NULL);
 
   d->n_splits = n;
-  d->split_type = type == SPLIT_NONE ? SPLIT_LAYERED : type;
+  d->split_type = (n == 0 ? SPLIT_NONE
+                   : type == SPLIT_NONE ? SPLIT_LAYERED
+                   : type);
   if (n > 0)
-   {
-    d->split = xnrealloc (d->split, n, sizeof *d->split) ;
-    memcpy (d->split, split, n * sizeof *d->split);
-   }
+    {
+      d->split = xnrealloc (d->split, n, sizeof *d->split) ;
+      memcpy (d->split, split, n * sizeof *d->split);
+    }
   else
-   {
-    free (d->split);
-    d->split = NULL;
-   }
+    {
+      free (d->split);
+      d->split = NULL;
+    }
 
- if (!skip_callbacks)
+  if (!skip_callbacks)
     {
       if (d->changed) d->changed (d, d->changed_data);
       if (d->callbacks &&  d->callbacks->split_changed)

@@ -955,6 +955,43 @@ show_SMALL (const struct dataset *ds UNUSED)
 }
 
 static char *
+show_SPLIT (const struct dataset *ds)
+{
+  const struct dictionary *dict = dataset_dict (ds);
+
+  const char *type;
+  switch (dict_get_split_type (dict))
+    {
+    case SPLIT_NONE:
+      return xstrdup ("none");
+
+    case SPLIT_SEPARATE:
+      type = "SEPARATE";
+      break;
+
+    case SPLIT_LAYERED:
+      type = "LAYERED";
+      break;
+
+    default:
+      NOT_REACHED ();
+    }
+
+  struct string s = DS_EMPTY_INITIALIZER;
+
+  size_t n = dict_get_n_splits (dict);
+  const struct variable *const *vars = dict_get_split_vars (dict);
+  for (size_t i = 0; i < n; i++)
+    {
+      if (i > 0)
+        ds_put_cstr (&s, ", ");
+      ds_put_cstr (&s, var_get_name (vars[i]));
+    }
+  ds_put_format (&s, " (%s)", type);
+  return ds_steal_cstr (&s);
+}
+
+static char *
 show_SUBTITLE (const struct dataset *ds UNUSED)
 {
   return xstrdup (output_get_subtitle ());
@@ -1271,6 +1308,7 @@ static const struct setting settings[] = {
   { "SCOMPRESSION", parse_SCOMPRESSION, show_SCOMPRESSION },
   { "SEED", parse_SEED, NULL },
   { "SMALL", parse_SMALL, show_SMALL },
+  { "SPLIT", NULL, show_SPLIT },
   { "TEMPDIR", NULL, show_TEMPDIR },
   { "TNUMBERS", parse_TNUMBERS, show_TNUMBERS },
   { "TVARS", parse_TVARS, show_TVARS },

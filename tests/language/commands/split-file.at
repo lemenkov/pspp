@@ -145,3 +145,76 @@ specified.
       |               ^~~~~~~~
 ])
 AT_CLEANUP
+
+AT_SETUP([SPLIT FILE - SHOW SPLIT and SPLIT FILE OFF])
+AT_DATA([show.sps], [dnl
+SET PRINTBACK=ON.
+
+SHOW SPLIT.
+
+DATA LIST LIST NOTABLE/x y z.
+SPLIT FILE BY x y.
+SHOW SPLIT.
+
+SPLIT FILE LAYERED BY y z.
+SHOW SPLIT.
+
+SPLIT FILE SEPARATE BY x z.
+SHOW SPLIT.
+
+SPLIT FILE OFF.
+SHOW SPLIT.
+])
+AT_CHECK([pspp show.sps -O box=unicode], [0], [dnl
+SET PRINTBACK=ON.
+
+SHOW SPLIT.
+
+  Settings
+╭─────┬────╮
+│SPLIT│none│
+╰─────┴────╯
+
+
+DATA LIST LIST NOTABLE/x y z.
+
+SPLIT FILE BY x y.
+
+SHOW SPLIT.
+
+       Settings
+╭─────┬──────────────╮
+│SPLIT│x, y (LAYERED)│
+╰─────┴──────────────╯
+
+
+SPLIT FILE LAYERED BY y z.
+
+SHOW SPLIT.
+
+       Settings
+╭─────┬──────────────╮
+│SPLIT│y, z (LAYERED)│
+╰─────┴──────────────╯
+
+
+SPLIT FILE SEPARATE BY x z.
+
+SHOW SPLIT.
+
+        Settings
+╭─────┬───────────────╮
+│SPLIT│x, z (SEPARATE)│
+╰─────┴───────────────╯
+
+
+SPLIT FILE OFF.
+
+SHOW SPLIT.
+
+  Settings
+╭─────┬────╮
+│SPLIT│none│
+╰─────┴────╯
+])
+AT_CLEANUP
