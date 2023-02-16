@@ -601,6 +601,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
   size_t nx = 1;
   size_t n_by = 0;
   int vars_start = lex_ofs (lexer);
+  bool overflow = false;
   do
     {
       by = xnrealloc (by, n_by + 1, sizeof *by);
@@ -610,15 +611,16 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
 	goto done;
       size_t n = by_nvar[n_by++];
       if (xalloc_oversized (nx, n))
-        {
-          lex_ofs_error (
-            lexer, vars_start, lex_ofs (lexer) - 1,
-            _("Too many cross-tabulation variables or dimensions."));
-          goto done;
-        }
+        overflow = true;
       nx *= n;
     }
   while (lex_match (lexer, T_BY));
+  if (overflow)
+    {
+      lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
+                     _("Too many cross-tabulation variables or dimensions."));
+      goto done;
+    }
   if (n_by < 2)
     {
       bool unused UNUSED = lex_force_match (lexer, T_BY);

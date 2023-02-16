@@ -2014,11 +2014,14 @@ AT_CHECK([pspp -O format=csv crosstabs.sps], [1], [dnl
    13 | CROSSTABS **.
       |           ^~"
 
-"crosstabs.sps:15.8-16.59: error: CROSSTABS: Too many cross-tabulation variables or dimensions.
+"crosstabs.sps:15.8-20.87: error: CROSSTABS: Too many cross-tabulation variables or dimensions.
    15 |        v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
       |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    16 |     BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100
-      | -----------------------------------------------------------"
+      | ---------------------------------------------------------------------------------------
+  ... |
+   20 |     BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100 BY v1 to v100.
+      | ---------------------------------------------------------------------------------------"
 
 crosstabs.sps:21: error: CROSSTABS: At least one crosstabulation must be requested (using the TABLES subcommand).
 
