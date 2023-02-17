@@ -278,7 +278,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
     {
       /* The active dataset will be replaced by the aggregated data,
          so TEMPORARY is moot. */
-      proc_cancel_temporary_transformations (ds);
+      proc_make_temporary_transformations_permanent (ds);
       proc_discard_output (ds);
       output = autopaging_writer_create (dict_get_proto (agr.dict));
     }

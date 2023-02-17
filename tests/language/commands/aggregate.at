@@ -511,3 +511,21 @@ aggregate.sps:16: error: AGGREGATE: Number of source variables (1) does not matc
       | ^~~~~~~~~"
 ])
 AT_CLEANUP
+
+AT_SETUP([AGGREGATE - temporary transformations])
+AT_DATA([aggregate.sps], [dnl
+DATA LIST FREE /quakes (F2.0).
+BEGIN DATA
+1 2 3 4 5 6 7 8 9 10
+END DATA.
+TEMPORARY.
+SELECT IF quakes GT 5.
+AGGREGATE OUTFILE = *  /nrecs=NU.
+LIST.
+])
+AT_CHECK([pspp -O format=csv aggregate.sps], [0], [dnl
+Table: Data List
+nrecs
+5
+])
+AT_CLEANUP
