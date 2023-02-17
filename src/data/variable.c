@@ -760,22 +760,19 @@ var_get_label (const struct variable *v)
 
 /* Sets V's variable label to UTF-8 encoded string LABEL, stripping off leading
    and trailing white space.  If LABEL is a null pointer or if LABEL is an
-   empty string (after stripping white space), then V's variable label (if any)
-   is removed. */
+   empty string, then V's variable label (if any) is removed. */
 static void
 var_set_label_quiet (struct variable *v, const char *label)
 {
   free (v->label);
   v->label = NULL;
 
-  if (label != NULL && label[strspn (label, CC_SPACES)])
+  if (label != NULL && label[0])
     v->label = xstrdup (label);
 
   ds_destroy (&v->name_and_label);
   ds_init_empty (&v->name_and_label);
 }
-
-
 
 /* Sets V's variable label to UTF-8 encoded string LABEL, stripping off leading
    and trailing white space.  If LABEL is a null pointer or if LABEL is an
@@ -788,7 +785,6 @@ var_set_label (struct variable *v, const char *label)
   var_set_label_quiet (v, label);
   dict_var_changed (v, VAR_TRAIT_LABEL, ov);
 }
-
 
 /* Removes any variable label from V. */
 void

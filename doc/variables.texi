@@ -293,30 +293,26 @@ dictionary; use @cmd{NEW FILE} to do that (@pxref{NEW FILE}).
 @section VARIABLE LABELS
 @vindex VARIABLE LABELS
 
-In addition to a variable's name, each variable can have a @dfn{label}.
-Whereas the name is limited to certain constraints (@pxref{Attributes}) a variable's
-label has no such constraints.
-Typically, the names are concise, easy to type mnemonics for the variable
-and the labels are longer, more verbose descriptions.
+In addition to a variable's name, each variable can have a
+@dfn{label}.  Whereas a variable name is a concise, easy-to-type
+mnemonic for the variable, a label may be longer and more descriptive.
 
 @display
 VARIABLE LABELS
-        @var{var_list} '@var{var_label}'
-        [ /@var{var_list} '@var{var_label}']
-        .
-        .
-        .
-        [ /@var{var_list} '@var{var_label}']
+        @var{variable} '@var{label}'
+        [@var{variable} '@var{label}']@dots{}
 @end display
 
 @cmd{VARIABLE LABELS} associates explanatory names
 with variables.  This name, called a @dfn{variable label}, is displayed by
 statistical procedures.
 
-To assign a variable label to a group of variables, specify a
-list of variable names and the variable label as a string.
-To assign different labels to different variables in the same command,
-precede the subsequent variable list with a slash (@samp{/}).
+Specify each variable followed by its label as a quoted string.
+Variable-label pairs may be separated by an optional slash @samp{/}.
+
+If a listed variable already has a label, the new one replaces it.
+Specifying an empty string as the label, e.g.@:@samp{''}, removes a
+label.
 
 @node PRINT FORMATS
 @section PRINT FORMATS

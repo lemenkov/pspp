@@ -434,6 +434,7 @@ TESTSUITE_AT = \
 	tests/language/commands/title.at \
 	tests/language/commands/update.at \
 	tests/language/commands/value-labels.at \
+	tests/language/commands/variable-labels.at \
 	tests/language/commands/variable-display.at \
 	tests/language/commands/vector.at \
 	tests/language/commands/weight.at \

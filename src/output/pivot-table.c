@@ -2915,7 +2915,7 @@ pivot_value_new_variable__ (const char *name, const char *label)
     .variable = {
       .type = PIVOT_VALUE_VARIABLE,
       .var_name = xstrdup (name),
-      .var_label = xstrdup_if_nonempty (label),
+      .var_label = xstrdup_if_nonnull (label),
     },
   };
   return value;

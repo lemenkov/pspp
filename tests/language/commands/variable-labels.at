@@ -1,0 +1,25 @@
+AT_BANNER([VARIABLE LABELS])
+
+AT_SETUP([VARIABLE LABELS])
+AT_DATA([var-labels.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+VARIABLE LABELS x 'First variable' y ' '.
+BEGIN DATA.
+1 2 3
+4 5 6
+END DATA.
+DESCRIPTIVES x y z.
+])
+AT_CHECK([pspp -O box=unicode var-labels.sps], [0], [dnl
+                Descriptive Statistics
+╭────────────────────┬─┬────┬───────┬───────┬───────╮
+│                    │N│Mean│Std Dev│Minimum│Maximum│
+├────────────────────┼─┼────┼───────┼───────┼───────┤
+│First variable      │2│2.50│   2.12│   1.00│   4.00│
+│                    │2│3.50│   2.12│   2.00│   5.00│
+│z                   │2│4.50│   2.12│   3.00│   6.00│
+│Valid N (listwise)  │2│    │       │       │       │
+│Missing N (listwise)│0│    │       │       │       │
+╰────────────────────┴─┴────┴───────┴───────┴───────╯
+])
+AT_CLEANUP
