@@ -1782,58 +1782,30 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 │                                                 │Male│Female│
 ├─────────────────────────────────────────────────┼────┼──────┤
 │QN1  Every day                   Count           │2305│  2362│
-│                                 Unweighted Count│    │      │
-│                                 Mean            │    │      │
 │    ╶────────────────────────────────────────────┼────┼──────┤
 │     Several days a week         Count           │ 440│   834│
-│                                 Unweighted Count│    │      │
-│                                 Mean            │    │      │
 │    ╶────────────────────────────────────────────┼────┼──────┤
 │     Once a week or less         Count           │ 125│   236│
-│                                 Unweighted Count│    │      │
-│                                 Mean            │    │      │
 │    ╶────────────────────────────────────────────┼────┼──────┤
 │     Only certain times a year   Count           │  58│    72│
-│                                 Unweighted Count│    │      │
-│                                 Mean            │    │      │
 │    ╶────────────────────────────────────────────┼────┼──────┤
 │     Never                       Count           │ 192│   348│
-│                                 Unweighted Count│    │      │
-│                                 Mean            │    │      │
 ├─────────────────────────────────────────────────┼────┼──────┤
-│qnd1 Count                                       │    │      │
-│    ╶────────────────────────────────────────────┼────┼──────┤
-│     Unweighted Count                            │    │      │
-│    ╶────────────────────────────────────────────┼────┼──────┤
-│     Mean                                        │  46│    50│
+│qnd1 Mean                                        │  46│    50│
 ├─────────────────────────────────────────────────┼────┼──────┤
-│QN17 OR, something else          Count           │    │      │
-│                                 Unweighted Count│   1│     1│
-│                                 Mean            │    │      │
+│QN17 OR, something else          Unweighted Count│   1│     1│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Beer                        Count           │    │      │
-│                                 Unweighted Count│ 817│   256│
-│                                 Mean            │    │      │
+│     Beer                        Unweighted Count│ 817│   256│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Light beer                  Count           │    │      │
-│                                 Unweighted Count│ 406│   214│
-│                                 Mean            │    │      │
+│     Light beer                  Unweighted Count│ 406│   214│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Wine                        Count           │    │      │
-│                                 Unweighted Count│ 390│  1028│
-│                                 Mean            │    │      │
+│     Wine                        Unweighted Count│ 390│  1028│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Wine coolers                Count           │    │      │
-│                                 Unweighted Count│  20│   117│
-│                                 Mean            │    │      │
+│     Wine coolers                Unweighted Count│  20│   117│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Hard liquor or mixed drinks Count           │    │      │
-│                                 Unweighted Count│ 392│   496│
-│                                 Mean            │    │      │
+│     Hard liquor or mixed drinks Unweighted Count│ 392│   496│
 │    ╶────────────────────────────────────────────┼────┼──────┤
-│     Flavored malt drinks        Count           │    │      │
-│                                 Unweighted Count│  20│    63│
-│                                 Mean            │    │      │
+│     Flavored malt drinks        Unweighted Count│  20│    63│
 ╰─────────────────────────────────────────────────┴────┴──────╯
 ])
 AT_CLEANUP

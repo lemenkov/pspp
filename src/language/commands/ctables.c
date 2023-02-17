@@ -6014,7 +6014,6 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
 
   struct pivot_table_look *look = pivot_table_look_unshare (
     pivot_table_look_ref (pivot_table_look_get_default ()));
-  look->omit_empty = false;
 
   struct ctables *ct = xmalloc (sizeof *ct);
   *ct = (struct ctables) {
