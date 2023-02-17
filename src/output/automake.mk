@@ -20,6 +20,8 @@ noinst_LTLIBRARIES += src/output/liboutput.la
 
 src_output_liboutput_la_CPPFLAGS = $(LIBXML2_CFLAGS) $(AM_CPPFLAGS)
 
+src_output_liboutput_la_LIBADD = $(CAIRO_LIBS) $(LIBXML2_LIBS)
+
 src_output_liboutput_la_SOURCES = \
 	src/output/ascii.c \
 	src/output/ascii.h \
