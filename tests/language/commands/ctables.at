@@ -1236,7 +1236,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES categories and EMPTY])
 AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
-AT_DATA([ctables.sps],
+AT_DATA([ctables.sps], [dnl
 DATA LIST LIST NOTABLE /class datum size.
 BEGIN DATA
 1 1 1
@@ -1292,6 +1292,96 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 │              4│     │    1│    1│
 │              6│     │    1│    1│
 ╰───────────────┴─────┴─────┴─────╯
+])
+AT_CLEANUP
+
+dnl PCOMPUTE needs to be an internal exception to omitting empty
+dnl categories, but the code didn't always implement that
+dnl properly.  This test guards against regression.
+AT_SETUP([CTABLES interaction between EMPTY and PCOMPUTE])
+AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_DATA([ctables.sps],
+[[GET 'nhtsa.sav'.
+
+* Make sure that "Never" has no responses.
+SELECT IF qn1 <> 5.
+
+* This will include "% Not Drivers" even though it has a zero value,
+because it is explicitly specified.  It will include "missing" and the
+"Not Drivers or Missing" subtotal, even though they are both zero,
+because we include empty values.
+CTABLES
+  /PCOMPUTE &all_drivers=EXPR([1 THRU 2] + [3 THRU 4])
+  /PPROPERTIES &all_drivers LABEL='All Drivers'
+  /PCOMPUTE &pct_never=EXPR([5] / ([1 THRU 2] + [3 THRU 4] + [5]) * 100)
+  /PPROPERTIES &pct_never LABEL='% Not Drivers' FORMAT=COUNT PCT40.1
+  /TABLE=qn1 BY qns3a
+  /CATEGORIES VARIABLES=qn1
+  [1 THRU 2, SUBTOTAL='Frequent Drivers',
+  3 THRU 4, SUBTOTAL='Infrequent Drivers',
+  &all_drivers, 5, &pct_never,
+  MISSING, SUBTOTAL='Not Drivers or Missing'].
+
+* This will include "% Not Drivers" even though it has a zero value,
+because it is explicitly specified.  It will omit "missing" and the
+"Not Drivers or Missing" subtotal because they are both zero and
+we have EMPTY=EXCLUDE.
+CTABLES
+  /PCOMPUTE &all_drivers=EXPR([1 THRU 2] + [3 THRU 4])
+  /PPROPERTIES &all_drivers LABEL='All Drivers'
+  /PCOMPUTE &pct_never=EXPR([5] / ([1 THRU 2] + [3 THRU 4] + [5]) * 100)
+  /PPROPERTIES &pct_never LABEL='% Not Drivers' FORMAT=COUNT PCT40.1
+  /TABLE=qn1 BY qns3a
+  /CATEGORIES VARIABLES=ALL EMPTY=EXCLUDE
+  /CATEGORIES VARIABLES=qn1
+  [1 THRU 2, SUBTOTAL='Frequent Drivers',
+  3 THRU 4, SUBTOTAL='Infrequent Drivers',
+  &all_drivers, 5, &pct_never,
+  MISSING, SUBTOTAL='Not Drivers or Missing'].
+]])
+AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
+                                 Custom Tables
+╭────────────────────────────────────────────────────────────────┬────────────╮
+│                                                                │S3a. GENDER:│
+│                                                                ├─────┬──────┤
+│                                                                │ Male│Female│
+│                                                                ├─────┼──────┤
+│                                                                │Count│ Count│
+├────────────────────────────────────────────────────────────────┼─────┼──────┤
+│ 1. How often do you usually drive a car or Every day           │ 2305│  2362│
+│other motor vehicle?                        Several days a week │  440│   834│
+│                                            Frequent Drivers    │ 2745│  3196│
+│                                            Once a week or less │  125│   236│
+│                                            Only certain times a│   58│    72│
+│                                            year                │     │      │
+│                                            Infrequent Drivers  │  183│   308│
+│                                            All Drivers         │ 2928│  3504│
+│                                            Never               │    0│     0│
+│                                            % Not Drivers       │  .0%│   .0%│
+│                                            Don't know          │    0│     0│
+│                                            Refused             │    0│     0│
+│                                            Not Drivers or      │    0│     0│
+│                                            Missing             │     │      │
+╰────────────────────────────────────────────────────────────────┴─────┴──────╯
+
+                                 Custom Tables
+╭────────────────────────────────────────────────────────────────┬────────────╮
+│                                                                │S3a. GENDER:│
+│                                                                ├─────┬──────┤
+│                                                                │ Male│Female│
+│                                                                ├─────┼──────┤
+│                                                                │Count│ Count│
+├────────────────────────────────────────────────────────────────┼─────┼──────┤
+│ 1. How often do you usually drive a car or Every day           │ 2305│  2362│
+│other motor vehicle?                        Several days a week │  440│   834│
+│                                            Frequent Drivers    │ 2745│  3196│
+│                                            Once a week or less │  125│   236│
+│                                            Only certain times a│   58│    72│
+│                                            year                │     │      │
+│                                            Infrequent Drivers  │  183│   308│
+│                                            All Drivers         │ 2928│  3504│
+│                                            % Not Drivers       │  .0%│   .0%│
+╰────────────────────────────────────────────────────────────────┴─────┴──────╯
 ])
 AT_CLEANUP
 
@@ -1924,12 +2014,12 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 │A. Get stopped by the police?                Very likely│       .│   24.9%│   18.5%│   24.0%│  26.6%│   25.5%│   33.3%│
 │                                             Somewhat   │       .│   38.3%│   41.9%│   38.6%│  37.5%│   36.4%│   23.8%│
 │                                             likely     │        │        │        │        │       │        │        │
-│                                             Subtotal   │        │   72.8%│   68.6%│   75.0%│  74.0%│   81.8%│   81.0%│
+│                                             Subtotal   │       .│   72.8%│   68.6%│   75.0%│  74.0%│   81.8%│   81.0%│
 │                                             Somewhat   │       .│   18.1%│   21.7%│   16.8%│  16.7%│   10.9%│    9.5%│
 │                                             unlikely   │        │        │        │        │       │        │        │
 │                                             Very       │       .│    9.2%│    9.7%│    8.2%│   9.4%│    7.3%│    9.5%│
 │                                             unlikely   │        │        │        │        │       │        │        │
-│                                             Subtotal   │        │   27.2%│   31.4%│   25.0%│  26.0%│   18.2%│   19.0%│
+│                                             Subtotal   │       .│   27.2%│   31.4%│   25.0%│  26.0%│   18.2%│   19.0%│
 ╰────────────────────────────────────────────────────────┴────────┴────────┴────────┴────────┴───────┴────────┴────────╯
 
                                                       Custom Tables
@@ -2204,7 +2294,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 │Favorite month JAN│ 10│  3│  8│  6│  4│  2│  7│     17│   40│  9│  6│  4│  2│  7│  5│  3│     12│   36│
 │               FEB│  6│  8│  6│  4│  2│  7│  5│     11│   38│ 12│  4│  2│  7│  5│  3│  8│     20│   41│
 │               MAR│ 16│  6│  4│  2│  7│  5│  3│     19│   43│  8│  2│  7│  5│  3│  8│  6│     14│   39│
-│               Q1 │ 32│ 17│ 18│ 12│ 13│ 14│ 15│       │     │ 29│ 12│ 13│ 14│ 15│ 16│ 17│       │     │
+│               Q1 │ 32│ 17│ 18│ 12│ 13│ 14│ 15│     47│     │ 29│ 12│ 13│ 14│ 15│ 16│ 17│     46│     │
 │               APR│ 12│  4│  2│  7│  5│  3│  8│     20│   41│  4│  7│  5│  3│  8│  6│  4│      8│   37│
 │               MAY│  8│  2│  7│  5│  3│  8│  6│     14│   39│ 14│  5│  3│  8│  6│  4│  2│     16│   42│
 │               JUN│  4│  7│  5│  3│  8│  6│  4│      8│   37│ 10│  3│  8│  6│  4│  2│  7│     17│   40│
@@ -2212,11 +2302,11 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 │               JUL│ 14│  5│  3│  8│  6│  4│  2│     16│   42│  6│  8│  6│  4│  2│  7│  5│     11│   38│
 │               AUG│ 10│  3│  8│  6│  4│  2│  7│     17│   40│ 16│  6│  4│  2│  7│  5│  3│     19│   43│
 │               SEP│  6│  8│  6│  4│  2│  7│  5│     11│   38│ 12│  4│  2│  7│  5│  3│  8│     20│   41│
-│               Q3 │ 54│ 29│ 31│ 33│ 28│ 30│ 32│       │     │ 62│ 33│ 28│ 30│ 32│ 27│ 29│       │     │
+│               Q3 │ 54│ 29│ 31│ 33│ 28│ 30│ 32│     86│     │ 62│ 33│ 28│ 30│ 32│ 27│ 29│     91│     │
 │               OCT│ 16│  6│  4│  2│  7│  5│  3│     19│   43│  8│  2│  7│  5│  3│  8│  6│     14│   39│
 │               NOV│ 12│  4│  2│  7│  5│  3│  8│     20│   41│  4│  7│  5│  3│  8│  6│  4│      8│   37│
 │               DEC│  8│  2│  7│  5│  3│  8│  6│     14│   39│ 14│  5│  3│  8│  6│  4│  2│     16│   42│
-│               Q4 │ 36│ 12│ 13│ 14│ 15│ 16│ 17│       │     │ 26│ 14│ 15│ 16│ 17│ 18│ 12│       │     │
+│               Q4 │ 36│ 12│ 13│ 14│ 15│ 16│ 17│     53│     │ 26│ 14│ 15│ 16│ 17│ 18│ 12│     38│     │
 ╰──────────────────┴───┴───┴───┴───┴───┴───┴───┴───────┴─────┴───┴───┴───┴───┴───┴───┴───┴───────┴─────╯
 ])
 AT_CLEANUP

@@ -5445,17 +5445,24 @@ static void
 ctables_section_recurse_add_empty_categories (
   struct ctables_section *s,
   const struct ctables_category **cats[PIVOT_N_AXES], struct ccase *c,
-  enum pivot_axis_type a, size_t a_idx)
+  enum pivot_axis_type a, size_t a_idx, bool add)
 {
   if (a >= PIVOT_N_AXES)
-    ctables_cell_insert__ (s, c, cats);
+    {
+      if (add)
+        ctables_cell_insert__ (s, c, cats);
+    }
   else if (!s->nests[a] || a_idx >= s->nests[a]->n)
-    ctables_section_recurse_add_empty_categories (s, cats, c, a + 1, 0);
+    ctables_section_recurse_add_empty_categories (s, cats, c, a + 1, 0, add);
   else
     {
       const struct variable *var = s->nests[a]->vars[a_idx];
-      const struct ctables_categories *categories = s->table->categories[
-        var_get_dict_index (var)];
+      size_t idx = var_get_dict_index (var);
+      bool show_empty = s->table->show_empty[idx];
+      if (show_empty)
+        add = true;
+
+      const struct ctables_categories *categories = s->table->categories[idx];
       int width = var_get_width (var);
       const struct hmap *occurrences = &s->occurrences[a][a_idx];
       const struct ctables_occurrence *o;
@@ -5466,16 +5473,19 @@ ctables_section_recurse_add_empty_categories (
           value_clone (value, &o->value, width);
           cats[a][a_idx] = ctables_categories_match (categories, value, var);
           assert (cats[a][a_idx] != NULL);
-          ctables_section_recurse_add_empty_categories (s, cats, c, a, a_idx + 1);
+          ctables_section_recurse_add_empty_categories (s, cats, c,
+                                                        a, a_idx + 1, add);
         }
 
       for (size_t i = 0; i < categories->n_cats; i++)
         {
           const struct ctables_category *cat = &categories->cats[i];
-          if (cat->type == CCT_POSTCOMPUTE)
+          if (cat->type == CCT_POSTCOMPUTE
+              || (show_empty && cat->type == CCT_SUBTOTAL))
             {
               cats[a][a_idx] = cat;
-              ctables_section_recurse_add_empty_categories (s, cats, c, a, a_idx + 1);
+              ctables_section_recurse_add_empty_categories (s, cats, c,
+                                                            a, a_idx + 1, true);
             }
         }
     }
@@ -5484,7 +5494,6 @@ ctables_section_recurse_add_empty_categories (
 static void
 ctables_section_add_empty_categories (struct ctables_section *s)
 {
-  bool show_empty = false;
   for (size_t a = 0; a < PIVOT_N_AXES; a++)
     if (s->nests[a])
       for (size_t k = 0; k < s->nests[a]->n; k++)
@@ -5494,13 +5503,8 @@ ctables_section_add_empty_categories (struct ctables_section *s)
             size_t idx = var_get_dict_index (var);
             const struct ctables_categories *cats = s->table->categories[idx];
             if (s->table->show_empty[idx])
-              {
-                show_empty = true;
-                ctables_add_category_occurrences (var, &s->occurrences[a][k], cats);
-              }
+              ctables_add_category_occurrences (var, &s->occurrences[a][k], cats);
           }
-  if (!show_empty)
-    return;
 
   const struct ctables_category *layer_cats[s->nests[PIVOT_AXIS_LAYER]->n];
   const struct ctables_category *row_cats[s->nests[PIVOT_AXIS_ROW]->n];
@@ -5512,7 +5516,7 @@ ctables_section_add_empty_categories (struct ctables_section *s)
       [PIVOT_AXIS_COLUMN] = column_cats,
     };
   struct ccase *c = case_create (dict_get_proto (s->table->ctables->dict));
-  ctables_section_recurse_add_empty_categories (s, cats, c, 0, 0);
+  ctables_section_recurse_add_empty_categories (s, cats, c, 0, 0, false);
   case_unref (c);
 }
 
