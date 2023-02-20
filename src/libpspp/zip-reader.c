@@ -32,6 +32,7 @@
 #include "libpspp/integer-format.h"
 #include "libpspp/str.h"
 
+#include "gl/crc.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
@@ -46,6 +47,10 @@ struct zip_member
   uint32_t offset;            /* Starting offset in file. */
   uint32_t comp_size;         /* Length of member file data, in bytes. */
   uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
+
+  uint32_t expected_crc;
+  uint32_t accumulated_crc;
+
   const struct decompressor *decompressor;
 
   size_t bytes_unread;       /* Number of bytes left in the member available for reading */
@@ -93,6 +98,7 @@ struct zip_entry
   uint32_t offset;            /* Starting offset in file. */
   uint32_t comp_size;         /* Length of member file data, in bytes. */
   uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
+  uint32_t expected_crc;      /* CRC32 of uncompressed data. */
   char *name;                 /* Name of member file. */
 };
 
@@ -230,10 +236,19 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
     return 0;
 
   int bytes_read = zm->decompressor->read (zm, buf, bytes);
-  if (bytes_read < 0)
+  if (bytes_read <= 0)
     return bytes_read;
 
   zm->bytes_unread -= bytes_read;
+  zm->accumulated_crc = crc32_update (zm->accumulated_crc, buf, bytes_read);
+  if (!zm->bytes_unread && zm->accumulated_crc != zm->expected_crc)
+    {
+      zm->error = xasprintf (_("%s: corrupt archive reading member \"%s\": "
+                               "bad CRC %#"PRIx32" (expected %"PRIx32")"),
+                             zm->file_name, zm->member_name,
+                             zm->accumulated_crc, zm->expected_crc);
+      return -1;
+    }
 
   return bytes_read;
 }
@@ -291,7 +306,7 @@ zip_header_read_next (FILE *file, const char *file_name,
   get_u16 (file);       /* comp_type */
   get_u16 (file);       /* time */
   get_u16 (file);       /* date */
-  get_u32 (file);       /* expected_crc */
+  ze->expected_crc = get_u32 (file);
   ze->comp_size = get_u32 (file);
   ze->ucomp_size = get_u32 (file);
   uint16_t nlen = get_u16 (file);
@@ -444,16 +459,16 @@ zip_member_open (struct zip_reader *zr, const char *member,
                        zr->file_name, strerror (errno));
 
   struct zip_member *zm = xmalloc (sizeof *zm);
-  zm->file_name = xstrdup (zr->file_name);
-  zm->member_name = xstrdup (member);
-  zm->fp = fp;
-  zm->offset = ze->offset;
-  zm->comp_size = ze->comp_size;
-  zm->ucomp_size = ze->ucomp_size;
-  zm->decompressor = NULL;
-  zm->bytes_unread = ze->ucomp_size;
-  zm->aux = NULL;
-  zm->error = NULL;
+  *zm = (struct zip_member) {
+    .file_name = xstrdup (zr->file_name),
+    .member_name = xstrdup (member),
+    .fp = fp,
+    .offset = ze->offset,
+    .comp_size = ze->comp_size,
+    .ucomp_size = ze->ucomp_size,
+    .bytes_unread = ze->ucomp_size,
+    .expected_crc = ze->expected_crc,
+  };
 
   char *error;
   if (0 != fseeko (zm->fp, zm->offset, SEEK_SET))

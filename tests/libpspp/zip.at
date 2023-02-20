@@ -57,6 +57,29 @@ AT_CHECK([
 ])
 AT_CLEANUP
 
+AT_SETUP([zip - detect corruption on unzip])
+AT_KEYWORDS([compression])
+mkdir write
+cd write
+AT_DATA([data.txt], [xyzzy
+])
+AT_CHECK([zip-test w ../foo.zip data.txt])
+cd ..
+
+mkdir extract
+cd extract
+AT_CHECK([zip-test r ../foo.zip data.txt])
+AT_CHECK([cat data.txt], [0], [xyzzy
+])
+cd ..
+
+mkdir error
+cd error
+sed 's/xyzzy/XYZZY/' < ../foo.zip > ../corrupted.zip
+AT_CHECK([zip-test r ../corrupted.zip data.txt], [1], [], [dnl
+Unzip failed: ../corrupted.zip: corrupt archive reading member "data.txt": bad CRC 0x2a2bcd20 (expected e1bd2a6e)
+])
+AT_CLEANUP
 
 AT_SETUP([zip to pipe])
 AT_KEYWORDS([compression])
