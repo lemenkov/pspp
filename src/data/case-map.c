@@ -134,9 +134,9 @@ case_map_create_input_translator (struct case_map *map,
   static const struct casereader_translator_class class = {
     translate_case, destroy_case_map,
   };
-  return casereader_create_translator (subreader,
-                                       case_map_get_proto (map),
-                                       &class, map);
+  return casereader_translate_stateless (subreader,
+                                         case_map_get_proto (map),
+                                         &class, map);
 }
 
 /* Creates and returns a new casewriter.  Cases written to the
