@@ -44,7 +44,7 @@ struct casereader_project
   };
 
 static struct ccase *
-project_case (struct ccase *old, casenumber idx UNUSED, const void *project_)
+project_case (struct ccase *old, void *project_)
 {
   const struct casereader_project *project = project_;
   struct ccase *new = case_create (subcase_get_proto (&project->new_sc));
@@ -81,9 +81,12 @@ casereader_project (struct casereader *subreader, const struct subcase *sc)
       subcase_init_empty (&project->new_sc);
       subcase_add_proto_always (&project->new_sc, proto);
 
+      static const struct casereader_translator_class class = {
+        project_case, destroy_projection,
+      };
+
       return casereader_translate_stateless (subreader, proto,
-                                             project_case, destroy_projection,
-                                             project);
+                                             &class, project);
     }
 }
 

@@ -501,7 +501,8 @@ advance_random_reader (struct casereader *reader,
   if (new > old)
     {
       shared->min_offset = new;
-      shared->class->advance (reader, shared->aux, new - old);
+      if (shared->class->advance)
+        shared->class->advance (reader, shared->aux, new - old);
     }
 }
 

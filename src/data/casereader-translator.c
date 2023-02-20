@@ -33,9 +33,7 @@
 struct casereader_translator
   {
     struct casereader *subreader; /* Source of input cases. */
-
-    struct ccase *(*translate) (struct ccase *input, void *aux);
-    bool (*destroy) (void *aux);
+    const struct casereader_translator_class *class;
     void *aux;
   };
 
@@ -63,18 +61,17 @@ static const struct casereader_class casereader_translator_class;
 struct casereader *
 casereader_create_translator (struct casereader *subreader,
                               const struct caseproto *output_proto,
-                              struct ccase *(*translate) (struct ccase *input,
-                                                          void *aux),
-                              bool (*destroy) (void *aux),
+                              const struct casereader_translator_class *class,
                               void *aux)
 {
   struct casereader_translator *ct = xmalloc (sizeof *ct);
-  struct casereader *reader;
-  ct->subreader = casereader_rename (subreader);
-  ct->translate = translate;
-  ct->destroy = destroy;
-  ct->aux = aux;
-  reader = casereader_create_sequential (
+  *ct = (struct casereader_translator) {
+    .subreader = casereader_rename (subreader),
+    .class = class,
+    .aux = aux,
+  };
+
+  struct casereader *reader = casereader_create_sequential (
     NULL, output_proto, casereader_get_n_cases (ct->subreader),
     &casereader_translator_class, ct);
   taint_propagate (casereader_get_taint (ct->subreader),
@@ -90,7 +87,7 @@ casereader_translator_read (struct casereader *reader UNUSED,
   struct casereader_translator *ct = ct_;
   struct ccase *tmp = casereader_read (ct->subreader);
   if (tmp)
-    tmp = ct->translate (tmp, ct->aux);
+    tmp = ct->class->translate (tmp, ct->aux);
   return tmp;
 }
 
@@ -100,7 +97,7 @@ casereader_translator_destroy (struct casereader *reader UNUSED, void *ct_)
 {
   struct casereader_translator *ct = ct_;
   casereader_destroy (ct->subreader);
-  ct->destroy (ct->aux);
+  ct->class->destroy (ct->aux);
   free (ct);
 }
 
@@ -122,9 +119,7 @@ struct casereader_stateless_translator
     struct casereader *subreader; /* Source of input cases. */
 
     casenumber case_offset;
-    struct ccase *(*translate) (struct ccase *input, casenumber,
-                                const void *aux);
-    bool (*destroy) (void *aux);
+    const struct casereader_translator_class *class;
     void *aux;
   };
 
@@ -142,10 +137,6 @@ casereader_stateless_translator_class;
    cases may be skipped and never retrieved at all.  If TRANSLATE is stateful,
    use casereader_create_translator instead.
 
-   The casenumber argument to the TRANSLATE function is the absolute case
-   number in SUBREADER, that is, 0 when the first case in SUBREADER is being
-   translated, 1 when the second case is being translated, and so on.
-
    The cases returned by TRANSLATE must match OUTPUT_PROTO.
 
    When the stateless translating casereader is destroyed, DESTROY will be
@@ -158,18 +149,16 @@ struct casereader *
 casereader_translate_stateless (
   struct casereader *subreader,
   const struct caseproto *output_proto,
-  struct ccase *(*translate) (struct ccase *input, casenumber,
-                              const void *aux),
-  bool (*destroy) (void *aux),
+  const struct casereader_translator_class *class,
   void *aux)
 {
   struct casereader_stateless_translator *cst = xmalloc (sizeof *cst);
-  struct casereader *reader;
-  cst->subreader = casereader_rename (subreader);
-  cst->translate = translate;
-  cst->destroy = destroy;
-  cst->aux = aux;
-  reader = casereader_create_random (
+  *cst = (struct casereader_stateless_translator) {
+    .subreader = casereader_rename (subreader),
+    .class = class,
+    .aux = aux,
+  };
+  struct casereader *reader = casereader_create_random (
     output_proto, casereader_get_n_cases (cst->subreader),
     &casereader_stateless_translator_class, cst);
   taint_propagate (casereader_get_taint (cst->subreader),
@@ -185,7 +174,7 @@ casereader_stateless_translator_read (struct casereader *reader UNUSED,
   struct casereader_stateless_translator *cst = cst_;
   struct ccase *tmp = casereader_peek (cst->subreader, idx);
   if (tmp != NULL)
-    tmp = cst->translate (tmp, cst->case_offset + idx, cst->aux);
+    tmp = cst->class->translate (tmp, cst->aux);
   return tmp;
 }
 
@@ -196,7 +185,7 @@ casereader_stateless_translator_destroy (struct casereader *reader UNUSED,
 {
   struct casereader_stateless_translator *cst = cst_;
   casereader_destroy (cst->subreader);
-  cst->destroy (cst->aux);
+  cst->class->destroy (cst->aux);
   free (cst);
 }
 
@@ -253,8 +242,11 @@ casereader_create_append_numeric (struct casereader *subreader,
   can->aux = aux;
   can->func = func;
   can->destroy = destroy;
-  return casereader_create_translator (subreader, can->proto,
-                                       can_translate, can_destroy, can);
+
+  static const struct casereader_translator_class class = {
+    can_translate, can_destroy,
+  };
+  return casereader_create_translator (subreader, can->proto, &class, can);
 }
 
 
@@ -385,8 +377,10 @@ casereader_create_append_rank (struct casereader *subreader,
   car->err = err;
   car->prev_value = SYSMIS;
 
-  return casereader_create_translator (subreader, car->proto,
-                                       car_translate, car_destroy, car);
+  static const struct casereader_translator_class class = {
+    car_translate, car_destroy
+  };
+  return casereader_create_translator (subreader, car->proto, &class, car);
 }
 
 
@@ -576,7 +570,6 @@ casereader_create_distinct (struct casereader *input,
 					       const struct variable *weight)
 {
   struct casereader *u ;
-  struct casereader *ud ;
   struct caseproto *output_proto = caseproto_ref (casereader_get_proto (input));
 
   struct consolidator *cdr = xmalloc (sizeof (*cdr));
@@ -595,12 +588,9 @@ casereader_create_distinct (struct casereader *input,
   u = casereader_create_filter_func (input, uniquify,
 				     NULL, cdr, NULL);
 
-  ud = casereader_create_translator (u,
-				     output_proto,
-				     consolodate_weight,
-				     uniquify_destroy,
-				     cdr);
-
-  return ud;
+  static const struct casereader_translator_class class = {
+    consolodate_weight, uniquify_destroy,
+  };
+  return casereader_create_translator (u, output_proto, &class, cdr);
 }
 

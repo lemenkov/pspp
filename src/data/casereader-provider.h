@@ -148,7 +148,7 @@ struct casereader_random_class
        function should call casereader_force_error on READER. */
     void (*destroy) (struct casereader *reader, void *aux);
 
-    /* Mandatory.
+    /* Optional.
 
        A call to this function tells the callee that the N
        cases at the beginning of READER will never be read again.

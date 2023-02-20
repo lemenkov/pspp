@@ -107,21 +107,20 @@ struct casereader *
 casereader_create_counter (struct casereader *, casenumber *counter,
                            casenumber initial_value);
 
+struct casereader_translator_class
+  {
+    struct ccase *(*translate) (struct ccase *, void *aux);
+    bool (*destroy) (void *aux);
+  };
 struct casereader *
 casereader_create_translator (struct casereader *,
                               const struct caseproto *output_proto,
-                              struct ccase *(*translate) (struct ccase *,
-                                                          void *aux),
-                              bool (*destroy) (void *aux),
+                              const struct casereader_translator_class *,
                               void *aux);
-
 struct casereader *
 casereader_translate_stateless (struct casereader *,
                                 const struct caseproto *output_proto,
-                                struct ccase *(*translate) (struct ccase *,
-                                                            casenumber idx,
-                                                            const void *aux),
-                                bool (*destroy) (void *aux),
+                                const struct casereader_translator_class *,
                                 void *aux);
 
 struct casereader *casereader_project (struct casereader *,
