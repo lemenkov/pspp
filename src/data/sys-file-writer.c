@@ -1041,7 +1041,8 @@ write_long_string_missing_values (struct sfm_writer *w,
       size += 4;
       size += recode_string_len (encoding, "UTF-8", var_get_name (var), -1);
       size += 1;
-      size += mv_n_values (mv) * (4 + 8);
+      size += 4;
+      size += mv_n_values (mv) * 8;
     }
   if (size == 0)
     return;
@@ -1071,11 +1072,11 @@ write_long_string_missing_values (struct sfm_writer *w,
       n_missing_values = mv_n_values (mv);
       write_bytes (w, &n_missing_values, 1);
 
+      write_int (w, 8);
+
       for (j = 0; j < n_missing_values; j++)
         {
           const union value *value = mv_get_value (mv, j);
-
-          write_int (w, 8);
           write_bytes (w, value->s, 8);
         }
     }

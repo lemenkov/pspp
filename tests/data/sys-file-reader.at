@@ -119,10 +119,10 @@ dnl One missing value for STR8.
 COUNT("STR8"); i8 1; 8; "abcdefgh";
 
 dnl Two missing values for STR9.
-COUNT("STR9"); i8 2; 8; "abcdefgh"; 8; "01234567";
+COUNT("STR9"); i8 2; 8; "abcdefgh"; "01234567";
 
 dnl Three missing values for STR9.
-COUNT("STR10"); i8 3; 8; "abcdefgh"; 8; "01234567"; 8; "0       ";
+COUNT("STR10"); i8 3; 8; "abcdefgh"; "01234567"; "0       ";
 );
 
 dnl Character encoding record.
@@ -1921,11 +1921,11 @@ dnl Machine floating-point info record.
 dnl Long string variable missing values record.
 7; 22; 1; COUNT (
 dnl Zero missing values (not allowed) for STR1 .
-COUNT("STR1"); i8 >>0<<;
+COUNT("STR1"); i8 >>0<<; 8;
 
 dnl Four missing values (not allowed) for STR2.
-COUNT("STR2"); i8 4;
-8; "abcdefgh"; 8; "ijklmnop"; 8; "qrstuvwx"; 8; "yz012345";
+COUNT("STR2"); i8 4; 8;
+"abcdefgh"; "ijklmnop"; "qrstuvwx"; "yz012345";
 
 dnl Missing values for unknown variable
 COUNT(>>"Nonexistent"<<); i8 1; 8; "abcdefgh";
@@ -1935,6 +1935,10 @@ COUNT(>>"NUM1"<<); i8 1; 8; "abcdefgh";
 
 dnl Too long missing value
 COUNT("STR3"); i8 1; >>COUNT("abcdefghijkl")<<;
+
+dnl Buggy way that this was written in old PSPP, with a length
+dnl before each missing value instead of just once.
+COUNT("STR3"); i8 2; 8; "ABCDEFGH"; >>8<<; "IJKLMNOP";
 );
 
 dnl Character encoding record.
@@ -1956,20 +1960,22 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -O format=csv sys-file.sps], [0],
    ["warning: `sys-file.sav' near offset 0x1f8: Long string missing values record says variable STR1 has 0 missing values, but only 1 to 3 missing values are allowed."
 
-"warning: `sys-file.sav' near offset 0x201: Long string missing values record says variable STR2 has 4 missing values, but only 1 to 3 missing values are allowed."
+"warning: `sys-file.sav' near offset 0x205: Long string missing values record says variable STR2 has 4 missing values, but only 1 to 3 missing values are allowed."
 
-warning: `sys-file.sav' near offset 0x242: Ignoring long string missing value record for unknown variable Nonexistent.
+warning: `sys-file.sav' near offset 0x23a: Ignoring long string missing value record for unknown variable Nonexistent.
 
-warning: `sys-file.sav' near offset 0x257: Ignoring long string missing value record for numeric variable NUM1.
+warning: `sys-file.sav' near offset 0x24f: Ignoring long string missing value record for numeric variable NUM1.
 
-"warning: `sys-file.sav' near offset 0x270: Ignoring long string missing value 0 for variable str3, with width 11, that has bad value width 12."
+"warning: `sys-file.sav' near offset 0x268: Ignoring long string missing value 0 for variable str3, with width 11, that has bad value width 12."
+
+"warning: `sys-file.sav' near offset 0x289: This file has corrupted metadata written by a buggy version of PSPP.  To fix it, save a new copy of the file."
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 num1,1,Unknown,Input,8,Right,F8.0,F8.0,
 str1,2,Nominal,Input,9,Left,A9,A9,
 str2,3,Nominal,Input,10,Left,A10,A10,"""abcdefgh""; ""ijklmnop""; ""qrstuvwx"""
-str3,4,Nominal,Input,11,Left,A11,A11,
+str3,4,Nominal,Input,11,Left,A11,A11,"""ABCDEFGH""; ""IJKLMNOP"""
 ])
 done
 AT_CLEANUP

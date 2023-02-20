@@ -1315,7 +1315,8 @@ int32               count;
 int32               var_name_len;
 char                var_name[];
 char                n_missing_values;
-long_string_missing_value   values[];
+int32               value_len;
+char                values[values_len * n_missing_values];
 @end example
 
 @table @code
@@ -1342,29 +1343,24 @@ any particular boundary, nor is it null-terminated.
 The number of missing values, either 1, 2, or 3.  (This is, unusually,
 a single byte instead of a 32-bit number.)
 
-@item long_string_missing_value values[];
-The missing values themselves.  This array contains exactly
-@code{n_missing_values} elements, each of which has the following
-substructure:
-
-@example
-int32               value_len;
-char                value[];
-@end example
-
-@table @code
 @item int32 value_len;
-The length of the missing value string, in bytes.  This value should
+The length of each missing value string, in bytes.  This value should
 be 8, because long string variables are at least 8 bytes wide (by
 definition), only the first 8 bytes of a long string variable's
 missing values are allowed to be non-spaces, and any spaces within the
 first 8 bytes are included in the missing value here.
 
-@item char value[];
-The missing value string, exactly @code{value_len} bytes, without
-any padding or null terminator.
+@item char values[values_len * n_missing_values]
+The missing values themselves, without any padding or null
+terminators.
 @end table
-@end table
+
+An earlier version of this document stated that @code{value_len} was
+repeated before each of the missing values, so that there was an extra
+@code{int32} value of 8 before each missing value after the first.
+Old versions of PSPP wrote data files in this format.  Readers can
+tolerate this mistake, if they wish, by noticing and skipping the
+extra @code{int32} values, which wouldn't ordinarily occur in strings.
 
 @node Data File and Variable Attributes Records
 @section Data File and Variable Attributes Records

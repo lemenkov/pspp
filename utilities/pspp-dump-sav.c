@@ -1094,36 +1094,33 @@ read_long_string_missing_values (struct sfm_reader *r,
   while (ftello (r->file) - start < size * count)
     {
       long long posn = ftello (r->file);
-      char var_name[ID_MAX_LEN + 1];
-      uint8_t n_missing_values;
-      int var_name_len;
-      int i;
 
       /* Read variable name. */
-      var_name_len = read_int (r);
+      int var_name_len = read_int (r);
       if (var_name_len > ID_MAX_LEN)
         sys_error (r, "Variable name length in long string value label "
                    "record (%d) exceeds %d-byte limit.",
                    var_name_len, ID_MAX_LEN);
+      char var_name[ID_MAX_LEN + 1];
       read_string (r, var_name, var_name_len + 1);
 
       /* Read number of values. */
+      uint8_t n_missing_values;
       read_bytes (r, &n_missing_values, 1);
 
-      printf ("\t%08llx: %s, %d missing values:",
-              posn, var_name, n_missing_values);
+      /* Read value length. */
+      int value_length = read_int (r);
+
+      printf ("\t%08llx: %s, %d missing values, each %d bytes:",
+              posn, var_name, n_missing_values, value_length);
 
       /* Read values. */
-      for (i = 0; i < n_missing_values; i++)
+      for (int i = 0; i < n_missing_values; i++)
 	{
-          char *value;
-          int value_length;
-
           posn = ftello (r->file);
 
           /* Read value. */
-          value_length = read_int (r);
-          value = xmalloc (value_length + 1);
+          char *value = xmalloc (value_length + 1);
           read_string (r, value, value_length + 1);
 
           printf (" \"%s\"", value);

@@ -2477,19 +2477,26 @@ assign_variable_roles (struct sfm_reader *r, struct dictionary *dict)
 }
 
 static bool
+check_overflow__ (const struct sfm_extension_record *record,
+                  size_t ofs, size_t length)
+{
+  size_t end = record->size * record->count;
+  if (length >= end || ofs + length > end)
+    return false;
+  return true;
+}
+
+static bool
 check_overflow (struct sfm_reader *r,
                 const struct sfm_extension_record *record,
                 size_t ofs, size_t length)
 {
-  size_t end = record->size * record->count;
-  if (length >= end || ofs + length > end)
-    {
-      sys_warn (r, record->pos + end,
-                _("Extension record subtype %d ends unexpectedly."),
-                record->subtype);
-      return false;
-    }
-  return true;
+  bool ok = check_overflow__ (record, ofs, length);
+  if (!ok)
+    sys_warn (r, record->pos + record->size * record->count,
+              _("Extension record subtype %d ends unexpectedly."),
+              record->subtype);
+  return ok;
 }
 
 static void
@@ -2618,6 +2625,7 @@ parse_long_string_missing_values (struct sfm_reader *r,
   size_t end = record->size * record->count;
   size_t ofs = 0;
 
+  bool warned = false;
   while (ofs < end)
     {
       struct missing_values mv;
@@ -2666,17 +2674,32 @@ parse_long_string_missing_values (struct sfm_reader *r,
           var = NULL;
         }
 
+      /* Parse value length. */
+      if (!check_overflow (r, record, ofs, 4))
+        return;
+      size_t value_length = parse_int (r, record->data, ofs);
+      ofs += 4;
+
       /* Parse values. */
       mv_init_pool (r->pool, &mv, var ? var_get_width (var) : 8);
       for (i = 0; i < n_missing_values; i++)
 	{
-          size_t value_length;
-
-          /* Parse value length. */
-          if (!check_overflow (r, record, ofs, 4))
-            return;
-          value_length = parse_int (r, record->data, ofs);
-          ofs += 4;
+          /* Tolerate files written by old, buggy versions of PSPP where we
+             believed that the value_length was repeated before each missing
+             value. */
+          if (check_overflow__ (record, ofs, value_length)
+              && parse_int (r, record->data, ofs) == 8)
+            {
+              if (!warned)
+                {
+                  sys_warn (r, record->pos + ofs,
+                            _("This file has corrupted metadata written by a "
+                              "buggy version of PSPP.  To fix it, save a new "
+                              "copy of the file."));
+                  warned = true;
+                }
+              ofs += 4;
+            }
 
           /* Parse value. */
           if (!check_overflow (r, record, ofs, value_length))
