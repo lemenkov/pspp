@@ -63,26 +63,56 @@ s2,n1
 ])
 AT_CLEANUP
 
+dnl Checks for regression against a crash by Frans Houuweling
+dnl on Feb. 18, 2023.
+AT_SETUP([DELETE VARIABLES crash])
+AT_DATA([delete-variables.sps], [dnl
+DATA LIST NOTABLE LIST
+  /ID (A8) respondent_city_of_birth (A25) respondent_name (A20) respondent_surname (A30) respondent_year_of_birth (F4.0).
+BEGIN DATA
+195 Amsterdam Floris "van Gelder" 1958
+END DATA.
+STRING varlist (A64).
+COMPUTE found = 0.
+EXECUTE.
+MATCH FILES FILE= * /KEEP = ID TO respondent_name ALL.
+EXECUTE.
+DELETE VARIABLES respondent_surname found .
+LIST.
+])
+AT_CHECK([pspp --testing-mode -O format=csv delete-variables.sps], [0], [dnl
+Table: Data List
+ID,respondent_city_of_birth,respondent_name,respondent_year_of_birth,varlist
+195,Amsterdam,Floris,1958,
+])
+AT_CLEANUP
+
 AT_SETUP([DELETE VARIABLES syntax errors])
 AT_DATA([delete-variables.sps], [dnl
 DATA LIST LIST NOTABLE /x y z.
 BEGIN DATA.
 1 2 3
 END DATA.
+DELETE VARIABLES x y z.
 TEMPORARY.
 DELETE VARIABLES x.
-DELETE VARIABLES y z.
+COMPUTE y=0.
+DELETE VARIABLES x.
 ])
 AT_DATA([insert.sps], [dnl
 INSERT FILE='delete-variables.sps' ERROR=IGNORE.
 ])
 AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
-"delete-variables.sps:6.1-6.16: error: DELETE VARIABLES: DELETE VARIABLES may not be used after TEMPORARY.  Temporary transformations will be made permanent.
-    6 | DELETE VARIABLES x.
+"delete-variables.sps:5.1-5.22: error: DELETE VARIABLES: DELETE VARIABLES may not be used to delete all variables from the active dataset dictionary.  Use NEW FILE instead.
+    5 | DELETE VARIABLES x y z.
+      | ^~~~~~~~~~~~~~~~~~~~~~"
+
+"delete-variables.sps:7.1-7.16: error: DELETE VARIABLES: DELETE VARIABLES may not be used after TEMPORARY.
+    7 | DELETE VARIABLES x.
       | ^~~~~~~~~~~~~~~~"
 
-"delete-variables.sps:7.1-7.20: error: DELETE VARIABLES: DELETE VARIABLES may not be used to delete all variables from the active dataset dictionary.  Use NEW FILE instead.
-    7 | DELETE VARIABLES y z.
-      | ^~~~~~~~~~~~~~~~~~~~"
+"delete-variables.sps:9.1-9.16: error: DELETE VARIABLES: DELETE VARIABLES may not be used when there are pending transformations (use EXECUTE to execute transformations).
+    9 | DELETE VARIABLES x.
+      | ^~~~~~~~~~~~~~~~"
 ])
 AT_CLEANUP

@@ -820,6 +820,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 /* RANK transformation. */
 struct rank_trns
   {
+    struct caseproto *proto;
+
     int order_case_idx;
 
     struct rank_trns_input_var *input_vars;
@@ -833,7 +835,7 @@ struct rank_trns_input_var
     struct casereader *input;
     struct ccase *current;
 
-    struct variable **output_vars;
+    size_t *output_var_indexes;
   };
 
 static void
@@ -843,48 +845,52 @@ advance_ranking (struct rank_trns_input_var *iv)
   iv->current = casereader_read (iv->input);
 }
 
-static enum trns_result
-rank_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
+static struct ccase *
+rank_translate (struct ccase *c, void *trns_)
 {
   struct rank_trns *trns = trns_;
-  double order = case_num_idx (*c, trns->order_case_idx);
-  struct rank_trns_input_var *iv;
 
-  *c = case_unshare (*c);
-  for (iv = trns->input_vars; iv < &trns->input_vars[trns->n_input_vars]; iv++)
-    while (iv->current != NULL)
-      {
-        double iv_order = case_num_idx (iv->current, 0);
-        if (iv_order == order)
-          {
-            size_t i;
+  c = case_unshare_and_resize (c, trns->proto);
+  double order = case_num_idx (c, trns->order_case_idx);
+  for (struct rank_trns_input_var *iv = trns->input_vars;
+       iv < &trns->input_vars[trns->n_input_vars]; iv++)
+    {
+      for (size_t i = 0; i < trns->n_funcs; i++)
+        *case_num_rw_idx (c, iv->output_var_indexes[i]) = SYSMIS;
 
-            for (i = 0; i < trns->n_funcs; i++)
-              *case_num_rw (*c, iv->output_vars[i])
-                = case_num_idx (iv->current, i + 1);
-            advance_ranking (iv);
+      while (iv->current != NULL)
+        {
+          double iv_order = case_num_idx (iv->current, 0);
+          if (iv_order == order)
+            {
+              for (size_t i = 0; i < trns->n_funcs; i++)
+                *case_num_rw_idx (c, iv->output_var_indexes[i])
+                  = case_num_idx (iv->current, i + 1);
+              advance_ranking (iv);
+              break;
+            }
+          else if (iv_order > order)
             break;
-          }
-        else if (iv_order > order)
-          break;
-        else
-          advance_ranking (iv);
+          else
+            advance_ranking (iv);
+        }
       }
-  return TRNS_CONTINUE;
+  return c;
 }
 
 static bool
 rank_trns_free (void *trns_)
 {
   struct rank_trns *trns = trns_;
-  struct rank_trns_input_var *iv;
 
-  for (iv = trns->input_vars; iv < &trns->input_vars[trns->n_input_vars]; iv++)
+  caseproto_unref (trns->proto);
+  for (struct rank_trns_input_var *iv = trns->input_vars;
+       iv < &trns->input_vars[trns->n_input_vars]; iv++)
     {
       casereader_destroy (iv->input);
       case_unref (iv->current);
 
-      free (iv->output_vars);
+      free (iv->output_var_indexes);
     }
   free (trns->input_vars);
   free (trns);
@@ -892,9 +898,8 @@ rank_trns_free (void *trns_)
   return true;
 }
 
-static const struct trns_class rank_trns_class = {
-  .name = "RANK",
-  .execute = rank_trns_proc,
+static const struct casereader_translator_class rank_trns_class = {
+  .translate = rank_translate,
   .destroy = rank_trns_free,
 };
 
@@ -1016,17 +1021,20 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
   /* Merge the original data set with the ranks (which we already sorted on
      $ORDER). */
   struct rank_trns *trns = xmalloc (sizeof *trns);
-  trns->order_case_idx = var_get_case_index (order_var);
-  trns->input_vars = xnmalloc (cmd->n_vars, sizeof *trns->input_vars);
-  trns->n_input_vars = cmd->n_vars;
-  trns->n_funcs = cmd->n_rs;
+  *trns = (struct rank_trns) {
+    .order_case_idx = var_get_case_index (order_var),
+    .input_vars = xnmalloc (cmd->n_vars, sizeof *trns->input_vars),
+    .n_input_vars = cmd->n_vars,
+    .n_funcs = cmd->n_rs,
+  };
   for (size_t i = 0; i < trns->n_input_vars; i++)
     {
       struct rank_trns_input_var *iv = &trns->input_vars[i];
 
       iv->input = casewriter_make_reader (outputs[i]);
       iv->current = casereader_read (iv->input);
-      iv->output_vars = xnmalloc (trns->n_funcs, sizeof *iv->output_vars);
+      iv->output_var_indexes = xnmalloc (trns->n_funcs,
+                                         sizeof *iv->output_var_indexes);
       for (size_t j = 0; j < trns->n_funcs; j++)
         {
           struct rank_spec *rs = &cmd->rs[j];
@@ -1037,15 +1045,18 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
           var_set_label (var, rs->dest_labels[i]);
           var_set_measure (var, rank_measures[rs->rfunc]);
 
-          iv->output_vars[j] = var;
+          iv->output_var_indexes[j] = var_get_case_index (var);
         }
     }
   free (outputs);
 
-  add_transformation (ds, &rank_trns_class, trns);
+  trns->proto = caseproto_ref (dict_get_proto (d)),
+  dataset_set_source (ds, casereader_translate_stateless (
+                        dataset_steal_source (ds), trns->proto,
+                        &rank_trns_class, trns));
 
   /* Delete our sort key, which we don't need anymore. */
-  dict_delete_var (d, order_var);
+  dataset_delete_vars (ds, &order_var, 1);
 
   return ok;
 }

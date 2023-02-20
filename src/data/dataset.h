@@ -23,6 +23,7 @@
 #include "data/transformations.h"
 
 struct casereader;
+struct casereader_translator_class;
 struct dataset;
 struct dictionary;
 struct session;
@@ -84,12 +85,18 @@ void add_transformation (struct dataset *ds, const struct trns_class *, void *);
 bool proc_cancel_all_transformations (struct dataset *ds);
 void proc_push_transformations (struct dataset *);
 void proc_pop_transformations (struct dataset *, struct trns_chain *);
+bool proc_has_transformations (const struct dataset *);
 
 void proc_start_temporary_transformations (struct dataset *ds);
 bool proc_in_temporary_transformations (const struct dataset *ds);
 bool proc_make_temporary_transformations_permanent (struct dataset *ds);
 bool proc_cancel_temporary_transformations (struct dataset *ds);
 struct variable *add_permanent_ordering_transformation (struct dataset *);
+
+bool dataset_transform_source (struct dataset *,
+                               const struct casereader_translator_class *,
+                               void *aux);
+void dataset_delete_vars (struct dataset *, struct variable **, size_t n);
 
 /* Procedures. */
 

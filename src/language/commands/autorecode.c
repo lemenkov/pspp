@@ -67,7 +67,7 @@ struct arc_spec
     int src_idx;                /* Case index of source variable. */
     char *src_name;             /* Name of source variable. */
     struct fmt_spec format;     /* Print format in source variable. */
-    struct variable *dst;       /* Target variable. */
+    size_t dst_idx;             /* Target variable. */
     struct missing_values mv;   /* Missing values of source variable. */
     char *label;                /* Variable label of source variable. */
     struct rec_items *items;
@@ -90,13 +90,15 @@ struct rec_items
 /* AUTORECODE data. */
 struct autorecode_pgm
 {
+  struct caseproto *proto;
+
   struct arc_spec *specs;
   size_t n_specs;
 
   bool blank_valid;
 };
 
-static const struct trns_class autorecode_trns_class;
+static const struct casereader_translator_class autorecode_trns_class;
 
 static int compare_arc_items (const void *, const void *, const void *aux);
 static void arc_free (struct autorecode_pgm *);
@@ -131,8 +133,10 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   bool print = false;
 
   /* Create procedure. */
-  struct autorecode_pgm *arc = XZALLOC (struct autorecode_pgm);
-  arc->blank_valid = true;
+  struct autorecode_pgm *arc = xmalloc (sizeof *arc);
+  *arc = (struct autorecode_pgm) {
+    .blank_valid = true,
+  };
 
   /* Parse variable lists. */
   lex_match_id (lexer, "VARIABLES");
@@ -331,14 +335,15 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       struct arc_spec *spec = &arc->specs[i];
 
       /* Create destination variable. */
-      spec->dst = dict_create_var_assert (dict, dst_names[i], 0);
-      var_set_label (spec->dst, spec->label);
+      struct variable *dst = dict_create_var_assert (dict, dst_names[i], 0);
+      spec->dst_idx = var_get_case_index (dst);
+      var_set_label (dst, spec->label);
 
       /* Set print format. */
       size_t n_items = hmap_count (&spec->items->ht);
       char *longest_value = xasprintf ("%zu", n_items);
       struct fmt_spec format = { .type = FMT_F, .w = strlen (longest_value) };
-      var_set_both_formats (spec->dst, &format);
+      var_set_both_formats (dst, &format);
       free (longest_value);
 
       /* Create array of pointers to items. */
@@ -364,11 +369,11 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
                : spec->label && spec->label[0]
                ? pivot_value_new_text_format (N_("Recoding %s into %s (%s)."),
                                               spec->src_name,
-                                              var_get_name (spec->dst),
+                                              var_get_name (dst),
                                               spec->label)
                : pivot_value_new_text_format (N_("Recoding %s into %s."),
                                               spec->src_name,
-                                              var_get_name (spec->dst)));
+                                              var_get_name (dst)));
           struct pivot_table *table = pivot_table_create__ (title, "Recoding");
 
           pivot_dimension_create (
@@ -431,7 +436,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           else
             for (size_t k = 0; k < n_missing; k++)
               mv_add_num (&mv, lo + k);
-          var_set_missing_values (spec->dst, &mv);
+          var_set_missing_values (dst, &mv);
           mv_destroy (&mv);
         }
 
@@ -442,14 +447,17 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           if (value_label && value_label[0])
             {
               union value to_val = { .f = items[j]->to };
-              var_add_value_label (spec->dst, &to_val, value_label);
+              var_add_value_label (dst, &to_val, value_label);
             }
         }
 
       /* Free array. */
       free (items);
     }
-  add_transformation (ds, &autorecode_trns_class, arc);
+  arc->proto = caseproto_ref (dict_get_proto (dict));
+  dataset_set_source (ds, casereader_translate_stateless (
+                        dataset_steal_source (ds), arc->proto,
+                        &autorecode_trns_class, arc));
 
   for (size_t i = 0; i < n_dsts; i++)
     free (dst_names[i]);
@@ -552,25 +560,24 @@ compare_arc_items (const void *a_, const void *b_, const void *direction_)
   return direction == ASCENDING ? cmp : -cmp;
 }
 
-static enum trns_result
-autorecode_trns_proc (void *arc_, struct ccase **c,
-                      casenumber case_idx UNUSED)
+static struct ccase *
+autorecode_translate (struct ccase *c, void *arc_)
 {
   struct autorecode_pgm *arc = arc_;
 
-  *c = case_unshare (*c);
+  c = case_unshare_and_resize (c, arc->proto);
   for (size_t i = 0; i < arc->n_specs; i++)
     {
       const struct arc_spec *spec = &arc->specs[i];
-      const union value *value = case_data_idx (*c, spec->src_idx);
+      const union value *value = case_data_idx (c, spec->src_idx);
       int width = value_trim_spaces (value, spec->width);
       size_t hash = value_hash (value, width, 0);
       const struct arc_item *item = find_arc_item (spec->items, value, width,
                                                    hash);
-      *case_num_rw (*c, spec->dst) = item ? item->to : SYSMIS;
+      *case_num_rw_idx (c, spec->dst_idx) = item ? item->to : SYSMIS;
     }
 
-  return TRNS_CONTINUE;
+  return c;
 }
 
 static bool
@@ -578,12 +585,12 @@ autorecode_trns_free (void *arc_)
 {
   struct autorecode_pgm *arc = arc_;
 
+  caseproto_unref (arc->proto);
   arc_free (arc);
   return true;
 }
 
-static const struct trns_class autorecode_trns_class = {
-  .name = "AUTORECODE",
-  .execute = autorecode_trns_proc,
+static const struct casereader_translator_class autorecode_trns_class = {
+  .translate = autorecode_translate,
   .destroy = autorecode_trns_free,
 };

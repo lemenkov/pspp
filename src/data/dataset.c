@@ -347,6 +347,21 @@ dataset_steal_source (struct dataset *ds)
   return reader;
 }
 
+void
+dataset_delete_vars (struct dataset *ds, struct variable **vars, size_t n)
+{
+  assert (!proc_in_temporary_transformations (ds));
+  assert (!proc_has_transformations (ds));
+  assert (n < dict_get_n_vars (ds->dict));
+
+  dict_delete_vars (ds->dict, vars, n);
+  ds->source = case_map_create_input_translator (
+    case_map_to_compact_dict (ds->dict, 0), ds->source);
+  dict_compact_values (ds->dict);
+  caseinit_clear (ds->caseinit);
+  caseinit_mark_as_preinited (ds->caseinit, ds->dict);
+}
+
 /* Returns a number unique to DS.  It can be used to distinguish one dataset
    from any other within a given program run, even datasets that do not exist
    at the same time. */
@@ -801,6 +816,12 @@ proc_pop_transformations (struct dataset *ds, struct trns_chain *chain)
 {
   assert (ds->n_stack > 0);
   *chain = ds->stack[--ds->n_stack];
+}
+
+bool
+proc_has_transformations (const struct dataset *ds)
+{
+  return ds->permanent_trns_chain.n || ds->temporary_trns_chain.n;
 }
 
 static enum trns_result
