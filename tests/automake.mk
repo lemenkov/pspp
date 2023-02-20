@@ -169,7 +169,7 @@ check_PROGRAMS += tests/libpspp/sparse-xarray-test
 tests_libpspp_sparse_xarray_test_SOURCES = \
 	tests/libpspp/sparse-xarray-test.c
 tests_libpspp_sparse_xarray_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
-tests_libpspp_sparse_xarray_test_LDADD = src/libpspp/liblibpspp.la \
+tests_libpspp_sparse_xarray_test_LDADD = \
 	src/libpspp-core.la \
 	gl/libgl.la \
 	$(LIB_GETRANDOM)
@@ -217,10 +217,8 @@ tests_language_lexer_segment_test_LDADD = \
 check_PROGRAMS += tests/libpspp/zip-test
 tests_libpspp_zip_test_SOURCES = \
 	tests/libpspp/zip-test.c
-
 tests_libpspp_zip_test_CFLAGS = $(AM_CFLAGS)
 tests_libpspp_zip_test_LDADD = \
-	src/libpspp/liblibpspp.la \
 	src/libpspp-core.la \
 	gl/libgl.la \
 	$(LIB_GETRANDOM)
@@ -230,7 +228,6 @@ tests_math_chart_get_scale_test_SOURCES = tests/math/chart-get-scale-test.c
 tests_math_chart_get_scale_test_LDADD = \
 	src/math/libpspp-math.la \
 	src/libpspp/liblibpspp.la \
-	src/libpspp-core.la \
 	gl/libgl.la \
 	$(LIB_GETRANDOM)
 
@@ -239,7 +236,6 @@ tests_math_chart_get_ticks_format_test_SOURCES = tests/math/chart-get-ticks-form
 tests_math_chart_get_ticks_format_test_LDADD = \
 	src/math/libpspp-math.la \
 	src/libpspp/liblibpspp.la \
-	src/libpspp-core.la \
 	gl/libgl.la \
 	$(LIB_GETRANDOM)
 
