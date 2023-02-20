@@ -182,9 +182,9 @@ destroy_case_map (void *map_)
    the last value.  (Holes are created by deleting variables.)
 
    All variables are compacted if EXCLUDE_CLASSES is 0, or it may
-   contain one or more of (1u << DC_ORDINARY), (1u << DC_SYSTEM),
-   or (1u << DC_SCRATCH) to cause the corresponding type of
-   variable to be deleted during compaction. */
+   contain one or more of DC_ORDINARY, DC_SYSTEM, or DC_SCRATCH
+   to cause the corresponding type of variable to be deleted
+   during compaction. */
 struct case_map *
 case_map_to_compact_dict (const struct dictionary *d,
                           unsigned int exclude_classes)
@@ -205,7 +205,7 @@ case_map_to_compact_dict (const struct dictionary *d,
   for (i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
-      if (!(exclude_classes & (1u << var_get_dict_class (v))))
+      if (!(exclude_classes & var_get_dict_class (v)))
         insert_mapping (map, var_get_case_index (v), n_values++);
     }
 

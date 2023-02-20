@@ -179,8 +179,7 @@ parse_variables_pool (struct lexer *lexer, struct pool *pool,
    failure. */
 static bool
 parse_var_idx_class (struct lexer *lexer, const struct var_set *vs,
-			size_t *idx,
-			enum dict_class *class)
+                     size_t *idx, enum dict_class *class)
 {
   if (!parse_vs_variable_idx (lexer, vs, idx))
     return false;

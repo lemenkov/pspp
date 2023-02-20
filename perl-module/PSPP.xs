@@ -694,8 +694,7 @@ CODE:
 
  c =  case_create (dict_get_proto (swi->dict->dict));
 
- dict_get_vars (swi->dict->dict, &vv, &nv,
-                1u << DC_ORDINARY | 1u << DC_SYSTEM);
+ dict_get_vars (swi->dict->dict, &vv, &nv, 0);
 
  for (SV *sv = av_shift (av_case); SvOK (sv);  sv = av_shift (av_case))
   {

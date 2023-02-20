@@ -1435,9 +1435,8 @@ dict_compact_values (struct dictionary *d)
 
 /* Returns the number of values occupied by the variables in
    dictionary D.  All variables are considered if EXCLUDE_CLASSES
-   is 0, or it may contain one or more of (1u << DC_ORDINARY),
-   (1u << DC_SYSTEM), or (1u << DC_SCRATCH) to exclude the
-   corresponding type of variable.
+   is 0, or it may contain one or more of DC_ORDINARY, DC_SYSTEM,
+   or DC_SCRATCH to exclude the corresponding type of variable.
 
    The return value may be less than the number of values in one
    of dictionary D's cases (as returned by
@@ -1446,15 +1445,13 @@ dict_compact_values (struct dictionary *d)
 size_t
 dict_count_values (const struct dictionary *d, unsigned int exclude_classes)
 {
-  assert ((exclude_classes & ~((1u << DC_ORDINARY)
-                               | (1u << DC_SYSTEM)
-                               | (1u << DC_SCRATCH))) == 0);
+  assert (!(exclude_classes & ~DC_ALL));
 
   size_t n = 0;
   for (size_t i = 0; i < d->n_vars; i++)
     {
       enum dict_class class = var_get_dict_class (d->vars[i].var);
-      if (!(exclude_classes & (1u << class)))
+      if (!(exclude_classes & class))
         n++;
     }
   return n;
@@ -1474,15 +1471,13 @@ dict_get_compacted_proto (const struct dictionary *d,
   struct caseproto *proto;
   size_t i;
 
-  assert ((exclude_classes & ~((1u << DC_ORDINARY)
-                               | (1u << DC_SYSTEM)
-                               | (1u << DC_SCRATCH))) == 0);
+  assert (!(exclude_classes & ~DC_ALL));
 
   proto = caseproto_create ();
   for (i = 0; i < d->n_vars; i++)
     {
       struct variable *v = d->vars[i].var;
-      if (!(exclude_classes & (1u << var_get_dict_class (v))))
+      if (!(exclude_classes & var_get_dict_class (v)))
         proto = caseproto_add_width (proto, var_get_width (v));
     }
   return proto;
