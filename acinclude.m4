@@ -94,7 +94,7 @@ dnl Check whether the given C compiler OPTION is accepted.
 dnl If so, execute ACTION-IF-ACCEPTED, otherwise ACTION-IF-REJECTED.
 AC_DEFUN([PSPP_CHECK_CC_OPTION],
 [
-  m4_define([pspp_cv_name], [pspp_cv_[]m4_translit([$1], [-], [_])])dnl
+  m4_define([pspp_cv_name], [pspp_cv_[]m4_translit([$1], [-=], [__])])dnl
   AC_CACHE_CHECK([whether $CC accepts $1], [pspp_cv_name],
     [pspp_save_CFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS $1"
@@ -354,7 +354,20 @@ AC_DEFUN([PSPP_ENABLE_WERROR],
         CFLAGS="$CFLAGS -Werror -Wno-error=deprecated-declarations"
 	# gnulib needs this, for now:
 	CFLAGS="$CFLAGS -Wno-error=attributes"
-      fi])])
+      fi])
+
+   dnl Gnulib triggers the following error for me with GCC 12.x:
+   dnl
+   dnl   In function 'convert_to_decimal',
+   dnl       inlined from 'scale10_round_decimal_decoded' at ../gl/vasnprintf.c:1368:12:
+   dnl   ../gl/vasnprintf.c:939:26: error: argument 1 value '18446744073709551615' exceeds maximum object size 9223372036854775807 [-Werror=alloc-size-larger-than=]
+   dnl     939 |   char *c_ptr = (char *) malloc (xsum (xsum (extra_zeroes, c_len), 1));
+   dnl         |                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   dnl
+   dnl I prefer to just disable the error because I think the warning is wrong.
+   if test "X$enable_Werror" = Xyes; then
+     PSPP_ENABLE_OPTION([-Wno-error=alloc-size-larger-than=])
+   fi])
 
 # The following comes from Open vSwitch:
 # ----------------------------------------------------------------------
