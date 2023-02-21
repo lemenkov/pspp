@@ -32,7 +32,7 @@ struct casewriter;
 struct ccase;
 struct dictionary;
 
-struct case_map *case_map_create (void);
+struct case_map *case_map_clone (const struct case_map *);
 void case_map_destroy (struct case_map *);
 struct ccase *case_map_execute (const struct case_map *, struct ccase *);
 
