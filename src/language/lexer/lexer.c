@@ -362,6 +362,13 @@ lex_define_macro (struct lexer *lexer, struct macro *m)
   macro_set_add (lexer->macros, m);
 }
 
+/* Returns LEXER's macro set.  The caller should not modify it. */
+const struct macro_set *
+lex_get_macros (const struct lexer *lexer)
+{
+  return lexer->macros;
+}
+
 /* Inserts READER into LEXER so that the next token read by LEXER comes from
    READER.  Before the caller, LEXER must either be empty or at a T_ENDCMD
    token. */

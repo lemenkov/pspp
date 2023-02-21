@@ -34,6 +34,7 @@
 #include "language/command.h"
 #include "language/commands/file-handle.h"
 #include "language/lexer/lexer.h"
+#include "language/lexer/macro.h"
 #include "language/lexer/variable-parser.h"
 #include "libpspp/array.h"
 #include "libpspp/hash-functions.h"
@@ -271,23 +272,17 @@ error:
 
 /* DISPLAY utility. */
 
-static void display_macros (void);
 static void display_documents (const struct dictionary *dict);
 static void display_vectors (const struct dictionary *dict, int sorted);
 
 int
 cmd_display (struct lexer *lexer, struct dataset *ds)
 {
-  /* Whether to sort the list of variables alphabetically. */
-  int sorted;
-
   /* Variables to display. */
   size_t n;
   const struct variable **vl;
 
-  if (lex_match_id (lexer, "MACROS"))
-    display_macros ();
-  else if (lex_match_id (lexer, "DOCUMENTS"))
+  if (lex_match_id (lexer, "DOCUMENTS"))
     display_documents (dataset_dict (ds));
   else if (lex_match_id (lexer, "FILE"))
     {
@@ -308,7 +303,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
     {
       int flags;
 
-      sorted = lex_match_id (lexer, "SORTED");
+      bool sorted = lex_match_id (lexer, "SORTED");
 
       if (lex_match_id (lexer, "VECTORS"))
 	{
@@ -397,10 +392,67 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
   return CMD_SUCCESS;
 }
 
-static void
-display_macros (void)
+static int
+compare_macros_by_name (const void *a_, const void *b_, const void *aux UNUSED)
 {
-  msg (SW, _("Macros not supported."));
+  const struct macro *const *ap = a_;
+  const struct macro *const *bp = b_;
+  const struct macro *a = *ap;
+  const struct macro *b = *bp;
+
+  return utf8_strcasecmp (a->name, b->name);
+}
+
+int
+cmd_display_macros (struct lexer *lexer, struct dataset *ds UNUSED)
+{
+  const struct macro_set *set = lex_get_macros (lexer);
+
+  if (hmap_is_empty (&set->macros))
+    {
+      msg (SN, _("No macros to display."));
+      return CMD_SUCCESS;
+    }
+
+  const struct macro **macros = xnmalloc (hmap_count (&set->macros),
+                                          sizeof *macros);
+  size_t n = 0;
+  const struct macro *m;
+  HMAP_FOR_EACH (m, struct macro, hmap_node, &set->macros)
+    macros[n++] = m;
+  assert (n == hmap_count (&set->macros));
+  sort (macros, n, sizeof *macros, compare_macros_by_name, NULL);
+
+  struct pivot_table *table = pivot_table_create (N_("Macros"));
+
+  struct pivot_dimension *attributes = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Attributes"));
+  pivot_category_create_leaf (attributes->root,
+                              pivot_value_new_text (N_("Source Location")));
+
+  struct pivot_dimension *names = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Name"));
+  names->root->show_label = true;
+
+  for (size_t i = 0; i < n; i++)
+    {
+      const struct macro *m = macros[i];
+
+      pivot_category_create_leaf (names->root,
+                                  pivot_value_new_user_text (m->name, -1));
+
+      struct string location = DS_EMPTY_INITIALIZER;
+      msg_location_format (m->location, &location);
+      pivot_table_put2 (
+        table, 0, i,
+        pivot_value_new_user_text_nocopy (ds_steal_cstr (&location)));
+    }
+
+  pivot_table_submit (table);
+
+  free (macros);
+
+  return CMD_SUCCESS;
 }
 
 static char *

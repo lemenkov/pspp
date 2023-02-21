@@ -2454,3 +2454,28 @@ AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
 [[ < y > ]]
 ])
 AT_CLEANUP
+
+AT_SETUP([DISPLAY MACROS])
+AT_DATA([define.sps], [dnl
+DEFINE !b() 0 !ENDDEFINE.
+DEFINE !macro()
+a b c d
+e f g h.
+i j k l
+1,2,3,4.
+5+6+7.
+m(n,o).
+"a" "b" "c" 'a' 'b' 'c'.
+"x "" y".
+!ENDDEFINE.
+DEFINE !a() 1 !ENDDEFINE.
+DISPLAY MACROS.
+])
+AT_CHECK([pspp -O format=csv define.sps], [0], [dnl
+Table: Macros
+Name,Source Location
+!a,define.sps:12
+!b,define.sps:1
+!macro,define.sps:2-11
+])
+AT_CLEANUP

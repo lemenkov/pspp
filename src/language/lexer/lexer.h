@@ -97,6 +97,7 @@ void lex_destroy (struct lexer *);
 
 /* Macros. */
 void lex_define_macro (struct lexer *, struct macro *);
+const struct macro_set *lex_get_macros (const struct lexer *);
 
 /* Files. */
 void lex_include (struct lexer *, struct lex_reader *);
