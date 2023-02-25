@@ -576,8 +576,7 @@ void pivot_table_set_look (struct pivot_table *,
 /* Format of PIVOT_RC_COUNT cells. */
 void pivot_table_set_weight_var (struct pivot_table *,
                                  const struct variable *);
-void pivot_table_set_weight_format (struct pivot_table *,
-                                    const struct fmt_spec);
+void pivot_table_set_weight_format (struct pivot_table *, struct fmt_spec);
 
 /* Query. */
 bool pivot_table_is_empty (const struct pivot_table *);

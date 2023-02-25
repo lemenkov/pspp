@@ -1375,9 +1375,9 @@ pivot_table_set_weight_var (struct pivot_table *table,
    format for the dictionary whose data or statistics are being put into
    TABLE. */
 void
-pivot_table_set_weight_format (struct pivot_table *table,
-                               const struct fmt_spec wfmt)
+pivot_table_set_weight_format (struct pivot_table *table, struct fmt_spec wfmt)
 {
+  wfmt.w = 40;
   table->weight_format = wfmt;
 }
 
