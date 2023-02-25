@@ -1315,10 +1315,10 @@ dict_get_rounded_case_weight (const struct dictionary *d,
 }
 
 /* Returns the format to use for weights. */
-const struct fmt_spec *
+struct fmt_spec
 dict_get_weight_format (const struct dictionary *d)
 {
-  return d->weight ? var_get_print_format (d->weight) : &F_8_0;
+  return d->weight ? *var_get_print_format (d->weight) : F_8_0;
 }
 
 /* Sets the weighting variable of D to V, or turning off

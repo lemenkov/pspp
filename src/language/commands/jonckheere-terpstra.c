@@ -222,7 +222,7 @@ struct jt
 };
 
 static void show_jt (const struct n_sample_test *, const struct jt *,
-                     const struct fmt_spec *wfmt);
+                     const struct fmt_spec wfmt);
 
 
 void
@@ -350,7 +350,7 @@ jonckheere_terpstra_execute (const struct dataset *ds,
 
 static void
 show_jt (const struct n_sample_test *nst, const struct jt *jt,
-         const struct fmt_spec *wfmt)
+         const struct fmt_spec wfmt)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Jonckheere-Terpstra Test"));

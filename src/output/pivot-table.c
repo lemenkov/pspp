@@ -1368,19 +1368,17 @@ pivot_table_set_weight_var (struct pivot_table *table,
                             const struct variable *wv)
 {
   if (wv)
-    pivot_table_set_weight_format (table, var_get_print_format (wv));
+    pivot_table_set_weight_format (table, *var_get_print_format (wv));
 }
 
 /* Sets the format used for PIVOT_RC_COUNT cells to WFMT, which should be the
-   format for the dictionary whose data or statistics are being put into TABLE.
-
-   This has no effect if WFMT is NULL. */
+   format for the dictionary whose data or statistics are being put into
+   TABLE. */
 void
 pivot_table_set_weight_format (struct pivot_table *table,
-                               const struct fmt_spec *wfmt)
+                               const struct fmt_spec wfmt)
 {
-  if (wfmt)
-    table->weight_format = *wfmt;
+  table->weight_format = wfmt;
 }
 
 /* Returns true if TABLE has no cells, false otherwise. */

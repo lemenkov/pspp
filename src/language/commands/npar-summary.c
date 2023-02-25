@@ -93,7 +93,7 @@ void
 do_summary_box (const struct descriptives *desc,
 		const struct variable *const *vv,
 		int n_vars,
-                const struct fmt_spec *wfmt)
+                const struct fmt_spec wfmt)
 {
   if (!desc)
     return;

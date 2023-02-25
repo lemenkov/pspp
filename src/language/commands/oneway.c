@@ -139,7 +139,7 @@ struct oneway_spec
 
   /* The weight variable */
   const struct variable *wv;
-  const struct fmt_spec *wfmt;
+  const struct fmt_spec wfmt;
 
   /* The confidence level for multiple comparisons */
   double alpha;

@@ -288,7 +288,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
     .exclude = MV_ANY,
     .barchart = false,
     .bad_warn = true,
-    .weight_format = *dict_get_weight_format (dataset_dict (ds)),
+    .weight_format = dict_get_weight_format (dataset_dict (ds)),
 
     .variables = NULL,
     .n_variables = 0,
@@ -1385,7 +1385,7 @@ create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_user_text_nocopy (ds_steal_cstr (&title)),
     "Crosstabulation");
-  pivot_table_set_weight_format (table, &proc->weight_format);
+  pivot_table_set_weight_format (table, proc->weight_format);
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Statistics"));
@@ -1419,7 +1419,7 @@ static struct pivot_table *
 create_chisq_table (struct crosstabulation *xt)
 {
   struct pivot_table *chisq = pivot_table_create (N_("Chi-Square Tests"));
-  pivot_table_set_weight_format (chisq, &xt->weight_format);
+  pivot_table_set_weight_format (chisq, xt->weight_format);
 
   pivot_dimension_create (
     chisq, PIVOT_AXIS_ROW, N_("Statistics"),
@@ -1449,7 +1449,7 @@ static struct pivot_table *
 create_sym_table (struct crosstabulation *xt)
 {
   struct pivot_table *sym = pivot_table_create (N_("Symmetric Measures"));
-  pivot_table_set_weight_format (sym, &xt->weight_format);
+  pivot_table_set_weight_format (sym, xt->weight_format);
 
   pivot_dimension_create (
     sym, PIVOT_AXIS_COLUMN, N_("Values"),
@@ -1488,7 +1488,7 @@ create_risk_table (struct crosstabulation *xt,
                    struct pivot_dimension **risk_statistics)
 {
   struct pivot_table *risk = pivot_table_create (N_("Risk Estimate"));
-  pivot_table_set_weight_format (risk, &xt->weight_format);
+  pivot_table_set_weight_format (risk, xt->weight_format);
 
   struct pivot_dimension *values = pivot_dimension_create (
     risk, PIVOT_AXIS_COLUMN, N_("Values"),
@@ -1534,7 +1534,7 @@ static struct pivot_table *
 create_direct_table (struct crosstabulation *xt)
 {
   struct pivot_table *direct = pivot_table_create (N_("Directional Measures"));
-  pivot_table_set_weight_format (direct, &xt->weight_format);
+  pivot_table_set_weight_format (direct, xt->weight_format);
 
   pivot_dimension_create (
     direct, PIVOT_AXIS_COLUMN, N_("Values"),

@@ -126,7 +126,7 @@ ks_asymp_sig (double z)
     }
 }
 
-static void show_results (const struct ks *, const struct ks_one_sample_test *,  const struct fmt_spec *);
+static void show_results (const struct ks *, const struct ks_one_sample_test *,  const struct fmt_spec);
 
 
 void
@@ -140,7 +140,7 @@ ks_one_sample_execute (const struct dataset *ds,
   const struct ks_one_sample_test *kst = UP_CAST (test, const struct ks_one_sample_test, parent.parent);
   const struct one_sample_test *ost = &kst->parent;
   struct ccase *c;
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  const struct fmt_spec wfmt = dict_get_weight_format (dict);
   bool warn = true;
   int v;
   struct casereader *r = casereader_clone (input);
@@ -268,7 +268,7 @@ ks_one_sample_execute (const struct dataset *ds,
 static void
 show_results (const struct ks *ks,
 	      const struct ks_one_sample_test *kst,
-	      const struct fmt_spec *wfmt)
+	      const struct fmt_spec wfmt)
 {
   struct pivot_table *table = pivot_table_create (
     N_("One-Sample Kolmogorov-Smirnov Test"));
