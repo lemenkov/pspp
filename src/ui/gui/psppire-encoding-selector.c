@@ -212,7 +212,7 @@ psppire_encoding_selector_get_encoding (GtkWidget *selector)
 
   g_list_free (list);
 
-  if (0 == strcmp (encoding, "Auto"))
+  if (encoding && (0 == strcmp (encoding, "Auto")))
     {
       g_free (encoding);
       return NULL;
