@@ -76,6 +76,7 @@ static void read_machine_float_info (struct sfm_reader *,
                                      size_t size, size_t count);
 static void read_extra_product_info (struct sfm_reader *,
                                      size_t size, size_t count);
+static void read_variable_sets (struct sfm_reader *, size_t size, size_t count);
 static void read_mrsets (struct sfm_reader *, size_t size, size_t count);
 static void read_display_parameters (struct sfm_reader *,
                                      size_t size, size_t count);
@@ -607,6 +608,10 @@ read_extension_record (struct sfm_reader *r)
       read_machine_float_info (r, size, count);
       return;
 
+    case 5:
+      read_variable_sets (r, size, count);
+      return;
+
     case 6:
       /* DATE variable information.  We don't use it yet, but we
          should. */
@@ -728,6 +733,38 @@ read_machine_float_info (struct sfm_reader *r, size_t size, size_t count)
   if (lowest != LOWEST && lowest != SYSMIS)
     sys_warn (r, "File specifies unexpected value %.*g (%a) as %s.",
               DBL_DIG + 1, lowest, lowest, "LOWEST");
+}
+
+/* Read record type 7, subtype 5. */
+static void
+read_variable_sets (struct sfm_reader *r, size_t size, size_t count)
+{
+  printf ("%08llx: variable sets\n", (long long int) ftello (r->file));
+  struct text_record *text = open_text_record (r, size, count);
+  for (;;)
+    {
+      while (text_match (text, '\n'))
+        continue;
+
+      const char *set = text_tokenize (text, '=');
+      if (!set)
+        break;
+
+      /* Always present even for an empty set. */
+      text_match (text, ' ');
+
+      char *variables = text_tokenize (text, '\n');
+      if (!variables)
+        printf ("\tset \"%s\" is empty\n", set);
+      else
+        {
+          size_t length = strlen (variables);
+          if (variables[length - 1] == '\r')
+            variables[length - 1] = '\0';
+          printf ("\tset \"%s\" contains \"%s\"\n", set, variables);
+        }
+    }
+  close_text_record (text);
 }
 
 static void

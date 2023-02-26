@@ -32,6 +32,7 @@
 #include "data/value-labels.h"
 #include "data/vardict.h"
 #include "data/variable.h"
+#include "data/varset.h"
 #include "data/vector.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
@@ -78,6 +79,8 @@ struct dictionary
     struct attrset attributes;  /* Custom attributes. */
     struct mrset **mrsets;      /* Multiple response sets. */
     size_t n_mrsets;            /* Number of multiple response sets. */
+    struct varset **varsets;    /* Variable sets. */
+    size_t n_varsets;           /* Number of variable sets. */
 
     /* Whether variable names must be valid identifiers.  Normally, this is
        true, but sometimes a dictionary is prepared for external use
@@ -96,6 +99,7 @@ struct dictionary
 
 static void dict_unset_split_var (struct dictionary *, struct variable *, bool);
 static void dict_unset_mrset_var (struct dictionary *, struct variable *);
+static void dict_unset_varset_var (struct dictionary *, struct variable *);
 
 /* Compares two double pointers to variables, which should point
    to elements of a struct dictionary's `var' member array. */
@@ -299,13 +303,10 @@ dict_create (const char *encoding)
 struct dictionary *
 dict_clone (const struct dictionary *s)
 {
-  struct dictionary *d;
-  size_t i;
-
-  d = dict_create (s->encoding);
+  struct dictionary *d = dict_create (s->encoding);
   dict_set_names_must_be_ids (d, dict_get_names_must_be_ids (s));
 
-  for (i = 0; i < s->n_vars; i++)
+  for (size_t i = 0; i < s->n_vars; i++)
     {
       struct variable *sv = s->vars[i].var;
       struct variable *dv = dict_clone_var_assert (d, sv);
@@ -322,7 +323,7 @@ dict_clone (const struct dictionary *s)
   if (d->n_splits > 0)
     {
        d->split = xnmalloc (d->n_splits, sizeof *d->split);
-       for (i = 0; i < d->n_splits; i++)
+       for (size_t i = 0; i < d->n_splits; i++)
          d->split[i] = dict_lookup_var_assert (d, var_get_name (s->split[i]));
     }
   d->split_type = s->split_type;
@@ -339,12 +340,12 @@ dict_clone (const struct dictionary *s)
 
   d->n_vectors = s->n_vectors;
   d->vector = xnmalloc (d->n_vectors, sizeof *d->vector);
-  for (i = 0; i < s->n_vectors; i++)
+  for (size_t i = 0; i < s->n_vectors; i++)
     d->vector[i] = vector_clone (s->vector[i], s, d);
 
   dict_set_attributes (d, dict_get_attributes (s));
 
-  for (i = 0; i < s->n_mrsets; i++)
+  for (size_t i = 0; i < s->n_mrsets; i++)
     {
       const struct mrset *old = s->mrsets[i];
       struct mrset *new;
@@ -358,10 +359,20 @@ dict_clone (const struct dictionary *s)
       dict_add_mrset (d, new);
     }
 
+  for (size_t i = 0; i < s->n_varsets; i++)
+    {
+      const struct varset *old = s->varsets[i];
+
+      /* Clone old varset, then replace vars from D by vars from S. */
+      struct varset *new = varset_clone (old);
+      for (size_t j = 0; j < new->n_vars; j++)
+        new->vars[j] = dict_lookup_var_assert (d, var_get_name (new->vars[j]));
+
+      dict_add_varset (d, new);
+    }
+
   return d;
 }
-
-
 
 /* Returns the SPLIT FILE vars (see cmd_split_file()).  Call
    dict_get_n_splits() to determine how many SPLIT FILE vars
@@ -482,6 +493,7 @@ dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks
 
   dict_unset_split_var (d, v, skip_callbacks);
   dict_unset_mrset_var (d, v);
+  dict_unset_varset_var (d, v);
 
   if (d->weight == v)
     dict_set_weight (d, NULL);
@@ -578,6 +590,7 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 
       dict_unset_split_var (d, v, false);
       dict_unset_mrset_var (d, v);
+      dict_unset_varset_var (d, v);
 
       if (d->weight == v)
 	dict_set_weight (d, NULL);
@@ -694,6 +707,7 @@ _dict_destroy (struct dictionary *d)
   hmap_destroy (&d->name_map);
   attrset_destroy (&d->attributes);
   dict_clear_mrsets (d);
+  dict_clear_varsets (d);
   free (d->encoding);
   free (d);
 }
@@ -1801,6 +1815,97 @@ dict_unset_mrset_var (struct dictionary *dict, struct variable *var)
         }
       else
         i++;
+    }
+}
+
+
+/* Returns the variable set in DICT with index IDX, which must be between 0 and
+   the count returned by dict_get_n_varsets(), exclusive. */
+const struct varset *
+dict_get_varset (const struct dictionary *dict, size_t idx)
+{
+  assert (idx < dict->n_varsets);
+  return dict->varsets[idx];
+}
+
+/* Returns the number of variable sets in DICT. */
+size_t
+dict_get_n_varsets (const struct dictionary *dict)
+{
+  return dict->n_varsets;
+}
+
+/* Looks for a variable set named NAME in DICT.  If it finds one, returns its
+   index; otherwise, returns SIZE_MAX. */
+static size_t
+dict_lookup_varset_idx (const struct dictionary *dict, const char *name)
+{
+  for (size_t i = 0; i < dict->n_varsets; i++)
+    if (!utf8_strcasecmp (name, dict->varsets[i]->name))
+      return i;
+
+  return SIZE_MAX;
+}
+
+/* Looks for a multiple response set named NAME in DICT.  If it finds one,
+   returns it; otherwise, returns NULL. */
+const struct varset *
+dict_lookup_varset (const struct dictionary *dict, const char *name)
+{
+  size_t idx = dict_lookup_varset_idx (dict, name);
+  return idx != SIZE_MAX ? dict->varsets[idx] : NULL;
+}
+
+/* Adds VARSET to DICT, replacing any existing set with the same name.  Returns
+   true if a set was replaced, false if none existed with the specified name.
+
+   Ownership of VARSET is transferred to DICT. */
+bool
+dict_add_varset (struct dictionary *dict, struct varset *varset)
+{
+  size_t idx = dict_lookup_varset_idx (dict, varset->name);
+  if (idx == SIZE_MAX)
+    {
+      dict->varsets = xrealloc (dict->varsets,
+                               (dict->n_varsets + 1) * sizeof *dict->varsets);
+      dict->varsets[dict->n_varsets++] = varset;
+      return true;
+    }
+  else
+    {
+      varset_destroy (dict->varsets[idx]);
+      dict->varsets[idx] = varset;
+      return false;
+    }
+}
+
+/* Deletes all variable sets from DICT. */
+void
+dict_clear_varsets (struct dictionary *dict)
+{
+  for (size_t i = 0; i < dict->n_varsets; i++)
+    varset_destroy (dict->varsets[i]);
+  free (dict->varsets);
+  dict->varsets = NULL;
+  dict->n_varsets = 0;
+}
+
+/* Removes VAR, which must be in DICT, from DICT's multiple response sets. */
+static void
+dict_unset_varset_var (struct dictionary *dict, struct variable *var)
+{
+  assert (dict_contains_var (dict, var));
+
+  for (size_t i = 0; i < dict->n_varsets; i++)
+    {
+      struct varset *varset = dict->varsets[i];
+
+      for (size_t j = 0; j < varset->n_vars;)
+        if (varset->vars[j] == var)
+          remove_element (varset->vars, varset->n_vars--,
+                          sizeof *varset->vars, j);
+        else
+          j++;
     }
 }
 

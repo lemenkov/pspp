@@ -92,6 +92,7 @@ possible to artificially synthesize files that use different encodings
 * Multiple Response Sets Records::
 * Extra Product Info Record::
 * Variable Display Parameter Record::
+* Variable Sets Record::
 * Long Variable Names Record::
 * Very Long String Record::
 * Character Encoding Record::
@@ -1043,6 +1044,54 @@ Centre aligned
 @end table
 @end table
 
+@node Variable Sets Record
+@section Variable Sets Record
+
+The SPSS GUI offers users the ability to arrange variables in sets.
+Users may enable and disable sets individually, and the data editor
+and analysis dialog boxes only show enabled sets.  Syntax does not use
+variable sets.
+
+The variable sets record, if present, has the following format:
+
+@example
+/* @r{Header.} */
+int32               rec_type;
+int32               subtype;
+int32               size;
+int32               count;
+
+/* @r{Exactly @code{count} bytes of text.} */
+char                text[];
+@end example
+
+@table @code
+@item int32 rec_type;
+Record type.  Always set to 7.
+
+@item int32 subtype;
+Record subtype.  Always set to 5.
+
+@item int32 size;
+Always set to 1.
+
+@item int32 count;
+The total number of bytes in @code{text}.
+
+@item char text[];
+The variable sets, in a text-based format.
+
+Each variable set occupies one line of text, each of which ends with a
+line feed (byte 0x0a), optionally preceded by a carriage return (byte
+0x0d).
+
+Each line begins with the name of the variable set, followed by an
+equals sign (@samp{=}) and a space (byte 0x20), followed by the long
+variable names of the members of the set, separated by spaces.  A
+variable set may be empty, in which case the equals sign and the space
+following it are still present.
+@end table
+
 @node Long Variable Names Record
 @section Long Variable Names Record
 
@@ -1522,10 +1571,6 @@ The following extension record subtypes have also been observed, with
 the following believed meanings:
 
 @table @asis
-@item 5
-A named variable set for use in the GUI (according to Aapi
-H@"am@"al@"ainen).
-
 @item 6
 Date info, probably related to USE (according to Aapi H@"am@"al@"ainen).
 

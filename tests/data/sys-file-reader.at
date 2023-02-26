@@ -577,6 +577,115 @@ num1
 done
 AT_CLEANUP
 
+AT_SETUP([variable sets])
+AT_KEYWORDS([sack synthetic system file positive set])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; dnl Layout code
+10; dnl Nominal case size
+0; dnl Not compressed
+0; dnl Not weighted
+0; dnl No cases.
+100.0; dnl Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+dnl Variable Set 1
+2; 0; 0; 0; 0x050800 *2; i8 0x82; i8 0xa0; s6 "";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+
+dnl vs2
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+2; 0; 0; 0; 0x050800 *2; s8 "E";
+2; 0; 0; 0; 0x050800 *2; s8 "F";
+2; 0; 0; 0; 0x050800 *2; s8 "G";
+
+dnl c
+2; 4; 0; 0; 0x010400 *2; s8 "H";
+2; 4; 0; 0; 0x010400 *2; s8 "I";
+2; 4; 0; 0; 0x010400 *2; s8 "J";
+
+dnl Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 932;
+
+7; 5; 1;
+COUNT(
+  "Variable Set 1= "; i8 0x82; i8 0xa0; " b c"; i8 10;
+  "vs2=d e f g"; i8 10;
+  "c=h i j"; i8 13; i8 10;
+  "d= e g i b f"; i8 10;
+  "Empty Variable Set= "; i8 10);
+
+dnl Character encoding record.
+7; 20; 1; 9; "shift_jis";
+
+dnl Dictionary termination record.
+999; 0;
+])
+AT_DATA([expout], [dnl
+                Variables
+╭────┬────────┬────────────┬────────────╮
+│Name│Position│Print Format│Write Format│
+├────┼────────┼────────────┼────────────┤
+│あ  │       1│F8.0        │F8.0        │
+│b   │       2│F8.0        │F8.0        │
+│c   │       3│F8.0        │F8.0        │
+│d   │       4│F8.0        │F8.0        │
+│e   │       5│F8.0        │F8.0        │
+│f   │       6│F8.0        │F8.0        │
+│g   │       7│F8.0        │F8.0        │
+│h   │       8│A4          │A4          │
+│i   │       9│A4          │A4          │
+│j   │      10│A4          │A4          │
+╰────┴────────┴────────────┴────────────╯
+
+            Variable Sets
+╭──────────────────────────┬────────╮
+│Variable Set and Position │Variable│
+├──────────────────────────┼────────┤
+│Variable Set 1     1      │あ      │
+│                   2      │b       │
+│                   3      │c       │
+├──────────────────────────┼────────┤
+│vs2                1      │d       │
+│                   2      │e       │
+│                   3      │f       │
+│                   4      │g       │
+├──────────────────────────┼────────┤
+│c                  1      │h       │
+│                   2      │i       │
+│                   3      │j       │
+├──────────────────────────┼────────┤
+│d                  1      │e       │
+│                   2      │g       │
+│                   3      │i       │
+│                   4      │b       │
+│                   5      │f       │
+├──────────────────────────┼────────┤
+│Empty Variable Set n/a    │(empty) │
+╰──────────────────────────┴────────╯
+])
+AT_DATA([sys-file-1.sps], [dnl
+GET FILE='sys-file.sav'.
+DISPLAY VARIABLES.
+DISPLAY VARIABLE SETS.
+SAVE OUTFILE='sys-file-2.sav'.
+])
+AT_DATA([sys-file-2.sps], [dnl
+GET FILE='sys-file-2.sav'.
+DISPLAY VARIABLES.
+DISPLAY VARIABLE SETS.
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_CHECK([rm -f sys-file-2.sav])
+  AT_CHECK([pspp --testing-mode -O box=unicode sys-file-1.sps], [0], [expout])
+  AT_CHECK([pspp --testing-mode -O box=unicode sys-file-2.sps], [0], [expout])
+done
+AT_CLEANUP
+
 AT_SETUP([multiple response sets])
 AT_KEYWORDS([sack synthetic system file positive])
 AT_DATA([sys-file.sack], [dnl
@@ -2319,6 +2428,97 @@ for variant in be le; do
 "warning: `sys-file.sav' near offset 0xd8: File specifies unexpected value 1...
 
 "warning: `sys-file.sav' near offset 0xd8: File specifies unexpected value 2...
+])
+done
+AT_CLEANUP
+
+AT_SETUP([unknown variables in variable sets])
+AT_KEYWORDS([sack synthetic system file negative set])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; dnl Layout code
+10; dnl Nominal case size
+0; dnl Not compressed
+0; dnl Not weighted
+0; dnl No cases.
+100.0; dnl Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+dnl Variable Set 1
+2; 0; 0; 0; 0x050800 *2; i8 0x82; i8 0xa0; s6 "";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+
+dnl vs2
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+2; 0; 0; 0; 0x050800 *2; s8 "E";
+2; 0; 0; 0; 0x050800 *2; s8 "F";
+2; 0; 0; 0; 0x050800 *2; s8 "G";
+
+dnl c
+2; 4; 0; 0; 0x010400 *2; s8 "H";
+2; 4; 0; 0; 0x010400 *2; s8 "I";
+2; 4; 0; 0; 0x010400 *2; s8 "J";
+
+dnl Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 932;
+
+7; 5; 1;
+COUNT(
+  "Variable Set 1= "; i8 0x82; i8 0xa0; " "; >>"xyzzy"<<; " b c"; i8 10;
+  "vs2=d "; >>"foo"<<; " e f g"; i8 10;);
+
+dnl Character encoding record.
+7; 20; 1; 9; "shift_jis";
+
+dnl Dictionary termination record.
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+DISPLAY VARIABLES.
+DISPLAY VARIABLE SETS.
+])
+  AT_CHECK([pspp --testing-mode -O box=unicode sys-file.sps], [0], [dnl
+warning: `sys-file.sav' near offset 0x228: Variable set Variable Set 1 contains
+unknown variable xyzzy.
+
+warning: `sys-file.sav' near offset 0x228: Variable set vs2 contains unknown
+variable foo.
+
+                Variables
+╭────┬────────┬────────────┬────────────╮
+│Name│Position│Print Format│Write Format│
+├────┼────────┼────────────┼────────────┤
+│あ  │       1│F8.0        │F8.0        │
+│b   │       2│F8.0        │F8.0        │
+│c   │       3│F8.0        │F8.0        │
+│d   │       4│F8.0        │F8.0        │
+│e   │       5│F8.0        │F8.0        │
+│f   │       6│F8.0        │F8.0        │
+│g   │       7│F8.0        │F8.0        │
+│h   │       8│A4          │A4          │
+│i   │       9│A4          │A4          │
+│j   │      10│A4          │A4          │
+╰────┴────────┴────────────┴────────────╯
+
+            Variable Sets
+╭──────────────────────────┬────────╮
+│Variable Set and Position │Variable│
+├──────────────────────────┼────────┤
+│Variable Set 1     1      │あ      │
+│                   2      │b       │
+│                   3      │c       │
+├──────────────────────────┼────────┤
+│vs2                1      │d       │
+│                   2      │e       │
+│                   3      │f       │
+│                   4      │g       │
+╰──────────────────────────┴────────╯
 ])
 done
 AT_CLEANUP

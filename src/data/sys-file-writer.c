@@ -41,6 +41,7 @@
 #include "data/short-names.h"
 #include "data/value-labels.h"
 #include "data/variable.h"
+#include "data/varset.h"
 #include "libpspp/float-format.h"
 #include "libpspp/i18n.h"
 #include "libpspp/integer-format.h"
@@ -132,6 +133,7 @@ static void write_long_string_value_labels (struct sfm_writer *,
 static void write_long_string_missing_values (struct sfm_writer *,
                                               const struct dictionary *);
 
+static void write_varsets (struct sfm_writer *, const struct dictionary *);
 static void write_mrsets (struct sfm_writer *, const struct dictionary *,
                           bool pre_v14);
 
@@ -275,6 +277,7 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
   write_integer_info_record (w, d);
   write_float_info_record (w);
 
+  write_varsets (w, d);
   write_mrsets (w, d, true);
 
   write_variable_display_parameters (w, d);
@@ -801,6 +804,49 @@ write_variable_attributes (struct sfm_writer *w, const struct dictionary *d)
     }
   if (n_attrsets)
     write_utf8_record (w, dict_get_encoding (d), &s, 18);
+  ds_destroy (&s);
+}
+
+/* Write variable sets. */
+static void
+write_varsets (struct sfm_writer *w, const struct dictionary *dict)
+{
+  const char *encoding = dict_get_encoding (dict);
+
+  if (is_encoding_ebcdic_compatible (encoding))
+    {
+      /* FIXME. */
+      return;
+    }
+
+  size_t n_varsets = dict_get_n_varsets (dict);
+  if (n_varsets == 0)
+    return;
+
+  struct string s = DS_EMPTY_INITIALIZER;
+  for (size_t i = 0; i < n_varsets; i++)
+    {
+      const struct varset *varset = dict_get_varset (dict, i);
+
+      char *name = recode_string (encoding, "UTF-8", varset->name, -1);
+      ds_put_format (&s, "%s= ", name);
+      free (name);
+
+      for (size_t j = 0; j < varset->n_vars; j++)
+        {
+          if (j)
+            ds_put_byte (&s, ' ');
+
+          const char *name_utf8 = var_get_name (varset->vars[j]);
+          char *name = recode_string (encoding, "UTF-8", name_utf8, -1);
+          ds_put_cstr (&s, name);
+          free (name);
+        }
+      ds_put_byte (&s, '\n');
+    }
+
+  if (!ds_is_empty (&s))
+    write_string_record (w, ds_ss (&s), 5);
   ds_destroy (&s);
 }
 

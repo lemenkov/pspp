@@ -181,6 +181,16 @@ bool dict_add_mrset (struct dictionary *, struct mrset *);
 bool dict_delete_mrset (struct dictionary *, const char *name);
 void dict_clear_mrsets (struct dictionary *);
 
+/* Variable sets. */
+const struct varset *dict_get_varset (const struct dictionary *, size_t idx);
+size_t dict_get_n_varsets (const struct dictionary *);
+const struct varset *dict_lookup_varset (const struct dictionary *,
+                                         const char *name);
+
+bool dict_add_varset (struct dictionary *, struct varset *);
+bool dict_delete_varset (struct dictionary *, const char *name);
+void dict_clear_varsets (struct dictionary *);
+
 /* Attributes. */
 struct attrset *dict_get_attributes (const struct dictionary *);
 void dict_set_attributes (struct dictionary *, const struct attrset *);

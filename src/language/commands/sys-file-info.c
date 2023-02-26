@@ -30,6 +30,7 @@
 #include "data/missing-values.h"
 #include "data/value-labels.h"
 #include "data/variable.h"
+#include "data/varset.h"
 #include "data/vector.h"
 #include "language/command.h"
 #include "language/commands/file-handle.h"
@@ -451,6 +452,57 @@ cmd_display_macros (struct lexer *lexer, struct dataset *ds UNUSED)
   pivot_table_submit (table);
 
   free (macros);
+
+  return CMD_SUCCESS;
+}
+
+int
+cmd_display_variable_sets (struct lexer *lexer UNUSED, struct dataset *ds)
+{
+  const struct dictionary *dict = dataset_dict (ds);
+  size_t n_varsets = dict_get_n_varsets (dict);
+  if (n_varsets == 0)
+    {
+      msg (SN, _("No variable sets defined."));
+      return CMD_SUCCESS;
+    }
+
+  struct pivot_table *table = pivot_table_create (N_("Variable Sets"));
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+                          N_("Variable"));
+  struct pivot_dimension *varset_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable Set and Position"));
+  varset_dim->root->show_label = true;
+
+  for (size_t i = 0; i < n_varsets; i++)
+    {
+      const struct varset *vs = dict_get_varset (dict, i);
+
+      struct pivot_category *group = pivot_category_create_group__ (
+        varset_dim->root, pivot_value_new_user_text (
+          vs->name, -1));
+
+      for (size_t j = 0; j < vs->n_vars; j++)
+        {
+          struct variable *var = vs->vars[j];
+
+          int row = pivot_category_create_leaf (
+            group, pivot_value_new_integer (j + 1));
+
+          pivot_table_put2 (table, 0, row, pivot_value_new_variable (var));
+        }
+
+      if (!vs->n_vars)
+        {
+          int row = pivot_category_create_leaf (
+            group, pivot_value_new_user_text ("n/a", -1));
+
+          pivot_table_put2 (table, 0, row,
+                            pivot_value_new_text (N_("(empty)")));
+        }
+    }
+
+  pivot_table_submit (table);
 
   return CMD_SUCCESS;
 }

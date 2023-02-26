@@ -41,6 +41,7 @@
 #include "data/value-labels.h"
 #include "data/value.h"
 #include "data/variable.h"
+#include "data/varset.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
@@ -371,6 +372,9 @@ static void parse_long_string_value_labels (struct sfm_reader *,
 static void parse_long_string_missing_values (
   struct sfm_reader *, const struct sfm_extension_record *,
   struct dictionary *);
+static void parse_var_sets (struct sfm_reader *,
+                            const struct sfm_extension_record *,
+                            struct dictionary *);
 
 /* Frees the strings inside INFO. */
 void
@@ -840,6 +844,8 @@ sfm_decode (struct any_reader *r_, const char *encoding,
   if (r->extensions[EXT_LONG_MISSING] != NULL)
     parse_long_string_missing_values (r, r->extensions[EXT_LONG_MISSING],
                                       dict);
+  if (r->extensions[EXT_VAR_SETS])
+    parse_var_sets (r, r->extensions[EXT_VAR_SETS], dict);
 
   /* Warn if the actual amount of data per case differs from the
      amount that the header claims.  SPSS version 13 gets this
@@ -1284,6 +1290,7 @@ read_extension_record (struct sfm_reader *r, int subtype,
       /* Implemented record types. */
       { EXT_INTEGER,      4, 8 },
       { EXT_FLOAT,        8, 3 },
+      { EXT_VAR_SETS,     1, 0 },
       { EXT_MRSETS,       1, 0 },
       { EXT_PRODUCT_INFO, 1, 0 },
       { EXT_DISPLAY,      4, 0 },
@@ -1298,7 +1305,6 @@ read_extension_record (struct sfm_reader *r, int subtype,
       { EXT_LONG_MISSING, 1, 0 },
 
       /* Ignored record types. */
-      { EXT_VAR_SETS,     0, 0 },
       { EXT_DATE,         0, 0 },
       { EXT_DATA_ENTRY,   0, 0 },
       { EXT_DATAVIEW,     0, 0 },
@@ -2718,6 +2724,57 @@ parse_long_string_missing_values (struct sfm_reader *r,
       if (var != NULL)
         var_set_missing_values (var, &mv);
     }
+}
+
+static void
+parse_var_sets (struct sfm_reader *r,
+                const struct sfm_extension_record *record,
+                struct dictionary *dict)
+{
+  struct text_record *text = open_text_record (r, record, true);
+  for (;;)
+    {
+      char *varset_name = text_get_token (text, ss_cstr ("="), NULL);
+      if (!varset_name)
+        break;
+
+      struct varset *varset = xmalloc (sizeof *varset);
+      *varset = (struct varset) {
+        .name = xstrdup (varset_name),
+      };
+
+      text_match (text, ' ');
+
+      size_t allocated_vars = 0;
+      char delimiter;
+      do
+        {
+          char *var_name = text_get_token (text, ss_cstr (" \n"), &delimiter);
+          if (!var_name)
+            break;
+
+          size_t len = strlen (var_name);
+          if (len > 0 && var_name[len - 1] == '\r')
+            var_name[len - 1] = '\0';
+
+          struct variable *var = dict_lookup_var (dict, var_name);
+          if (var)
+            {
+              if (varset->n_vars >= allocated_vars)
+                varset->vars = x2nrealloc (varset->vars, &allocated_vars,
+                                           sizeof *varset->vars);
+              varset->vars[varset->n_vars++] = var;
+            }
+          else
+            sys_warn (r, record->pos,
+                      _("Variable set %s contains unknown variable %s."),
+                      varset_name, var_name);
+        }
+      while (delimiter == ' ');
+
+      dict_add_varset (dict, varset);
+    }
+  close_text_record (r, text);
 }
 
 /* Case reader. */

@@ -133,6 +133,8 @@ src_data_libdata_la_SOURCES = \
 	src/data/vardict.h \
 	src/data/variable.h \
 	src/data/variable.c \
+	src/data/varset.c \
+	src/data/varset.h \
 	src/data/vector.c \
 	src/data/vector.h
 
