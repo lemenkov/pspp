@@ -1540,9 +1540,9 @@ parse_format_spec (struct sfm_reader *r, off_t pos, unsigned int format,
   if (fmt_from_u32 (format, var_get_width (v), false, &f))
     {
       if (which == PRINT_FORMAT)
-        var_set_print_format (v, &f);
+        var_set_print_format (v, f);
       else
-        var_set_write_format (v, &f);
+        var_set_write_format (v, f);
     }
   else if (format == 0)
     {

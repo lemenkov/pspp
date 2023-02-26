@@ -577,7 +577,7 @@ populate_table (const struct means *means, const struct mtable *mt,
 	  if (NULL == cell_spec[stat].rc)
 	    {
 	      const struct variable *dv = mt->dep_vars[v];
-	      pv->numeric.format = * var_get_print_format (dv);
+	      pv->numeric.format = var_get_print_format (dv);
 	    }
           pivot_table_put (pt, indexes, pt->n_dimensions, pv);
         }

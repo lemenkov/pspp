@@ -377,7 +377,7 @@ show_test_statistics (const struct n_sample_test *nst,
           struct pivot_value *value
             = pivot_value_new_number (entries[i]);
           if (i == 1)
-            value->numeric.format = *var_get_print_format (rs->var);
+            value->numeric.format = var_get_print_format (rs->var);
           pivot_table_put2 (table, i, var_idx, value);
         }
     }

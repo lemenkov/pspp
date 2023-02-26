@@ -196,7 +196,7 @@ err_dialog (const gchar *msg, GtkWindow *window)
 static gboolean
 try_missing_value(const PsppireMissingValDialog *dialog, const gchar *text, union value *vp)
 {
-  const int var_width = fmt_var_width (&dialog->format);
+  const int var_width = fmt_var_width (dialog->format);
   char *error_txt = NULL;
 
   value_init(vp, var_width);
@@ -233,7 +233,7 @@ static gboolean
 missing_val_dialog_acceptable (gpointer data)
 {
   PsppireMissingValDialog *dialog = data;
-  int var_width = fmt_var_width (&dialog->format);
+  int var_width = fmt_var_width (dialog->format);
 
   if (gtk_toggle_button_get_active (dialog->button_discrete))
     {
@@ -435,7 +435,7 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
       else
 	mv_copy (&dialog->mvl, vmv);
       dialog->encoding = g_strdup (var_get_encoding (var));
-      dialog->format = *var_get_print_format (var);
+      dialog->format = var_get_print_format (var);
     }
   else
     {
@@ -452,7 +452,7 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
   gtk_widget_set_sensitive (dialog->high, FALSE);
   gtk_widget_set_sensitive (dialog->discrete, FALSE);
 
-  var_type = val_type_from_width (fmt_var_width (&dialog->format));
+  var_type = val_type_from_width (fmt_var_width (dialog->format));
   gtk_widget_set_sensitive (GTK_WIDGET (dialog->button_range),
 			    var_type == VAL_NUMERIC);
 
@@ -473,8 +473,8 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
       mv_get_range (&dialog->mvl, &low.f, &high.f);
 
 
-      low_text = value_to_text__ (low, &dialog->format, dialog->encoding);
-      high_text = value_to_text__ (high, &dialog->format, dialog->encoding);
+      low_text = value_to_text__ (low, dialog->format, dialog->encoding);
+      high_text = value_to_text__ (high, dialog->format, dialog->encoding);
 
       gtk_entry_set_text (GTK_ENTRY (dialog->low), low_text);
       gtk_entry_set_text (GTK_ENTRY (dialog->high), high_text);
@@ -485,7 +485,7 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
 	{
 	  gchar *text;
 	  text = value_to_text__ (*mv_get_value (&dialog->mvl, 0),
-                                  &dialog->format, dialog->encoding);
+                                  dialog->format, dialog->encoding);
 	  gtk_entry_set_text (GTK_ENTRY (dialog->discrete), text);
 	  g_free (text);
 	}
@@ -507,7 +507,7 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
 	      gchar *text ;
 
 	      text = value_to_text__ (*mv_get_value (&dialog->mvl, i),
-                                      &dialog->format, dialog->encoding);
+                                      dialog->format, dialog->encoding);
 	      gtk_entry_set_text (GTK_ENTRY (dialog->mv[i]), text);
 	      g_free (text);
 	    }

@@ -5472,7 +5472,7 @@ static bool
 format_fits (struct fmt_spec format, double x)
 {
   char *s = data_out (&(union value) { .f = x }, NULL,
-                      &format, settings_get_fmt_settings ());
+                      format, settings_get_fmt_settings ());
   bool fits = *s != '*' && !strchr (s, 'E');
   free (s);
   return fits;
@@ -5607,7 +5607,7 @@ matrix_print_text (const struct matrix_print *print, const gsl_matrix *m,
           double f = gsl_matrix_get (m, y, x);
           char *s = (numeric
                      ? data_out (&(union value) { .f = f / scale}, NULL,
-                                 &format, settings_get_fmt_settings ())
+                                 format, settings_get_fmt_settings ())
                      : trimmed_string (f));
           ds_put_format (&line, " %s", s);
           free (s);
@@ -7254,7 +7254,7 @@ matrix_write_parse (struct matrix_state *s)
       write->format = xmalloc (sizeof *write->format);
       *write->format = (struct fmt_spec) { .type = format, .w = w };
 
-      char *error = fmt_check_output__ (write->format);
+      char *error = fmt_check_output__ (*write->format);
       if (error)
         {
           msg (SE, "%s", error);
@@ -7287,10 +7287,10 @@ matrix_write_parse (struct matrix_state *s)
         }
     }
 
-  if (write->format && fmt_var_width (write->format) > sizeof (double))
+  if (write->format && fmt_var_width (*write->format) > sizeof (double))
     {
       char fs[FMT_STRING_LEN_MAX + 1];
-      fmt_to_string (write->format, fs);
+      fmt_to_string (*write->format, fs);
       lex_ofs_error (s->lexer, format_ofs, format_ofs,
                      _("Format %s is too wide for %zu-byte matrix elements."),
                      fs, sizeof (double));
@@ -7351,7 +7351,7 @@ matrix_write_execute (struct matrix_write *write)
                 v.f = f;
               else
                 v.s = (uint8_t *) &f;
-              s = data_out (&v, NULL, write->format, settings);
+              s = data_out (&v, NULL, *write->format, settings);
             }
           else
             {

@@ -45,13 +45,12 @@ null_if_empty_param (const gchar *name, const gchar *nick,
 }
 
 gchar * value_to_text (union value v, const struct variable *);
-gchar * value_to_text__ (union value v, const struct fmt_spec *,
-                         const char *encoding);
+gchar * value_to_text__ (union value v, struct fmt_spec, const char *encoding);
 
 
 union value *text_to_value (const gchar *text, const struct variable *,
                             union value *);
-union value *text_to_value__ (const gchar *text, const struct fmt_spec *,
+union value *text_to_value__ (const gchar *text, struct fmt_spec,
                               const gchar *encoding, union value *);
 
 /* Create a deep copy of SRC */

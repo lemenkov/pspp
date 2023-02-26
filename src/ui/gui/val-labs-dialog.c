@@ -192,7 +192,7 @@ on_label_entry_change (GtkEntry *entry, gpointer data)
 
   text = gtk_entry_get_text (GTK_ENTRY (dialog->value_entry));
 
-  text_to_value__ (text, &dialog->format, dialog->encoding, &v);
+  text_to_value__ (text, dialog->format, dialog->encoding, &v);
 
   if (val_labs_find (dialog->labs, &v))
     {
@@ -271,7 +271,7 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
   const gchar *text = gtk_entry_get_text (GTK_ENTRY (dialog->value_entry));
 
   union value v;
-  text_to_value__ (text, &dialog->format, dialog->encoding, &v);
+  text_to_value__ (text, dialog->format, dialog->encoding, &v);
 
   g_signal_handler_block (GTK_ENTRY (dialog->label_entry),
 			 dialog->change_handler_id);
@@ -359,7 +359,7 @@ do_change (PsppireValLabsDialog *dialog)
 
   union value v;
 
-  if (text_to_value__ (val_text, &dialog->format, dialog->encoding, &v))
+  if (text_to_value__ (val_text, dialog->format, dialog->encoding, &v))
     {
       val_labs_replace (dialog->labs, &v,
 			gtk_entry_get_text (GTK_ENTRY (dialog->label_entry)));
@@ -383,7 +383,7 @@ on_add (GtkWidget *w, gpointer data)
 
   const gchar *text = gtk_entry_get_text (GTK_ENTRY (dialog->value_entry));
 
-  if (text_to_value__ (text, &dialog->format, dialog->encoding, &v))
+  if (text_to_value__ (text, dialog->format, dialog->encoding, &v))
     {
       if (val_labs_add (dialog->labs, &v,
 			gtk_entry_get_text
@@ -438,7 +438,7 @@ on_select_row (GtkTreeView *treeview, gpointer data)
   if (! get_selected_tuple (dialog, &value, &label))
     return;
 
-  text = value_to_text__ (value, &dialog->format, dialog->encoding);
+  text = value_to_text__ (value, dialog->format, dialog->encoding);
 
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),
 			 dialog->value_handler_id);
@@ -586,7 +586,7 @@ repopulate_dialog (PsppireValLabsDialog *dialog)
       const struct val_lab *vl = labels[i];
 
       gchar *const vstr  =
-        value_to_text__ (vl->value, &dialog->format, dialog->encoding);
+        value_to_text__ (vl->value, dialog->format, dialog->encoding);
 
       gchar *const text = g_strdup_printf (_("%s = `%s'"), vstr,
                                            val_lab_get_escaped_label (vl));
@@ -622,7 +622,7 @@ psppire_val_labs_dialog_set_variable (PsppireValLabsDialog *dialog,
     {
       dialog->labs = val_labs_clone (var_get_value_labels (var));
       dialog->encoding = g_strdup (var_get_encoding (var));
-      dialog->format = *var_get_print_format (var);
+      dialog->format = var_get_print_format (var);
     }
   else
     dialog->format = F_8_0;

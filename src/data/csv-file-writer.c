@@ -120,7 +120,7 @@ csv_writer_open (struct file_handle *fh, const struct dictionary *dict,
       cv->width = var_get_width (var);
       cv->case_index = var_get_case_index (var);
 
-      cv->format = *var_get_print_format (var);
+      cv->format = var_get_print_format (var);
       if (opts->recode_user_missing)
         mv_copy (&cv->missing, var_get_missing_values (var));
       else
@@ -225,7 +225,7 @@ static void
 csv_output_format (struct csv_writer *w, const struct csv_var *cv,
                    const union value *value)
 {
-  char *s = data_out (value, w->encoding, &cv->format,
+  char *s = data_out (value, w->encoding, cv->format,
                       settings_get_fmt_settings ());
   struct substring ss = ss_cstr (s);
   if (cv->format.type != FMT_A)

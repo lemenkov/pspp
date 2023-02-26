@@ -229,9 +229,9 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           lex_match (lexer, T_EQUALS);
           if (!parse_format_specifier (lexer, &format))
             goto done;
-          char *error = fmt_check_output__ (&format);
+          char *error = fmt_check_output__ (format);
           if (!error)
-            error = fmt_check_type_compat__ (&format, NULL, VAL_NUMERIC);
+            error = fmt_check_type_compat__ (format, NULL, VAL_NUMERIC);
           if (error)
             {
               lex_next_error (lexer, -1, -1, "%s", error);
@@ -282,7 +282,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
           if (has_format)
             {
               char *output = data_out (&(const union value) { .f = d },
-                                       NULL, &format,
+                                       NULL, format,
                                        settings_get_fmt_settings ());
               output_log ("%s => %s", title, output);
               free (output);

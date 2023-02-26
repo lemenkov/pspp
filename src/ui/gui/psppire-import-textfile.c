@@ -640,7 +640,7 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
 		 caseproto. See bug #58298 */
 	      char *xx = data_in (ss_cstr (ss),
 				  "UTF-8",
-				  var_get_write_format (var)->type,
+				  var_get_write_format (var).type,
                                   settings_get_fmt_settings (),
 				  v, var_get_width (var), "UTF-8");
 
@@ -701,14 +701,13 @@ textfile_create_reader (PsppireImportAssistant *ia)
   struct caseproto *proto = caseproto_create ();
   for (i = 0 ; i < n_vars; ++i)
     {
-      struct fmt_spec fs;
-      fmt_guesser_guess (fg[i], &fs);
+      struct fmt_spec fs = fmt_guesser_guess (fg[i]);
 
       fmt_fix (&fs, FMT_FOR_INPUT);
 
       struct variable *var = dict_get_var (ia->dict, i);
 
-      int width = fmt_var_width (&fs);
+      int width = fmt_var_width (fs);
 
       var_set_width_and_formats (var, width,
 				 &fs, &fs);
@@ -812,7 +811,7 @@ apply_dict (const struct dictionary *dict, struct string *s)
       enum measure measure = var_get_measure (var);
       enum var_role role = var_get_role (var);
       enum alignment alignment = var_get_alignment (var);
-      const struct fmt_spec *format = var_get_print_format (var);
+      struct fmt_spec format = var_get_print_format (var);
 
       if (var_has_missing_values (var))
         {
@@ -824,7 +823,7 @@ apply_dict (const struct dictionary *dict, struct string *s)
             {
               if (j)
                 ds_put_cstr (s, ", ");
-              syntax_gen_value (s, mv_get_value (mv, j), width, format);
+              syntax_gen_value (s, mv_get_value (mv, j), width, &format);
             }
 
           if (mv_has_range (mv))
@@ -833,7 +832,7 @@ apply_dict (const struct dictionary *dict, struct string *s)
               if (mv_has_value (mv))
                 ds_put_cstr (s, ", ");
               mv_get_range (mv, &low, &high);
-              syntax_gen_num_range (s, low, high, format);
+              syntax_gen_num_range (s, low, high, &format);
             }
           ds_put_cstr (s, ").\n");
         }
@@ -848,7 +847,7 @@ apply_dict (const struct dictionary *dict, struct string *s)
             {
               const struct val_lab *vl = labels[j];
               ds_put_cstr (s, "\n  ");
-              syntax_gen_value (s, &vl->value, width, format);
+              syntax_gen_value (s, &vl->value, width, &format);
               ds_put_byte (s, ' ');
               syntax_gen_string (s, ss_cstr (val_lab_get_escaped_label (vl)));
             }

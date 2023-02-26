@@ -69,7 +69,7 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
             {
               while (!lex_match (lexer, T_RPAREN))
                 {
-                  enum fmt_type type = var_get_print_format (v[0])->type;
+                  enum fmt_type type = var_get_print_format (v[0]).type;
                   double x, y;
 
                   if (!parse_num_range (lexer, &x, &y, &type))

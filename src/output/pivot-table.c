@@ -776,7 +776,7 @@ pivot_table_use_rc (const struct pivot_table *table, const char *s,
     {
       if (!strcmp (s, PIVOT_RC_OTHER))
         {
-          *format = *settings_get_format ();
+          *format = settings_get_format ();
           *honor_small = true;
         }
       else if (!strcmp (s, PIVOT_RC_COUNT) && !overridden_count_format)
@@ -804,13 +804,13 @@ pivot_table_use_rc (const struct pivot_table *table, const char *s,
    include the RC_ prefix) to *FORMAT.  Returns true if successful, false if S
    does not name a known result class. */
 bool
-pivot_result_class_change (const char *s_, const struct fmt_spec *format)
+pivot_result_class_change (const char *s_, struct fmt_spec format)
 {
   char *s = xasprintf ("RC_%s", s_);
   struct result_class *rc = pivot_result_class_find (s);
   if (rc)
     {
-      rc->format = *format;
+      rc->format = format;
       if (!strcmp (s, PIVOT_RC_COUNT))
         overridden_count_format = true;
     }
@@ -1368,7 +1368,7 @@ pivot_table_set_weight_var (struct pivot_table *table,
                             const struct variable *wv)
 {
   if (wv)
-    pivot_table_set_weight_format (table, *var_get_print_format (wv));
+    pivot_table_set_weight_format (table, var_get_print_format (wv));
 }
 
 /* Sets the format used for PIVOT_RC_COUNT cells to WFMT, which should be the
@@ -1472,7 +1472,7 @@ pivot_table_put (struct pivot_table *table, const size_t *dindexes, size_t n,
                 }
             }
         }
-      value->numeric.format = *settings_get_format ();
+      value->numeric.format = settings_get_format ();
       value->numeric.honor_small = true;
 
     done:;
@@ -2409,13 +2409,13 @@ pivot_value_format_body (const struct pivot_value *value,
                              value->numeric.value_label != NULL);
       if (show & SETTINGS_VALUE_SHOW_VALUE)
         {
-          const struct fmt_spec *f = &value->numeric.format;
-          const struct fmt_spec *format
-            = (f->type == FMT_F
+          struct fmt_spec f = value->numeric.format;
+          const struct fmt_spec format
+            = (f.type == FMT_F
                && value->numeric.honor_small
                && value->numeric.x != 0
                && fabs (value->numeric.x) < pt->small
-               ? &(struct fmt_spec) { .type = FMT_E, .w = 40, .d = f->d }
+               ? (struct fmt_spec) { .type = FMT_E, .w = 40, .d = f.d }
                : f);
 
           char *s = data_out (&(union value) { .f = value->numeric.x },
@@ -2870,7 +2870,7 @@ pivot_value_new_var_value (const struct variable *variable,
    encoding. */
 struct pivot_value *
 pivot_value_new_value (const union value *value, int width,
-                       const struct fmt_spec *format, const char *encoding)
+                       struct fmt_spec format, const char *encoding)
 {
   struct pivot_value *pv = XZALLOC (struct pivot_value);
   if (width > 0)
@@ -2883,13 +2883,13 @@ pivot_value_new_value (const union value *value, int width,
 
       pv->type = PIVOT_VALUE_STRING;
       pv->string.s = s;
-      pv->string.hex = format->type == FMT_AHEX;
+      pv->string.hex = format.type == FMT_AHEX;
     }
   else
     {
       pv->type = PIVOT_VALUE_NUMERIC;
       pv->numeric.x = value->f;
-      pv->numeric.format = *format;
+      pv->numeric.format = format;
     }
 
   return pv;

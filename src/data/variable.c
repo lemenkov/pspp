@@ -117,8 +117,8 @@ struct variable
   };
 
 
-static void var_set_print_format_quiet (struct variable *v, const struct fmt_spec *print);
-static void var_set_write_format_quiet (struct variable *v, const struct fmt_spec *write);
+static void var_set_print_format_quiet (struct variable *v, struct fmt_spec);
+static void var_set_write_format_quiet (struct variable *v, struct fmt_spec);
 static void var_set_label_quiet (struct variable *v, const char *label);
 static void var_set_name_quiet (struct variable *v, const char *name);
 
@@ -343,13 +343,13 @@ var_set_width_and_formats (struct variable *v, int new_width,
 
   if (print)
     {
-      var_set_print_format_quiet (v, print);
+      var_set_print_format_quiet (v, *print);
       traits |= VAR_TRAIT_PRINT_FORMAT;
     }
 
   if (write)
     {
-      var_set_write_format_quiet (v, write);
+      var_set_write_format_quiet (v, *write);
       traits |= VAR_TRAIT_WRITE_FORMAT;
     }
 
@@ -568,7 +568,7 @@ static void
 append_value (const struct variable *v, const union value *value,
 	      struct string *str)
 {
-  char *s = data_out (value, var_get_encoding (v), &v->print,
+  char *s = data_out (value, var_get_encoding (v), v->print,
                       settings_get_fmt_settings ());
   struct substring ss = ss_cstr (s);
   ss_rtrim (&ss, ss_cstr (" "));
@@ -619,10 +619,10 @@ var_append_value_name (const struct variable *v, const union value *value,
 /* Print and write formats. */
 
 /* Returns V's print format specification. */
-const struct fmt_spec *
+struct fmt_spec
 var_get_print_format (const struct variable *v)
 {
-  return &v->print;
+  return v->print;
 }
 
 /* Sets V's print format specification to PRINT, which must be a
@@ -630,12 +630,12 @@ var_get_print_format (const struct variable *v)
    (ordinarily an output format, but input formats are not
    rejected). */
 static void
-var_set_print_format_quiet (struct variable *v, const struct fmt_spec *print)
+var_set_print_format_quiet (struct variable *v, struct fmt_spec print)
 {
-  if (!fmt_equal (&v->print, print))
+  if (!fmt_equal (v->print, print))
     {
       assert (fmt_check_width_compat (print, v->width));
-      v->print = *print;
+      v->print = print;
     }
 }
 
@@ -644,7 +644,7 @@ var_set_print_format_quiet (struct variable *v, const struct fmt_spec *print)
    (ordinarily an output format, but input formats are not
    rejected). */
 void
-var_set_print_format (struct variable *v, const struct fmt_spec *print)
+var_set_print_format (struct variable *v, struct fmt_spec print)
 {
   struct variable *ov = var_clone (v);
   var_set_print_format_quiet (v, print);
@@ -652,10 +652,10 @@ var_set_print_format (struct variable *v, const struct fmt_spec *print)
 }
 
 /* Returns V's write format specification. */
-const struct fmt_spec *
+struct fmt_spec
 var_get_write_format (const struct variable *v)
 {
-  return &v->write;
+  return v->write;
 }
 
 /* Sets V's write format specification to WRITE, which must be a
@@ -663,12 +663,12 @@ var_get_write_format (const struct variable *v)
    (ordinarily an output format, but input formats are not
    rejected). */
 static void
-var_set_write_format_quiet (struct variable *v, const struct fmt_spec *write)
+var_set_write_format_quiet (struct variable *v, struct fmt_spec write)
 {
-  if (!fmt_equal (&v->write, write))
+  if (!fmt_equal (v->write, write))
     {
       assert (fmt_check_width_compat (write, v->width));
-      v->write = *write;
+      v->write = write;
     }
 }
 
@@ -677,7 +677,7 @@ var_set_write_format_quiet (struct variable *v, const struct fmt_spec *write)
    (ordinarily an output format, but input formats are not
    rejected). */
 void
-var_set_write_format (struct variable *v, const struct fmt_spec *write)
+var_set_write_format (struct variable *v, struct fmt_spec write)
 {
   struct variable *ov = var_clone (v);
   var_set_write_format_quiet (v, write);
@@ -690,7 +690,7 @@ var_set_write_format (struct variable *v, const struct fmt_spec *write)
    V's width (ordinarily an output format, but input formats are
    not rejected). */
 void
-var_set_both_formats (struct variable *v, const struct fmt_spec *format)
+var_set_both_formats (struct variable *v, struct fmt_spec format)
 {
   struct variable *ov = var_clone (v);
   var_set_print_format_quiet (v, format);

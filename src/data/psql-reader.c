@@ -177,7 +177,7 @@ dump (const unsigned char *x, int l)
 #endif
 
 static struct variable *
-create_var (struct psql_reader *r, const struct fmt_spec *fmt,
+create_var (struct psql_reader *r, struct fmt_spec fmt,
 	    int width, const char *suggested_name, int col)
 {
   unsigned long int vx = 0;
@@ -460,7 +460,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	fmt.w = width = PSQL_DEFAULT_WIDTH;
 
 
-      var = create_var (r, &fmt, width, PQfname (qres, i), i);
+      var = create_var (r, fmt, width, PQfname (qres, i), i);
       if (type == NUMERICOID && n_tuples > 0)
 	{
 	  const uint8_t *vptr = (const uint8_t *) PQgetvalue (qres, 0, i);
@@ -477,7 +477,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	  fmt.type = FMT_E;
 	  fmt.w = fmt_max_output_width (fmt.type) ;
 	  fmt.d =  MIN (dscale, fmt_max_output_decimals (fmt.type, fmt.w));
-	  var_set_both_formats (var, &fmt);
+	  var_set_both_formats (var, fmt);
 	}
 
       /* Timezones need an extra variable */
@@ -492,7 +492,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	    fmt.w = 8;
 	    fmt.d = 2;
 
-	    create_var (r, &fmt, 0, ds_cstr (&name), -1);
+	    create_var (r, fmt, 0, ds_cstr (&name), -1);
 
 	    ds_destroy (&name);
 	  }
@@ -507,7 +507,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	    fmt.w = 3;
 	    fmt.d = 0;
 
-	    create_var (r, &fmt, 0, ds_cstr (&name), -1);
+	    create_var (r, fmt, 0, ds_cstr (&name), -1);
 
 	    ds_destroy (&name);
 	  }

@@ -219,13 +219,13 @@ format_value (val, var)
  struct variable *var
 CODE:
  SV *ret;
- const struct fmt_spec *fmt = var_get_print_format (var);
+ const struct fmt_spec fmt = var_get_print_format (var);
  union value uv;
  char *s;
  make_value_from_scalar (&uv, val, var);
  s = data_out (&uv, var_get_encoding (var), fmt, settings_get_fmt_settings ());
  value_destroy (&uv, var_get_width (var));
- ret = newSVpv (s, fmt->w);
+ ret = newSVpv (s, fmt.w);
  free (s);
  RETVAL = ret;
  OUTPUT:
@@ -378,7 +378,7 @@ CODE:
  struct input_format *input_format;
 
  struct variable *v;
- op_fmt = fmt_for_output_from_input (&ip_fmt, settings_get_fmt_settings ());
+ op_fmt = fmt_for_output_from_input (ip_fmt, settings_get_fmt_settings ());
  v = dict_create_var (dict->dict, name,
 	fmt_is_string (op_fmt.type) ? op_fmt.w : 0);
  if ( NULL == v )
@@ -386,7 +386,7 @@ CODE:
     sv_setpv (errstr, "The variable could not be created (probably already exists).");
     XSRETURN_UNDEF;
   }
- var_set_both_formats (v, &op_fmt);
+ var_set_both_formats (v, op_fmt);
 
  input_format = xmalloc (sizeof *input_format);
  input_format->var = v;
@@ -442,11 +442,11 @@ get_write_format (var)
  struct variable *var
 CODE:
  HV *fmthash = (HV *) sv_2mortal ((SV *) newHV());
- const struct fmt_spec *fmt = var_get_write_format (var);
+ const struct fmt_spec fmt = var_get_write_format (var);
 
- hv_store (fmthash, "fmt", 3, newSVnv (fmt->type), 0);
- hv_store (fmthash, "decimals", 8, newSVnv (fmt->d), 0);
- hv_store (fmthash, "width", 5, newSVnv (fmt->w), 0);
+ hv_store (fmthash, "fmt", 3, newSVnv (fmt.type), 0);
+ hv_store (fmthash, "decimals", 8, newSVnv (fmt.d), 0);
+ hv_store (fmthash, "width", 5, newSVnv (fmt.w), 0);
 
  RETVAL = newRV ((SV *) fmthash);
  OUTPUT:
@@ -457,11 +457,11 @@ get_print_format (var)
  struct variable *var
 CODE:
  HV *fmthash = (HV *) sv_2mortal ((SV *) newHV());
- const struct fmt_spec *fmt = var_get_print_format (var);
+ const struct fmt_spec fmt = var_get_print_format (var);
 
- hv_store (fmthash, "fmt", 3, newSVnv (fmt->type), 0);
- hv_store (fmthash, "decimals", 8, newSVnv (fmt->d), 0);
- hv_store (fmthash, "width", 5, newSVnv (fmt->w), 0);
+ hv_store (fmthash, "fmt", 3, newSVnv (fmt.type), 0);
+ hv_store (fmthash, "decimals", 8, newSVnv (fmt.d), 0);
+ hv_store (fmthash, "width", 5, newSVnv (fmt.w), 0);
 
  RETVAL = newRV ((SV *) fmthash);
  OUTPUT:
@@ -473,7 +473,7 @@ pxs_set_write_format (var, fmt)
  struct variable *var
  output_format fmt
 CODE:
- var_set_write_format (var, &fmt);
+ var_set_write_format (var, fmt);
 
 
 void
@@ -481,14 +481,14 @@ pxs_set_print_format (var, fmt)
  struct variable *var
  output_format fmt
 CODE:
- var_set_print_format (var, &fmt);
+ var_set_print_format (var, fmt);
 
 void
 pxs_set_output_format (var, fmt)
  struct variable *var
  output_format fmt
 CODE:
- var_set_both_formats (var, &fmt);
+ var_set_both_formats (var, fmt);
 
 
 int

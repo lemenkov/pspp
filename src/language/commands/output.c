@@ -86,10 +86,7 @@ cmd_output_modify (struct lexer *lexer, struct dataset *ds UNUSED)
                     goto error;
 
 		  if (width <= 0)
-		    {
-		      const struct fmt_spec *dflt = settings_get_format ();
-		      width = dflt->w;
-		    }
+                    width = settings_get_format ().w;
 
                   if (!fmt_from_name (type, &fmt.type))
                     {
@@ -112,7 +109,7 @@ cmd_output_modify (struct lexer *lexer, struct dataset *ds UNUSED)
               const struct string_set_node *node;
               const char *s;
               STRING_SET_FOR_EACH (s, node, &rc_names)
-                if (!pivot_result_class_change (s, &fmt))
+                if (!pivot_result_class_change (s, fmt))
                   lex_error (lexer, _("Unknown cell class %s."), s);
             }
 	}

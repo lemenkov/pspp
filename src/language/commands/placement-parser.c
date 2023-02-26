@@ -167,7 +167,7 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
   int end_ofs = lex_ofs (lexer) - 1;
 
   struct fmt_spec format = { .type = type, .w = w, .d = d };
-  char *error = fmt_check__ (&format, use);
+  char *error = fmt_check__ (format, use);
   if (error)
     {
       lex_ofs_error (lexer, start_ofs, end_ofs, "%s", error);
@@ -247,7 +247,7 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
                                      _("Unknown format type `%s'."), type);
                       return false;
                     }
-                  char *error = fmt_check__ (&f, use);
+                  char *error = fmt_check__ (f, use);
                   if (error)
                     {
                       lex_ofs_error (lexer, ofs, ofs, "%s", error);
@@ -291,17 +291,17 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
    as appropriate, and returns true.  Otherwise, returns false
    without any side effects. */
 bool
-execute_placement_format (const struct fmt_spec *format,
+execute_placement_format (const struct fmt_spec format,
                           int *record, int *column)
 {
-  switch ((int) format->type)
+  switch ((int) format.type)
     {
     case PRS_TYPE_X:
-      *column += format->w;
+      *column += format.w;
       return true;
 
     case PRS_TYPE_T:
-      *column = format->w;
+      *column = format.w;
       return true;
 
     case PRS_TYPE_NEW_REC:
@@ -310,7 +310,7 @@ execute_placement_format (const struct fmt_spec *format,
       return true;
 
     default:
-      assert (format->type < FMT_NUMBER_OF_FORMATS);
+      assert (format.type < FMT_NUMBER_OF_FORMATS);
       return false;
     }
 }

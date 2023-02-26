@@ -130,7 +130,7 @@ union operation_data
     struct substring string;
     const struct variable *variable;
     const struct vector *vector;
-    struct fmt_spec *format;
+    struct fmt_spec format;
     const struct expr_node *expr_node;
     int integer;
   };
@@ -173,8 +173,7 @@ struct expr_node *expr_allocate_pos_int (struct expression *e, int);
 struct expr_node *expr_allocate_string (struct expression *e, struct substring);
 struct expr_node *expr_allocate_variable (struct expression *e,
                                         const struct variable *);
-struct expr_node *expr_allocate_format (struct expression *e,
-                                 const struct fmt_spec *);
+struct expr_node *expr_allocate_format (struct expression *, struct fmt_spec);
 struct expr_node *expr_allocate_expr_node (struct expression *,
                                            const struct expr_node *);
 struct expr_node *expr_allocate_vector (struct expression *e,

@@ -251,33 +251,31 @@ fmt_guesser_add (struct fmt_guesser *g, struct substring s)
     add_date_time (g, s);
 }
 
-/* Guesses the format of the input previously added to G using
-   fmt_guesser_add, storing the guess into *F.  The guessed
-   format may not actually a valid input or output format, in
-   that its width and number of decimal places may be outside the
-   valid range for the guessed format type.  The caller must
-   therefore adjust the format to make it valid, e.g. by calling
-   fmt_fix. */
-void
-fmt_guesser_guess (struct fmt_guesser *g, struct fmt_spec *f)
+/* Returns a guess about the format of the input previously added to G using
+   fmt_guesser_add().  The guessed format may not actually a valid input or
+   output format, in that its width and number of decimal places may be outside
+   the valid range for the guessed format type.  The caller must therefore
+   adjust the format to make it valid, e.g. by calling fmt_fix(). */
+struct fmt_spec
+fmt_guesser_guess (struct fmt_guesser *g)
 {
   if (g->count > 0)
     {
       /* Set defaults.  The guesser functions typically override
          the width and type. */
-      f->type = FMT_A;
-      f->w = g->width;
-      f->d = 0;
+      struct fmt_spec f = { .type = FMT_A, .w = g->width };
 
       if (g->any_numeric > g->count / 2)
-        guess_numeric (g, f);
+        guess_numeric (g, &f);
       else if (g->any_date > g->count / 2)
-        guess_date_time (g, f);
+        guess_date_time (g, &f);
+
+      return f;
     }
   else
     {
       /* No data at all.  Use fallback default. */
-      *f = fmt_default_for_width (0);
+      return fmt_default_for_width (0);
     }
 }
 

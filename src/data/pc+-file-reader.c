@@ -755,7 +755,7 @@ read_variables_record (struct pcp_reader *r)
       var->format.w = (format >> 8) & 0xff;
       var->format.d = format & 0xff;
       fmt_fix_output (&var->format);
-      var->width = fmt_var_width (&var->format);
+      var->width = fmt_var_width (var->format);
 
       if (var_label_ofs)
         {
@@ -924,7 +924,7 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
         }
 
       /* Set formats. */
-      var_set_both_formats (var, &rec->format);
+      var_set_both_formats (var, rec->format);
     }
 
   return true;

@@ -890,7 +890,7 @@ spv_decode_fmt_spec (uint32_t u32, struct fmt_spec *out)
   if (ok)
     {
       fmt_fix_output (out);
-      ok = fmt_check_width_compat (out, 0);
+      ok = fmt_check_width_compat (*out, 0);
     }
 
   if (!ok)

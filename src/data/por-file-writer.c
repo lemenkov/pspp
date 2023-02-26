@@ -350,8 +350,8 @@ write_variables (struct pfm_writer *w, struct dictionary *dict)
       buf_write (w, "7", 1);
       write_int (w, width);
       write_string (w, var_get_short_name (v, 0));
-      write_format (w, *var_get_print_format (v), width);
-      write_format (w, *var_get_write_format (v), width);
+      write_format (w, var_get_print_format (v), width);
+      write_format (w, var_get_write_format (v), width);
 
       /* Write missing values. */
       mv_copy (&mv, var_get_missing_values (v));

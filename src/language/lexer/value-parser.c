@@ -141,7 +141,10 @@ parse_value (struct lexer *lexer, union value *v, const struct variable *var)
 {
   int width = var_get_width (var);
   if (width == 0)
-    return parse_number (lexer, &v->f, &var_get_print_format (var)->type);
+    {
+      struct fmt_spec format = var_get_print_format (var);
+      return parse_number (lexer, &v->f, &format.type);
+    }
   else if (lex_force_string (lexer))
     {
       struct substring out;

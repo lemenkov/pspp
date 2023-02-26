@@ -450,7 +450,7 @@ write_header (struct sfm_writer *w, const struct dictionary *d)
 static void
 write_format (struct sfm_writer *w, struct fmt_spec fmt, int width)
 {
-  assert (fmt_check_output (&fmt));
+  assert (fmt_check_output (fmt));
   assert (sfm_width_to_segments (width) == 1);
 
   if (width > 0)
@@ -518,8 +518,8 @@ write_variable (struct sfm_writer *w, const struct variable *v)
     write_int (w, 0);
 
   /* Print and write formats. */
-  write_format (w, *var_get_print_format (v), seg0_width);
-  write_format (w, *var_get_write_format (v), seg0_width);
+  write_format (w, var_get_print_format (v), seg0_width);
+  write_format (w, var_get_write_format (v), seg0_width);
 
   /* Short name.
      The full name is in a translation table written

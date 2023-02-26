@@ -412,7 +412,7 @@ void pivot_category_destroy (struct pivot_category *);
 #define PIVOT_RC_RESIDUAL ("RC_RESIDUAL")
 #define PIVOT_RC_COUNT ("RC_COUNT")
 
-bool pivot_result_class_change (const char *, const struct fmt_spec *);
+bool pivot_result_class_change (const char *, struct fmt_spec);
 bool is_pivot_result_class (const char *);
 
 /* Styling for a pivot table.
@@ -803,7 +803,7 @@ struct pivot_value *pivot_value_new_integer (double);
 struct pivot_value *pivot_value_new_var_value (
   const struct variable *, const union value *);
 struct pivot_value *pivot_value_new_value (const union value *, int width,
-                                           const struct fmt_spec *,
+                                           struct fmt_spec,
                                            const char *encoding);
 
 /* Values from variable names. */

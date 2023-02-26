@@ -109,11 +109,11 @@ void var_replace_value_label (struct variable *,
 void var_clear_value_labels (struct variable *);
 
 /* Print and write formats. */
-const struct fmt_spec *var_get_print_format (const struct variable *);
-void var_set_print_format (struct variable *, const struct fmt_spec *);
-const struct fmt_spec *var_get_write_format (const struct variable *);
-void var_set_write_format (struct variable *, const struct fmt_spec *);
-void var_set_both_formats (struct variable *, const struct fmt_spec *);
+struct fmt_spec var_get_print_format (const struct variable *);
+void var_set_print_format (struct variable *, struct fmt_spec);
+struct fmt_spec var_get_write_format (const struct variable *);
+void var_set_write_format (struct variable *, struct fmt_spec);
+void var_set_both_formats (struct variable *, struct fmt_spec);
 
 struct fmt_spec var_default_formats (int width);
 

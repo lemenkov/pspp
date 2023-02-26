@@ -491,8 +491,8 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
 
     case OP_ni_format:
       if (arg->type == OP_format
-          && fmt_check_input (&arg->format)
-          && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
+          && fmt_check_input (arg->format)
+          && fmt_check_type_compat (arg->format, VAL_NUMERIC))
         {
           if (do_coercion)
             arg->type = OP_ni_format;
@@ -502,8 +502,8 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
 
     case OP_no_format:
       if (arg->type == OP_format
-          && fmt_check_output (&arg->format)
-          && fmt_check_type_compat (&arg->format, VAL_NUMERIC))
+          && fmt_check_output (arg->format)
+          && fmt_check_type_compat (arg->format, VAL_NUMERIC))
         {
           if (do_coercion)
             arg->type = OP_no_format;
@@ -952,7 +952,7 @@ parse_primary__ (struct lexer *lexer, struct expression *e)
           msg_enable ();
 
           if (ok)
-            return expr_allocate_format (e, &fmt);
+            return expr_allocate_format (e, fmt);
 
           /* All attempts failed. */
           lex_error (lexer, _("Unknown identifier %s."), lex_tokcstr (lexer));
@@ -1295,7 +1295,7 @@ no_match (struct expression *e, const char *func_name, struct expr_node *node,
             if ((expected == OP_ni_format || expected == OP_no_format)
                 && actual == OP_format)
               {
-                const struct fmt_spec *f = &node->args[i]->format;
+                struct fmt_spec f = node->args[i]->format;
                 char *error = fmt_check__ (f, (ops->args[i] == OP_ni_format
                                                ? FMT_FOR_INPUT : FMT_FOR_OUTPUT));
                 if (!error)
@@ -1582,10 +1582,10 @@ expr_allocate_variable (struct expression *e, const struct variable *v)
 }
 
 struct expr_node *
-expr_allocate_format (struct expression *e, const struct fmt_spec *format)
+expr_allocate_format (struct expression *e, struct fmt_spec format)
 {
   struct expr_node *n = pool_alloc (e->expr_pool, sizeof *n);
-  *n = (struct expr_node) { .type = OP_format, .format = *format };
+  *n = (struct expr_node) { .type = OP_format, .format = format };
   return n;
 }
 

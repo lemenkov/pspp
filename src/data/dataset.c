@@ -1061,8 +1061,8 @@ measure_guesser_create__ (struct dictionary *dict)
       if (var_get_measure (var) != MEASURE_UNKNOWN)
         continue;
 
-      const struct fmt_spec *f = var_get_print_format (var);
-      enum measure m = var_default_measure_for_format (f->type);
+      struct fmt_spec f = var_get_print_format (var);
+      enum measure m = var_default_measure_for_format (f.type);
       if (m != MEASURE_UNKNOWN)
         {
           var_set_measure (var, m);

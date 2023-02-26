@@ -592,8 +592,8 @@ read_value_option (struct lexer *lexer, const struct pivot_table *pt,
 
       if (ok)
         {
-          if (!fmt_check_output (&fmt)
-              || !fmt_check_type_compat (&fmt, VAL_NUMERIC))
+          if (!fmt_check_output (fmt)
+              || !fmt_check_type_compat (fmt, VAL_NUMERIC))
             exit (1);
 
           value->numeric.format = fmt;

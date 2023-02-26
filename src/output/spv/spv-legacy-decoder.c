@@ -203,7 +203,7 @@ spv_map_insert (struct hmap *map, double from, const char *to,
       else
         {
           union value v = { .f = mapping->to.d };
-          mapping->to.s = data_out_stretchy (&v, NULL, format,
+          mapping->to.s = data_out_stretchy (&v, NULL, *format,
                                              settings_get_fmt_settings (),
                                              NULL);
           mapping->to.width = strlen (mapping->to.s);
@@ -808,7 +808,7 @@ decode_spvdx_source_variable (const struct spvxml_node *node,
             if (label_series->values[i].width < 0)
               {
                 union value v = { .f = label_series->values[i].d };
-                dest = data_out_stretchy (&v, "UTF-8", &s->format,
+                dest = data_out_stretchy (&v, "UTF-8", s->format,
                                           settings_get_fmt_settings (), NULL);
               }
             else

@@ -86,29 +86,29 @@ struct fmt_spec
 /* Constructing formats. */
 struct fmt_spec fmt_for_input (enum fmt_type, int w, int d) PURE_FUNCTION;
 struct fmt_spec fmt_for_output (enum fmt_type, int w, int d) PURE_FUNCTION;
-struct fmt_spec fmt_for_output_from_input (const struct fmt_spec *,
+struct fmt_spec fmt_for_output_from_input (struct fmt_spec,
                                            const struct fmt_settings *);
 struct fmt_spec fmt_default_for_width (int width);
 
 /* Verifying formats. */
-bool fmt_check (const struct fmt_spec *, enum fmt_use);
-bool fmt_check_input (const struct fmt_spec *);
-bool fmt_check_output (const struct fmt_spec *);
-bool fmt_check_type_compat (const struct fmt_spec *, enum val_type);
-bool fmt_check_width_compat (const struct fmt_spec *, int var_width);
+bool fmt_check (struct fmt_spec, enum fmt_use);
+bool fmt_check_input (struct fmt_spec);
+bool fmt_check_output (struct fmt_spec);
+bool fmt_check_type_compat (struct fmt_spec, enum val_type);
+bool fmt_check_width_compat (struct fmt_spec, int var_width);
 
-char *fmt_check__ (const struct fmt_spec *, enum fmt_use);
-char *fmt_check_input__ (const struct fmt_spec *);
-char *fmt_check_output__ (const struct fmt_spec *);
-char *fmt_check_type_compat__ (const struct fmt_spec *, const char *varname,
+char *fmt_check__ (struct fmt_spec, enum fmt_use);
+char *fmt_check_input__ (struct fmt_spec);
+char *fmt_check_output__ (struct fmt_spec);
+char *fmt_check_type_compat__ (struct fmt_spec, const char *varname,
                                enum val_type);
-char *fmt_check_width_compat__ (const struct fmt_spec *, const char *varname,
+char *fmt_check_width_compat__ (struct fmt_spec, const char *varname,
                                 int var_width);
 
 /* Working with formats. */
-int fmt_var_width (const struct fmt_spec *);
-char *fmt_to_string (const struct fmt_spec *, char s[FMT_STRING_LEN_MAX + 1]);
-bool fmt_equal (const struct fmt_spec *, const struct fmt_spec *);
+int fmt_var_width (struct fmt_spec);
+char *fmt_to_string (struct fmt_spec, char s[FMT_STRING_LEN_MAX + 1]);
+bool fmt_equal (struct fmt_spec, struct fmt_spec);
 bool fmt_resize (struct fmt_spec *, int new_width);
 
 void fmt_fix (struct fmt_spec *, enum fmt_use);

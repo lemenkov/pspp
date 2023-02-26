@@ -85,9 +85,9 @@ cmd_formats__ (struct lexer *lexer, struct dataset *ds,
 	}
       if (!parse_format_specifier (lexer, &f))
         goto fail;
-      char *error = fmt_check_output__ (&f);
+      char *error = fmt_check_output__ (f);
       if (!error)
-        error = fmt_check_width_compat__ (&f, var_get_name (v[0]), width);
+        error = fmt_check_width_compat__ (f, var_get_name (v[0]), width);
       if (error)
         {
           lex_next_error (lexer, -1, -1, "%s", error);
@@ -104,9 +104,9 @@ cmd_formats__ (struct lexer *lexer, struct dataset *ds,
       for (i = 0; i < cv; i++)
 	{
 	  if (print_format)
-            var_set_print_format (v[i], &f);
+            var_set_print_format (v[i], f);
 	  if (write_format)
-            var_set_write_format (v[i], &f);
+            var_set_write_format (v[i], f);
 	}
       free (v);
       v = NULL;

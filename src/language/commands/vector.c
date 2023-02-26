@@ -145,7 +145,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                   seen_format = true;
                   if (!parse_format_specifier (lexer, &format))
                     goto error;
-                  char *error = fmt_check_output__ (&format);
+                  char *error = fmt_check_output__ (format);
                   if (error)
                     {
                       lex_next_error (lexer, -1, -1, "%s", error);
@@ -202,8 +202,8 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 		{
                   char *name = xasprintf ("%s%zu", vectors[i], j + 1);
 		  vars[j] = dict_create_var_assert (dict, name,
-                                                    fmt_var_width (&format));
-                  var_set_both_formats (vars[j], &format);
+                                                    fmt_var_width (format));
+                  var_set_both_formats (vars[j], format);
                   free (name);
 		}
               dict_create_vector_assert (dict, vectors[i], vars, n_vars);

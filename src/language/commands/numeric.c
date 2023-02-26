@@ -56,7 +56,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	  if (!parse_format_specifier (lexer, &f))
 	    goto done;
 
-          char *error = fmt_check_output__ (&f);
+          char *error = fmt_check_output__ (f);
           if (error)
             {
               lex_next_error (lexer, -1, -1, "%s", error);
@@ -69,7 +69,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
               char str[FMT_STRING_LEN_MAX + 1];
 	      lex_next_error (lexer, -1, -1,
                               _("Format type %s may not be used with a numeric "
-                                "variable."), fmt_to_string (&f, str));
+                                "variable."), fmt_to_string (f, str));
 	      goto done;
 	    }
 
@@ -89,7 +89,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	    lex_ofs_error (lexer, vars_start, vars_end,
                            _("There is already a variable named %s."), v[i]);
 	  else
-            var_set_both_formats (new_var, &f);
+            var_set_both_formats (new_var, f);
 	}
       ok = true;
 
@@ -126,9 +126,9 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
           || !parse_format_specifier (lexer, &f))
 	goto done;
 
-      char *error = fmt_check_type_compat__ (&f, NULL, VAL_STRING);
+      char *error = fmt_check_type_compat__ (f, NULL, VAL_STRING);
       if (!error)
-        error = fmt_check_output__ (&f);
+        error = fmt_check_output__ (f);
       if (error)
         {
           lex_next_error (lexer, -1, -1, "%s", error);
@@ -140,7 +140,7 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
         goto done;
 
       /* Create each variable. */
-      int width = fmt_var_width (&f);
+      int width = fmt_var_width (f);
       for (size_t i = 0; i < nv; i++)
 	{
 	  struct variable *new_var = dict_create_var (dataset_dict (ds), v[i],
@@ -149,7 +149,7 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
 	    lex_ofs_error (lexer, vars_start, vars_end,
                            _("There is already a variable named %s."), v[i]);
 	  else
-            var_set_both_formats (new_var, &f);
+            var_set_both_formats (new_var, f);
 	}
       ok = true;
 

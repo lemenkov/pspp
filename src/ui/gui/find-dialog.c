@@ -473,9 +473,9 @@ value_compare (const struct comparator *cmptr,
 	       const union value *v)
 {
   const struct numeric_comparator *nc = (const struct numeric_comparator *) cmptr;
-  const struct fmt_spec *fs = var_get_print_format (cmptr->var);
+  struct fmt_spec fs = var_get_print_format (cmptr->var);
 
-  double c = nearbyint (v->f * int_pow10 (fs->d));
+  double c = nearbyint (v->f * int_pow10 (fs.d));
 
   return c == nc->rounded_ref;
 }
@@ -603,11 +603,11 @@ numeric_comparator_create (const struct variable *var, const char *target)
   cmptr->flags = 0;
   cmptr->var = var;
   cmptr->compare  = value_compare;
-  const struct fmt_spec *fs = var_get_write_format (var);
+  struct fmt_spec fs = var_get_write_format (var);
 
   union value val;
   text_to_value (target, var, &val);
-  nc->rounded_ref = nearbyint (val.f * int_pow10 (fs->d));
+  nc->rounded_ref = nearbyint (val.f * int_pow10 (fs.d));
   value_destroy (&val, var_get_width (var));
 
   return cmptr;

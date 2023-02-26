@@ -385,7 +385,7 @@ var_icon_cell_data_func (GtkTreeViewColumn *col,
 
   g_object_set (cell,
 		"stock-size", GTK_ICON_SIZE_MENU,
-		"icon-name", get_var_measurement_stock_id (var_get_print_format (var)->type,
+		"icon-name", get_var_measurement_stock_id (var_get_print_format (var).type,
 							   var_get_measure (var)),
                 NULL);
 

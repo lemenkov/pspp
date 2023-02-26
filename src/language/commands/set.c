@@ -531,7 +531,7 @@ parse_FORMAT (struct lexer *lexer)
   if (!parse_format_specifier (lexer, &fmt))
     return false;
 
-  char *error = fmt_check_output__ (&fmt);
+  char *error = fmt_check_output__ (fmt);
   if (error)
     {
       lex_next_error (lexer, -1, -1, "%s", error);
@@ -546,11 +546,11 @@ parse_FORMAT (struct lexer *lexer)
       lex_ofs_error (lexer, start, end,
                      _("%s requires numeric output format as an argument.  "
                        "Specified format %s is of type string."),
-                     "FORMAT", fmt_to_string (&fmt, str));
+                     "FORMAT", fmt_to_string (fmt, str));
       return false;
     }
 
-  settings_set_format (&fmt);
+  settings_set_format (fmt);
   return true;
 }
 

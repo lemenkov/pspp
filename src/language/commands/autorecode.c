@@ -246,7 +246,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       spec->width = var_get_width (src_vars[i]);
       spec->src_idx = var_get_case_index (src_vars[i]);
       spec->src_name = xstrdup (var_get_name (src_vars[i]));
-      spec->format = *var_get_print_format (src_vars[i]);
+      spec->format = var_get_print_format (src_vars[i]);
 
       const char *label = var_get_label (src_vars[i]);
       spec->label = xstrdup_if_nonnull (label);
@@ -343,7 +343,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       size_t n_items = hmap_count (&spec->items->ht);
       char *longest_value = xasprintf ("%zu", n_items);
       struct fmt_spec format = { .type = FMT_F, .w = strlen (longest_value) };
-      var_set_both_formats (dst, &format);
+      var_set_both_formats (dst, format);
       free (longest_value);
 
       /* Create array of pointers to items. */
@@ -391,8 +391,8 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
                 old_values->root, pivot_value_new_value (
                   &item->from, item->width,
                   (item->width
-                   ? &(struct fmt_spec) { .type = FMT_F, .w = item->width }
-                   : &spec->format),
+                   ? (struct fmt_spec) { .type = FMT_F, .w = item->width }
+                   : spec->format),
                   dict_get_encoding (dict)));
               pivot_table_put2 (table, 0, old_value_idx,
                                 pivot_value_new_integer (item->to));

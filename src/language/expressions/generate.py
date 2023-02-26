@@ -51,9 +51,9 @@ def init_all_types():
 
         # Format types.
         Type.new_atom('format'),
-        Type.new_leaf('ni_format', 'const struct fmt_spec *',
+        Type.new_leaf('ni_format', 'struct fmt_spec',
                       'format', 'f', 'num_input_format'),
-        Type.new_leaf('no_format', 'const struct fmt_spec *',
+        Type.new_leaf('no_format', 'struct fmt_spec',
                       'format', 'f', 'num_output_format'),
 
         # Integer types.

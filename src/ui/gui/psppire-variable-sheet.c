@@ -51,13 +51,10 @@ set_var_type (PsppireVariableSheet *sheet)
   if (var == NULL)
     return;
 
-  const struct fmt_spec *format = var_get_write_format (var);
-  struct fmt_spec fmt = *format;
+  struct fmt_spec fmt = var_get_write_format (var);
   GtkWindow *win = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (sheet)));
   if (GTK_RESPONSE_OK == psppire_var_type_dialog_run (win, &fmt))
-    {
-      var_set_width_and_formats (var, fmt_var_width (&fmt), &fmt, &fmt);
-    }
+    var_set_width_and_formats (var, fmt_var_width (fmt), &fmt, &fmt);
 }
 
 static void
@@ -351,9 +348,9 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
       gint width = g_value_get_int (value);
       if (var_is_numeric (var))
         {
-          struct fmt_spec format = *var_get_print_format (var);
+          struct fmt_spec format = var_get_print_format (var);
 	  fmt_change_width (&format, width, FMT_FOR_OUTPUT);
-          var_set_both_formats (var, &format);
+          var_set_both_formats (var, format);
         }
       else
 	{
@@ -366,9 +363,9 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
       gint decimals = g_value_get_int (value);
       if (decimals >= 0)
         {
-          struct fmt_spec format = *var_get_print_format (var);
+          struct fmt_spec format = var_get_print_format (var);
 	  fmt_change_decimals (&format, decimals, FMT_FOR_OUTPUT);
-          var_set_both_formats (var, &format);
+          var_set_both_formats (var, format);
         }
       }
       break;
@@ -407,8 +404,8 @@ var_sheet_data_to_string (SswSheet *sheet, GtkTreeModel *m,
 
   if (col == DICT_TVM_COL_TYPE)
     {
-      const struct fmt_spec *print = var_get_print_format (var);
-      return strdup (fmt_gui_name (print->type));
+      struct fmt_spec print = var_get_print_format (var);
+      return strdup (fmt_gui_name (print.type));
     }
   else if (col == DICT_TVM_COL_MISSING_VALUES)
     return missing_values_to_string (var, NULL);

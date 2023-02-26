@@ -393,8 +393,8 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
         {
           const struct variable *v = vars[i];
           formats[i] = (which_formats == PRINT
-                        ? *var_get_print_format (v)
-                        : *var_get_write_format (v));
+                        ? var_get_print_format (v)
+                        : var_get_write_format (v));
         }
       add_space = which_formats == PRINT;
     }
@@ -402,10 +402,10 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
 
   size_t var_idx = 0;
   for (f = formats; f < &formats[n_formats]; f++)
-    if (!execute_placement_format (f, record, column))
+    if (!execute_placement_format (*f, record, column))
       {
         const struct variable *var = vars[var_idx++];
-        char *error = fmt_check_width_compat__ (f, var_get_name (var),
+        char *error = fmt_check_width_compat__ (*f, var_get_name (var),
                                                 var_get_width (var));
         if (error)
           {
@@ -471,7 +471,7 @@ dump_table (struct print_trns *trns)
 
       char fmt_string[FMT_STRING_LEN_MAX + 1];
       pivot_table_put2 (table, 2, row, pivot_value_new_user_text (
-                          fmt_to_string (&spec->format, fmt_string), -1));
+                          fmt_to_string (spec->format, fmt_string), -1));
     }
 
   int row = pivot_category_create_leaf (
@@ -533,7 +533,7 @@ print_text_trns_proc (void *trns_, struct ccase **c,
               char *s;
 
               s = data_out (input, var_get_encoding (spec->var),
-                            &spec->format, settings_get_fmt_settings ());
+                            spec->format, settings_get_fmt_settings ());
               len = strlen (s);
               width = u8_width (CHAR_CAST (const uint8_t *, s), len, UTF8);
               x1 = x0 + width;
@@ -636,7 +636,7 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
           const union value *input = case_data (*c, spec->var);
           if (!spec->sysmis_as_spaces || input->f != SYSMIS)
             data_out_recode (input, var_get_encoding (spec->var),
-                             &spec->format, settings_get_fmt_settings (),
+                             spec->format, settings_get_fmt_settings (),
                              &line, trns->encoding);
           else
             ds_put_byte_multiple (&line, encoded_space, spec->format.w);

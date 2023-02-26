@@ -274,7 +274,7 @@ data_parser_set_records (struct data_parser *parser, int records_per_case)
 }
 
 static void
-add_field (struct data_parser *p, const struct fmt_spec *format, int case_idx,
+add_field (struct data_parser *p, struct fmt_spec format, int case_idx,
            const char *name, int record, int first_column)
 {
   struct field *field;
@@ -282,11 +282,13 @@ add_field (struct data_parser *p, const struct fmt_spec *format, int case_idx,
   if (p->n_fields == p->field_allocated)
     p->fields = x2nrealloc (p->fields, &p->field_allocated, sizeof *p->fields);
   field = &p->fields[p->n_fields++];
-  field->format = *format;
-  field->case_idx = case_idx;
-  field->name = xstrdup (name);
-  field->record = record;
-  field->first_column = first_column;
+  *field = (struct field) {
+    .format = format,
+    .case_idx = case_idx,
+    .name = xstrdup (name),
+    .record = record,
+    .first_column = first_column,
+  };
 }
 
 /* Adds a delimited field to the field parsed by PARSER, which
@@ -296,7 +298,7 @@ add_field (struct data_parser *p, const struct fmt_spec *format, int case_idx,
    against variable NAME. */
 void
 data_parser_add_delimited_field (struct data_parser *parser,
-                                 const struct fmt_spec *format, int case_idx,
+                                 struct fmt_spec format, int case_idx,
                                  const char *name)
 {
   assert (parser->type == DP_DELIMITED);
@@ -318,7 +320,7 @@ data_parser_add_delimited_field (struct data_parser *parser,
    increased as needed.  */
 void
 data_parser_add_fixed_field (struct data_parser *parser,
-                             const struct fmt_spec *format, int case_idx,
+                             struct fmt_spec format, int case_idx,
                              const char *name,
                              int record, int first_column)
 {
@@ -552,7 +554,7 @@ parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
           union value *value = case_data_rw_idx (c, f->case_idx);
           char *error = data_in (s, input_encoding, f->format.type,
                                  settings_get_fmt_settings (),
-                                 value, fmt_var_width (&f->format),
+                                 value, fmt_var_width (f->format),
                                  output_encoding);
 
           if (error == NULL)
@@ -642,7 +644,7 @@ parse_delimited_span (const struct data_parser *parser,
       error = data_in (s, input_encoding, f->format.type,
                        settings_get_fmt_settings (),
                        case_data_rw_idx (c, f->case_idx),
-                       fmt_var_width (&f->format), output_encoding);
+                       fmt_var_width (f->format), output_encoding);
       if (error != NULL)
         parse_error (reader, f, first_column, last_column, error);
     }
@@ -681,7 +683,7 @@ parse_delimited_no_span (const struct data_parser *parser,
 		 f->name);
           for (; f < end; f++)
             value_set_missing (case_data_rw_idx (c, f->case_idx),
-                               fmt_var_width (&f->format));
+                               fmt_var_width (f->format));
           goto exit;
 	}
 
@@ -689,7 +691,7 @@ parse_delimited_no_span (const struct data_parser *parser,
       error = data_in (s, input_encoding, f->format.type,
                        settings_get_fmt_settings (),
                        case_data_rw_idx (c, f->case_idx),
-                       fmt_var_width (&f->format), output_encoding);
+                       fmt_var_width (f->format), output_encoding);
       if (error != NULL)
         parse_error (reader, f, first_column, last_column, error);
     }
@@ -748,7 +750,7 @@ dump_fixed_table (const struct data_parser *parser,
       char str[FMT_STRING_LEN_MAX + 1];
       pivot_table_put2 (table, 2, variable_idx,
                         pivot_value_new_user_text (
-                          fmt_to_string (&f->format, str), -1));
+                          fmt_to_string (f->format, str), -1));
 
     }
 
@@ -783,7 +785,7 @@ dump_delimited_table (const struct data_parser *parser,
       char str[FMT_STRING_LEN_MAX + 1];
       pivot_table_put2 (table, 0, variable_idx,
                         pivot_value_new_user_text (
-                          fmt_to_string (&f->format, str), -1));
+                          fmt_to_string (f->format, str), -1));
     }
 
   pivot_table_submit (table);

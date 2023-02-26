@@ -596,7 +596,7 @@ parse_display (struct lexer *lexer, struct dictionary *dict)
         pivot_table_put2 (table, 2, row,
                           pivot_value_new_value (
                             &mrset->counted, mrset->width,
-                            &F_8_0, dict_get_encoding (dict)));
+                            F_8_0, dict_get_encoding (dict)));
 
       /* Variable names. */
       struct string var_names = DS_EMPTY_INITIALIZER;

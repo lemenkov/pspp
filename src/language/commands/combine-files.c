@@ -621,7 +621,7 @@ create_flag_var (struct lexer *lexer, const char *subcommand,
                          var_name, subcommand);
           return false;
         }
-      var_set_both_formats (*var, &format);
+      var_set_both_formats (*var, format);
     }
   else
     *var = NULL;

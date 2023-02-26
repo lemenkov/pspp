@@ -28,11 +28,7 @@
 int
 cmd_debug_format_guesser (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  struct fmt_guesser *g;
-  struct fmt_spec format;
-  char format_string[FMT_STRING_LEN_MAX + 1];
-
-  g = fmt_guesser_create ();
+  struct fmt_guesser *g = fmt_guesser_create ();
   while (lex_is_string (lexer))
     {
       fprintf (stderr, "\"%s\" ", lex_tokcstr (lexer));
@@ -40,13 +36,14 @@ cmd_debug_format_guesser (struct lexer *lexer, struct dataset *ds UNUSED)
       lex_get (lexer);
     }
 
-  fmt_guesser_guess (g, &format);
-  fmt_to_string (&format, format_string);
+  struct fmt_spec format = fmt_guesser_guess (g);
+  char format_string[FMT_STRING_LEN_MAX + 1];
+  fmt_to_string (format, format_string);
   fprintf (stderr, "=> %s", format_string);
-  if (!fmt_check_input (&format))
+  if (!fmt_check_input (format))
     {
       fmt_fix_input (&format);
-      fmt_to_string (&format, format_string);
+      fmt_to_string (format, format_string);
       fprintf (stderr, " (%s)", format_string);
     }
   putc ('\n', stderr);

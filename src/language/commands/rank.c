@@ -1041,7 +1041,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
           struct variable *var;
 
           var = dict_create_var_assert (d, rs->dest_names[i], 0);
-          var_set_both_formats (var, &dest_format[rs->rfunc]);
+          var_set_both_formats (var, dest_format[rs->rfunc]);
           var_set_label (var, rs->dest_labels[i]);
           var_set_measure (var, rank_measures[rs->rfunc]);
 

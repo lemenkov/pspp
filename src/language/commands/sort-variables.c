@@ -65,13 +65,13 @@ compare_ints (int a, int b)
 }
 
 static int
-compare_formats (const struct fmt_spec *a, const struct fmt_spec *b)
+compare_formats (struct fmt_spec a, struct fmt_spec b)
 {
-  int retval = compare_ints (fmt_to_io (a->type), fmt_to_io (b->type));
+  int retval = compare_ints (fmt_to_io (a.type), fmt_to_io (b.type));
   if (!retval)
-    retval = compare_ints (a->w, b->w);
+    retval = compare_ints (a.w, b.w);
   if (!retval)
-    retval = compare_ints (a->d, b->d);
+    retval = compare_ints (a.d, b.d);
   return retval;
 }
 

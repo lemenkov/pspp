@@ -625,7 +625,7 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
                 f = fmt_for_output (FMT_F, 8, 2);
               else
                 f = function->format;
-              var_set_both_formats (v->dest, &f);
+              var_set_both_formats (v->dest, f);
             }
           if (dest_label[i])
             var_set_label (v->dest, dest_label[i]);

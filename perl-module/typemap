@@ -36,10 +36,10 @@ OUTPUT_FMT_SPEC
    $var.d    = decimals ? SvIV (*decimals) :
      fmt_takes_decimals ($var.type) ?
      MIN (2, fmt_max_output_decimals ($var.type, $var.w)) : 0;
-   if ( ! fmt_check_output (&$var))
+   if ( ! fmt_check_output ($var))
    {
 	char buf[FMT_STRING_LEN_MAX + 1];
-        fmt_to_string (&$var, buf);
+        fmt_to_string ($var, buf);
   	croak (\"%s is an invalid output format\", buf);
    }
 
@@ -59,10 +59,10 @@ INPUT_FMT_SPEC
    $var.d    = decimals ? SvIV (*decimals) :
      fmt_takes_decimals ($var.type) ?
      MIN (2, fmt_max_input_decimals ($var.type, $var.w)) : 0;
-   if ( ! fmt_check_input (&$var))
+   if ( ! fmt_check_input ($var))
    {
 	char buf[FMT_STRING_LEN_MAX + 1];
-        fmt_to_string (&$var, buf);
+        fmt_to_string ($var, buf);
   	croak (\"%s is an invalid input format\", buf);
    }
 

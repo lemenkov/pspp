@@ -70,14 +70,13 @@ value_to_text (union value v, const struct variable *var)
    Returns an allocated string.  The returned string must be freed when no
    longer required. */
 gchar *
-value_to_text__ (union value v,
-                 const struct fmt_spec *format, const char *encoding)
+value_to_text__ (union value v, struct fmt_spec format, const char *encoding)
 {
   gchar *s;
 
   s = data_out_stretchy (&v, encoding, format, settings_get_fmt_settings (),
                          NULL);
-  if (fmt_is_numeric (format->type))
+  if (fmt_is_numeric (format.type))
     g_strchug (s);
   else
     g_strchomp (s);
@@ -112,13 +111,13 @@ text_to_value (const gchar *text,
 */
 union value *
 text_to_value__ (const gchar *text,
-                 const struct fmt_spec *format,
+                 struct fmt_spec format,
                  const gchar *encoding,
                  union value *val)
 {
   int width = fmt_var_width (format);
 
-  if (format->type != FMT_A)
+  if (format.type != FMT_A)
     {
       if (! text) return NULL;
 
@@ -136,7 +135,7 @@ text_to_value__ (const gchar *text,
     }
 
   value_init (val, width);
-  char *err = data_in (ss_cstr (text), UTF8, format->type,
+  char *err = data_in (ss_cstr (text), UTF8, format.type,
                        settings_get_fmt_settings (), val, width, encoding);
 
   if (err)

@@ -902,7 +902,7 @@ parse_matrix_data_subvars (struct lexer *lexer, struct dictionary *dict,
       *tv = true;
 
       var_set_measure (v, MEASURE_NOMINAL);
-      var_set_both_formats (v, &(struct fmt_spec) { .type = FMT_F, .w = 4 });
+      var_set_both_formats (v, (struct fmt_spec) { .type = FMT_F, .w = 4 });
     }
   return true;
 
@@ -1038,7 +1038,7 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
                                                     0);
               var_set_measure (mf.svars[0], MEASURE_NOMINAL);
               var_set_both_formats (
-                mf.svars[0], &(struct fmt_spec) { .type = FMT_F, .w = 4 });
+                mf.svars[0], (struct fmt_spec) { .type = FMT_F, .w = 4 });
               mf.n_svars = 1;
               lex_get (lexer);
             }
@@ -1154,8 +1154,8 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
       {
         struct variable *v = input_vars[i];
         mf.cvars[mf.n_cvars++] = v;
-        var_set_both_formats (v, &(struct fmt_spec) { .type = FMT_F, .w = 10,
-                                                      .d = 4 });
+        var_set_both_formats (v, (struct fmt_spec) { .type = FMT_F, .w = 10,
+                                                     .d = 4 });
       }
   if (!mf.n_cvars)
     {

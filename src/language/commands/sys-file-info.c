@@ -566,7 +566,7 @@ display_variables (const struct variable **vl, size_t n, int flags)
 
       if (flags & DF_PRINT_FORMAT)
         {
-          const struct fmt_spec *print = var_get_print_format (v);
+          struct fmt_spec print = var_get_print_format (v);
           char s[FMT_STRING_LEN_MAX + 1];
 
           pivot_table_put2 (
@@ -576,7 +576,7 @@ display_variables (const struct variable **vl, size_t n, int flags)
 
       if (flags & DF_WRITE_FORMAT)
         {
-          const struct fmt_spec *write = var_get_write_format (v);
+          struct fmt_spec write = var_get_write_format (v);
           char s[FMT_STRING_LEN_MAX + 1];
 
           pivot_table_put2 (

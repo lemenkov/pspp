@@ -25,6 +25,6 @@ struct fmt_guesser *fmt_guesser_create (void);
 void fmt_guesser_destroy (struct fmt_guesser *);
 void fmt_guesser_clear (struct fmt_guesser *);
 void fmt_guesser_add (struct fmt_guesser *, struct substring);
-void fmt_guesser_guess (struct fmt_guesser *, struct fmt_spec *);
+struct fmt_spec fmt_guesser_guess (struct fmt_guesser *);
 
 #endif /* format-guesser.h */

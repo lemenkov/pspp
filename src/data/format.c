@@ -199,7 +199,7 @@ struct fmt_spec
 fmt_for_input (enum fmt_type type, int w, int d)
 {
   struct fmt_spec f = { .type = type, .w = w, .d = d };
-  assert (fmt_check_input (&f));
+  assert (fmt_check_input (f));
   return f;
 }
 
@@ -209,29 +209,29 @@ struct fmt_spec
 fmt_for_output (enum fmt_type type, int w, int d)
 {
   struct fmt_spec f = { .type = type, .w = w, .d = d };
-  assert (fmt_check_output (&f));
+  assert (fmt_check_output (f));
   return f;
 }
 
 /* Returns the output format specifier corresponding to input
    format specifier INPUT. */
 struct fmt_spec
-fmt_for_output_from_input (const struct fmt_spec *input,
+fmt_for_output_from_input (struct fmt_spec input,
                            const struct fmt_settings *settings)
 {
   struct fmt_spec output;
 
   assert (fmt_check_input (input));
 
-  output.type = fmt_input_to_output (input->type);
-  output.w = input->w;
+  output.type = fmt_input_to_output (input.type);
+  output.w = input.w;
   if (output.w > fmt_max_output_width (output.type))
     output.w = fmt_max_output_width (output.type);
   else if (output.w < fmt_min_output_width (output.type))
     output.w = fmt_min_output_width (output.type);
-  output.d = input->d;
+  output.d = input.d;
 
-  switch (input->type)
+  switch (input.type)
     {
     case FMT_Z:
       output.w++;
@@ -246,11 +246,11 @@ fmt_for_output_from_input (const struct fmt_spec *input,
     case FMT_PCT:
       {
         const struct fmt_number_style *style =
-	  fmt_settings_get_style (settings, input->type);
+	  fmt_settings_get_style (settings, input.type);
 
         output.w += fmt_affix_width (style);
-        if (style->grouping != 0 && input->w - input->d >= 3)
-          output.w += (input->w - input->d - 1) / 3;
+        if (style->grouping != 0 && input.w - input.d >= 3)
+          output.w += (input.w - input.d - 1) / 3;
         if (output.d > 0)
           output.w++;
       }
@@ -262,12 +262,12 @@ fmt_for_output_from_input (const struct fmt_spec *input,
       break;
 
     case FMT_E:
-      output.d = MAX (input->d, 3);
-      output.w = MAX (input->w, output.d + 7);
+      output.d = MAX (input.d, 3);
+      output.w = MAX (input.w, output.d + 7);
       break;
 
     case FMT_PIBHEX:
-      output.w = max_digits_for_bytes (input->w / 2) + 1;
+      output.w = max_digits_for_bytes (input.w / 2) + 1;
       break;
 
     case FMT_RB:
@@ -278,12 +278,12 @@ fmt_for_output_from_input (const struct fmt_spec *input,
 
     case FMT_P:
     case FMT_PK:
-      output.w = 2 * input->w + (input->d > 0);
+      output.w = 2 * input.w + (input.d > 0);
       break;
 
     case FMT_IB:
     case FMT_PIB:
-      output.w = max_digits_for_bytes (input->w) + 1;
+      output.w = max_digits_for_bytes (input.w) + 1;
       if (output.d > 0)
         output.w++;
       break;
@@ -299,7 +299,7 @@ fmt_for_output_from_input (const struct fmt_spec *input,
       break;
 
     case FMT_AHEX:
-      output.w = input->w / 2;
+      output.w = input.w / 2;
       break;
 
     case FMT_DATE:
@@ -318,13 +318,13 @@ fmt_for_output_from_input (const struct fmt_spec *input,
       break;
 
     case FMT_MTIME:
-      if (input->d)
-        output.w = MAX (input->w, input->d + 6);
+      if (input.d)
+        output.w = MAX (input.w, input.d + 6);
       break;
 
     case FMT_YMDHMS:
-      if (input->w)
-        output.w = MAX (input->w, input->d + 20);
+      if (input.w)
+        output.w = MAX (input.w, input.d + 20);
       break;
 
     default:
@@ -334,7 +334,7 @@ fmt_for_output_from_input (const struct fmt_spec *input,
   if (output.w > fmt_max_output_width (output.type))
     output.w = fmt_max_output_width (output.type);
 
-  assert (fmt_check_output (&output));
+  assert (fmt_check_output (output));
   return output;
 }
 
@@ -352,42 +352,42 @@ fmt_default_for_width (int width)
    returns a malloc()'d string that describes the error.  The caller must
    eventually free() the string. */
 char *
-fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
+fmt_check__ (struct fmt_spec spec, enum fmt_use use)
 {
   char str[FMT_STRING_LEN_MAX + 1];
   int min_w, max_w, max_d;
 
-  assert (is_fmt_type (spec->type));
+  assert (is_fmt_type (spec.type));
   fmt_to_string (spec, str);
 
-  if (use == FMT_FOR_INPUT && !fmt_usable_for_input (spec->type))
+  if (use == FMT_FOR_INPUT && !fmt_usable_for_input (spec.type))
     return xasprintf (_("Format %s may not be used for input."), str);
 
-  if (spec->w % fmt_step_width (spec->type))
+  if (spec.w % fmt_step_width (spec.type))
     {
-      assert (fmt_step_width (spec->type) == 2);
+      assert (fmt_step_width (spec.type) == 2);
       return (use == FMT_FOR_INPUT
               ? xasprintf (_("Input format %s specifies width %d, "
                              "but %s requires an even width."),
-                           str, spec->w, fmt_name (spec->type))
+                           str, spec.w, fmt_name (spec.type))
               : xasprintf (_("Output format %s specifies width %d, "
                              "but %s requires an even width."),
-                           str, spec->w, fmt_name (spec->type)));
+                           str, spec.w, fmt_name (spec.type)));
     }
 
-  min_w = fmt_min_width (spec->type, use);
-  max_w = fmt_max_width (spec->type, use);
-  if (spec->w < min_w || spec->w > max_w)
+  min_w = fmt_min_width (spec.type, use);
+  max_w = fmt_max_width (spec.type, use);
+  if (spec.w < min_w || spec.w > max_w)
     return (use == FMT_FOR_INPUT
             ? xasprintf (_("Input format %s specifies width %d, but "
                            "%s requires a width between %d and %d."),
-                         str, spec->w, fmt_name (spec->type), min_w, max_w)
+                         str, spec.w, fmt_name (spec.type), min_w, max_w)
             : xasprintf (_("Output format %s specifies width %d, but "
                            "%s requires a width between %d and %d."),
-                         str, spec->w, fmt_name (spec->type), min_w, max_w));
+                         str, spec.w, fmt_name (spec.type), min_w, max_w));
 
-  max_d = fmt_max_decimals (spec->type, spec->w, use);
-  if (!fmt_takes_decimals (spec->type) && spec->d != 0)
+  max_d = fmt_max_decimals (spec.type, spec.w, use);
+  if (!fmt_takes_decimals (spec.type) && spec.d != 0)
     return (use == FMT_FOR_INPUT
             ? xasprintf (ngettext (
                            "Input format %s specifies %d decimal "
@@ -395,16 +395,16 @@ fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
                            "Input format %s specifies %d decimal "
                            "places, but %s does not allow any "
                            "decimals.",
-                           spec->d),
-                         str, spec->d, fmt_name (spec->type))
+                           spec.d),
+                         str, spec.d, fmt_name (spec.type))
             : xasprintf (ngettext (
                            "Output format %s specifies %d decimal "
                            "place, but %s does not allow any decimals.",
                            "Output format %s specifies %d decimal places, but "
                            "%s does not allow any decimals.",
-                           spec->d),
-                         str, spec->d, fmt_name (spec->type)));
-  else if (spec->d > max_d)
+                           spec.d),
+                         str, spec.d, fmt_name (spec.type)));
+  else if (spec.d > max_d)
     {
       if (max_d > 0)
         return (use == FMT_FOR_INPUT
@@ -413,15 +413,15 @@ fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
                                "but width %d allows at most %d decimals.",
                                "Input format %s specifies %d decimal places, "
                                "but width %d allows at most %d decimals.",
-                               spec->d),
-                             str, spec->d, spec->w, max_d)
+                               spec.d),
+                             str, spec.d, spec.w, max_d)
                 : xasprintf (ngettext (
                                "Output format %s specifies %d decimal place, "
                                "but width %d allows at most %d decimals.",
                                "Output format %s specifies %d decimal places, "
                                "but width %d allows at most %d decimals.",
-                               spec->d),
-                             str, spec->d, spec->w, max_d));
+                               spec.d),
+                             str, spec.d, spec.w, max_d));
       else
         return (use == FMT_FOR_INPUT
                 ? xasprintf (ngettext (
@@ -429,28 +429,28 @@ fmt_check__ (const struct fmt_spec *spec, enum fmt_use use)
                                "but width %d does not allow for any decimals.",
                                "Input format %s specifies %d decimal places, "
                                "but width %d does not allow for any decimals.",
-                               spec->d),
-                             str, spec->d, spec->w)
+                               spec.d),
+                             str, spec.d, spec.w)
                 : xasprintf (ngettext (
                                "Output format %s specifies %d decimal place, "
                                "but width %d does not allow for any decimals.",
                                "Output format %s specifies %d decimal places, "
                                "but width %d does not allow for any decimals.",
-                               spec->d),
-                             str, spec->d, spec->w));
+                               spec.d),
+                             str, spec.d, spec.w));
     }
 
   return NULL;
 }
 
 char *
-fmt_check_input__ (const struct fmt_spec *spec)
+fmt_check_input__ (struct fmt_spec spec)
 {
   return fmt_check__ (spec, FMT_FOR_INPUT);
 }
 
 char *
-fmt_check_output__ (const struct fmt_spec *spec)
+fmt_check_output__ (struct fmt_spec spec)
 {
   return fmt_check__ (spec, FMT_FOR_OUTPUT);
 }
@@ -469,21 +469,21 @@ error_to_bool (char *error)
 
 /* Returns true if SPEC is valid for USE, false otherwise. */
 bool
-fmt_check (const struct fmt_spec *spec, enum fmt_use use)
+fmt_check (struct fmt_spec spec, enum fmt_use use)
 {
   return error_to_bool (fmt_check__ (spec, use));
 }
 
 /* Returns true if SPEC is valid as an input format, otherwise false. */
 bool
-fmt_check_input (const struct fmt_spec *spec)
+fmt_check_input (struct fmt_spec spec)
 {
   return fmt_check (spec, FMT_FOR_INPUT);
 }
 
 /* Returnst true SPEC is valid as an output format, false otherwise. */
 bool
-fmt_check_output (const struct fmt_spec *spec)
+fmt_check_output (struct fmt_spec spec)
 {
   return fmt_check (spec, FMT_FOR_OUTPUT);
 }
@@ -493,11 +493,11 @@ fmt_check_output (const struct fmt_spec *spec)
    caller must eventually free().  VARNAME is optional and only used in the
    error message.*/
 char *
-fmt_check_type_compat__ (const struct fmt_spec *format, const char *varname,
+fmt_check_type_compat__ (struct fmt_spec format, const char *varname,
                          enum val_type var_type)
 {
   assert (val_type_is_valid (var_type));
-  if ((var_type == VAL_STRING) != (fmt_is_string (format->type) != 0))
+  if ((var_type == VAL_STRING) != (fmt_is_string (format.type) != 0))
     {
       char str[FMT_STRING_LEN_MAX + 1];
       fmt_to_string (format, str);
@@ -526,7 +526,7 @@ fmt_check_type_compat__ (const struct fmt_spec *format, const char *varname,
 /* Returns FORMAT is appropriate for a variable of the given VAR_TYPE and
    returns true if so, otherwise false. */
 bool
-fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
+fmt_check_type_compat (struct fmt_spec format, enum val_type var_type)
 {
   return error_to_bool (fmt_check_type_compat__ (format, NULL, var_type));
 }
@@ -536,7 +536,7 @@ fmt_check_type_compat (const struct fmt_spec *format, enum val_type var_type)
    caller must eventually free().  VARNAME is optional and only used in the
    error message. */
 char *
-fmt_check_width_compat__ (const struct fmt_spec *format, const char *varname,
+fmt_check_width_compat__ (struct fmt_spec format, const char *varname,
                           int width)
 {
   char *error = fmt_check_type_compat__ (format, varname,
@@ -550,7 +550,7 @@ fmt_check_width_compat__ (const struct fmt_spec *format, const char *varname,
       fmt_to_string (format, format_str);
 
       char better_str[FMT_STRING_LEN_MAX + 1];
-      if (format->type == FMT_A)
+      if (format.type == FMT_A)
         snprintf (better_str, sizeof better_str, "A%d", width);
       else
         snprintf (better_str, sizeof better_str, "AHEX%d", width * 2);
@@ -572,7 +572,7 @@ fmt_check_width_compat__ (const struct fmt_spec *format, const char *varname,
 /* Checks that FORMAT is appropriate for a variable of the given WIDTH and
    returns true if so, otherwise false. */
 bool
-fmt_check_width_compat (const struct fmt_spec *format, int width)
+fmt_check_width_compat (struct fmt_spec format, int width)
 {
   return error_to_bool (fmt_check_width_compat__ (format, NULL, width));
 }
@@ -580,10 +580,10 @@ fmt_check_width_compat (const struct fmt_spec *format, int width)
 /* Returns the width corresponding to FORMAT.  The return value
    is the width of the `union value's required by FORMAT. */
 int
-fmt_var_width (const struct fmt_spec *format)
+fmt_var_width (struct fmt_spec format)
 {
-  return (format->type == FMT_AHEX ? format->w / 2
-          : format->type == FMT_A ? format->w
+  return (format.type == FMT_AHEX ? format.w / 2
+          : format.type == FMT_A ? format.w
           : 0);
 }
 
@@ -594,23 +594,23 @@ fmt_var_width (const struct fmt_spec *format)
    even if F's format type does not allow decimals, to allow
    accurately presenting incorrect formats to the user. */
 char *
-fmt_to_string (const struct fmt_spec *f, char buffer[FMT_STRING_LEN_MAX + 1])
+fmt_to_string (struct fmt_spec f, char buffer[FMT_STRING_LEN_MAX + 1])
 {
-  if (fmt_takes_decimals (f->type) || f->d > 0)
+  if (fmt_takes_decimals (f.type) || f.d > 0)
     snprintf (buffer, FMT_STRING_LEN_MAX + 1,
-              "%s%d.%d", fmt_name (f->type), f->w, f->d);
+              "%s%d.%d", fmt_name (f.type), f.w, f.d);
   else
     snprintf (buffer, FMT_STRING_LEN_MAX + 1,
-              "%s%d", fmt_name (f->type), f->w);
+              "%s%d", fmt_name (f.type), f.w);
   return buffer;
 }
 
 /* Returns true if A and B are identical formats,
    false otherwise. */
 bool
-fmt_equal (const struct fmt_spec *a, const struct fmt_spec *b)
+fmt_equal (struct fmt_spec a, struct fmt_spec b)
 {
-  return a->type == b->type && a->w == b->w && a->d == b->d;
+  return a.type == b.type && a.w == b.w && a.d == b.d;
 }
 
 /* Adjusts FMT to be valid for a value of the given WIDTH if necessary.
@@ -1047,10 +1047,10 @@ fmt_from_u32 (uint32_t u32, int width, bool loose, struct fmt_spec *f)
 
   if (loose)
     fmt_fix_output (f);
-  else if (!fmt_check_output (f))
+  else if (!fmt_check_output (*f))
     return false;
 
-  return fmt_check_width_compat (f, width);
+  return fmt_check_width_compat (*f, width);
 }
 
 /* Returns true if TYPE may be used as an input format,

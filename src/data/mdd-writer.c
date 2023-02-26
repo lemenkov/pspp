@@ -64,20 +64,20 @@ enum val_numeric_type
 static enum val_numeric_type
 var_get_numeric_type_ (const struct variable *var)
 {
-  const struct fmt_spec *print = var_get_print_format (var);
+  const struct fmt_spec print = var_get_print_format (var);
   if (var_get_type (var) == VAL_STRING)
     return VAL_STRING_TYPE;
 
   if (var_has_value_labels (var))
     return VAL_CATEGORICAL_TYPE;
 
-  if (print->d > 0)
+  if (print.d > 0)
     return VAL_DECIMAL_TYPE;
 
-  if (print->type == FMT_DATETIME)
+  if (print.type == FMT_DATETIME)
     return VAL_DATETIME_TYPE;
 
-  if (print->type == FMT_F)
+  if (print.type == FMT_F)
     return VAL_INTEGER_TYPE;
 
   return VAL_CATEGORICAL_TYPE;

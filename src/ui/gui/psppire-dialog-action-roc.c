@@ -186,8 +186,8 @@ generate_syntax (const PsppireDialogAction *a)
       struct string str;
       ds_init_empty (&str);
 
-      syntax_gen_value (&str, &val, var_get_width (var),
-			var_get_print_format (var));
+      struct fmt_spec f = var_get_print_format (var);
+      syntax_gen_value (&str, &val, var_get_width (var), &f);
 
       g_string_append (string, ds_cstr (&str));
       ds_destroy (&str);

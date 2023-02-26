@@ -526,14 +526,14 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         {
           if (!parse_format_specifier (lexer, &input))
             goto error;
-          error = fmt_check_input__ (&input);
+          error = fmt_check_input__ (input);
           if (error)
 	    {
               lex_next_error (lexer, -1, -1, "%s", error);
               free (error);
 	      goto error;
 	    }
-          output = fmt_for_output_from_input (&input,
+          output = fmt_for_output_from_input (input,
                                               settings_get_fmt_settings ());
         }
       else
@@ -560,7 +560,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
 
           /* Compose input format. */
           input = (struct fmt_spec) { .type = fmt_type, .w = lc - fc + 1 };
-          error = fmt_check_input__ (&input);
+          error = fmt_check_input__ (input);
           if (error)
             {
               lex_ofs_error (lexer, start_ofs, end_ofs, "%s", error);
@@ -572,7 +572,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           if (w != 0)
             {
               output = (struct fmt_spec) { .type = fmt_type, .w = w, .d = d };
-              error = fmt_check_output__ (&output);
+              error = fmt_check_output__ (output);
               if (error)
                 {
                   lex_ofs_error (lexer, start_ofs, end_ofs, "%s", error);
@@ -581,23 +581,23 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
                 }
             }
           else
-            output = fmt_for_output_from_input (&input,
+            output = fmt_for_output_from_input (input,
                                                 settings_get_fmt_settings ());
         }
-      struct variable *v = dict_create_var (dict, name, fmt_var_width (&input));
+      struct variable *v = dict_create_var (dict, name, fmt_var_width (input));
       if (!v)
         {
           lex_ofs_error (lexer, name_ofs, name_ofs,
                          _("%s is a duplicate variable name."), name);
           goto error;
         }
-      var_set_both_formats (v, &output);
+      var_set_both_formats (v, output);
       if (type == DP_DELIMITED)
-        data_parser_add_delimited_field (parser, &input,
+        data_parser_add_delimited_field (parser, input,
                                          var_get_case_index (v),
                                          name);
       else
-        data_parser_add_fixed_field (parser, &input, var_get_case_index (v),
+        data_parser_add_fixed_field (parser, input, var_get_case_index (v),
                                      name, record, fc);
       free (name);
       name = NULL;

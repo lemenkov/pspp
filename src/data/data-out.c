@@ -65,26 +65,25 @@ static int rounder_width (const struct rounder *, int decimals,
 static void rounder_format (const struct rounder *, int decimals,
                             char *output);
 
-typedef void data_out_converter_func (const union value *,
-                                      const struct fmt_spec *,
+typedef void data_out_converter_func (const union value *, struct fmt_spec,
                                       const struct fmt_settings *, char *);
 #define FMT(NAME, METHOD, IMIN, OMIN, IO, CATEGORY) \
         static data_out_converter_func output_##METHOD;
 #include "format.def"
 
-static bool output_decimal (const struct rounder *, const struct fmt_spec *,
+static bool output_decimal (const struct rounder *, struct fmt_spec,
                             const struct fmt_number_style *,
                             bool require_affixes, char *);
-static bool output_scientific (double, const struct fmt_spec *,
+static bool output_scientific (double, struct fmt_spec,
                                const struct fmt_number_style *,
                                bool require_affixes, char *);
 
 static double power10 (int) PURE_FUNCTION;
 static double power256 (int) PURE_FUNCTION;
 
-static void output_infinite (double, const struct fmt_spec *, char *);
-static void output_missing (const struct fmt_spec *, char *);
-static void output_overflow (const struct fmt_spec *, char *);
+static void output_infinite (double, struct fmt_spec, char *);
+static void output_missing (struct fmt_spec, char *);
+static void output_overflow (struct fmt_spec, char *);
 static bool output_bcd_integer (double, int digits, char *);
 static void output_binary_integer (uint64_t, int bytes, enum integer_format,
                                    char *);
@@ -110,22 +109,21 @@ static data_out_converter_func *const converters[FMT_NUMBER_OF_FORMATS] =
    when FORMAT's type is FMT_A. */
 void
 data_out_recode (const union value *input, const char *input_encoding,
-                 const struct fmt_spec *format,
-                 const struct fmt_settings *settings,
+                 struct fmt_spec format, const struct fmt_settings *settings,
                  struct string *output, const char *output_encoding)
 {
   assert (fmt_check_output (format));
-  if (format->type == FMT_A)
+  if (format.type == FMT_A)
     {
       char *in = CHAR_CAST (char *, input->s);
       char *out = recode_string (output_encoding, input_encoding,
-                                 in, format->w);
+                                 in, format.w);
       ds_put_cstr (output, out);
       free (out);
     }
-  else if (fmt_get_category (format->type) == FMT_CAT_BINARY)
-    converters[format->type] (input, format, settings,
-                              ds_put_uninit (output, format->w));
+  else if (fmt_get_category (format.type) == FMT_CAT_BINARY)
+    converters[format.type] (input, format, settings,
+                             ds_put_uninit (output, format.w));
   else
     {
       char *utf8_encoded = data_out (input, input_encoding, format, settings);
@@ -169,32 +167,32 @@ binary_to_utf8 (const char *in, struct pool *pool)
    If POOL is non-null, then the return value is allocated on that pool.  */
 char *
 data_out_pool (const union value *input, const char *input_encoding,
-	       const struct fmt_spec *format,
+	       struct fmt_spec format,
                const struct fmt_settings *settings, struct pool *pool)
 {
   assert (fmt_check_output (format));
-  if (format->type == FMT_A)
+  if (format.type == FMT_A)
     {
       char *in = CHAR_CAST (char *, input->s);
-      return recode_string_pool (UTF8, input_encoding, in, format->w, pool);
+      return recode_string_pool (UTF8, input_encoding, in, format.w, pool);
     }
-  else if (fmt_get_category (format->type) == FMT_CAT_BINARY)
+  else if (fmt_get_category (format.type) == FMT_CAT_BINARY)
     {
       char tmp[16];
 
-      assert (format->w + 1 <= sizeof tmp);
-      converters[format->type] (input, format, settings, tmp);
+      assert (format.w + 1 <= sizeof tmp);
+      converters[format.type] (input, format, settings, tmp);
       return binary_to_utf8 (tmp, pool);
     }
   else
     {
       const struct fmt_number_style *style = fmt_settings_get_style (
-        settings, format->type);
-      size_t size = format->w + style->extra_bytes + 1;
+        settings, format.type);
+      size_t size = format.w + style->extra_bytes + 1;
       char *output;
 
       output = pool_alloc_unaligned (pool, size);
-      converters[format->type] (input, format, settings, output);
+      converters[format.type] (input, format, settings, output);
       return output;
     }
 }
@@ -204,26 +202,23 @@ data_out_pool (const union value *input, const char *input_encoding,
    necessary to fully display the selected number of decimal places. */
 char *
 data_out_stretchy (const union value *input, const char *encoding,
-                   const struct fmt_spec *format,
+                   struct fmt_spec format,
                    const struct fmt_settings *settings, struct pool *pool)
 {
 
-  if (fmt_get_category (format->type) & (FMT_CAT_BASIC | FMT_CAT_CUSTOM))
+  if (fmt_get_category (format.type) & (FMT_CAT_BASIC | FMT_CAT_CUSTOM))
     {
       const struct fmt_number_style *style
-        = fmt_settings_get_style (settings, format->type);
-      struct fmt_spec wide_format;
+        = fmt_settings_get_style (settings, format.type);
       char tmp[128];
-      size_t size;
-
-      wide_format.type = format->type;
-      wide_format.w = 40;
-      wide_format.d = format->d;
-
-      size = format->w + style->extra_bytes + 1;
-      if (size <= sizeof tmp)
+      if (format.w + style->extra_bytes + 1 <= sizeof tmp)
         {
-          output_number (input, &wide_format, settings, tmp);
+          struct fmt_spec wide_format = {
+            .type = format.type,
+            .w = 40,
+            .d = format.d,
+          };
+          output_number (input, wide_format, settings, tmp);
           return pool_strdup (pool, tmp + strspn (tmp, " "));
         }
     }
@@ -233,7 +228,7 @@ data_out_stretchy (const union value *input, const char *encoding,
 
 char *
 data_out (const union value *input, const char *input_encoding,
-          const struct fmt_spec *format, const struct fmt_settings *settings)
+          struct fmt_spec format, const struct fmt_settings *settings)
 {
   return data_out_pool (input, input_encoding, format, settings, NULL);
 }
@@ -244,7 +239,7 @@ data_out (const union value *input, const char *input_encoding,
 /* Outputs F, COMMA, DOT, DOLLAR, PCT, E, CCA, CCB, CCC, CCD, and
    CCE formats. */
 static void
-output_number (const union value *input, const struct fmt_spec *format,
+output_number (const union value *input, struct fmt_spec format,
                const struct fmt_settings *settings, char *output)
 {
   double number = input->f;
@@ -256,12 +251,12 @@ output_number (const union value *input, const struct fmt_spec *format,
   else
     {
       const struct fmt_number_style *style =
-        fmt_settings_get_style (settings, format->type);
+        fmt_settings_get_style (settings, format.type);
 
-      if (format->type != FMT_E && fabs (number) < 1.5 * power10 (format->w))
+      if (format.type != FMT_E && fabs (number) < 1.5 * power10 (format.w))
         {
           struct rounder r;
-          rounder_init (&r, style, number, format->d);
+          rounder_init (&r, style, number, format.d);
 
           if (output_decimal (&r, format, style, true, output)
               || output_scientific (number, format, style, true, output)
@@ -276,46 +271,46 @@ output_number (const union value *input, const struct fmt_spec *format,
 
 /* Outputs N format. */
 static void
-output_N (const union value *input, const struct fmt_spec *format,
+output_N (const union value *input, struct fmt_spec format,
           const struct fmt_settings *settings UNUSED, char *output)
 {
-  double number = input->f * power10 (format->d);
+  double number = input->f * power10 (format.d);
   if (input->f == SYSMIS || number < 0)
     output_missing (format, output);
   else
     {
       char buf[128];
       number = fabs (round (number));
-      if (number < power10 (format->w)
-          && c_snprintf (buf, 128, "%0*.0f", format->w, number) == format->w)
-        memcpy (output, buf, format->w);
+      if (number < power10 (format.w)
+          && c_snprintf (buf, 128, "%0*.0f", format.w, number) == format.w)
+        memcpy (output, buf, format.w);
       else
         output_overflow (format, output);
     }
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Outputs Z format. */
 static void
-output_Z (const union value *input, const struct fmt_spec *format,
+output_Z (const union value *input, struct fmt_spec format,
           const struct fmt_settings *settings UNUSED, char *output)
 {
-  double number = input->f * power10 (format->d);
+  double number = input->f * power10 (format.d);
   char buf[128];
   if (input->f == SYSMIS)
     output_missing (format, output);
-  else if (fabs (number) < power10 (format->w)
-           && c_snprintf (buf, 128, "%0*.0f", format->w,
-                       fabs (round (number))) == format->w)
+  else if (fabs (number) < power10 (format.w)
+           && c_snprintf (buf, 128, "%0*.0f", format.w,
+                       fabs (round (number))) == format.w)
     {
-      if (number < 0 && strspn (buf, "0") < format->w)
+      if (number < 0 && strspn (buf, "0") < format.w)
         {
-          char *p = &buf[format->w - 1];
+          char *p = &buf[format.w - 1];
           *p = "}JKLMNOPQR"[*p - '0'];
         }
-      memcpy (output, buf, format->w);
-      output[format->w] = '\0';
+      memcpy (output, buf, format.w);
+      output[format.w] = '\0';
     }
   else
     output_overflow (format, output);
@@ -323,114 +318,114 @@ output_Z (const union value *input, const struct fmt_spec *format,
 
 /* Outputs P format. */
 static void
-output_P (const union value *input, const struct fmt_spec *format,
+output_P (const union value *input, struct fmt_spec format,
           const struct fmt_settings *settings UNUSED, char *output)
 {
-  if (output_bcd_integer (fabs (input->f * power10 (format->d)),
-                          format->w * 2 - 1, output)
+  if (output_bcd_integer (fabs (input->f * power10 (format.d)),
+                          format.w * 2 - 1, output)
       && input->f < 0.0)
-    output[format->w - 1] |= 0xd;
+    output[format.w - 1] |= 0xd;
   else
-    output[format->w - 1] |= 0xf;
+    output[format.w - 1] |= 0xf;
 }
 
 /* Outputs PK format. */
 static void
-output_PK (const union value *input, const struct fmt_spec *format,
+output_PK (const union value *input, struct fmt_spec format,
            const struct fmt_settings *settings UNUSED, char *output)
 {
-  output_bcd_integer (input->f * power10 (format->d), format->w * 2, output);
+  output_bcd_integer (input->f * power10 (format.d), format.w * 2, output);
 }
 
 /* Outputs IB format. */
 static void
-output_IB (const union value *input, const struct fmt_spec *format,
+output_IB (const union value *input, struct fmt_spec format,
            const struct fmt_settings *settings UNUSED, char *output)
 {
-  double number = round (input->f * power10 (format->d));
+  double number = round (input->f * power10 (format.d));
   if (input->f == SYSMIS
-      || number >= power256 (format->w) / 2 - 1
-      || number < -power256 (format->w) / 2)
-    memset (output, 0, format->w);
+      || number >= power256 (format.w) / 2 - 1
+      || number < -power256 (format.w) / 2)
+    memset (output, 0, format.w);
   else
     {
       uint64_t integer = fabs (number);
       if (number < 0)
         integer = -integer;
-      output_binary_integer (integer, format->w,
+      output_binary_integer (integer, format.w,
 			     settings_get_output_integer_format (),
                              output);
     }
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Outputs PIB format. */
 static void
-output_PIB (const union value *input, const struct fmt_spec *format,
+output_PIB (const union value *input, struct fmt_spec format,
             const struct fmt_settings *settings UNUSED, char *output)
 {
-  double number = round (input->f * power10 (format->d));
+  double number = round (input->f * power10 (format.d));
   if (input->f == SYSMIS
-      || number < 0 || number >= power256 (format->w))
-    memset (output, 0, format->w);
+      || number < 0 || number >= power256 (format.w))
+    memset (output, 0, format.w);
   else
-    output_binary_integer (number, format->w,
+    output_binary_integer (number, format.w,
 			   settings_get_output_integer_format (), output);
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Outputs PIBHEX format. */
 static void
-output_PIBHEX (const union value *input, const struct fmt_spec *format,
+output_PIBHEX (const union value *input, struct fmt_spec format,
                const struct fmt_settings *settings UNUSED, char *output)
 {
   double number = round (input->f);
   if (input->f == SYSMIS)
     output_missing (format, output);
-  else if (input->f < 0 || number >= power256 (format->w / 2))
+  else if (input->f < 0 || number >= power256 (format.w / 2))
     output_overflow (format, output);
   else
     {
       char tmp[8];
-      output_binary_integer (number, format->w / 2, INTEGER_MSB_FIRST, tmp);
-      output_hex (tmp, format->w / 2, output);
+      output_binary_integer (number, format.w / 2, INTEGER_MSB_FIRST, tmp);
+      output_hex (tmp, format.w / 2, output);
     }
 
 }
 
 /* Outputs RB format. */
 static void
-output_RB (const union value *input, const struct fmt_spec *format,
+output_RB (const union value *input, struct fmt_spec format,
            const struct fmt_settings *settings UNUSED, char *output)
 {
   double d = input->f;
-  memcpy (output, &d, format->w);
+  memcpy (output, &d, format.w);
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Outputs RBHEX format. */
 static void
-output_RBHEX (const union value *input, const struct fmt_spec *format,
+output_RBHEX (const union value *input, struct fmt_spec format,
               const struct fmt_settings *settings UNUSED, char *output)
 {
   double d = input->f;
 
-  output_hex (&d, format->w / 2, output);
+  output_hex (&d, format.w / 2, output);
 }
 
 /* Outputs DATE, ADATE, EDATE, JDATE, SDATE, QYR, MOYR, WKYR,
    DATETIME, TIME, and DTIME formats. */
 static void
-output_date (const union value *input, const struct fmt_spec *format,
+output_date (const union value *input, struct fmt_spec format,
              const struct fmt_settings *settings, char *output)
 {
   double number = input->f;
   int year, month, day, yday;
 
-  const char *template = fmt_date_template (format->type, format->w);
+  const char *template = fmt_date_template (format.type, format.w);
 
   char tmp[64];
   char *p = tmp;
@@ -438,7 +433,7 @@ output_date (const union value *input, const struct fmt_spec *format,
   if (number == SYSMIS)
     goto missing;
 
-  if (fmt_get_category (format->type) == FMT_CAT_DATE)
+  if (fmt_get_category (format.type) == FMT_CAT_DATE)
     {
       if (number <= 0)
         goto missing;
@@ -485,8 +480,7 @@ output_date (const union value *input, const struct fmt_spec *format,
             {
               if (year <= 9999)
                 p += sprintf (p, "%04d", year);
-              else if (format->type == FMT_DATETIME
-                       || format->type == FMT_YMDHMS)
+              else if (format.type == FMT_DATETIME || format.type == FMT_YMDHMS)
                 p = stpcpy (p, "****");
               else
                 goto overflow;
@@ -526,16 +520,16 @@ output_date (const union value *input, const struct fmt_spec *format,
           number = fabs (number);
           p += sprintf (p, "%02d", (int) floor (number / 60.));
           number = fmod (number, 60.);
-          excess_width = format->w - (p - tmp);
+          excess_width = format.w - (p - tmp);
           if (excess_width < 0
-              || (format->type == FMT_MTIME && excess_width < 3))
+              || (format.type == FMT_MTIME && excess_width < 3))
             goto overflow;
           if (excess_width == 3 || excess_width == 4
-              || (excess_width >= 5 && format->d == 0))
+              || (excess_width >= 5 && format.d == 0))
             p += sprintf (p, ":%02d", (int) number);
           else if (excess_width >= 5)
             {
-              int d = MIN (format->d, excess_width - 4);
+              int d = MIN (format.d, excess_width - 4);
               int w = d + 3;
               c_snprintf (p, 64, ":%0*.*f", w, d, number);
 	      if (settings->decimal != '.')
@@ -555,8 +549,8 @@ output_date (const union value *input, const struct fmt_spec *format,
     }
 
  done:
-  buf_copy_lpad (output, format->w, tmp, p - tmp, ' ');
-  output[format->w] = '\0';
+  buf_copy_lpad (output, format.w, tmp, p - tmp, ' ');
+  output[format.w] = '\0';
   return;
 
  overflow:
@@ -570,7 +564,7 @@ output_date (const union value *input, const struct fmt_spec *format,
 
 /* Outputs WKDAY format. */
 static void
-output_WKDAY (const union value *input, const struct fmt_spec *format,
+output_WKDAY (const union value *input, struct fmt_spec format,
               const struct fmt_settings *settings UNUSED, char *output)
 {
   static const char *const weekdays[7] =
@@ -581,9 +575,9 @@ output_WKDAY (const union value *input, const struct fmt_spec *format,
 
   if (input->f >= 1 && input->f < 8)
     {
-      buf_copy_str_rpad (output, format->w,
+      buf_copy_str_rpad (output, format.w,
                          weekdays[(int) input->f - 1], ' ');
-      output[format->w] = '\0';
+      output[format.w] = '\0';
     }
   else
     {
@@ -596,7 +590,7 @@ output_WKDAY (const union value *input, const struct fmt_spec *format,
 
 /* Outputs MONTH format. */
 static void
-output_MONTH (const union value *input, const struct fmt_spec *format,
+output_MONTH (const union value *input, struct fmt_spec format,
               const struct fmt_settings *settings UNUSED, char *output)
 {
   static const char *const months[12] =
@@ -607,8 +601,8 @@ output_MONTH (const union value *input, const struct fmt_spec *format,
 
   if (input->f >= 1 && input->f < 13)
     {
-      buf_copy_str_rpad (output, format->w, months[(int) input->f - 1], ' ');
-      output[format->w] = '\0';
+      buf_copy_str_rpad (output, format.w, months[(int) input->f - 1], ' ');
+      output[format.w] = '\0';
     }
   else
     {
@@ -622,7 +616,7 @@ output_MONTH (const union value *input, const struct fmt_spec *format,
 /* Outputs A format. */
 static void
 output_A (const union value *input UNUSED,
-          const struct fmt_spec *format UNUSED,
+          struct fmt_spec format UNUSED,
           const struct fmt_settings *settings UNUSED, char *output UNUSED)
 {
   NOT_REACHED ();
@@ -630,10 +624,10 @@ output_A (const union value *input UNUSED,
 
 /* Outputs AHEX format. */
 static void
-output_AHEX (const union value *input, const struct fmt_spec *format,
+output_AHEX (const union value *input, struct fmt_spec format,
              const struct fmt_settings *settings UNUSED, char *output)
 {
-  output_hex (input->s, format->w / 2, output);
+  output_hex (input->s, format.w / 2, output);
 }
 
 /* Decimal and scientific formatting. */
@@ -661,13 +655,13 @@ allocate_space (int request, int max_width, int *width)
    by FORMAT's style must be included; otherwise, they may be
    omitted to make the number fit. */
 static bool
-output_decimal (const struct rounder *r, const struct fmt_spec *format,
+output_decimal (const struct rounder *r, struct fmt_spec format,
                 const struct fmt_number_style *style, bool require_affixes,
                 char *output)
 {
   int decimals;
 
-  for (decimals = format->d; decimals >= 0; decimals--)
+  for (decimals = format.d; decimals >= 0; decimals--)
     {
       /* Formatted version of magnitude of NUMBER. */
       char magnitude[64];
@@ -696,14 +690,14 @@ output_decimal (const struct rounder *r, const struct fmt_spec *format,
       width += style->neg_suffix.width;
       if (add_neg_prefix)
         width += style->neg_prefix.width;
-      if (width > format->w)
+      if (width > format.w)
         continue;
 
       /* If there's room for the prefix and suffix, allocate
          space.  If the affixes are required, but there's no
          space, give up. */
       add_affixes = allocate_space (fmt_affix_width (style),
-                                    format->w, &width);
+                                    format.w, &width);
       if (!add_affixes && require_affixes)
         continue;
 
@@ -713,17 +707,17 @@ output_decimal (const struct rounder *r, const struct fmt_spec *format,
          requested but they were all dropped. */
       add_grouping = (style->grouping != 0
                       && integer_digits > 3
-                      && (format->d == 0 || decimals > 0)
+                      && (format.d == 0 || decimals > 0)
                       && allocate_space ((integer_digits - 1) / 3,
-                                         format->w, &width));
+                                         format.w, &width));
 
       /* Format the number's magnitude. */
       rounder_format (r, decimals, magnitude);
 
       /* Assemble number. */
       p = output;
-      if (format->w > width)
-        p = mempset (p, ' ', format->w - width);
+      if (format.w > width)
+        p = mempset (p, ' ', format.w - width);
       if (add_neg_prefix)
         p = stpcpy (p, style->neg_prefix.s);
       if (add_affixes)
@@ -752,8 +746,8 @@ output_decimal (const struct rounder *r, const struct fmt_spec *format,
       else
         p = mempset (p, ' ', style->neg_suffix.width);
 
-      assert (p >= output + format->w);
-      assert (p <= output + format->w + style->extra_bytes);
+      assert (p >= output + format.w);
+      assert (p <= output + format.w + style->extra_bytes);
       *p = '\0';
 
       return true;
@@ -764,7 +758,7 @@ output_decimal (const struct rounder *r, const struct fmt_spec *format,
 /* Formats NUMBER into OUTPUT in scientific notation according to FORMAT and
    STYLE. */
 static bool
-output_scientific (double number, const struct fmt_spec *format,
+output_scientific (double number, struct fmt_spec format,
                    const struct fmt_number_style *style,
                    bool require_affixes, char *output)
 {
@@ -777,11 +771,11 @@ output_scientific (double number, const struct fmt_spec *format,
   width = 6 + style->neg_suffix.width;
   if (number < 0)
     width += style->neg_prefix.width;
-  if (width > format->w)
+  if (width > format.w)
     return false;
 
   /* Check for room for prefix and suffix. */
-  add_affixes = allocate_space (fmt_affix_width (style), format->w, &width);
+  add_affixes = allocate_space (fmt_affix_width (style), format.w, &width);
   if (require_affixes && !add_affixes)
     return false;
 
@@ -789,15 +783,15 @@ output_scientific (double number, const struct fmt_spec *format,
      if any.  (If that turns out to be 1, then we'll output a
      decimal point without any digits following; that's what the
      # flag does in the call to c_snprintf, below.) */
-  fraction_width = MIN (MIN (format->d + 1, format->w - width), 16);
-  if (format->type != FMT_E && fraction_width == 1)
+  fraction_width = MIN (MIN (format.d + 1, format.w - width), 16);
+  if (format.type != FMT_E && fraction_width == 1)
     fraction_width = 0;
   width += fraction_width;
 
   /* Format (except suffix). */
   p = output;
-  if (width < format->w)
-    p = mempset (p, ' ', format->w - width);
+  if (width < format.w)
+    p = mempset (p, ' ', format.w - width);
   if (number < 0)
     p = stpcpy (p, style->neg_prefix.s);
   if (add_affixes)
@@ -834,8 +828,8 @@ output_scientific (double number, const struct fmt_spec *format,
   else
     p = mempset (p, ' ', style->neg_suffix.width);
 
-  assert (p >= output + format->w);
-  assert (p <= output + format->w + style->extra_bytes);
+  assert (p >= output + format.w);
+  assert (p <= output + format.w + style->extra_bytes);
   *p = '\0';
 
   return true;
@@ -1070,11 +1064,11 @@ power256 (int x)
 /* Formats non-finite NUMBER into OUTPUT according to the width
    given in FORMAT. */
 static void
-output_infinite (double number, const struct fmt_spec *format, char *output)
+output_infinite (double number, struct fmt_spec format, char *output)
 {
   assert (!isfinite (number));
 
-  if (format->w >= 3)
+  if (format.w >= 3)
     {
       const char *s;
 
@@ -1085,39 +1079,39 @@ output_infinite (double number, const struct fmt_spec *format, char *output)
       else
         s = "Unknown";
 
-      buf_copy_str_lpad (output, format->w, s, ' ');
+      buf_copy_str_lpad (output, format.w, s, ' ');
     }
   else
     output_overflow (format, output);
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Formats OUTPUT as a missing value for the given FORMAT. */
 static void
-output_missing (const struct fmt_spec *format, char *output)
+output_missing (struct fmt_spec format, char *output)
 {
-  memset (output, ' ', format->w);
+  memset (output, ' ', format.w);
 
-  if (format->type != FMT_N)
+  if (format.type != FMT_N)
     {
-      int dot_ofs = (format->type == FMT_PCT ? 2
-                     : format->type == FMT_E ? 5
+      int dot_ofs = (format.type == FMT_PCT ? 2
+                     : format.type == FMT_E ? 5
                      : 1);
-      output[MAX (0, format->w - format->d - dot_ofs)] = '.';
+      output[MAX (0, format.w - format.d - dot_ofs)] = '.';
     }
   else
-    output[format->w - 1] = '.';
+    output[format.w - 1] = '.';
 
-  output[format->w] = '\0';
+  output[format.w] = '\0';
 }
 
 /* Formats OUTPUT for overflow given FORMAT. */
 static void
-output_overflow (const struct fmt_spec *format, char *output)
+output_overflow (struct fmt_spec format, char *output)
 {
-  memset (output, '*', format->w);
-  output[format->w] = '\0';
+  memset (output, '*', format.w);
+  output[format.w] = '\0';
 }
 
 /* Converts the integer part of NUMBER to a packed BCD number

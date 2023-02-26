@@ -632,14 +632,14 @@ convert_format (struct pfm_reader *r, const int portable_format[3],
         .d = portable_format[2],
       };
 
-      if (fmt_check_output (&format)
-          && fmt_check_width_compat (&format, var_get_width (v)))
+      if (fmt_check_output (format)
+          && fmt_check_width_compat (format, var_get_width (v)))
         return format;
 
       if (*report_error)
         {
           char fmt_string[FMT_STRING_LEN_MAX + 1];
-          fmt_to_string (&format, fmt_string);
+          fmt_to_string (format, fmt_string);
           if (var_is_numeric (v))
             warning (r, _("Numeric variable %s has invalid format "
                           "specifier %s."),
@@ -735,8 +735,8 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
 
       print = convert_format (r, &fmt[0], v, &report_error);
       write = convert_format (r, &fmt[3], v, &report_error);
-      var_set_print_format (v, &print);
-      var_set_write_format (v, &write);
+      var_set_print_format (v, print);
+      var_set_write_format (v, write);
 
       /* Range missing values. */
       mv_init (&miss, width);

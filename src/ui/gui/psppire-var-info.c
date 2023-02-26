@@ -165,12 +165,12 @@ __set_property (GObject      *object,
         gtk_entry_set_text (GTK_ENTRY (var_info->entry[VAR_INFO_ALIGNMENT]),
                             alignment_to_string (var_get_alignment (var)));
 
-        const struct fmt_spec *pf = var_get_print_format (var);
+        struct fmt_spec pf = var_get_print_format (var);
         char xx[FMT_STRING_LEN_MAX + 1];
         gtk_entry_set_text (GTK_ENTRY (var_info->entry[VAR_INFO_PRINT_FORMAT]),
                             fmt_to_string (pf, xx));
 
-        const struct fmt_spec *wf = var_get_write_format (var);
+        struct fmt_spec wf = var_get_write_format (var);
         gtk_entry_set_text (GTK_ENTRY (var_info->entry[VAR_INFO_WRITE_FORMAT]),
                             fmt_to_string (wf, xx));
 

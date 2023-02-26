@@ -217,7 +217,7 @@ ctables_summary_default_format (enum ctables_summary_function function,
       return (struct fmt_spec) { .type = FMT_PCT, .w = 40, .d = 1 };
 
     case CTF_GENERAL:
-      return *var_get_print_format (var);
+      return var_get_print_format (var);
 
     default:
       NOT_REACHED ();
@@ -1292,9 +1292,9 @@ parse_ctables_format_specifier (struct lexer *lexer, struct fmt_spec *format,
       if (!parse_format_specifier (lexer, format))
         return false;
 
-      char *error = fmt_check_output__ (format);
+      char *error = fmt_check_output__ (*format);
       if (!error)
-        error = fmt_check_type_compat__ (format, NULL, VAL_NUMERIC);
+        error = fmt_check_type_compat__ (*format, NULL, VAL_NUMERIC);
       if (error)
         {
           lex_next_error (lexer, -1, -1, "%s", error);
@@ -4049,19 +4049,20 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
   if (!parse_variables (lexer, dict, &vars, &n_vars, PV_NO_SCRATCH))
     return false;
 
-  const struct fmt_spec *common_format = var_get_print_format (vars[0]);
+  struct fmt_spec common_format = var_get_print_format (vars[0]);
+  bool has_common_format = true;
   for (size_t i = 1; i < n_vars; i++)
     {
-      const struct fmt_spec *f = var_get_print_format (vars[i]);
-      if (f->type != common_format->type)
+      struct fmt_spec f = var_get_print_format (vars[i]);
+      if (f.type != common_format.type)
         {
-          common_format = NULL;
+          has_common_format = false;
           break;
         }
     }
   bool parse_strings
-    = (common_format
-       && (fmt_get_category (common_format->type)
+    = (has_common_format
+       && (fmt_get_category (common_format.type)
            & (FMT_CAT_DATE | FMT_CAT_TIME | FMT_CAT_DATE_COMPONENT)));
 
   struct ctables_categories *c = xmalloc (sizeof *c);
@@ -4314,7 +4315,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
           switch (cat->type)
             {
             case CCT_POSTCOMPUTE:
-              cat->parse_format = parse_strings ? common_format->type : FMT_F;
+              cat->parse_format = parse_strings ? common_format.type : FMT_F;
               struct msg_location *cats_location
                 = lex_ofs_location (lexer, cats_start_ofs, cats_end_ofs);
               bool ok = ctables_recursive_check_postcompute (
@@ -4344,7 +4345,7 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
                 {
                   double n;
                   if (!parse_category_string (cat->location, cat->string, dict,
-                                              common_format->type, &n))
+                                              common_format.type, &n))
                     goto error;
 
                   ss_dealloc (&cat->string);
@@ -4365,14 +4366,14 @@ ctables_table_parse_categories (struct lexer *lexer, struct dictionary *dict,
                     n[0] = -DBL_MAX;
                   else if (!parse_category_string (cat->location,
                                                    cat->srange[0], dict,
-                                                   common_format->type, &n[0]))
+                                                   common_format.type, &n[0]))
                     goto error;
 
                   if (!cat->srange[1].string)
                     n[1] = DBL_MAX;
                   else if (!parse_category_string (cat->location,
                                                    cat->srange[1], dict,
-                                                   common_format->type, &n[1]))
+                                                   common_format.type, &n[1]))
                     goto error;
 
                   ss_dealloc (&cat->srange[0]);
@@ -4477,7 +4478,7 @@ ctables_table_add_section (struct ctables_table *t, enum pivot_axis_type a,
 }
 
 static char *
-ctables_format (double d, const struct fmt_spec *format,
+ctables_format (double d, struct fmt_spec format,
                 const struct fmt_settings *settings)
 {
   const union value v = { .f = d };
@@ -4917,7 +4918,7 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
                 value = pivot_value_new_user_text (ct->missing, SIZE_MAX);
               else if (is_ctables_format)
                 value = pivot_value_new_user_text_nocopy (
-                  ctables_format (d, &format, &ct->ctables_formats));
+                  ctables_format (d, format, &ct->ctables_formats));
               else
                 {
                   value = pivot_value_new_number (d);

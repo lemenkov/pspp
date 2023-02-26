@@ -157,7 +157,7 @@ syntax_gen_number (struct string *output,
       bool ok;
 
       v_in.f = number;
-      s = data_out (&v_in, "FIXME", format, settings_get_fmt_settings ());
+      s = data_out (&v_in, "FIXME", *format, settings_get_fmt_settings ());
 
       /* FIXME: UTF8 encoded strings will fail here */
       error = data_in (ss_cstr (s), C_ENCODING, format->type,
@@ -194,7 +194,7 @@ void
 syntax_gen_value (struct string *output, const union value *value, int width,
                   const struct fmt_spec *format)
 {
-  assert (format == NULL || fmt_var_width (format) == width);
+  assert (format == NULL || fmt_var_width (*format) == width);
   if (width == 0)
     syntax_gen_number (output, value->f, format);
   else

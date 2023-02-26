@@ -191,13 +191,13 @@ get_string_args (struct expr_node *n, size_t arg_idx, size_t n_args,
   return s;
 }
 
-static const struct fmt_spec *
+static struct fmt_spec
 get_format_arg (struct expr_node *n, size_t arg_idx)
 {
   assert (arg_idx < n->n_args);
   assert (n->args[arg_idx]->type == OP_ni_format
           || n->args[arg_idx]->type == OP_no_format);
-  return &n->args[arg_idx]->format;
+  return n->args[arg_idx]->format;
 }
 
 static const struct expr_node *
@@ -247,10 +247,9 @@ emit_string (struct expression *e, struct substring s)
 }
 
 static void
-emit_format (struct expression *e, const struct fmt_spec *f)
+emit_format (struct expression *e, struct fmt_spec f)
 {
-  allocate_aux (e, OP_format)->format = pool_clone (e->expr_pool,
-                                                    f, sizeof *f);
+  allocate_aux (e, OP_format)->format = f;
 }
 
 static void
@@ -340,7 +339,7 @@ flatten_composite (struct expr_node *n, struct expression *e)
 
         case OP_ni_format:
         case OP_no_format:
-          emit_format (e, &arg->format);
+          emit_format (e, arg->format);
           break;
 
         case OP_pos_int:

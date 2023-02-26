@@ -107,8 +107,8 @@ size_t settings_get_workspace (void);
 size_t settings_get_workspace_cases (const struct caseproto *);
 void settings_set_workspace (size_t);
 
-const struct fmt_spec *settings_get_format (void);
-void settings_set_format (const struct fmt_spec *);
+struct fmt_spec settings_get_format (void);
+void settings_set_format (const struct fmt_spec);
 
 bool settings_get_testing_mode (void);
 void settings_set_testing_mode (bool);
@@ -165,7 +165,7 @@ const struct fmt_settings *settings_get_fmt_settings (void);
 double settings_get_small (void);
 void settings_set_small (double);
 
-char * settings_dollar_template (const struct fmt_spec *fmt);
+char *settings_dollar_template (struct fmt_spec);
 
 /* Routing of different kinds of output. */
 enum settings_output_devices

@@ -83,10 +83,8 @@ void psppire_value_entry_set_value_labels (PsppireValueEntry *,
 const struct val_labs *
 psppire_value_entry_get_value_labels (const PsppireValueEntry *);
 
-void psppire_value_entry_set_format (PsppireValueEntry *,
-                                     const struct fmt_spec *);
-const struct fmt_spec *
-psppire_value_entry_get_format (const PsppireValueEntry *);
+void psppire_value_entry_set_format (PsppireValueEntry *, struct fmt_spec);
+struct fmt_spec psppire_value_entry_get_format (const PsppireValueEntry *);
 
 void psppire_value_entry_set_encoding (PsppireValueEntry *, const gchar *);
 const gchar *psppire_value_entry_get_encoding (const PsppireValueEntry *);

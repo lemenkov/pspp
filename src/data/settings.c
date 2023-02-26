@@ -509,18 +509,18 @@ settings_set_workspace (size_t workspace)
 
 /* Default format for variables created by transformations and by
    DATA LIST {FREE,LIST}. */
-const struct fmt_spec *
+struct fmt_spec
 settings_get_format (void)
 {
-  return &the_settings.default_format;
+  return the_settings.default_format;
 }
 
 /* Set default format for variables created by transformations
    and by DATA LIST {FREE,LIST}. */
 void
-settings_set_format (const struct fmt_spec *default_format)
+settings_set_format (const struct fmt_spec default_format)
 {
-  the_settings.default_format = *default_format;
+  the_settings.default_format = default_format;
 }
 
 /* Are we in testing mode?  (e.g. --testing-mode command line
@@ -656,18 +656,18 @@ settings_set_small (double small)
    which must be of type FMT_DOLLAR.  The caller must free the
    string. */
 char *
-settings_dollar_template (const struct fmt_spec *fmt)
+settings_dollar_template (const struct fmt_spec fmt)
 {
   struct string str = DS_EMPTY_INITIALIZER;
   int c;
   const struct fmt_number_style *fns ;
 
-  assert (fmt->type == FMT_DOLLAR);
+  assert (fmt.type == FMT_DOLLAR);
 
-  fns = fmt_settings_get_style (&the_settings.styles, fmt->type);
+  fns = fmt_settings_get_style (&the_settings.styles, fmt.type);
 
   ds_put_byte (&str, '$');
-  for (c = MAX (fmt->w - fmt->d - 1, 0); c > 0;)
+  for (c = MAX (fmt.w - fmt.d - 1, 0); c > 0;)
     {
       ds_put_byte (&str, '#');
       if (--c % 4 == 0 && c > 0)
@@ -676,10 +676,10 @@ settings_dollar_template (const struct fmt_spec *fmt)
           --c;
         }
     }
-  if (fmt->d > 0)
+  if (fmt.d > 0)
     {
       ds_put_byte (&str, fns->decimal);
-      ds_put_byte_multiple (&str, '#', fmt->d);
+      ds_put_byte_multiple (&str, '#', fmt.d);
     }
 
   return ds_cstr (&str);

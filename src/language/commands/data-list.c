@@ -365,18 +365,18 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
       /* Create variables and var specs. */
       size_t name_idx = 0;
       for (struct fmt_spec *f = formats; f < &formats[n_formats]; f++)
-        if (!execute_placement_format (f, &record, &column))
+        if (!execute_placement_format (*f, &record, &column))
           {
             /* Create variable. */
             const char *name = names[name_idx++];
-            int width = fmt_var_width (f);
+            int width = fmt_var_width (*f);
             struct variable *v = dict_create_var (dict, name, width);
             if (v != NULL)
               {
                 /* Success. */
                 struct fmt_spec output = fmt_for_output_from_input (
-                  f, settings_get_fmt_settings ());
-                var_set_both_formats (v, &output);
+                  *f, settings_get_fmt_settings ());
+                var_set_both_formats (v, output);
               }
             else
               {
@@ -419,7 +419,7 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
                 return false;
               }
 
-            data_parser_add_fixed_field (parser, f,
+            data_parser_add_fixed_field (parser, *f,
                                          var_get_case_index (v),
                                          var_get_name (v), record, column);
 
@@ -478,7 +478,7 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
               input.d = 0;
             }
 
-          char *error = fmt_check_input__ (&input);
+          char *error = fmt_check_input__ (input);
           if (error)
             {
               lex_next_error (lexer, -1, -1, "%s", error);
@@ -493,30 +493,30 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
           if (input.type == FMT_N)
             input.type = FMT_F;
 
-	  output = fmt_for_output_from_input (&input,
+	  output = fmt_for_output_from_input (input,
                                               settings_get_fmt_settings ());
 	}
       else
 	{
 	  lex_match (lexer, T_ASTERISK);
           input = fmt_for_input (FMT_F, 8, 0);
-	  output = *settings_get_format ();
+	  output = settings_get_format ();
 	}
 
       for (size_t i = 0; i < n_names; i++)
 	{
 	  struct variable *v = dict_create_var (dict, names[i],
-                                                fmt_var_width (&input));
+                                                fmt_var_width (input));
 	  if (!v)
 	    {
 	      lex_ofs_error (lexer, vars_start, vars_end,
                              _("%s is a duplicate variable name."), names[i]);
 	      return false;
 	    }
-          var_set_both_formats (v, &output);
+          var_set_both_formats (v, output);
 
           data_parser_add_delimited_field (parser,
-                                           &input, var_get_case_index (v),
+                                           input, var_get_case_index (v),
                                            var_get_name (v));
 	}
     }

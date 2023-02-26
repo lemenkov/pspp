@@ -78,7 +78,10 @@ psppire_value_entry_set_property (GObject      *object,
       break;
 
     case PROP_FORMAT:
-      psppire_value_entry_set_format (obj, g_value_get_boxed (value));
+      {
+        const struct fmt_spec *f = g_value_get_boxed (value);
+        psppire_value_entry_set_format (obj, *f);
+      }
       break;
 
     case PROP_ENCODING:
@@ -365,7 +368,7 @@ psppire_value_entry_set_variable (PsppireValueEntry *obj,
   if (var != NULL)
     {
       psppire_value_entry_set_value_labels (obj, var_get_value_labels (var));
-      obj->format = *var_get_print_format (var);
+      obj->format = var_get_print_format (var);
       psppire_value_entry_set_encoding (obj, var_get_encoding (var));
     }
   else
@@ -386,7 +389,7 @@ psppire_value_entry_set_value_labels (PsppireValueEntry *obj,
       if (val_labs != NULL)
         {
           int width = val_labs_get_width (val_labs);
-          if (width != fmt_var_width (&obj->format))
+          if (width != fmt_var_width (obj->format))
             obj->format = fmt_default_for_width (width);
         }
 
@@ -404,12 +407,12 @@ psppire_value_entry_get_value_labels (const PsppireValueEntry *obj)
 
 void
 psppire_value_entry_set_format (PsppireValueEntry *obj,
-                                const struct fmt_spec *format)
+                                struct fmt_spec format)
 {
-  if (!fmt_equal (format, &obj->format))
+  if (!fmt_equal (format, obj->format))
     {
       obj->cur_value = NULL;
-      obj->format = *format;
+      obj->format = format;
 
       if (obj->val_labs
           && val_labs_get_width (obj->val_labs) != fmt_var_width (format))
@@ -419,10 +422,10 @@ psppire_value_entry_set_format (PsppireValueEntry *obj,
     }
 }
 
-const struct fmt_spec *
+struct fmt_spec
 psppire_value_entry_get_format (const PsppireValueEntry *obj)
 {
-  return &obj->format;
+  return obj->format;
 }
 
 void
@@ -444,17 +447,17 @@ psppire_value_entry_get_encoding (const PsppireValueEntry *obj)
 void
 psppire_value_entry_set_width (PsppireValueEntry *obj, int width)
 {
-  if (width != fmt_var_width (&obj->format))
+  if (width != fmt_var_width (obj->format))
     {
       struct fmt_spec format = fmt_default_for_width (width);
-      psppire_value_entry_set_format (obj, &format);
+      psppire_value_entry_set_format (obj, format);
     }
 }
 
 int
 psppire_value_entry_get_width (const PsppireValueEntry *obj)
 {
-  return fmt_var_width (&obj->format);
+  return fmt_var_width (obj->format);
 }
 
 void
@@ -481,7 +484,7 @@ psppire_value_entry_set_value (PsppireValueEntry *obj,
         }
     }
 
-  string = value_to_text__ (*value, &obj->format, obj->encoding);
+  string = value_to_text__ (*value, obj->format, obj->encoding);
   gtk_entry_set_text (entry, string);
   g_free (string);
 }
@@ -494,7 +497,7 @@ psppire_value_entry_get_value (PsppireValueEntry *obj,
   GtkEntry *entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (obj)));
   GtkTreeIter iter;
 
-  g_return_val_if_fail (fmt_var_width (&obj->format) == width, FALSE);
+  g_return_val_if_fail (fmt_var_width (obj->format) == width, FALSE);
 
   if (obj->cur_value)
     {

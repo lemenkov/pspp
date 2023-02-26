@@ -67,11 +67,10 @@ void data_parser_set_records (struct data_parser *, int records_per_case);
 
 /* Field setup and parsing. */
 void data_parser_add_delimited_field (struct data_parser *,
-                                      const struct fmt_spec *, int fv,
+                                      struct fmt_spec, int fv,
                                       const char *name);
 void data_parser_add_fixed_field (struct data_parser *,
-                                  const struct fmt_spec *, int fv,
-                                  const char *name,
+                                  struct fmt_spec, int fv, const char *name,
                                   int record, int first_column);
 bool data_parser_any_fields (const struct data_parser *);
 bool data_parser_parse (struct data_parser *, struct dfm_reader *,

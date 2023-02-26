@@ -770,7 +770,7 @@ tree_model_get_path (GtkTreeModel *model, GtkTreeIter *iter)
   return path;
 }
 
-const struct fmt_spec *var_get_write_format (const struct variable *);
+struct fmt_spec var_get_write_format (const struct variable *);
 
 static void
 tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
@@ -783,7 +783,7 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
 
   var = iter->user_data;
 
-  const struct fmt_spec *fs = var_get_write_format (var);
+  struct fmt_spec fs = var_get_write_format (var);
 
   switch (column)
     {
@@ -793,11 +793,11 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
       break;
     case DICT_TVM_COL_WIDTH:
       g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, fs->w);
+      g_value_set_int (value, fs.w);
       break;
     case DICT_TVM_COL_DECIMAL:
       g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, fs->d);
+      g_value_set_int (value, fs.d);
       break;
     case DICT_TVM_COL_LABEL:
       g_value_init (value, G_TYPE_STRING);

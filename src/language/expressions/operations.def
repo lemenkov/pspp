@@ -761,20 +761,20 @@ function NUMBER (string s, ni_format f)
   expression e;
   expr_node n;
 {
-  if (s.length > f->w)
-    s.length = f->w;
+  if (s.length > f.w)
+    s.length = f.w;
 
   union value out;
-  char *error = data_in (s, C_ENCODING, f->type, settings_get_fmt_settings (),
+  char *error = data_in (s, C_ENCODING, f.type, settings_get_fmt_settings (),
                          &out, 0, NULL);
   if (error == NULL)
-    data_in_imply_decimals (s, C_ENCODING, f->type, f->d,
+    data_in_imply_decimals (s, C_ENCODING, f.type, f.d,
                             settings_get_fmt_settings (), &out);
   else
     {
       msg_at (SE, expr_location (e, n->args[0]),
               _("Cannot parse \"%.*s\" as format %s: %s"),
-              (int) s.length, s.string, fmt_name (f->type), error);
+              (int) s.length, s.string, fmt_name (f.type), error);
       free (error);
     }
   return out.f;
@@ -789,7 +789,7 @@ absorb_miss string function STRING (x, no_format f)
 
   v.f = x;
 
-  assert (!fmt_is_string (f->type));
+  assert (!fmt_is_string (f.type));
   s = data_out (&v, C_ENCODING, f, settings_get_fmt_settings ());
   dst = alloc_string (e, strlen (s));
   strcpy (dst.string, s);

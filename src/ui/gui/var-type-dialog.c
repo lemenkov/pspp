@@ -91,9 +91,9 @@ static GObject *psppire_var_type_dialog_constructor (GType type, guint,
 static void psppire_var_type_dialog_set_state (PsppireVarTypeDialog *);
 
 static void psppire_var_type_dialog_set_format (PsppireVarTypeDialog *dialog,
-						const struct fmt_spec *format);
+						struct fmt_spec format);
 
-static int find_format (const struct fmt_spec *target,
+static int find_format (struct fmt_spec target,
                         const struct fmt_spec formats[], int n_formats);
 static int find_format_type (int target, const int types[], int n_types);
 
@@ -127,7 +127,10 @@ psppire_var_type_dialog_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_FORMAT:
-      psppire_var_type_dialog_set_format (obj, g_value_get_boxed (value));
+      {
+        const struct fmt_spec *f = g_value_get_boxed (value);
+        psppire_var_type_dialog_set_format (obj, *f);
+      }
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -156,16 +159,16 @@ psppire_var_type_dialog_get_property (GObject      *object,
 
 static void
 psppire_var_type_dialog_set_format (PsppireVarTypeDialog *dialog,
-                                    const struct fmt_spec *format)
+                                    struct fmt_spec format)
 {
-  dialog->base_format = *format;
+  dialog->base_format = format;
   psppire_var_type_dialog_set_state (dialog);
 }
 
-static const struct fmt_spec *
+static struct fmt_spec
 psppire_var_type_dialog_get_format (const PsppireVarTypeDialog *dialog)
 {
-  return &dialog->fmt_l;
+  return dialog->fmt_l;
 }
 
 static void
@@ -220,7 +223,7 @@ psppire_var_type_dialog_run (GtkWindow *parent_window,
 
   gint result = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
   if (result == GTK_RESPONSE_OK)
-    *format = *psppire_var_type_dialog_get_format (dialog);
+    *format = psppire_var_type_dialog_get_format (dialog);
 
   gtk_widget_destroy (GTK_WIDGET (dialog));
 
@@ -358,13 +361,13 @@ on_active_button_change (GtkToggleButton *togglebutton,
       dialog->fmt_l.type = FMT_A;
       break;
     case BUTTON_DATE:
-      indx = find_format (&dialog->fmt_l, date_format,
+      indx = find_format (dialog->fmt_l, date_format,
                           sizeof date_format / sizeof *date_format);
       select_treeview_at_index (dialog->date_format_treeview, indx);
       dialog->fmt_l = date_format[indx];
       break;
     case BUTTON_DOLLAR:
-      indx = find_format (&dialog->fmt_l, dollar_format,
+      indx = find_format (dialog->fmt_l, dollar_format,
                           sizeof dollar_format / sizeof *dollar_format);
       select_treeview_at_index (dialog->dollar_treeview, indx);
       dialog->fmt_l = dollar_format[indx];
@@ -432,7 +435,7 @@ preview_custom (GtkWidget *w, gpointer data)
   text = gtk_entry_get_text (GTK_ENTRY (dialog->entry_width));
   dialog->fmt_l.w = atoi (text);
 
-  if (! fmt_check_output (&dialog->fmt_l))
+  if (! fmt_check_output (dialog->fmt_l))
     {
       gtk_label_set_text (GTK_LABEL (dialog->label_psample), "---");
       gtk_label_set_text (GTK_LABEL (dialog->label_nsample), "---");
@@ -443,13 +446,13 @@ preview_custom (GtkWidget *w, gpointer data)
       union value v;
       v.f = 1234.56;
 
-      sample_text = g_strchug (data_out (&v, NULL, &dialog->fmt_l,
+      sample_text = g_strchug (data_out (&v, NULL, dialog->fmt_l,
                                          settings_get_fmt_settings ()));
       gtk_label_set_text (GTK_LABEL (dialog->label_psample), sample_text);
       g_free (sample_text);
 
       v.f = -v.f;
-      sample_text = g_strchug (data_out (&v, NULL, &dialog->fmt_l,
+      sample_text = g_strchug (data_out (&v, NULL, dialog->fmt_l,
                                          settings_get_fmt_settings ()));
       gtk_label_set_text (GTK_LABEL (dialog->label_nsample), sample_text);
       g_free (sample_text);
@@ -636,10 +639,10 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   for (i = 0 ; i < sizeof (date_format) / sizeof (date_format[0]) ; ++i)
     {
-      const struct fmt_spec *f = &date_format[i];
+      struct fmt_spec f = date_format[i];
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
-                          0, fmt_date_template (f->type, f->w),
+                          0, fmt_date_template (f.type, f.w),
 			  -1);
     }
 
@@ -670,7 +673,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   for (i = 0 ; i < sizeof (dollar_format)/sizeof (dollar_format[0]) ; ++i)
     {
-      char *template = settings_dollar_template (&dollar_format[i]);
+      char *template = settings_dollar_template (dollar_format[i]);
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
                           0, template,
@@ -778,13 +781,13 @@ select_treeview_at_index (GtkTreeView *treeview, int index)
 }
 
 static int
-find_format (const struct fmt_spec *target,
+find_format (struct fmt_spec target,
              const struct fmt_spec formats[], int n_formats)
 {
   int i;
 
   for (i = 0; i < n_formats; i++)
-    if (fmt_equal (target, &formats[i]))
+    if (fmt_equal (target, formats[i]))
       return i;
 
   return 0;
