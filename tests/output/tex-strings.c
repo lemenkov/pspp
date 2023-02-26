@@ -108,7 +108,7 @@ main (int argc, char **argv)
         }
     }
 
-  if (optind >= argc)
+  if (!outfile || optind >= argc)
     {
       fprintf (stderr, "Usage: tex-strings  -o <outfile> <infile1> <infile2> ... <infileN>\n");
       return 1;
