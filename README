@@ -20,20 +20,11 @@ NEWS.
 Source code for the latest release of PSPP is available at
 ftp://ftp.gnu.org/pub/gnu/pspp/.  Test releases are at
 ftp://alpha.gnu.org/gnu/pspp/.  Development sources are available
-at http://savannah.gnu.org/projects/pspp
+at https://savannah.gnu.org/projects/pspp
 
-The following miscellaneous notes apply to this release:
-
-	* On a few operating systems, such as OpenBSD, some of the
-          tests may fail with messages similar to: 'Warning: cannot
-          create a converter for "646" to "UTF-8"'.  These test
-          failures may safely be ignored.
-
-Questions and comments about using PSPP may be sent to pspp-users@gnu.org.
-Bug reports may be filed at http://savannah.gnu.org/bugs/?group=pspp
-or emailed to bug-gnu-pspp@gnu.org.  We prefer the web-based system
-because it makes it more difficult for us to lose track of bugs, but we
-are happy to hear from users through any means.
+Questions and comments about using PSPP may be sent to
+pspp-users@gnu.org.  Please email bug reports to bug-gnu-pspp@gnu.org
+or file them online at https://savannah.gnu.org/bugs/?group=pspp.
 
 The PSPP bug tracker and bug reporting mailing list are public.  To
 privately report a security vulnerability in GNU PSPP, please send
@@ -78,12 +69,6 @@ following:
           with some support for automated parsing of the most common
           constructs.  We wish to improve the situation by supplying a
           more complete and flexible parser generator.
-
-	* Easy-to-use support for producing attractive output.
-          Currently, output is done by writing code to explicitly fill
-          in table cells with data.  We should be able to supply a
-          more convenient interface that also allows for providing
-          machine-readable output.
 
 	* Eventually, a plug-in interface for procedures.  Over the
           short term, the interface between the PSPP core and
