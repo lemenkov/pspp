@@ -309,10 +309,9 @@ dict_clone (const struct dictionary *s)
     {
       struct variable *sv = s->vars[i].var;
       struct variable *dv = dict_clone_var_assert (d, sv);
-      size_t i;
 
-      for (i = 0; i < var_get_n_short_names (sv); i++)
-        var_set_short_name (dv, i, var_get_short_name (sv, i));
+      for (size_t j = 0; j < var_get_n_short_names (sv); j++)
+        var_set_short_name (dv, j, var_get_short_name (sv, j));
 
       var_get_vardict (dv)->case_index = var_get_vardict (sv)->case_index;
     }
