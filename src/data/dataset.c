@@ -448,6 +448,8 @@ proc_open_filtering (struct dataset *ds, bool filter)
   update_last_proc_invocation (ds);
 
   caseinit_mark_for_init (ds->caseinit, ds->dict);
+  ds->source = caseinit_translate_casereader_to_init_vars (
+    ds->caseinit, dict_get_proto (ds->dict), ds->source);
 
   /* Finish up the collection of transformations. */
   add_case_limit_trns (ds);
@@ -549,12 +551,12 @@ proc_casereader_read (struct casereader *reader UNUSED, void *ds_)
       if (c == NULL)
         return NULL;
       c = case_unshare_and_resize (c, dict_get_proto (ds->dict));
-      caseinit_init_vars (ds->caseinit, c);
+      caseinit_restore_left_vars (ds->caseinit, c);
 
       /* Execute permanent transformations.  */
       casenumber case_nr = ds->cases_written + 1;
       retval = trns_chain_execute (&ds->permanent_trns_chain, case_nr, &c);
-      caseinit_update_left_vars (ds->caseinit, c);
+      caseinit_save_left_vars (ds->caseinit, c);
       if (retval != TRNS_CONTINUE)
         continue;
 

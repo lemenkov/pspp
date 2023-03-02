@@ -130,9 +130,10 @@ bool caseproto_range_is_valid (const struct caseproto *,
                                size_t ofs, size_t count);
 bool caseproto_is_conformable (const struct caseproto *a,
                                const struct caseproto *b);
-bool caseproto_equal (const struct caseproto *a, size_t a_start,
-                      const struct caseproto *b, size_t b_start,
-                      size_t n);
+bool caseproto_range_equal (const struct caseproto *a, size_t a_start,
+                            const struct caseproto *b, size_t b_start,
+                            size_t n);
+bool caseproto_equal (const struct caseproto *, const struct caseproto *);
 
 /* Creation and destruction. */
 

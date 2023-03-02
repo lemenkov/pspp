@@ -207,9 +207,9 @@ caseproto_is_conformable (const struct caseproto *a, const struct caseproto *b)
    same as the N widths starting at B_START in B, false if any of
    the corresponding widths differ. */
 bool
-caseproto_equal (const struct caseproto *a, size_t a_start,
-                 const struct caseproto *b, size_t b_start,
-                 size_t n)
+caseproto_range_equal (const struct caseproto *a, size_t a_start,
+                       const struct caseproto *b, size_t b_start,
+                       size_t n)
 {
   size_t i;
 
@@ -219,6 +219,15 @@ caseproto_equal (const struct caseproto *a, size_t a_start,
     if (a->widths[a_start + i] != b->widths[b_start + i])
       return false;
   return true;
+}
+
+/* Returns true if A and B have the same widths, false otherwise. */
+bool
+caseproto_equal (const struct caseproto *a, const struct caseproto *b)
+{
+  return (a == b ? true
+          : a->n_widths != b->n_widths ? false
+          : caseproto_range_equal (a, 0, b, 0, a->n_widths));
 }
 
 /* Returns true if an array of values that is to be used for

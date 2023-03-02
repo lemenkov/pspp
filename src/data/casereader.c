@@ -73,8 +73,8 @@ casereader_read (struct casereader *reader)
         {
           size_t n_widths UNUSED = caseproto_get_n_widths (reader->proto);
           assert (case_get_n_values (c) >= n_widths);
-          expensive_assert (caseproto_equal (case_get_proto (c), 0,
-                                             reader->proto, 0, n_widths));
+          expensive_assert (caseproto_range_equal (case_get_proto (c), 0,
+                                                   reader->proto, 0, n_widths));
           return c;
         }
     }

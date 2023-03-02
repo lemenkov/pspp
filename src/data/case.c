@@ -201,8 +201,8 @@ case_copy (struct ccase *dst, size_t dst_idx,
   assert (!case_is_shared (dst));
   assert (caseproto_range_is_valid (dst->proto, dst_idx, n_values));
   assert (caseproto_range_is_valid (src->proto, src_idx, n_values));
-  assert (caseproto_equal (dst->proto, dst_idx, src->proto, src_idx,
-                           n_values));
+  assert (caseproto_range_equal (dst->proto, dst_idx, src->proto, src_idx,
+                                 n_values));
 
   if (dst != src)
     {

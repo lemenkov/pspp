@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "data/case.h"
+#include "data/casereader.h"
 #include "data/dictionary.h"
 #include "data/value.h"
 #include "data/variable.h"
@@ -66,19 +67,17 @@ init_list_create (struct init_list *list)
 }
 
 /* Initializes NEW as a copy of OLD. */
-static void
-init_list_clone (struct init_list *new, const struct init_list *old)
+static struct init_list
+init_list_clone (const struct init_list *old)
 {
-  size_t i;
-
-  new->values = xmemdup (old->values, old->n * sizeof *old->values);
-  new->n = old->n;
-
-  for (i = 0; i < new->n; i++)
+  struct init_value *values = xmemdup (old->values,
+                                       old->n * sizeof *old->values);
+  for (size_t i = 0; i < old->n; i++)
     {
-      struct init_value *iv = &new->values[i];
+      struct init_value *iv = &values[i];
       value_clone (&iv->value, &iv->value, iv->width);
     }
+  return (struct init_list) { .values = values, .n = old->n };
 }
 
 /* Frees the storage associated with LIST. */
@@ -218,9 +217,11 @@ struct caseinit *
 caseinit_clone (struct caseinit *old)
 {
   struct caseinit *new = xmalloc (sizeof *new);
-  init_list_clone (&new->preinited_values, &old->preinited_values);
-  init_list_clone (&new->reinit_values, &old->reinit_values);
-  init_list_clone (&new->left_values, &old->left_values);
+  *new = (struct caseinit) {
+    .preinited_values = init_list_clone (&old->preinited_values),
+    .reinit_values = init_list_clone (&old->reinit_values),
+    .left_values = init_list_clone (&old->left_values),
+  };
   return new;
 }
 
@@ -272,15 +273,75 @@ void
 caseinit_init_vars (const struct caseinit *ci, struct ccase *c)
 {
   init_list_init (&ci->reinit_values, c);
+}
+
+/* Copies the left vars from CI into C. */
+void
+caseinit_restore_left_vars (struct caseinit *ci, struct ccase *c)
+{
   init_list_init (&ci->left_values, c);
 }
 
-/* Updates the left vars in CI from the data in C, so that the
-   next call to caseinit_init_vars will store those values in the
-   next case. */
+/* Copies the left vars from C into CI. */
 void
-caseinit_update_left_vars (struct caseinit *ci, const struct ccase *c)
+caseinit_save_left_vars (struct caseinit *ci, const struct ccase *c)
 {
   init_list_update (&ci->left_values, c);
+}
+
+struct caseinit_translator
+  {
+    struct init_list reinit_values;
+    struct caseproto *proto;
+  };
+
+static struct ccase *
+translate_caseinit (struct ccase *c, void *cit_)
+{
+  const struct caseinit_translator *cit = cit_;
+
+  c = case_unshare_and_resize (c, cit->proto);
+  init_list_init (&cit->reinit_values, c);
+  return c;
+}
+
+static bool
+translate_destroy (void *cit_)
+{
+  struct caseinit_translator *cit = cit_;
+
+  init_list_destroy (&cit->reinit_values);
+  caseproto_unref (cit->proto);
+  free (cit);
+
+  return true;
+}
+
+/* Returns a new casereader that yields each case from R, resized to match
+   OUTPUT_PROTO and initialized from CI as if with caseinit_init_vars().  Takes
+   ownership of R.
+
+   OUTPUT_PROTO must be conformable with R's prototype.  */
+struct casereader *
+caseinit_translate_casereader_to_init_vars (struct caseinit *ci,
+                                            const struct caseproto *output_proto,
+                                            struct casereader *r)
+{
+  assert (caseproto_is_conformable (casereader_get_proto (r), output_proto));
+  if (caseproto_equal (output_proto, casereader_get_proto (r))
+      && ci->reinit_values.n == 0)
+    return casereader_rename (r);
+
+  struct caseinit_translator *cit = xmalloc (sizeof *cit);
+  *cit = (struct caseinit_translator) {
+    .reinit_values = init_list_clone (&ci->reinit_values),
+    .proto = caseproto_ref (output_proto),
+  };
+
+  static const struct casereader_translator_class class = {
+    .translate = translate_caseinit,
+    .destroy = translate_destroy,
+  };
+  return casereader_translate_stateless (r, output_proto, &class, cit);
 }
 

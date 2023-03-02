@@ -31,6 +31,7 @@
 #ifndef DATA_CASEINIT_H
 #define DATA_CASEINIT_H 1
 
+struct caseproto;
 struct dictionary;
 struct ccase;
 
@@ -46,6 +47,12 @@ void caseinit_mark_for_init (struct caseinit *, const struct dictionary *);
 
 /* Initialize data and copy data from case to case. */
 void caseinit_init_vars (const struct caseinit *, struct ccase *);
-void caseinit_update_left_vars (struct caseinit *, const struct ccase *);
+void caseinit_save_left_vars (struct caseinit *, const struct ccase *);
+void caseinit_restore_left_vars (struct caseinit *, struct ccase *);
+
+/* Translate. */
+struct casereader *caseinit_translate_casereader_to_init_vars (
+  struct caseinit *, const struct caseproto *output_proto,
+  struct casereader *);
 
 #endif /* data/caseinit.h */

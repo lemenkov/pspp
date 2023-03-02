@@ -184,6 +184,7 @@ input_program_casereader_read (struct casereader *reader UNUSED, void *inp_)
 
   struct ccase *c = case_create (inp->proto);
   caseinit_init_vars (inp->init, c);
+  caseinit_restore_left_vars (inp->init, c);
 
   for (size_t i = inp->idx < inp->xforms.n ? inp->idx : 0; ; i++)
     {
@@ -191,7 +192,7 @@ input_program_casereader_read (struct casereader *reader UNUSED, void *inp_)
         {
           i = 0;
           c = case_unshare (c);
-          caseinit_update_left_vars (inp->init, c);
+          caseinit_save_left_vars (inp->init, c);
           caseinit_init_vars (inp->init, c);
         }
 
