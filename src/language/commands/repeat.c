@@ -275,17 +275,22 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
   bool print = ok && lex_match_id (lexer, "PRINT");
   lex_discard_rest_of_command (lexer);
 
-  for (size_t i = 0; i < n_values; i++)
+  if (print)
     {
-      struct string *output = &outputs[n_values - i - 1];
-      if (print)
+      for (size_t i = 0; i < n_values; i++)
         {
+          struct string *output = &outputs[i];
           struct substring s = output->ss;
           ss_chomp_byte (&s, '\n');
           char *label = xasprintf (_("Expansion %zu of %zu"), i + 1, n_values);
           output_item_submit (
             text_item_create_nocopy (TEXT_ITEM_LOG, ss_xstrdup (s), label));
         }
+    }
+
+  for (size_t i = 0; i < n_values; i++)
+    {
+      struct string *output = &outputs[n_values - i - 1];
       const char *encoding = lex_get_encoding (lexer);
       struct lex_reader *reader = lex_reader_for_substring_nocopy (ds_ss (output), encoding);
       lex_reader_set_file_name (reader, file_name);

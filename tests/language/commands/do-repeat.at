@@ -32,9 +32,9 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv do-repeat.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-COMPUTE x=3.
-COMPUTE y='c'.
-COMPUTE c=3.
+COMPUTE x=1.
+COMPUTE y='a'.
+COMPUTE a=1.
 END CASE.
 
 COMPUTE x=2.
@@ -42,9 +42,9 @@ COMPUTE y='b'.
 COMPUTE b=2.
 END CASE.
 
-COMPUTE x=1.
-COMPUTE y='a'.
-COMPUTE a=1.
+COMPUTE x=3.
+COMPUTE y='c'.
+COMPUTE c=3.
 END CASE.
 
 Table: Data List
