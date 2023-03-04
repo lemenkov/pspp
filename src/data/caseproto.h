@@ -31,15 +31,9 @@
    A case prototype specifies the number and type of the values
    in a case.  It is essentially an array of integers, where the
    array index is an index into a case and each element
-   represents the width of a value in a case.  Valid widths are:
-
-       * 0, indicating a numeric value.
-
-       * A positive integer between 1 and 32767, indicating the
-         size in bytes of a string value.
-
-       * -1, indicating that the value at this index in the case
-         is not used at all.  (This is rarely useful.)
+   represents the width of a value in a case.  A width of 0
+   indicates a numeric value, and any positive integer up to
+   MAX_STRING indicate the size in bytes of a string value.
 
    Case prototypes are reference counted.  A newly created case
    prototype has a single owner (the code that created it),
@@ -51,9 +45,7 @@
    piece of code that incremented the reference count.
 
    Functions that modifying case prototypes automatically unshare
-   them as necessary.  All of these functions potentially move
-   the caseproto around in memory even when the case prototype is
-   not shared.  Thus it is very important that every caller of a
+   them as necessary.  Thus it is very important that every caller of a
    function that modifies a case prototype thereafter uses the returned
    caseproto instead of the one passed in as an argument.
 
@@ -79,6 +71,7 @@ struct pool;
 
 /* Creation and destruction. */
 struct caseproto *caseproto_create (void) MALLOC_LIKE;
+struct caseproto *caseproto_from_widths (short int *, size_t n) MALLOC_LIKE;
 static inline struct caseproto *caseproto_ref (const struct caseproto *) WARN_UNUSED_RESULT;
 struct caseproto *caseproto_ref_pool (const struct caseproto *, struct pool *) WARN_UNUSED_RESULT;
 static inline void caseproto_unref (struct caseproto *);

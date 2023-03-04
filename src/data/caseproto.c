@@ -48,6 +48,20 @@ caseproto_create (void)
   return proto;
 }
 
+struct caseproto * MALLOC_LIKE
+caseproto_from_widths (short int *widths, size_t n)
+{
+  struct caseproto *proto = xmalloc (sizeof *proto);
+  *proto = (struct caseproto) {
+    .ref_cnt = 1,
+    .n_widths = n,
+    .allocated_widths = n,
+    .widths = widths,
+  };
+  proto->n_strings = count_strings (proto, 0, n);
+  return proto;
+}
+
 static void
 do_unref (void *proto_)
 {
@@ -65,27 +79,11 @@ caseproto_ref_pool (const struct caseproto *proto_, struct pool *pool)
   return proto;
 }
 
-/* Returns a replacement for PROTO that is unshared and has
-   enough room for at least N_WIDTHS widths before additional
-   memory is needed.  */
-struct caseproto *
-caseproto_reserve (struct caseproto *proto, size_t n_widths)
-{
-  proto = caseproto_unshare (proto);
-  if (n_widths > proto->allocated_widths)
-    {
-      proto->allocated_widths = MAX (proto->allocated_widths * 2, n_widths);
-      proto->widths = xnrealloc (proto->widths, proto->allocated_widths,
-                                 sizeof *proto->widths);
-    }
-  return proto;
-}
-
 /* Returns a replacement for PROTO with WIDTH appended.  */
 struct caseproto *
 caseproto_add_width (struct caseproto *proto, int width)
 {
-  assert (width >= -1 && width <= MAX_STRING);
+  assert (width >= 0 && width <= MAX_STRING);
 
   proto = caseproto_unshare (proto);
   if (proto->n_widths >= proto->allocated_widths)
@@ -98,18 +96,15 @@ caseproto_add_width (struct caseproto *proto, int width)
   return proto;
 }
 
-/* Returns a replacement for PROTO with the width at index IDX
-   replaced by WIDTH.  IDX may be greater than the current number
-   of widths in PROTO, in which case any gap is filled in by
-   widths of -1. */
+/* Returns a replacement for PROTO with the width at index IDX replaced by
+   WIDTH.  */
 struct caseproto *
 caseproto_set_width (struct caseproto *proto, size_t idx, int width)
 {
-  assert (width >= -1 && width <= MAX_STRING);
+  assert (idx < proto->n_widths);
+  assert (width >= 0 && width <= MAX_STRING);
 
-  proto = caseproto_reserve (proto, idx + 1);
-  while (idx >= proto->n_widths)
-    proto->widths[proto->n_widths++] = -1;
+  proto = caseproto_unshare (proto);
   proto->n_strings -= count_strings (proto, idx, 1);
   proto->widths[idx] = width;
   proto->n_strings += count_strings (proto, idx, 1);
@@ -123,9 +118,13 @@ caseproto_set_width (struct caseproto *proto, size_t idx, int width)
 struct caseproto *
 caseproto_insert_width (struct caseproto *proto, size_t before, int width)
 {
+  assert (width >= 0 && width <= MAX_STRING);
   assert (before <= proto->n_widths);
 
-  proto = caseproto_reserve (proto, proto->n_widths + 1);
+  proto = caseproto_unshare (proto);
+  if (proto->n_widths >= proto->allocated_widths)
+    proto->widths = x2nrealloc (proto->widths, &proto->allocated_widths,
+                                sizeof *proto->widths);
   proto->n_strings += value_needs_init (width);
   insert_element (proto->widths, proto->n_widths, sizeof *proto->widths,
                   before);

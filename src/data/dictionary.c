@@ -1401,14 +1401,19 @@ dict_get_proto (const struct dictionary *d_)
   struct dictionary *d = CONST_CAST (struct dictionary *, d_);
   if (d->proto == NULL)
     {
-      size_t i;
+      short int *widths = xnmalloc (d->n_vars, sizeof *widths);
+      for (size_t i = 0; i < d->n_vars; i++)
+        widths[i] = -1;
+      for (size_t i = 0; i < d->n_vars; i++)
+        {
+          const struct variable *var = d->vars[i].var;
+          size_t case_idx = var_get_case_index (var);
+          assert (case_idx < d->n_vars);
+          assert (widths[case_idx] == -1);
+          widths[case_idx] = var_get_width (var);
+        }
 
-      d->proto = caseproto_create ();
-      d->proto = caseproto_reserve (d->proto, d->n_vars);
-      for (i = 0; i < d->n_vars; i++)
-        d->proto = caseproto_set_width (d->proto,
-                                        var_get_case_index (d->vars[i].var),
-                                        var_get_width (d->vars[i].var));
+      d->proto = caseproto_from_widths (widths, d->n_vars);
     }
   return d->proto;
 }
