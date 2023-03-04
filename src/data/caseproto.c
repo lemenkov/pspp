@@ -36,27 +36,15 @@ static void destroy_strings (const struct caseproto *,
 static size_t count_strings (const struct caseproto *,
                                   size_t idx, size_t count);
 
-/* Returns the number of bytes to allocate for a struct caseproto
-   with room for N_WIDTHS elements in its widths[] array. */
-static inline size_t
-caseproto_size (size_t n_widths)
-{
-  return (offsetof (struct caseproto, widths)
-          + n_widths * sizeof (((struct caseproto *) NULL)->widths[0]));
-}
-
 /* Creates and returns a case prototype that initially has no
    widths. */
 struct caseproto *
 caseproto_create (void)
 {
-  enum { N_ALLOCATE = 4 };
-  struct caseproto *proto = xmalloc (caseproto_size (N_ALLOCATE));
-  proto->ref_cnt = 1;
-  proto->strings = NULL;
-  proto->n_strings = 0;
-  proto->n_widths = 0;
-  proto->allocated_widths = N_ALLOCATE;
+  struct caseproto *proto = xmalloc (sizeof *proto);
+  *proto = (struct caseproto) {
+    .ref_cnt = 1,
+  };
   return proto;
 }
 
@@ -87,7 +75,8 @@ caseproto_reserve (struct caseproto *proto, size_t n_widths)
   if (n_widths > proto->allocated_widths)
     {
       proto->allocated_widths = MAX (proto->allocated_widths * 2, n_widths);
-      proto = xrealloc (proto, caseproto_size (proto->allocated_widths));
+      proto->widths = xnrealloc (proto->widths, proto->allocated_widths,
+                                 sizeof *proto->widths);
     }
   return proto;
 }
@@ -98,9 +87,13 @@ caseproto_add_width (struct caseproto *proto, int width)
 {
   assert (width >= -1 && width <= MAX_STRING);
 
-  proto = caseproto_reserve (proto, proto->n_widths + 1);
+  proto = caseproto_unshare (proto);
+  if (proto->n_widths >= proto->allocated_widths)
+    proto->widths = x2nrealloc (proto->widths, &proto->allocated_widths,
+                                sizeof *proto->widths);
   proto->widths[proto->n_widths++] = width;
-  proto->n_strings += count_strings (proto, proto->n_widths - 1, 1);
+  if (width > 0)
+    proto->n_strings++;
 
   return proto;
 }
@@ -324,6 +317,7 @@ void
 caseproto_free__ (struct caseproto *proto)
 {
   free (proto->strings);
+  free (proto->widths);
   free (proto);
 }
 
@@ -344,22 +338,31 @@ caseproto_refresh_string_cache__ (const struct caseproto *proto_)
   assert (n == proto->n_strings);
 }
 
+/* Returns a caseproto that can be modified without affecting the contents of
+   any caseproto shared with OLD.
+
+   The returned caseproto has no strings cache.  This is helpful because the
+   caller might be about to invalidate it. */
 static struct caseproto *
 caseproto_unshare (struct caseproto *old)
 {
-  struct caseproto *new;
-  if (old->ref_cnt > 1)
+  assert (old->ref_cnt > 0);
+  if (old->ref_cnt <= 1)
     {
-      new = xmemdup (old, caseproto_size (old->allocated_widths));
-      new->ref_cnt = 1;
-      --old->ref_cnt;
+      free (old->strings);
+      old->strings = NULL;
+      return old;
     }
-  else
-    {
-      new = old;
-      free (new->strings);
-    }
-  new->strings = NULL;
+
+  struct caseproto *new = xmalloc (sizeof *new);
+  *new = (struct caseproto) {
+    .ref_cnt = 1,
+    .n_strings = old->n_strings,
+    .n_widths = old->n_widths,
+    .allocated_widths = old->allocated_widths,
+    .widths = xmemdup (old->widths, old->allocated_widths * sizeof *old->widths),
+  };
+  --old->ref_cnt;
   return new;
 }
 

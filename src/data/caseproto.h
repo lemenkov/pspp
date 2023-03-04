@@ -72,7 +72,7 @@ struct caseproto
     /* Widths. */
     size_t n_widths;            /* Number of widths. */
     size_t allocated_widths;    /* Space allocated for 'widths' array. */
-    short int widths[1];        /* Width of each case value. */
+    short int *widths;          /* Width of each case value. */
   };
 
 struct pool;
