@@ -307,7 +307,6 @@ case_map_stage_get_case_map (const struct case_map_stage *stage)
 {
   struct case_map *map;
   size_t n_vars = dict_get_n_vars (stage->dict);
-  size_t n_values;
   size_t i;
   bool identity_map = true;
 
@@ -328,10 +327,6 @@ case_map_stage_get_case_map (const struct case_map_stage *stage)
       case_map_destroy (map);
       return NULL;
     }
-
-  n_values = caseproto_get_n_widths (map->proto);
-  while (n_values > 0 && caseproto_get_width (map->proto, n_values - 1) == -1)
-    map->proto = caseproto_remove_widths (map->proto, --n_values, 1);
 
   return map;
 }
