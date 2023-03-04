@@ -86,7 +86,7 @@ caseproto_reserve (struct caseproto *proto, size_t n_widths)
   proto = caseproto_unshare (proto);
   if (n_widths > proto->allocated_widths)
     {
-      proto->allocated_widths *= MAX (proto->allocated_widths * 2, n_widths);
+      proto->allocated_widths = MAX (proto->allocated_widths * 2, n_widths);
       proto = xrealloc (proto, caseproto_size (proto->allocated_widths));
     }
   return proto;
