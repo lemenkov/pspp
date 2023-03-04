@@ -87,6 +87,25 @@ ID,respondent_city_of_birth,respondent_name,respondent_year_of_birth,varlist
 ])
 AT_CLEANUP
 
+dnl Checks for regression against a crash reported privately by
+dnl knassen(at)chartermi.net on March 1, 2023.
+AT_SETUP([DELETE VARIABLES crash 2])
+AT_DATA([delete-variables.sps], [dnl
+DATA LIST LIST NOTABLE /foo (A5).
+STRING bar (A8).
+DELETE VARIABLES foo.
+LIST.
+BEGIN DATA.
+asdf
+END DATA.
+])
+AT_CHECK([pspp -O format=csv delete-variables.sps], [0], [dnl
+Table: Data List
+bar
+
+])
+AT_CLEANUP
+
 AT_SETUP([DELETE VARIABLES syntax errors])
 AT_DATA([delete-variables.sps], [dnl
 DATA LIST LIST NOTABLE /x y z.

@@ -354,6 +354,12 @@ dataset_delete_vars (struct dataset *ds, struct variable **vars, size_t n)
   assert (!proc_has_transformations (ds));
   assert (n < dict_get_n_vars (ds->dict));
 
+  caseinit_mark_for_init (ds->caseinit, ds->dict);
+  ds->source = caseinit_translate_casereader_to_init_vars (
+    ds->caseinit, dict_get_proto (ds->dict), ds->source);
+  caseinit_clear (ds->caseinit);
+  caseinit_mark_as_preinited (ds->caseinit, ds->dict);
+
   dict_delete_vars (ds->dict, vars, n);
   ds->source = case_map_create_input_translator (
     case_map_to_compact_dict (ds->dict, 0), ds->source);
