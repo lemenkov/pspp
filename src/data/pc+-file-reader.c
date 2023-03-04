@@ -90,8 +90,6 @@ struct pcp_var_record
 
     struct pcp_value_label *val_labs;
     size_t n_val_labs;
-
-    struct variable *var;
   };
 
 struct pcp_value_label
@@ -839,7 +837,6 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
 
   for (rec = var_recs; rec < &var_recs[n_var_recs]; rec++)
     {
-      struct variable *var;
       char *name;
       size_t i;
 
@@ -857,14 +854,14 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
           return false;
         }
 
-      var = rec->var = dict_create_var (dict, name, rec->width);
+      struct variable *var = dict_create_var (dict, name, rec->width);
       if (var == NULL)
         {
           char *new_name = dict_make_unique_var_name (dict, NULL, NULL);
           pcp_warn (r, rec->pos, _("Renaming variable with duplicate name "
                                    "`%s' to `%s'."),
                     name, new_name);
-          var = rec->var = dict_create_var_assert (dict, new_name, rec->width);
+          var = dict_create_var_assert (dict, new_name, rec->width);
           free (new_name);
         }
       if (rec->weight)
