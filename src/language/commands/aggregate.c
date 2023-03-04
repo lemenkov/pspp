@@ -85,6 +85,7 @@ struct agr_var
     bool saw_missing;
     struct moments1 *moments;
 
+    struct dictionary *dict;
     struct variable *subject;
     struct variable *weight;
     struct casewriter *writer;
@@ -693,8 +694,7 @@ agr_destroy (struct agr_proc *agr)
       if (av->function == AGRF_SD)
         moments1_destroy (av->moments);
 
-      dict_destroy_internal_var (av->subject);
-      dict_destroy_internal_var (av->weight);
+      dict_unref (av->dict);
     }
   free (agr->agr_vars);
   if (agr->dict != NULL)
@@ -1086,11 +1086,12 @@ initialize_aggregate_info (struct agr_proc *agr)
             proto = caseproto_add_width (proto, 0);
             proto = caseproto_add_width (proto, 0);
 
+            if (!av->dict)
+              av->dict = dict_create ("UTF-8");
 	    if (! av->subject)
-	      av->subject = dict_create_internal_var (0, 0);
-
+	      av->subject = dict_create_var (av->dict, "subject", 0);
 	    if (! av->weight)
-	      av->weight = dict_create_internal_var (1, 0);
+	      av->weight = dict_create_var (av->dict, "weight", 0);
 
             struct subcase ordering;
             subcase_init_var (&ordering, av->subject, SC_ASCEND);

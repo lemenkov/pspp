@@ -87,7 +87,6 @@ wilcoxon_execute (const struct dataset *ds,
 
   struct wilcoxon_state *ws = XCALLOC (t2s->n_pairs,  struct wilcoxon_state);
   const struct variable *weight = dict_get_weight (dict);
-  struct variable *weightx = dict_create_internal_var (WEIGHT_IDX, 0);
   struct caseproto *proto;
 
   input =
@@ -107,8 +106,10 @@ wilcoxon_execute (const struct dataset *ds,
       struct subcase ordering;
       variable_pair *vp = &t2s->pairs[i];
 
-      ws[i].sign = dict_create_internal_var (0, 0);
-      ws[i].absdiff = dict_create_internal_var (1, 0);
+      ws[i].dict = dict_create ("UTF-8");
+      ws[i].sign = dict_create_var (ws[i].dict, "sign", 0);
+      ws[i].absdiff = dict_create_var (ws[i].dict, "absdiff", 0);
+      ws[i].weight = dict_create_var (ws[i].dict, "weight", 0);
 
       r = casereader_create_filter_missing (r, *vp, 2,
 					    exclude,
@@ -142,7 +143,7 @@ wilcoxon_execute (const struct dataset *ds,
 	  *case_num_rw (output, ws[i].absdiff) = fabs (d);
 
 	  if (weight)
-	   *case_num_rw (output, weightx) = case_num (c, weight);
+	   *case_num_rw (output, ws[i].weight) = case_num (c, weight);
 
 	  casewriter_write (writer, output);
 	}
@@ -158,7 +159,7 @@ wilcoxon_execute (const struct dataset *ds,
       enum rank_error err = 0;
 
       rr = casereader_create_append_rank (ws[i].reader, ws[i].absdiff,
-					  weight ? weightx : NULL, &err,
+					  weight ? ws[i].weight : NULL, &err,
 					  distinct_callback, &ws[i]
 					);
 
@@ -166,7 +167,7 @@ wilcoxon_execute (const struct dataset *ds,
 	{
 	  double sign = case_num (c, ws[i].sign);
 	  double rank = case_num_idx (c, weight ? 3 : 2);
-	  double w = weight ? case_num (c, weightx) : 1.0;
+	  double w = weight ? case_num (c, ws[i].weight) : 1.0;
 
 	  if (sign > 0)
 	    {
@@ -187,16 +188,11 @@ wilcoxon_execute (const struct dataset *ds,
 
   casereader_destroy (input);
 
-  dict_destroy_internal_var (weightx);
-
   show_ranks_box (ws, t2s, dict);
   show_tests_box (ws, t2s, exact, timer);
 
   for (i = 0 ; i < t2s->n_pairs; ++i)
-    {
-      dict_destroy_internal_var (ws[i].sign);
-      dict_destroy_internal_var (ws[i].absdiff);
-    }
+    dict_unref (ws[i].dict);
 
   free (ws);
 }

@@ -32,8 +32,11 @@ struct rank_sum
 struct wilcoxon_state
 {
   struct casereader *reader;
+
+  struct dictionary *dict;
   struct variable *sign;
   struct variable *absdiff;
+  struct variable *weight;
 
   struct rank_sum positives;
   struct rank_sum negatives;

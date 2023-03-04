@@ -201,10 +201,6 @@ char *dict_id_is_valid__ (const struct dictionary *, const char *id)
   WARN_UNUSED_RESULT;
 bool dict_id_is_valid (const struct dictionary *, const char *id);
 
-/* Internal variables. */
-struct variable *dict_create_internal_var (int case_idx, int width);
-void dict_destroy_internal_var (struct variable *);
-
 /* Functions to be called upon dictionary changes. */
 struct dict_callbacks
  {

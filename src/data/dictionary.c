@@ -1929,55 +1929,6 @@ dict_var_changed (const struct variable *v, unsigned int what, struct variable *
 
 
 
-/* Dictionary used to contain "internal variables". */
-static struct dictionary *internal_dict;
-
-/* Create a variable of the specified WIDTH to be used for internal
-   calculations only.  The variable is assigned case index CASE_IDX. */
-struct variable *
-dict_create_internal_var (int case_idx, int width)
-{
-  if (internal_dict == NULL)
-    internal_dict = dict_create ("UTF-8");
-
-  for (;;)
-    {
-      static int counter = INT_MAX / 2;
-      struct variable *var;
-      char name[64];
-
-      if (++counter == INT_MAX)
-        counter = INT_MAX / 2;
-
-      sprintf (name, "$internal%d", counter);
-      var = dict_create_var (internal_dict, name, width);
-      if (var != NULL)
-        {
-          set_var_case_index (var, case_idx);
-          return var;
-        }
-    }
-}
-
-/* Destroys VAR, which must have been created with
-   dict_create_internal_var(). */
-void
-dict_destroy_internal_var (struct variable *var)
-{
-  if (var != NULL)
-    {
-      dict_delete_var (internal_dict, var);
-
-      /* Destroy internal_dict if it has no variables left, just so that
-         valgrind --leak-check --show-reachable won't show internal_dict. */
-      if (dict_get_n_vars (internal_dict) == 0)
-        {
-          dict_unref (internal_dict);
-          internal_dict = NULL;
-        }
-    }
-}
-
 int
 vardict_get_dict_index (const struct vardict_info *vardict)
 {
