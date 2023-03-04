@@ -72,22 +72,6 @@ insert_mapping (struct case_map *map, size_t from, size_t to)
   map->map[to] = from;
 }
 
-/* Returns a copy of OLD, if OLD is nonnull, and otherwise returns NULL.  */
-struct case_map *
-case_map_clone (const struct case_map *old)
-{
-  if (!old)
-    return NULL;
-
-  size_t n_values = caseproto_get_n_widths (old->proto);
-  struct case_map *new = xmalloc (sizeof *new);
-  *new = (struct case_map) {
-    .proto = caseproto_ref (old->proto),
-    .map = xmemdup (old->proto, n_values * sizeof *new->map),
-  };
-  return new;
-}
-
 /* Destroys case map MAP. */
 void
 case_map_destroy (struct case_map *map)
