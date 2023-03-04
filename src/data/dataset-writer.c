@@ -74,8 +74,7 @@ dataset_writer_open (struct file_handle *fh,
 
   writer->dict = dict_clone (dictionary);
   dict_delete_scratch_vars (writer->dict);
-  if (dict_count_values (writer->dict, 0)
-      < dict_get_next_value_idx (writer->dict))
+  if (dict_count_values (writer->dict, 0) < dict_get_n_vars (writer->dict))
     {
       writer->compactor = case_map_to_compact_dict (writer->dict, 0);
       dict_compact_values (writer->dict);

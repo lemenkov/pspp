@@ -83,9 +83,6 @@ void           psppire_dict_delete_var (PsppireDict *s, gint idx);
 /* Return the number of variables in the dictionary */
 gint psppire_dict_get_n_vars (const PsppireDict *d);
 
-/* Return the number of `union value's in the dictionary */
-size_t psppire_dict_get_n_values (const PsppireDict *d);
-
 /* Returns the prototype for the cases that match the dictionary */
 const struct caseproto *psppire_dict_get_proto (const PsppireDict *d);
 
@@ -110,8 +107,6 @@ struct variable *psppire_dict_insert_variable (PsppireDict *d, gint idx,
 gboolean psppire_dict_check_name (const PsppireDict *, const gchar *name);
 
 bool psppire_dict_generate_name (const PsppireDict *, char *name, size_t size);
-
-gint psppire_dict_get_next_value_idx (const PsppireDict *dict);
 
 gboolean psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
 			      const gchar *text);

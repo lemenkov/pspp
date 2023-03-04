@@ -501,17 +501,6 @@ psppire_dict_get_n_vars (const PsppireDict *d)
 }
 
 
-/* Return the number of `union value's in the dictionary */
-size_t
-psppire_dict_get_n_values (const PsppireDict *d)
-{
-  g_return_val_if_fail (d, -1);
-  g_return_val_if_fail (d->dict, -1);
-
-  return dict_get_next_value_idx (d->dict);
-}
-
-
 /* Returns the prototype for the cases that match the dictionary */
 const struct caseproto *
 psppire_dict_get_proto (const PsppireDict *d)
@@ -558,13 +547,6 @@ psppire_dict_check_name (const PsppireDict *dict,
   return (dict_id_is_valid (dict->dict, name)
           && !psppire_dict_lookup_var (dict, name));
 }
-
-gint
-psppire_dict_get_next_value_idx (const PsppireDict *dict)
-{
-  return dict_get_next_value_idx (dict->dict);
-}
-
 
 /* Tree Model Stuff */
 

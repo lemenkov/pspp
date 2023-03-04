@@ -332,7 +332,7 @@ psppire_data_store_get_case_count (const PsppireDataStore *store)
 size_t
 psppire_data_store_get_value_count (const PsppireDataStore *store)
 {
-  return psppire_dict_get_n_values (store->dict);
+  return psppire_dict_get_n_vars (store->dict);
 }
 
 const struct caseproto *

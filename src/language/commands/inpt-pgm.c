@@ -149,7 +149,7 @@ cmd_input_program (struct lexer *lexer, struct dataset *ds)
       msg_location_destroy (location);
       return CMD_FAILURE;
     }
-  if (dict_get_next_value_idx (dataset_dict (inp->ds)) == 0)
+  if (dict_get_n_vars (dataset_dict (inp->ds)) == 0)
     {
       msg_at (SE, location, _("Input program did not create any variables."));
       destroy_input_program (inp);

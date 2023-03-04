@@ -65,7 +65,6 @@ struct dictionary
     struct caseproto *proto;    /* Prototype for dictionary cases
                                    (updated lazily). */
     struct hmap name_map;	/* Variable index by name. */
-    int next_value_idx;         /* Index of next `union value' to allocate. */
     const struct variable **split;    /* SPLIT FILE vars. */
     size_t n_splits;            /* SPLIT FILE count. */
     enum split_type split_type;
@@ -293,12 +292,6 @@ dict_create (const char *encoding)
 /* Creates and returns a (deep) copy of an existing
    dictionary.
 
-   The new dictionary's case indexes are copied from the old
-   dictionary.  If the new dictionary won't be used to access
-   cases produced with the old dictionary, then the new
-   dictionary's case indexes should be compacted with
-   dict_compact_values to save space.
-
    Callbacks are not cloned. */
 struct dictionary *
 dict_clone (const struct dictionary *s)
@@ -316,8 +309,6 @@ dict_clone (const struct dictionary *s)
 
       var_get_vardict (dv)->case_index = var_get_vardict (sv)->case_index;
     }
-
-  d->next_value_idx = s->next_value_idx;
 
   d->n_splits = s->n_splits;
   if (d->n_splits > 0)
@@ -665,7 +656,6 @@ dict_clear__ (struct dictionary *d, bool skip_callbacks)
   d->n_vars = d->allocated_vars = 0;
   invalidate_proto (d);
   hmap_clear (&d->name_map);
-  d->next_value_idx = 0;
   dict_set_split_vars__ (d, NULL, 0, SPLIT_NONE, skip_callbacks);
 
   if (skip_callbacks)
@@ -799,8 +789,6 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
 {
   struct vardict_info *vardict;
 
-  assert (case_index >= d->next_value_idx);
-
   /* Update dictionary. */
   if (d->n_vars >= d->allocated_vars)
     {
@@ -829,7 +817,6 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
     d->callbacks->var_added (d, var_get_dict_index (v), d->cb_data);
 
   invalidate_proto (d);
-  d->next_value_idx = case_index + 1;
 
   return v;
 }
@@ -837,7 +824,7 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
 static struct variable *
 add_var (struct dictionary *d, struct variable *v)
 {
-  return add_var_with_case_index (d, v, d->next_value_idx);
+  return add_var_with_case_index (d, v, dict_get_n_vars (d));
 }
 
 /* Creates and returns a new variable in D with the given NAME
@@ -1418,35 +1405,15 @@ dict_get_proto (const struct dictionary *d_)
   return d->proto;
 }
 
-/* Returns the case index of the next value to be added to D.
-   This value is the number of `union value's that need to be
-   allocated to store a case for dictionary D. */
-int
-dict_get_next_value_idx (const struct dictionary *d)
-{
-  return d->next_value_idx;
-}
-
-/* Returns the number of bytes needed to store a case for
-   dictionary D. */
-size_t
-dict_get_case_size (const struct dictionary *d)
-{
-  return sizeof (union value) * dict_get_next_value_idx (d);
-}
-
 /* Reassigns values in dictionary D so that fragmentation is
    eliminated. */
 void
 dict_compact_values (struct dictionary *d)
 {
-  size_t i;
-
-  d->next_value_idx = 0;
-  for (i = 0; i < d->n_vars; i++)
+  for (size_t i = 0; i < d->n_vars; i++)
     {
       struct variable *v = d->vars[i].var;
-      set_var_case_index (v, d->next_value_idx++);
+      set_var_case_index (v, i);
     }
   invalidate_proto (d);
 }
@@ -1454,12 +1421,7 @@ dict_compact_values (struct dictionary *d)
 /* Returns the number of values occupied by the variables in
    dictionary D.  All variables are considered if EXCLUDE_CLASSES
    is 0, or it may contain one or more of DC_ORDINARY, DC_SYSTEM,
-   or DC_SCRATCH to exclude the corresponding type of variable.
-
-   The return value may be less than the number of values in one
-   of dictionary D's cases (as returned by
-   dict_get_next_value_idx) even if E is 0, because there may be
-   gaps in D's cases due to deleted variables. */
+   or DC_SCRATCH to exclude the corresponding type of variable. */
 size_t
 dict_count_values (const struct dictionary *d, unsigned int exclude_classes)
 {
