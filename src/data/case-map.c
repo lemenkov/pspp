@@ -154,11 +154,13 @@ struct casewriter *
 case_map_create_output_translator (struct case_map *map,
                                    struct casewriter *subwriter)
 {
-    return casewriter_create_translator (subwriter,
-                                         case_map_get_proto (map),
-                                         translate_case,
-                                         destroy_case_map,
-                                         map);
+  if (!map)
+    return casewriter_rename (subwriter);
+  return casewriter_create_translator (subwriter,
+                                       case_map_get_proto (map),
+                                       translate_case,
+                                       destroy_case_map,
+                                       map);
 }
 
 /* Casereader/casewriter translation callback. */
