@@ -130,7 +130,7 @@ pfm_open_writer (struct file_handle *fh, struct dictionary *dict,
       const struct variable *dv = dict_get_var (dict, i);
       struct pfm_var *pv = &w->vars[i];
       pv->width = MIN (var_get_width (dv), MAX_POR_WIDTH);
-      pv->case_index = var_get_case_index (dv);
+      pv->case_index = var_get_dict_index (dv);
     }
 
   w->digits = opts.digits;

@@ -244,7 +244,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       struct arc_spec *spec = &arc->specs[i];
 
       spec->width = var_get_width (src_vars[i]);
-      spec->src_idx = var_get_case_index (src_vars[i]);
+      spec->src_idx = var_get_dict_index (src_vars[i]);
       spec->src_name = xstrdup (var_get_name (src_vars[i]));
       spec->format = var_get_print_format (src_vars[i]);
 
@@ -336,7 +336,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
       /* Create destination variable. */
       struct variable *dst = dict_create_var_assert (dict, dst_names[i], 0);
-      spec->dst_idx = var_get_case_index (dst);
+      spec->dst_idx = var_get_dict_index (dst);
       var_set_label (dst, spec->label);
 
       /* Set print format. */

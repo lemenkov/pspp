@@ -97,7 +97,7 @@ subcase_uninit (struct subcase *sc)
 bool
 subcase_contains_var (const struct subcase *sc, const struct variable *var)
 {
-  return subcase_contains (sc, var_get_case_index (var));
+  return subcase_contains (sc, var_get_dict_index (var));
 }
 
 /* Returns true if CASE_INDEX already has a field in SC,
@@ -152,7 +152,7 @@ void
 subcase_add_var_always (struct subcase *sc, const struct variable *var,
                         enum subcase_direction direction)
 {
-  return subcase_add_always (sc, var_get_case_index (var),
+  return subcase_add_always (sc, var_get_dict_index (var),
                              var_get_width (var), direction);
 }
 
@@ -170,7 +170,7 @@ subcase_add_vars_always (struct subcase *sc,
   for (i = 0; i < n_vars; i++)
     {
       struct subcase_field *field = &sc->fields[sc->n_fields++];
-      field->case_index = var_get_case_index (vars[i]);
+      field->case_index = var_get_dict_index (vars[i]);
       field->width = var_get_width (vars[i]);
       field->direction = SC_ASCEND;
     }

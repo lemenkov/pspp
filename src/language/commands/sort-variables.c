@@ -272,7 +272,8 @@ cmd_sort_variables (struct lexer *lexer, struct dataset *ds)
   size_t n_vars;
   dict_get_vars_mutable (d, &vars, &n_vars, 0);
   sort (vars, n_vars, sizeof *vars, compare_vars, &c);
-  dict_reorder_vars (d, CONST_CAST (struct variable *const *, vars), n_vars);
+  proc_execute (ds);
+  dataset_reorder_vars (ds, vars, n_vars);
   free (vars);
 
   result = CMD_SUCCESS;

@@ -194,7 +194,7 @@ void variance_calculation (struct casereader *ir, const struct variable *var,
   struct ccase *c;
   const struct variable *wv = dict_get_weight (dict);
   const int w_idx = wv ?
-    var_get_case_index (wv) :
+    var_get_dict_index (wv) :
     caseproto_get_n_widths (casereader_get_proto (r)) ;
 
   r = sort_execute_1var (r, var);

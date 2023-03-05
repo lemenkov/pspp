@@ -594,10 +594,10 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
       var_set_both_formats (v, output);
       if (type == DP_DELIMITED)
         data_parser_add_delimited_field (parser, input,
-                                         var_get_case_index (v),
+                                         var_get_dict_index (v),
                                          name);
       else
-        data_parser_add_fixed_field (parser, input, var_get_case_index (v),
+        data_parser_add_fixed_field (parser, input, var_get_dict_index (v),
                                      name, record, fc);
       free (name);
       name = NULL;

@@ -199,7 +199,6 @@ void var_clear_short_names (struct variable *);
 
 /* Relationship with dictionary. */
 size_t var_get_dict_index (const struct variable *);
-size_t var_get_case_index (const struct variable *);
 
 /* Custom attributes. */
 struct attrset *var_get_attributes (const struct variable *);

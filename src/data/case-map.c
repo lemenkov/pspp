@@ -215,7 +215,7 @@ case_map_stage_create (const struct dictionary *dict)
 
       stage_var = xmalloc (sizeof *stage_var);
       stage_var->var = var;
-      stage_var->case_index = var_get_case_index (var);
+      stage_var->case_index = var_get_dict_index (var);
       hmap_insert (&stage->stage_vars, &stage_var->hmap_node,
                    hash_pointer (var, 0));
     }
@@ -281,10 +281,10 @@ case_map_stage_get_case_map (const struct case_map_stage *stage)
       const struct variable *var = dict_get_var (stage->dict, i);
       const struct stage_var *stage_var = case_map_stage_find_var (stage, var);
 
-      if (var_get_case_index (var) != stage_var->case_index)
+      if (var_get_dict_index (var) != stage_var->case_index)
         identity_map = false;
 
-      insert_mapping (map, stage_var->case_index, var_get_case_index (var));
+      insert_mapping (map, stage_var->case_index, var_get_dict_index (var));
     }
 
   if (identity_map)
@@ -311,7 +311,7 @@ case_map_by_name (const struct dictionary *old,
       struct variable *nv = dict_get_var (new, i);
       struct variable *ov = dict_lookup_var_assert (old, var_get_name (nv));
       assert (var_get_width (nv) == var_get_width (ov));
-      insert_mapping (map, var_get_case_index (ov), var_get_case_index (nv));
+      insert_mapping (map, var_get_dict_index (ov), var_get_dict_index (nv));
     }
   return map;
 }

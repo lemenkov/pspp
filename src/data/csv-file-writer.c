@@ -118,7 +118,7 @@ csv_writer_open (struct file_handle *fh, const struct dictionary *dict,
       struct csv_var *cv = &w->csv_vars[i];
 
       cv->width = var_get_width (var);
-      cv->case_index = var_get_case_index (var);
+      cv->case_index = var_get_dict_index (var);
 
       cv->format = var_get_print_format (var);
       if (opts->recode_user_missing)

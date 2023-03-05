@@ -58,6 +58,7 @@ enum dict_signal_handler {
   VARIABLE_INSERTED,
   VARIABLE_CHANGED,
   VARIABLES_DELETED,
+  VARIABLE_MOVED,
   n_dict_signals
 };
 

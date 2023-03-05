@@ -1221,17 +1221,6 @@ var_get_dict_index (const struct variable *v)
   assert (var_has_vardict (v));
   return vardict_get_dict_index (v->vardict);
 }
-
-/* Returns V's index within the case represented by its
-   dictionary, that is, the value for which "case_data_idx (case,
-   index)" will return the data for V in that case.
-   V must be in a dictionary. */
-size_t
-var_get_case_index (const struct variable *v)
-{
-  assert (var_has_vardict (v));
-  return vardict_get_case_index (v->vardict);
-}
 
 /* Returns variable V's attribute set.  The caller may examine or
    modify the attribute set, but must not destroy it.  Destroying

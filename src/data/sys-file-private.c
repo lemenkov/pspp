@@ -232,7 +232,7 @@ sfm_dictionary_to_sfm_vars (const struct dictionary *dict,
               sv = &(*sfm_vars)[(*sfm_n_vars)++];
               sv->var_width = width;
               sv->segment_width = width == 0 ? 0 : used_bytes;
-              sv->case_index = var_get_case_index (dv);
+              sv->case_index = var_get_dict_index (dv);
               sv->offset = sfm_segment_offset (width, j);
               sv->padding = padding;
             }

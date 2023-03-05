@@ -68,6 +68,7 @@ struct dataset {
   struct caseinit *caseinit;
   struct trns_chain permanent_trns_chain;
   struct dictionary *permanent_dict;
+  struct variable *order_var;
   struct casewriter *sink;
   struct trns_chain temporary_trns_chain;
   bool temporary;
@@ -369,6 +370,28 @@ dataset_delete_vars (struct dataset *ds, struct variable **vars, size_t n)
   caseinit_mark_as_preinited (ds->caseinit, ds->dict);
 }
 
+void
+dataset_reorder_vars (struct dataset *ds, struct variable **vars, size_t n)
+{
+  assert (!proc_in_temporary_transformations (ds));
+  assert (!proc_has_transformations (ds));
+  assert (n <= dict_get_n_vars (ds->dict));
+
+  caseinit_mark_for_init (ds->caseinit, ds->dict);
+  ds->source = caseinit_translate_casereader_to_init_vars (
+    ds->caseinit, dict_get_proto (ds->dict), ds->source);
+  caseinit_clear (ds->caseinit);
+  caseinit_mark_as_preinited (ds->caseinit, ds->dict);
+
+  struct case_map_stage *stage = case_map_stage_create (ds->dict);
+  dict_reorder_vars (ds->dict, vars, n);
+  ds->source = case_map_create_input_translator (
+    case_map_stage_get_case_map (stage), ds->source);
+  case_map_stage_destroy (stage);
+  caseinit_clear (ds->caseinit);
+  caseinit_mark_as_preinited (ds->caseinit, ds->dict);
+}
+
 /* Returns a number unique to DS.  It can be used to distinguish one dataset
    from any other within a given program run, even datasets that do not exist
    at the same time. */
@@ -570,8 +593,12 @@ proc_casereader_read (struct casereader *reader UNUSED, void *ds_)
       /* Write case to replacement dataset. */
       ds->cases_written++;
       if (ds->sink != NULL)
-        casewriter_write (ds->sink,
-                          case_map_execute (ds->compactor, case_ref (c)));
+        {
+          if (ds->order_var)
+            *case_num_rw (c, ds->order_var) = case_nr;
+          casewriter_write (ds->sink,
+                            case_map_execute (ds->compactor, case_ref (c)));
+        }
 
       /* Execute temporary transformations. */
       if (ds->temporary_trns_chain.n)
@@ -662,6 +689,7 @@ proc_commit (struct dataset *ds)
 
   dict_clear_vectors (ds->dict);
   ds->permanent_dict = NULL;
+  ds->order_var = NULL;
   return ok;
 }
 
@@ -835,24 +863,26 @@ store_case_num (void *var_, struct ccase **cc, casenumber case_num)
   return TRNS_CONTINUE;
 }
 
-/* Add a variable which we can sort by to get back the original order. */
+/* Add a variable $ORDERING which we can sort by to get back the original order. */
 struct variable *
 add_permanent_ordering_transformation (struct dataset *ds)
 {
-  struct variable *temp_var = dict_create_var_assert (ds->dict, "$ORDER", 0);
-  struct variable *order_var
-    = (proc_in_temporary_transformations (ds)
-       ? dict_clone_var_in_place_assert (ds->permanent_dict, temp_var)
-       : temp_var);
+  struct dictionary *d = ds->permanent_dict ? ds->permanent_dict : ds->dict;
+  struct variable *order_var = dict_create_var_assert (d, "$ORDER", 0);
+  ds->order_var = order_var;
 
-  static const struct trns_class trns_class = {
-    .name = "ordering",
-    .execute = store_case_num
-  };
-  const struct transformation t = { .class = &trns_class, .aux = order_var };
-  trns_chain_append (&ds->permanent_trns_chain, &t);
+  if (ds->permanent_dict)
+    {
+      order_var = dict_create_var_assert (ds->dict, "$ORDER", 0);
+      static const struct trns_class trns_class = {
+        .name = "ordering",
+        .execute = store_case_num
+      };
+      const struct transformation t = { .class = &trns_class, .aux = order_var };
+      trns_chain_prepend (&ds->temporary_trns_chain, &t);
+    }
 
-  return temp_var;
+  return order_var;
 }
 
 /* Causes output from the next procedure to be discarded, instead

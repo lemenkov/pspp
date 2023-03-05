@@ -176,6 +176,6 @@ order_stats_accumulate (struct order_stats **os, size_t n_os,
                                              exclude, NULL, NULL);
 
   order_stats_accumulate_idx (os, n_os, reader,
-                              weight_var ? var_get_case_index (weight_var) : -1,
-                              var_get_case_index (data_var));
+                              weight_var ? var_get_dict_index (weight_var) : -1,
+                              var_get_dict_index (data_var));
 }

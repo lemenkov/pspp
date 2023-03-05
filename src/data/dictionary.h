@@ -65,9 +65,6 @@ struct variable *dict_clone_var_as_assert (struct dictionary *,
                                            const struct variable *,
                                            const char *);
 
-struct variable *dict_clone_var_in_place_assert (struct dictionary *,
-                                                 const struct variable *);
-
 /* Deleting variables. */
 void dict_delete_var (struct dictionary *, struct variable *);
 void dict_delete_vars (struct dictionary *,
@@ -204,6 +201,7 @@ struct dict_callbacks
  {
   void (*var_added) (struct dictionary *, int, void *);
   void (*vars_deleted) (struct dictionary *, int dict_index, unsigned int n, void *);
+  void (*var_moved) (struct dictionary *, int new_dict_index, int old_dict_index, void *);
   void (*var_changed) (struct dictionary *, int, unsigned int, const struct variable *, void *);
   void (*weight_changed) (struct dictionary *, int, void *);
   void (*filter_changed) (struct dictionary *, int, void *);

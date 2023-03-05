@@ -1022,7 +1022,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
      $ORDER). */
   struct rank_trns *trns = xmalloc (sizeof *trns);
   *trns = (struct rank_trns) {
-    .order_case_idx = var_get_case_index (order_var),
+    .order_case_idx = var_get_dict_index (order_var),
     .input_vars = xnmalloc (cmd->n_vars, sizeof *trns->input_vars),
     .n_input_vars = cmd->n_vars,
     .n_funcs = cmd->n_rs,
@@ -1045,7 +1045,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
           var_set_label (var, rs->dest_labels[i]);
           var_set_measure (var, rank_measures[rs->rfunc]);
 
-          iv->output_var_indexes[j] = var_get_case_index (var);
+          iv->output_var_indexes[j] = var_get_dict_index (var);
         }
     }
   free (outputs);

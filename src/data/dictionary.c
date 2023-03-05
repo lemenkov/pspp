@@ -143,13 +143,6 @@ reindex_var (struct dictionary *d, struct vardict_info *vardict, bool skip_callb
     }
 }
 
-/* Sets the case_index in V's vardict to CASE_INDEX. */
-static void
-set_var_case_index (struct variable *v, int case_index)
-{
-  var_get_vardict (v)->case_index = case_index;
-}
-
 /* Removes the dictionary variables with indexes from FROM to TO (exclusive)
    from name_map. */
 static void
@@ -236,16 +229,8 @@ invalidate_proto (struct dictionary *d)
 void
 dict_dump (const struct dictionary *d)
 {
-  int i;
-  for (i = 0 ; i < d->n_vars ; ++i)
-    {
-      const struct variable *v = d->vars[i].var;
-      printf ("Name: %s;\tdict_idx: %zu; case_idx: %zu\n",
-	      var_get_name (v),
-	      var_get_dict_index (v),
-	      var_get_case_index (v));
-
-    }
+  for (size_t i = 0; i < d->n_vars; ++i)
+    printf ("%zu: %s\n", i, var_get_name (d->vars[i].var));
 }
 
 /* Associate CALLBACKS with DICT.  Callbacks will be invoked whenever
@@ -306,8 +291,6 @@ dict_clone (const struct dictionary *s)
 
       for (size_t j = 0; j < var_get_n_short_names (sv); j++)
         var_set_short_name (dv, j, var_get_short_name (sv, j));
-
-      var_get_vardict (dv)->case_index = var_get_vardict (sv)->case_index;
     }
 
   d->n_splits = s->n_splits;
@@ -532,7 +515,7 @@ void
 dict_delete_var (struct dictionary *d, struct variable *v)
 {
   dict_delete_var__ (d, v, false);
-  dict_compact_values (d);
+  invalidate_proto (d);
 }
 
 
@@ -548,7 +531,7 @@ dict_delete_vars (struct dictionary *d,
 
   while (count-- > 0)
     dict_delete_var (d, *vars++);
-  dict_compact_values (d);
+  invalidate_proto (d);
 }
 
 /* Deletes the COUNT variables in D starting at index IDX.  This
@@ -565,19 +548,12 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 {
   assert (idx + count <= d->n_vars);
 
-  /* We need to store the variable and the corresponding case_index
-     for the delete callbacks later. We store them in a linked list.*/
-  struct delvar {
-    struct ll ll;
-    struct variable *var;
-  };
-  struct ll_list list = LL_INITIALIZER (list);
+  struct variable **vars = xnmalloc (count, sizeof *vars);
 
-  for (size_t i = idx; i < idx + count; i++)
+  for (size_t i = 0; i < count; i++)
     {
-      struct delvar *dv = xmalloc (sizeof (struct delvar));
-      assert (dv);
-      struct variable *v = d->vars[i].var;
+      struct variable *v = d->vars[idx + i].var;
+      vars[i] = v;
 
       dict_unset_split_var (d, v, false);
       dict_unset_mrset_var (d, v);
@@ -588,9 +564,6 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 
       if (d->filter == v)
 	dict_set_filter (d, NULL);
-
-      dv->var = v;
-      ll_push_tail (&list, (struct ll *)dv);
     }
 
   dict_clear_vectors (d);
@@ -608,19 +581,17 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 
   /* Now issue the variable delete callbacks and delete
      the variables. The vardict is not valid at this point
-     anymore. That is the reason why we stored the
-     caseindex before reindexing. */
+     anymore. */
   if (d->callbacks &&  d->callbacks->vars_deleted)
     d->callbacks->vars_deleted (d, idx, count, d->cb_data);
-  for (size_t vi = idx; vi < idx + count; vi++)
+  for (size_t i = 0; i < count; i++)
     {
-      struct delvar *dv = (struct delvar *) ll_pop_head (&list);
-      var_clear_vardict (dv->var);
-      var_unref (dv->var);
-      free (dv);
+      var_clear_vardict (vars[i]);
+      var_unref (vars[i]);
     }
+  free (vars);
 
-  dict_compact_values (d);
+  invalidate_proto (d);
 }
 
 /* Deletes scratch variables from dictionary D. */
@@ -637,7 +608,7 @@ dict_delete_scratch_vars (struct dictionary *d)
     else
       i++;
 
-  dict_compact_values (d);
+  invalidate_proto (d);
 }
 
 
@@ -787,11 +758,8 @@ dict_get_vars_mutable (const struct dictionary *d, struct variable ***vars,
 }
 
 static struct variable *
-add_var_with_case_index (struct dictionary *d, struct variable *v,
-                         int case_index)
+add_var (struct dictionary *d, struct variable *v)
 {
-  struct vardict_info *vardict;
-
   /* Update dictionary. */
   if (d->n_vars >= d->allocated_vars)
     {
@@ -807,12 +775,13 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
         }
     }
 
-  vardict = &d->vars[d->n_vars++];
-  vardict->dict = d;
-  vardict->var = v;
+  struct vardict_info *vardict = &d->vars[d->n_vars++];
+  *vardict = (struct vardict_info) {
+    .dict = d,
+    .var = v,
+  };
   hmap_insert (&d->name_map, &vardict->name_node,
                utf8_hash_case_string (var_get_name (v), 0));
-  vardict->case_index = case_index;
   var_set_vardict (v, vardict);
 
   if (d->changed) d->changed (d, d->changed_data);
@@ -822,12 +791,6 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
   invalidate_proto (d);
 
   return v;
-}
-
-static struct variable *
-add_var (struct dictionary *d, struct variable *v)
-{
-  return add_var_with_case_index (d, v, dict_get_n_vars (d));
 }
 
 /* Creates and returns a new variable in D with the given NAME
@@ -898,15 +861,6 @@ dict_clone_var_as_assert (struct dictionary *d, const struct variable *old_var,
   return add_var (d, new_var);
 }
 
-struct variable *
-dict_clone_var_in_place_assert (struct dictionary *d,
-                                const struct variable *old_var)
-{
-  assert (dict_lookup_var (d, var_get_name (old_var)) == NULL);
-  return add_var_with_case_index (d, var_clone (old_var),
-                                  var_get_case_index (old_var));
-}
-
 /* Returns the variable named NAME in D, or a null pointer if no
    variable has that name. */
 struct variable *
@@ -959,6 +913,9 @@ dict_reorder_var (struct dictionary *d, struct variable *v, size_t new_index)
   unindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1);
   move_element (d->vars, d->n_vars, sizeof *d->vars, old_index, new_index);
   reindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1, false);
+
+  if (d->callbacks && d->callbacks->var_moved)
+    d->callbacks->var_moved (d, new_index, old_index, d->cb_data);
 }
 
 /* Reorders the variables in D, placing the COUNT variables
@@ -1395,32 +1352,10 @@ dict_get_proto (const struct dictionary *d_)
     {
       short int *widths = xnmalloc (d->n_vars, sizeof *widths);
       for (size_t i = 0; i < d->n_vars; i++)
-        widths[i] = -1;
-      for (size_t i = 0; i < d->n_vars; i++)
-        {
-          const struct variable *var = d->vars[i].var;
-          size_t case_idx = var_get_case_index (var);
-          assert (case_idx < d->n_vars);
-          assert (widths[case_idx] == -1);
-          widths[case_idx] = var_get_width (var);
-        }
-
+        widths[i] = var_get_width (d->vars[i].var);
       d->proto = caseproto_from_widths (widths, d->n_vars);
     }
   return d->proto;
-}
-
-/* Reassigns values in dictionary D so that fragmentation is
-   eliminated. */
-void
-dict_compact_values (struct dictionary *d)
-{
-  for (size_t i = 0; i < d->n_vars; i++)
-    {
-      struct variable *v = d->vars[i].var;
-      set_var_case_index (v, i);
-    }
-  invalidate_proto (d);
 }
 
 /* Returns the number of values occupied by the variables in

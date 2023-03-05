@@ -1716,7 +1716,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   if (examine.id_var)
     {
-      examine.id_idx = var_get_case_index (examine.id_var);
+      examine.id_idx = var_get_dict_index (examine.id_var);
       examine.id_width = var_get_width (examine.id_var);
     }
 

@@ -97,6 +97,7 @@ bool dataset_transform_source (struct dataset *,
                                const struct casereader_translator_class *,
                                void *aux);
 void dataset_delete_vars (struct dataset *, struct variable **, size_t n);
+void dataset_reorder_vars (struct dataset *, struct variable **, size_t n);
 
 /* Procedures. */
 

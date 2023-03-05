@@ -135,7 +135,7 @@ init_list_mark (struct init_list *list, const struct init_list *exclude,
   for (size_t i = 0; i < n_vars; i++)
     {
       struct variable *v = dict_get_var (d, i);
-      size_t case_index = var_get_case_index (v);
+      size_t case_index = var_get_dict_index (v);
       struct init_value *iv;
 
       /* Only include the correct class. */

@@ -223,7 +223,7 @@ psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet,
 							   posn, NULL);
 
   psppire_data_store_insert_value (data_store, var_get_width(v),
-				   var_get_case_index (v));
+				   var_get_dict_index (v));
 
   ssw_sheet_scroll_to (SSW_SHEET (sheet), posn, -1);
 

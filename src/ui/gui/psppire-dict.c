@@ -51,6 +51,7 @@ enum  {
   VARIABLE_CHANGED,
   VARIABLE_INSERTED,
   VARIABLES_DELETED,
+  VARIABLE_MOVED,
 
   WEIGHT_CHANGED,
   FILTER_CHANGED,
@@ -203,6 +204,18 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_INT,
                   G_TYPE_UINT);
 
+  signals [VARIABLE_MOVED] =
+    g_signal_new ("variable-moved",
+		  G_TYPE_FROM_CLASS (class),
+		  G_SIGNAL_RUN_FIRST,
+		  0,
+		  NULL, NULL,
+		  psppire_marshal_VOID__INT_INT,
+		  G_TYPE_NONE,
+		  2,
+		  G_TYPE_INT,
+                  G_TYPE_INT);
+
   signals [WEIGHT_CHANGED] =
     g_signal_new ("weight-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -255,7 +268,7 @@ psppire_dict_dispose (GObject *object)
 /* Pass on callbacks from src/data/dictionary, as
    signals in the Gtk library */
 static void
-addcb (struct dictionary *d, int idx, void *pd)
+var_added_callback (struct dictionary *d, int idx, void *pd)
 {
   PsppireDict *dict = PSPPIRE_DICT (pd);
 
@@ -267,14 +280,20 @@ addcb (struct dictionary *d, int idx, void *pd)
 }
 
 static void
-delcb (struct dictionary *d, int dict_idx, unsigned int n, void *pd)
+vars_deleted_callback (struct dictionary *d, int dict_idx, unsigned int n, void *pd)
 {
   g_signal_emit (pd, signals [VARIABLES_DELETED], 0, dict_idx, n);
   g_signal_emit_by_name (pd, "items-changed",  dict_idx, 1, 0);
 }
 
 static void
-mutcb (struct dictionary *d, int idx, unsigned int what, const struct variable *oldvar, void *pd)
+var_moved_callback (struct dictionary *d, int new_dict_index, int old_dict_index, void *pd)
+{
+  g_signal_emit (pd, signals [VARIABLE_MOVED], 0, new_dict_index, old_dict_index);
+}
+
+static void
+var_changed_callback (struct dictionary *d, int idx, unsigned int what, const struct variable *oldvar, void *pd)
 {
   g_signal_emit (pd, signals [VARIABLE_CHANGED], 0, idx, what, oldvar);
   g_signal_emit_by_name (pd, "items-changed", idx, 1, 1);
@@ -300,12 +319,13 @@ split_changed_callback (struct dictionary *d, void *pd)
 
 static const struct dict_callbacks gui_callbacks =
   {
-    addcb,
-    delcb,
-    mutcb,
-    weight_changed_callback,
-    filter_changed_callback,
-    split_changed_callback
+    .var_added = var_added_callback,
+    .vars_deleted = vars_deleted_callback,
+    .var_moved = var_moved_callback,
+    .var_changed = var_changed_callback,
+    .weight_changed = weight_changed_callback,
+    .filter_changed = filter_changed_callback,
+    .split_changed = split_changed_callback
   };
 
 static void

@@ -29,7 +29,6 @@ struct vardict_info
     struct dictionary *dict;
     struct variable *var;
     struct hmap_node name_node; /* In struct dictionary's name_map. */
-    int case_index;     /* Index into case of variable data. */
   };
 
 /* Called by dictionary code, defined in variable.c. */
@@ -42,12 +41,6 @@ void var_clear_vardict (struct variable *);
 void dict_var_changed (const struct variable *v, unsigned int what, struct variable *ov);
 
 int vardict_get_dict_index (const struct vardict_info *);
-
-static inline int
-vardict_get_case_index (const struct vardict_info *vardict)
-{
-  return vardict->case_index;
-}
 
 static inline struct dictionary *
 vardict_get_dictionary (const struct vardict_info *vardict)

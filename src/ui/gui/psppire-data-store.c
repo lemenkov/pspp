@@ -253,7 +253,7 @@ __get_value (GtkTreeModel *tree_model,
 
   g_value_init (value, G_TYPE_VARIANT);
 
-  const union value *val = case_data_idx (cc, var_get_case_index (variable));
+  const union value *val = case_data_idx (cc, var_get_dict_index (variable));
 
   GVariant *vv = value_variant_new (val, var_get_width (variable));
 
@@ -373,6 +373,17 @@ delete_variables_callback (GObject *obj, gint dict_index, unsigned int n, gpoint
   psppire_data_store_delete_values (store, dict_index, n);
 }
 
+/*
+   A callback which occurs after variables have been deleted.
+ */
+static void
+move_variable_callback (GObject *obj, gint new_dict_index, int old_dict_index, gpointer data)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (data);
+
+  datasheet_move_columns (store->datasheet, old_dict_index, new_dict_index, 1);
+}
+
 struct resize_datum_aux
   {
     const struct dictionary *dict;
@@ -406,7 +417,7 @@ variable_changed_callback (GObject *obj, gint var_num, guint what, const struct 
 
   if (what & VAR_TRAIT_WIDTH)
     {
-      int posn = var_get_case_index (variable);
+      int posn = var_get_dict_index (variable);
       struct resize_datum_aux aux;
       aux.old_variable = oldvar;
       aux.new_variable = variable;
@@ -428,7 +439,7 @@ insert_variable_callback (GObject *obj, gint var_num, gpointer data)
   store  = PSPPIRE_DATA_STORE (data);
 
   variable = psppire_dict_get_variable (store->dict, var_num);
-  posn = var_get_case_index (variable);
+  posn = var_get_dict_index (variable);
   psppire_data_store_insert_value (store, var_get_width (variable), posn);
 }
 
@@ -515,6 +526,11 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
       data_store->dict_handler_id [VARIABLES_DELETED] =
 	g_signal_connect (dict, "variables-deleted",
 			  G_CALLBACK (delete_variables_callback),
+			  data_store);
+
+      data_store->dict_handler_id [VARIABLE_MOVED] =
+	g_signal_connect (dict, "variable-moved",
+			  G_CALLBACK (move_variable_callback),
 			  data_store);
 
       data_store->dict_handler_id [VARIABLE_CHANGED] =
@@ -609,7 +625,7 @@ psppire_data_store_get_value (PsppireDataStore *store,
 
   int width = var_get_width (var);
   value_init (val, width);
-  datasheet_get_value (store->datasheet, row, var_get_case_index (var), val);
+  datasheet_get_value (store->datasheet, row, var_get_dict_index (var), val);
 
   return TRUE;
 }
@@ -667,7 +683,7 @@ psppire_data_store_set_string (PsppireDataStore *store,
   if (row == n_cases)
     psppire_data_store_insert_new_case (store, row);
 
-  case_index = var_get_case_index (var);
+  case_index = var_get_dict_index (var);
   if (use_value_label)
     {
       const struct val_labs *vls = var_get_value_labels (var);
@@ -800,7 +816,7 @@ psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
   if (casenum == n_cases)
     psppire_data_store_insert_new_case (ds, casenum);
 
-  ok = datasheet_put_value (ds->datasheet, casenum, var_get_case_index (var),
+  ok = datasheet_put_value (ds->datasheet, casenum, var_get_dict_index (var),
                             v);
   if (ok)
     {
@@ -893,7 +909,7 @@ psppire_data_store_filtered (PsppireDataStore *ds,
   g_return_val_if_fail (var_is_numeric (filter), FALSE);
   value_init (&val, 0);
   if (! datasheet_get_value (ds->datasheet, row,
-                              var_get_case_index (filter),
+                              var_get_dict_index (filter),
                               &val))
     return FALSE;
 

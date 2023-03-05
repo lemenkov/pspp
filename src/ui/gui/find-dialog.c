@@ -757,7 +757,7 @@ find_value (const struct find_dialog *fd, casenumber current_row,
 	 i != ip->end (current_row, fd->data);
 	 ip->next (&i, fd->data))
       {
-	datasheet_get_value (fd->data, i, var_get_case_index (var), &val);
+	datasheet_get_value (fd->data, i, var_get_dict_index (var), &val);
 
 	if (comparator_compare (cmptr, &val))
 	  {

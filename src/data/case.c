@@ -265,7 +265,7 @@ const union value *
 case_data (const struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  return &c->values[var_get_case_index (v)];
+  return &c->values[var_get_dict_index (v)];
 }
 
 /* Returns a pointer to the `union value' used for the element of
@@ -288,7 +288,7 @@ case_data_rw (struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
   assert (!case_is_shared (c));
-  return &c->values[var_get_case_index (v)];
+  return &c->values[var_get_dict_index (v)];
 }
 
 /* Returns a pointer to the `union value' used for the
@@ -311,7 +311,7 @@ double
 case_num (const struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  return c->values[var_get_case_index (v)].f;
+  return c->values[var_get_dict_index (v)].f;
 }
 
 /* Returns the numeric value of the `union value' in C numbered
@@ -332,7 +332,7 @@ case_num_rw (struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
   assert (!case_is_shared (c));
-  return &c->values[var_get_case_index (v)].f;
+  return &c->values[var_get_dict_index (v)].f;
 }
 
 /* Returns a pointer to the `double' in the `union value' in C numbered IDX.
@@ -356,7 +356,7 @@ const uint8_t *
 case_str (const struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  return c->values[var_get_case_index (v)].s;
+  return c->values[var_get_dict_index (v)].s;
 }
 
 /* Returns the string value of the `union value' in C numbered
@@ -377,7 +377,7 @@ struct substring
 case_ss (const struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  return ss_buffer (CHAR_CAST (char *, c->values[var_get_case_index (v)].s),
+  return ss_buffer (CHAR_CAST (char *, c->values[var_get_dict_index (v)].s),
                     var_get_width (v));
 }
 
@@ -403,7 +403,7 @@ uint8_t *
 case_str_rw (struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  size_t idx = var_get_case_index (v);
+  size_t idx = var_get_dict_index (v);
   assert (!case_is_shared (c));
   return c->values[idx].s;
 }
@@ -513,9 +513,9 @@ case_size (const struct caseproto *proto)
 static void
 assert_variable_matches_case (const struct ccase *c, const struct variable *v)
 {
-  size_t case_idx = var_get_case_index (v);
-  assert (case_idx < caseproto_get_n_widths (c->proto));
-  assert (caseproto_get_width (c->proto, case_idx) == var_get_width (v));
+  size_t var_idx = var_get_dict_index (v);
+  assert (var_idx < caseproto_get_n_widths (c->proto));
+  assert (caseproto_get_width (c->proto, var_idx) == var_get_width (v));
 }
 
 /* Internal helper function for case_copy(). */

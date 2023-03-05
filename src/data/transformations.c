@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "libpspp/array.h"
 #include "libpspp/str.h"
 
 #include "gl/xalloc.h"
@@ -51,6 +52,18 @@ trns_chain_clear (struct trns_chain *chain)
   bool ok = trns_chain_uninit (chain);
   trns_chain_init (chain);
   return ok;
+}
+
+void
+trns_chain_prepend (struct trns_chain *chain, const struct transformation *t)
+{
+  if (chain->n >= chain->allocated)
+    chain->xforms = x2nrealloc (chain->xforms, &chain->allocated,
+                                sizeof *chain->xforms);
+
+  insert_element (chain->xforms, 1, sizeof *chain->xforms, 0);
+  chain->xforms[0] = *t;
+  chain->n++;
 }
 
 void

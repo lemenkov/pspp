@@ -64,6 +64,7 @@ bool trns_chain_uninit (struct trns_chain *);
 
 bool trns_chain_clear (struct trns_chain *);
 
+void trns_chain_prepend (struct trns_chain *, const struct transformation *);
 void trns_chain_append (struct trns_chain *, const struct transformation *);
 void trns_chain_splice (struct trns_chain *, struct trns_chain *);
 

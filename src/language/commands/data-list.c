@@ -420,7 +420,7 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
               }
 
             data_parser_add_fixed_field (parser, *f,
-                                         var_get_case_index (v),
+                                         var_get_dict_index (v),
                                          var_get_name (v), record, column);
 
             column += f->w;
@@ -516,7 +516,7 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
           var_set_both_formats (v, output);
 
           data_parser_add_delimited_field (parser,
-                                           input, var_get_case_index (v),
+                                           input, var_get_dict_index (v),
                                            var_get_name (v));
 	}
     }

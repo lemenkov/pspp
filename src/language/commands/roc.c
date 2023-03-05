@@ -432,7 +432,7 @@ process_group (const struct variable *var, struct casereader *reader,
   struct casereader *r1 =
     casereader_create_distinct (sort_execute_1var (reader, var), var, w);
 
-  const int weight_idx  = w ? var_get_case_index (w) :
+  const int weight_idx  = w ? var_get_dict_index (w) :
     caseproto_get_n_widths (casereader_get_proto (r1)) - 1;
 
   struct ccase *c1;
