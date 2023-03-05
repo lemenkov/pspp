@@ -950,9 +950,11 @@ dict_contains_var (const struct dictionary *d, const struct variable *v)
 void
 dict_reorder_var (struct dictionary *d, struct variable *v, size_t new_index)
 {
-  size_t old_index = var_get_dict_index (v);
-
   assert (new_index < d->n_vars);
+
+  size_t old_index = var_get_dict_index (v);
+  if (new_index == old_index)
+    return;
 
   unindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1);
   move_element (d->vars, d->n_vars, sizeof *d->vars, old_index, new_index);
