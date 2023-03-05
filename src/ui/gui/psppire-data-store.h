@@ -57,7 +57,7 @@ struct dictionary;
 enum dict_signal_handler {
   VARIABLE_INSERTED,
   VARIABLE_CHANGED,
-  VARIABLE_DELETED,
+  VARIABLES_DELETED,
   n_dict_signals
 };
 

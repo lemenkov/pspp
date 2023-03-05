@@ -80,6 +80,9 @@ struct pcp_var_record
   {
     unsigned int pos;
 
+    bool drop;
+    union value tmp;
+
     char name[9];
     int width;
     struct fmt_spec format;
@@ -393,14 +396,6 @@ pcp_get_strings (const struct any_reader *r_, struct pool *pool,
   return aux.n;
 }
 
-static void
-find_and_delete_var (struct dictionary *dict, const char *name)
-{
-  struct variable *var = dict_lookup_var (dict, name);
-  if (var)
-    dict_delete_var (dict, var);
-}
-
 /* Decodes the dictionary read from R, saving it into *DICT.  Character
    strings in R are decoded using ENCODING, or an encoding obtained from R if
    ENCODING is null, or the locale encoding if R specifies no encoding.
@@ -441,10 +436,6 @@ pcp_decode (struct any_reader *r_, const char *encoding,
      from the dictionary we created, because the caller owns the
      dictionary and may destroy or modify its variables. */
   r->proto = caseproto_ref_pool (dict_get_proto (dict), r->pool);
-
-  find_and_delete_var (dict, "CASENUM_");
-  find_and_delete_var (dict, "DATE_");
-  find_and_delete_var (dict, "WEIGHT_");
 
   *dictp = dict;
   if (infop)
@@ -844,9 +835,13 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
                                  rec->name, -1, r->pool);
       name[strcspn (name, " ")] = '\0';
 
-      /* Transform $DATE => DATE_, $WEIGHT => WEIGHT_, $CASENUM => CASENUM_. */
-      if (name[0] == '$')
-        name = pool_asprintf (r->pool, "%s_", name + 1);
+      /* Drop system variables. */
+      rec->drop = name[0] == '$';
+      if (rec->drop)
+        {
+          value_init_pool (r->pool, &rec->tmp, rec->width);
+          continue;
+        }
 
       if (!dict_id_is_valid (dict, name) || name[0] == '#')
         {
@@ -954,10 +949,11 @@ pcp_file_casereader_read (struct casereader *reader, void *r_)
   r->n_cases--;
 
   c = case_create (r->proto);
+  size_t case_idx = 0;
   for (i = 0; i < r->n_vars; i++)
     {
       struct pcp_var_record *var = &r->vars[i];
-      union value *v = case_data_rw_idx (c, i);
+      union value *v = var->drop ? &var->tmp : case_data_rw_idx (c, case_idx++);
 
       if (var->width == 0)
         retval = read_case_number (r, &v->f);

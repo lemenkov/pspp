@@ -352,27 +352,25 @@ psppire_data_store_init (PsppireDataStore *data_store)
 
 
 static void
-psppire_data_store_delete_value (PsppireDataStore *store, gint case_index)
+psppire_data_store_delete_values (PsppireDataStore *store, gint case_index,
+                                  guint n)
 {
   g_return_if_fail (store->datasheet);
   g_return_if_fail (case_index < datasheet_get_n_columns (store->datasheet));
 
-  datasheet_delete_columns (store->datasheet, case_index, 1);
-  datasheet_insert_column (store->datasheet, NULL, -1, case_index);
+  datasheet_delete_columns (store->datasheet, case_index, n);
 }
 
 
 /*
-   A callback which occurs after a variable has been deleted.
+   A callback which occurs after variables have been deleted.
  */
 static void
-delete_variable_callback (GObject *obj, const struct variable *var UNUSED,
-                          gint dict_index, gint case_index,
-                          gpointer data)
+delete_variables_callback (GObject *obj, gint dict_index, unsigned int n, gpointer data)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (data);
 
-  psppire_data_store_delete_value (store, case_index);
+  psppire_data_store_delete_values (store, dict_index, n);
 }
 
 struct resize_datum_aux
@@ -514,9 +512,9 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
 			  G_CALLBACK (insert_variable_callback),
 			  data_store);
 
-      data_store->dict_handler_id [VARIABLE_DELETED] =
-	g_signal_connect (dict, "variable-deleted",
-			  G_CALLBACK (delete_variable_callback),
+      data_store->dict_handler_id [VARIABLES_DELETED] =
+	g_signal_connect (dict, "variables-deleted",
+			  G_CALLBACK (delete_variables_callback),
 			  data_store);
 
       data_store->dict_handler_id [VARIABLE_CHANGED] =

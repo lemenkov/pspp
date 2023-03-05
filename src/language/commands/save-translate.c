@@ -236,7 +236,6 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
     }
 
   dict_delete_scratch_vars (dict);
-  dict_compact_values (dict);
 
   struct csv_writer_options csv_opts = {
     .recode_user_missing = recode_user_missing,

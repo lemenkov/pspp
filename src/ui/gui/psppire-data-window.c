@@ -1479,7 +1479,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
                             G_CALLBACK (enable_save), de);
   g_signal_connect_swapped (de->dict, "variable-inserted",
                             G_CALLBACK (enable_save), de);
-  g_signal_connect_swapped (de->dict, "variable-deleted",
+  g_signal_connect_swapped (de->dict, "variables-deleted",
                             G_CALLBACK (enable_save), de);
   enable_save (de);
 

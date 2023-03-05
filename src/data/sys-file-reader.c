@@ -2141,7 +2141,6 @@ parse_long_string_map (struct sfm_reader *r,
       var_set_width (var, length);
     }
   close_text_record (r, text);
-  dict_compact_values (dict);
 
   return true;
 }

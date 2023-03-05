@@ -142,7 +142,6 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
       if (!parse_dict_trim (lexer, dict))
         goto error;
     }
-  dict_compact_values (dict);
 
   map = case_map_stage_get_case_map (stage);
   case_map_stage_destroy (stage);

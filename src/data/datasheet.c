@@ -190,6 +190,7 @@ caseproto_to_n_bytes (const struct caseproto *proto)
   for (i = 0; i < caseproto_get_n_widths (proto); i++)
     {
       int width = caseproto_get_width (proto, i);
+      assert (width >= 0);
       if (width >= 0)
         n_bytes += width_to_n_bytes (width);
     }
@@ -236,6 +237,7 @@ datasheet_create (struct casereader *reader)
           int width = caseproto_get_width (ds->proto, i);
           column->source = ds->sources[0];
           column->width = width;
+          assert (width >= 0);
           if (width >= 0)
             {
               column->value_ofs = i;
@@ -473,6 +475,8 @@ datasheet_resize_column (struct datasheet *ds, size_t column, int new_width,
   col = &ds->columns[column];
   old_col = *col;
   old_width = old_col.width;
+  assert (old_width >= 0);
+  assert (new_width >= 0);
 
   if (new_width == -1)
     {
@@ -756,6 +760,7 @@ allocate_column (struct datasheet *ds, int width, struct column *column)
 
   column->value_ofs = -1;
   column->width = width;
+  assert (width >= 0);
   if (width >= 0)
     {
       int n_bytes;
@@ -1402,6 +1407,7 @@ copy_case_into_source (struct source *source, struct ccase *c, casenumber row)
   for (i = 0; i < n_widths; i++)
     {
       int width = caseproto_get_width (proto, i);
+      assert (width >= 0);
       if (width >= 0)
         {
           int n_bytes = width_to_n_bytes (width);

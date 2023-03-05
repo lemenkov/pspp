@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "data/any-reader.h"
+#include "data/case-map.h"
 #include "data/casereader.h"
 #include "data/casewriter.h"
 #include "data/csv-file-writer.h"
@@ -294,6 +295,7 @@ main (int argc, char *argv[])
   if (reader == NULL)
     goto error;
 
+  struct case_map_stage *stage = case_map_stage_create (dict);
   if (keep)
     {
       struct variable **keep_vars;
@@ -315,6 +317,10 @@ main (int argc, char *argv[])
       dict_delete_vars (dict, drop_vars, n_drop_vars);
       free (drop_vars);
     }
+
+  reader = case_map_create_input_translator (
+    case_map_stage_get_case_map (stage), reader);
+  case_map_stage_destroy (stage);
 
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {

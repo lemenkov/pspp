@@ -73,14 +73,10 @@ dataset_writer_open (struct file_handle *fh,
   writer->ds = fh_get_dataset (fh);
 
   writer->dict = dict_clone (dictionary);
+  struct case_map_stage *stage = case_map_stage_create (writer->dict);
   dict_delete_scratch_vars (writer->dict);
-  if (dict_count_values (writer->dict, 0) < dict_get_n_vars (writer->dict))
-    {
-      writer->compactor = case_map_to_compact_dict (writer->dict, 0);
-      dict_compact_values (writer->dict);
-    }
-  else
-    writer->compactor = NULL;
+  writer->compactor = case_map_stage_get_case_map (stage);
+  case_map_stage_destroy (stage);
   writer->subwriter = autopaging_writer_create (dict_get_proto (writer->dict));
 
   casewriter = casewriter_create (dict_get_proto (writer->dict),

@@ -310,7 +310,6 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
     }
 
   dict_delete_scratch_vars (dict);
-  dict_compact_values (dict);
 
   if (handle)
     {

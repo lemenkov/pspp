@@ -120,8 +120,6 @@ const struct caseproto *dict_get_proto (const struct dictionary *);
 size_t dict_count_values (const struct dictionary *,
                           unsigned int exclude_classes);
 void dict_compact_values (struct dictionary *);
-struct caseproto *dict_get_compacted_proto (const struct dictionary *,
-                                            unsigned int exclude_classes);
 
 /* SPLIT FILE variables.
 
@@ -205,8 +203,7 @@ bool dict_id_is_valid (const struct dictionary *, const char *id);
 struct dict_callbacks
  {
   void (*var_added) (struct dictionary *, int, void *);
-  void (*var_deleted) (struct dictionary *, const struct variable *,
-                       int dict_index, int case_index, void *);
+  void (*vars_deleted) (struct dictionary *, int dict_index, unsigned int n, void *);
   void (*var_changed) (struct dictionary *, int, unsigned int, const struct variable *, void *);
   void (*weight_changed) (struct dictionary *, int, void *);
   void (*filter_changed) (struct dictionary *, int, void *);

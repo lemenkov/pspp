@@ -478,7 +478,6 @@ static void
 dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks)
 {
   int dict_index = var_get_dict_index (v);
-  const int case_index = var_get_case_index (v);
 
   assert (dict_contains_var (d, v));
 
@@ -508,8 +507,8 @@ dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks
   if (! skip_callbacks)
     {
       if (d->changed) d->changed (d, d->changed_data);
-      if (d->callbacks &&  d->callbacks->var_deleted)
-        d->callbacks->var_deleted (d, v, dict_index, case_index, d->cb_data);
+      if (d->callbacks &&  d->callbacks->vars_deleted)
+        d->callbacks->vars_deleted (d, dict_index, 1, d->cb_data);
     }
 
   invalidate_proto (d);
@@ -533,6 +532,7 @@ void
 dict_delete_var (struct dictionary *d, struct variable *v)
 {
   dict_delete_var__ (d, v, false);
+  dict_compact_values (d);
 }
 
 
@@ -548,6 +548,7 @@ dict_delete_vars (struct dictionary *d,
 
   while (count-- > 0)
     dict_delete_var (d, *vars++);
+  dict_compact_values (d);
 }
 
 /* Deletes the COUNT variables in D starting at index IDX.  This
@@ -569,7 +570,6 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
   struct delvar {
     struct ll ll;
     struct variable *var;
-    int case_index;
   };
   struct ll_list list = LL_INITIALIZER (list);
 
@@ -590,7 +590,6 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 	dict_set_filter (d, NULL);
 
       dv->var = v;
-      dv->case_index = var_get_case_index (v);
       ll_push_tail (&list, (struct ll *)dv);
     }
 
@@ -611,15 +610,17 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
      the variables. The vardict is not valid at this point
      anymore. That is the reason why we stored the
      caseindex before reindexing. */
+  if (d->callbacks &&  d->callbacks->vars_deleted)
+    d->callbacks->vars_deleted (d, idx, count, d->cb_data);
   for (size_t vi = idx; vi < idx + count; vi++)
     {
       struct delvar *dv = (struct delvar *) ll_pop_head (&list);
       var_clear_vardict (dv->var);
-      if (d->callbacks &&  d->callbacks->var_deleted)
-        d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
       var_unref (dv->var);
       free (dv);
     }
+
+  dict_compact_values (d);
 }
 
 /* Deletes scratch variables from dictionary D. */
@@ -635,6 +636,8 @@ dict_delete_scratch_vars (struct dictionary *d)
       dict_delete_var (d, d->vars[i].var);
     else
       i++;
+
+  dict_compact_values (d);
 }
 
 
@@ -1437,31 +1440,6 @@ dict_count_values (const struct dictionary *d, unsigned int exclude_classes)
   return n;
 }
 
-/* Returns the case prototype that would result after deleting
-   all variables from D that are not in one of the
-   EXCLUDE_CLASSES and compacting the dictionary with
-   dict_compact().
-
-   The caller must unref the returned caseproto when it is no
-   longer needed. */
-struct caseproto *
-dict_get_compacted_proto (const struct dictionary *d,
-                          unsigned int exclude_classes)
-{
-  struct caseproto *proto;
-  size_t i;
-
-  assert (!(exclude_classes & ~DC_ALL));
-
-  proto = caseproto_create ();
-  for (i = 0; i < d->n_vars; i++)
-    {
-      struct variable *v = d->vars[i].var;
-      if (!(exclude_classes & var_get_dict_class (v)))
-        proto = caseproto_add_width (proto, var_get_width (v));
-    }
-  return proto;
-}
 /* Returns the file label for D, or a null pointer if D is
    unlabeled (see cmd_file_label()). */
 const char *

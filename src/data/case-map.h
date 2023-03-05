@@ -48,10 +48,6 @@ struct case_map_stage *case_map_stage_create (const struct dictionary *);
 void case_map_stage_destroy (struct case_map_stage *);
 struct case_map *case_map_stage_get_case_map (const struct case_map_stage *);
 
-/* For eliminating "holes" in a case. */
-struct case_map *case_map_to_compact_dict (const struct dictionary *d,
-                                           unsigned int exclude_classes);
-
 /* For mapping cases for one dictionary to another based on
    variable names within the dictionary. */
 struct case_map *case_map_by_name (const struct dictionary *old,

@@ -50,7 +50,7 @@ GType role_enum_type;
 enum  {
   VARIABLE_CHANGED,
   VARIABLE_INSERTED,
-  VARIABLE_DELETED,
+  VARIABLES_DELETED,
 
   WEIGHT_CHANGED,
   FILTER_CHANGED,
@@ -191,18 +191,17 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  1,
 		  G_TYPE_INT);
 
-  signals [VARIABLE_DELETED] =
-    g_signal_new ("variable-deleted",
+  signals [VARIABLES_DELETED] =
+    g_signal_new ("variables-deleted",
 		  G_TYPE_FROM_CLASS (class),
 		  G_SIGNAL_RUN_FIRST,
 		  0,
 		  NULL, NULL,
-		  psppire_marshal_VOID__POINTER_INT_INT,
+		  psppire_marshal_VOID__INT_UINT,
 		  G_TYPE_NONE,
-		  3,
-		  G_TYPE_POINTER,
+		  2,
 		  G_TYPE_INT,
-		  G_TYPE_INT);
+                  G_TYPE_UINT);
 
   signals [WEIGHT_CHANGED] =
     g_signal_new ("weight-changed",
@@ -268,11 +267,9 @@ addcb (struct dictionary *d, int idx, void *pd)
 }
 
 static void
-delcb (struct dictionary *d, const struct variable *var,
-       int dict_idx, int case_idx, void *pd)
+delcb (struct dictionary *d, int dict_idx, unsigned int n, void *pd)
 {
-  g_signal_emit (pd, signals [VARIABLE_DELETED], 0,
-                 var, dict_idx, case_idx);
+  g_signal_emit (pd, signals [VARIABLES_DELETED], 0, dict_idx, n);
   g_signal_emit_by_name (pd, "items-changed",  dict_idx, 1, 0);
 }
 

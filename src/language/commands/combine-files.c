@@ -407,7 +407,6 @@ combine_files (enum comb_command_type command,
     goto error;
 
   dict_delete_scratch_vars (proc.dict);
-  dict_compact_values (proc.dict);
 
   /* Set up mapping from each file's variables to master
      variables. */

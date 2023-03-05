@@ -360,10 +360,11 @@ dataset_delete_vars (struct dataset *ds, struct variable **vars, size_t n)
   caseinit_clear (ds->caseinit);
   caseinit_mark_as_preinited (ds->caseinit, ds->dict);
 
+  struct case_map_stage *stage = case_map_stage_create (ds->dict);
   dict_delete_vars (ds->dict, vars, n);
   ds->source = case_map_create_input_translator (
-    case_map_to_compact_dict (ds->dict, 0), ds->source);
-  dict_compact_values (ds->dict);
+    case_map_stage_get_case_map (stage), ds->source);
+  case_map_stage_destroy (stage);
   caseinit_clear (ds->caseinit);
   caseinit_mark_as_preinited (ds->caseinit, ds->dict);
 }
@@ -472,22 +473,13 @@ proc_open_filtering (struct dataset *ds, bool filter)
   /* Prepare sink. */
   if (!ds->discard_output)
     {
-      struct dictionary *pd = ds->permanent_dict;
-      size_t compacted_n_values = dict_count_values (pd, DC_SCRATCH);
-      assert (dict_count_values (pd, 0) == dict_get_n_vars (pd));
-      if (compacted_n_values < dict_get_n_vars (pd))
-        {
-          struct caseproto *compacted_proto;
-          compacted_proto = dict_get_compacted_proto (pd, DC_SCRATCH);
-          ds->compactor = case_map_to_compact_dict (pd, DC_SCRATCH);
-          ds->sink = autopaging_writer_create (compacted_proto);
-          caseproto_unref (compacted_proto);
-        }
-      else
-        {
-          ds->compactor = NULL;
-          ds->sink = autopaging_writer_create (dict_get_proto (pd));
-        }
+      struct dictionary *pd = dict_clone (ds->permanent_dict);
+      struct case_map_stage *stage = case_map_stage_create (pd);
+      dict_delete_scratch_vars (pd);
+      ds->compactor = case_map_stage_get_case_map (stage);
+      case_map_stage_destroy (stage);
+      ds->sink = autopaging_writer_create (dict_get_proto (pd));
+      dict_unref (pd);
     }
   else
     {
@@ -652,7 +644,6 @@ proc_commit (struct dataset *ds)
           ds->compactor = NULL;
 
           dict_delete_scratch_vars (ds->dict);
-          dict_compact_values (ds->dict);
         }
 
       /* Old data sink becomes new data source. */

@@ -101,8 +101,8 @@ case_map_execute (const struct case_map *map, struct ccase *src)
       for (dst_idx = 0; dst_idx < n_values; dst_idx++)
         {
           int src_idx = map->map[dst_idx];
-          if (src_idx != -1)
-	    value_copy (case_data_rw_idx (dst, dst_idx), case_data_idx (src, src_idx), caseproto_get_width (map->proto, dst_idx));
+          assert (src_idx != -1);
+          value_copy (case_data_rw_idx (dst, dst_idx), case_data_idx (src, src_idx), caseproto_get_width (map->proto, dst_idx));
         }
       case_unref (src);
       return dst;
@@ -131,6 +131,8 @@ struct casereader *
 case_map_create_input_translator (struct case_map *map,
                                   struct casereader *subreader)
 {
+  if (!map)
+    return casereader_rename (subreader);
   static const struct casereader_translator_class class = {
     translate_case, destroy_case_map,
   };
@@ -174,43 +176,6 @@ destroy_case_map (void *map_)
   struct case_map *map = map_;
   case_map_destroy (map);
   return true;
-}
-
-/* Creates and returns a case_map that can be used to compact
-   cases for dictionary D.
-
-   Compacting a case eliminates "holes" between values and after
-   the last value.  (Holes are created by deleting variables.)
-
-   All variables are compacted if EXCLUDE_CLASSES is 0, or it may
-   contain one or more of DC_ORDINARY, DC_SYSTEM, or DC_SCRATCH
-   to cause the corresponding type of variable to be deleted
-   during compaction. */
-struct case_map *
-case_map_to_compact_dict (const struct dictionary *d,
-                          unsigned int exclude_classes)
-{
-  size_t n_vars = dict_get_n_vars (d);
-  struct caseproto *proto;
-  struct case_map *map;
-  size_t n_values;
-  size_t i;
-
-  /* Create the case mapping. */
-  proto = dict_get_compacted_proto (d, exclude_classes);
-  map = create_case_map (proto);
-  caseproto_unref (proto);
-
-  /* Add the values to the case mapping. */
-  n_values = 0;
-  for (i = 0; i < n_vars; i++)
-    {
-      struct variable *v = dict_get_var (d, i);
-      if (!(exclude_classes & var_get_dict_class (v)))
-        insert_mapping (map, var_get_case_index (v), n_values++);
-    }
-
-  return map;
 }
 
 struct stage_var
