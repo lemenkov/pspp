@@ -190,7 +190,10 @@ struct stage_var
 struct case_map_stage
   {
     const struct dictionary *dict;
-    struct hmap stage_vars;
+    struct hmap stage_vars_by_pointer;
+
+    struct stage_var *stage_vars;
+    size_t n_stage_vars;
   };
 
 /* Prepares and returns a "struct case_map_stage" for producing a case map for
@@ -203,22 +206,23 @@ struct case_map_stage *
 case_map_stage_create (const struct dictionary *dict)
 {
   size_t n_vars = dict_get_n_vars (dict);
-  struct case_map_stage *stage;
-  size_t i;
+  struct case_map_stage *stage = xmalloc (sizeof *stage);
+  *stage = (struct case_map_stage) {
+    .dict = dict,
+    .stage_vars_by_pointer = HMAP_INITIALIZER (stage->stage_vars_by_pointer),
+    .stage_vars = xnmalloc (n_vars, sizeof *stage->stage_vars),
+    .n_stage_vars = n_vars,
+  };
 
-  stage = xmalloc (sizeof *stage);
-  stage->dict = dict;
-  hmap_init (&stage->stage_vars);
-
-  for (i = 0; i < n_vars; i++)
+  for (size_t i = 0; i < n_vars; i++)
     {
       const struct variable *var = dict_get_var (dict, i);
-      struct stage_var *stage_var;
-
-      stage_var = xmalloc (sizeof *stage_var);
-      stage_var->var = var;
-      stage_var->case_index = var_get_dict_index (var);
-      hmap_insert (&stage->stage_vars, &stage_var->hmap_node,
+      struct stage_var *stage_var = &stage->stage_vars[i];
+      *stage_var = (struct stage_var) {
+        .var = var,
+        .case_index = var_get_dict_index (var),
+      };
+      hmap_insert (&stage->stage_vars_by_pointer, &stage_var->hmap_node,
                    hash_pointer (var, 0));
     }
 
@@ -231,15 +235,8 @@ case_map_stage_destroy (struct case_map_stage *stage)
 {
   if (stage != NULL)
     {
-      struct stage_var *stage_var, *next_stage_var;
-
-      HMAP_FOR_EACH_SAFE (stage_var, next_stage_var,
-                          struct stage_var, hmap_node, &stage->stage_vars)
-        {
-          hmap_delete (&stage->stage_vars, &stage_var->hmap_node);
-          free (stage_var);
-        }
-      hmap_destroy (&stage->stage_vars);
+      hmap_destroy (&stage->stage_vars_by_pointer);
+      free (stage->stage_vars);
       free (stage);
     }
 }
@@ -251,7 +248,7 @@ case_map_stage_find_var (const struct case_map_stage *stage,
   const struct stage_var *stage_var;
 
   HMAP_FOR_EACH_IN_BUCKET (stage_var, struct stage_var, hmap_node,
-                           hash_pointer (var, 0), &stage->stage_vars)
+                           hash_pointer (var, 0), &stage->stage_vars_by_pointer)
     if (stage_var->var == var)
       return stage_var;
 
@@ -268,17 +265,15 @@ case_map_stage_find_var (const struct case_map_stage *stage,
    the variables in STAGE's dictionary to their current case indexes.
 
    Returns the new case map, or a null pointer if no mapping is required (that
-   is, no data has changed position). */
+   is, no variables were deleted or reordered). */
 struct case_map *
 case_map_stage_get_case_map (const struct case_map_stage *stage)
 {
-  struct case_map *map;
   size_t n_vars = dict_get_n_vars (stage->dict);
-  size_t i;
-  bool identity_map = true;
+  bool identity_map = n_vars == stage->n_stage_vars;
 
-  map = create_case_map (dict_get_proto (stage->dict));
-  for (i = 0; i < n_vars; i++)
+  struct case_map *map = create_case_map (dict_get_proto (stage->dict));
+  for (size_t i = 0; i < n_vars; i++)
     {
       const struct variable *var = dict_get_var (stage->dict, i);
       const struct stage_var *stage_var = case_map_stage_find_var (stage, var);
