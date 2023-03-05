@@ -42,7 +42,6 @@ struct dataset_writer
     struct dataset *ds;                 /* Underlying dataset. */
     struct fh_lock *lock;               /* Exclusive access to file handle. */
     struct dictionary *dict;            /* Dictionary for subwriter. */
-    struct case_map *compactor;         /* Compacts into dictionary. */
     struct casewriter *subwriter;       /* Data output. */
   };
 
@@ -75,9 +74,9 @@ dataset_writer_open (struct file_handle *fh,
   writer->dict = dict_clone (dictionary);
   struct case_map_stage *stage = case_map_stage_create (writer->dict);
   dict_delete_scratch_vars (writer->dict);
-  writer->compactor = case_map_stage_get_case_map (stage);
-  case_map_stage_destroy (stage);
-  writer->subwriter = autopaging_writer_create (dict_get_proto (writer->dict));
+  writer->subwriter = case_map_create_output_translator (
+    case_map_stage_to_case_map (stage),
+    autopaging_writer_create (dict_get_proto (writer->dict)));
 
   casewriter = casewriter_create (dict_get_proto (writer->dict),
                                   &dataset_writer_casewriter_class, writer);
@@ -92,8 +91,7 @@ dataset_writer_casewriter_write (struct casewriter *w UNUSED, void *writer_,
                                  struct ccase *c)
 {
   struct dataset_writer *writer = writer_;
-  casewriter_write (writer->subwriter,
-                    case_map_execute (writer->compactor, c));
+  casewriter_write (writer->subwriter, c);
 }
 
 /* Closes WRITER. */

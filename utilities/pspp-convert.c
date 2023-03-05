@@ -319,8 +319,7 @@ main (int argc, char *argv[])
     }
 
   reader = case_map_create_input_translator (
-    case_map_stage_get_case_map (stage), reader);
-  case_map_stage_destroy (stage);
+    case_map_stage_to_case_map (stage), reader);
 
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {

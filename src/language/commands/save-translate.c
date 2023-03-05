@@ -254,10 +254,8 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
     goto error;
   fh_unref (handle);
 
-  struct case_map *map = case_map_stage_get_case_map (stage);
-  case_map_stage_destroy (stage);
-  if (map != NULL)
-    writer = case_map_create_output_translator (map, writer);
+  writer = case_map_create_output_translator (
+    case_map_stage_to_case_map (stage), writer);
   dict_unref (dict);
 
   casereader_transfer (proc_open_filtering (ds, !retain_unselected), writer);

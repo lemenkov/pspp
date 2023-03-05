@@ -46,7 +46,7 @@ struct casewriter *case_map_create_output_translator (struct case_map *,
    a modified version of the same dictionary. */
 struct case_map_stage *case_map_stage_create (const struct dictionary *);
 void case_map_stage_destroy (struct case_map_stage *);
-struct case_map *case_map_stage_get_case_map (const struct case_map_stage *);
+struct case_map *case_map_stage_to_case_map (struct case_map_stage *);
 
 /* For mapping cases for one dictionary to another based on
    variable names within the dictionary. */

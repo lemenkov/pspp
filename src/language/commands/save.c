@@ -341,10 +341,8 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
         goto error;
     }
 
-  map = case_map_stage_get_case_map (stage);
-  case_map_stage_destroy (stage);
-  if (map != NULL)
-    writer = case_map_create_output_translator (map, writer);
+  writer = case_map_create_output_translator (
+    case_map_stage_to_case_map (stage), writer);
   dict_unref (dict);
 
   fh_unref (handle);

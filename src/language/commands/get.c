@@ -143,8 +143,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
         goto error;
     }
 
-  map = case_map_stage_get_case_map (stage);
-  case_map_stage_destroy (stage);
+  map = case_map_stage_to_case_map (stage);
   if (map != NULL)
     reader = case_map_create_input_translator (map, reader);
 

@@ -360,8 +360,7 @@ dataset_delete_vars (struct dataset *ds, struct variable **vars, size_t n)
   struct case_map_stage *stage = case_map_stage_create (ds->dict);
   dict_delete_vars (ds->dict, vars, n);
   ds->source = case_map_create_input_translator (
-    case_map_stage_get_case_map (stage), ds->source);
-  case_map_stage_destroy (stage);
+    case_map_stage_to_case_map (stage), ds->source);
   caseinit_clear (ds->caseinit);
   caseinit_mark_as_preinited (ds->caseinit, ds->dict);
 }
@@ -382,8 +381,7 @@ dataset_reorder_vars (struct dataset *ds, struct variable **vars, size_t n)
   struct case_map_stage *stage = case_map_stage_create (ds->dict);
   dict_reorder_vars (ds->dict, vars, n);
   ds->source = case_map_create_input_translator (
-    case_map_stage_get_case_map (stage), ds->source);
-  case_map_stage_destroy (stage);
+    case_map_stage_to_case_map (stage), ds->source);
   caseinit_clear (ds->caseinit);
   caseinit_mark_as_preinited (ds->caseinit, ds->dict);
 }
@@ -496,9 +494,8 @@ proc_open_filtering (struct dataset *ds, bool filter)
       struct case_map_stage *stage = case_map_stage_create (pd);
       dict_delete_scratch_vars (pd);
       ds->sink = case_map_create_output_translator (
-        case_map_stage_get_case_map (stage),
+        case_map_stage_to_case_map (stage),
         autopaging_writer_create (dict_get_proto (pd)));
-      case_map_stage_destroy (stage);
       dict_unref (pd);
     }
   else

@@ -198,7 +198,7 @@ struct case_map_stage
 
 /* Prepares and returns a "struct case_map_stage" for producing a case map for
    DICT.  Afterward, the caller may delete, reorder, or rename variables within
-   DICT at will before using case_map_stage_get_case_map() to produce the case
+   DICT at will before using case_map_stage_to_case_map() to produce the case
    map.
 
    The caller must *not* add new variables to DICT. */
@@ -260,13 +260,7 @@ case_map_stage_find_var (const struct case_map_stage *stage,
   NOT_REACHED ();
 }
 
-/* Produces a case map from STAGE, which must have been previously created with
-   case_map_stage_create().  The case map maps from the original case index of
-   the variables in STAGE's dictionary to their current case indexes.
-
-   Returns the new case map, or a null pointer if no mapping is required (that
-   is, no variables were deleted or reordered). */
-struct case_map *
+static struct case_map *
 case_map_stage_get_case_map (const struct case_map_stage *stage)
 {
   size_t n_vars = dict_get_n_vars (stage->dict);
@@ -290,6 +284,22 @@ case_map_stage_get_case_map (const struct case_map_stage *stage)
       return NULL;
     }
 
+  return map;
+}
+
+/* Produces a case map from STAGE, which must have been previously created with
+   case_map_stage_create().  The case map maps from the original case index of
+   the variables in STAGE's dictionary to their current case indexes.
+
+   Returns the new case map, or a null pointer if no mapping is required (that
+   is, no variables were deleted or reordered).
+
+   Destroys STAGE. */
+struct case_map *
+case_map_stage_to_case_map (struct case_map_stage *stage)
+{
+  struct case_map *map = case_map_stage_get_case_map (stage);
+  case_map_stage_destroy (stage);
   return map;
 }
 
