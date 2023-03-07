@@ -446,7 +446,9 @@ INPUT PROGRAM.
 DATA LIST FIXED/y 2 (a).
 DATA LIST FIXED/y 3-4 (a).
 END INPUT PROGRAM.
-DATA LIST FIXED RECORDS=1/2 x 1-2.
+DATA LIST FIXED RECORDS=1/x y(F2/F3).
+DATA LIST FIXED RECORDS=1//.
+DATA LIST FIXED RECORDS=1/.
 ])
 
 AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
@@ -574,9 +576,120 @@ y,1,2-2,A1
    39 | DATA LIST FIXED/y 3-4 (a).
       |                 ^~~~~~~~~"
 
-"data-list.sps:41.26-41.29: error: DATA LIST: Cannot place variable x on record 2 when RECORDS=1 is specified.
-   41 | DATA LIST FIXED RECORDS=1/2 x 1-2.
-      |                          ^~~~"
-])
+"data-list.sps:41.27-41.36: error: DATA LIST: Cannot place variable y on record 2 when RECORDS=1 is specified.
+   41 | DATA LIST FIXED RECORDS=1/x y(F2/F3).
+      |                           ^~~~~~~~~~"
 
+"data-list.sps:42.27: error: DATA LIST: Cannot advance to record 2 when RECORDS=1 is specified.
+   42 | DATA LIST FIXED RECORDS=1//.
+      |                           ^"
+
+"data-list.sps:43.26: error: DATA LIST: No fields were specified.  At least one is required.
+   43 | DATA LIST FIXED RECORDS=1/.
+      |                          ^"
+])
+AT_CLEANUP
+
+AT_SETUP([DATA LIST FIXED manual example 1])
+AT_DATA([data-list.sps], [dnl
+DATA LIST TABLE /NAME 1-10 (A) INFO1 TO INFO3 12-17 (1).
+
+BEGIN DATA.
+John Smith 102311
+Bob Arnold 122015
+Bill Yates  918 6
+END DATA.
+
+LIST.
+])
+AT_CHECK([pspp data-list.sps -O box=unicode], [0], [dnl
+  Reading 1 record from INLINE.
+╭────────┬──────┬───────┬──────╮
+│Variable│Record│Columns│Format│
+├────────┼──────┼───────┼──────┤
+│NAME    │     1│1-10   │A10   │
+│INFO1   │     1│12-13  │F2.1  │
+│INFO2   │     1│14-15  │F2.1  │
+│INFO3   │     1│16-17  │F2.1  │
+╰────────┴──────┴───────┴──────╯
+
+           Data List
+╭──────────┬─────┬─────┬─────╮
+│   NAME   │INFO1│INFO2│INFO3│
+├──────────┼─────┼─────┼─────┤
+│John Smith│  1.0│  2.3│  1.1│
+│Bob Arnold│  1.2│  2.0│  1.5│
+│Bill Yates│   .9│  1.8│   .6│
+╰──────────┴─────┴─────┴─────╯
+])
+AT_CLEANUP
+
+AT_SETUP([DATA LIST FIXED manual example 2])
+AT_DATA([data-list.sps], [dnl
+DATA LIST
+        /ID 1-5 NAME 7-36 (A) SURNAME 38-67 (A) MINITIAL 69 (A)
+        /Q01 TO Q50 7-56
+        /.
+])
+AT_CHECK([pspp data-list.sps -O box=unicode], [0], [dnl
+ Reading 3 records from INLINE.
+╭────────┬──────┬───────┬──────╮
+│Variable│Record│Columns│Format│
+├────────┼──────┼───────┼──────┤
+│ID      │     1│1-5    │F5.0  │
+│NAME    │     1│7-36   │A30   │
+│SURNAME │     1│38-67  │A30   │
+│MINITIAL│     1│69-69  │A1    │
+│Q01     │     2│7-7    │F1.0  │
+│Q02     │     2│8-8    │F1.0  │
+│Q03     │     2│9-9    │F1.0  │
+│Q04     │     2│10-10  │F1.0  │
+│Q05     │     2│11-11  │F1.0  │
+│Q06     │     2│12-12  │F1.0  │
+│Q07     │     2│13-13  │F1.0  │
+│Q08     │     2│14-14  │F1.0  │
+│Q09     │     2│15-15  │F1.0  │
+│Q10     │     2│16-16  │F1.0  │
+│Q11     │     2│17-17  │F1.0  │
+│Q12     │     2│18-18  │F1.0  │
+│Q13     │     2│19-19  │F1.0  │
+│Q14     │     2│20-20  │F1.0  │
+│Q15     │     2│21-21  │F1.0  │
+│Q16     │     2│22-22  │F1.0  │
+│Q17     │     2│23-23  │F1.0  │
+│Q18     │     2│24-24  │F1.0  │
+│Q19     │     2│25-25  │F1.0  │
+│Q20     │     2│26-26  │F1.0  │
+│Q21     │     2│27-27  │F1.0  │
+│Q22     │     2│28-28  │F1.0  │
+│Q23     │     2│29-29  │F1.0  │
+│Q24     │     2│30-30  │F1.0  │
+│Q25     │     2│31-31  │F1.0  │
+│Q26     │     2│32-32  │F1.0  │
+│Q27     │     2│33-33  │F1.0  │
+│Q28     │     2│34-34  │F1.0  │
+│Q29     │     2│35-35  │F1.0  │
+│Q30     │     2│36-36  │F1.0  │
+│Q31     │     2│37-37  │F1.0  │
+│Q32     │     2│38-38  │F1.0  │
+│Q33     │     2│39-39  │F1.0  │
+│Q34     │     2│40-40  │F1.0  │
+│Q35     │     2│41-41  │F1.0  │
+│Q36     │     2│42-42  │F1.0  │
+│Q37     │     2│43-43  │F1.0  │
+│Q38     │     2│44-44  │F1.0  │
+│Q39     │     2│45-45  │F1.0  │
+│Q40     │     2│46-46  │F1.0  │
+│Q41     │     2│47-47  │F1.0  │
+│Q42     │     2│48-48  │F1.0  │
+│Q43     │     2│49-49  │F1.0  │
+│Q44     │     2│50-50  │F1.0  │
+│Q45     │     2│51-51  │F1.0  │
+│Q46     │     2│52-52  │F1.0  │
+│Q47     │     2│53-53  │F1.0  │
+│Q48     │     2│54-54  │F1.0  │
+│Q49     │     2│55-55  │F1.0  │
+│Q50     │     2│56-56  │F1.0  │
+╰────────┴──────┴───────┴──────╯
+])
 AT_CLEANUP

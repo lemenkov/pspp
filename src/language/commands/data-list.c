@@ -341,12 +341,36 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
   int record = 0;
   int column = 1;
 
-  do
+  int start = lex_ofs (lexer);
+  while (lex_token (lexer) != T_ENDCMD)
     {
-      /* Parse everything. */
-      int records_start = lex_ofs (lexer);
-      if (!parse_record_placement (lexer, &record, &column))
-        return false;
+      if (lex_match (lexer, T_SLASH))
+        {
+          int records_start = lex_ofs (lexer) - 1;
+          if (lex_is_number (lexer))
+            {
+              if (!lex_force_int_range (lexer, NULL, record + 1, INT_MAX))
+                return false;
+              record = lex_integer (lexer);
+              lex_get (lexer);
+            }
+          else
+            record++;
+          column = 1;
+
+          if (max_records && record > max_records)
+            {
+              lex_ofs_error (lexer, records_start, lex_ofs (lexer) - 1,
+                             _("Cannot advance to record %d when "
+                               "RECORDS=%d is specified."),
+                             record, data_parser_get_records (parser));
+              return false;
+            }
+          if (record > data_parser_get_records (parser))
+            data_parser_set_records (parser, record);
+
+          continue;
+        }
 
       int vars_start = lex_ofs (lexer);
       char **names;
@@ -411,7 +435,7 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
 
             if (max_records && record > max_records)
               {
-                lex_ofs_error (lexer, records_start, vars_end,
+                lex_ofs_error (lexer, vars_start, placements_end,
                                _("Cannot place variable %s on record %d when "
                                  "RECORDS=%d is specified."),
                                var_get_name (v), record,
@@ -427,7 +451,14 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
           }
       assert (name_idx == n_names);
     }
-  while (lex_token (lexer) != T_ENDCMD);
+
+  if (!data_parser_any_fields (parser))
+    {
+      lex_ofs_error (lexer, start, lex_ofs (lexer) - 1,
+                     _("No fields were specified.  "
+                       "At least one is required."));
+      return false;
+    }
 
   return true;
 }

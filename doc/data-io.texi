@@ -394,6 +394,7 @@ applies to later FORTRAN and columnar specifiers.
 
 @enumerate
 @item
+@c Update the corresponding test in tests/language/commands/data-list.at if you change this.
 @example
 DATA LIST TABLE /NAME 1-10 (A) INFO1 TO INFO3 12-17 (1).
 
@@ -435,8 +436,9 @@ The @code{TABLE} keyword causes @pspp{} to print out a table
 describing the four variables defined.
 
 @item
+@c Update the corresponding test in tests/language/commands/data-list.at if you change this.
 @example
-DAT LIS FIL="survey.dat"
+DATA LIST FILE="survey.dat"
         /ID 1-5 NAME 7-36 (A) SURNAME 38-67 (A) MINITIAL 69 (A)
         /Q01 TO Q50 7-56
         /.
@@ -470,9 +472,6 @@ record.
 Cases are separated by a blank record.
 
 Data is read from file @file{survey.dat} in the current directory.
-
-This example shows keywords abbreviated to their first 3 letters.
-
 @end enumerate
 
 @node DATA LIST FREE
