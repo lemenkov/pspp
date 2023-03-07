@@ -17,7 +17,6 @@ dnl
 AT_BANNER([SHOW])
 
 AT_SETUP([SHOW N])
-
 AT_DATA([show.sps], [dnl
 DATA LIST LIST NOTABLE /x.
 BEGIN DATA.
@@ -28,25 +27,26 @@ END DATA.
 
 SHOW N.
 ])
-
 AT_CHECK([pspp -O format=csv show.sps], [0], [dnl
 Table: Settings
 N,3
 ])
-
 AT_CLEANUP
 
 
 AT_SETUP([SHOW N empty])
-
 AT_DATA([shown-empty.sps], [dnl
 SHOW N.
 ])
-
 AT_CHECK([pspp -O format=csv shown-empty.sps], [0], [dnl
 Table: Settings
 N,Unknown
 ])
-
 AT_CLEANUP
 
+AT_SETUP([SHOW ENVIRONMENT])
+AT_DATA([show.sps], [dnl
+SHOW ENVIRONMENT.
+])
+AT_CHECK([pspp -O format=csv show.sps], [0], [ignore])
+AT_CLEANUP

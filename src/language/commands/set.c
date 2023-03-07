@@ -45,6 +45,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/integer-format.h"
 #include "libpspp/message.h"
+#include "libpspp/string-array.h"
 #include "math/random.h"
 #include "output/driver.h"
 #include "output/journal.h"
@@ -1369,6 +1370,33 @@ show_all_cc (const struct dataset *ds, struct pivot_table **ptp)
     }
 }
 
+static void
+show_environment (void)
+{
+  struct pivot_table *pt = pivot_table_create (N_("Environment Variables"));
+  pivot_dimension_create (pt, PIVOT_AXIS_ROW, N_("Variable"));
+
+  struct string_array sa = STRING_ARRAY_INITIALIZER;
+  for (char **env = environ; *env; env++)
+    string_array_append (&sa, *env);
+  string_array_sort (&sa);
+
+  for (size_t i = 0; i < sa.n; i++)
+    {
+      struct substring value = ss_cstr (sa.strings[i]);
+      struct substring variable;
+      ss_get_until (&value, '=', &variable);
+
+      char *variable_s = ss_xstrdup (variable);
+      char *value_s = ss_xstrdup (value);
+      add_row (pt, variable_s, value_s);
+      free (variable_s);
+      free (value_s);
+    }
+  string_array_destroy (&sa);
+  pivot_table_submit (pt);
+}
+
 int
 cmd_show (struct lexer *lexer, struct dataset *ds)
 {
@@ -1392,6 +1420,8 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
         show_copying (ds);
       else if (lex_match_id (lexer, "SYSTEM"))
         show_system (ds);
+      else if (lex_match_id (lexer, "ENVIRONMENT"))
+        show_environment ();
       else if (lex_match_id (lexer, "TITLE"))
         {
           struct setting s = { .name = "TITLE", .show = show_TITLE };
