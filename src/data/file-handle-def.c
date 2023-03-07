@@ -191,6 +191,8 @@ void
 fh_unname (struct file_handle *handle)
 {
   assert (handle->ref_cnt > 1);
+  if (fh_get_default_handle () == handle)
+    fh_set_default_handle (NULL);
   if (handle != fh_inline_file () && handle->id != NULL)
     unname_handle (handle);
 }

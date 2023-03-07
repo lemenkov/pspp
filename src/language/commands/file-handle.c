@@ -289,9 +289,15 @@ cmd_close_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
     return CMD_CASCADING_FAILURE;
   handle = fh_from_id (lex_tokcstr (lexer));
   if (handle == NULL)
-    return CMD_CASCADING_FAILURE;
+    {
+      lex_next_error (lexer, 0, 0, _("No file handle named %s."),
+                      lex_tokcstr (lexer));
+      return CMD_CASCADING_FAILURE;
+    }
+  lex_get (lexer);
 
   fh_unname (handle);
+  fh_unref (handle);
   return CMD_SUCCESS;
 }
 
