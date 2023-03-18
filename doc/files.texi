@@ -321,15 +321,15 @@ GET DATA /TYPE=PSQL
 @cindex postgres
 @cindex databases
 
-The PSQL type is used to import data from a postgres database server.
-The server may be located locally or remotely.
-Variables are automatically created based on the table column names
+@code{GET DATA /TYPE=PSQL} imports data from a local or remote
+Postgres database server.
+It automatically creates variables based on the table column names
 or the names specified in the SQL query.
-Postgres data types of high precision, loose precision when
-imported into @pspp{}.
-Not all the postgres data types are able to be represented in @pspp{}.
-If a datum cannot be represented then @cmd{GET DATA} issues a warning
-and that datum is set to SYSMIS.
+@pspp{} cannot support the full precision of some Postgres data types,
+so data of those types will lose some precision when @pspp{} imports them.
+@pspp{} does not support all Postgres data types.
+If @pspp{} cannot support a datum, @cmd{GET DATA} issues a warning
+and substitutes the system-missing value.
 
 The @subcmd{CONNECT} subcommand is mandatory.
 It is a string specifying the parameters of the database server from
