@@ -282,6 +282,11 @@ struct lexer
   {
     struct ll_list sources;     /* Contains "struct lex_source"s. */
     struct macro_set *macros;
+
+    /* Temporarily stores errors and warnings to be emitted by the lexer while
+       lexing is going on, to avoid reentrancy. */
+    struct msg **messages;
+    size_t n_messages, allocated_messages;
   };
 
 static struct lex_source *lex_source__ (const struct lexer *);
@@ -343,6 +348,8 @@ lex_destroy (struct lexer *lexer)
   if (lexer != NULL)
     {
       struct lex_source *source, *next;
+
+      assert (!lexer->messages);
 
       ll_for_each_safe (source, next, struct lex_source, ll, &lexer->sources)
         {
@@ -2102,7 +2109,12 @@ lex_get_error (struct lex_source *src, const struct lex_token *token)
     .location = lex_token_location_rw (src, token, token),
     .text = ss_xstrdup (token->token.string),
   };
-  msg_emit (m);
+
+  struct lexer *lexer = src->lexer;
+  if (lexer->n_messages >= lexer->allocated_messages)
+    lexer->messages = x2nrealloc (lexer->messages, &lexer->allocated_messages,
+                                  sizeof *lexer->messages);
+  lexer->messages[lexer->n_messages++] = m;
 }
 
 /* Attempts to append an additional token to 'pp' in SRC, reading more from the
@@ -2352,12 +2364,8 @@ lex_source_get_merge (struct lex_source *src)
   return false;
 }
 
-/* Attempts to obtain at least one new token into 'lookahead' in SRC.
-
-   Returns true if successful, false on failure.  In the latter case, SRC is
-   exhausted and 'src->eof' is now true. */
 static bool
-lex_source_get_parse (struct lex_source *src)
+lex_source_get_parse__ (struct lex_source *src)
 {
   struct merger m = MERGER_INIT;
   struct token out;
@@ -2409,6 +2417,30 @@ lex_source_get_parse (struct lex_source *src)
           return true;
         }
     }
+}
+
+/* Attempts to obtain at least one new token into 'lookahead' in SRC.
+
+   Returns true if successful, false on failure.  In the latter case, SRC is
+   exhausted and 'src->eof' is now true. */
+static bool
+lex_source_get_parse (struct lex_source *src)
+{
+  bool ok = lex_source_get_parse__ (src);
+  struct lexer *lexer = src->lexer;
+  if (lexer->n_messages)
+    {
+      struct msg **messages = lexer->messages;
+      size_t n = lexer->n_messages;
+
+      lexer->messages = NULL;
+      lexer->n_messages = lexer->allocated_messages = 0;
+
+      for (size_t i = 0; i < n; i++)
+        msg_emit (messages[i]);
+      free (messages);
+    }
+  return ok;
 }
 
 static void

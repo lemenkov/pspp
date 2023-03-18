@@ -133,3 +133,19 @@ AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
 ])
 
 AT_CLEANUP
+
+AT_SETUP([lexer crash due to reentrancy in error processing])
+dnl ^ is an invalid character in input that triggers an error message.
+dnl 100 of them, as shown below, exceeds the 100-error limit.  The
+dnl minus sign causes the lexer to look ahead for a number, and then
+dnl the ^ encountered afterward causes an error too, and then the
+dnl message emission handler might reenter the lexer looking for a
+dnl location, which can then cause the lexer to try to get a token
+dnl again.  It's a whole mess and the new way of avoiding reentrancy
+dnl by keeping a collection of messages to emit until we've almost
+dnl returned to the top level is much less prone to error.
+AT_DATA([lexer.sps], [dnl
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-^
+])
+AT_CHECK([pspp lexer.sps], [1], [ignore])
+AT_CLEANUP
