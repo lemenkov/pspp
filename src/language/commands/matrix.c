@@ -3336,7 +3336,8 @@ matrix_expr_evaluate_mul_mat (const struct matrix_expr *e,
     }
 
   gsl_matrix *c = gsl_matrix_alloc (a->size1, b->size2);
-  gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, a, b, 0.0, c);
+  if (a->size1 && b->size2)
+    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, a, b, 0.0, c);
   return c;
 }
 

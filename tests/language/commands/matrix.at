@@ -9,6 +9,9 @@ COMPUTE b={a; 1; 2; 3}.
 PRINT b.
 COMPUTE c={a, 1, 2, 3}.
 PRINT c.
+/* Multiplication of empty matrices previously assert-failed in blas.
+COMPUTE d = a * a.
+PRINT d.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [0], [dnl
@@ -21,6 +24,8 @@ b
 
 c
   1  2  3
+
+d
 ])
 AT_CLEANUP
 
