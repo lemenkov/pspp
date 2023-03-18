@@ -168,6 +168,7 @@ SHOW SPLIT.
 AT_CHECK([pspp show.sps -O box=unicode], [0], [dnl
 SET PRINTBACK=ON.
 
+
 SHOW SPLIT.
 
   Settings

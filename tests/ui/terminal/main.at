@@ -39,7 +39,6 @@ AT_CHECK([pspp main.sps & sleep 1; kill $!; wait $!], [143], [], [ignore])
 AT_CLEANUP
 
 AT_SETUP([SIGSEGV yields error report])
-
 # This test intentionally causes SIGSEGV, so make Address Sanitizer ignore it.
 ASAN_OPTIONS=$ASAN_OPTIONS:handle_segv=0; export ASAN_OPTIONS
 
@@ -60,7 +59,6 @@ EOF
 AT_CHECK([sed '/proximate/q' < stderr], [0], [expout])
 AT_CLEANUP
 
-
 dnl This tests for a crash which was observed with --syntax
 AT_SETUP([argument parsing])
 
@@ -70,5 +68,27 @@ FINISH.
 ])
 
 AT_CHECK([pspp --syntax=enhanced main.sps], [0], [ignore])
+AT_CLEANUP
 
+dnl Bug #63910 reported that command output was delayed until the
+dnl next command was supplied.  This checks for regression against
+dnl that bug.
+AT_SETUP([interactive output appears immediately])
+dnl We have to use squish-pty to make PSPP think that we're running
+dnl interactively.  First make sure that squish-pty works at all.
+SQUISH_PTY="$PYTHON3 $top_srcdir/tests/ui/terminal/squish-pty.py"
+AT_CHECK([$SQUISH_PTY true </dev/null >/dev/null 2>/dev/null || exit 77])
+dnl Then do the real test.  The crucial thing to notice here is
+dnl that the SHOW output must appear before the prompt for FINISH.
+AT_CHECK([echo 'SHOW N.
+FINISH.' | $SQUISH_PTY pspp], [0], [stdout])
+AT_CHECK([sed -n 's/$//
+/^PSPP>/,$p' stdout], [0], [dnl
+PSPP> SHOW N.
+  Settings
++-+-------+
+|N|Unknown|
++-+-------+
+PSPP> FINISH.
+])
 AT_CLEANUP

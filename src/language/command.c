@@ -252,12 +252,12 @@ finish:
     result = lex_end_of_command (lexer);
 
   lex_discard_rest_of_command (lexer);
+  if (nesting_level != SIZE_MAX)
+    output_close_groups (nesting_level);
+
   if (result != CMD_EOF && result != CMD_FINISH)
     while (lex_token (lexer) == T_ENDCMD)
       lex_get (lexer);
-
-  if (nesting_level != SIZE_MAX)
-    output_close_groups (nesting_level);
 
   return result;
 }
