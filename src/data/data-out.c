@@ -178,7 +178,7 @@ data_out_pool (const union value *input, const char *input_encoding,
     }
   else if (fmt_get_category (format.type) == FMT_CAT_BINARY)
     {
-      char tmp[16];
+      char tmp[17];
 
       assert (format.w + 1 <= sizeof tmp);
       converters[format.type] (input, format, settings, tmp);
