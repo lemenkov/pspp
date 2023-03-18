@@ -2095,15 +2095,12 @@ lex_source_msg_valist (struct lex_source *src, enum msg_class class,
 static void
 lex_get_error (struct lex_source *src, const struct lex_token *token)
 {
-  struct string s = DS_EMPTY_INITIALIZER;
-  ds_put_cstr (&s, token->token.string.string);
-
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
     .category = MSG_C_SYNTAX,
     .severity = MSG_S_ERROR,
     .location = lex_token_location_rw (src, token, token),
-    .text = ds_steal_cstr (&s),
+    .text = ss_xstrdup (token->token.string),
   };
   msg_emit (m);
 }
