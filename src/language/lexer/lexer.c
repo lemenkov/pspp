@@ -2095,10 +2095,6 @@ lex_source_msg_valist (struct lex_source *src, enum msg_class class,
 static void
 lex_get_error (struct lex_source *src, const struct lex_token *token)
 {
-  char syntax[64];
-  str_ellipsize (ss_buffer (&src->buffer[token->token_pos], token->token_len),
-                 syntax, sizeof syntax);
-
   struct string s = DS_EMPTY_INITIALIZER;
   ds_put_cstr (&s, token->token.string.string);
 
