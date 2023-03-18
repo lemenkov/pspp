@@ -5389,6 +5389,15 @@ matrix_print_parse (struct matrix_state *s)
           lex_match (s->lexer, T_EQUALS);
           if (!parse_format_specifier (s->lexer, &cmd->print.format))
             goto error;
+
+          char *error = fmt_check_output__ (cmd->print.format);
+          if (error)
+            {
+              lex_next_error (s->lexer, -1, -1, "%s", error);
+              free (error);
+              goto error;
+            }
+
           cmd->print.use_default_format = false;
         }
       else if (lex_match_id (s->lexer, "TITLE"))

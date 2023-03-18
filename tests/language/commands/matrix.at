@@ -2856,6 +2856,58 @@ a. × 10**12
 ])
 AT_CLEANUP
 
+AT_SETUP([MATRIX - PRINT - negative])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT !.
+PRINT/FORMAT=!.
+PRINT/FORMAT=P52.
+PRINT/TITLE=!.
+PRINT/SPACE=0.
+PRINT/RNAMES=!.
+PRINT/CNAMES=!.
+PRINT/!.
+END MATRIX.
+])
+
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.7: error: PRINT: Syntax error expecting matrix expression.
+    2 | PRINT !.
+      |       ^
+
+matrix.sps:3.14: error: PRINT: Syntax error expecting valid format specifier.
+    3 | PRINT/FORMAT=!.
+      |              ^
+
+matrix.sps:4.14-4.16: error: PRINT: Output format P52.0 specifies width 52, but
+P requires a width between 1 and 16.
+    4 | PRINT/FORMAT=P52.
+      |              ^~~
+
+matrix.sps:5.13: error: PRINT: Syntax error expecting string.
+    5 | PRINT/TITLE=!.
+      |             ^
+
+matrix.sps:6.13: error: PRINT: Syntax error expecting positive integer for
+SPACE.
+    6 | PRINT/SPACE=0.
+      |             ^
+
+matrix.sps:7.14: error: PRINT: Syntax error expecting matrix expression.
+    7 | PRINT/RNAMES=!.
+      |              ^
+
+matrix.sps:8.14: error: PRINT: Syntax error expecting matrix expression.
+    8 | PRINT/CNAMES=!.
+      |              ^
+
+matrix.sps:9.7: error: PRINT: Syntax error expecting FORMAT, TITLE, SPACE,
+RLABELS, CLABELS, RNAMES, or CNAMES.
+    9 | PRINT/!.
+      |       ^
+])
+AT_CLEANUP
+
 AT_SETUP([MATRIX - DO IF])
 AT_DATA([matrix.sps], [dnl
 MATRIX.
