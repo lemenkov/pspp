@@ -3538,6 +3538,7 @@ read_zheader (struct sfm_reader *r)
       return false;
     }
 
+  /* XXX allow a value of 0 for these two? */
   if (ztrailer_ofs < r->pos)
     {
       sys_error (r, pos, _("Impossible ZLIB trailer offset 0x%llx."),

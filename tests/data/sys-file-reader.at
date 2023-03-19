@@ -16,6 +16,16 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([system file reader - positive])
 
+m4_divert_text([PREPARE_TESTS], [dnl
+sack () {
+    local endian=$1 file=$2 dir=$(pwd)
+    $(which sack) "$1" "$2" > expected.sav || return 1
+    (cd $top_srcdir/rust && cargo test --test sack -- "$endian" "$dir/$file" "$dir/actual.sav" >/dev/null 2>&1) || return 1
+    diff -u <(hd expected.sav) <(hd actual.sav) || return 1
+    cat expected.sav
+}
+])
+
 AT_SETUP([variable labels and missing values])
 AT_KEYWORDS([sack synthetic system file positive])
 AT_DATA([sys-file.sack], [dnl
@@ -3259,7 +3269,7 @@ dnl Very long string map.
 7; 14; 1; COUNT (
 "STR1=00256"; i8 0; i8 9;
 );
-
+ 
 dnl Character encoding record.
 7; 20; 1; 12; "windows-1252";
 

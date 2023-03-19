@@ -42,3 +42,27 @@ prompt_style_to_string (enum prompt_style style)
     }
 }
 
+const char *
+prompt_style_to_rust_string (enum prompt_style style)
+{
+  switch (style)
+    {
+    case PROMPT_FIRST:
+      return "First";
+    case PROMPT_LATER:
+      return "Later";
+    case PROMPT_DATA:
+      return "Data";
+    case PROMPT_COMMENT:
+      return "Comment";
+    case PROMPT_DOCUMENT:
+      return "Document";
+    case PROMPT_DO_REPEAT:
+      return "DoRepeat";
+    case PROMPT_DEFINE:
+      return "Define";
+    default:
+      return "unknown prompt";
+    }
+}
+

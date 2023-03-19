@@ -1,0 +1,20 @@
+At offset 0x110, one or more variable indexes for value labels were not in the valid range [1,2] or referred to string continuations: [2]
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│1│
+╰─────────┴─╯
+
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│str1│       1│     │Nominal          │Input│    9│Left     │A9          │A9          │              │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

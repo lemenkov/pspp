@@ -1,0 +1,24 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 1; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+# Variables.
+2; 0; 0; 0; 0x050800 *2; s8 "FIRSTVAR";
+
+# Data file attributes record.
+7; 17; 1; COUNT (
+"Attr1(value"; i8 10;
+")"
+);
+
+# Variable attributes record.
+7; 18; 1; COUNT (
+"FIRSTVAR:";
+  "fred(23"; i8 10; ")"
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

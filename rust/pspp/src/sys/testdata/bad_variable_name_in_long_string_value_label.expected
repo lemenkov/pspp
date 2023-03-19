@@ -1,0 +1,30 @@
+Ignoring long string value label for unknown variable STR9.
+
+Ignoring long string value label for numeric variable NUM1.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│2│
+╰─────────┴─╯
+
+╭─────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│     │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├─────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│num1 │       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│str14│       2│     │Nominal          │Input│   14│Left     │A14         │A14         │              │
+╰─────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
+
+╭─────────────────────────────┬────────────────────────────────────────╮
+│Variable Value               │                                        │
+├─────────────────────────────┼────────────────────────────────────────┤
+│str14          RSTUVWXYZ     │value label for `RSTUVWXYZ'             │
+│               abcdefghijklmn│another value label for `abcdefghijklmn'│
+╰─────────────────────────────┴────────────────────────────────────────╯

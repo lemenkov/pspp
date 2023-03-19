@@ -1,0 +1,19 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 2; 0; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+# Numeric variables, no label or missing values.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+2; 0; 0; 0; 0x050800 *2; s8 "NUM2";
+
+# Two document records.
+(6; 1; s80 "One line of documents") >>* 2<<;
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;
+
+# Data.
+1.0; 2.0;

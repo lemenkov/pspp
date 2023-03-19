@@ -1,0 +1,36 @@
+In long string missing values record starting at offset 0x238, value length at offset 0x2a8 is 12 instead of the expected 8.
+
+File header claims 8 variable positions but 9 were read from file.
+
+Long string missing values record says variable STR2 has 4 missing values, but only 1 to 3 missing values are allowed.
+
+Unknown variable name "Nonexistent" in long string missing value record.
+
+Invalid long string missing value for numeric variable NUM1.
+
+Invalid long string missing value for 7-byte string variable STR4.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+│       Version        │1.2.3                   │
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       0│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬──────────────────────────────╮
+│Label    │PSPP synthetic test file: ôõöø│
+│Variables│                             5│
+╰─────────┴──────────────────────────────╯
+
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────────────────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│          Missing Values          │
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────────────────────────┤
+│num1│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │                                  │
+│str1│       2│     │Nominal          │Input│    9│Left     │A9          │A9          │                                  │
+│str2│       3│     │Nominal          │Input│   10│Left     │A10         │A10         │"abcdefgh"; "ijklmnop"; "qrstuvwx"│
+│str3│       4│     │Nominal          │Input│   11│Left     │A11         │A11         │"ABCDEFGH"; "IJKLMNOP"            │
+│str4│       5│     │Nominal          │Input│    7│Left     │A7          │A7          │                                  │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────────────────────────╯

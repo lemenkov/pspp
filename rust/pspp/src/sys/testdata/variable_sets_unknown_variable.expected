@@ -1,0 +1,46 @@
+Variable set "Variable Set 1" includes unknown variable xyzzy.
+
+Variable set "vs2" includes unknown variable foo.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+│       Version        │1.2.3                   │
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       0│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬────────────────────────╮
+│Label    │PSPP synthetic test file│
+│Variables│                      10│
+╰─────────┴────────────────────────╯
+
+╭──┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│  │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├──┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│あ│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│b │       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│c │       3│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│d │       4│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│e │       5│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│f │       6│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│g │       7│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│h │       8│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
+│i │       9│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
+│j │      10│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
+╰──┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
+
+╭───────────────────────────┬────────╮
+│Variable Set and Position  │Variable│
+├───────────────────────────┼────────┤
+│Variable Set 1            1│あ      │
+│                          2│b       │
+│                          3│c       │
+├───────────────────────────┼────────┤
+│vs2                       1│d       │
+│                          2│e       │
+│                          3│f       │
+│                          4│g       │
+╰───────────────────────────┴────────╯

@@ -131,7 +131,7 @@ dist-hook-git: distfiles
             (git --version) >/dev/null 2>&1; then                           \
 	  (cd $(srcdir) && git ls-files)				    \
 	    | grep -vE '\.gitignore|README.Git|Smake|Bug-administration'    \
-	    | grep -vE '\.gitattributes'                                    \
+	    | grep -vE '\.gitattributes|rust'                                    \
 	    | LC_ALL=C sort -u > gitfiles;				    \
 	  LC_ALL=C comm -1 -3 distfiles gitfiles > missing-distfiles;	    \
 	  if test -s missing-distfiles; then				    \
@@ -159,4 +159,3 @@ $(bin_PROGRAMS) $(RECURSIVE_TARGETS) dist: $(BUILT_SOURCES) config.h
 mimedir = $(datadir)/mime/packages
 mime_DATA = org.gnu.pspp.xml
 EXTRA_DIST += org.gnu.pspp.xml
-

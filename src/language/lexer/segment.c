@@ -1466,7 +1466,7 @@ segmenter_parse_do_repeat_2__ (struct segmenter *s,
     {
       /* We reached the body. */
       s->state = S_DO_REPEAT_3;
-      s->substate = 1;
+      s->nest = 1;
     }
 
   return ofs;
@@ -1499,7 +1499,7 @@ check_repeat_command (struct segmenter *s,
     return false;
 
   if (lex_id_match (ss_cstr ("REPEAT"), ss_cstr (id)))
-    s->substate += direction;
+    s->nest += direction;
   return true;
 }
 
@@ -1525,7 +1525,7 @@ segmenter_parse_full_line__ (const char *input, size_t n, bool eof,
    be repeated.  Report each line of syntax as a single SEG_DO_REPEAT_COMMAND.
 
    DO REPEAT can be nested, so we look for DO REPEAT...END REPEAT blocks inside
-   the lines we're segmenting.  s->substate counts the nesting level, starting
+   the lines we're segmenting.  s->nest counts the nesting level, starting
    at 1. */
 static int
 segmenter_parse_do_repeat_3__ (struct segmenter *s,
@@ -1539,7 +1539,7 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
     return ofs;
   else if (!check_repeat_command (s, input, n, eof) && !eof)
     return -1;
-  else if (s->substate == 0)
+  else if (s->nest == 0)
     {
       /* Nesting level dropped to 0, so we've finished reading the DO REPEAT
          body. */

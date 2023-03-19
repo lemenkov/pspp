@@ -1,0 +1,21 @@
+Variable index 0 is a 10-byte string that should be followed by long string continuation records through index 1 (inclusive), but index 1 is not a continuation
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│2│
+╰─────────┴─╯
+
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│var1│       1│     │Nominal          │Input│   10│Left     │A10         │A10         │              │
+│var2│       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

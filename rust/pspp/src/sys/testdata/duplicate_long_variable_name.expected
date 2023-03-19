@@ -1,0 +1,29 @@
+Invalid name in long variable name record.  "_Invalid" may not be used as an identifier because it begins with disallowed character '_'.
+
+Invalid name in long variable name record.  "$Invalid" may not be used as an identifier because it begins with disallowed character '$'.
+
+Invalid name in long variable name record.  "#Invalid" may not be used as an identifier because it begins with disallowed character '#'.
+
+Duplicate long variable name LONGVARIABLENAME.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│4│
+╰─────────┴─╯
+
+╭────────────────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│                │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────────────────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│LONGVARI        │       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LongVariableName│       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LONGVA_B        │       3│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LONGVA_C        │       4│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰────────────────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

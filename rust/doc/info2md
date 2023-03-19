@@ -1,0 +1,7 @@
+#! /bin/sh
+sed 's/[“”]/"/g
+s/[‘’]/`/g
+s/•/-/g
+s/ -- Function: \(.*\)/* `\1`  /
+s/ -- Macro Function: \(.*\)/* `\1`  /
+'

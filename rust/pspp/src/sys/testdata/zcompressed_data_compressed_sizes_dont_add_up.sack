@@ -1,0 +1,52 @@
+# File header.
+"$FL3"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+6; # Nominal case size
+2; # zlib compressed
+0; # Not weighted
+-1; # Unspecified number of cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Numeric variables.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+2; 0; 0; 0; 0x050800 *2; s8 "NUM2";
+
+# String variable.
+2; 4; 0; 0; 0x010400 *2; s8 "STR4";
+2; 8; 0; 0; 0x010800 *2; s8 "STR8";
+2; 15; 0; 0; 0x010f00 *2; s8 "STR15";
+2; -1; 0; 0; 0; 0; s8 "";
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;
+
+# ZLIB data header.
+i64 0x194;    # zheader_ofs
+i64 0x1ac;    # ztrailer_ofs
+i64 72;       # ztrailer_len
+
+# This is where the ZLIB data blocks would go, but we don't need any to
+# provoke this message so we omit them.
+
+# ZLIB data trailer fixed header:
+i64 -100;     # ztrailer_bias
+i64 0;        # ztrailer_zero
+0x3ff000;     # block_size
+2;            # n_blocks
+
+# ZLIB block descriptor 1:
+i64 0x194;    # uncompressed_ofs
+i64 0x1ac;    # compressed_ofs
+0x100000;     # uncompressed_size
+0x12345;      # compressed_size
+
+# ZLIB block descriptor 2:
+i64 0x100194; # uncompressed_ofs
+i64 0x12421;  # compressed_ofs
+0x100000;     # uncompressed_size
+0x12345;      # compressed_size

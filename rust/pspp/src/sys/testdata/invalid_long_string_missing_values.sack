@@ -1,0 +1,63 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+8; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # 0 cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52";
+"PSPP synthetic test file: "; i8 244; i8 245; i8 246; i8 248; s34 "";
+i8 0 *3;
+
+# One numeric variable.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+# Long string variables that will have missing values added with a
+# later record.
+2; 9; 0; 0; 0x010900 *2; s8 "STR1";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 10; 0; 0; 0x010a00 *2; s8 "STR2";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 11; 0; 0; 0x010b00 *2; s8 "STR3";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 7; 0; 0; 0x010700 *2; s8 "STR4";
+2; -1; 0; 0; 0; 0; s8 "";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+# Machine floating-point info record.
+7; 4; 8; 3; SYSMIS; HIGHEST; LOWEST;
+
+# Long string variable missing values record.
+7; 22; 1; COUNT (
+# Zero missing values (not allowed) for STR1 .
+COUNT("STR1"); i8 >>0<<; 8;
+
+# Four missing values (not allowed) for STR2.
+COUNT("STR2"); i8 4; 8;
+"abcdefgh"; "ijklmnop"; "qrstuvwx"; "yz012345";
+
+# Missing values for unknown variable
+COUNT(>>"Nonexistent"<<); i8 1; 8; "abcdefgh";
+
+# Missing values for numeric variable
+COUNT(>>"NUM1"<<); i8 1; 8; "abcdefgh";
+
+# Too long missing value
+COUNT("STR3"); i8 1; >>COUNT("abcdefghijkl")<<;
+
+# Buggy way that this was written in old PSPP, with a length
+# before each missing value instead of just once.
+COUNT("STR3"); i8 2; 8; "ABCDEFGH"; >>8<<; "IJKLMNOP";
+
+# Invalid 8-byte missing value for 7-byte string.
+COUNT("STR4"); i8 1; 8; "ABCDEFGH";
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

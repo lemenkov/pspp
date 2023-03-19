@@ -1,0 +1,26 @@
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+│       Version        │1.2.3                   │
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       0│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬────────────────────────╮
+│Label    │PSPP synthetic test file│
+│Variables│                       7│
+╰─────────┴────────────────────────╯
+
+╭─────────────────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│                 │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├─────────────────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│LongVariableName1│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LongVariableName2│       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LongVariableName3│       3│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│LongVariableName4│       4│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│Coördinate_X     │       5│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│Coördinate_Y     │       6│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│Coördinate_Z     │       7│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰─────────────────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

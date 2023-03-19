@@ -139,7 +139,7 @@ struct sys_encoding sys_codepage_number_to_name[] = {""")
 
 for cpnumber, value in sorted(codepages.items()):
     source = max(value.keys())
-    name = value[source][0]
+    name = value[source]
     print('  { %s, "%s" },' % (cpnumber, name))
 print("""  { 0, NULL }
 };

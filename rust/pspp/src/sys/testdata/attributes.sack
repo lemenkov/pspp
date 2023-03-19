@@ -1,0 +1,52 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+3; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # 1 case.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Variables.
+2; 0; 0; 0; 0x050800 *2; s8 "FIRSTVAR";
+2; 0; 0; 0; 0x050800 *2; s8 "SECONDVA";
+2; 0; 0; 0; 0x050800 *2; s8 "THIRDVAR";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+# Long variable names.
+7; 13; 1; COUNT (
+"FIRSTVAR=FirstVariable"; i8 9;
+"SECONDVA=S"; i8 233; "condVariable"; i8 9;
+"THIRDVAR=ThirdVariable"; i8 9
+);
+
+# Data file attributes record.
+7; 17; 1; COUNT (
+"Attr1('Value1'"; i8 10; "''d"; i8 233; "claration''"; i8 10; ")";
+"S"; i8 233; "condAttr('123'"; i8 10; "'456'"; i8 10; ")";
+);
+
+# Variable attributes record.
+7; 18; 1; COUNT (
+"FirstVariable:";
+  "ad"; i8 232; "le('23'"; i8 10; "'34'"; i8 10; ")";
+  "bert('123'"; i8 10; ")";
+  "$@Role('1'"; i8 10; ")";
+"/S"; i8 233; "condVariable:";
+  "xyzzy('quux'"; i8 10; ")";
+);
+
+# Another variable attributes record.
+# Only system files written by "Stata 14.1/-savespss- 1.77 by S.Radyakin"
+# include multiple variable attributes records.
+7; 18; 1; COUNT ("ThirdVariable:fizz('buzz'"; i8 10; ")";);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

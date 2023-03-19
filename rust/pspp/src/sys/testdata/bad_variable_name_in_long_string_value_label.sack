@@ -1,0 +1,37 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 3; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+# Variables.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+2; 14; 0; 0; 0x010e00 *2; s8 "STR14";
+2; -1; 0; 0; 0; 0; s8 "";
+
+7; 21; 1; COUNT (
+# No variable named STR9.
+COUNT(>>"STR9"<<); 9;
+1; COUNT("RSTUVWXYZ"); COUNT("value label for `RSTUVWXYZ'");
+
+# NUM1 is numeric.
+COUNT(>>"NUM1"<<); 0;
+1; COUNT("xyz"); COUNT("value label for 1.0");
+
+# Wrong width for STR14.
+COUNT("STR14"); >>9<<;
+1; COUNT("RSTUVWXYZ"); COUNT("value label for `RSTUVWXYZ'");
+
+# Wrong width for value.
+COUNT("STR14"); 14;
+1; COUNT(>>"RSTUVWXYZ"<<); COUNT("value label for `RSTUVWXYZ'");
+
+# Duplicate value label.
+COUNT("STR14"); 14; 2;
+COUNT("abcdefghijklmn"); COUNT("value label for `abcdefghijklmn'");
+>>COUNT("abcdefghijklmn"); COUNT("another value label for `abcdefghijklmn'")<<;
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

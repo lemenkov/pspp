@@ -1,0 +1,53 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+19; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Numeric variables.
+2; 0; 0; 0; 0x050800 *2; s8 "A";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+
+# Short string variables.
+2; 3; 0; 0; 0x010300 *2; s8 "H";
+2; 3; 0; 0; 0x010300 *2; s8 "I";
+2; 3; 0; 0; 0x010300 *2; s8 "J";
+2; 3; 0; 0; 0x010300 *2; s8 "K";
+
+# Long string variables.
+2; 9; 0; 0; 0x010900 *2; s8 "L";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 10; 0; 0; 0x010a00 *2; s8 "M";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 17; 0; 0; 0x011100 *2; s8 "N";
+( 2; -1; 0; 0; 0; 0; s8 "" ) * 2;
+2; 25; 0; 0; 0x011900 *2; s8 "O";
+( 2; -1; 0; 0; 0; 0; s8 "" ) * 3;
+
+# Variable display parameters
+7; 11; 4; 24;
+1; 0;
+2; 0;
+3; 0;
+1; 1;
+2; 1;
+3; 1;
+1; 2;
+2; 2;
+3; 2;
+0; 0;
+0; 1;
+0; 2;
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

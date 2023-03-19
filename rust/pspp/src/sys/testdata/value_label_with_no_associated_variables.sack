@@ -1,0 +1,12 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 1; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+# Numeric variable.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+# Value label with no variables.
+3; 1; 1.0; i8 3; s7 "one"; 4; >>0<<;
+
+# End of dictionary.
+>>999; 0<<;

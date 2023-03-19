@@ -1,0 +1,25 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+4; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; "PSPP synthetic"; i8 13; s49 "test file";
+i8 0 *3;
+
+# Numeric variables.
+2; 0; 0; 0; 0x050800 *2; s8 "A";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+
+# Extra product info.
+7; 10; 1; COUNT ("Extra product info"; i8 13; "another line"; i8 13; "blah");
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

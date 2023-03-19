@@ -1,0 +1,57 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+16; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# $a
+2; 0; 0; 0; 0x050800 *2; i8 0x82; i8 0xa0; s6 "";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+
+# $b
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+2; 0; 0; 0; 0x050800 *2; s8 "E";
+2; 0; 0; 0; 0x050800 *2; s8 "F";
+2; 0; 0; 0; 0x050800 *2; s8 "G";
+
+# $c
+2; 4; 0; 0; 0x010400 *2; s8 "H";
+2; 4; 0; 0; 0x010400 *2; s8 "I";
+2; 4; 0; 0; 0x010400 *2; s8 "J";
+
+# $d
+2; 0; 0; 0; 0x050800 *2; s8 "K";
+2; 0; 0; 0; 0x050800 *2; s8 "L";
+2; 0; 0; 0; 0x050800 *2; s8 "M";
+
+# $e
+2; 6; 0; 0; 0x010600 *2; s8 "N";
+2; 6; 0; 0; 0x010600 *2; s8 "O";
+2; 6; 0; 0; 0x010600 *2; s8 "P";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 932;
+
+7; 7; 1;
+COUNT(
+  "$a=C 10 my mcgroup "; i8 0x82; i8 0xa0; " b c"; i8 10;
+  "$b=D2 55 0  g e f d"; i8 10; i8 10;
+  "$c=D4 "; i8 0x82; i8 0xcd; i8 0x82; i8 0xa2; " 10 mdgroup #2 h i j"; i8 10);
+
+7; 19; 1;
+COUNT(
+  i8 10;
+  "$d=E 1 2 34 13 third mdgroup k l m"; i8 10;
+  "$e=E 11 6 choice 0  n o p"; i8 10; i8 10; i8 10; i8 10);
+
+# Character encoding record.
+7; 20; 1; 9; "shift_jis";
+
+# Dictionary termination record.
+999; 0;

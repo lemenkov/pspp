@@ -1,0 +1,37 @@
+Substituting F8.2 for invalid print format on variable NUM1.  Unknown format type 255.
+
+Substituting F8.2 for invalid write format on variable NUM1.  Unknown format type 0.
+
+Substituting F8.2 for invalid print format on variable VAR1.  Numeric variable is not compatible with string format A.
+
+Substituting F8.2 for invalid write format on variable VAR1.  Numeric variable is not compatible with string format AHEX.
+
+Substituting A4 for invalid print format on variable STR1.  String variable is not compatible with numeric format F.
+
+Substituting A4 for invalid write format on variable STR1.  String variable is not compatible with numeric format E.
+
+Substituting A4 for invalid print format on variable STR2.  String variable with width 4 is not compatible with format A8.  Use format A4 instead.
+
+Substituting A4 for invalid write format on variable STR2.  String variable with width 4 is not compatible with format AHEX4.  Use format AHEX8 instead.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│4│
+╰─────────┴─╯
+
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│num1│       1│     │                 │Input│    8│Right    │F8.2        │F8.2        │              │
+│var1│       2│     │                 │Input│    8│Right    │F8.2        │F8.2        │              │
+│str1│       3│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
+│str2│       4│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

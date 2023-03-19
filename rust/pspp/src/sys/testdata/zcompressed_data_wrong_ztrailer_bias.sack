@@ -1,0 +1,63 @@
+
+# File header.
+"$FL3"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+6; # Nominal case size
+2; # zlib compressed
+0; # Not weighted
+-1; # Unspecified number of cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Numeric variables.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+2; 0; 0; 0; 0x050800 *2; s8 "NUM2";
+
+# String variable.
+2; 4; 0; 0; 0x010400 *2; s8 "STR4";
+2; 8; 0; 0; 0x010800 *2; s8 "STR8";
+2; 15; 0; 0; 0x010f00 *2; s8 "STR15";
+2; -1; 0; 0; 0; 0; s8 "";
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;
+
+# ZLIB data header.
+i64 0x194;    # zheader_ofs
+i64 0x205;    # ztrailer_ofs
+i64 48;       # ztrailer_len
+
+# ZLIB data block.
+#
+# This is the compressed form of:
+#
+# 01 64 fe fd fe fd ff fb  61 62 63 64 65 66 67 68  |.d......abcdefgh|
+# 30 31 32 33 20 20 20 20  fd fd fd fe 65 66 fd fd  |0123    ....ef..|
+# 6a 6b 6c 6d 20 20 20 20  6e 6f 70 71 72 73 74 75  |jklm    nopqrstu|
+# 76 77 78 79 7a 41 42 43  44 45 46 47 20 20 20 20  |vwxyzABCDEFG    |
+# 48 49 4a 4b 4c 4d 4e 4f  fe fd fc 00 00 00 00 00  |HIJKLMNO........|
+# 50 51 52 53 54 55 56 57                           |PQRSTUVW|
+#
+# which is the data from the "compressed data" test.
+hex "78 01 63 4c f9 f7 f7 df  df ff bf 13 93 92 53 52";
+hex "d3 d2 33 0c 0c 8d 8c 15  80 e0 ef df bf ff 52 d3";
+hex "fe fe cd ca ce c9 05 f1  f3 f2 0b 0a 8b 8a 4b 4a";
+hex "cb ca 2b 2a ab 1c 9d 9c  5d 5c dd dc 41 e2 1e 9e";
+hex "5e de 3e be 7e fe ff fe  fe 61 00 81 80 c0 a0 e0";
+hex "90 d0 b0 70 00 0f 3f 23  d7";
+
+# ZLIB data trailer fixed header:
+>>i64 0<<;    # ztrailer_bias
+i64 0;        # ztrailer_zero
+0x3ff000;     # block_size
+1;            # n_blocks
+
+# ZLIB block descriptor:
+i64 0x194;    # uncompressed_ofs
+i64 0x1ac;    # compressed_ofs
+88;           # uncompressed_size
+89;           # compressed_size

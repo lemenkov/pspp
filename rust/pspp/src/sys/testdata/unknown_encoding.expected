@@ -1,0 +1,26 @@
+This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING="DETECT" to analyze the possible encodings.
+
+Text string contains invalid bytes for UTF-8 encoding: "PSPP synthetic test file: ����                                  "
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       0│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬──────────────────────────────╮
+│Label    │PSPP synthetic test file: ����│
+│Variables│                             4│
+╰─────────┴──────────────────────────────╯
+
+╭─┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│ │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├─┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│a│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│b│       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│c│       3│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│d│       4│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰─┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

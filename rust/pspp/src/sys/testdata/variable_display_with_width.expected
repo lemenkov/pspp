@@ -1,0 +1,30 @@
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       0│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬────────────────────────╮
+│Label    │PSPP synthetic test file│
+│Variables│                      12│
+╰─────────┴────────────────────────╯
+
+╭─┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│ │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├─┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│a│       1│     │Nominal          │Input│    1│Left     │F8.0        │F8.0        │              │
+│b│       2│     │Ordinal          │Input│    2│Left     │F8.0        │F8.0        │              │
+│c│       3│     │Scale            │Input│    3│Left     │F8.0        │F8.0        │              │
+│d│       4│     │Nominal          │Input│    4│Right    │F8.0        │F8.0        │              │
+│h│       5│     │Ordinal          │Input│    5│Right    │A3          │A3          │              │
+│i│       6│     │Scale            │Input│    6│Right    │A3          │A3          │              │
+│j│       7│     │Nominal          │Input│    7│Center   │A3          │A3          │              │
+│k│       8│     │Ordinal          │Input│    8│Center   │A3          │A3          │              │
+│l│       9│     │Scale            │Input│    9│Center   │A9          │A9          │              │
+│m│      10│     │Nominal          │Input│   10│Left     │A10         │A10         │              │
+│n│      11│     │Nominal          │Input│   11│Right    │A17         │A17         │              │
+│o│      12│     │Nominal          │Input│   12│Center   │A25         │A25         │              │
+╰─┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

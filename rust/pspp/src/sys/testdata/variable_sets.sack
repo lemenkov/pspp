@@ -1,0 +1,43 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+10; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Variable Set 1
+2; 0; 0; 0; 0x050800 *2; i8 0x82; i8 0xa0; s6 "";
+2; 0; 0; 0; 0x050800 *2; s8 "B";
+2; 0; 0; 0; 0x050800 *2; s8 "C";
+
+# vs2
+2; 0; 0; 0; 0x050800 *2; s8 "D";
+2; 0; 0; 0; 0x050800 *2; s8 "E";
+2; 0; 0; 0; 0x050800 *2; s8 "F";
+2; 0; 0; 0; 0x050800 *2; s8 "G";
+
+# c
+2; 4; 0; 0; 0x010400 *2; s8 "H";
+2; 4; 0; 0; 0x010400 *2; s8 "I";
+2; 4; 0; 0; 0x010400 *2; s8 "J";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 932;
+
+7; 5; 1;
+COUNT(
+  "Variable Set 1= "; i8 0x82; i8 0xa0; " b c"; i8 10;
+  "vs2=d e f g"; i8 10;
+  "c=h i j"; i8 13; i8 10;
+  "d= e g i b f"; i8 10;
+  "Empty Variable Set= "; i8 10);
+
+# Character encoding record.
+7; 20; 1; 9; "shift_jis";
+
+# Dictionary termination record.
+999; 0;

@@ -1,0 +1,29 @@
+"$UM1" may not be used as an identifier because it begins with disallowed character '$'.  Renaming variable to VAR001.
+
+"#UM1" may not be used as an identifier because it begins with disallowed character '#'.  Renaming variable to VAR002.
+
+"!UM1" may not be used as an identifier because it begins with disallowed character '!'.  Renaming variable to VAR003.
+
+"GE" may not be used as an identifier because it is a reserved word.  Renaming variable to VAR004.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│4│
+╰─────────┴─╯
+
+╭──────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│      │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├──────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│var001│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│var002│       2│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│var003│       3│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+│var004│       4│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰──────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

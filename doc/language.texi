@@ -1047,7 +1047,7 @@ where the characters in each row represent digits 0 through 9 in order.
 Characters in the first two rows indicate a positive sign; those in the
 third indicate a negative sign.
 
-On output, Z fields are padded on the left with spaces.  On input,
+On output, Z fields are padded on the left with zeros.  On input,
 leading and trailing spaces are ignored.  Any character in an input
 field other than spaces, the digit characters above, and @samp{.} causes
 the field to be read as system-missing.

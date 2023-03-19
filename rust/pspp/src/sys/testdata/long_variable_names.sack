@@ -1,0 +1,42 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+7; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+0; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# Numeric variables.
+2; 0; 0; 0; 0x050800 *2; s8 "LONGVARI";
+2; 0; 0; 0; 0x050800 *2; s8 "LONGVA_A";
+2; 0; 0; 0; 0x050800 *2; s8 "LONGVA_B";
+2; 0; 0; 0; 0x050800 *2; s8 "LONGVA_C";
+2; 0; 0; 0; 0x050800 *2; "CO"; i8 214; "RDINA";
+2; 0; 0; 0; 0x050800 *2; "CO"; i8 214; "RDI_A";
+2; 0; 0; 0; 0x050800 *2; "CO"; i8 214; "RDI_B";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+# Machine floating-point info record.
+7; 4; 8; 3; SYSMIS; HIGHEST; LOWEST;
+
+# Long variable names.
+7; 13; 1; COUNT (
+"LONGVARI=LongVariableName1"; i8 9;
+"LONGVA_A=LongVariableName2"; i8 9;
+"LONGVA_B=LongVariableName3"; i8 9;
+"LONGVA_C=LongVariableName4"; i8 9;
+"CO"; i8 214; "RDINA=Co"; i8 246; "rdinate_X"; i8 9;
+"CO"; i8 214; "RDI_A=Co"; i8 246; "rdinate_Y"; i8 9;
+"CO"; i8 214; "RDI_B=Co"; i8 246; "rdinate_Z";
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;

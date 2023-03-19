@@ -65,6 +65,9 @@ struct sfm_reader
     double bias;
   };
 
+  static int character_code;
+static char *encoding;
+
 static void read_header (struct sfm_reader *);
 static void read_variable_record (struct sfm_reader *);
 static void read_value_label_record (struct sfm_reader *);
@@ -229,6 +232,7 @@ main (int argc, char *argv[])
               (long long int) ftello (r.file),
               (long long int) ftello (r.file) + 4);
 
+      printf ("Character Encoding: %s (%d)\n", encoding ? encoding : "none", character_code);
       if (r.compression == COMP_SIMPLE)
         {
           if (max_cases > 0)
@@ -317,6 +321,19 @@ read_header (struct sfm_reader *r)
         r->float_format = FLOAT_IEEE_DOUBLE_BE;
       else
         r->float_format = FLOAT_IEEE_DOUBLE_LE;
+    }
+  if ((r->integer_format == INTEGER_MSB_FIRST && r->float_format != FLOAT_IEEE_DOUBLE_BE) ||
+      (r->integer_format == INTEGER_LSB_FIRST && r->float_format != FLOAT_IEEE_DOUBLE_LE)) 
+    {
+      printf ("unexpected floating-point format\n");
+    }
+
+  if (r->float_format != FLOAT_IEEE_DOUBLE_LE && r->float_format != FLOAT_IEEE_DOUBLE_BE)
+    {
+      printf ("non-IEEE format\n");
+    } else
+    {
+      printf ("IEEE format\n");
     }
   r->bias = float_get_double (r->float_format, raw_bias);
 
@@ -682,7 +699,7 @@ read_machine_integer_info (struct sfm_reader *r, size_t size, size_t count)
   int float_representation = read_int (r);
   int compression_code = read_int (r);
   int integer_representation = read_int (r);
-  int character_code = read_int (r);
+  character_code = read_int (r);
 
   printf ("%08llx: machine integer info\n", offset);
   if (size != 4 || count != 8)
@@ -911,7 +928,7 @@ read_display_parameters (struct sfm_reader *r, size_t size, size_t count)
     includes_width = false;
   else
     {
-      sys_warn (r, "Extension 11 has bad count %zu (for %zu variables.",
+      sys_warn (r, "Extension 11 has bad count %zu (for %zu variables).",
                 count, n_vars);
       skip_bytes (r, size * count);
       return;
@@ -1052,13 +1069,9 @@ read_datafile_attributes (struct sfm_reader *r, size_t size, size_t count)
 static void
 read_character_encoding (struct sfm_reader *r, size_t size, size_t count)
 {
-  long long int posn =  ftello (r->file);
-  char *encoding = xcalloc (size, count + 1);
+  encoding = xcalloc (size, count + 1);
   read_string (r, encoding, count + 1);
 
-  printf ("%08llx: Character Encoding: %s\n", posn, encoding);
-
-  free (encoding);
 }
 
 static void
@@ -1141,7 +1154,7 @@ read_long_string_missing_values (struct sfm_reader *r,
       /* Read variable name. */
       int var_name_len = read_int (r);
       if (var_name_len > ID_MAX_LEN)
-        sys_error (r, "Variable name length in long string value label "
+        sys_error (r, "Variable name length in long string missing value "
                    "record (%d) exceeds %d-byte limit.",
                    var_name_len, ID_MAX_LEN);
       char var_name[ID_MAX_LEN + 1];

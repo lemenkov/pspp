@@ -1,0 +1,44 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+109; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+1; # No cases.
+100.0; # Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+# 256-byte string.
+2; 255; 0; 0; 0x01FF00 *2; "S"; i8 201; s6 "Q256";
+(2; -1; 0; 0; 0; 0; s8 "") * 31;
+2; 4; 0; 0; 0x010400 *2; "S"; i8 201; "Q256_1";
+
+# 600-byte string.
+2; 255; 0; 0; 0x01FF00 *2; s8 "STR600";
+(2; -1; 0; 0; 0; 0; s8 "") * 31;
+2; 255; 0; 0; 0x01FF00 *2; s8 "STR600_1";
+(2; -1; 0; 0; 0; 0; s8 "") * 31;
+2; 96; 0; 0; 0x016000 *2; s8 "STR600_2";
+(2; -1; 0; 0; 0; 0; s8 "") * 11;
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+# Very long string record.
+7; 14; 1; COUNT (
+"S"; i8 201; "Q256=00256"; i8 0; i8 9;
+"STR600=00600"; i8 0; i8 9;
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;
+
+# Data.
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#" * 4;
+"abcdefgh";
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#" * 9;
+"abcdefghijklmnopqrstuvwxyzABCDEF";

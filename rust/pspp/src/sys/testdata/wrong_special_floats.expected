@@ -1,0 +1,24 @@
+System file specifies value 0.0 (0.0) as SYSMIS but -1.7976931348623157e308 (-0x1.fffffffffffffp1023) was expected.
+
+System file specifies value 1.0 (0x1.0p0) as HIGHEST but 1.7976931348623157e308 (0x1.fffffffffffffp1023) was expected.
+
+System file specifies value 2.0 (0x1.0p1) as LOWEST but -1.7976931348623157e308 (-0x1.fffffffffffffp1023) was expected.
+
+╭──────────────────────┬────────────────────────╮
+│       Created        │    01-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+├──────────────────────┼────────────────────────┤
+│       Compression    │SAV                     │
+│       Number of Cases│Unknown                 │
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬─╮
+│Variables│1│
+╰─────────┴─╯
+
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│num1│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯

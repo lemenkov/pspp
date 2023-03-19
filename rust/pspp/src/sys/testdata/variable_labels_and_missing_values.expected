@@ -1,0 +1,46 @@
+╭──────────────────────┬────────────────────────╮
+│       Created        │    05-JAN-2011 20:53:52│
+├──────────────────────┼────────────────────────┤
+│Writer Product        │PSPP synthetic test file│
+│       Version        │1.2.3                   │
+├──────────────────────┼────────────────────────┤
+│       Compression    │None                    │
+│       Number of Cases│                       1│
+╰──────────────────────┴────────────────────────╯
+
+╭─────────┬──────────────────────────────╮
+│Label    │PSPP synthetic test file: ôõöø│
+│Variables│                            21│
+╰─────────┴──────────────────────────────╯
+
+╭────────────────────────────────┬────────┬────────────────────────────────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬───────────────────────────╮
+│                                │Position│              Label             │Measurement Level│ Role│Width│Alignment│Print Format│Write Format│       Missing Values      │
+├────────────────────────────────┼────────┼────────────────────────────────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼───────────────────────────┤
+│num1                            │       1│                                │                 │Input│    8│Right    │F8.0        │F8.0        │                           │
+│Numeric variable 2's label (ùúû)│       2│Numeric variable 2's label (ùúû)│                 │Input│    8│Right    │F8.0        │F8.0        │                           │
+│num3                            │       3│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1                          │
+│Another numeric variable label  │       4│Another numeric variable label  │                 │Input│    8│Right    │F8.0        │F8.0        │1                          │
+│num5                            │       5│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1; 2                       │
+│num6                            │       6│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1; 2; 3                    │
+│num7                            │       7│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1 THRU 3                   │
+│num8                            │       8│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1 THRU 3; 5                │
+│num9                            │       9│                                │                 │Input│    8│Right    │F8.0        │F8.0        │1 THRU HIGH; -5            │
+│numàèìñò                        │      10│                                │                 │Input│    8│Right    │F8.0        │F8.0        │LOW THRU 1; 5              │
+│str1                            │      11│                                │Nominal          │Input│    4│Left     │A4          │A4          │                           │
+│String variable 2's label       │      12│String variable 2's label       │Nominal          │Input│    4│Left     │A4          │A4          │                           │
+│str3                            │      13│                                │Nominal          │Input│    4│Left     │A4          │A4          │"MISS"                     │
+│Another string variable label   │      14│Another string variable label   │Nominal          │Input│    4│Left     │A4          │A4          │"OTHR"                     │
+│str5                            │      15│                                │Nominal          │Input│    4│Left     │A4          │A4          │"MISS"; "OTHR"             │
+│str6                            │      16│                                │Nominal          │Input│    4│Left     │A4          │A4          │"MISS"; "OTHR"; "MORE"     │
+│str7                            │      17│                                │Nominal          │Input│   11│Left     │A11         │A11         │"first8by"                 │
+│str8                            │      18│                                │Nominal          │Input│    9│Left     │A9          │A9          │"abcdefgh"                 │
+│str9                            │      19│                                │Nominal          │Input│   10│Left     │A10         │A10         │"abcdefgh"; "01234567"     │
+│str10                           │      20│                                │Nominal          │Input│   11│Left     │A11         │A11         │"abcdefgh"; "01234567"; "0"│
+│25-byte string                  │      21│25-byte string                  │Nominal          │Input│   25│Left     │A25         │A25         │                           │
+╰────────────────────────────────┴────────┴────────────────────────────────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴───────────────────────────╯
+
+╭────┬────┬────────────────────────────────┬────┬──────────────────────────────┬────┬────┬────┬────┬────┬────────┬────┬─────────────────────────┬────┬─────────────────────────────┬────┬────┬───────────┬─────────┬──────────┬───────────┬─────────────────────────╮
+│Case│num1│Numeric variable 2's label (ùúû)│num3│Another numeric variable label│num5│num6│num7│num8│num9│numàèìñò│str1│String variable 2's label│str3│Another string variable label│str5│str6│    str7   │   str8  │   str9   │   str10   │      25-byte string     │
+├────┼────┼────────────────────────────────┼────┼──────────────────────────────┼────┼────┼────┼────┼────┼────────┼────┼─────────────────────────┼────┼─────────────────────────────┼────┼────┼───────────┼─────────┼──────────┼───────────┼─────────────────────────┤
+│1   │1.00│                            2.00│3.00│                          4.00│5.00│6.00│7.00│8.00│9.00│   10.00│abcd│efgh                     │ijkl│mnop                         │qrst│uvwx│yzABCDEFGHI│JKLMNOPQR│STUVWXYZ01│23456789abc│defghijklmnopqstuvwxyzABC│
+╰────┴────┴────────────────────────────────┴────┴──────────────────────────────┴────┴────┴────┴────┴────┴────────┴────┴─────────────────────────┴────┴─────────────────────────────┴────┴────┴───────────┴─────────┴──────────┴───────────┴─────────────────────────╯

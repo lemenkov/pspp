@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "pspp",
+  "pspp-derive",
+  "pspp-lsp",
+]
+default-members = ["pspp"]
+resolver = "2"

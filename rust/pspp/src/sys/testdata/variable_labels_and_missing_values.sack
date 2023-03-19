@@ -1,0 +1,117 @@
+# File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; # Layout code
+28; # Nominal case size
+0; # Not compressed
+0; # Not weighted
+1; # 1 case.
+100.0; # Bias.
+"05 Jan 11"; "20:53:52";
+"PSPP synthetic test file: "; i8 244; i8 245; i8 246; i8 248; s34 "";
+i8 0 *3;
+
+# Numeric variable, no label or missing values.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+# Numeric variable, variable label.
+2; 0; 1; 0; 0x050800 *2; s8 "NUM2";
+32; "Numeric variable 2's label ("; i8 249; i8 250; i8 251; ")";
+
+# Numeric variable, one missing value.
+2; 0; 0; 1; 0x050800 *2; s8 "NUM3";
+1.0;
+
+# Numeric variable, variable label and missing value.
+2; 0; 1; 1; 0x050800 *2; s8 "NUM4";
+30; "Another numeric variable label"; i8 0 * 2;
+1.0;
+
+# Numeric variable, two missing values.
+2; 0; 0; 2; 0x050800 *2; s8 "NUM5"; 1.0; 2.0;
+
+# Numeric variable, three missing values.
+2; 0; 0; 3; 0x050800 *2; s8 "NUM6"; 1.0; 2.0; 3.0;
+
+# Numeric variable, range of missing values.
+2; 0; 0; -2; 0x050800 *2; s8 "NUM7"; 1.0; 3.0;
+
+# Numeric variables, range of missing values plus discrete value.
+2; 0; 0; -3; 0x050800 *2; s8 "NUM8"; 1.0; 3.0; 5.0;
+2; 0; 0; -3; 0x050800 *2; s8 "NUM9"; 1.0; HIGHEST; -5.0;
+2; 0; 0; -3; 0x050800 *2; "NUM"; i8 192; i8 200; i8 204; i8 209; i8 210;
+LOWEST; 1.0; 5.0;
+
+# String variable, no label or missing values.
+2; 4; 0; 0; 0x010400 *2; s8 "STR1";
+
+# String variable, variable label.
+2; 4; 1; 0; 0x010400 *2; s8 "STR2";
+25; "String variable 2's label"; i8 0 * 3;
+
+# String variable, one missing value.
+2; 4; 0; 1; 0x010400 *2; s8 "STR3"; s8 "MISS";
+
+# String variable, variable label and missing value.
+2; 4; 1; 1; 0x010400 *2; s8 "STR4";
+29; "Another string variable label"; i8 0 * 3;
+s8 "OTHR";
+
+# String variable, two missing values.
+2; 4; 0; 2; 0x010400 *2; s8 "STR5"; s8 "MISS"; s8 "OTHR";
+
+# String variable, three missing values.
+2; 4; 0; 3; 0x010400 *2; s8 "STR6"; s8 "MISS"; s8 "OTHR"; s8 "MORE";
+
+# Long string variable, one missing value.
+# (This is not how SPSS represents missing values for long strings--it
+# uses a separate record as shown later below--but old versions of PSPP
+# did use this representation so we continue supporting it for backward
+# compatibility.
+2; 11; 0; 1; 0x010b00 *2; s8 "STR7"; "first8by";
+2; -1; 0; 0; 0; 0; s8 "";
+
+# Long string variables that will have missing values added with a
+# later record.
+2; 9; 0; 0; 0x010900 *2; s8 "STR8";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 10; 0; 0; 0x010a00 *2; s8 "STR9";
+2; -1; 0; 0; 0; 0; s8 "";
+2; 11; 0; 0; 0x010b00 *2; s8 "STR10";
+2; -1; 0; 0; 0; 0; s8 "";
+
+# Long string variable, value label.
+2; 25; 1; 0; 0x011900 *2; s8 "STR11"; 14; "25-byte string"; i8 0 * 2;
+( 2; -1; 0; 0; 0; 0; s8 ""; ) * 2;
+# Variable label fields on continuation records have been spotted in system
+# files created by "SPSS Power Macintosh Release 6.1".
+2; -1; 1; 0; 0; 0; s8 ""; 20; "dummy variable label";
+
+# Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+# Machine floating-point info record.
+7; 4; 8; 3; SYSMIS; HIGHEST; LOWEST;
+
+# Long string variable missing values record.
+7; 22; 1; COUNT (
+# One missing value for STR8.
+COUNT("STR8"); i8 1; 8; "abcdefgh";
+
+# Two missing values for STR9.
+COUNT("STR9"); i8 2; 8; "abcdefgh"; "01234567";
+
+# Three missing values for STR9.
+COUNT("STR10"); i8 3; 8; "abcdefgh"; "01234567"; "0       ";
+);
+
+# Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+# Dictionary termination record.
+999; 0;
+
+# Data.
+1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0; 9.0; 10.0;
+s8 "abcd"; s8 "efgh"; s8 "ijkl"; s8 "mnop"; s8 "qrst"; s8 "uvwx";
+s16 "yzABCDEFGHI"; s16 "JKLMNOPQR"; s16 "STUVWXYZ01";
+s16 "23456789abc"; s32 "defghijklmnopqstuvwxyzABC";
