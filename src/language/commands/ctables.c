@@ -4765,7 +4765,7 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
                                    && c->type != CCT_POSTCOMPUTE
                                    && !value_equal (&prev->axes[a].cvs[var_idx].value,
                                                     &cell->axes[a].cvs[var_idx].value,
-                                                    var_get_type (nest->vars[var_idx])))
+                                                    var_get_width (nest->vars[var_idx])))
                             break;
                         }
                     }

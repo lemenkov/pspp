@@ -947,8 +947,8 @@ AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/t
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 STRING licensed(A8).
-MISSING VALUES licensed('DontKnow', 'Refused').
-RECODE qnd7a(1='Yes')(2='No')(3='DontKnow')(4='Refused') INTO licensed.
+MISSING VALUES licensed('DontKnow', 'NoAnswer').
+RECODE qnd7a(1='Yes')(2='No')(3='DontKnow')(4='NoAnswer') INTO licensed.
 CTABLES /TABLE licensed.
 CTABLES /TABLE licensed [COUNT, TOTALS[COUNT, VALIDN]] /CATEGORIES VARIABLES=ALL TOTAL=YES MISSING=INCLUDE.
 CTABLES /TABLE licensed /CATEGORIES VARIABLES=licensed ['Yes', 'No'] TOTAL=YES.
@@ -956,15 +956,15 @@ CTABLES /TABLE licensed /CATEGORIES VARIABLES=licensed ['Yes', 'No'] TOTAL=YES.
 CTABLES /TABLE licensed /CATEGORIES VARIABLES=licensed ['Yes', 'no'] TOTAL=YES.
 CTABLES /TABLE licensed /CATEGORIES VARIABLES=licensed ['No' THRU 'yes'] TOTAL=YES.
 CTABLES
-    /PCOMPUTE &notyes=EXPR(['No']+['DontKnow']+['Refused'])
+    /PCOMPUTE &notyes=EXPR(['No']+['DontKnow']+['NoAnswer'])
     /PPROPERTIES &notyes LABEL='Not Yes' HIDESOURCECATS=YES
     /TABLE licensed
-    /CATEGORIES VARIABLES=licensed ['Yes', &notyes, 'No', 'DontKnow', 'Refused'].
+    /CATEGORIES VARIABLES=licensed ['Yes', &notyes, 'No', 'DontKnow', 'NoAnswer'].
 CTABLES
-    /PCOMPUTE &notyes=EXPR(['DontKnow' THRU 'No'] + ['Refused'])
+    /PCOMPUTE &notyes=EXPR(['DontKnow' THRU 'No'] + ['NoAnswer'])
     /PPROPERTIES &notyes LABEL='Not Yes' HIDESOURCECATS=YES
     /TABLE licensed
-    /CATEGORIES VARIABLES=licensed ['Yes', &notyes, 'DontKnow' THRU 'No', 'Refused'].
+    /CATEGORIES VARIABLES=licensed ['Yes', &notyes, 'DontKnow' THRU 'No', 'NoAnswer'].
 ]])
 AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
     Custom Tables
@@ -981,7 +981,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 ├─────────────────┼─────┼───────┤
 │licensed DontKnow│    4│       │
 │         No      │  572│       │
-│         Refused │   44│       │
+│         NoAnswer│   44│       │
 │         Yes     │ 6379│       │
 │         Total   │ 6999│   6951│
 ╰─────────────────┴─────┴───────╯
@@ -1005,14 +1005,14 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 ╰──────────────┴─────╯
 
       Custom Tables
-╭────────────────┬─────╮
-│                │Count│
-├────────────────┼─────┤
-│licensed No     │  572│
-│         Refused│   44│
-│         Yes    │ 6379│
-│         Total  │ 6995│
-╰────────────────┴─────╯
+╭─────────────────┬─────╮
+│                 │Count│
+├─────────────────┼─────┤
+│licensed No      │  572│
+│         NoAnswer│   44│
+│         Yes     │ 6379│
+│         Total   │ 6995│
+╰─────────────────┴─────╯
 
       Custom Tables
 ╭────────────────┬─────╮
