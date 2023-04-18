@@ -466,6 +466,11 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
                               "%s is not allowed inside DO IF or LOOP."),
                             command->name);
 
+        case S_NESTED_INPUT_PROGRAM:
+          return xasprintf (_("%s is not allowed inside DO IF or LOOP "
+                              "(except inside INPUT PROGRAM)."),
+                            command->name);
+
         default:
           NOT_REACHED ();
         }

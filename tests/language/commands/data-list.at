@@ -693,3 +693,21 @@ AT_CHECK([pspp data-list.sps -O box=unicode], [0], [dnl
 ╰────────┴──────┴───────┴──────╯
 ])
 AT_CLEANUP
+
+# Checks for a bug where DATA LIST was allowed inside LOOP, which
+# cleared the dataset and caused LOOP to assert-fail because its
+# transformation stack entry had been popped.
+AT_SETUP([DATA LIST inside LOOP])
+AT_DATA([data-list.sps], [dnl
+DATA LIST LIST NOTABLE/x y z.
+LOOP.
+DATA LIST.
+END LOOP.
+])
+AT_CHECK([pspp data-list.sps], [1], [dnl
+data-list.sps:3.1-3.9: error: DATA LIST: DATA LIST is not allowed inside DO IF
+or LOOP (except inside INPUT PROGRAM).
+    3 | DATA LIST.
+      | ^~~~~~~~~
+])
+AT_CLEANUP

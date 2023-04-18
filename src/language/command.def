@@ -50,7 +50,8 @@ DEF_CMD (S_ANY, 0, "TITLE", cmd_title)
 
 /* Commands that define (or replace) the active dataset. */
 DEF_CMD (S_INITIAL | S_DATA, 0, "ADD FILES", cmd_add_files)
-DEF_CMD (S_ANY, 0, "DATA LIST", cmd_data_list)
+DEF_CMD (S_INITIAL | S_DATA | S_INPUT_PROGRAM | S_FILE_TYPE | S_NESTED_INPUT_PROGRAM,
+         0, "DATA LIST", cmd_data_list)
 DEF_CMD (S_INITIAL | S_DATA, 0, "GET", cmd_get)
 DEF_CMD (S_INITIAL | S_DATA, 0, "GET DATA", cmd_get_data)
 DEF_CMD (S_INITIAL | S_DATA, 0, "IMPORT", cmd_import)
