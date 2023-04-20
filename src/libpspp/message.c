@@ -638,10 +638,12 @@ prepare_fatal_error_message (void)
 const char *
 prepare_diagnostic_information (void)
 {
+  char *allocated;
+
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "version:             %s\n", version);
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "host_system:         %s\n", host_system);
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "build_system:        %s\n", build_system);
-  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "locale_dir:          %s\n", relocate (locale_dir));
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "locale_dir:          %s\n", relocate2 (locale_dir, &allocated));
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "compiler version:    %s\n",
 #ifdef __VERSION__
            __VERSION__
@@ -649,6 +651,8 @@ prepare_diagnostic_information (void)
            "Unknown"
 #endif
 );
+
+  free (allocated);
 
   return diagnostic_information;
 }

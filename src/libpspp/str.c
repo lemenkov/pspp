@@ -1749,7 +1749,30 @@ ds_relocate (struct string *st)
     }
 }
 
+/* Returns a relocated version of S as a malloc()'d string that the caller must
+   eventually free(). */
+char *
+relocate_clone (const char *s)
+{
+  char *r = CONST_CAST (char *, relocate (s));
+  return r != s ? r : xstrdup (s);
+}
 
+/* Formats FORMAT in a printf()-like manner and returns a relocated version of
+   it.  The caller must eventually free() the returned string. */
+char * PRINTF_FORMAT (1, 2) MALLOC_LIKE
+relocate_format (const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  char *s = xvasprintf (format, args);
+  va_end (args);
+
+  char *r = CONST_CAST (char *, relocate (s));
+  if (r != s)
+    free (s);
+  return r;
+}
 
 
 /* Operations on uint8_t "strings" */

@@ -1253,7 +1253,11 @@ show_system (const struct dataset *ds UNUSED)
   add_row (table, N_("Version"), version);
   add_row (table, N_("Host System"), host_system);
   add_row (table, N_("Build System"), build_system);
-  add_row (table, N_("Locale Directory"), relocate (locale_dir));
+
+  char *allocated;
+  add_row (table, N_("Locale Directory"), relocate2 (locale_dir, &allocated));
+  free (allocated);
+
   add_row (table, N_("Compiler Version"),
 #ifdef __VERSION__
            __VERSION__

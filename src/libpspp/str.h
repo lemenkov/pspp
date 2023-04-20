@@ -262,7 +262,9 @@ char *ds_splice_uninit (struct string *, size_t ofs, size_t old_len,
 /* Other */
 /* calls relocate from gnulib on ST */
 void ds_relocate (struct string *st);
-
+char *relocate_clone (const char *);
+char *relocate_format (const char *, ...)
+  PRINTF_FORMAT (1, 2) MALLOC_LIKE;
 
 void u8_buf_copy_rpad (uint8_t *dst, size_t dst_size,
 		       const uint8_t *src, size_t src_size,

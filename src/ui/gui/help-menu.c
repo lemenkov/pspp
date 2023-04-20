@@ -194,14 +194,11 @@ void
 online_help (const char *page)
 {
   GError *htmlerr = NULL;
-  gchar *htmlfilename = NULL;
-  gchar *htmlfullname = NULL;
   gchar *htmluri = NULL;
 
+  char *htmlfilename;
   if (page == NULL)
-    {
-      htmlfilename = g_strdup ("index.html");
-    }
+    htmlfilename = xstrdup ("index.html");
   else
     {
       gchar **tokens = NULL;
@@ -215,13 +212,13 @@ online_help (const char *page)
       tokens = g_strsplit (page, "#", maxtokens);
       for (idx = 0; idx < maxtokens && tokens[idx]; idx++)
 	;
-      htmlfilename = g_strdup_printf ("%s.html", tokens[idx-1]);
+      htmlfilename = xasprintf ("%s.html", tokens[idx-1]);
       g_strfreev (tokens);
     }
   /* Hint: pspp.html is a directory...*/
-  htmlfullname = g_strdup_printf ("%s/%s", relocate (DOCDIR "/pspp.html"),
-                                  htmlfilename);
-  if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_IS_DIR))
+  char *htmldir = relocate_clone (DOCDIR "/pspp.html");
+  char *htmlfullname = xasprintf ("%s/%s", htmldir, htmlfilename);
+  if (g_file_test (htmldir, G_FILE_TEST_IS_DIR))
     {
       GError *urierr = NULL;
       htmluri =  g_filename_to_uri (htmlfullname,NULL, &urierr);
@@ -235,8 +232,9 @@ online_help (const char *page)
   else
     htmluri = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
                                htmlfilename);
-  g_free (htmlfullname);
-  g_free (htmlfilename);
+  free (htmlfullname);
+  free (htmldir);
+  free (htmlfilename);
 
 #ifdef _WIN32
   bool ok = open_windows_help (htmluri, &htmlerr);

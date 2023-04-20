@@ -718,7 +718,9 @@ psppire_window_open (PsppireWindow *de)
 {
   GtkWidget *dialog = psppire_window_file_chooser_dialog (de);
 
-  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), relocate (examples_dir), NULL);
+  char *dir = relocate_clone (examples_dir);
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), dir, NULL);
+  free (dir);
 
   switch (gtk_dialog_run (GTK_DIALOG (dialog)))
     {

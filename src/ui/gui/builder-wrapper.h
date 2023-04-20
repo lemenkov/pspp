@@ -23,9 +23,7 @@
 #include "relocatable.h"
 #include "gl/configmake.h"
 
-GtkBuilder *builder_new_real (const gchar *name);
-
-#define builder_new(NAME) (builder_new_real (relocate (PKGDATADIR "/" NAME)))
+GtkBuilder *builder_new (const gchar *name);
 
 GObject *get_object_assert (GtkBuilder *builder, const gchar *name, GType type);
 GtkWidget * get_widget_assert (GtkBuilder *builder, const gchar *name);

@@ -107,11 +107,9 @@ create_splash_window (void)
 {
   GtkWidget *sp = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  const gchar *filename = PKGDATADIR "/splash.png";
-  const char *relocated_filename = relocate (filename);
-  GtkWidget *l = gtk_image_new_from_file (relocated_filename);
-  if (filename != relocated_filename)
-    free (CONST_CAST (char *, relocated_filename));
+  char *splash = relocate_clone (PKGDATADIR"/splash.png");
+  GtkWidget *l = gtk_image_new_from_file (splash);
+  free (splash);
 
   gtk_container_add (GTK_CONTAINER (sp), l);
   gtk_window_set_type_hint (GTK_WINDOW (sp),

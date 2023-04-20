@@ -20,8 +20,10 @@
 
 #include "builder-wrapper.h"
 
+#include "libpspp/str.h"
 
-GtkBuilder *
+
+static GtkBuilder *
 builder_new_real (const gchar *name)
 {
   GtkBuilder *builder = gtk_builder_new ();
@@ -32,6 +34,16 @@ builder_new_real (const gchar *name)
       g_critical ("Couldn\'t open user interface  file %s: %s", name, err->message);
       g_clear_error (&err);
     }
+
+  return builder;
+}
+
+GtkBuilder *
+builder_new (const gchar *name)
+{
+  char *full_name = relocate_format ("%s/%s", PKGDATADIR, name);
+  GtkBuilder *builder = builder_new_real (full_name);
+  free (full_name);
 
   return builder;
 }

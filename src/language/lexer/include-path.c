@@ -83,7 +83,7 @@ include_path_init__ (void)
   if (home != NULL)
     string_array_append_nocopy (&the_include_path,
                                 xasprintf ("%s/.pspp", home));
-  string_array_append (&the_include_path, relocate (PKGDATADIR));
+  string_array_append_nocopy (&the_include_path, relocate_clone (PKGDATADIR));
 
   string_array_clone (&default_include_path, &the_include_path);
 }
