@@ -118,6 +118,7 @@ VECTOR v(**).
 VECTOR v(F8.2).
 VECTOR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx(5).
 VECTOR v **.
+VECTOR v v1 (123).
 ])
 AT_DATA([insert.sps], [dnl
 INSERT FILE='vector.sps' ERROR=IGNORE.
@@ -174,5 +175,9 @@ AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
 "vector.sps:15.10-15.11: error: VECTOR: Syntax error expecting `=' or `@{:@'.
    15 | VECTOR v **.
       |          ^~"
+
+"vector.sps:16.8-16.17: error: VECTOR: Two different vectors add variable v11.
+   16 | VECTOR v v1 (123).
+      |        ^~~~~~~~~~"
 ])
 AT_CLEANUP
