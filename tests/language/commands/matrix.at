@@ -1567,6 +1567,9 @@ PRINT {-1:-3:0}.
 
 PRINT {1, 2; 3}.
 PRINT {{2; 5}, 3}.
+
+PRINT {{1; 2}:3e50}.
+PRINT {-9223372036854770000:9223372036854775807}.
 END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
@@ -1631,6 +1634,35 @@ matrix.sps:19.8-19.13: note: MATRIX: This operand is a 2×1 matrix.
 matrix.sps:19.16: note: MATRIX: This operand is a 1×1 matrix.
    19 | PRINT {{2; 5}, 3}.
       |                ^
+
+matrix.sps:21.8-21.18: error: MATRIX: All operands of : must be scalars in the
+supported integer range.
+   21 | PRINT {{1; 2}:3e50}.
+      |        ^~~~~~~~~~~
+
+matrix.sps:21.8-21.13: note: MATRIX: This operand is a 2×1 matrix.
+   21 | PRINT {{1; 2}:3e50}.
+      |        ^~~~~~
+
+matrix.sps:21.15-21.18: note: MATRIX: This operand with value 3e+50 is outside
+the supported integer range from -9007199254740992 to 9007199254740992.
+   21 | PRINT {{1; 2}:3e50}.
+      |               ^~~~
+
+matrix.sps:22.8-22.47: error: MATRIX: All operands of : must be scalars in the
+supported integer range.
+   22 | PRINT {-9223372036854770000:9223372036854775807}.
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+matrix.sps:22.8-22.27: note: MATRIX: This operand with value -9.22337e+18 is
+outside the supported integer range from -9007199254740992 to 9007199254740992.
+   22 | PRINT {-9223372036854770000:9223372036854775807}.
+      |        ^~~~~~~~~~~~~~~~~~~~
+
+matrix.sps:22.29-22.47: note: MATRIX: This operand with value 9.22337e+18 is
+outside the supported integer range from -9007199254740992 to 9007199254740992.
+   22 | PRINT {-9223372036854770000:9223372036854775807}.
+      |                             ^~~~~~~~~~~~~~~~~~~
 ])
 AT_CLEANUP
 
@@ -3171,7 +3203,7 @@ to scalar, not a 0×0 matrix.
       |             ^~
 
 matrix.sps:81.8-81.12: error: MATRIX: Expression for LOOP is outside the
-integer range.
+supported integer range.
    81 | LOOP i=1e100 to 1e200.
       |        ^~~~~
 ])

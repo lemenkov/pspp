@@ -25,6 +25,7 @@
 #include "data/identifier.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
+#include "libpspp/float-range.h"
 #include "libpspp/misc.h"
 
 #include "gl/ftoastr.h"
@@ -201,14 +202,16 @@ token_print (const struct token *token, FILE *stream)
   putc ('\n', stream);
 }
 
-/* Returns true if T is a numeric token for an integer in the range of "long",
-   except that LONG_MIN is excluded. */
+/* Returns true if T is a numeric token for a 'long' in the unit range of
+   'double'.  LONG_MIN is excluded (usually it's outside the unit range of
+   'double' anyway). */
 bool
 token_is_integer (const struct token *t)
 {
   return (token_is_number (t)
-          && t->number > LONG_MIN
-          && t->number <= LONG_MAX
+          && t->number >= DBL_UNIT_LONG_MIN
+          && t->number <= DBL_UNIT_LONG_MAX
+          && (LONG_MIN < DBL_UNIT_LONG_MIN || t->number > DBL_UNIT_LONG_MIN)
           && floor (t->number) == t->number);
 }
 

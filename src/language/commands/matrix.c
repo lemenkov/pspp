@@ -47,6 +47,7 @@
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
+#include "libpspp/float-range.h"
 #include "libpspp/hmap.h"
 #include "libpspp/i18n.h"
 #include "libpspp/intern.h"
@@ -64,6 +65,7 @@
 #include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
 #include "gl/ftoastr.h"
+#include "gl/intprops.h"
 #include "gl/minmax.h"
 #include "gl/xsize.h"
 
@@ -3385,7 +3387,7 @@ matrix_expr_evaluate_exp_mat (const struct matrix_expr *e,
       return NULL;
     }
   double bf = to_scalar (b);
-  if (bf != floor (bf) || bf <= LONG_MIN || bf > LONG_MAX)
+  if (bf != floor (bf) || bf < DBL_UNIT_LONG_MIN || bf > DBL_UNIT_LONG_MAX)
     {
       msg_at (SE, matrix_expr_location (e->subs[1]),
               _("Exponent %.1f in matrix exponentiation is non-integer "
@@ -3438,11 +3440,30 @@ note_operand_size (const gsl_matrix *m, const struct matrix_expr *e)
           _("This operand is a %zu×%zu matrix."), m->size1, m->size2);
 }
 
+static bool
+is_integer_range (const gsl_matrix *m)
+{
+  if (!is_scalar (m))
+    return false;
+
+  double d = to_scalar (m);
+  return d >= DBL_UNIT_LONG_MIN && d <= DBL_UNIT_LONG_MAX;
+}
+
 static void
-note_nonscalar (const gsl_matrix *m, const struct matrix_expr *e)
+note_noninteger_range (const gsl_matrix *m, const struct matrix_expr *e)
 {
   if (!is_scalar (m))
     note_operand_size (m, e);
+  else
+    {
+      double d = to_scalar (m);
+      if (d < DBL_UNIT_LONG_MIN || d > DBL_UNIT_LONG_MAX)
+        msg_at (SN, matrix_expr_location (e),
+                _("This operand with value %g is outside the supported integer "
+                  "range from %ld to %ld."),
+                d, DBL_UNIT_LONG_MIN, DBL_UNIT_LONG_MAX);
+    }
 }
 
 static gsl_matrix *
@@ -3450,15 +3471,18 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
                           gsl_matrix *start_, gsl_matrix *end_,
                           gsl_matrix *by_)
 {
-  if (!is_scalar (start_) || !is_scalar (end_) || (by_ && !is_scalar (by_)))
+  if (!is_integer_range (start_)
+      || !is_integer_range (end_)
+      || (by_ && !is_integer_range (by_)))
     {
       msg_at (SE, matrix_expr_location (e),
-              _("All operands of : operator must be scalars."));
+              _("All operands of : must be scalars in the supported "
+                "integer range."));
 
-      note_nonscalar (start_, e->subs[0]);
-      note_nonscalar (end_, e->subs[1]);
+      note_noninteger_range (start_, e->subs[0]);
+      note_noninteger_range (end_, e->subs[1]);
       if (by_)
-        note_nonscalar (by_, e->subs[2]);
+        note_noninteger_range (by_, e->subs[2]);
       return NULL;
     }
 
@@ -4673,10 +4697,11 @@ matrix_expr_evaluate_integer (const struct matrix_expr *e, const char *context,
     return false;
 
   d = trunc (d);
-  if (d < LONG_MIN || d > LONG_MAX)
+  if (d < DBL_UNIT_LONG_MIN || d > DBL_UNIT_LONG_MAX)
     {
       msg_at (SE, matrix_expr_location (e),
-              _("Expression for %s is outside the integer range."), context);
+              _("Expression for %s is outside the supported integer range."),
+              context);
       return false;
     }
   *integer = d;

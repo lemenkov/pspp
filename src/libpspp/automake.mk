@@ -45,6 +45,7 @@ src_libpspp_liblibpspp_la_SOURCES = \
 	src/libpspp/ext-array.h \
 	src/libpspp/float-format.c \
 	src/libpspp/float-format.h \
+	src/libpspp/float-range.h \
 	src/libpspp/freaderror.c \
 	src/libpspp/freaderror.h \
 	src/libpspp/hash-functions.c \

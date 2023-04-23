@@ -37,6 +37,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/deque.h"
+#include "libpspp/float-range.h"
 #include "libpspp/i18n.h"
 #include "libpspp/intern.h"
 #include "libpspp/ll.h"
@@ -932,6 +933,9 @@ lex_force_int (struct lexer *lexer)
 bool
 lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
 {
+  min = MAX (min, DBL_UNIT_LONG_MIN);
+  max = MIN (max, DBL_UNIT_LONG_MAX);
+
   bool is_number = lex_is_number (lexer);
   bool is_integer = lex_is_integer (lexer);
   bool too_small = (is_integer ? lex_integer (lexer) < min
