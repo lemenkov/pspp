@@ -30,7 +30,7 @@ DATA LIST LIST NOTABLE FILE="data.txt"
      filter(F1.0).
 MISSING VALUES number(0) time('0 12:00') string('xyzzy').
 FILTER BY filter.
-SAVE TRANSLATE /OUTFILE="data.csv" /TYPE=m4_if([$2], [], [CSV], [$2])
+SAVE TRANSLATE OUTFILE="data.csv" /TYPE=m4_if([$2], [], [CSV], [$2])
     $1.
 ])
 AT_CHECK([pspp -O format=csv save-translate.pspp], [0])
@@ -202,9 +202,10 @@ SAVE TRANSLATE/RENAME=v1=v1.
 SAVE TRANSLATE/DROP=ALL.
 SAVE TRANSLATE/DROP=**.
 SAVE TRANSLATE/KEEP=**.
+SAVE TRANSLATE/OUTFILE='xyzzy.txt' **.
 ])
 AT_CHECK([pspp -O format=csv save-translate.sps], [1], [dnl
-"save-translate.sps:2.16-2.17: error: SAVE TRANSLATE: Syntax error expecting `/'.
+"save-translate.sps:2.16-2.17: error: SAVE TRANSLATE: Syntax error expecting MAP, DROP, KEEP, or RENAME.
     2 | SAVE TRANSLATE **.
       |                ^~"
 
@@ -357,5 +358,9 @@ save-translate.sps:26: error: SAVE TRANSLATE: Old and new variable counts do not
 "save-translate.sps:35.21-35.22: error: SAVE TRANSLATE: Syntax error expecting variable name.
    35 | SAVE TRANSLATE/KEEP=**.
       |                     ^~"
+
+"save-translate.sps:36.36-36.37: error: SAVE TRANSLATE: Syntax error expecting `/'.
+   36 | SAVE TRANSLATE/OUTFILE='xyzzy.txt' **.
+      |                                    ^~"
 ])
 AT_CLEANUP

@@ -65,11 +65,9 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   int outfile_start = 0;
   int outfile_end = 0;
 
-  while (lex_token (lexer) != T_ENDCMD)
+  lex_match (lexer, T_SLASH);
+  for (;;)
     {
-      if (!lex_force_match (lexer, T_SLASH))
-        goto error;
-
       if (lex_match_id (lexer, "OUTFILE"))
 	{
           outfile_start = lex_ofs (lexer) - 1;
@@ -214,6 +212,12 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
             }
         }
       else if (!parse_dict_trim (lexer, dict))
+        goto error;
+
+      if (lex_token (lexer) == T_ENDCMD)
+        break;
+
+      if (!lex_force_match (lexer, T_SLASH))
         goto error;
     }
 
