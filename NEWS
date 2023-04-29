@@ -17,6 +17,9 @@ Changes after 1.6.2:
 
    - Break variables are now optional.
 
+ * CROSSTABS now calculates significance of Pearson and Spearman
+   correlations in symmetric measures.
+
  * DISPLAY MACROS is now implemented.
 
  * SHOW ENVIRONMENT is now implemented.

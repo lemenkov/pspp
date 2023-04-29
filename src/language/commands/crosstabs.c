@@ -16,7 +16,7 @@
 
 /* FIXME:
 
-   - How to calculate significance of some symmetric and directional measures?
+   - How to calculate significance of some directional measures?
    - How to calculate ASE for symmetric Somers ' d?
    - How to calculate ASE for Goodman and Kruskal's tau?
    - How to calculate approx. T of symmetric uncertainty coefficient?
@@ -55,6 +55,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
+#include "math/correlation.h"
 #include "output/pivot-table.h"
 #include "output/charts/barchart.h"
 
@@ -1821,8 +1822,16 @@ display_crosstabulation (struct crosstabs_proc *proc,
   free (indexes);
 }
 
+struct symmetric_statistic
+  {
+    double v;                   /* Value. */
+    double ase;                 /* Appropriate standard error. */
+    double t;                   /* Student's t value. */
+    double sig;                 /* Significance. */
+  };
+
 static void calc_r (struct crosstabulation *,
-                    double *XT, double *Y, double *, double *, double *);
+                    double *XT, double *Y, struct symmetric_statistic *);
 static void calc_chisq (struct crosstabulation *,
                         double[N_CHISQ], int[N_CHISQ], double *, double *);
 
@@ -1872,14 +1881,6 @@ display_chisq (struct crosstabulation *xt, struct pivot_table *chisq)
 
   free (indexes);
 }
-
-struct symmetric_statistic
-  {
-    double v;                   /* Value. */
-    double ase;                 /* Appropriate standard error. */
-    double t;                   /* Student's t value. */
-    double sig;                 /* Significance. */
-  };
 
 struct somers_d
   {
@@ -2189,22 +2190,20 @@ calc_chisq (struct crosstabulation *xt,
   if (var_is_numeric (xt->vars[ROW_VAR].var)
       && var_is_numeric (xt->vars[COL_VAR].var))
     {
-      double r, ase_0, ase_1;
+      struct symmetric_statistic r;
       calc_r (xt, (double *) xt->vars[ROW_VAR].values,
-              (double *) xt->vars[COL_VAR].values,
-              &r, &ase_0, &ase_1);
+              (double *) xt->vars[COL_VAR].values, &r);
 
-      chisq[4] = (xt->total - 1.) * r * r;
+      chisq[4] = (xt->total - 1.) * pow2 (r.v);
       df[4] = 1;
     }
 }
 
-/* Calculate the value of Pearson's r.  r is stored into R, its T value into
-   T, and standard error into ERROR.  The row and column values must be
-   passed in XT and Y. */
+/* Calculate the value of Pearson's r and stores it into *R.  The row and
+   column values must be passed in XT and Y. */
 static void
 calc_r (struct crosstabulation *xt,
-        double *XT, double *Y, double *r, double *t, double *error)
+        double *XT, double *Y, struct symmetric_statistic *r)
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
@@ -2241,8 +2240,9 @@ calc_r (struct crosstabulation *xt,
   double SX = sum_X2r - pow2 (sum_Xr) / xt->total;
   double SY = sum_Y2c - pow2 (sum_Yc) / xt->total;
   double T = sqrt (SX * SY);
-  *r = S / T;
-  *t = *r / sqrt (1 - pow2 (*r)) * sqrt (xt->total - 2);
+  r->v = S / T;
+  r->t = r->v / sqrt (1 - pow2 (r->v)) * sqrt (xt->total - 2);
+  r->sig = 2 * significance_of_correlation (r->v, xt->total);
 
   double s = 0;
   double c = 0;
@@ -2259,7 +2259,7 @@ calc_r (struct crosstabulation *xt,
         c = (t - s) - y;
         s = t;
       }
-  *error = sqrt (s) / (T * T);
+  r->ase = sqrt (s) / (T * T);
 }
 
 /* Calculate symmetric statistics and their asymptotic standard
@@ -2486,14 +2486,14 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
           s = t;
         }
 
-      calc_r (xt, R, C, &sym[6].v, &sym[6].t, &sym[6].ase);
+      calc_r (xt, R, C, &sym[6]);
 
       free (R);
       free (C);
 
       calc_r (xt, (double *) xt->vars[ROW_VAR].values,
               (double *) xt->vars[COL_VAR].values,
-              &sym[7].v, &sym[7].t, &sym[7].ase);
+              &sym[7]);
     }
 
   /* Cohen's kappa. */

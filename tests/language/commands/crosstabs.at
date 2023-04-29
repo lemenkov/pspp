@@ -469,25 +469,25 @@ z,1,Pearson Chi-Square,5.00,4,.287
 ,,N of Valid Cases,4,,
 
 Table: Symmetric Measures
-,,,,Value,Asymp. Std. Error,Approx. T
-z,1,Nominal by Nominal,Phi,1.00,,
-,,,Cramer's V,1.00,,
-,,,Contingency Coefficient,.71,,
-,,Ordinal by Ordinal,Kendall's tau-b,.00,.32,.00
-,,,Kendall's tau-c,.00,.32,.00
-,,,Gamma,.00,.50,.00
-,,,Spearman Correlation,.00,.22,.00
-,,Interval by Interval,Pearson's R,.04,.22,.07
-,,N of Valid Cases,,5,,
-,2,Nominal by Nominal,Phi,1.00,,
-,,,Cramer's V,1.00,,
-,,,Contingency Coefficient,.71,,
-,,Ordinal by Ordinal,Kendall's tau-b,-.71,.20,-1.73
-,,,Kendall's tau-c,-.75,.43,-1.73
-,,,Gamma,-1.00,.00,-1.73
-,,,Spearman Correlation,-.77,.17,-1.73
-,,Interval by Interval,Pearson's R,-.73,.18,-1.49
-,,N of Valid Cases,,4,,
+,,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+z,1,Nominal by Nominal,Phi,1.00,,,
+,,,Cramer's V,1.00,,,
+,,,Contingency Coefficient,.71,,,
+,,Ordinal by Ordinal,Kendall's tau-b,.00,.32,.00,
+,,,Kendall's tau-c,.00,.32,.00,
+,,,Gamma,.00,.50,.00,
+,,,Spearman Correlation,.00,.22,.00,1.000
+,,Interval by Interval,Pearson's R,.04,.22,.07,.950
+,,N of Valid Cases,,5,,,
+,2,Nominal by Nominal,Phi,1.00,,,
+,,,Cramer's V,1.00,,,
+,,,Contingency Coefficient,.71,,,
+,,Ordinal by Ordinal,Kendall's tau-b,-.71,.20,-1.73,
+,,,Kendall's tau-c,-.75,.43,-1.73,
+,,,Gamma,-1.00,.00,-1.73,
+,,,Spearman Correlation,-.77,.17,-1.73,.225
+,,Interval by Interval,Pearson's R,-.73,.18,-1.49,.274
+,,N of Valid Cases,,4,,,
 
 Table: Directional Measures
 ,,,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
@@ -989,10 +989,10 @@ x,1.000,Count,1,0,0,0,0,1
 Total,,Count,1,1,1,1,1,5
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Ordinal by Ordinal,Spearman Correlation,.975,.022,7.550
-Interval by Interval,Pearson's R,.968,.017,6.708
-N of Valid Cases,,5,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Ordinal by Ordinal,Spearman Correlation,.975,.022,7.550,.005
+Interval by Interval,Pearson's R,.968,.017,6.708,.007
+N of Valid Cases,,5,,,
 ])
 AT_CLEANUP
 
@@ -1040,10 +1040,10 @@ x,1.000,Count,1,0,0,0,0,0,0,0,0,1
 Total,,Count,2,1,1,1,1,1,1,1,1,10
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Ordinal by Ordinal,Spearman Correlation,.973,.015,11.844
-Interval by Interval,Pearson's R,.971,.017,11.580
-N of Valid Cases,,10,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Ordinal by Ordinal,Spearman Correlation,.973,.015,11.844,.000
+Interval by Interval,Pearson's R,.971,.017,11.580,.000
+N of Valid Cases,,10,,,
 ])
 AT_CLEANUP
 
@@ -1087,10 +1087,10 @@ x,25.000,Count,1,0,0,0,0,0,0,0,1
 Total,,Count,1,1,1,1,1,1,2,1,9
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Ordinal by Ordinal,Spearman Correlation,.911,.068,5.860
-Interval by Interval,Pearson's R,.966,.017,9.915
-N of Valid Cases,,9,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Ordinal by Ordinal,Spearman Correlation,.911,.068,5.860,.001
+Interval by Interval,Pearson's R,.966,.017,9.915,.000
+N of Valid Cases,,9,,,
 ])
 AT_CLEANUP
 
@@ -1139,10 +1139,10 @@ x,2.000,Count,0,0,0,1,0,0,0,0,0,0,0,0,1
 Total,,Count,1,1,1,1,1,1,1,1,1,1,1,1,12
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Ordinal by Ordinal,Spearman Correlation,.657,.140,2.758
-Interval by Interval,Pearson's R,.667,.132,2.830
-N of Valid Cases,,12,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Ordinal by Ordinal,Spearman Correlation,.657,.140,2.758,.020
+Interval by Interval,Pearson's R,.667,.132,2.830,.018
+N of Valid Cases,,12,,,
 ])
 AT_CLEANUP
 
@@ -1190,10 +1190,10 @@ x,18.000,Count,1,0,0,0,0,0,0,0,0,0,1
 Total,,Count,1,1,1,1,1,1,1,1,1,1,10
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Ordinal by Ordinal,Spearman Correlation,1.000,.000,+Infinit
-Interval by Interval,Pearson's R,.992,.004,22.638
-N of Valid Cases,,10,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Ordinal by Ordinal,Spearman Correlation,1.000,.000,+Infinit,.000
+Interval by Interval,Pearson's R,.992,.004,22.638,.000
+N of Valid Cases,,10,,,
 ])
 AT_CLEANUP
 
@@ -1782,16 +1782,16 @@ Linear-by-Linear Association,5.8450,1.0000,.016
 N of Valid Cases,66.0000,,
 
 Table: Symmetric Measures
-,,Value,Asymp. Std. Error,Approx. T
-Nominal by Nominal,Phi,.3246,,
-,Cramer's V,.3246,,
-,Contingency Coefficient,.3088,,
-Ordinal by Ordinal,Kendall's tau-b,.2752,.0856,1.9920
-,Kendall's tau-c,.1497,.0751,1.9920
-,Gamma,.8717,.1250,1.9920
-,Spearman Correlation,.2908,.0906,2.4311
-Interval by Interval,Pearson's R,.2999,.0973,2.5147
-N of Valid Cases,,66.0000,,
+,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Nominal by Nominal,Phi,.3246,,,
+,Cramer's V,.3246,,,
+,Contingency Coefficient,.3088,,,
+Ordinal by Ordinal,Kendall's tau-b,.2752,.0856,1.9920,
+,Kendall's tau-c,.1497,.0751,1.9920,
+,Gamma,.8717,.1250,1.9920,
+,Spearman Correlation,.2908,.0906,2.4311,.018
+Interval by Interval,Pearson's R,.2999,.0973,2.5147,.014
+N of Valid Cases,,66.0000,,,
 
 Table: Directional Measures
 ,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
