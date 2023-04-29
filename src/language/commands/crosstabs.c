@@ -1873,21 +1873,34 @@ display_chisq (struct crosstabulation *xt, struct pivot_table *chisq)
   free (indexes);
 }
 
+struct symmetric_statistic
+  {
+    double v;                   /* Value. */
+    double ase;                 /* Appropriate standard error. */
+    double t;                   /* Student's t value. */
+    double sig;                 /* Significance. */
+  };
+
+struct somers_d
+  {
+    double v;
+    double ase;
+    double t;
+  };
+
 static bool calc_symmetric (struct crosstabs_proc *, struct crosstabulation *,
-                            double[N_SYMMETRIC], double[N_SYMMETRIC],
-                            double[N_SYMMETRIC],
-                            double[3], double[3], double[3]);
+                            struct symmetric_statistic[N_SYMMETRIC],
+                            struct somers_d[3]);
 
 /* Display symmetric measures. */
 static void
 display_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
                    struct pivot_table *sym)
 {
-  double sym_v[N_SYMMETRIC], sym_ase[N_SYMMETRIC], sym_t[N_SYMMETRIC];
-  double somers_d_v[3], somers_d_ase[3], somers_d_t[3];
+  struct symmetric_statistic ss[N_SYMMETRIC];
+  struct somers_d somers_d[3];
 
-  if (!calc_symmetric (proc, xt, sym_v, sym_ase, sym_t,
-                       somers_d_v, somers_d_ase, somers_d_t))
+  if (!calc_symmetric (proc, xt, ss, somers_d))
     return;
 
   size_t *indexes = xnmalloc (sym->n_dimensions, sizeof *indexes);
@@ -1897,12 +1910,13 @@ display_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
   for (size_t i = 0; i < N_SYMMETRIC; i++)
     {
-      if (sym_v[i] == SYSMIS)
+      struct symmetric_statistic *s = &ss[i];
+      if (s->v == SYSMIS)
 	continue;
 
       indexes[1] = i;
 
-      double entries[] = { sym_v[i], sym_ase[i], sym_t[i] };
+      double entries[] = { s->v, s->ase, s->t, s->sig };
       for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
         if (entries[j] != SYSMIS)
           {
@@ -2252,10 +2266,8 @@ calc_r (struct crosstabulation *xt,
    errors.  Returns false if none could be calculated. */
 static bool
 calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
-                double v[N_SYMMETRIC], double ase[N_SYMMETRIC],
-		double t[N_SYMMETRIC],
-                double somers_d_v[3], double somers_d_ase[3],
-                double somers_d_t[3])
+                struct symmetric_statistic sym[N_SYMMETRIC],
+                struct somers_d somers_d[3])
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
@@ -2265,7 +2277,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
     return false;
 
   for (size_t i = 0; i < N_SYMMETRIC; i++)
-    v[i] = ase[i] = t[i] = SYSMIS;
+    sym[i].v = sym[i].ase = sym[i].t = sym[i].sig = SYSMIS;
 
   /* Phi, Cramer's V, contingency coefficient. */
   if (proc->statistics & (CRS_ST_PHI | CRS_ST_CC))
@@ -2284,11 +2296,11 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       if (proc->statistics & CRS_ST_PHI)
 	{
-	  v[0] = sqrt (Xp / xt->total);
-	  v[1] = sqrt (Xp / (xt->total * (q - 1)));
+	  sym[0].v = sqrt (Xp / xt->total);
+	  sym[1].v = sqrt (Xp / (xt->total * (q - 1)));
 	}
       if (proc->statistics & CRS_ST_CC)
-	v[2] = sqrt (Xp / (Xp + xt->total));
+	sym[2].v = sqrt (Xp / (Xp + xt->total));
     }
 
   if (proc->statistics & (CRS_ST_BTAU | CRS_ST_CTAU
@@ -2346,11 +2358,11 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
         }
 
       if (proc->statistics & CRS_ST_BTAU)
-	v[3] = (P - Q) / sqrt (Dr * Dc);
+	sym[3].v = (P - Q) / sqrt (Dr * Dc);
       if (proc->statistics & CRS_ST_CTAU)
-	v[4] = (q * (P - Q)) / (pow2 (xt->total) * (q - 1));
+	sym[4].v = (q * (P - Q)) / (pow2 (xt->total) * (q - 1));
       if (proc->statistics & CRS_ST_GAMMA)
-	v[5] = (P - Q) / (P + Q);
+	sym[5].v = (P - Q) / (P + Q);
 
       /* ASE for tau-b, tau-c, gamma.  Calculations could be
 	 eliminated here, at expense of memory.  */
@@ -2376,8 +2388,8 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
               if (proc->statistics & CRS_ST_BTAU)
                 btau_cum += fij * pow2 (2. * sqrt (Dr * Dc) * (Cij - Dij)
-                                        + v[3] * (xt->row_tot[i] * Dc
-                                                  + xt->col_tot[j] * Dr));
+                                        + sym[3].v * (xt->row_tot[i] * Dc
+                                                      + xt->col_tot[j] * Dr));
               ctau_cum += fij * pow2 (Cij - Dij);
 
               if (proc->statistics & CRS_ST_GAMMA)
@@ -2410,37 +2422,37 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
           double btau_var = ((btau_cum
                               - (xt->total * pow2 (xt->total * (P - Q) / sqrt (Dr * Dc) * (Dr + Dc))))
                              / pow2 (Dr * Dc));
-	  ase[3] = sqrt (btau_var);
-	  t[3] = v[3] / (2 * sqrt ((ctau_cum - (P - Q) * (P - Q) / xt->total)
-				   / (Dr * Dc)));
+	  sym[3].ase = sqrt (btau_var);
+	  sym[3].t = sym[3].v / (2 * sqrt ((ctau_cum - (P - Q) * (P - Q) / xt->total)
+                                           / (Dr * Dc)));
 	}
       if (proc->statistics & CRS_ST_CTAU)
 	{
-	  ase[4] = ((2 * q / ((q - 1) * pow2 (xt->total)))
-		    * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
-	  t[4] = v[4] / ase[4];
+	  sym[4].ase = ((2 * q / ((q - 1) * pow2 (xt->total)))
+                        * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
+	  sym[4].t = sym[4].v / sym[4].ase;
 	}
       if (proc->statistics & CRS_ST_GAMMA)
 	{
-	  ase[5] = ((4. / ((P + Q) * (P + Q))) * sqrt (gamma_cum));
-	  t[5] = v[5] / (2. / (P + Q)
-			 * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
+	  sym[5].ase = ((4. / ((P + Q) * (P + Q))) * sqrt (gamma_cum));
+	  sym[5].t = sym[5].v / (2. / (P + Q)
+                                 * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
 	}
       if (proc->statistics & CRS_ST_D)
 	{
-	  somers_d_v[0] = (P - Q) / (.5 * (Dc + Dr));
-	  somers_d_ase[0] = SYSMIS;
-	  somers_d_t[0] = (somers_d_v[0]
+	  somers_d[0].v = (P - Q) / (.5 * (Dc + Dr));
+	  somers_d[0].ase = SYSMIS;
+	  somers_d[0].t = (somers_d[0].v
 			   / (4 / (Dc + Dr)
 			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
-	  somers_d_v[1] = (P - Q) / Dc;
-	  somers_d_ase[1] = 2. / pow2 (Dc) * sqrt (d_xy_cum);
-	  somers_d_t[1] = (somers_d_v[1]
+	  somers_d[1].v = (P - Q) / Dc;
+	  somers_d[1].ase = 2. / pow2 (Dc) * sqrt (d_xy_cum);
+	  somers_d[1].t = (somers_d[1].v
 			   / (2. / Dc
 			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
-	  somers_d_v[2] = (P - Q) / Dr;
-	  somers_d_ase[2] = 2. / pow2 (Dr) * sqrt (d_yx_cum);
-	  somers_d_t[2] = (somers_d_v[2]
+	  somers_d[2].v = (P - Q) / Dr;
+	  somers_d[2].ase = 2. / pow2 (Dr) * sqrt (d_yx_cum);
+	  somers_d[2].t = (somers_d[2].v
 			   / (2. / Dr
 			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
 	}
@@ -2474,14 +2486,14 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
           s = t;
         }
 
-      calc_r (xt, R, C, &v[6], &t[6], &ase[6]);
+      calc_r (xt, R, C, &sym[6].v, &sym[6].t, &sym[6].ase);
 
       free (R);
       free (C);
 
       calc_r (xt, (double *) xt->vars[ROW_VAR].values,
               (double *) xt->vars[COL_VAR].values,
-              &v[7], &t[7], &ase[7]);
+              &sym[7].v, &sym[7].t, &sym[7].ase);
     }
 
   /* Cohen's kappa. */
@@ -2513,25 +2525,25 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 	    sum_fijri_ci2 += xt->mat[j + i * n_cols] * sum * sum;
 	  }
 
-      v[8] = (xt->total * sum_fii - sum_rici) / (pow2 (xt->total) - sum_rici);
+      sym[8].v = (xt->total * sum_fii - sum_rici) / (pow2 (xt->total) - sum_rici);
 
       double ase_under_h0 = sqrt ((pow2 (xt->total) * sum_rici
                                    + sum_rici * sum_rici
                                    - xt->total * sum_riciri_ci)
                                   / (xt->total * (pow2 (xt->total) - sum_rici) * (pow2 (xt->total) - sum_rici)));
 
-      ase[8] = sqrt (xt->total * (((sum_fii * (xt->total - sum_fii))
-				/ pow2 (pow2 (xt->total) - sum_rici))
-			       + ((2. * (xt->total - sum_fii)
-				   * (2. * sum_fii * sum_rici
-				      - xt->total * sum_fiiri_ci))
-				  / pow3 (pow2 (xt->total) - sum_rici))
-			       + (pow2 (xt->total - sum_fii)
-				  * (xt->total * sum_fijri_ci2 - 4.
-				     * sum_rici * sum_rici)
-				  / pow4 (pow2 (xt->total) - sum_rici))));
+      sym[8].ase = sqrt (xt->total * (((sum_fii * (xt->total - sum_fii))
+                                       / pow2 (pow2 (xt->total) - sum_rici))
+                                      + ((2. * (xt->total - sum_fii)
+                                          * (2. * sum_fii * sum_rici
+                                             - xt->total * sum_fiiri_ci))
+                                         / pow3 (pow2 (xt->total) - sum_rici))
+                                      + (pow2 (xt->total - sum_fii)
+                                         * (xt->total * sum_fijri_ci2 - 4.
+                                            * sum_rici * sum_rici)
+                                         / pow4 (pow2 (xt->total) - sum_rici))));
 
-      t[8] = v[8] / ase_under_h0;
+      sym[8].t = sym[8].v / ase_under_h0;
     }
 
   return true;
@@ -2823,22 +2835,17 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
   /* Somers' D. */
   if (proc->statistics & CRS_ST_D)
     {
-      double v_dummy[N_SYMMETRIC];
-      double ase_dummy[N_SYMMETRIC];
-      double t_dummy[N_SYMMETRIC];
-      double somers_d_v[3];
-      double somers_d_ase[3];
-      double somers_d_t[3];
+      struct symmetric_statistic ss[N_SYMMETRIC];
+      struct somers_d somers_d[3];
 
-      if (calc_symmetric (proc, xt, v_dummy, ase_dummy, t_dummy,
-                          somers_d_v, somers_d_ase, somers_d_t))
+      if (calc_symmetric (proc, xt, ss, somers_d))
         {
           for (size_t i = 0; i < 3; i++)
             {
-              v[8 + i] = somers_d_v[i];
-              ase[8 + i] = somers_d_ase[i];
-              t[8 + i] = somers_d_t[i];
-              sig[8 + i] = 2 * gsl_cdf_ugaussian_Q (fabs (somers_d_t[i]));
+              v[8 + i] = somers_d[i].v;
+              ase[8 + i] = somers_d[i].ase;
+              t[8 + i] = somers_d[i].t;
+              sig[8 + i] = 2 * gsl_cdf_ugaussian_Q (fabs (somers_d[i].t));
             }
         }
     }
