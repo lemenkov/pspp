@@ -710,28 +710,13 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
       for (j = 0; j < 6; j++)
         fmt[j] = read_int (r);
 
-      if (!dict_id_is_valid (dict, name) || *name == '#' || *name == '$')
-        error (r, _("Invalid variable name `%s' in position %d."), name, i);
-      str_uppercase (name);
-
       if (width < 0 || width > 255)
 	error (r, _("Bad width %d for variable %s."), width, name);
 
-      v = dict_create_var (dict, name, width);
-      if (v == NULL)
-        {
-          unsigned long int i;
-          for (i = 1; ; i++)
-            {
-              char *try_name = xasprintf ("%s_%lu", name, i);
-              v = dict_create_var (dict, try_name, width);
-              free (try_name);
-              if (v != NULL)
-                break;
-            }
-          warning (r, _("Duplicate variable name %s in position %d renamed "
-                        "to %s."), name, i, var_get_name (v));
-        }
+      v = dict_create_var_with_unique_name (dict, name, width);
+      if (utf8_strcasecmp (name, var_get_name (v)))
+        warning (r, _("Invalid or duplicate variable name %s in position %d "
+                      "renamed to %s."), name, i, var_get_name (v));
 
       print = convert_format (r, &fmt[0], v, &report_error);
       write = convert_format (r, &fmt[3], v, &report_error);

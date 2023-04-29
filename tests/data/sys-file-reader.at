@@ -1748,7 +1748,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], 0,
-   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid name `$UM1' to `VAR001'.
+   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid or duplicate name `$UM1' to `UM1'.
 ])
 done
 AT_CLEANUP
@@ -1774,7 +1774,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], 0,
-   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid name `TO' to `VAR001'.
+   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid or duplicate name `TO' to `TO_A'.
 ])
 done
 AT_CLEANUP
@@ -1830,12 +1830,12 @@ for variant in be le; do
 DISPLAY DICTIONARY.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], [0],
-   [warning: `sys-file.sav' near offset 0xd4: Renaming variable with duplicate name `VAR1' to `VAR001'.
+   [warning: `sys-file.sav' near offset 0xd4: Renaming variable with invalid or duplicate name `VAR1' to `VAR1_A'.
 
 Table: Variables
 Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
 var1,1,Unknown,Input,8,Right,F8.0,F8.0
-var001,2,Unknown,Input,8,Right,F8.0,F8.0
+var1_a,2,Unknown,Input,8,Right,F8.0,F8.0
 ])
 done
 AT_CLEANUP

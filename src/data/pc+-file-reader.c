@@ -843,7 +843,7 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
           continue;
         }
 
-      if (!dict_id_is_valid (dict, name) || name[0] == '#')
+      if (!dict_id_is_valid (dict, name, DC_ORDINARY))
         {
           pcp_error (r, rec->pos, _("Invalid variable name `%s'."), name);
           return false;
@@ -852,12 +852,10 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
       struct variable *var = dict_create_var (dict, name, rec->width);
       if (var == NULL)
         {
-          char *new_name = dict_make_unique_var_name (dict, NULL, NULL);
+          var = dict_create_var_with_unique_name (dict, name, rec->width);
           pcp_warn (r, rec->pos, _("Renaming variable with duplicate name "
                                    "`%s' to `%s'."),
-                    name, new_name);
-          var = dict_create_var_assert (dict, new_name, rec->width);
-          free (new_name);
+                    name, var_get_name (var));
         }
       if (rec->weight)
         {

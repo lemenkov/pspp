@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "data/dict-class.h"
 
 struct pool;
 struct dictionary;
@@ -60,7 +61,8 @@ bool parse_variables_pool (struct lexer *, struct pool *, const struct dictionar
 bool parse_var_set_vars (struct lexer *, const struct var_set *, struct variable ***, size_t *,
                         int opts);
 
-char *parse_DATA_LIST_var (struct lexer *, const struct dictionary *);
+char *parse_DATA_LIST_var (struct lexer *, const struct dictionary *,
+                           enum dict_class);
 bool parse_DATA_LIST_vars (struct lexer *, const struct dictionary *,
                            char ***names, size_t *n, int opts);
 bool parse_DATA_LIST_vars_pool (struct lexer *, const struct dictionary *,

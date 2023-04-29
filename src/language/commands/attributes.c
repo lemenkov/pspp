@@ -88,7 +88,8 @@ parse_attribute_name (struct lexer *lexer, const char *dict_encoding,
 {
   if (!lex_force_id (lexer))
     return NULL;
-  char *error = id_is_valid__ (lex_tokcstr (lexer), dict_encoding);
+  char *error = id_is_valid__ (lex_tokcstr (lexer), dict_encoding,
+                               DC_ORDINARY | DC_SYSTEM | DC_SCRATCH);
   if (error)
     {
       lex_error (lexer, "%s", error);

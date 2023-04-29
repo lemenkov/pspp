@@ -427,7 +427,6 @@ static void
 choose_column_names (PsppireImportAssistant *ia)
 {
   int i;
-  unsigned long int generated_name_count = 0;
   char *encoding = NULL;
   g_object_get (ia->text_file, "encoding", &encoding, NULL);
   if (ia->dict)
@@ -446,12 +445,7 @@ choose_column_names (PsppireImportAssistant *ia)
 	  candidate_name = psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
 	}
 
-      char *name = dict_make_unique_var_name (ia->dict,
-					      candidate_name,
-					      &generated_name_count);
-
-      dict_create_var_assert (ia->dict, name, 0);
-      free (name);
+      dict_create_var_with_unique_name (ia->dict, candidate_name, 0);
     }
 }
 

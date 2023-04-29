@@ -511,7 +511,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
       if (!lex_force_id (lexer))
         goto error;
       name = xstrdup (lex_tokcstr (lexer));
-      char *error = dict_id_is_valid__ (dict, name);
+      char *error = dict_id_is_valid__ (dict, name, DC_ORDINARY);
       if (error)
         {
           lex_error (lexer, "%s", error);

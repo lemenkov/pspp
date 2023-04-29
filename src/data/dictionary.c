@@ -81,6 +81,10 @@ struct dictionary
     struct varset **varsets;    /* Variable sets. */
     size_t n_varsets;           /* Number of variable sets. */
 
+    /* Number of VAR### names created by dict_make_unique_var_name(), or
+       less. */
+    unsigned long int n_unique_names;
+
     /* Whether variable names must be valid identifiers.  Normally, this is
        true, but sometimes a dictionary is prepared for external use
        (e.g. output to a CSV file) where names don't have to be valid. */
@@ -176,14 +180,15 @@ dict_get_encoding (const struct dictionary *d)
 }
 
 /* Checks whether UTF-8 string ID is an acceptable identifier in DICT's
-   encoding.  Returns true if it is, otherwise an error message that the caller
-   must free(). */
+   encoding for a variable in the classes in CLASSES.  Returns true if it is,
+   otherwise an error message that the caller must free(). */
 char * WARN_UNUSED_RESULT
-dict_id_is_valid__ (const struct dictionary *dict, const char *id)
+dict_id_is_valid__ (const struct dictionary *dict, const char *id,
+                    enum dict_class classes)
 {
   if (!dict->names_must_be_ids)
     return NULL;
-  return id_is_valid__ (id, dict->encoding);
+  return id_is_valid__ (id, dict->encoding, classes);
 }
 
 static bool
@@ -199,11 +204,12 @@ error_to_bool (char *error)
 }
 
 /* Returns true if UTF-8 string ID is an acceptable identifier in DICT's
-   encoding, false otherwise. */
+   encoding for a variable in the classes in CLASSES, false otherwise. */
 bool
-dict_id_is_valid (const struct dictionary *dict, const char *id)
+dict_id_is_valid (const struct dictionary *dict, const char *id,
+                  enum dict_class classes)
 {
-  return error_to_bool (dict_id_is_valid__ (dict, id));
+  return error_to_bool (dict_id_is_valid__ (dict, id, classes));
 }
 
 void
@@ -460,6 +466,8 @@ dict_clear_split_vars (struct dictionary *d)
 static void
 dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks)
 {
+  d->n_unique_names = 0;
+
   int dict_index = var_get_dict_index (v);
 
   assert (dict_contains_var (d, v));
@@ -621,9 +629,7 @@ dict_clear__ (struct dictionary *d, bool skip_callbacks)
   /* FIXME?  Should we really clear case_limit, label, documents?
      Others are necessarily cleared by deleting all the variables.*/
   while (d->n_vars > 0)
-    {
-      dict_delete_var__ (d, d->vars[d->n_vars - 1].var, skip_callbacks);
-    }
+    dict_delete_var__ (d, d->vars[d->n_vars - 1].var, skip_callbacks);
 
   free (d->vars);
   d->vars = NULL;
@@ -861,6 +867,25 @@ dict_clone_var_as_assert (struct dictionary *d, const struct variable *old_var,
   return add_var (d, new_var);
 }
 
+/* Creates and returns a new variable in DICT with the given WIDTH.  Uses HINT
+   as the variable name, if it is nonnull, not already in use in DICT, and a
+   valid name for a DC_ORDINARY variable; otherwise, chooses a unique name with
+   HINT as a hint. */
+struct variable *
+dict_create_var_with_unique_name (struct dictionary *dict, const char *hint,
+                                  int width)
+{
+  const char *name = (hint
+                      && dict_id_is_valid (dict, hint, DC_ORDINARY)
+                      && !dict_lookup_var (dict, hint)
+                      ? hint
+                      : dict_make_unique_var_name (dict, hint));
+  struct variable *var = dict_create_var_assert (dict, name, width);
+  if (name != hint)
+    free (CONST_CAST (char *, name));
+  return var;
+}
+
 /* Returns the variable named NAME in D, or a null pointer if no
    variable has that name. */
 struct variable *
@@ -960,11 +985,13 @@ dict_reorder_vars (struct dictionary *d,
   reindex_vars (d, 0, d->n_vars, false);
 }
 
-/* Changes the name of variable V that is currently in a dictionary to
+/* Changes the name of variable V that is currently in dictionary D to
    NEW_NAME. */
 static void
-rename_var (struct variable *v, const char *new_name)
+rename_var (struct dictionary *d, struct variable *v, const char *new_name)
 {
+  d->n_unique_names = 0;
+
   struct vardict_info *vardict = var_get_vardict (v);
   var_clear_vardict (v);
   var_set_name (v, new_name);
@@ -985,7 +1012,7 @@ dict_try_rename_var (struct dictionary *d, struct variable *v,
 
   struct variable *old = var_clone (v);
   unindex_var (d, var_get_vardict (v));
-  rename_var (v, new_name);
+  rename_var (d, v, new_name);
   reindex_var (d, var_get_vardict (v), false);
 
   if (settings_get_algorithm () == ENHANCED)
@@ -1040,7 +1067,7 @@ dict_rename_vars (struct dictionary *d,
   for (i = 0; i < count; i++)
     {
       unindex_var (d, var_get_vardict (vars[i]));
-      rename_var (vars[i], new_names[i]);
+      rename_var (d, vars[i], new_names[i]);
     }
 
   /* Add the renamed variables back into the name hash,
@@ -1061,7 +1088,7 @@ dict_rename_vars (struct dictionary *d,
 
           for (i = 0; i < count; i++)
             {
-              rename_var (vars[i], old_names[i]);
+              rename_var (d, vars[i], old_names[i]);
               reindex_var (d, var_get_vardict (vars[i]), false);
             }
 
@@ -1116,7 +1143,7 @@ make_hinted_name (const struct dictionary *dict, const char *hint)
       mblen = u8_mbtouc (&uc, CHAR_CAST (const uint8_t *, hint + ofs),
                          hint_len - ofs);
       if (rp == root
-          ? lex_uc_is_id1 (uc) && uc != '$'
+          ? lex_uc_is_id1 (uc) && uc != '$' && uc != '#' && uc != '@'
           : lex_uc_is_idn (uc))
         {
           if (dropped)
@@ -1163,47 +1190,33 @@ make_hinted_name (const struct dictionary *dict, const char *hint)
 }
 
 static char *
-make_numeric_name (const struct dictionary *dict, unsigned long int *num_start)
+make_numeric_name (struct dictionary *dict)
 {
-  unsigned long int number;
-
-  for (number = num_start != NULL ? MAX (*num_start, 1) : 1;
-       number < ULONG_MAX;
-       number++)
+  while (dict->n_unique_names++ < ULONG_MAX)
     {
-      char name[3 + INT_STRLEN_BOUND (number) + 1];
-
-      sprintf (name, "VAR%03lu", number);
+      char *name = xasprintf ("VAR%03lu", dict->n_unique_names);
       if (dict_lookup_var (dict, name) == NULL)
-        {
-          if (num_start != NULL)
-            *num_start = number + 1;
-          return xstrdup (name);
-        }
+        return name;
+      free (name);
     }
 
   NOT_REACHED ();
 }
 
-
 /* Devises and returns a variable name unique within DICT.  The variable name
    is owned by the caller, which must free it with free() when it is no longer
-   needed.
+   needed.  The variable name will not begin with '$' or '#' or '@'.
 
    HINT, if it is non-null, is used as a suggestion that will be
    modified for suitability as a variable name and for
    uniqueness.
 
-   If HINT is null or entirely unsuitable, a name in the form
-   "VAR%03d" will be generated, where the smallest unused integer
-   value is used.  If NUM_START is non-null, then its value is
-   used as the minimum numeric value to check, and it is updated
-   to the next value to be checked.
-*/
+   If HINT is null or entirely unsuitable, uses a name in the form "VAR%03d",
+   using the smallest available integer. */
 char *
-dict_make_unique_var_name (const struct dictionary *dict, const char *hint,
-                           unsigned long int *num_start)
+dict_make_unique_var_name (const struct dictionary *dict_, const char *hint)
 {
+  struct dictionary *dict = CONST_CAST (struct dictionary *, dict_);
   if (hint != NULL)
     {
       char *hinted_name = make_hinted_name (dict, hint);
@@ -1211,7 +1224,7 @@ dict_make_unique_var_name (const struct dictionary *dict, const char *hint,
         return hinted_name;
     }
 
-  return make_numeric_name (dict, num_start);
+  return make_numeric_name (dict);
 }
 
 /* Returns whether variable names must be valid identifiers.  Normally, this is

@@ -278,7 +278,7 @@ AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
    20 | MRSETS /MDGROUP NAME=**.
       |                      ^~"
 
-"mrsets.sps:21.22: error: MRSETS: x is not a valid name for a multiple response set.  Multiple response set names must begin with `$'.
+"mrsets.sps:21.22: error: MRSETS: `x' is not valid here because this identifier must start with `$'.
    21 | MRSETS /MDGROUP NAME=x.
       |                      ^"
 

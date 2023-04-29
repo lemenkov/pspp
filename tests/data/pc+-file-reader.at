@@ -1049,11 +1049,11 @@ AT_DATA([pc+-file.sps], [dnl
 GET FILE='pc+-file.sav' ENCODING='us-ascii'.
 ])
 AT_CHECK([pspp -O format=csv pc+-file.sps], [0], [dnl
-warning: `pc+-file.sav' near offset 0x230: Renaming variable with duplicate name `NUM1' to `VAR001'.
+warning: `pc+-file.sav' near offset 0x230: Renaming variable with duplicate name `NUM1' to `NUM1_A'.
 
-warning: `pc+-file.sav' near offset 0x250: Renaming variable with duplicate name `NUM1' to `VAR002'.
+warning: `pc+-file.sav' near offset 0x250: Renaming variable with duplicate name `NUM1' to `NUM1_B'.
 
-warning: `pc+-file.sav' near offset 0x270: Renaming variable with duplicate name `NUM1' to `VAR003'.
+warning: `pc+-file.sav' near offset 0x270: Renaming variable with duplicate name `NUM1' to `NUM1_C'.
 ])
 AT_CLEANUP
 

@@ -684,7 +684,6 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
   int type = 0;
   int x = 0;
   struct gnumeric_reader *r = NULL;
-  unsigned long int vstart = 0;
   int ret;
   casenumber n_cases = CASENUMBER_MAX;
   int i;
@@ -853,19 +852,17 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 
   for (i = 0 ; i < n_var_specs ; ++i)
     {
-      char *name;
-
-      if ((var_spec[i].name == NULL) && (var_spec[i].first_value == NULL))
+      struct var_spec *vs = &var_spec[i];
+      if (vs->name == NULL && !vs->first_value)
 	continue;
 
       /* Probably no data exists for this variable, so allocate a
 	 default width */
-      if (var_spec[i].width == -1)
-	var_spec[i].width = SPREADSHEET_DEFAULT_WIDTH;
+      if (vs->width == -1)
+	vs->width = SPREADSHEET_DEFAULT_WIDTH;
 
-      name = dict_make_unique_var_name (r->spreadsheet.dict, var_spec[i].name, &vstart);
-      dict_create_var (r->spreadsheet.dict, name, var_spec[i].width);
-      free (name);
+      dict_create_var_with_unique_name (r->spreadsheet.dict, vs->name,
+                                        vs->width);
     }
 
   /* Create the first case, and cache it */

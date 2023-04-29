@@ -64,6 +64,9 @@ struct variable *dict_clone_var_as (struct dictionary *,
 struct variable *dict_clone_var_as_assert (struct dictionary *,
                                            const struct variable *,
                                            const char *);
+struct variable *dict_create_var_with_unique_name (struct dictionary *,
+                                                   const char *hint,
+                                                   int width);
 
 /* Deleting variables. */
 void dict_delete_var (struct dictionary *, struct variable *);
@@ -86,8 +89,7 @@ void dict_rename_var (struct dictionary *, struct variable *, const char *);
 bool dict_rename_vars (struct dictionary *,
                        struct variable **, char **new_names,
                        size_t count, char **err_name);
-char *dict_make_unique_var_name (const struct dictionary *, const char *hint,
-                                 unsigned long int *num_start);
+char *dict_make_unique_var_name (const struct dictionary *, const char *hint);
 
 bool dict_get_names_must_be_ids (const struct dictionary *);
 void dict_set_names_must_be_ids (struct dictionary *, bool);
@@ -192,9 +194,11 @@ bool dict_has_attributes (const struct dictionary *);
 /* Data encoding. */
 const char *dict_get_encoding (const struct dictionary *d);
 
-char *dict_id_is_valid__ (const struct dictionary *, const char *id)
+char *dict_id_is_valid__ (const struct dictionary *, const char *id,
+                          enum dict_class)
   WARN_UNUSED_RESULT;
-bool dict_id_is_valid (const struct dictionary *, const char *id);
+bool dict_id_is_valid (const struct dictionary *, const char *id,
+                       enum dict_class);
 
 /* Functions to be called upon dictionary changes. */
 struct dict_callbacks

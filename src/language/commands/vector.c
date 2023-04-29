@@ -58,7 +58,8 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
       size_t allocated_vectors = 0;
       while (lex_token (lexer) == T_ID)
 	{
-          char *error = dict_id_is_valid__ (dict, lex_tokcstr (lexer));
+          char *error = dict_id_is_valid__ (dict, lex_tokcstr (lexer),
+                                            DC_ORDINARY | DC_SCRATCH);
           if (error)
             {
               lex_error (lexer, "%s", error);
@@ -176,7 +177,8 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
             for (size_t j = 0; j < n_vars; j++)
               {
                 char *name = xasprintf ("%s%zu", vectors[i], j + 1);
-                char *error = dict_id_is_valid__ (dict, name);
+                char *error = dict_id_is_valid__ (dict, name,
+                                                  DC_ORDINARY | DC_SCRATCH);
                 if (error)
                   {
                     lex_ofs_error (lexer, vectors_start, end_ofs, "%s", error);

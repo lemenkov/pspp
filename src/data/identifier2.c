@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistr.h>
 
+#include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
@@ -47,11 +48,15 @@ error_to_bool (char *error)
 }
 
 /* Checks whether if UTF-8 string ID is an acceptable identifier in encoding
-   DICT_ENCODING (UTF-8 if null).  Returns NULL if it is acceptable, otherwise
-   an error message that the caller must free(). */
+   DICT_ENCODING (UTF-8 if null) for a variable in one of the classes in
+   CLASSES.  Returns NULL if it is acceptable, otherwise an error message that
+   the caller must free(). */
 char * WARN_UNUSED_RESULT
-id_is_valid__ (const char *id, const char *dict_encoding)
+id_is_valid__ (const char *id, const char *dict_encoding,
+               enum dict_class classes)
 {
+  assert (classes && !(classes & ~DC_ALL));
+
   char *error = id_is_plausible__ (id);
   if (error)
     return error;
@@ -59,12 +64,54 @@ id_is_valid__ (const char *id, const char *dict_encoding)
   size_t dict_len;
   if (dict_encoding != NULL)
     {
-      /* XXX need to reject recoded strings that contain the fallback
-         character. */
-      dict_len = recode_string_len (dict_encoding, "UTF-8", id, -1);
+      struct substring out;
+      bool ok = !recode_pedantically (dict_encoding, "UTF-8", ss_cstr (id),
+                                      NULL, &out);
+      dict_len = ss_length (out);
+      ss_dealloc (&out);
+      if (!ok)
+        return xasprintf (_("Identifier `%s' is not valid in encoding `%s'."
+                            "used for this dictionary."), id, dict_encoding);
     }
   else
     dict_len = strlen (id);
+
+  enum dict_class c = dict_class_from_id (id);
+  if (!(classes & c))
+    {
+      switch (c)
+        {
+        case DC_ORDINARY:
+          switch ((int) classes)
+            {
+            case DC_SYSTEM:
+              return xasprintf (_("`%s' is not valid here because this "
+                                  "identifier must start with `$'."), id);
+
+            case DC_SCRATCH:
+              return xasprintf (_("`%s' is not valid here because this "
+                                  "identifier must start with `#'."), id);
+
+            case DC_SYSTEM | DC_SCRATCH:
+              return xasprintf (_("`%s' is not valid here because this "
+                                  "identifier must start with `$' or `#'."),
+                                id);
+
+            case DC_ORDINARY:
+            default:
+              NOT_REACHED ();
+            }
+          NOT_REACHED ();
+
+        case DC_SYSTEM:
+          return xasprintf (_("`%s' and other identifiers starting with `$' "
+                              "are not valid here."), id);
+
+        case DC_SCRATCH:
+          return xasprintf (_("`%s' and other identifiers starting with `#' "
+                              "are not valid here."), id);
+        }
+    }
 
   if (dict_len > ID_MAX_LEN)
     return xasprintf (_("Identifier `%s' exceeds %d-byte limit."),
@@ -74,11 +121,12 @@ id_is_valid__ (const char *id, const char *dict_encoding)
 }
 
 /* Returns true if UTF-8 string ID is an acceptable identifier in encoding
-   DICT_ENCODING (UTF-8 if null), false otherwise. */
+   DICT_ENCODING (UTF-8 if null) for variable in one of the classes in CLASSES,
+   false otherwise. */
 bool
-id_is_valid (const char *id, const char *dict_encoding)
+id_is_valid (const char *id, const char *dict_encoding, enum dict_class classes)
 {
-  return error_to_bool (id_is_valid__ (id, dict_encoding));
+  return error_to_bool (id_is_valid__ (id, dict_encoding, classes));
 }
 
 /* Checks whether UTF-8 string ID is an plausible identifier.  Returns NULL if

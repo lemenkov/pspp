@@ -180,13 +180,8 @@ static struct variable *
 create_var (struct psql_reader *r, struct fmt_spec fmt,
 	    int width, const char *suggested_name, int col)
 {
-  unsigned long int vx = 0;
-  struct variable *var;
-  char *name;
-
-  name = dict_make_unique_var_name (r->dict, suggested_name, &vx);
-  var = dict_create_var (r->dict, name, width);
-  free (name);
+  struct variable *var
+    = dict_create_var_with_unique_name (r->dict, suggested_name, width);
 
   var_set_both_formats (var, fmt);
 

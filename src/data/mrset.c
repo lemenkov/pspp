@@ -73,16 +73,7 @@ mrset_destroy (struct mrset *mrset)
 char * WARN_UNUSED_RESULT
 mrset_is_valid_name__ (const char *name, const char *dict_encoding)
 {
-  char *error = id_is_valid__ (name, dict_encoding);
-  if (error)
-    return error;
-
-  if (name[0] != '$')
-    return xasprintf (_("%s is not a valid name for a multiple response "
-                        "set.  Multiple response set names must begin with "
-                        "`$'."), name);
-
-  return NULL;
+  return id_is_valid__ (name, dict_encoding, DC_SYSTEM);
 }
 
 static bool

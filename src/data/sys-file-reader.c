@@ -1400,15 +1400,6 @@ parse_header (struct sfm_reader *r, const struct sfm_header_record *header,
   info->product = ss_xstrdup (product);
 }
 
-static struct variable *
-add_var_with_generated_name (struct dictionary *dict, int width)
-{
-  char *name = dict_make_unique_var_name (dict, NULL, NULL);
-  struct variable *var = dict_create_var_assert (dict, name, width);
-  free (name);
-  return var;
-}
-
 /* Reads a variable (type 2) record from R and adds the
    corresponding variable to DICT.
    Also skips past additional variable records for long string
@@ -1423,12 +1414,10 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
 
   for (rec = var_recs; rec < &var_recs[n_var_recs];)
     {
-      size_t n_values;
-      char *name;
-      size_t i;
+      char *name = recode_string_pool ("UTF-8", dict_encoding,
+                                       rec->name, -1, r->pool);
 
-      name = recode_string_pool ("UTF-8", dict_encoding,
-                                 rec->name, -1, r->pool);
+      /* Names are right-padded with spaces. */
       name[strcspn (name, " ")] = '\0';
 
       if (rec->width < 0 || rec->width > 255)
@@ -1438,25 +1427,13 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
           return false;
         }
 
-      struct variable *var;
-      if (!dict_id_is_valid (dict, name) || name[0] == '$' || name[0] == '#')
-        {
-          var = add_var_with_generated_name (dict, rec->width);
-          sys_warn (r, rec->pos, _("Renaming variable with invalid name "
-                                   "`%s' to `%s'."), name, var_get_name (var));
-        }
-      else
-        {
-          var = dict_create_var (dict, name, rec->width);
-          if (var == NULL)
-            {
-              var = add_var_with_generated_name (dict, rec->width);
-              sys_warn (r, rec->pos, _("Renaming variable with duplicate name "
-                                       "`%s' to `%s'."),
-                        name, var_get_name (var));
-            }
-        }
+      struct variable *var = dict_create_var_with_unique_name (dict, name,
+                                                               rec->width);
       rec->var = var;
+      if (strcmp (var_get_name (var), name))
+        sys_warn (r, rec->pos, _("Renaming variable with invalid or duplicate "
+                                 "name `%s' to `%s'."),
+                  name, var_get_name (var));
 
       /* Set the short name the same as the long name (even if we renamed
          it). */
@@ -1500,14 +1477,14 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
                   ofs += 16;
                 }
 
-              for (i = 0; i < n_discrete; i++)
+              for (size_t i = 0; i < n_discrete; i++)
                 {
                   mv_add_num (&mv, parse_float (r, rec->missing, ofs));
                   ofs += 8;
                 }
             }
           else
-            for (i = 0; i < rec->missing_value_code; i++)
+            for (size_t i = 0; i < rec->missing_value_code; i++)
               mv_add_str (&mv, rec->missing + 8 * i, MIN (width, 8));
           var_set_missing_values (var, &mv);
         }
@@ -1520,8 +1497,8 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
 
       /* Account for values.
          Skip long string continuation records, if any. */
-      n_values = rec->width == 0 ? 1 : DIV_RND_UP (rec->width, 8);
-      for (i = 1; i < n_values; i++)
+      size_t n_values = rec->width == 0 ? 1 : DIV_RND_UP (rec->width, 8);
+      for (size_t i = 1; i < n_values; i++)
         if (i + (rec - var_recs) >= n_var_recs || rec[i].width != -1)
           {
             sys_error (r, rec->pos, _("Missing string continuation record."));
@@ -2056,8 +2033,7 @@ parse_long_var_name_map (struct sfm_reader *r,
   while (read_variable_to_value_pair (r, dict, text, &var, &long_name))
     {
       /* Validate long name. */
-      if (!dict_id_is_valid (dict, long_name)
-          || long_name[0] == '$' || long_name[0] == '#')
+      if (!dict_id_is_valid (dict, long_name, DC_ORDINARY))
         {
           sys_warn (r, record->pos,
                     _("Long variable mapping from %s to invalid "

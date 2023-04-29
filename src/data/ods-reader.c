@@ -771,7 +771,6 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 {
   intf ret = 0;
   xmlChar *type = NULL;
-  unsigned long int vstart = 0;
   casenumber n_cases = CASENUMBER_MAX;
   int i;
   struct var_spec *var_spec = NULL;
@@ -936,15 +935,11 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 
   for (i = 0; i < n_var_specs ; ++i)
     {
+      int width = xmv_to_width (&var_spec[i].firstval, opts->asw);
+      struct variable *var = dict_create_var_with_unique_name (
+        r->spreadsheet.dict, var_spec[i].name, width);
+
       struct fmt_spec fmt;
-      struct variable *var = NULL;
-      char *name = dict_make_unique_var_name (r->spreadsheet.dict, var_spec[i].name, &vstart);
-      int width  = xmv_to_width (&var_spec[i].firstval, opts->asw);
-      dict_create_var (r->spreadsheet.dict, name, width);
-      free (name);
-
-      var = dict_get_var (r->spreadsheet.dict, i);
-
       if (0 == xmlStrcmp (var_spec[i].firstval.type, _xml("date")))
 	{
 	  fmt.type = FMT_DATE;
@@ -953,7 +948,6 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 	}
       else
 	fmt = fmt_default_for_width (width);
-
       var_set_both_formats (var, fmt);
     }
 

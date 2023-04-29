@@ -471,7 +471,7 @@ psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
   g_assert (d);
   g_assert (PSPPIRE_IS_DICT (d));
 
-  if (! dict_id_is_valid (d->dict, name))
+  if (! dict_id_is_valid (d->dict, name, DC_ORDINARY))
     return FALSE;
 
   if (idx < dict_get_n_vars (d->dict))
@@ -561,7 +561,7 @@ gboolean
 psppire_dict_check_name (const PsppireDict *dict,
 			 const gchar *name)
 {
-  return (dict_id_is_valid (dict->dict, name)
+  return (dict_id_is_valid (dict->dict, name, DC_ORDINARY)
           && !psppire_dict_lookup_var (dict, name));
 }
 
@@ -879,7 +879,7 @@ gboolean
 psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
 			 const gchar *name)
 {
-  if (! dict_id_is_valid (dict->dict, name))
+  if (! dict_id_is_valid (dict->dict, name, DC_ORDINARY))
     return FALSE;
 
   /* Make sure no other variable has this name */

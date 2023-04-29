@@ -429,14 +429,15 @@ fail:
 }
 
 char *
-parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d)
+parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d,
+                     enum dict_class classes)
 {
   if (!is_dict_name_token (lexer, d))
     {
       lex_error (lexer, ("Syntax error expecting variable name."));
       return NULL;
     }
-  char *error = dict_id_is_valid__ (d, lex_tokcstr (lexer));
+  char *error = dict_id_is_valid__ (d, lex_tokcstr (lexer), classes);
   if (error)
     {
       lex_error (lexer, "%s", error);
@@ -547,18 +548,15 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
       names = NULL;
     }
 
+  enum dict_class classes = (pv_opts & PV_NO_SCRATCH
+                             ? DC_ORDINARY
+                             : DC_ORDINARY | DC_SCRATCH);
   do
     {
       int start_ofs = lex_ofs (lexer);
-      name1 = parse_DATA_LIST_var (lexer, dict);
+      name1 = parse_DATA_LIST_var (lexer, dict, classes);
       if (!name1)
         goto exit;
-      if (dict_class_from_id (name1) == DC_SCRATCH && pv_opts & PV_NO_SCRATCH)
-	{
-	  lex_ofs_error (lexer, start_ofs, start_ofs,
-                         _("Scratch variables not allowed here."));
-	  goto exit;
-	}
       if (lex_match (lexer, T_TO))
 	{
 	  unsigned long int num1, num2;
@@ -566,7 +564,7 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           int root_len1, root_len2;
           unsigned long int number;
 
-          name2 = parse_DATA_LIST_var (lexer, dict);
+          name2 = parse_DATA_LIST_var (lexer, dict, classes);
           if (!name2)
             goto exit;
           int end_ofs = lex_ofs (lexer) - 1;

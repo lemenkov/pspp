@@ -6170,7 +6170,7 @@ save_file_open (struct save_file *sf, gsl_matrix *m,
           for (size_t i = 0; i < nv.size; i++)
             {
               char *name = trimmed_string (gsl_vector_get (&nv, i));
-              char *error = dict_id_is_valid__ (dict, name);
+              char *error = dict_id_is_valid__ (dict, name, DC_ORDINARY);
               if (!error)
                 string_array_append_nocopy (&names, name);
               else
