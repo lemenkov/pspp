@@ -185,6 +185,11 @@ combine_files (enum comb_command_type command,
           type = COMB_TABLE;
           table_idx = MIN (table_idx, proc.n_files);
         }
+      else if (!proc.n_files)
+        {
+          lex_error_expecting (lexer, "FILE", "TABLE");
+          goto error;
+        }
       else
         break;
       lex_match (lexer, T_EQUALS);

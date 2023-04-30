@@ -297,6 +297,7 @@ MATCH FILES/FILE='x.sav'/SORT/FILE=*/RENAME(name=name2)/SORT.
 MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/FIRST=x.
 MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x.
 MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/IN=x.
+MATCH FILES/KEEP=**.
 ])
 AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
 "match-files.sps:1.18: error: MATCH FILES: Cannot specify the active dataset since none has been defined.
@@ -392,5 +393,9 @@ match-files.sps:20: error: MATCH FILES: Variable name has different type or widt
 "match-files.sps:39.55: error: MATCH FILES: Variable name x specified on IN subcommand duplicates an existing variable name.
    39 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/IN=x.
       |                                                       ^"
+
+"match-files.sps:40.13-40.16: error: MATCH FILES: Syntax error expecting FILE or TABLE.
+   40 | MATCH FILES/KEEP=**.
+      |             ^~~~"
 ])
 AT_CLEANUP
