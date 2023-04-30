@@ -125,6 +125,7 @@ static void close_all_comb_files (struct comb_proc *);
 static void merge_dictionary (struct comb_proc *, struct comb_file *);
 static void different_types_error (struct comb_proc *, struct lexer *,
                                    const char *var_name);
+static void check_encodings (struct comb_proc *, struct lexer *);
 
 static void execute_update (struct comb_proc *);
 static void execute_match_files (struct comb_proc *);
@@ -159,7 +160,6 @@ combine_files (enum comb_command_type command,
                struct lexer *lexer, struct dataset *ds)
 {
   struct comb_proc proc = {
-    .dict = dict_create (get_default_encoding ()),
     .different_types = STRINGI_SET_INITIALIZER (proc.different_types),
   };
 
@@ -177,8 +177,6 @@ combine_files (enum comb_command_type command,
   size_t table_idx = SIZE_MAX;
   int sort_ofs = INT_MAX;
   size_t allocated_files = 0;
-
-  dict_set_case_limit (proc.dict, dict_get_case_limit (dataset_dict (ds)));
 
   lex_match (lexer, T_SLASH);
   for (;;)
@@ -242,6 +240,13 @@ combine_files (enum comb_command_type command,
             goto error;
         }
       file->end_ofs = lex_ofs (lexer) - 1;
+
+      if (!proc.dict)
+        {
+          proc.dict = dict_create (dict_get_encoding (file->dict));
+          dict_set_case_limit (proc.dict,
+                               dict_get_case_limit (dataset_dict (ds)));
+        }
 
       while (lex_match (lexer, T_SLASH))
         if (lex_match_id (lexer, "RENAME"))
@@ -410,6 +415,8 @@ combine_files (enum comb_command_type command,
         goto error;
     }
 
+  check_encodings (&proc, lexer);
+
   if (!saw_by)
     {
       if (command == COMB_UPDATE)
@@ -543,15 +550,6 @@ merge_dictionary (struct comb_proc *proc, struct comb_file *f)
   if (dict_get_label (m) == NULL)
     dict_set_label (m, dict_get_label (d));
 
-  /* FIXME: If the input files have different encodings, then
-     the result is undefined.
-     The correct thing to do would be to convert to an encoding
-     which can cope with all the input files (eg UTF-8).
-   */
-  if (strcmp (dict_get_encoding (f->dict), dict_get_encoding (m)))
-    msg (MW, _("Combining files with incompatible encodings. String data may "
-               "not be represented correctly."));
-
   const struct string_array *d_docs = dict_get_documents (d);
   const struct string_array *m_docs = dict_get_documents (m);
   if (d_docs)
@@ -629,6 +627,47 @@ different_types_error (struct comb_proc *proc,
                      _("In file %s, %s is a string with width %d."),
                      fn, var_name, var_get_width (ev));
     }
+}
+
+static void
+check_encodings (struct comb_proc *proc, struct lexer *lexer)
+{
+  /* FIXME: If the input files have different encodings, then
+     the result is undefined.
+     The correct thing to do would be to convert to an encoding
+     which can cope with all the input files (eg UTF-8).
+  */
+  for (size_t i = 0; i < dict_get_n_vars (proc->dict); i++)
+    if (var_is_alpha (dict_get_var (proc->dict, i)))
+      {
+        for (size_t j = 1; j < proc->n_files; j++)
+          if (strcmp (dict_get_encoding (proc->files[j - 1].dict),
+                      dict_get_encoding (proc->files[j].dict)))
+            {
+              msg (MW, _("Combining files with different encodings.  "
+                         "String data (such as in variable `%s') "
+                         "may not be represented correctly."),
+                   var_get_name (dict_get_var (proc->dict, i)));
+
+              for (size_t k = 0; k < proc->n_files; k++)
+                {
+                  const struct comb_file *ef = &proc->files[k];
+                  const char *fn = ef->handle ? fh_get_name (ef->handle) : "*";
+                  if (!k)
+                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                                 _("File %s uses encoding %s.  The output "
+                                   "will use this encoding."),
+                                 fn, dict_get_encoding (ef->dict));
+                  else
+                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                                 _("File %s uses encoding %s."),
+                                 fn, dict_get_encoding (ef->dict));
+                }
+
+              return;
+            }
+        return;
+      }
 }
 
 /* If VAR_NAME is non-NULL, attempts to create a

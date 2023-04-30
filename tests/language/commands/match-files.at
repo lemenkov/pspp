@@ -413,3 +413,39 @@ match-files.sps:43: error: MATCH FILES: Variable name has different type or widt
       |                          ^~~~~~"
 ])
 AT_CLEANUP
+
+AT_SETUP([MATCH FILES incompatible encoding warning])
+AT_DATA([match-files.sps], [dnl
+SET LOCALE='utf-8'.
+DATA LIST LIST NOTABLE/name (A6) x.
+BEGIN DATA.
+al,7
+brad,8
+carl,9
+END DATA.
+SAVE OUTFILE='x.sav'.
+
+SET LOCALE='US-ASCII'.
+DATA LIST LIST NOTABLE/name (A6) y.
+BEGIN DATA.
+al,1
+carl,2
+dan,3
+END DATA.
+MATCH FILES/FILE=*/FILE='x.sav'/RENAME(x=y).
+])
+AT_CHECK([pspp match-files.sps], [0], [dnl
+warning: Combining files with different encodings.  String data (such as in
+variable `name') may not be represented correctly.
+
+match-files.sps:17.13-17.18: note: MATCH FILES: File * uses encoding US-ASCII.
+The output will use this encoding.
+   17 | MATCH FILES/FILE=*/FILE='x.sav'/RENAME(x=y).
+      |             ^~~~~~
+
+match-files.sps:17.20-17.31: note: MATCH FILES: File `x.sav' uses encoding
+UTF-8.
+   17 | MATCH FILES/FILE=*/FILE='x.sav'/RENAME(x=y).
+      |                    ^~~~~~~~~~~~
+])
+AT_CLEANUP
