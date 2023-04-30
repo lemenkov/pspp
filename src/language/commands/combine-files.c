@@ -38,6 +38,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/string-array.h"
+#include "libpspp/stringi-set.h"
 #include "libpspp/taint.h"
 #include "math/sort.h"
 
@@ -97,6 +98,10 @@ struct comb_proc
     struct subcase by_vars;     /* BY variables in the output. */
     struct casewriter *output;  /* Destination for output. */
 
+    /* Names of variables whose types or widths different among the files.
+       It's OK if they're all dropped, but not otherwise. */
+    struct stringi_set different_types;
+
     size_t *var_sources;
     size_t n_var_sources, allocated_var_sources;
 
@@ -117,8 +122,9 @@ static int combine_files (enum comb_command_type, struct lexer *,
 static void free_comb_proc (struct comb_proc *);
 
 static void close_all_comb_files (struct comb_proc *);
-static bool merge_dictionary (struct comb_proc *, struct lexer *,
-                              struct comb_file *);
+static void merge_dictionary (struct comb_proc *, struct comb_file *);
+static void different_types_error (struct comb_proc *, struct lexer *,
+                                   const char *var_name);
 
 static void execute_update (struct comb_proc *);
 static void execute_match_files (struct comb_proc *);
@@ -154,6 +160,7 @@ combine_files (enum comb_command_type command,
 {
   struct comb_proc proc = {
     .dict = dict_create (get_default_encoding ()),
+    .different_types = STRINGI_SET_INITIALIZER (proc.different_types),
   };
 
   bool saw_by = false;
@@ -265,8 +272,7 @@ combine_files (enum comb_command_type command,
             sort_ofs = MIN (sort_ofs, lex_ofs (lexer) - 1);
           }
 
-      if (!merge_dictionary (&proc, lexer, file))
-        goto error;
+      merge_dictionary (&proc, file);
     }
 
   while (lex_token (lexer) != T_ENDCMD)
@@ -286,12 +292,24 @@ combine_files (enum comb_command_type command,
           if (!parse_sort_criteria (lexer, proc.dict, &proc.by_vars,
                                     &by_vars, NULL))
 	    goto error;
+          size_t n_by_vars = subcase_get_n_fields (&proc.by_vars);
+
+          for (size_t i = 0; i < n_by_vars; i++)
+            {
+              const char *name = var_get_name (by_vars[i]);
+              if (stringi_set_contains (&proc.different_types, name))
+                {
+                  different_types_error (&proc, lexer, name);
+                  free (by_vars);
+                  goto error;
+              }
+            }
 
           bool ok = true;
           for (size_t i = 0; i < proc.n_files; i++)
             {
               struct comb_file *file = &proc.files[i];
-              for (size_t j = 0; j < subcase_get_n_fields (&proc.by_vars); j++)
+              for (size_t j = 0; j < n_by_vars; j++)
                 {
                   const char *name = var_get_name (by_vars[j]);
                   struct variable *var = dict_lookup_var (file->dict, name);
@@ -375,6 +393,21 @@ combine_files (enum comb_command_type command,
           lex_end_of_command (lexer);
           goto error;
         }
+    }
+
+  if (!stringi_set_is_empty (&proc.different_types))
+    {
+      const char *var_name;
+      const struct stringi_set_node *node;
+      bool any_errors = false;
+      STRINGI_SET_FOR_EACH (var_name, node, &proc.different_types)
+        if (dict_lookup_var (proc.dict, var_name))
+          {
+            any_errors = true;
+            different_types_error (&proc, lexer, var_name);
+          }
+      if (any_errors)
+        goto error;
     }
 
   if (!saw_by)
@@ -501,9 +534,8 @@ combine_files (enum comb_command_type command,
 }
 
 /* Merge the dictionary for file F into master dictionary for PROC. */
-static bool
-merge_dictionary (struct comb_proc *proc, struct lexer *lexer,
-                  struct comb_file *f)
+static void
+merge_dictionary (struct comb_proc *proc, struct comb_file *f)
 {
   struct dictionary *m = proc->dict;
   struct dictionary *d = f->dict;
@@ -560,34 +592,8 @@ merge_dictionary (struct comb_proc *proc, struct lexer *lexer,
                                             sizeof *proc->var_sources);
           proc->var_sources[proc->n_var_sources++] = f - proc->files;
         }
-      else
+      else if (var_get_width (mv) == var_get_width (dv))
         {
-          if (var_get_width (mv) != var_get_width (dv))
-            {
-              const char *var_name = var_get_name (dv);
-              msg (SE, _("Variable %s has different type or width in different "
-                         "files."), var_name);
-
-              for (size_t j = 0; j < 2; j++)
-                {
-                  const struct variable *ev = !j ? mv : dv;
-                  const struct comb_file *ef
-                    = !j ? &proc->files[proc->var_sources[var_get_dict_index (mv)]] : f;
-                  const char *fn = ef->handle ? fh_get_name (ef->handle) : "*";
-
-                  if (var_is_numeric (ev))
-                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
-                                 _("In file %s, %s is numeric."),
-                                 fn, var_name);
-                  else
-                    lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
-                                 _("In file %s, %s is a string with width %d."),
-                                 fn, var_name, var_get_width (ev));
-                }
-
-              return false;
-            }
-
           if (var_has_value_labels (dv) && !var_has_value_labels (mv))
             var_set_value_labels (mv, var_get_value_labels (dv));
           if (var_has_missing_values (dv) && !var_has_missing_values (mv))
@@ -595,9 +601,34 @@ merge_dictionary (struct comb_proc *proc, struct lexer *lexer,
           if (var_get_label (dv) && !var_get_label (mv))
             var_set_label (mv, var_get_label (dv));
         }
+      else
+        stringi_set_insert (&proc->different_types, var_get_name (mv));
     }
+}
 
-  return true;
+static void
+different_types_error (struct comb_proc *proc,
+                       struct lexer *lexer, const char *var_name)
+{
+  msg (SE, _("Variable %s has different type or width in different "
+             "files."), var_name);
+  for (size_t i = 0; i < proc->n_files; i++)
+    {
+      const struct comb_file *ef = &proc->files[i];
+      const struct variable *ev = dict_lookup_var (ef->dict, var_name);
+      if (!ev)
+        continue;
+
+      const char *fn = ef->handle ? fh_get_name (ef->handle) : "*";
+      if (var_is_numeric (ev))
+        lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                     _("In file %s, %s is numeric."),
+                     fn, var_name);
+      else
+        lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
+                     _("In file %s, %s is a string with width %d."),
+                     fn, var_name, var_get_width (ev));
+    }
 }
 
 /* If VAR_NAME is non-NULL, attempts to create a
@@ -671,6 +702,7 @@ free_comb_proc (struct comb_proc *proc)
   subcase_uninit (&proc->by_vars);
   case_unref (proc->buffered_case);
   free (proc->var_sources);
+  stringi_set_destroy (&proc->different_types);
 }
 
 static bool scan_table (struct comb_file *, union value by[]);

@@ -120,6 +120,8 @@ variable with a given name, those variables must all have the same
 type (numeric or string) and, for string variables, the same width.
 Variables are matched after renaming with the @subcmd{RENAME} subcommand.
 Thus, @subcmd{RENAME} can be used to resolve conflicts.
+Only variables in the output file can conflict, so @subcmd{DROP} or
+@subcmd{KEEP}, as described below, can also resolve a conflict.
 
 @item
 The variable label for each output variable is taken from the first

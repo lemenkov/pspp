@@ -123,3 +123,6 @@ CHECK_ADD_FILES([interleave], [inline], [sav])
 CHECK_ADD_FILES([concatenate], [sav], [sav])
 CHECK_ADD_FILES([concatenate], [sav], [inline])
 CHECK_ADD_FILES([concatenate], [inline], [sav])
+
+dnl ADD FILES doesn't have syntax error tests because they are all covered
+dnl by the tests for MATCH FILES.
