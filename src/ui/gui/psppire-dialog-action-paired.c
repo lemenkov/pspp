@@ -127,7 +127,6 @@ static gchar *
 generate_syntax (const PsppireDialogAction *pda)
 {
   PsppireDialogActionPaired *d = PSPPIRE_DIALOG_ACTION_PAIRED (pda);
-  gchar *text = NULL;
   GString *str =   g_string_new ("T-TEST \n\tPAIRS = ");
 
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (d->pairs_treeview), 0, str);
@@ -143,10 +142,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
   g_string_append (str, ".\n");
 
-  text = str->str;
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 static GtkBuilder *

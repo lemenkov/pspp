@@ -362,7 +362,6 @@ static char *
 generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
-  gchar *text;
 
   GString *str = g_string_new ("T-TEST /VARIABLES=");
 
@@ -415,11 +414,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   g_string_append (str, ".\n");
 
-  text = str->str;
-
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 static void

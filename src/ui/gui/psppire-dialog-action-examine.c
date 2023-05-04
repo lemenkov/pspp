@@ -218,7 +218,6 @@ generate_syntax (const PsppireDialogAction *act)
   PsppireDialogActionExamine *ed  = PSPPIRE_DIALOG_ACTION_EXAMINE (act);
 
   const char *label;
-  gchar *text = NULL;
   GString *str = g_string_new ("EXAMINE ");
   bool show_stats = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->display_stats_button));
   bool show_plots = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->display_plots_button));
@@ -334,11 +333,8 @@ generate_syntax (const PsppireDialogAction *act)
     };
 
   g_string_append (str, ".");
-  text = str->str;
 
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 static gboolean

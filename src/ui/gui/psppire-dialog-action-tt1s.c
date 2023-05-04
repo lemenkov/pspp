@@ -35,7 +35,6 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionTt1s *d = PSPPIRE_DIALOG_ACTION_TT1S (act);
-  gchar *text;
 
   GString *str = g_string_new ("T-TEST ");
 
@@ -50,11 +49,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (str, ".\n");
 
-  text = str->str;
-
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 

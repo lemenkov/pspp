@@ -189,7 +189,6 @@ static char *
 generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionRegression *rd = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
-  gchar *text = NULL;
 
   guint selected;
   GtkTreeIter iter;
@@ -241,11 +240,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static void

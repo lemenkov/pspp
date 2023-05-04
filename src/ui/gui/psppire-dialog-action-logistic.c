@@ -148,7 +148,6 @@ static char *
 generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionLogistic *rd = PSPPIRE_DIALOG_ACTION_LOGISTIC (a);
-  gchar *text = NULL;
 
   const gchar *dep = gtk_entry_get_text (GTK_ENTRY (rd->dep_var));
 
@@ -211,11 +210,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   g_string_append (strx, ".\n");
 
-  text = strx->str;
-
-  g_string_free (strx, FALSE);
-
-  return text;
+  return g_string_free_and_steal (strx);
 }
 
 static void

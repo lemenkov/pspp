@@ -42,7 +42,6 @@ generate_syntax (const PsppireDialogAction *pda)
   gint i;
 
   GString *str;
-  gchar *text;
   GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (cd->textview));
 
   str = g_string_new ("\n* Data File Comments.\n\n");
@@ -82,11 +81,7 @@ generate_syntax (const PsppireDialogAction *pda)
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->check)))
     g_string_append (str, "DISPLAY DOCUMENTS.\n");
 
-  text = str->str;
-
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 

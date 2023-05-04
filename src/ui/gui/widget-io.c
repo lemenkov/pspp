@@ -43,7 +43,6 @@ widget_printf (const gchar *fmt, ...)
   char_directives d;
   arguments a;
   GString *output;
-  gchar *text;
   va_list ap;
   const char *s = fmt;
 
@@ -94,7 +93,5 @@ widget_printf (const gchar *fmt, ...)
   if (*s)
     g_string_append_len (output, s, -1);
 
-  text = output->str;
-  g_string_free (output, FALSE);
-  return text;
+  return g_string_free_and_steal (output);
 }

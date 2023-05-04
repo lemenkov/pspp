@@ -154,7 +154,6 @@ static char *
 generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionBarchart *rd = PSPPIRE_DIALOG_ACTION_BARCHART (a);
-  gchar *text;
   const gchar *var_name_xaxis = gtk_entry_get_text (GTK_ENTRY (rd->variable_xaxis));
   const gchar *var_name_cluster = gtk_entry_get_text (GTK_ENTRY (rd->variable_cluster));
 
@@ -214,11 +213,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static void

@@ -34,7 +34,6 @@ generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionUnivariate *uvd = PSPPIRE_DIALOG_ACTION_UNIVARIATE (act);
 
-  gchar *text = NULL;
   GString *str = g_string_new ("GLM ");
 
   g_string_append (str, gtk_entry_get_text (GTK_ENTRY (uvd->dep_entry)));
@@ -45,11 +44,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (str, ".\n");
 
-  text = str->str;
-
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 

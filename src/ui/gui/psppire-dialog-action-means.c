@@ -40,7 +40,6 @@ generate_syntax (const PsppireDialogAction *act)
 {
   gint l;
   PsppireDialogActionMeans *scd = PSPPIRE_DIALOG_ACTION_MEANS (act);
-  gchar *text;
   GString *string = g_string_new ("MEANS TABLES = ");
   PsppireMeansLayer *layer = PSPPIRE_MEANS_LAYER (scd->layer);
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (scd->variables), 0, string);
@@ -62,11 +61,8 @@ generate_syntax (const PsppireDialogAction *act)
     }
 
   g_string_append (string, ".\n");
-  text = string->str;
 
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static gboolean

@@ -33,7 +33,6 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionCorrelation *rd = PSPPIRE_DIALOG_ACTION_CORRELATION (act);
-  gchar *text;
   GString *string = g_string_new ("CORRELATION");
   g_string_append (string, "\n\t/VARIABLES = ");
 
@@ -56,11 +55,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 

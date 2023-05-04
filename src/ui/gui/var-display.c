@@ -42,10 +42,9 @@ missing_values_to_string (const struct variable *pv, GError **err)
     return xstrdup (gettext (none));
   else
     {
-      gchar *s = NULL;
+      GString *gstr = g_string_sized_new (10);
       if (! mv_has_range (miss))
 	{
-	  GString *gstr = g_string_sized_new (10);
 	  const int n = mv_n_values (miss);
 	  gchar *mv[4] = {0,0,0,0};
 	  gint i;
@@ -57,12 +56,9 @@ missing_values_to_string (const struct variable *pv, GError **err)
 	      g_string_append (gstr, mv[i]);
 	      g_free (mv[i]);
 	    }
-	  s = gstr->str;
-	  g_string_free (gstr, FALSE);
 	}
       else
 	{
-	  GString *gstr = g_string_sized_new (10);
 	  gchar *l, *h;
 	  union value low, high;
 	  mv_get_range (miss, &low.f, &high.f);
@@ -84,10 +80,8 @@ missing_values_to_string (const struct variable *pv, GError **err)
 	      g_string_append (gstr, ss);
 	      free (ss);
 	    }
-	  s = gstr->str;
-	  g_string_free (gstr, FALSE);
 	}
 
-      return s;
+      return g_string_free_and_steal (gstr);
     }
 }

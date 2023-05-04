@@ -40,7 +40,6 @@ generate_syntax (const PsppireDialogAction *act)
   PsppireDialogActionFlip *rd = PSPPIRE_DIALOG_ACTION_FLIP (act);
 
   GString *string = g_string_new ("FLIP");
-  gchar *syntax ;
 
   g_string_append (string, " /VARIABLES = ");
 
@@ -53,11 +52,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, ".\n");
 
-  syntax = string->str;
-
-  g_string_free (string, FALSE);
-
-  return syntax;
+  return g_string_free_and_steal (string);
 }
 
 

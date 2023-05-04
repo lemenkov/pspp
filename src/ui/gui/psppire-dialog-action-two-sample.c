@@ -139,7 +139,6 @@ generate_syntax (const PsppireDialogAction *pda)
   gint i;
 
   PsppireDialogActionTwoSample *d = PSPPIRE_DIALOG_ACTION_TWO_SAMPLE (pda);
-  gchar *text = NULL;
 
   GString *str = g_string_new ("NPAR TEST");
 
@@ -162,10 +161,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
   g_string_append (str, ".\n");
 
-  text = str->str;
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 static GtkBuilder *

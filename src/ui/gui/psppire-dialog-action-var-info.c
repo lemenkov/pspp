@@ -62,7 +62,6 @@ generate_syntax__ (const PsppireDialogAction *act, const char *prefix)
   size_t n_vars;
   size_t line_len;
   GString *s;
-  char *str;
   size_t i;
 
   psppire_dict_view_get_selected_variables (PSPPIRE_DICT_VIEW (act->source),
@@ -95,9 +94,7 @@ generate_syntax__ (const PsppireDialogAction *act, const char *prefix)
 
   g_free (vars);
 
-  str = s->str;
-  g_string_free (s, FALSE);
-  return str;
+  return g_string_free_and_steal (s);
 }
 
 static gchar *

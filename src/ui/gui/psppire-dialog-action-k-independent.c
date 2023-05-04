@@ -48,7 +48,6 @@ static const char *keyword[n_KIDS] =
 static char *
 generate_syntax (const PsppireDialogAction *act)
 {
-  gchar *text;
   PsppireDialogActionKIndependent *kid = PSPPIRE_DIALOG_ACTION_K_INDEPENDENT (act);
 
   GString *string = g_string_new ("NPAR TEST");
@@ -77,11 +76,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 

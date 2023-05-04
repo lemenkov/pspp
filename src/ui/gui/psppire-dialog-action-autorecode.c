@@ -119,7 +119,6 @@ generate_syntax (const PsppireDialogAction *act)
 
   GHashTableIter iter;
   gpointer key, value;
-  gchar *text;
 
   GString *string = g_string_new ("AUTORECODE");
 
@@ -154,11 +153,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static void

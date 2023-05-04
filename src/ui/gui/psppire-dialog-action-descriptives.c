@@ -77,7 +77,6 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionDescriptives *scd = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (act);
-  gchar *text;
   GString *string;
   GtkTreeIter iter;
   unsigned int selected;
@@ -149,11 +148,7 @@ generate_syntax (const PsppireDialogAction *act)
   if (gtk_toggle_button_get_active (scd->save_z_scores))
     g_string_append (string, "\nEXECUTE.");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static gboolean

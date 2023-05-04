@@ -89,7 +89,6 @@ static char *
 generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionHistogram *rd = PSPPIRE_DIALOG_ACTION_HISTOGRAM (a);
-  gchar *text;
   const gchar *var_name = gtk_entry_get_text (GTK_ENTRY (rd->variable));
   GString *string = g_string_new ("GRAPH /HISTOGRAM ");
 
@@ -103,11 +102,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static void

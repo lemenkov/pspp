@@ -40,7 +40,6 @@ generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionRank *rd  = PSPPIRE_DIALOG_ACTION_RANK (act);
 
-  gchar *text = NULL;
   GtkTreeModel *gs = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->group_vars));
 
   GtkTreeIter notused;
@@ -116,11 +115,8 @@ generate_syntax (const PsppireDialogAction *act)
 
 
   g_string_append (str, ".");
-  text = str->str;
 
-  g_string_free (str, FALSE);
-
-  return text;
+  return g_string_free_and_steal (str);
 }
 
 static gboolean

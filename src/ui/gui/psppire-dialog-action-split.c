@@ -39,7 +39,6 @@ static char *
 generate_syntax (const PsppireDialogAction *pda)
 {
   PsppireDialogActionSplit *act = PSPPIRE_DIALOG_ACTION_SPLIT (pda);
-  gchar *text;
 
   GString *string = g_string_new ("SPLIT FILE OFF.");
 
@@ -73,11 +72,7 @@ generate_syntax (const PsppireDialogAction *pda)
       g_string_free (varlist, TRUE);
     }
 
-  text =  string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 

@@ -33,7 +33,6 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionSort *scd = PSPPIRE_DIALOG_ACTION_SORT (act);
-  gchar *text;
   GString *string = g_string_new ("SORT CASES BY ");
 
   PsppireVarView *var_view = PSPPIRE_VAR_VIEW (scd->variables);
@@ -52,11 +51,7 @@ generate_syntax (const PsppireDialogAction *act)
       g_string_append (string, ".");
     }
 
-  text = string->str;
-
-  g_string_free (string, FALSE);
-
-  return text;
+  return g_string_free_and_steal (string);
 }
 
 static void
