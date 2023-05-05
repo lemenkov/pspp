@@ -102,9 +102,6 @@ struct comb_proc
        It's OK if they're all dropped, but not otherwise. */
     struct stringi_set different_types;
 
-    size_t *var_sources;
-    size_t n_var_sources, allocated_var_sources;
-
     struct case_matcher *matcher;
 
     /* FIRST, LAST.
@@ -582,14 +579,7 @@ merge_dictionary (struct comb_proc *proc, struct comb_file *f)
         continue;
 
       if (!mv)
-        {
-          mv = dict_clone_var_assert (m, dv);
-          if (proc->n_var_sources >= proc->allocated_var_sources)
-            proc->var_sources = x2nrealloc (proc->var_sources,
-                                            &proc->allocated_var_sources,
-                                            sizeof *proc->var_sources);
-          proc->var_sources[proc->n_var_sources++] = f - proc->files;
-        }
+        mv = dict_clone_var_assert (m, dv);
       else if (var_get_width (mv) == var_get_width (dv))
         {
           if (var_has_value_labels (dv) && !var_has_value_labels (mv))
@@ -740,7 +730,6 @@ free_comb_proc (struct comb_proc *proc)
     }
   subcase_uninit (&proc->by_vars);
   case_unref (proc->buffered_case);
-  free (proc->var_sources);
   stringi_set_destroy (&proc->different_types);
 }
 
