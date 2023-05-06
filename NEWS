@@ -5,7 +5,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes after 1.6.2:
+Changes from 1.6.2 to 2.0.0-pre1:
 
  * The CTABLES command is now implemented.
 
