@@ -84,6 +84,7 @@ static inline size_t subcase_get_n_fields (const struct subcase *);
 
 static inline size_t subcase_get_case_index (const struct subcase *,
                                              size_t idx);
+static inline int subcase_get_width (const struct subcase *, size_t idx);
 static inline enum subcase_direction subcase_get_direction (
   const struct subcase *, size_t idx);
 
@@ -117,6 +118,12 @@ static inline size_t
 subcase_get_case_index (const struct subcase *sc, size_t idx)
 {
   return sc->fields[idx].case_index;
+}
+
+static inline int
+subcase_get_width (const struct subcase *sc, size_t idx)
+{
+  return sc->fields[idx].width;
 }
 
 static inline enum subcase_direction

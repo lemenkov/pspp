@@ -116,8 +116,10 @@ The variables in the new active dataset are the union of all the input files'
 variables, matched based on their name.  When a single input file
 contains a variable with a given name, the output file will contain
 exactly that variable.  When more than one input file contains a
-variable with a given name, those variables must all have the same
-type (numeric or string) and, for string variables, the same width.
+variable with a given name, those variables must be all string or all numeric.
+If they are string variables, then the result will have the width of the longest
+variable with that name, with narrower values padded on the right with spaces
+to fill the width.
 Variables are matched after renaming with the @subcmd{RENAME} subcommand.
 Thus, @subcmd{RENAME} can be used to resolve conflicts.
 Only variables in the output file can conflict, so @subcmd{DROP} or

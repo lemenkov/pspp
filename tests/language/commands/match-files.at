@@ -215,11 +215,7 @@ x,y,j
 ])
 AT_CLEANUP
 
-dnl Tests for a bug that caused MATCH FILES to crash
-dnl with incompatible variables, especially but not
-dnl exclusively when one variable came from the active
-dnl file.
-AT_SETUP([MATCH FILES with incompatible variable types])
+AT_SETUP([MATCH FILES with different string widths])
 AT_DATA([match-files.sps], [dnl
 DATA LIST LIST NOTABLE/name (A6) x.
 BEGIN DATA.
@@ -238,18 +234,13 @@ END DATA.
 MATCH FILES/FILE='x.sav'/FILE=*/BY name.
 LIST.
 ])
-AT_CHECK([pspp -O format=csv match-files.sps], [1], [dnl
-match-files.sps:15: error: MATCH FILES: Variable name has different type or width in different files.
-
-"match-files.sps:15.13-15.24: note: MATCH FILES: In file `x.sav', name is a string with width 6.
-   15 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
-      |             ^~~~~~~~~~~~"
-
-"match-files.sps:15.26-15.31: note: MATCH FILES: In file *, name is a string with width 7.
-   15 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
-      |                          ^~~~~~"
-
-match-files.sps:16: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+AT_CHECK([pspp -O format=csv match-files.sps], [0], [dnl
+Table: Data List
+name,x,y
+al,7.00,1.00
+brad,8.00,.  @&t@
+carl,9.00,2.00
+dan,.  ,3.00
 ])
 AT_CLEANUP
 
@@ -277,7 +268,7 @@ al,1
 carl,2
 dan,3
 END DATA.
-MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x)/BY x.
 MATCH FILES/FILE='x.sav'/IN=**.
 MATCH FILES/FILE='x.sav'/IN=x/IN=y.
 MATCH FILES/FILE='x.sav'/BY=x/BY=y.
@@ -299,9 +290,10 @@ MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/LAST=x.
 MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=name2)/IN=x.
 MATCH FILES/KEEP=**.
 
-* The different 'name' variables are a problem, but not if we drop them.
-MATCH FILES/FILE='x.sav'/FILE=*/RENAME(y=x).
-MATCH FILES/FILE='x.sav'/FILE=*/RENAME(y=x)/DROP=name.
+* It's a problem to have different types and the same name,
+but not if we drop them.
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x).
+MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x)/DROP=x.
 ])
 AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
 "match-files.sps:1.18: error: MATCH FILES: Cannot specify the active dataset since none has been defined.
@@ -312,14 +304,14 @@ AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
    12 | MATCH FILES/FILE=*.
       |                  ^"
 
-match-files.sps:20: error: MATCH FILES: Variable name has different type or width in different files.
+match-files.sps:20: error: MATCH FILES: Variable x has different types in different files.
 
-"match-files.sps:20.13-20.24: note: MATCH FILES: In file `x.sav', name is a string with width 6.
-   20 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+"match-files.sps:20.13-20.24: note: MATCH FILES: In file `x.sav', x is numeric.
+   20 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x)/BY x.
       |             ^~~~~~~~~~~~"
 
-"match-files.sps:20.26-20.31: note: MATCH FILES: In file *, name is a string with width 7.
-   20 | MATCH FILES/FILE='x.sav'/FILE=*/BY name.
+"match-files.sps:20.26-20.31: note: MATCH FILES: In file *, x is a string.
+   20 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x)/BY x.
       |                          ^~~~~~"
 
 "match-files.sps:21.29-21.30: error: MATCH FILES: Syntax error expecting identifier.
@@ -402,14 +394,14 @@ match-files.sps:20: error: MATCH FILES: Variable name has different type or widt
    40 | MATCH FILES/KEEP=**.
       |             ^~~~"
 
-match-files.sps:43: error: MATCH FILES: Variable name has different type or width in different files.
+match-files.sps:44: error: MATCH FILES: Variable x has different types in different files.
 
-"match-files.sps:43.13-43.24: note: MATCH FILES: In file `x.sav', name is a string with width 6.
-   43 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(y=x).
+"match-files.sps:44.13-44.24: note: MATCH FILES: In file `x.sav', x is numeric.
+   44 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x).
       |             ^~~~~~~~~~~~"
 
-"match-files.sps:43.26-43.31: note: MATCH FILES: In file *, name is a string with width 7.
-   43 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(y=x).
+"match-files.sps:44.26-44.31: note: MATCH FILES: In file *, x is a string.
+   44 | MATCH FILES/FILE='x.sav'/FILE=*/RENAME(name=x).
       |                          ^~~~~~"
 ])
 AT_CLEANUP

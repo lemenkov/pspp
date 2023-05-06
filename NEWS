@@ -17,6 +17,9 @@ Changes after 1.6.2:
 
    - Break variables are now optional.
 
+ * ADD FILES, MATCH FILES, and UPDATE now allow string variables with
+   the same name to have different widths.
+
  * CROSSTABS now calculates significance of Pearson and Spearman
    correlations in symmetric measures.
 

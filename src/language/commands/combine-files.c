@@ -62,6 +62,21 @@ enum comb_file_type
     COMB_TABLE			/* Specified on TABLE= subcommand. */
   };
 
+/* These commands combine multiple input files into a single master file.  The
+   input files may merge string variables with different widths, right-padding
+   with spaces to the length of the longest.  This data structure allows for
+   that. */
+struct comb_resizer
+  {
+    struct caseproto *output_proto;
+    int *indexes;
+    size_t n_indexes;
+  };
+
+static struct casereader *comb_resize (struct casereader *,
+                                       struct comb_resizer *);
+static void comb_resizer_destroy (struct comb_resizer *);
+
 /* One FILE or TABLE subcommand. */
 struct comb_file
   {
@@ -82,6 +97,7 @@ struct comb_file
     bool is_minimal;            /* Does 'data' have minimum BY values across
                                    all input files? */
     bool is_sorted;             /* Is file presorted on the BY variables? */
+    struct comb_resizer *resizer; /* If necessary. */
 
     /* IN subcommand. */
     char *in_name;
@@ -98,7 +114,7 @@ struct comb_proc
     struct subcase by_vars;     /* BY variables in the output. */
     struct casewriter *output;  /* Destination for output. */
 
-    /* Names of variables whose types or widths different among the files.
+    /* Names of variables whose types differ among the files.
        It's OK if they're all dropped, but not otherwise. */
     struct stringi_set different_types;
 
@@ -277,6 +293,41 @@ combine_files (enum comb_command_type command,
       merge_dictionary (&proc, file);
     }
 
+  for (size_t i = 0; i < dict_get_n_vars (proc.dict); i++)
+    {
+      const struct variable *mv = dict_get_var (proc.dict, i);
+      const char *name = var_get_name (mv);
+      int mw = var_get_width (mv);
+      if (!mw || stringi_set_contains (&proc.different_types, name))
+        continue;
+
+      for (size_t j = 0; j < proc.n_files; j++)
+        {
+          struct comb_file *cf = &proc.files[j];
+          struct variable *dv = dict_lookup_var (cf->dict, name);
+          if (!dv)
+            continue;
+
+          int dw = var_get_width (dv);
+          assert (dw <= mw);
+          if (dw < mw)
+            {
+              struct comb_resizer *r = cf->resizer;
+              if (!r)
+                {
+                  r = xmalloc (sizeof *r);
+                  *r = (struct comb_resizer) {
+                    .output_proto = caseproto_ref (dict_get_proto (proc.dict)),
+                    .indexes = xnmalloc (dict_get_n_vars (cf->dict),
+                                         sizeof *r->indexes),
+                  };
+                  cf->resizer = r;
+                }
+              r->indexes[r->n_indexes++] = var_get_dict_index (dv);
+            }
+        }
+    }
+
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match (lexer, T_BY))
@@ -316,8 +367,9 @@ combine_files (enum comb_command_type command,
                   const char *name = var_get_name (by_vars[j]);
                   struct variable *var = dict_lookup_var (file->dict, name);
                   if (var != NULL)
-                    subcase_add_var (&file->by_vars, var,
-                                     subcase_get_direction (&proc.by_vars, j));
+                    subcase_add (&file->by_vars, var_get_dict_index (var),
+                                 subcase_get_width (&proc.by_vars, j),
+                                 subcase_get_direction (&proc.by_vars, j));
                   else
                     {
                       const char *fn
@@ -491,6 +543,11 @@ combine_files (enum comb_command_type command,
           else
             file->reader = casereader_clone (active_file);
         }
+      if (file->resizer)
+        {
+          file->reader = comb_resize (file->reader, file->resizer);
+          file->resizer = NULL;
+        }
       if (!file->is_sorted)
         file->reader = sort_execute (file->reader, &file->by_vars);
       taint_propagate (casereader_get_taint (file->reader), taint);
@@ -580,8 +637,11 @@ merge_dictionary (struct comb_proc *proc, struct comb_file *f)
 
       if (!mv)
         mv = dict_clone_var_assert (m, dv);
-      else if (var_get_width (mv) == var_get_width (dv))
+      else if (var_get_type (mv) == var_get_type (dv))
         {
+          if (var_get_width (dv) > var_get_width (mv))
+            var_set_width (mv, var_get_width (dv));
+
           if (var_has_value_labels (dv) && !var_has_value_labels (mv))
             var_set_value_labels (mv, var_get_value_labels (dv));
           if (var_has_missing_values (dv) && !var_has_missing_values (mv))
@@ -598,8 +658,7 @@ static void
 different_types_error (struct comb_proc *proc,
                        struct lexer *lexer, const char *var_name)
 {
-  msg (SE, _("Variable %s has different type or width in different "
-             "files."), var_name);
+  msg (SE, _("Variable %s has different types in different files."), var_name);
   for (size_t i = 0; i < proc->n_files; i++)
     {
       const struct comb_file *ef = &proc->files[i];
@@ -614,8 +673,7 @@ different_types_error (struct comb_proc *proc,
                      fn, var_name);
       else
         lex_ofs_msg (lexer, SN, ef->start_ofs, ef->end_ofs,
-                     _("In file %s, %s is a string with width %d."),
-                     fn, var_name, var_get_width (ev));
+                     _("In file %s, %s is a string."), fn, var_name);
     }
 }
 
@@ -707,6 +765,7 @@ close_all_comb_files (struct comb_proc *proc)
       dict_unref (file->dict);
       casereader_destroy (file->reader);
       case_unref (file->data);
+      comb_resizer_destroy (file->resizer);
       free (file->in_name);
     }
   free (proc->files);
@@ -999,4 +1058,57 @@ output_buffered_case (struct comb_proc *proc)
       casewriter_write (proc->output, proc->buffered_case);
       proc->buffered_case = NULL;
     }
+}
+
+static void
+comb_resizer_destroy (struct comb_resizer *r)
+{
+  if (!r)
+    return;
+
+  caseproto_unref (r->output_proto);
+  free (r->indexes);
+  free (r);
+}
+
+static struct ccase *
+comb_resize_translate (struct ccase *c, void *r_)
+{
+  struct comb_resizer *r = r_;
+
+  c = case_unshare (c);
+
+  for (size_t i = 0; i < r->n_indexes; i++)
+    {
+      int idx = r->indexes[i];
+      value_resize (&c->values[idx],
+                    caseproto_get_width (c->proto, idx),
+                    caseproto_get_width (r->output_proto, idx));
+    }
+
+  caseproto_unref (c->proto);
+  c->proto = caseproto_ref (r->output_proto);
+
+  return c;
+}
+
+static bool
+comb_resizer_translate_destroy (void *r_)
+{
+  struct comb_resizer *r = r_;
+
+  comb_resizer_destroy (r);
+  return true;
+}
+
+static struct casereader *
+comb_resize (struct casereader *subreader, struct comb_resizer *r)
+{
+  static struct casereader_translator_class class = {
+    .translate = comb_resize_translate,
+    .destroy = comb_resizer_translate_destroy,
+  };
+
+  return casereader_translate_stateless (subreader, r->output_proto,
+                                         &class, r);
 }
