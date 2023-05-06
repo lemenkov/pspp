@@ -281,6 +281,7 @@ EXTRA_DIST += doc/tutorial.stt
 ALL_LOCAL += tutorial-stt-must-print-all-layers
 tutorial-stt-must-print-all-layers:
 	$(AM_V_GEN)grep 'printAllLayers="true"' $(srcdir)/doc/tutorial.stt >/dev/null 2>&1 && touch $@
+DISTCLEANFILES += tutorial-stt-must-print-all-layers
 
 # Convert a text file into a Texinfo file.
 .txt.texi:

@@ -498,6 +498,7 @@ tests/all-layers.stt: utilities/pspp-output
 	$(AM_V_at)if grep 'printAllLayers="false"' $@.tmp >/dev/null; then :; else \
 		echo >&2 "$<: expected printAllLayers=\"false\""; exit 1; fi
 	$(AM_v_at)sed 's/printAllLayers="false"/printAllLayers="true"/' < $@.tmp > $@
+DISTCLEANFILES += tests/all-layers.stt tests/all-layers.stt.tmp
 
 CHECK_LOCAL += tests_check
 tests_check: tests/atconfig tests/atlocal $(TESTSUITE) $(check_PROGRAMS) $(check_DATA)
