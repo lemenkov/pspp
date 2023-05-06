@@ -121,6 +121,13 @@ the destination is written as best it can, even with errors.
 Reads a table style from @var{file} and applies it to all of the
 output tables.  The file should be a TableLook @file{.stt} or
 @file{.tlo} file.
+
+@item --use-page-setup
+By default, the @code{convert} command uses the default page setup
+(for example, page size and margins) for @var{destination}, or the one
+specified with @option{-O} options, if any.  Specify this option to
+ignore these sources of page setup in favor of the one embedded in the
+SPV, if any.
 @end table
 
 @node The pspp-output get-table-look Command

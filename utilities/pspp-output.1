@@ -102,6 +102,12 @@ write the output as best it can, even with errors.
 Reads a table style from \fIfile\fR and applies it to all of the
 output tables.  The file should a TableLook \fB.stt\fR or \fB.tlo\fR
 file.
+.IP \fB\-\-use\-page\-setup\fR
+By default, the \fBconvert\fR command uses the default page setup
+(for example, page size and margins) for \fIdestination\fR, or the
+one specified with \fB\-O\fR options, if any.  Specify this option
+to ignore these sources of page setup in favor of the one embedded
+in the SPV, if any.
 .SS The \fBget\-table\-look\fR command
 When invoked as \fBpspp\-output get\-table\-look \fIsource
 destination\fR, \fBpspp\-output\fR reads SPV file \fIsource\fR,

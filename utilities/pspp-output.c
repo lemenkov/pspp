@@ -89,6 +89,9 @@ static bool force;
 /* --table-look: TableLook to replace table style for conversion. */
 static struct pivot_table_look *table_look;
 
+/* --use-page-setup: Use page setup from .spv file rather than command line. */
+static bool use_page_setup;
+
 /* Number of warnings issued. */
 static size_t n_warnings;
 
@@ -239,7 +242,8 @@ run_convert (int argc UNUSED, char **argv)
 
   if (ps)
     {
-      output_set_page_setup (ps);
+      if (use_page_setup)
+        output_set_page_setup (ps);
       page_setup_destroy (ps);
     }
   output_item_submit_children (root);
@@ -1012,6 +1016,7 @@ parse_options (int argc, char *argv[])
           OPT_NO_ASCII_ONLY,
           OPT_UTF8_ONLY,
           OPT_TABLE_LOOK,
+          OPT_USE_PAGE_SETUP,
           OPT_HELP_DEVELOPER,
         };
       static const struct option long_options[] =
@@ -1034,6 +1039,7 @@ parse_options (int argc, char *argv[])
           /* "convert" command options. */
           { "force", no_argument, NULL, 'f' },
           { "table-look", required_argument, NULL, OPT_TABLE_LOOK },
+          { "use-page-setup", no_argument, NULL, OPT_USE_PAGE_SETUP },
 
           /* "dump-light-table" command options. */
           { "sort", no_argument, NULL, OPT_SORT },
@@ -1118,6 +1124,10 @@ parse_options (int argc, char *argv[])
           parse_table_look (optarg);
           break;
 
+        case OPT_USE_PAGE_SETUP:
+          use_page_setup = true;
+          break;
+
         case OPT_NO_ASCII_ONLY:
           exclude_ascii_only = true;
           break;
@@ -1194,6 +1204,7 @@ The following options override \"convert\" behavior:\n\
   -O OPTION=VALUE           set output option\n\
   -f, --force               keep output file even given errors\n\
   --table-look=FILE         override tables' style with TableLook from FILE\n\
+  --use-page-setup          use page setup from SOURCE\n\
 Other options:\n\
   --help              display this help and exit\n\
   --help-developer    display help for developer commands and exit\n\
