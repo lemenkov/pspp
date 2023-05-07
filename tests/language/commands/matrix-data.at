@@ -20,7 +20,7 @@ dnl Keep this test in sync with Example 1 in doc/matrices.texi.
 AT_SETUP([MATRIX DATA - LOWER DIAGONAL with ROWTYPE_])
 AT_DATA([matrix-data.sps], [dnl
 MATRIX DATA
-    VARIABLES=ROWTYPE_ var01 TO var08
+    /VARIABLES=ROWTYPE_ var01 TO var08
     /FILE='matrix-data.txt'.
 FORMATS var01 TO var08(F5.2).
 LIST.

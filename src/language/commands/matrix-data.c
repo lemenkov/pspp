@@ -829,6 +829,7 @@ parse_data_without_rowtype (const struct matrix_format *mf,
 static struct dictionary *
 parse_matrix_data_variables (struct lexer *lexer)
 {
+  lex_match (lexer, T_SLASH);
   if (!lex_force_match_id (lexer, "VARIABLES"))
     return NULL;
   lex_match (lexer, T_EQUALS);
