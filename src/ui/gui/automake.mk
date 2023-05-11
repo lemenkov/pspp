@@ -159,7 +159,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/executor.h \
 	src/ui/gui/find-dialog.c \
 	src/ui/gui/find-dialog.h \
-	src/ui/gui/glibfix.h \
 	src/ui/gui/goto-case-dialog.c \
 	src/ui/gui/goto-case-dialog.h \
 	src/ui/gui/helper.c \
@@ -394,6 +393,7 @@ src/ui/gui/resources.c: src/ui/gui/resources.xml
 	cat $@,out >> $@,tmp
 	$(RM) $@,out
 	mv $@,tmp $@
+EXTRA_DIST += src/ui/gui/resources.xml
 
 src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
 	$(AM_V_GEN)echo '#include <config.h>' > $@
@@ -428,7 +428,24 @@ src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	} > $@-t && \
 	mv $@-t $@
 CLEANFILES += src/ui/gui/include/gtk/gtk.h
-EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h src/ui/gui/resources.xml
+EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h
+
+# <glib.h> wrapper
+src_ui_gui_psppire_CPPFLAGS += $(AM_CPPFLAGS) -Isrc/ui/gui/include
+BUILT_SOURCES += src/ui/gui/include/glib.h
+src/ui/gui/include/glib.h: src/ui/gui/include/glib.in.h
+	@$(MKDIR_P) src/ui/gui/include
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  $(SED) -e 's|%''INCLUDE_NEXT''%|$(INCLUDE_NEXT)|g' \
+	      -e 's|%''PRAGMA_SYSTEM_HEADER''%|$(PRAGMA_SYSTEM_HEADER)|g' \
+	      -e 's|%''PRAGMA_COLUMNS''%|$(PRAGMA_COLUMNS)|g' \
+	      -e 's|%''NEXT_GLIB_H''%|$(NEXT_GLIB_H)|g' \
+	      < $(srcdir)/src/ui/gui/include/glib.in.h; \
+	} > $@-t && \
+	mv $@-t $@
+CLEANFILES += src/ui/gui/include/glib.h
+EXTRA_DIST += src/ui/gui/include/glib.in.h
 
 include $(top_srcdir)/src/ui/gui/icons/automake.mk
 

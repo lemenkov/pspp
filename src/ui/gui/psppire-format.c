@@ -16,7 +16,6 @@
 
 #include <config.h>
 #include "ui/gui/psppire-format.h"
-#include "ui/gui/glibfix.h"
 
 static gpointer
 psppire_format_copy (gpointer boxed)

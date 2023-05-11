@@ -22,7 +22,6 @@
 #include "psppire-val-chooser.h"
 
 #include "libpspp/str.h"
-#include "ui/gui/glibfix.h"
 
 #include "ui/syntax-gen.h"
 

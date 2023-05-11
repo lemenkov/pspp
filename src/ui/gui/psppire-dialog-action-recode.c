@@ -31,7 +31,6 @@
 
 #include "helper.h"
 #include <ui/syntax-gen.h>
-#include "ui/gui/glibfix.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)

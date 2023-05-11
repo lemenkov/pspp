@@ -1,9 +1,9 @@
-/* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2022 Free Software Foundation
+/* Wrapper for <glib.h>.
+   Copyright (C) 2023 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
+   the Free Software Foundation; either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -12,12 +12,17 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef __GLIBFIX_H__
-#define __GLIBFIX_H__
+#ifndef PSPP_GLIB_H
+#define PSPP_GLIB_H
 
-#include <config.h>
+#if __GNUC__ >= 3
+%PRAGMA_SYSTEM_HEADER%
+#endif
+%PRAGMA_COLUMNS%
+
+#%INCLUDE_NEXT% %NEXT_GLIB_H%
 
 /* Workaround for g_memdup2 which is introduced in glib 2.67.3
    for earlier versions of glib
@@ -44,4 +49,12 @@ g_memdup2 (gconstpointer mem,
 }
 #endif
 
+#if !GLIB_CHECK_VERSION(2, 76, 0)
+static inline gchar *
+g_string_free_and_steal (GString *string)
+{
+  return g_string_free (string, FALSE);
+}
 #endif
+
+#endif /* PSPP_GLIB_H */
