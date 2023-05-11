@@ -546,6 +546,35 @@ matrix_sched_init (const struct matrix_format *mf, enum rowtype rt,
       gsl_matrix_set (m, y, x, y == x ? diagonal : SYSMIS);
 }
 
+static struct ccase *
+matrix_sched_output_create_case (const struct matrix_format *mf,
+                                 enum rowtype rt, const struct variable *var,
+                                 const double *d, int split_num,
+                                 struct casewriter *w)
+{
+  struct ccase *c = case_create (casewriter_get_proto (w));
+  for (size_t i = 0; mf->input_vars[i] != mf->cvars[0]; i++)
+    if (mf->input_vars[i] != mf->rowtype)
+      *case_num_rw (c, mf->input_vars[i]) = d[i];
+  if (mf->n_svars && !mf->svar_indexes)
+    *case_num_rw (c, mf->svars[0]) = split_num;
+  set_string (c, mf->rowtype, rowtype_name (rt));
+  const char *varname = var ? var_get_name (var) : "";
+  set_string (c, mf->varname, ss_cstr (varname));
+  return c;
+}
+
+static void
+matrix_sched_output_n (const struct matrix_format *mf, double n,
+                       const double *d, int split_num, struct casewriter *w)
+{
+  struct ccase *c = matrix_sched_output_create_case (mf, C_N, NULL, d,
+                                                     split_num, w);
+  for (int x = 0; x < mf->n_cvars; x++)
+    *case_num_rw (c, mf->cvars[x]) = n;
+  casewriter_write (w, c);
+}
+
 static void
 matrix_sched_output (const struct matrix_format *mf, enum rowtype rt,
                      gsl_matrix *m, const double *d, int split_num,
@@ -556,35 +585,19 @@ matrix_sched_output (const struct matrix_format *mf, enum rowtype rt,
 
   if (rt == C_N_SCALAR)
     {
-      for (size_t x = 1; x < mf->n_cvars; x++)
-        gsl_matrix_set (m, 0, x, gsl_matrix_get (m, 0, 0));
-      rt = C_N;
+      matrix_sched_output_n (mf, gsl_matrix_get (m, 0, 0), d, split_num, w);
+      return;
     }
 
   for (int y = 0; y < ms->nr; y++)
     {
-      struct ccase *c = case_create (casewriter_get_proto (w));
-      for (size_t i = 0; mf->input_vars[i] != mf->cvars[0]; i++)
-        if (mf->input_vars[i] != mf->rowtype)
-          *case_num_rw (c, mf->input_vars[i]) = d[i];
-      if (mf->n_svars && !mf->svar_indexes)
-        *case_num_rw (c, mf->svars[0]) = split_num;
-      set_string (c, mf->rowtype, rowtype_name (rt));
-      const char *varname = n_dims == 2 ? var_get_name (mf->cvars[y]) : "";
-      set_string (c, mf->varname, ss_cstr (varname));
+      const struct variable *var = n_dims == 2 ? mf->cvars[y] : NULL;
+      struct ccase *c = matrix_sched_output_create_case (mf, rt, var, d,
+                                                         split_num, w);
       for (int x = 0; x < mf->n_cvars; x++)
         *case_num_rw (c, mf->cvars[x]) = gsl_matrix_get (m, y, x);
       casewriter_write (w, c);
     }
-}
-
-static void
-matrix_sched_output_n (const struct matrix_format *mf, double n,
-                       gsl_matrix *m, const double *d, int split_num,
-                       struct casewriter *w)
-{
-  gsl_matrix_set (m, 0, 0, n);
-  matrix_sched_output (mf, C_N_SCALAR, m, d, split_num, w);
 }
 
 static void
@@ -635,7 +648,7 @@ parse_data_with_rowtype (const struct matrix_format *mf,
          record. */
       if (mf->n >= 0 && (!prev || !equal_split_columns (mf, prev, d)))
         {
-          matrix_sched_output_n (mf, mf->n, m, d, 0, w);
+          matrix_sched_output_n (mf, mf->n, d, 0, w);
 
           if (!prev)
             prev = xnmalloc (mf->n_input_vars, sizeof *prev);
@@ -729,7 +742,7 @@ static void
 parse_matrix_without_rowtype (const struct matrix_format *mf,
                               struct substring *p, struct dfm_reader *r,
                               gsl_matrix *m, enum rowtype rowtype, bool pooled,
-                              int split_num, struct casewriter *w)
+                              int split_num, bool *first, struct casewriter *w)
 {
   int n_dims = rowtype_dimensions (rowtype);
   const struct matrix_sched *ms = &mf->ms[n_dims];
@@ -778,6 +791,14 @@ parse_matrix_without_rowtype (const struct matrix_format *mf,
       check_eol (mf, p, r);
     }
 
+  /* If there's an N subcommand, and this is a new split, then output an N
+     record. */
+  if (mf->n >= 0 && *first)
+    {
+      *first = false;
+      matrix_sched_output_n (mf, mf->n, d, 0, w);
+    }
+
   matrix_sched_output (mf, rowtype, m, d, split_num, w);
 exit:
   free (d);
@@ -796,6 +817,7 @@ parse_data_without_rowtype (const struct matrix_format *mf,
   int split_num = 1;
   do
     {
+      bool first = true;
       for (size_t i = 0; i < mf->n_contents; )
         {
           size_t j = i;
@@ -809,11 +831,11 @@ parse_data_without_rowtype (const struct matrix_format *mf,
                 for (size_t h = i; h <= j; h++)
                   parse_matrix_without_rowtype (mf, &p, r, m,
                                                 mf->contents[h].rowtype, false,
-                                                split_num, w);
+                                                split_num, &first, w);
             }
           else
             parse_matrix_without_rowtype (mf, &p, r, m, mf->contents[i].rowtype,
-                                          true, split_num, w);
+                                          true, split_num, &first, w);
           i = j + 1;
         }
 

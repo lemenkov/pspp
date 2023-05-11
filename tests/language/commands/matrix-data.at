@@ -921,6 +921,45 @@ CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
 ])
 AT_CLEANUP
 
+dnl Keep this test in sync with Example 6 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - LOWER DIAGONAL with N and without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=var01 TO var08
+   /CONTENTS=MEAN SD CORR
+   /N 92.
+BEGIN DATA.
+24.3   5.4  69.7  20.1  13.4   2.7  27.9   3.7
+ 5.7   1.5  23.5   5.8   2.8   4.5   5.4   1.5
+1.00
+ .18  1.00
+-.22  -.17  1.00
+ .36   .31  -.14  1.00
+ .27   .16  -.12   .22  1.00
+ .33   .15  -.17   .24   .21  1.00
+ .50   .29  -.20   .32   .12   .38  1.00
+ .17   .29  -.05   .20   .27   .20   .04  1.00
+END DATA.
+FORMATS var01 TO var08(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+N,,92.00,92.00,92.00,92.00,92.00,92.00,92.00,92.00
+MEAN,,24.30,5.40,69.70,20.10,13.40,2.70,27.90,3.70
+STDDEV,,5.70,1.50,23.50,5.80,2.80,4.50,5.40,1.50
+CORR,var01,1.00,.18,-.22,.36,.27,.33,.50,.17
+CORR,var02,.18,1.00,-.17,.31,.16,.15,.29,.29
+CORR,var03,-.22,-.17,1.00,-.14,-.12,-.17,-.20,-.05
+CORR,var04,.36,.31,-.14,1.00,.22,.24,.32,.20
+CORR,var05,.27,.16,-.12,.22,1.00,.21,.12,.27
+CORR,var06,.33,.15,-.17,.24,.21,1.00,.38,.20
+CORR,var07,.50,.29,-.20,.32,.12,.38,1.00,.04
+CORR,var08,.17,.29,-.05,.20,.27,.20,.04,1.00
+])
+AT_CLEANUP
+
 AT_SETUP([MATRIX DATA - extraneous data without ROWTYPE_])
 AT_DATA([matrix-data.sps], [dnl
 MATRIX DATA
@@ -1012,6 +1051,63 @@ s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
 1,MEAN,,44.00,45.00,34.00,39.00
 1,STDDEV,,23.00,15.00,51.00,46.00
 1,N,,98.00,34.00,87.00,23.00
+1,CORR,var01,1.00,.20,.30,.40
+1,CORR,var02,.20,1.00,.50,.60
+1,CORR,var03,.30,.50,1.00,.70
+1,CORR,var04,.40,.60,.70,1.00
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with Example 7 in doc/matrices.texi.
+AT_SETUP([MATRIX DATA - Split variables with explicit values with N and without ROWTYPE_])
+AT_DATA([matrix-data.sps], [dnl
+MATRIX DATA
+    VARIABLES=s1 var01 TO var04
+    /SPLIT=s1
+    /FORMAT=FULL
+    /CONTENTS=MEAN SD CORR
+    /N=99.
+BEGIN DATA.
+0 34 35 36 37
+0 22 11 55 66
+0  1 .9 .8 .7
+0 .9  1 .6 .5
+0 .8 .6  1 .4
+0 .7 .5 .4  1
+1 44 45 34 39
+1 23 15 51 46
+1  1 .2 .3 .4
+1 .2  1 .5 .6
+1 .3 .5  1 .7
+1 .4 .6 .7  1
+END DATA.
+FORMATS var01 TO var04(F5.2).
+LIST.
+])
+AT_CHECK([pspp matrix-data.sps -O format=csv], [0], [dnl
+Table: Split Values
+Variable,Value
+s1,0
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+0,N,,99.00,99.00,99.00,99.00
+0,MEAN,,34.00,35.00,36.00,37.00
+0,STDDEV,,22.00,11.00,55.00,66.00
+0,CORR,var01,1.00,.90,.80,.70
+0,CORR,var02,.90,1.00,.60,.50
+0,CORR,var03,.80,.60,1.00,.40
+0,CORR,var04,.70,.50,.40,1.00
+
+Table: Split Values
+Variable,Value
+s1,1
+
+Table: Data List
+s1,ROWTYPE_,VARNAME_,var01,var02,var03,var04
+1,N,,99.00,99.00,99.00,99.00
+1,MEAN,,44.00,45.00,34.00,39.00
+1,STDDEV,,23.00,15.00,51.00,46.00
 1,CORR,var01,1.00,.20,.30,.40
 1,CORR,var02,.20,1.00,.50,.60
 1,CORR,var03,.30,.50,1.00,.70
