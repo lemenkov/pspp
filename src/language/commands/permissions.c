@@ -109,10 +109,11 @@ change_permissions (const char *file_name, enum PER per)
   mode_t mode;
 
   locale_file_name = utf8_to_filename (file_name);
-  if (-1 == stat(locale_file_name, &buf))
+  if (-1 == stat (locale_file_name, &buf))
     {
       const int errnum = errno;
-      msg (SE, _("Cannot stat %s: %s"), file_name, strerror(errnum));
+      msg (SE, _("Cannot read permissions for %s: %s"),
+           file_name, strerror (errnum));
       free (locale_file_name);
       return 0;
     }
@@ -122,11 +123,11 @@ change_permissions (const char *file_name, enum PER per)
   else
     mode = buf.st_mode & ~0222;
 
-  if (-1 == chmod(locale_file_name, mode))
-
+  if (-1 == chmod (locale_file_name, mode))
     {
       const int errnum = errno;
-      msg (SE, _("Cannot change mode of %s: %s"), file_name, strerror(errnum));
+      msg (SE, _("Cannot change permissions for %s: %s"),
+           file_name, strerror (errnum));
       free (locale_file_name);
       return 0;
     }
