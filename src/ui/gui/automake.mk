@@ -77,7 +77,7 @@ EXTRA_DIST += \
 	src/ui/gui/pspplogo.svg \
 	src/ui/gui/pspp.rc.in
 
-src_ui_gui_psppire_CPPFLAGS=
+src_ui_gui_psppire_CPPFLAGS = $(AM_CPPFLAGS) -Isrc/ui/gui/include
 
 bin_PROGRAMS += src/ui/gui/psppire
 noinst_PROGRAMS += src/ui/gui/spreadsheet-test
@@ -371,6 +371,7 @@ src_ui_gui_libwidgets_essential_la_CFLAGS = \
 	$(GTKSOURCEVIEW_CFLAGS) \
         $(SPREAD_SHEET_WIDGET_CFLAGS) \
 	$(AM_CFLAGS)
+src_ui_gui_libwidgets_essential_la_CPPFLAGS = $(AM_CPPFLAGS) -Isrc/ui/gui/include
 
 # The unused-parameter warning is not by default disabled
 # in AM_CFLAGS because the core pspp code has this enabled.
@@ -414,7 +415,6 @@ installcheck-local:
 	DISPLAY=/invalid/port $(MAKE) $(AM_MAKEFLAGS) installcheck-binPROGRAMS
 
 # <gtk/gtk.h> wrapper
-src_ui_gui_psppire_CPPFLAGS += $(AM_CPPFLAGS) -Isrc/ui/gui/include
 BUILT_SOURCES += src/ui/gui/include/gtk/gtk.h
 src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	@$(MKDIR_P) src/ui/gui/include/gtk
@@ -431,7 +431,6 @@ CLEANFILES += src/ui/gui/include/gtk/gtk.h
 EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h
 
 # <glib.h> wrapper
-src_ui_gui_psppire_CPPFLAGS += $(AM_CPPFLAGS) -Isrc/ui/gui/include
 BUILT_SOURCES += src/ui/gui/include/glib.h
 src/ui/gui/include/glib.h: src/ui/gui/include/glib.in.h
 	@$(MKDIR_P) src/ui/gui/include
