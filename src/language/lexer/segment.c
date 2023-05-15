@@ -1087,7 +1087,7 @@ compare_commands (const void *a_, const void *b_)
 static const char **
 segmenter_get_command_name_candidates (unsigned char first)
 {
-#define DEF_CMD(STATES, FLAGS, NAME, FUNCTION) NAME,
+#define DEF_CMD(STATES, FLAGS, NAME, LABEL, FUNCTION) NAME,
 #define UNIMPL_CMD(NAME, DESCRIPTION) NAME,
   static const char *commands[] =
     {

@@ -63,7 +63,7 @@ const char *cmd_complete (const char *, const struct command **);
 struct dataset;
 
 /* Prototype all the command functions. */
-#define DEF_CMD(STATES, FLAGS, NAME, FUNCTION) int FUNCTION (struct lexer *, struct dataset *);
+#define DEF_CMD(STATES, FLAGS, NAME, LABEL, FUNCTION) int FUNCTION (struct lexer *, struct dataset *);
 #define UNIMPL_CMD(NAME, DESCRIPTION)
 #include "command.def"
 #undef DEF_CMD

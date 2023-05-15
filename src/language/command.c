@@ -111,12 +111,13 @@ struct command
     enum states states;         /* States in which command is allowed. */
     enum flags flags;           /* Other command requirements. */
     const char *name;		/* Command name. */
+    const char *label;		/* Translated command label. */
     int (*function) (struct lexer *, struct dataset *);	/* Function to call. */
   };
 
 /* Define the command array. */
-#define DEF_CMD(STATES, FLAGS, NAME, FUNCTION) {STATES, FLAGS, NAME, FUNCTION},
-#define UNIMPL_CMD(NAME, DESCRIPTION) {S_ANY, 0, NAME, NULL},
+#define DEF_CMD(STATES, FLAGS, NAME, LABEL, FUNCTION) {STATES, FLAGS, NAME, LABEL, FUNCTION},
+#define UNIMPL_CMD(NAME, DESCRIPTION) {S_ANY, 0, NAME, NAME, NULL},
 static const struct command commands[] =
   {
 #include "command.def"
@@ -201,9 +202,9 @@ do_parse_command (struct lexer *lexer,
       goto finish;
     }
 
-  nesting_level = output_open_group (group_item_create_nocopy (
-                                       utf8_to_title (command->name),
-                                       utf8_to_title (command->name)));
+  nesting_level = output_open_group (group_item_create (
+                                       command->name,
+                                       gettext (command->label)));
 
   int end = n_tokens - 1;
   if (command->function == NULL)
