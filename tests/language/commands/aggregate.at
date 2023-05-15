@@ -323,7 +323,7 @@ AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
     2 | AGGREGATE/PRESORTED/BREAK=x(A).
       |                           ^~~~"
 
-"aggregate.sps:2.11-2.19: note: AGGREGATE: The PRESORTED subcommand state that the input data is presorted.
+"aggregate.sps:2.11-2.19: note: AGGREGATE: The PRESORTED subcommand states that the input data is presorted.
     2 | AGGREGATE/PRESORTED/BREAK=x(A).
       |           ^~~~~~~~~"
 

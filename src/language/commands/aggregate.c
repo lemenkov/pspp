@@ -249,7 +249,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
                          "input data."));
           if (presorted_ofs)
             lex_ofs_msg (lexer, SN, presorted_ofs, presorted_ofs,
-                         _("The PRESORTED subcommand state that the "
+                         _("The PRESORTED subcommand states that the "
                            "input data is presorted."));
           else if (addvariables_ofs)
             lex_ofs_msg (lexer, SN, addvariables_ofs, addvariables_ofs,

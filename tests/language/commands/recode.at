@@ -332,7 +332,7 @@ list.
 AT_CHECK([pspp -O format=csv recode.sps], [1], [dnl
 recode.sps:9: error: RECODE: At least one target variable is too narrow for the output values.
 
-"recode.sps:9.19-9.25: note: RECODE: This recoding output value has width 5.
+"recode.sps:9.19-9.25: note: RECODE: This output value has width 5.
     9 | recode x y (""a"" = ""first"") .
       |                   ^~~~~~~"
 
@@ -498,7 +498,7 @@ recode.sps:15: error: RECODE: All string variables specified on INTO must alread
 
 recode.sps:20: error: RECODE: At least one target variable is too narrow for the output values.
 
-"recode.sps:20.19-20.26: note: RECODE: This recoding output value has width 6.
+"recode.sps:20.19-20.26: note: RECODE: This output value has width 6.
    20 | RECODE n1 TO n4(1='123456') INTO s1 TO s4.
       |                   ^~~~~~~~"
 

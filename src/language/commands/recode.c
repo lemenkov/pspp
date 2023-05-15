@@ -589,7 +589,7 @@ enlarge_dst_widths (struct lexer *lexer, struct recode_trns *trns,
               msg (SE, _("At least one target variable is too narrow for "
                          "the output values."));
               lex_ofs_msg (lexer, SN, out->ofs, out->ofs,
-                           _("This recoding output value has width %d."),
+                           _("This output value has width %d."),
                            out->width);
               lex_ofs_msg (lexer, SN, dst_start, dst_end,
                            _("Target variable %s only has width %d."),

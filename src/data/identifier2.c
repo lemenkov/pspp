@@ -70,7 +70,7 @@ id_is_valid__ (const char *id, const char *dict_encoding,
       dict_len = ss_length (out);
       ss_dealloc (&out);
       if (!ok)
-        return xasprintf (_("Identifier `%s' is not valid in encoding `%s'."
+        return xasprintf (_("Identifier `%s' is not valid in encoding `%s' "
                             "used for this dictionary."), id, dict_encoding);
     }
   else
