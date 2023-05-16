@@ -678,6 +678,8 @@ AT_KEYWORDS([slow])
 AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 # Skip this test if Perl's Text::Diff module is not installed.
 AT_CHECK([perl -MText::Diff -e '' || exit 77])
+# Skip this test if Perl's Test::More module is not installed.
+AT_CHECK([perl -MTest::More -e '' || exit 77])
 AT_CHECK([run_perl_module "$abs_top_builddir/perl-module/t/Pspp.t"], [0],
   [[1..37
 ok 1 - use PSPP;
