@@ -32,7 +32,7 @@ dnl  The wasy10 font and its associated .tex file must be installed.
 dnl  in order to run this test.  On Debian based systems this is found
 dnl  in the texlive-fonts-recommended package.
 AT_SKIP_IF([! kpsewhich wasyfont.tex])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 dnl There should be no overfull boxes
 AT_CHECK([grep '^Overfull ' pspp.log], [1])
@@ -157,7 +157,7 @@ AT_CHECK([tex-strings -o pspp.tex sample-texts/*], [0], [ignore], [ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
 AT_SKIP_IF([! kpsewhich wasyfont.tex])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
 
@@ -186,7 +186,7 @@ AT_CHECK([pspp -O format=tex simple.sps], [0], [])
 AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 dnl There should be no overfull boxes
 AT_CHECK([grep '^Overfull ' pspp.log], [1])
@@ -206,7 +206,7 @@ AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 
 AT_SKIP_IF([test "$TEX" = no])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
 
@@ -240,7 +240,7 @@ AT_CHECK([pspp -O format=tex footnote.sps], [0], [])
 AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 dnl There should be no overfull boxes
 AT_CHECK([grep '^Overfull ' pspp.log], [1])
@@ -284,7 +284,7 @@ dnl The string "??" should not be present in pspp.tex
 AT_CHECK([grep -F '??' pspp.tex], [1])
 
 AT_SKIP_IF([test "$TEX" = no])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 dnl There should be no overfull boxes
 AT_CHECK([grep '^Overfull ' pspp.log], [1])
@@ -321,7 +321,7 @@ AT_CHECK([pspp -O format=tex t-test.sps], [0], [])
 AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
-AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore], [ignore])
 
 dnl There should be no overfull boxes
 AT_CHECK([grep '^Overfull ' pspp.log], [1])
