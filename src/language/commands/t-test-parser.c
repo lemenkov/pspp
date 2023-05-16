@@ -158,17 +158,15 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
 
           int vars_start = lex_ofs (lexer);
-          if (!parse_variables_const (lexer, dict,
-                                      &v1, &n_v1,
-                                      PV_NO_DUPLICATE | PV_NUMERIC))
+          if (!parse_variables_const (lexer, dict, &v1, &n_v1,
+                                      PV_DUPLICATE | PV_NUMERIC))
             goto exit;
 
           if (lex_match (lexer, T_WITH))
             {
               with = true;
-              if (!parse_variables_const (lexer, dict,
-                                          &v2, &n_v2,
-                                          PV_NO_DUPLICATE | PV_NUMERIC))
+              if (!parse_variables_const (lexer, dict, &v2, &n_v2,
+                                          PV_DUPLICATE | PV_NUMERIC))
                 goto exit;
               int vars_end = lex_ofs (lexer) - 1;
 
