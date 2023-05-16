@@ -39,9 +39,15 @@ AT_CLEANUP
 
 AT_SETUP([Write error - no permission])
 
-mkdir  directory
-touch directory/foobar.sav
-chmod 000 directory
+AT_CHECK([
+    mkdir directory
+    touch directory/foobar.sav
+    chmod 000 directory
+])
+
+# If we can write to the directory, then permissions just don't work
+# properly.  (Perhaps we're running as root.)
+AT_SKIP_IF([: > directory/foo])
 
 AT_DATA([file.sps], [dnl
 DATA LIST NOTABLE/x 1.
