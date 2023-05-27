@@ -1123,7 +1123,7 @@ init_reader (struct ods_reader *r, bool report_errors,
       if (content == NULL)
         {
           free (error);
-          return NULL;
+          return false;
         }
 
       xmlTextReaderPtr xtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, content, NULL, NULL,
