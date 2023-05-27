@@ -1157,38 +1157,42 @@ init_reader (struct ods_reader *r, bool report_errors,
 struct spreadsheet *
 ods_probe (const char *filename, bool report_errors)
 {
-  struct ods_reader *r = XZALLOC (struct ods_reader);
-
   struct zip_reader *zr;
   char *error = zip_reader_create (filename, &zr);
   if (error)
     {
       if (report_errors)
-	{
-	  msg (ME, _("Cannot open %s as a OpenDocument file: %s"),
-	       filename, error);
-	}
+        msg (ME, _("Cannot open %s as a OpenDocument file: %s"),
+             filename, error);
       free (error);
-      free (r);
+      return NULL;
+    }
+  if (!zip_reader_contains_member (zr, "meta.xml")
+      || !zip_reader_contains_member (zr, "content.xml"))
+    {
+      if (report_errors)
+        msg (ME, _("%s is not an OpenDocument file."), filename);
+      zip_reader_unref (zr);
       return NULL;
     }
 
-  r->zreader = zr;
-  r->spreadsheet.ref_cnt = 1;
-  hmap_init (&r->cache);
+  struct ods_reader *r = xmalloc (sizeof *r);
+  *r = (struct ods_reader) {
+    .zreader = zr,
+    .cache = HMAP_INITIALIZER (r->cache),
+    .n_sheets = -1,
+    .spreadsheet = {
+      .ref_cnt = 1,
+      .file_name = strdup (filename),
+    },
+  };
 
   if (!init_reader (r, report_errors, NULL))
     goto error;
 
-  r->n_sheets = -1;
-  r->n_allocated_sheets = 0;
-  r->spreadsheet.sheets = NULL;
-
-  r->spreadsheet.file_name = strdup (filename);
   return &r->spreadsheet;
 
  error:
-  zip_reader_unref (r->zreader);
-  free (r);
+  ods_destroy (&r->spreadsheet);
   return NULL;
 }
