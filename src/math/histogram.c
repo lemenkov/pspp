@@ -107,6 +107,10 @@ hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
       *adjusted_min = floor((min - lower)/binwidth)*binwidth + lower;
     }
 
+  /* This should not happen, but sometimes it does. */
+  if (*adjusted_min > min)
+    *adjusted_min = min;
+
   nbins = ceil((max-*adjusted_min)/binwidth);
   *adjusted_max = nbins*binwidth + *adjusted_min;
 

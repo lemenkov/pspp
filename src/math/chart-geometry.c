@@ -57,7 +57,6 @@ chart_get_scale (double high, double low,
 		 double *lower, double *interval,
 		 int *n_ticks)
 {
-  int i;
   double fitness = DBL_MAX;
   double logrange;
   *n_ticks = 0;
@@ -74,7 +73,7 @@ chart_get_scale (double high, double low,
   logrange = floor(log10(high-low));
 
   /* Find the most pleasing interval */
-  for (i = 1; i < 4; ++i)
+  for (int i = 0; i < sizeof standard_tick / sizeof *standard_tick; i++)
     {
       double cinterval = standard_tick[i] * pow(10.0,logrange-1);
       double clower = floor(low/cinterval) * cinterval;
