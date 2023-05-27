@@ -1097,7 +1097,7 @@ in the data region.
 
 @code{min-row-heading-width} is the minimum width that a column in the corner
 and row headings region will be given automatically.
-@code{max-col-heading-width} is the maximum width that a column in this region
+@code{max-row-heading-width} is the maximum width that a column in this region
 will be assigned to accomodate a long label.  This region doesn't
 include data, so data values don't affect column widths.
 
