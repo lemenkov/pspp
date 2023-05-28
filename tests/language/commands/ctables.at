@@ -741,6 +741,8 @@ CTABLES /TABLE qn113 [COUNT.UCL].
 CTABLES /TABLE qn1 /CATEGORIES **.
 
 CTABLES /TITLES.
+
+CTABLES /TABLE (qn1 > qn113) [COUNT].
 ]])
 AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [1],
 [[ctables.sps:2.76-2.78: error: CTABLES: Computed category &pc references a category not included in the category list.
@@ -888,6 +890,14 @@ PCOMPUTE, PPROPERTIES, WEIGHT, HIDESMALLCOUNTS, TABLE.
 ctables.sps:36.10-36.15: note: CTABLES: TABLE must appear before this subcommand.
    36 | CTABLES /TITLES.
       |          ^~~~~~
+
+ctables.sps:38.31-38.35: error: CTABLES: Summary functions may not be applied to the nest operator '>'.
+   38 | CTABLES /TABLE (qn1 > qn113) [COUNT].
+      |                               ^~~~~
+
+ctables.sps:38.17-38.27: note: CTABLES: This is where the nest operator was used.
+   38 | CTABLES /TABLE (qn1 > qn113) [COUNT].
+      |                 ^~~~~~~~~~~
 ]])
 AT_CLEANUP
 
