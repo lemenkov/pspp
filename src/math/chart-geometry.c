@@ -29,8 +29,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-static const double standard_tick[] = {1, 2, 5, 10};
-
 /*
    Find a set {LOWER, INTERVAL, N_TICKS} such that:
 
@@ -57,35 +55,52 @@ chart_get_scale (double high, double low,
 		 double *lower, double *interval,
 		 int *n_ticks)
 {
-  double fitness = DBL_MAX;
-  double logrange;
-  *n_ticks = 0;
-
   assert (high >= low);
+  if ((high - low) < 10 * DBL_MIN)
+    {
+      *n_ticks = 0;
+      *lower = low;
+      *interval = 0.0;
+      return;
+    }
 
-  if ((high - low) < 10 * DBL_MIN) {
-    *n_ticks = 0;
-    *lower = low;
-    *interval = 0.0;
-    return;
-  }
+  /* Round down the difference between HIGH and LOW to a power of 10, then
+     divide by 10.  If HIGH - LOW is a power of 10, then BINTERVAL will be
+     (HIGH - LOW) / 10; otherwise, it will be less than (HIGH - LOW) / 10 but
+     more than (HIGH - LOW) / 100.
 
-  logrange = floor(log10(high-low));
+     for a range of [5.5,9.2], binterval = 0.1;
+     For a range of [0,10], binterval = 1;
+     for a range of [55,92], binterval = 1;
+     for a range of [0,100], binterval = 10;
+     for a range of [555,922], binterval = 10;
+     and so on. */
+  double binterval = pow (10.0, floor (log10 (high - low)) - 1);
+  double fitness = DBL_MAX;
 
-  /* Find the most pleasing interval */
+  /* Find the most pleasing interval. */
+  static const double standard_tick[] = {1, 2, 5, 10};
   for (int i = 0; i < sizeof standard_tick / sizeof *standard_tick; i++)
     {
-      double cinterval = standard_tick[i] * pow(10.0,logrange-1);
-      double clower = floor(low/cinterval) * cinterval;
-      int cnticks = ceil((high - clower) / cinterval)-1;
-      double cfitness = fabs(7.5 - cnticks);
+      /* Take a multiple of the basic interval. */
+      double cinterval = standard_tick[i] * binterval;
 
-      if (cfitness < fitness) {
-	fitness = cfitness;
-	*lower = clower;
-	*interval = cinterval;
-	*n_ticks = cnticks;
-      }
+      /* Make a range by rounding LOW down to the next multiple of CINTERVAL,
+         and HIGH up to the next multiple of CINTERVAL. */
+      double clower = floor (low / cinterval) * cinterval;
+      int cnticks = ceil ((high - clower) / cinterval) - 1;
+
+      /* Compute a score based on considering 7.5 ticks to be ideal. */
+      double cfitness = fabs (7.5 - cnticks);
+
+      /* Choose the lowest score. */
+      if (cfitness < fitness)
+        {
+          fitness = cfitness;
+          *lower = clower;
+          *interval = cinterval;
+          *n_ticks = cnticks;
+        }
     }
 }
 

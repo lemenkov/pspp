@@ -63,16 +63,16 @@ such that (max-min) is a multiple of the binwidth. Then the location of the
 first bin has to be aligned to the ticks.
 */
 static int
-hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
-			    double *adjusted_min, double *adjusted_max)
+hist_find_pretty_no_of_bins (double bin_width_in, double min, double max,
+                             double *adjusted_min, double *adjusted_max)
 {
+  /* Choose an initial chart scale, without considering bin width. */
   double lower, interval;
   int n_ticks;
-  double binwidth;
-  int nbins;
-
   chart_get_scale (max, min, &lower, &interval, &n_ticks);
 
+  /* Then adjust things. */
+  double binwidth;
   if (bin_width_in >= 2 * interval)
     {
       binwidth = floor(bin_width_in/interval) * interval;
@@ -111,7 +111,7 @@ hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
   if (*adjusted_min > min)
     *adjusted_min = min;
 
-  nbins = ceil((max-*adjusted_min)/binwidth);
+  int nbins = ceil((max-*adjusted_min)/binwidth);
   *adjusted_max = nbins*binwidth + *adjusted_min;
 
   /* adjusted_max should never be smaller than max but if it is equal
@@ -126,54 +126,53 @@ hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
   return nbins;
 }
 
+/* Creates and returns a new histogram for data that ranges from MIN to MAX
+   with a suggested bin width of BIN_WIDTH_IN.  The implementation will adjust
+   the bin width.  The caller should add each data point to the histogram with
+   histogram_add(), and eventually destroy it with statistic_destroy().
 
+   Returns NULL if the histogram cannot be created. */
 struct histogram *
 histogram_create (double bin_width_in, double min, double max)
 {
-  struct histogram *h;
-  struct statistic *stat;
-  int bins;
-  double adjusted_min, adjusted_max;
-
   if (max == min)
     {
-      msg (MW, _("Not creating histogram because the data contains less than 2 distinct values"));
+      msg (MW, _("Not creating histogram because the data contains less than 2 "
+                 "distinct values"));
       return NULL;
-    }
+  }
 
   assert (bin_width_in > 0);
 
-  bins = hist_find_pretty_no_of_bins(bin_width_in, min, max, &adjusted_min, &adjusted_max);
+  double adjusted_min, adjusted_max;
+  int bins = hist_find_pretty_no_of_bins (bin_width_in, min, max, &adjusted_min,
+                                          &adjusted_max);
 
-  h = xmalloc (sizeof *h);
-
-  h->gsl_hist = gsl_histogram_alloc (bins);
+  struct histogram *h = xmalloc (sizeof *h);
+  *h = (struct histogram) {
+    .parent.destroy = destroy,
+    .gsl_hist = gsl_histogram_alloc (bins),
+  };
 
   /* The bin ranges could be computed with gsl_histogram_set_ranges_uniform,
-     but the number of bins is adapted to the ticks of the axis such that for example
-     data ranging from 1.0 to 7.0 with 6 bins will have bin limits at
-     2.0,3.0,4.0 and 5.0. Due to numerical accuracy the computed bin limits might
-     be 4.99999999 for a value which is expected to be 5.0. But the limits of
-     the histogram bins should be that what is expected from the displayed ticks.
-     Therefore the bin limits are computed from the rounded values which is similar
-     to the procedure at the chart_get_ticks_format. Actual bin limits should be
-     exactly what is displayed at the ticks.
-     But... I cannot reproduce the problem that I see with gsl_histogram_set_ranges_uniform
-     with the code below without rounding...
+     but the number of bins is adapted to the ticks of the axis such that for
+     example data ranging from 1.0 to 7.0 with 6 bins will have bin limits at
+     2.0,3.0,4.0 and 5.0. Due to numerical accuracy the computed bin limits
+     might be 4.99999999 for a value which is expected to be 5.0. But the limits
+     of the histogram bins should be that what is expected from the displayed
+     ticks. Therefore the bin limits are computed from the rounded values which
+     is similar to the procedure at the chart_get_ticks_format. Actual bin
+     limits should be exactly what is displayed at the ticks. But... I cannot
+     reproduce the problem that I see with gsl_histogram_set_ranges_uniform with
+     the code below without rounding...
   */
-  {
-    double *ranges = xmalloc (sizeof (double) * (bins + 1));
-    double interval = (adjusted_max - adjusted_min) / bins;
-    for (int i = 0; i < bins; i++)
-      ranges[i] = adjusted_min + interval * i;
-    ranges[bins] = adjusted_max;
-    gsl_histogram_set_ranges (h->gsl_hist, ranges, bins + 1);
-    free (ranges);
-  }
-
-  stat = &h->parent;
-  stat->destroy = destroy;
+  double *ranges = xmalloc (sizeof *ranges * (bins + 1));
+  double interval = (adjusted_max - adjusted_min) / bins;
+  for (int i = 0; i < bins; i++)
+    ranges[i] = adjusted_min + interval * i;
+  ranges[bins] = adjusted_max;
+  gsl_histogram_set_ranges (h->gsl_hist, ranges, bins + 1);
+  free (ranges);
 
   return h;
 }
-
