@@ -482,6 +482,15 @@ psppire_output_window_init (PsppireOutputWindow *window)
   }
 
   {
+    GSimpleAction *close = g_simple_action_new ("close", NULL);
+    g_signal_connect_swapped (close, "activate", G_CALLBACK (gtk_window_close), window);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (close));
+
+    const gchar *accels[2] = { "<Primary>W", NULL};
+    gtk_application_set_accels_for_action (app, "win.close", accels);
+  }
+
+  {
     GSimpleAction *select_all = g_simple_action_new ("select-all", NULL);
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (select_all));
   }

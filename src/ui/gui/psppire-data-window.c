@@ -1311,9 +1311,17 @@ create_file_menu (PsppireDataWindow *dw)
 
   gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 12, 13);
 
+
+  {
+    GtkWidget *close = gtk_menu_item_new_with_mnemonic (_("_Close"));
+    gtk_menu_attach (GTK_MENU (menu), close,     0, 1, 13, 14);
+
+    connect_action_to_menuitem (G_ACTION_MAP (dw), "close", close, "<Primary>W");
+  }
+
   {
     GtkWidget *quit = gtk_menu_item_new_with_mnemonic (_("_Quit"));
-    gtk_menu_attach (GTK_MENU (menu), quit,     0, 1, 13, 14);
+    gtk_menu_attach (GTK_MENU (menu), quit,     0, 1, 14, 15);
 
     connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()),
 				"quit", quit, "<Primary>Q");
@@ -1556,6 +1564,12 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     GSimpleAction *save_as = g_simple_action_new ("save-as", NULL);
     g_signal_connect_swapped (save_as, "activate", G_CALLBACK (psppire_window_save_as), de);
     g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (save_as));
+  }
+
+  {
+    GSimpleAction *close_action = g_simple_action_new ("close", NULL);
+    g_signal_connect_swapped (close_action, "activate", G_CALLBACK (gtk_window_close), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (close_action));
   }
 
   {
