@@ -1202,12 +1202,9 @@ add_summary_spec (struct ctables_axis *axis,
       return true;
     }
   else if (axis->op == CTAO_NEST)
-    {
-      msg_at (SE, loc, _("Summary functions may not be applied to the nest "
-                         "operator '>'."));
-      msg_at (SN, axis->loc, _("This is where the nest operator was used."));
-      return false;
-    }
+    return add_summary_spec (axis->subs[1], function, weighting, area,
+                             percentile, label, format, is_ctables_format,
+                             loc, sv);
   else
     {
       assert (axis->op == CTAO_STACK);
