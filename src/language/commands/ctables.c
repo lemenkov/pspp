@@ -1383,10 +1383,13 @@ ctables_axis_parse_postfix (struct ctables_axis_parse_ctx *ctx)
 
       struct msg_location *loc = lex_ofs_location (ctx->lexer, start_ofs,
                                                    lex_ofs (ctx->lexer) - 1);
-      add_summary_spec (sub, function, weighting, area, percentile, label,
-                        formatp, is_ctables_format, loc, sv);
+      bool ok = add_summary_spec (sub, function, weighting, area, percentile,
+                                  label, formatp, is_ctables_format, loc, sv);
       free (label);
       msg_location_destroy (loc);
+
+      if (!ok)
+        goto error;
 
       lex_match (ctx->lexer, T_COMMA);
       if (sv == CSV_CELL && lex_match_id (ctx->lexer, "TOTALS"))

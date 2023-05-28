@@ -286,10 +286,6 @@ ctables.sps:15.16-15.18: note: CTABLES: 'QN1' is not a scale variable.
    15 | CTABLES /TABLE qn1 [MEAN TOTALS].
       |                ^~~
 
-ctables.sps:15.32: error: CTABLES: Syntax error expecting `@<:@'.
-   15 | CTABLES /TABLE qn1 [MEAN TOTALS].
-      |                                ^
-
 ctables.sps:16.21-16.24: error: CTABLES: Summary function MEAN applies only to
 scale variables.
    16 | CTABLES /TABLE qn1 [MEAN TOTALS[STDDEV]%].
@@ -298,10 +294,6 @@ scale variables.
 ctables.sps:16.16-16.18: note: CTABLES: 'QN1' is not a scale variable.
    16 | CTABLES /TABLE qn1 [MEAN TOTALS[STDDEV]%].
       |                ^~~
-
-ctables.sps:16.40: error: CTABLES: Syntax error expecting `@:>@'.
-   16 | CTABLES /TABLE qn1 [MEAN TOTALS[STDDEV]%].
-      |                                        ^
 
 ctables.sps:17.56: error: CTABLES: Syntax error expecting string.
    17 | CTABLES /TABLE qn1 /CATEGORIES VARIABLES=qn1 [SUBTOTAL=x].
