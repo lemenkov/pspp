@@ -49,7 +49,7 @@ dnl - CATEGORIES:
 dnl   * Data-dependent sorting.
 
 AT_SETUP([CTABLES parsing])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -118,7 +118,7 @@ RDD
 AT_CLEANUP
 
 AT_SETUP([CTABLES parsing - negative])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES.
@@ -703,7 +703,7 @@ specification as format DATETIME: Day (123) must be between 1 and 31..
 AT_CLEANUP
 
 AT_SETUP([CTABLES parsing - more negative])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /PCOMPUTE &pc=EXPR(SUBTOTAL) /TABLE qn1 /CATEGORIES VARIABLES=qn1 [&pc].
@@ -892,7 +892,7 @@ ctables.sps:36.10-36.15: note: CTABLES: TABLE must appear before this subcommand
 AT_CLEANUP
 
 AT_SETUP([CTABLES one categorical variable])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE qn1.
@@ -935,7 +935,7 @@ Every day
 AT_CLEANUP
 
 AT_SETUP([CTABLES one string variable])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 STRING licensed(A8).
@@ -1025,7 +1025,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES one scale variable])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 DESCRIPTIVES qnd1.
@@ -1073,7 +1073,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES simple stacking])
 AT_KEYWORDS([stack stacked])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE qn105ba + qn105bb + qn105bc + qn105bd BY qns3a [COLPCT PCT8.0].
@@ -1132,7 +1132,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES show or hide empty categories])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 IF (qn105ba = 2) qn105ba = 1.
@@ -1227,7 +1227,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES categories and EMPTY])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps], [dnl
 DATA LIST LIST NOTABLE /class datum size.
 BEGIN DATA
@@ -1291,7 +1291,7 @@ dnl PCOMPUTE needs to be an internal exception to omitting empty
 dnl categories, but the code didn't always implement that
 dnl properly.  This test guards against regression.
 AT_SETUP([CTABLES interaction between EMPTY and PCOMPUTE])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 
@@ -1378,7 +1378,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES sorting categories])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 IF (QND5A=6) QND5A=-1.
@@ -1461,7 +1461,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES simple nesting])
 AT_KEYWORDS([nest nested])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE ((qn105ba + qn105bb + qn105bc + qn105bd) > qns3a) [COUNT, TABLEPCT PCT8.0]
@@ -1666,7 +1666,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES nesting and scale variables])
 AT_KEYWORDS([nest nested])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE=qnd1 > qn1 BY qns3a.
@@ -1785,7 +1785,7 @@ AT_CLEANUP
 
 
 AT_SETUP([CTABLES SLABELS])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE qn1 [COUNT COLPCT].
@@ -1848,7 +1848,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES SLABELS with stacking different summaries])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -1893,7 +1893,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES simple totals])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE=qn17
@@ -1958,7 +1958,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES subtotals])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE=qn105ba BY qns1
@@ -2040,7 +2040,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES PCOMPUTE])
 AT_KEYWORDS([postcompute])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -2112,7 +2112,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES PCOMPUTE - OTHERNM and MISSING])
 AT_KEYWORDS([postcompute])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -2149,7 +2149,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES PCOMPUTE - THRU])
 AT_KEYWORDS([postcompute])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -2304,7 +2304,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES CLABELS])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE AgeGroup BY qns3a.
@@ -2809,7 +2809,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES VLABELS - variables on different axes])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /VLABELS VARIABLES=qns3a qnd5a DISPLAY=DEFAULT /TABLE qnd5a BY qns3a.
@@ -2915,7 +2915,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES VLABELS - stacked variables])
 AT_KEYWORDS([stack stacking])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /VLABELS VARIABLES=qns3a DISPLAY=NAME /TABLE qnd5a + qns3a.
@@ -3023,7 +3023,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES VLABELS - nested variables])
 AT_KEYWORDS([nest nesting])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /VLABELS VARIABLES=qns3a DISPLAY=NAME /TABLE qnd5a > qns3a.
@@ -3181,7 +3181,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES FORMAT EMPTY])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /FORMAT EMPTY=ZERO /TABLE qnd5a BY qnd5.
@@ -3258,7 +3258,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES FORMAT MISSING])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /FORMAT MISSING='(no data)' /TABLE qnd5a[COLPCT] BY qnd5.
@@ -3289,7 +3289,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES HIDESMALLCOUNTS])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /TABLE qn38[c][COUNT, COLPCT].
@@ -3381,7 +3381,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES FORMAT MINCOLWIDTH MAXCOLWIDTH])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES /FORMAT MINCOLWIDTH=1 MAXCOLWIDTH=2 UNITS=INCHES /TABLE BY qns3a.
@@ -3407,7 +3407,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES special formats])
 AT_KEYWORDS([NEGPAREN NEQUAL PAREN PCTPAREN])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 COMPUTE x = qnd3 - 4.
@@ -3424,7 +3424,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES TITLES])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -3463,7 +3463,7 @@ Generated HH:MM:SS on MM/DD/YY
 AT_CLEANUP
 
 AT_SETUP([CTABLES area definitions])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -3632,7 +3632,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES area definitions with CLABELS ROWLABELS=OPPOSITE])
 AT_KEYWORDS([ROWLABELS OPPOSITE])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -3840,7 +3840,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES area definitions with CLABELS COLLABELS=OPPOSITE])
 AT_KEYWORDS([COLLABELS OPPOSITE])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -4264,7 +4264,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES area definitions with CLABELS ROWLABELS=LAYER])
 AT_KEYWORDS([ROWLABELS LAYER])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -4648,7 +4648,7 @@ AT_CLEANUP
 
 AT_SETUP([CTABLES area definitions with CLABELS COLLABELS=LAYER])
 AT_KEYWORDS([COLLABELS LAYER])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -5167,7 +5167,7 @@ No
 AT_CLEANUP
 
 AT_SETUP([CTABLES categorical summary functions])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -5232,7 +5232,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES scale summary functions])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 SET TVAR=NAME.
@@ -5514,7 +5514,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=120], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES hidden scale VLABELS])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 CTABLES
@@ -5602,7 +5602,7 @@ AT_CHECK([pspp ctables.sps -O box=unicode], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([CTABLES with SPLIT FILE])
-AT_CHECK([ln $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
 AT_DATA([ctables.sps],
 [[GET 'nhtsa.sav'.
 
