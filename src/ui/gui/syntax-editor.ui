@@ -112,10 +112,6 @@
       <item>
 	<attribute name="label" translatable="yes">_Selection</attribute>
 	<attribute name="action">win.run-selection</attribute>
-      </item>
-      <item>
-	<attribute name="label" translatable="yes">_Current Line</attribute>
-	<attribute name="action">win.run-current-line</attribute>
 	<attribute name="accel">&lt;Primary&gt;r</attribute>
       </item>
       <item>

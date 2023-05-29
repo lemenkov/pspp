@@ -22,6 +22,7 @@
 
 #include <gtksourceview/gtksource.h>
 
+#include "language/lexer/command-segmenter.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/encoding-guesser.h"
 #include "libpspp/i18n.h"
@@ -457,69 +458,136 @@ on_run_all (PsppireSyntaxWindow *se)
   editor_execute_syntax (se, begin, end);
 }
 
-/* Parse and execute the currently selected text */
+static bool
+overlaps (int a[2], int b[2])
+{
+  return (b[0] <= a[0] && a[0] < b[1]) || (a[0] <= b[0] && b[0] < a[1]);
+}
+
+/* Parse and execute the commands that overlap [START, END). */
+static void
+run_commands (PsppireSyntaxWindow *se, GtkTextIter start, GtkTextIter end)
+{
+  GtkTextBuffer *buf = GTK_TEXT_BUFFER (se->buffer);
+
+  /* Convert the iterator range into a line number range.  Both ranges are
+     half-open (they exclude the end), but it's OK for them to be empty. */
+  int in_lines[2] = {
+    gtk_text_iter_get_line (&start),
+    gtk_text_iter_get_line (&end),
+  };
+  if (in_lines[0] == in_lines[1] || gtk_text_iter_get_line_index (&end) > 0)
+    in_lines[1]++;
+
+  /* These are the lines that we're going to run.  */
+  int run_lines[2] = { -1, -1 };
+
+  /* Iterate through all the text in the buffer until we find a command that
+     spans the line we're on. */
+  struct command_segmenter *cs = command_segmenter_create (se->syntax_mode);
+  GtkTextIter begin;
+  gtk_text_buffer_get_start_iter (buf, &begin);
+  while (!gtk_text_iter_is_end (&begin))
+    {
+      GtkTextIter next = begin;
+      gtk_text_iter_forward_line (&next);
+
+      gchar *text = gtk_text_iter_get_text (&begin, &next);
+      command_segmenter_push (cs, text, strlen (text));
+      g_free (text);
+
+      if (gtk_text_iter_is_end (&next))
+        command_segmenter_eof (cs);
+
+      int cmd_lines[2];
+      while (command_segmenter_get (cs, cmd_lines))
+        {
+          if (overlaps (cmd_lines, in_lines))
+            {
+              /* This command's lines overlap with the lines we want to run.
+                 If we don't have any lines yet, take this command's lines;
+                 otherwise, extend the lines we have with this command's
+                 lines. */
+              if (run_lines[0] == -1)
+                {
+                  run_lines[0] = cmd_lines[0];
+                  run_lines[1] = cmd_lines[1];
+                }
+              else
+                run_lines[1] = cmd_lines[1];
+            }
+          else if (cmd_lines[0] >= in_lines[1])
+            {
+              /* We're moved past the lines that could possibly overlap with
+                 those that we want to run.
+
+                 If we don't have anything to run, we need to make some guess.
+                 If we were just given a single position, then probably it
+                 makes sense to run the next command.  Otherwise, we were given
+                 a nonempty selection that didn't contain any commands, and it
+                 seems reasonable to not run any. */
+              if (run_lines[0] == -1 && gtk_text_iter_equal (&start, &end))
+                {
+                  run_lines[0] = cmd_lines[0];
+                  run_lines[1] = cmd_lines[1];
+                }
+              break;
+            }
+        }
+
+      begin = next;
+    }
+  command_segmenter_destroy (cs);
+
+  if (run_lines[0] != -1)
+    {
+      GtkTextIter begin, end;
+      gtk_text_buffer_get_iter_at_line (buf, &begin, run_lines[0]);
+      gtk_text_buffer_get_iter_at_line (buf, &end, run_lines[1]);
+
+      editor_execute_syntax (se, begin, end);
+    }
+}
+
+static GtkTextIter
+get_iter_for_cursor (PsppireSyntaxWindow *se)
+{
+  GtkTextBuffer *buf = GTK_TEXT_BUFFER (se->buffer);
+  GtkTextIter iter;
+  gtk_text_buffer_get_iter_at_mark (
+    buf, &iter, gtk_text_buffer_get_insert (buf));
+  return iter;
+}
+
+/* Parse and execute the currently selected syntax, if there is any, and
+   otherwise the command that the cursor is in. */
 static void
 on_run_selection (PsppireSyntaxWindow *se)
 {
-  GtkTextIter begin, end;
+  GtkTextBuffer *buf = GTK_TEXT_BUFFER (se->buffer);
 
-  if (gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (se->buffer), &begin, &end))
-    editor_execute_syntax (se, begin, end);
+  GtkTextIter begin, end;
+  if (gtk_text_buffer_get_selection_bounds (buf, &begin, &end))
+    run_commands (se, begin, end);
+  else
+    {
+      GtkTextIter iter = get_iter_for_cursor (se);
+      run_commands (se, iter, iter);
+    }
 }
 
 
-/* Parse and execute the from the current line, to the end of the
-   buffer */
+/* Parse and execute the syntax from the current line, to the end of the
+   buffer. */
 static void
 on_run_to_end (PsppireSyntaxWindow *se)
 {
-  GtkTextIter begin, end;
-  GtkTextIter here;
-  gint line;
+  GtkTextBuffer *buf = GTK_TEXT_BUFFER (se->buffer);
+  GtkTextIter end;
+  gtk_text_buffer_get_end_iter (buf, &end);
 
-  /* Get the current line */
-  gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
-				    &here,
-				    gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (se->buffer))
-				);
-
-  line = gtk_text_iter_get_line (&here) ;
-
-  /* Now set begin and end to the start of this line, and end of buffer
-     respectively */
-  gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (se->buffer), &begin, line);
-  gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (se->buffer), &end, -1);
-
-  editor_execute_syntax (se, begin, end);
+  run_commands (se, get_iter_for_cursor (se), end);
 }
-
-
-
-/* Parse and execute the current line */
-static void
-on_run_current_line (PsppireSyntaxWindow *se)
-{
-  GtkTextIter begin, end;
-  GtkTextIter here;
-  gint line;
-
-  /* Get the current line */
-  gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
-				    &here,
-				    gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (se->buffer))
-				);
-
-  line = gtk_text_iter_get_line (&here) ;
-
-  /* Now set begin and end to the start of this line, and start of
-     following line respectively */
-  gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (se->buffer), &begin, line);
-  gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (se->buffer), &end, line + 1);
-
-  editor_execute_syntax (se, begin, end);
-}
-
-
 
 static void
 on_syntax (GAction *action, GVariant *param, PsppireSyntaxWindow *sw)
@@ -944,27 +1012,18 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   }
 
   {
-    GSimpleAction *run_current_line = g_simple_action_new ("run-current-line", NULL);
-
-    g_signal_connect_swapped (run_current_line, "activate",
-			      G_CALLBACK (on_run_current_line), window);
-
-    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_current_line));
-
-    GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
-    const gchar *accels[2] = { "<Primary>R", NULL};
-    gtk_application_set_accels_for_action (app,
-					   "win.run-current-line",
-					   accels);
-  }
-
-  {
     GSimpleAction *run_selection = g_simple_action_new ("run-selection", NULL);
 
     g_signal_connect_swapped (run_selection, "activate",
 			      G_CALLBACK (on_run_selection), window);
 
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_selection));
+
+    GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
+    const gchar *accels[2] = { "<Primary>R", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.run-selection",
+					   accels);
   }
 
   {
