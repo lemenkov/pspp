@@ -29,6 +29,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
 #include "libpspp/misc.h"
+#include "language/lexer/command-segmenter.h"
 #include "language/lexer/segment.h"
 
 #include "gl/error.h"
@@ -50,6 +51,9 @@ static bool one_byte;
 /* -0, --truncations: Check that every truncation of input yields a result. */
 static bool check_truncations;
 
+/* -c, --commands: Print segmentation of input into commands. */
+static bool commands;
+
 /* -s, --strip-trailing-newline: Strip trailing newline from last line of
     input. */
 static bool strip_trailing_newline;
@@ -59,6 +63,7 @@ static void usage (void) NO_RETURN;
 
 static void check_segmentation (const char *input, size_t length,
                                 bool print_segments);
+static void check_commands (const char *input, size_t length);
 
 int
 main (int argc, char *argv[])
@@ -72,8 +77,7 @@ main (int argc, char *argv[])
 
   setvbuf (stdout, NULL, _IONBF, 0);
 
-  /* Read from stdin into 'input'.  Ensure that 'input' ends in a new-line
-     followed by a null byte. */
+  /* Read syntax into 'input'. */
   input = (!strcmp (file_name, "-")
            ? fread_file (stdin, 0, &length)
            : read_file (file_name, 0, &length));
@@ -87,9 +91,7 @@ main (int argc, char *argv[])
         length--;
     }
 
-  if (!check_truncations)
-    check_segmentation (input, length, true);
-  else
+  if (check_truncations)
     {
       size_t test_len;
 
@@ -100,9 +102,52 @@ main (int argc, char *argv[])
           free (copy);
         }
     }
+  else if (commands)
+    check_commands (input, length);
+  else
+    check_segmentation (input, length, true);
+
   free (input);
 
   return 0;
+}
+
+static void
+print_line (const char *input, size_t length, int line)
+{
+  for (int i = 0; i < line; i++)
+    {
+      const char *newline = memchr (input, '\n', length);
+      size_t line_len = newline ? newline - input + 1 : strlen (input);
+      input += line_len;
+      length -= line_len;
+    }
+
+  int line_len = strcspn (input, "\n");
+  printf ("%.*s\n", line_len, input);
+}
+
+static void
+check_commands (const char *input, size_t length)
+{
+  struct command_segmenter *cs = command_segmenter_create (mode);
+  command_segmenter_push (cs, input, length);
+  command_segmenter_eof (cs);
+
+  int last_line = -1;
+  int lines[2];
+  while (command_segmenter_get (cs, lines))
+    {
+      assert (last_line == -1 || lines[0] >= last_line);
+      assert (lines[0] < lines[1]);
+      if (last_line != -1)
+        printf ("-----\n");
+      for (int line = lines[0]; line < lines[1]; line++)
+        print_line (input, length, line);
+      last_line = lines[1];
+    }
+
+  command_segmenter_destroy (cs);
 }
 
 static void
@@ -300,12 +345,13 @@ parse_options (int argc, char **argv)
           {"auto", no_argument, NULL, 'a'},
           {"batch", no_argument, NULL, 'b'},
           {"interactive", no_argument, NULL, 'i'},
+          {"commands", no_argument, NULL, 'c'},
           {"verbose", no_argument, NULL, 'v'},
           {"help", no_argument, NULL, 'h'},
           {NULL, 0, NULL, 0},
         };
 
-      int c = getopt_long (argc, argv, "01abivhs", options, NULL);
+      int c = getopt_long (argc, argv, "01abivhsc", options, NULL);
       if (c == -1)
         break;
 
@@ -333,6 +379,10 @@ parse_options (int argc, char **argv)
 
         case 'i':
           mode = SEG_MODE_INTERACTIVE;
+          break;
+
+        case 'c':
+          commands = true;
           break;
 
         case 'v':
@@ -368,9 +418,12 @@ usage (void)
 %s, to test breaking PSPP syntax into lexical segments\n\
 usage: %s [OPTIONS] INPUT\n\
 \n\
+By default, print segmentation of input into PSPP syntax units. Other modes:\n\
+  -0, --truncations   check null truncation of each prefix of input\n\
+  -c, --commands      print segmentation into PSPP commands\n\
+\n\
 Options:\n\
   -1, --one-byte      feed one byte at a time\n\
-  -0, --truncations   check null truncation of each prefix of input\n\
   -s, --strip-trailing-newline  remove newline from end of input\n\
   -a, --auto          use \"auto\" syntax mode\n\
   -b, --batch         use \"batch\" syntax mode\n\

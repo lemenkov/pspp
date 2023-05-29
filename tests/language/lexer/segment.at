@@ -178,10 +178,10 @@ identifier      #abcd
 end_command     .
 newline         \n (first)
 
-start_command   .
+end_command     .
 newline         \n (first)
 
-start_command   .    space
+end_command     .    space
 newline         \n (first)
 
 identifier      LMNOP
@@ -610,7 +610,8 @@ AT_CLEANUP
 AT_SETUP([* and COMMENT commands])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
-* Comment commands "don't
+* Comment commands "don't dnl "
+
 have to contain valid tokens.
 
 ** Check ambiguity with ** token.
@@ -627,8 +628,30 @@ com is ambiguous with COMPUTE.
 next command.
 
 ])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+* Comment commands "don't dnl "
+
+have to contain valid tokens.
+-----
+** Check ambiguity with ** token.
+-----
+****************.
+-----
+comment keyword works too.
+-----
+COMM also.
+-----
+com is ambiguous with COMPUTE.
+-----
+   * Comment need not start at left margin.
+-----
+* Comment ends with blank line
+-----
+next command.
+])
 AT_DATA([expout-base], [dnl
-comment_command *_Comment_commands_"don't
+comment_command *_Comment_commands_"don't dnl "
+
 newline         \n (COMMENT)
 
 comment_command have_to_contain_valid_tokens
@@ -709,6 +732,20 @@ isn't parsed as tokens
 
 second paragraph.
 ])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+DOCUMENT one line.
+-----
+DOC more
+    than
+        one
+            line.
+-----
+docu
+first.paragraph
+isn't parsed as tokens
+
+second paragraph.
+])
 AT_DATA([expout-base], [dnl
 start_document
 document        DOCUMENT_one_line.
@@ -763,6 +800,15 @@ FILE
 FILE /*
 /**/  lab not quoted here either
 
+])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+FIL label isn't quoted.
+-----
+FILE
+  lab 'is quoted'.
+-----
+FILE /*
+/**/  lab not quoted here either
 ])
 AT_DATA([expout-base], [dnl
 identifier      FIL    space
@@ -825,10 +871,37 @@ begin data "xxx".
 begin data 123.
 not data
 ])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+begin data.
+end data.
+-----
+begin data. /*
+123
+xxx
+end data.
+-----
+BEG /**/ DAT /*
+5 6 7 /* x
+
+end  data
+end data
+.
+-----
+begin
+ data.
+data
+end data.
+-----
+begin data "xxx".
+-----
+begin data 123.
+-----
+not data
+])
 AT_DATA([expout-base], [dnl
 identifier      begin    space
 identifier      data
-end_command     .
+inner_end_command .
 newline         \n (data)
 
 identifier      end    space
@@ -841,7 +914,7 @@ newline         \n (first)
 
 identifier      begin    space
 identifier      data
-end_command     .    space
+inner_end_command .    space
 comment         /*
 newline         \n (data)
 
@@ -878,7 +951,7 @@ identifier      end    space
 identifier      data
 newline         \n (later)
 
-start_command   .
+end_command     .
 newline         \n (first)
 
 separate_commands
@@ -888,7 +961,7 @@ identifier      begin
 newline         \n (later)
     space
 identifier      data
-end_command     .
+inner_end_command .
 newline         \n (data)
 
 inline_data     data
@@ -940,6 +1013,22 @@ do
   inner command.
 end repeat.
 ])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+do repeat x=a b c
+          y=d e f.
+  do repeat a=1 thru 5.
+another command.
+second command
++ third command.
+end /* x */ /* y */ repeat print.
+end
+ repeat.
+-----
+do
+  repeat #a=1.
+  inner command.
+end repeat.
+])
 AT_DATA([expout-base], [dnl
 identifier      do    space
 identifier      repeat    space
@@ -956,7 +1045,7 @@ punct           =
 identifier      d    space
 identifier      e    space
 identifier      f
-end_command     .
+inner_end_command .
 newline         \n (DO REPEAT)
 
 do_repeat_command __do_repeat_a=1_thru_5.
@@ -989,7 +1078,7 @@ identifier      repeat    space
 identifier      #a
 punct           =
 number          1
-end_command     .
+inner_end_command .
 newline         \n (DO REPEAT)
 
 do_repeat_command __inner_command.
@@ -1023,6 +1112,23 @@ do
   inner command
 end repeat
 ])
+AT_CHECK([segment-test -c -b input], [0], [dnl
+do repeat x=a b c
+          y=d e f
+do repeat a=1 thru 5
+another command
+second command
++ third command
+end /* x */ /* y */ repeat print
+end
+ repeat
+-----
+do
+  repeat #a=1
+
+  inner command
+end repeat
+])
 AT_DATA([expout-base], [dnl
 identifier      do    space
 identifier      repeat    space
@@ -1041,7 +1147,7 @@ identifier      e    space
 identifier      f
 newline         \n (later)
 
-start_command
+inner_start_command
 do_repeat_command do_repeat_a=1_thru_5
 newline         \n (DO REPEAT)
 
@@ -1074,7 +1180,7 @@ punct           =
 number          1
 newline         \n (later)
 
-separate_commands
+inner_separate_commands
 newline         \n (DO REPEAT)
 
 do_repeat_command __inner_command
@@ -1096,6 +1202,7 @@ define !macro1()
 var1 var2 var3 "!enddefine"
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1122,6 +1229,7 @@ AT_DATA([input], [dnl
 define !macro1() var1 var2 var3 /* !enddefine
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1145,6 +1253,7 @@ AT_DATA([input], [dnl
 define !macro1()
 var1 var2 var3!enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1168,6 +1277,7 @@ AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 define !macro1()var1 var2 var3!enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1189,6 +1299,7 @@ AT_DATA([input], [dnl
 define !macro1()
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1214,6 +1325,7 @@ define !macro1()
 
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1243,6 +1355,7 @@ AT_DATA([input], [dnl
 define !macro1(a(), b(), c())
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1281,6 +1394,7 @@ define !macro1(
 )
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1330,6 +1444,7 @@ content 1
 content 2
 !enddefine.
 ])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1368,6 +1483,11 @@ AT_DATA([input], [dnl
 define !macro1.
 data list /x 1.
 ])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+define !macro1.
+-----
+data list /x 1.
+])
 AT_DATA([expout-base], [dnl
 identifier      define    space
 macro_name      !macro1
@@ -1392,6 +1512,12 @@ AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 define !macro1
 x.
+data list /x 1.
+])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+define !macro1
+x.
+-----
 data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
@@ -1421,6 +1547,13 @@ AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 define !macro1(.
 x.
+data list /x 1.
+])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+define !macro1@{:@.
+-----
+x.
+-----
 data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
@@ -1453,6 +1586,11 @@ AT_DATA([input], [dnl
 dnl Notice the command terminator at the end of the DEFINE command,
 dnl which should not be there and ends it early.
 define !macro1.
+data list /x 1.
+])
+AT_CHECK([segment-test -c -i input], [0], [dnl
+define !macro1.
+-----
 data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
@@ -1643,11 +1781,49 @@ end
 ])
 PSPP_CHECK_SEGMENT([-a])
 AT_CLEANUP
+
+AT_SETUP([empty input])
+AT_KEYWORDS([segment])
+: > input
+AT_DATA([expout-base], [dnl
+end
+])
+AT_CHECK([cp input expout && segment-test -c -i input], [0], [expout])
+PSPP_CHECK_SEGMENT
+AT_CLEANUP
+
+AT_SETUP([blank lines input])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+
+
+
+
+])
+AT_DATA([expout-base], [dnl
+separate_commands
+newline         \n (first)
+
+separate_commands
+newline         \n (first)
+
+separate_commands
+newline         \n (first)
+
+-separate_commands
+-newline         \n (first)
+-
+end
+])
+AT_CHECK([segment-test -c -i input])
+PSPP_CHECK_SEGMENT
+AT_CLEANUP
 
 # This checks for regression against bug #61253.  To see the read of
 # uninitialized data, run with valgrind.  The test will pass either
 # way.  (The bug report has a more complicated crashing case.)
 AT_SETUP([input ends in carriage return])
+AT_KEYWORDS([segment])
 printf '\r' > input
 AT_DATA([expout-base], [dnl
 separate_commands

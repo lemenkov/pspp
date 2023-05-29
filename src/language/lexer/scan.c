@@ -372,6 +372,9 @@ token_from_segment (enum segment_type type, struct substring s,
     case SEG_START_COMMAND:
     case SEG_SEPARATE_COMMANDS:
     case SEG_END_COMMAND:
+    case SEG_INNER_START_COMMAND:
+    case SEG_INNER_SEPARATE_COMMANDS:
+    case SEG_INNER_END_COMMAND:
       *token = (struct token) { .type = T_ENDCMD };
       return TOKENIZE_TOKEN;
 

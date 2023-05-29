@@ -688,6 +688,9 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
         case SEG_START_COMMAND:
         case SEG_SEPARATE_COMMANDS:
         case SEG_END_COMMAND:
+        case SEG_INNER_START_COMMAND:
+        case SEG_INNER_SEPARATE_COMMANDS:
+        case SEG_INNER_END_COMMAND:
         case SEG_END:
         case SEG_EXPECTED_QUOTE:
         case SEG_EXPECTED_EXPONENT:
@@ -800,8 +803,9 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
             return -1;
           else if (lex_id_match (ss_cstr ("DATA"), ss_cstr (id)))
             {
-              int eol;
-
+              /* We've found BEGIN DATA.  Check whether that's the entire
+                 command (either followed by a new-line or by '.' then a
+                 new-line). */
               ofs2 = skip_spaces_and_comments (input, n, eof, ofs2);
               if (ofs2 < 0)
                 return -1;
@@ -815,11 +819,14 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
                     return -1;
                 }
 
-              eol = is_end_of_line (input, n, eof, ofs2);
+              int eol = is_end_of_line (input, n, eof, ofs2);
               if (eol < 0)
                 return -1;
               else if (eol)
                 {
+                  /* BEGIN DATA is indeed the entire command.  We choose a next
+                     state depending on whether it's one line long or two lines
+                     long. */
                   if (memchr (input, '\n', ofs2))
                     s->state = S_BEGIN_DATA_1;
                   else
@@ -1229,11 +1236,27 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
               return 1;
             }
         }
-      /* Fall through. */
+      *type = SEG_START_COMMAND;
+      s->substate = SS_START_OF_COMMAND;
+      return 1;
 
     case '-':
-    case '.':
       *type = SEG_START_COMMAND;
+      s->substate = SS_START_OF_COMMAND;
+      return 1;
+
+    case '.':
+      /* We've found '.' at the beginning of a line.  If there's more text on
+         the line, then it starts a new command, because '+' or '-' or '.' in
+         the leftmost column does that.  If the command is otherwise blank,
+         then it ends the previous command.  The difference only matters for
+         deciding whether the line is part of the previous command in
+         command_segmenter. */
+      int eol = at_end_of_line (input, n, eof, 1);
+      if (eol < 0)
+        return -1;
+
+      *type = eol ? SEG_END_COMMAND : SEG_START_COMMAND;
       s->substate = SS_START_OF_COMMAND;
       return 1;
 
@@ -1409,12 +1432,16 @@ segmenter_parse_do_repeat_1__ (struct segmenter *s,
     {
       /* We reached a blank line that separates the head from the body. */
       s->state = S_DO_REPEAT_2;
+      *type = SEG_INNER_SEPARATE_COMMANDS;
     }
   else if (*type == SEG_END_COMMAND || *type == SEG_START_COMMAND)
     {
       /* We reached the body. */
       s->state = S_DO_REPEAT_3;
       s->substate = 1;
+      *type = (*type == SEG_END_COMMAND
+               ? SEG_INNER_END_COMMAND
+               : SEG_INNER_START_COMMAND);
     }
 
   return ofs;
@@ -1722,6 +1749,13 @@ segmenter_parse_define_5__ (struct segmenter *s,
   return ofs;
 }
 
+/* We're segmenting the first line of a two-line BEGIN DATA command.  Segment
+   up to the first new-line.
+
+   This BEGIN DATA is expressed something like this (weird, but legal):
+
+      BEGIN
+       DATA. */
 static int
 segmenter_parse_begin_data_1__ (struct segmenter *s,
                                 const char *input, size_t n, bool eof,
@@ -1737,6 +1771,8 @@ segmenter_parse_begin_data_1__ (struct segmenter *s,
   return ofs;
 }
 
+/* We're segmenting a one-line BEGIN DATA command, or the second line of a
+   two-line BEGIN DATA command.  Segment up to the new-line. */
 static int
 segmenter_parse_begin_data_2__ (struct segmenter *s,
                                 const char *input, size_t n, bool eof,
@@ -1748,6 +1784,8 @@ segmenter_parse_begin_data_2__ (struct segmenter *s,
 
   if (*type == SEG_NEWLINE)
     s->state = S_BEGIN_DATA_3;
+  else if (*type == SEG_END_COMMAND)
+    *type = SEG_INNER_END_COMMAND;
 
   return ofs;
 }

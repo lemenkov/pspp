@@ -88,6 +88,9 @@ enum segmenter_mode
     SEG_TYPE(START_COMMAND)                     \
     SEG_TYPE(SEPARATE_COMMANDS)                 \
     SEG_TYPE(END_COMMAND)                       \
+    SEG_TYPE(INNER_START_COMMAND)               \
+    SEG_TYPE(INNER_SEPARATE_COMMANDS)           \
+    SEG_TYPE(INNER_END_COMMAND)                 \
     SEG_TYPE(END)                               \
                                                 \
     SEG_TYPE(EXPECTED_QUOTE)                    \

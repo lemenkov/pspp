@@ -20,6 +20,8 @@
 language_lexer_sources = \
 	src/language/lexer/command-name.c \
 	src/language/lexer/command-name.h \
+	src/language/lexer/command-segmenter.c \
+	src/language/lexer/command-segmenter.h \
 	src/language/lexer/include-path.c \
 	src/language/lexer/include-path.h \
 	src/language/lexer/lexer.c \

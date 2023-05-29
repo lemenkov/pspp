@@ -206,6 +206,7 @@ check_PROGRAMS += tests/language/lexer/segment-test
 tests_language_lexer_segment_test_SOURCES = \
 	src/data/identifier.c \
 	src/language/lexer/command-name.c \
+	src/language/lexer/command-segmenter.c \
 	src/language/lexer/segment.c \
 	tests/language/lexer/segment-test.c
 tests_language_lexer_segment_test_CFLAGS = $(AM_CFLAGS)
