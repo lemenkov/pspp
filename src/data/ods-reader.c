@@ -196,7 +196,7 @@ reading_target_sheet (const struct ods_reader *r, const struct state_data *sd)
 }
 
 
-static void process_node (struct ods_reader *or, struct state_data *r);
+static bool process_node (struct ods_reader *or, struct state_data *r);
 
 
 /* Initialise SD using R */
@@ -231,15 +231,10 @@ ods_get_sheet_name (struct spreadsheet *s, int n)
   struct state_data sd;
   state_data_init (r, &sd);
 
-  while ((r->n_allocated_sheets <= n)
-	 || sd.state != STATE_SPREADSHEET)
-    {
-      int ret = xmlTextReaderRead (sd.xtr);
-      if (ret != 1)
-	break;
-
-      process_node (r, &sd);
-    }
+  while ((r->n_allocated_sheets <= n
+          || sd.state != STATE_SPREADSHEET)
+         && process_node (r, &sd))
+    continue;
   state_data_destroy (&sd);
 
   return r->spreadsheet.sheets[n].name;
@@ -252,16 +247,11 @@ ods_get_sheet_range (struct spreadsheet *s, int n)
   struct state_data sd;
   state_data_init (r, &sd);
 
-  while ((r->n_allocated_sheets <= n)
-	  || (r->spreadsheet.sheets[n].last_row == -1)
-	 || sd.state != STATE_SPREADSHEET)
-    {
-      int ret = xmlTextReaderRead (sd.xtr);
-      if (ret != 1)
-	break;
-
-      process_node (r, &sd);
-    }
+  while ((r->n_allocated_sheets <= n
+          || r->spreadsheet.sheets[n].last_row == -1
+          || sd.state != STATE_SPREADSHEET)
+         && process_node (r, &sd))
+    continue;
   state_data_destroy (&sd);
 
   return create_cell_range (
@@ -283,12 +273,8 @@ ods_get_sheet_n_rows (struct spreadsheet *s, int n)
     }
 
   state_data_init (r, &sd);
-
-  while (1 == xmlTextReaderRead (sd.xtr))
-    {
-      process_node (r, &sd);
-    }
-
+  while (process_node (r, &sd))
+    continue;
   state_data_destroy (&sd);
 
   return r->spreadsheet.sheets[n].last_row + 1;
@@ -304,12 +290,8 @@ ods_get_sheet_n_columns (struct spreadsheet *s, int n)
     return r->spreadsheet.sheets[n].last_col + 1;
 
   state_data_init (r, &sd);
-
-  while (1 == xmlTextReaderRead (sd.xtr))
-    {
-      process_node (r, &sd);
-    }
-
+  while (process_node (r, &sd))
+    continue;
   state_data_destroy (&sd);
 
   return r->spreadsheet.sheets[n].last_col + 1;
@@ -350,9 +332,8 @@ ods_get_sheet_cell (struct spreadsheet *s, int n, int row, int column)
 
   int prev_col = 0;
   int prev_row = 0;
-  while (1 == xmlTextReaderRead (sd.xtr))
+  while (process_node (r, &sd))
     {
-      process_node (r, &sd);
       if (sd.row > prev_row)
 	prev_col = 0;
 
@@ -452,9 +433,12 @@ ods_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   spreadsheet_unref (&r->spreadsheet);
 }
 
-static void
+static bool
 process_node (struct ods_reader *or, struct state_data *r)
 {
+  if (xmlTextReaderRead (r->xtr) != 1)
+    return false;
+
   xmlChar *name = xmlTextReaderName (r->xtr);
   if (name == NULL)
     name = xmlStrdup (_xml ("--"));
@@ -601,6 +585,8 @@ process_node (struct ods_reader *or, struct state_data *r)
     };
 
   xmlFree (name);
+
+  return true;
 }
 
 /*
@@ -769,7 +755,6 @@ static struct casereader *
 ods_make_reader (struct spreadsheet *spreadsheet,
 		 const struct spreadsheet_read_options *opts)
 {
-  intf ret = 0;
   xmlChar *type = NULL;
   casenumber n_cases = CASENUMBER_MAX;
   int i;
@@ -812,28 +797,20 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   r->target_sheet_index = opts->sheet_index;
 
   /* Advance to the start of the cells for the target sheet */
-  while (! reading_target_sheet (r, &r->rsd)
-	  || r->rsd.state != STATE_ROW || r->rsd.row <= r->spreadsheet.start_row)
-    {
-      if (1 != (ret = xmlTextReaderRead (r->rsd.xtr)))
-	   break;
-
-      process_node (r, &r->rsd);
-    }
-
-  if (ret < 1)
-    {
-      msg (MW, _("Selected sheet or range of spreadsheet `%s' is empty."),
-           spreadsheet->file_name);
-      goto error;
-    }
+  while (!reading_target_sheet (r, &r->rsd)
+         || r->rsd.state != STATE_ROW
+         || r->rsd.row <= r->spreadsheet.start_row)
+    if (!process_node (r, &r->rsd))
+      {
+        msg (MW, _("Selected sheet or range of spreadsheet `%s' is empty."),
+             spreadsheet->file_name);
+        goto error;
+      }
 
   if (opts->read_names)
     {
-      while (1 == xmlTextReaderRead (r->rsd.xtr))
+      while (process_node (r, &r->rsd))
 	{
-	  process_node (r, &r->rsd);
-
 	  /* If the row is finished then stop for now */
 	  if (r->rsd.state == STATE_TABLE && r->rsd.row > r->spreadsheet.start_row)
 	    break;
@@ -876,11 +853,9 @@ ods_make_reader (struct spreadsheet *spreadsheet,
     }
 
   /* Read in the first row of data */
-  while (1 == xmlTextReaderRead (r->rsd.xtr))
+  while (process_node (r, &r->rsd))
     {
       int idx;
-      process_node (r, &r->rsd);
-
       if (! reading_target_sheet (r, &r->rsd))
 	break;
 
@@ -973,14 +948,9 @@ ods_make_reader (struct spreadsheet *spreadsheet,
     }
 
   /* Read in the first row of data */
-  while (1 == xmlTextReaderRead (r->rsd.xtr))
-    {
-      process_node (r, &r->rsd);
-
-      if (r->rsd.state == STATE_ROW)
-	break;
-    }
-
+  while (process_node (r, &r->rsd))
+    if (r->rsd.state == STATE_ROW)
+      break;
 
   for (i = 0 ; i < n_var_specs ; ++i)
     {
@@ -1036,13 +1006,8 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 
 
   /* Advance to the start of a row. (If there is one) */
-  while (r->rsd.state != STATE_ROW
-	 && 1 == xmlTextReaderRead (r->rsd.xtr)
-	)
-    {
-      process_node (r, &r->rsd);
-    }
-
+  while (r->rsd.state != STATE_ROW && process_node (r, &r->rsd))
+    continue;
 
   if (! reading_target_sheet (r, &r->rsd)
        ||  r->rsd.state < STATE_TABLE
@@ -1055,10 +1020,8 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
   c = case_create (r->spreadsheet.proto);
   case_set_missing (c);
 
-  while (1 == xmlTextReaderRead (r->rsd.xtr))
+  while (process_node (r, &r->rsd))
     {
-      process_node (r, &r->rsd);
-
       if (r->spreadsheet.stop_row != -1 && r->rsd.row > r->spreadsheet.stop_row + 1)
 	break;
 
