@@ -18,7 +18,7 @@ AT_BANNER([spreadsheet])
 
 m4_define([SPREADSHEET_TEST],
   [AT_SETUP([$1 $2])
-   AT_KEYWORDS([spreadsheet $4])
+   AT_KEYWORDS([spreadsheet ods gnumeric $4])
    AT_CHECK([spreadsheet-test $2 $top_srcdir/tests/data/$1.gnumeric], [0], [$3], [ignore])
    AT_CHECK([spreadsheet-test $2 $top_srcdir/tests/data/$1.ods], [0], [$3], [ignore])
    AT_CLEANUP])

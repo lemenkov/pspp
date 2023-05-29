@@ -17,10 +17,12 @@ dnl
 m4_define([SPREADSHEET_TEST_PREP],[dnl
  AT_KEYWORDS([spreadsheet])
  m4_if($1,[GNM],[dnl
+    AT_KEYWORDS([gnumeric])
     AT_CHECK([gzip -c $top_srcdir/tests/language/commands/Book1.gnm.unzipped > Book1.gnumeric])dnl
     m4_define([testsheet],[Book1.gnumeric])dnl
     ]) dnl
  m4_if($1,[ODS],[dnl
+    AT_KEYWORDS([ods])
     AT_CHECK([cp $top_srcdir/tests/language/commands/test.ods test.ods])dnl
     m4_define([testsheet],[test.ods])dnl
     ])dnl
