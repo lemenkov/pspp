@@ -16,23 +16,18 @@
 
 /* Deque data structure.
 
-   This code slightly simplifies the implementation of a deque as
-   a circular queue.  To use it, declare a "struct deque" and a
-   pointer to the element type.  For example, for a deque of
-   "int"s:
+   This code slightly simplifies the implementation of a deque as a circular
+   queue.  To use it, declare a "struct deque" and a pointer to the element
+   type.  For example, for deque of "int"s with an initial capacity of 0:
 
-        struct deque deque;
-        int *data;
-
-   To initialize the deque with a initial capacity of 0:
-
-        deque_init_null (&deque);
-        data = NULL;
+        struct deque deque = DEQUE_EMPTY_INITIALIZER;
+        int *data = NULL;
 
    Alternatively, to initialize the deque with an initial minimum
    capacity of, e.g., 4:
 
-        data = deque_init (&deque, 4, sizeof *data);
+        struct deque deque;
+        int *data = deque_init (&deque, 4, sizeof *data);
 
    Functions that access elements in the deque return array
    indexes.  This is fairly convenient:
@@ -75,8 +70,8 @@ struct deque
     size_t front;       /* One past the front of the queue. */
     size_t back;        /* The back of the queue. */
   };
+#define DEQUE_EMPTY_INITIALIZER { .capacity = 0 }
 
-void deque_init_null (struct deque *);
 void *deque_init (struct deque *, size_t capacity, size_t elem_size);
 void *deque_expand (struct deque *, void *, size_t elem_size);
 

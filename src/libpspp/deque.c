@@ -23,16 +23,6 @@
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 
-/* Initializes DEQUE as an empty deque with an initial capacity
-   of zero. */
-void
-deque_init_null (struct deque *deque)
-{
-  deque->capacity = 0;
-  deque->front = 0;
-  deque->back = 0;
-}
-
 /* Initializes DEQUE as an empty deque of elements ELEM_SIZE
    bytes in size, with an initial capacity of at least
    CAPACITY.  Returns the initial deque data array. */
@@ -40,7 +30,7 @@ void *
 deque_init (struct deque *deque, size_t capacity, size_t elem_size)
 {
   void *data = NULL;
-  deque_init_null (deque);
+  *deque = (struct deque) DEQUE_EMPTY_INITIALIZER;
   if (capacity > 0)
     {
       deque->capacity = 1;

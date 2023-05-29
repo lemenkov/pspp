@@ -1683,36 +1683,29 @@ init_mc (struct mc *mc, const struct mc_class *class,
     }
 
   /* Initialize MC. */
-  mc->class = class;
-  mc->options = options;
-  mc->results = mc_results_create ();
+  struct mc_results *results = mc_results_create ();
+  *mc = (struct mc) {
+    .class = class,
+    .options = options,
+    .results = results,
+    .hash = (options->hash_bits > 0
+             ? bitvector_allocate (1 << options->hash_bits)
+             : NULL),
+    .queue_deque = DEQUE_EMPTY_INITIALIZER,
+    .path = MC_PATH_EMPTY_INITIALIZER,
+    .path_string = DS_EMPTY_INITIALIZER,
+    .next_progress = options->progress_usec != 0 ? 100 : UINT_MAX,
+    .prev_progress_time = results->start,
+    .saved_interrupted_ptr = interrupted_ptr,
+    .saved_sigint = signal (SIGINT, sigint_handler),
+  };
 
-  mc->hash = (mc->options->hash_bits > 0
-              ? bitvector_allocate (1 << mc->options->hash_bits)
-              : NULL);
-
-  mc->queue = NULL;
-  deque_init_null (&mc->queue_deque);
-
-  mc_path_init (&mc->path);
-  mc_path_push (&mc->path, 0);
-  ds_init_empty (&mc->path_string);
-  mc->state_named = false;
-  mc->state_error = false;
-
-  mc->progress = 0;
-  mc->next_progress = mc->options->progress_usec != 0 ? 100 : UINT_MAX;
-  mc->prev_progress = 0;
-  mc->prev_progress_time = mc->results->start;
-
-  if (mc->options->strategy == MC_RANDOM
-      || options->queue_limit_strategy == MC_DROP_RANDOM)
-    srand (mc->options->seed);
-
-  mc->interrupted = false;
-  mc->saved_interrupted_ptr = interrupted_ptr;
   interrupted_ptr = &mc->interrupted;
-  mc->saved_sigint = signal (SIGINT, sigint_handler);
+  if (options->strategy == MC_RANDOM
+      || options->queue_limit_strategy == MC_DROP_RANDOM)
+    srand (options->seed);
+
+  mc_path_push (&mc->path, 0);
 
   class->init (mc);
 }

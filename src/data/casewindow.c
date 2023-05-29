@@ -226,7 +226,7 @@ casewindow_memory_create (struct taint *taint UNUSED,
                           const struct caseproto *proto UNUSED)
 {
   struct casewindow_memory *cwm = xmalloc (sizeof *cwm);
-  cwm->cases = deque_init (&cwm->deque, 4, sizeof *cwm->cases);
+  *cwm = (struct casewindow_memory) { .deque = DEQUE_EMPTY_INITIALIZER };
   return cwm;
 }
 

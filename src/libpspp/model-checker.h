@@ -344,6 +344,7 @@ struct mc_path
     size_t length;      /* Number of operations. */
     size_t capacity;    /* Number of operations for which room is allocated. */
   };
+#define MC_PATH_EMPTY_INITIALIZER { .ops = NULL }
 
 void mc_path_init (struct mc_path *);
 void mc_path_copy (struct mc_path *, const struct mc_path *);
