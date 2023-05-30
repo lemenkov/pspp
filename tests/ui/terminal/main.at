@@ -74,10 +74,6 @@ dnl Bug #63910 reported that command output was delayed until the
 dnl next command was supplied.  This checks for regression against
 dnl that bug.
 AT_SETUP([interactive output appears immediately])
-dnl We have to use squish-pty to make PSPP think that we're running
-dnl interactively.  First make sure that squish-pty works at all.
-SQUISH_PTY="$PYTHON3 $top_srcdir/tests/ui/terminal/squish-pty.py"
-AT_CHECK([$SQUISH_PTY true </dev/null >/dev/null 2>/dev/null || exit 77])
 dnl ptys are pretty system-dependent and it's hard to test them
 dnl everywhere.  For example, on Mac OS the SHOW N and FINISH command
 dnl text doesn't appear in the output.  So we'll just skip them
@@ -86,6 +82,10 @@ AT_CHECK([case $host in #(
   *-linux*) ;; #(
   *) exit 77
 esac])
+dnl We have to use squish-pty to make PSPP think that we're running
+dnl interactively.  First make sure that squish-pty works at all.
+SQUISH_PTY="$PYTHON3 $top_srcdir/tests/ui/terminal/squish-pty.py"
+AT_CHECK([$SQUISH_PTY true </dev/null >/dev/null 2>/dev/null || exit 77])
 dnl Then do the real test.  The crucial thing to notice here is
 dnl that the SHOW output must appear before the prompt for FINISH.
 AT_CHECK([echo 'SHOW N.
