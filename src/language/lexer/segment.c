@@ -803,6 +803,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
             return -1;
           else if (lex_id_match (ss_cstr ("DATA"), ss_cstr (id)))
             {
+              int eol = -1;
               /* We've found BEGIN DATA.  Check whether that's the entire
                  command (either followed by a new-line or by '.' then a
                  new-line). */
@@ -819,7 +820,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
                     return -1;
                 }
 
-              int eol = is_end_of_line (input, n, eof, ofs2);
+              eol = is_end_of_line (input, n, eof, ofs2);
               if (eol < 0)
                 return -1;
               else if (eol)
@@ -996,19 +997,20 @@ segmenter_parse_mid_command__ (struct segmenter *s,
         }
       else if (c_isdigit (input[1]))
         return segmenter_parse_number__ (s, input, n, eof, type, 0);
+      {
+        int eol = at_end_of_line (input, n, eof, 1);
+        if (eol < 0)
+          return -1;
 
-      int eol = at_end_of_line (input, n, eof, 1);
-      if (eol < 0)
-        return -1;
-
-      if (eol)
-        {
-          *type = SEG_END_COMMAND;
-          s->substate = SS_START_OF_COMMAND;
-        }
-      else
-        *type = SEG_PUNCT;
-      return 1;
+        if (eol)
+          {
+            *type = SEG_END_COMMAND;
+            s->substate = SS_START_OF_COMMAND;
+          }
+        else
+          *type = SEG_PUNCT;
+        return 1;
+      }
 
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
@@ -1252,13 +1254,15 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
          then it ends the previous command.  The difference only matters for
          deciding whether the line is part of the previous command in
          command_segmenter. */
-      int eol = at_end_of_line (input, n, eof, 1);
-      if (eol < 0)
-        return -1;
+      {
+        int eol = at_end_of_line (input, n, eof, 1);
+        if (eol < 0)
+          return -1;
 
-      *type = eol ? SEG_END_COMMAND : SEG_START_COMMAND;
-      s->substate = SS_START_OF_COMMAND;
-      return 1;
+        *type = eol ? SEG_END_COMMAND : SEG_START_COMMAND;
+        s->substate = SS_START_OF_COMMAND;
+        return 1;
+      }
 
     default:
       if (lex_uc_is_space (uc))
