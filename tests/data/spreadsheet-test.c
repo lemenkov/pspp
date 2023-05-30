@@ -76,9 +76,9 @@ main (int argc, char **argv)
         }
     }
 
-  if (argc < optind)
+  if (argc <= optind)
     {
-      fprintf (stderr, "Usage: spreadsheet-test [-s n] file\n");
+      fprintf (stderr, "Usage: spreadsheet-test [-s n] [--refcheck] [--reverse] [--metadata] file\n");
       exit (EXIT_FAILURE);
     }
 
