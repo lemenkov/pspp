@@ -50,11 +50,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* Setting this to false can help with debugging and development.
-   Don't forget to set it back to true, or users will complain that
-   all but the smallest spreadsheets display VERY slowly.  */
-static const bool use_cache = true;
-
 static void ods_file_casereader_destroy (struct casereader *, void *);
 static struct ccase *ods_file_casereader_read (struct casereader *, void *);
 
@@ -73,7 +68,6 @@ enum reader_state
     STATE_TABLE,           /* Found the sheet that we actually want */
     STATE_ROW,             /* Found the start of the cell array */
     STATE_CELL,            /* Found a cell */
-    STATE_CELL_CONTENT     /* Found a the text within a cell */
   };
 
 struct state_data
@@ -297,114 +291,72 @@ ods_get_sheet_n_columns (struct spreadsheet *s, int n)
   return r->spreadsheet.sheets[n].last_col + 1;
 }
 
-static char *
-ods_get_sheet_cell (struct spreadsheet *s, int n, int row, int column)
+static unsigned int
+cell_hash (int n, int row, int column)
 {
-  struct ods_reader *r = (struct ods_reader *) s;
+  return hash_int (column, hash_int (row, hash_int (n, 0)));
+}
+
+static struct cache_datum *
+cache_lookup (struct ods_reader *r, int n, int row, int column)
+{
+  unsigned int hash = cell_hash (n, row, column);
+
+  struct cache_datum *d;
+  HMAP_FOR_EACH_WITH_HASH (d, struct cache_datum, node, hash, &r->cache)
+    if (d->row == row && d->col == column && d->sheet == n)
+      return d;
+  return NULL;
+}
+
+static void
+populate_cache (struct ods_reader *r)
+{
   struct state_data sd;
-
-  /* See if this cell is in the cache.  If it is, then use it.  */
-  if (use_cache)
-  {
-    struct cache_datum *lookup = NULL;
-    unsigned int hash = hash_int (n, 0);
-    hash = hash_int (row, hash);
-    hash = hash_int (column, hash);
-
-    HMAP_FOR_EACH_WITH_HASH (lookup, struct cache_datum, node, hash,
-                             &r->cache)
-      {
-        if (lookup->row == row && lookup->col == column
-            && lookup->sheet == n)
-          {
-            break;
-          }
-      }
-    if (lookup)
-      {
-        return lookup->value ? strdup (lookup->value) : NULL;
-      }
-  }
 
   state_data_init (r, &sd);
 
-  char *cell_content = NULL;
-
-  int prev_col = 0;
-  int prev_row = 0;
   while (process_node (r, &sd))
     {
-      if (sd.row > prev_row)
-	prev_col = 0;
+      if (sd.state == STATE_CELL)
+        {
+          /* When cell contents are encountered, copy and save it, discarding
+             any older content.  */
+          char *cell_content = CHAR_CAST (char *, xmlNodeGetContent (
+                                            xmlTextReaderExpand (sd.xtr)));
 
-      if (sd.state == STATE_CELL_CONTENT
-          && sd.current_sheet == n
-          && sd.node_type == XML_READER_TYPE_TEXT)
-        {
-          /*  When cell contents are encountered, copy and save it, discarding
-              any older content.  */
-          free (cell_content);
-          cell_content = CHAR_CAST (char *, xmlTextReaderValue (sd.xtr));
-        }
-      if (sd.state == STATE_ROW
-               && sd.current_sheet == n
-               && sd.node_type == XML_READER_TYPE_ELEMENT)
-        {
-          /* At the start of a row, free the cell contents and set it to NULL.  */
-          free (cell_content);
-          cell_content = NULL;
-        }
-      if (sd.state == STATE_ROW
-          && sd.current_sheet == n
-          &&
-               (sd.node_type == XML_READER_TYPE_END_ELEMENT
-                ||
-                xmlTextReaderIsEmptyElement (sd.xtr)))
-        {
-          if (use_cache)
+          for (int c = sd.col - sd.col_span; c < sd.col; ++c)
             {
-	      for (int c = prev_col; c < sd.col; ++c)
-		{
-		  /* See if this cell has already been cached ... */
-		  unsigned int hash = hash_int (sd.current_sheet, 0);
-		  hash = hash_int (sd.row - 1, hash);
-		  hash = hash_int (c, hash);
-		  struct cache_datum *probe = NULL;
-		  struct cache_datum *next;
-		  HMAP_FOR_EACH_WITH_HASH_SAFE (probe, next, struct cache_datum, node, hash,
-						&r->cache)
-		    {
-		      if (probe->row == sd.row - 1 && probe->col == c
-			  && probe->sheet == sd.current_sheet)
-			break;
-		      probe = NULL;
-		    }
-		  /* If not, then cache it.  */
-		  if (!probe)
-		    {
-		      struct cache_datum *cell_data = XMALLOC (struct cache_datum);
-		      cell_data->row = sd.row - 1;
-		      cell_data->col = c;
-		      cell_data->sheet = sd.current_sheet;
-		      cell_data->value = cell_content ? strdup (cell_content) : NULL;
+              if (cache_lookup (r, sd.current_sheet, sd.row, c))
+                continue;
 
-		      hmap_insert (&r->cache, &cell_data->node, hash);
-		    }
-		}
+              struct cache_datum *cell_data = xmalloc (sizeof *cell_data);
+              *cell_data = (struct cache_datum) {
+                .row = sd.row - 1,
+                .col = c,
+                .sheet = sd.current_sheet,
+                .value = xstrdup_if_nonnull (cell_content),
+              };
+              hmap_insert (&r->cache, &cell_data->node,
+                           cell_hash (sd.current_sheet, sd.row - 1, c));
             }
-
-          if (sd.row == row + 1 && sd.col >= column + 1)
-	    {
-	      break;
-	    }
-
-	  prev_col = sd.col;
-	  prev_row = sd.row;
+          free (cell_content);
         }
     }
 
   state_data_destroy (&sd);
-  return cell_content;
+}
+
+static char *
+ods_get_sheet_cell (struct spreadsheet *s, int n, int row, int column)
+{
+  struct ods_reader *r = (struct ods_reader *) s;
+
+  if (hmap_is_empty (&r->cache))
+    populate_cache (r);
+
+  const struct cache_datum *datum = cache_lookup (r, n, row, column);
+  return datum ? xstrdup_if_nonnull (datum->value) : NULL;
 }
 
 static void
@@ -436,7 +388,10 @@ ods_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
 static bool
 process_node (struct ods_reader *or, struct state_data *r)
 {
-  if (xmlTextReaderRead (r->xtr) != 1)
+  int ret = (r->state == STATE_CELL
+             ? xmlTextReaderNext (r->xtr)
+             : xmlTextReaderRead (r->xtr));
+  if (ret != 1)
     return false;
 
   xmlChar *name = xmlTextReaderName (r->xtr);
@@ -515,6 +470,10 @@ process_node (struct ods_reader *or, struct state_data *r)
 	  r->state = STATE_SPREADSHEET;
 	}
       break;
+
+    case STATE_CELL:
+      r->state = STATE_ROW;
+      /* Fall through. */
     case STATE_ROW:
       if ((0 == xmlStrcasecmp (name, _xml ("table:table-cell")))
 	   &&
@@ -526,58 +485,38 @@ process_node (struct ods_reader *or, struct state_data *r)
 
 	  r->col_span = value ? _xmlchar_to_int (value) : 1;
 	  r->col += r->col_span;
+	  xmlFree (value);
 
 	  if (! xmlTextReaderIsEmptyElement (r->xtr))
-	    r->state = STATE_CELL;
+            {
+              assert (r->current_sheet >= 0);
+              assert (r->current_sheet < or->n_allocated_sheets);
 
-	  xmlFree (value);
-	}
+              if (or->spreadsheet.sheets[r->current_sheet].first_row == -1)
+                or->spreadsheet.sheets[r->current_sheet].first_row = r->row - 1;
+
+              if (
+                (or->spreadsheet.sheets[r->current_sheet].first_col == -1)
+                ||
+                (or->spreadsheet.sheets[r->current_sheet].first_col >= r->col - 1)
+                  )
+                or->spreadsheet.sheets[r->current_sheet].first_col = r->col - 1;
+
+              if (or->spreadsheet.sheets[r->current_sheet].last_row < r->row - 1)
+                or->spreadsheet.sheets[r->current_sheet].last_row = r->row - 1;
+
+              if (or->spreadsheet.sheets[r->current_sheet].last_col < r->col - 1)
+                or->spreadsheet.sheets[r->current_sheet].last_col = r->col - 1;
+
+              r->state = STATE_CELL;
+            }
+        }
       else if ((0 == xmlStrcasecmp (name, _xml ("table:table-row")))
 		&&
 		(XML_READER_TYPE_END_ELEMENT  == r->node_type))
 	{
 	  r->state = STATE_TABLE;
 	}
-      break;
-    case STATE_CELL:
-      if ((0 == xmlStrcasecmp (name, _xml("text:p")))
-	    &&
-	   (XML_READER_TYPE_ELEMENT  == r->node_type))
-	{
-	  if (! xmlTextReaderIsEmptyElement (r->xtr))
-	    r->state = STATE_CELL_CONTENT;
-	}
-      else if
-	((0 == xmlStrcasecmp (name, _xml("table:table-cell")))
-	  &&
-	  (XML_READER_TYPE_END_ELEMENT  == r->node_type)
-	)
-	{
-	  r->state = STATE_ROW;
-	}
-      break;
-    case STATE_CELL_CONTENT:
-      assert (r->current_sheet >= 0);
-      assert (r->current_sheet < or->n_allocated_sheets);
-
-      if (or->spreadsheet.sheets[r->current_sheet].first_row == -1)
-	or->spreadsheet.sheets[r->current_sheet].first_row = r->row - 1;
-
-      if (
-	  (or->spreadsheet.sheets[r->current_sheet].first_col == -1)
-	  ||
-	  (or->spreadsheet.sheets[r->current_sheet].first_col >= r->col - 1)
-	)
-	or->spreadsheet.sheets[r->current_sheet].first_col = r->col - 1;
-
-      if (or->spreadsheet.sheets[r->current_sheet].last_row < r->row - 1)
-	or->spreadsheet.sheets[r->current_sheet].last_row = r->row - 1;
-
-      if (or->spreadsheet.sheets[r->current_sheet].last_col < r->col - 1)
-	or->spreadsheet.sheets[r->current_sheet].last_col = r->col - 1;
-
-      if (XML_READER_TYPE_END_ELEMENT  == r->node_type)
-	r->state = STATE_CELL;
       break;
     default:
       NOT_REACHED ();
@@ -823,11 +762,10 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 	  if (r->spreadsheet.stop_col != -1 && idx > r->spreadsheet.stop_col - r->spreadsheet.start_col)
 	    continue;
 
-	  if (r->rsd.state == STATE_CELL_CONTENT
-	      &&
-	      XML_READER_TYPE_TEXT  == r->rsd.node_type)
+	  if (r->rsd.state == STATE_CELL)
 	    {
-	      xmlChar *value = xmlTextReaderValue (r->rsd.xtr);
+              char *value = CHAR_CAST (char *, xmlNodeGetContent (
+                                         xmlTextReaderExpand (r->rsd.xtr)));
 	      if (idx >= n_var_specs)
 		{
 		  var_spec = xrealloc (var_spec, sizeof (*var_spec) * (idx + 1));
@@ -843,8 +781,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 		  var_spec[idx - i].firstval.text = 0;
 		  var_spec[idx - i].firstval.value = 0;
 		  var_spec[idx - i].firstval.type = 0;
-		  var_spec[idx - i].name =
-		    strdup (CHAR_CAST (const char *, value));
+		  var_spec[idx - i].name = xstrdup (value);
 		}
 
 	      xmlFree (value);
@@ -878,8 +815,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 	  val_string = xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("office:value"));
 	}
 
-      if (r->rsd.state == STATE_CELL_CONTENT &&
-	   XML_READER_TYPE_TEXT  == r->rsd.node_type)
+      if (r->rsd.state == STATE_CELL)
 	{
 	  if (idx >= n_var_specs)
 	    {
@@ -895,7 +831,8 @@ ods_make_reader (struct spreadsheet *spreadsheet,
           for (int x = 0; x < r->rsd.col_span; ++x)
           {
             var_spec [idx - x].firstval.type = xmlStrdup (type);
-            var_spec [idx - x].firstval.text = xmlTextReaderValue (r->rsd.xtr);
+            var_spec [idx - x].firstval.text
+              = xmlNodeGetContent (xmlTextReaderExpand (r->rsd.xtr));
             var_spec [idx - x].firstval.value = xmlStrdup (val_string);
           }
 
@@ -1032,12 +969,11 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	  val_string = xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("office:value"));
 	}
 
-      if (r->rsd.state == STATE_CELL_CONTENT &&
-	   r->rsd.node_type == XML_READER_TYPE_TEXT)
+      if (r->rsd.state == STATE_CELL)
 	{
 	  int col;
 	  struct xml_value *xmv = XZALLOC (struct xml_value);
-	  xmv->text = xmlTextReaderValue (r->rsd.xtr);
+	  xmv->text = xmlNodeGetContent (xmlTextReaderExpand (r->rsd.xtr));
 	  xmv->value = val_string;
 	  val_string = NULL;
 	  xmv->type = type;
@@ -1146,7 +1082,7 @@ ods_probe (const char *filename, bool report_errors)
     .n_sheets = -1,
     .spreadsheet = {
       .ref_cnt = 1,
-      .file_name = strdup (filename),
+      .file_name = xstrdup (filename),
     },
   };
 
