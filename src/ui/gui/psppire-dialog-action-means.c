@@ -21,7 +21,8 @@
 
 #include "psppire-means-layer.h"
 
-#include "psppire-var-view.h"
+#include "psppire-dictview.h"
+#include "psppire-selector.h"
 #include "psppire-dict.h"
 #include "psppire-dialog.h"
 #include "builder-wrapper.h"
@@ -87,6 +88,22 @@ dialog_refresh (PsppireDialogAction *da)
   psppire_means_layer_clear (PSPPIRE_MEANS_LAYER (pdm->layer));
 }
 
+/* Return FALSE iff any variables selected in SRC are string variables.  TRUE otherwise. */
+static gboolean numeric_variable (GtkWidget *src, GtkWidget *dest)
+{
+  struct variable **vars;
+  size_t n_vars;
+  psppire_dict_view_get_selected_variables (PSPPIRE_DICT_VIEW (src), &vars, &n_vars);
+
+  for (int i = 0; i < n_vars; i++)
+    {
+      if (! var_is_numeric (vars[i]))
+        return FALSE;
+    }
+
+  return TRUE;
+}
+
 static GtkBuilder *
 psppire_dialog_action_means_activate (PsppireDialogAction *a, GVariant *param)
 {
@@ -101,14 +118,13 @@ psppire_dialog_action_means_activate (PsppireDialogAction *a, GVariant *param)
   gtk_widget_show (act->layer);
 
   GtkWidget *selector = get_widget_assert (xml, "layer-selector");
+  GtkWidget *dep_selector = get_widget_assert (xml, "stat-var-selector");
 
   pda->dialog = get_widget_assert (xml, "means-dialog");
   pda->source = get_widget_assert (xml, "all-variables");
   act->variables = get_widget_assert (xml, "stat-variables");
 
-  g_object_set (pda->source,
-		"predicate", var_is_numeric,
-		NULL);
+  psppire_selector_set_allow (PSPPIRE_SELECTOR (dep_selector),  numeric_variable);
 
   g_object_set (selector,
 		"dest-widget", act->layer,
