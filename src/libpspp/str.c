@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <unistr.h>
 
+#include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
@@ -262,10 +263,14 @@ str_lowercase (char *s)
    which has room for SIZE bytes.  Uses uppercase if UPPERCASE is
    true, otherwise lowercase, Returns true if successful, false
    if NUMBER, plus a trailing null, is too large to fit in the
-   available space.
+   available space.  If SIZE is at least F26ADIC_STRLEN_MAX + 1,
+   the number is guaranteed to fit.  Even if the number doesn't
+   fit, if SIZE > 0, the characters that do fit, if any, will be
+   null-terminated.
 
    26-adic notation is "spreadsheet column numbering": 1 = A, 2 =
-   B, 3 = C, ... 26 = Z, 27 = AA, 28 = AB, 29 = AC, ...
+   B, 3 = C, ... 26 = Z, 27 = AA, 28 = AB, 29 = AC, ...  Zero is
+   the empty string.
 
    26-adic notation is the special case of a k-adic numeration
    system (aka bijective base-k numeration) with k=26.  In k-adic
@@ -274,8 +279,8 @@ str_lowercase (char *s)
    For more information, see
    http://en.wikipedia.org/wiki/Bijective_numeration. */
 bool
-str_format_26adic (unsigned long int number, bool uppercase,
-                   char buffer[], size_t size)
+str_format_26adic__ (unsigned long int number, bool uppercase,
+                     char buffer[], size_t size)
 {
   const char *alphabet
     = uppercase ? "ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "abcdefghijklmnopqrstuvwxyz";
@@ -300,6 +305,50 @@ overflow:
   if (length > 0)
     buffer[0] = '\0';
   return false;
+}
+
+/* Like str_format_26adic__(), but SIZE must be big enough that it cannot
+   fail. */
+void
+str_format_26adic (unsigned long int number, bool uppercase,
+                   char buffer[], size_t size)
+{
+  assert (size >= F26ADIC_STRLEN_MAX + 1);
+  if (!str_format_26adic__ (number, uppercase, buffer, size))
+    NOT_REACHED ();
+}
+
+/* Returns the value of 26-adic string STR.  See str_format_26adic() for a
+   definition of 26-adic.
+
+   On error, this function returns -1. */
+int
+str_parse_26adic (const char *str)
+{
+  enum { RADIX = 26 };
+
+  int multiplier = 1;
+  int result = 0;
+
+  size_t len = strlen (str);
+  for (size_t i = 0; i < len; i++)
+    {
+      if (result >= INT_MAX / RADIX)
+        return -1;
+
+      char c = str[len - i - 1];
+      int digit = (c >= 'A' && c <= 'Z' ? c - 'A'
+                   : c >= 'a' && c <= 'z' ? c - 'a'
+                   : -1);
+      if (digit < 0)
+	return -1;
+      assert (digit >= 0 && digit < RADIX);
+
+      result += (digit + (i > 0)) * multiplier;
+      multiplier *= RADIX;
+    }
+
+  return result;
 }
 
 /* Copies IN to buffer OUT with size OUT_SIZE, appending a null terminator.  If

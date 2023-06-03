@@ -18,16 +18,17 @@
 
 #include "spreadsheet-reader.h"
 
-#include <libpspp/assertion.h>
-#include "gnumeric-reader.h"
-#include "ods-reader.h"
-
-#include <libpspp/str.h>
 #include <stdio.h>
 #include <string.h>
-#include <gl/xalloc.h>
-#include <gl/c-xvasprintf.h>
 #include <stdlib.h>
+
+#include "data/gnumeric-reader.h"
+#include "data/ods-reader.h"
+#include "libpspp/assertion.h"
+#include "libpspp/str.h"
+
+#include "gl/xalloc.h"
+#include "gl/c-xvasprintf.h"
 
 struct spreadsheet *
 spreadsheet_ref (struct spreadsheet *s)
@@ -89,115 +90,18 @@ spreadsheet_get_cell (struct spreadsheet *s, int n, int row, int column)
 }
 
 
-#define RADIX 26
-
-static void
-reverse (char *s, int len)
-{
-  int i;
-  for (i = 0; i < len / 2; ++i)
-    {
-      char tmp = s[len - i - 1];
-      s[len - i -1] = s[i];
-      s[i] = tmp;
-    }
-}
-
-
-/* Convert a string, which is an integer encoded in base26
-   IE, A=0, B=1, ... Z=25 to the integer it represents.
-   ... except that in this scheme, digits with an exponent
-   greater than 1 are implicitly incremented by 1, so
-   AA  = 0 + 1*26, AB = 1 + 1*26,
-   ABC = 2 + 2*26 + 1*26^2 ....
-   On error, this function returns -1
-*/
-int
-ps26_to_int (const char *str)
-{
-  int i;
-  int multiplier = 1;
-  int result = 0;
-  int len = strlen (str);
-
-  for (i = len - 1 ; i >= 0; --i)
-    {
-      char c = str[i];
-      if (c < 'A' || c > 'Z')
-	return -1;
-      int mantissa = (c - 'A');
-
-      assert (mantissa >= 0);
-      assert (mantissa < RADIX);
-
-      if (i != len - 1)
-	mantissa++;
-
-      result += mantissa * multiplier;
-      multiplier *= RADIX;
-    }
-
-  return result;
-}
-
-/* Convert an integer, which must be non-negative,
-   to pseudo base 26.
-   The caller must free the return value when no longer required.  */
-char *
-int_to_ps26 (int i)
-{
-  char *ret = NULL;
-
-  int lower = 0;
-  long long int base = RADIX;
-  int exp = 1;
-
-  if (i < 0)
-    return NULL;
-
-  while (i > lower + base - 1)
-    {
-      lower += base;
-      base *= RADIX;
-      assert (base > 0);
-      exp++;
-    }
-
-  i -= lower;
-  i += base;
-
-  ret = xmalloc (exp + 1);
-
-  exp = 0;
-  do
-    {
-      ret[exp++] = (i % RADIX) + 'A';
-      i /= RADIX;
-    }
-  while (i > 1);
-
-  ret[exp]='\0';
-
-  reverse (ret, exp);
-  return ret;
-}
-
-
 char *
 create_cell_ref (int col0, int row0)
 {
-  char *cs0 ;
-  char *s ;
+  if (col0 < 0 || row0 < 0)
+    return NULL;
 
-  if (col0 < 0) return NULL;
-  if (row0 < 0) return NULL;
+  char s[F26ADIC_STRLEN_MAX + INT_STRLEN_BOUND (row0) + 1];
+  str_format_26adic (col0 + 1, true, s, sizeof s);
+  size_t len = strlen (s);
+  snprintf (s + len, sizeof s - len, "%d", row0 + 1);
 
-  cs0 = int_to_ps26 (col0);
-  s =  c_xasprintf ("%s%d", cs0, row0 + 1);
-
-  free (cs0);
-
-  return s;
+  return xstrdup (s);
 }
 
 char *
@@ -236,10 +140,8 @@ convert_cell_ref (const char *ref,
   if (n != 4)
     return false;
 
-  str_uppercase (startcol);
-  *col0 = ps26_to_int (startcol);
-  str_uppercase (stopcol);
-  *coli = ps26_to_int (stopcol);
+  *col0 = str_parse_26adic (startcol);
+  *coli = str_parse_26adic (stopcol);
   *row0 = startrow - 1;
   *rowi = stoprow - 1 ;
 

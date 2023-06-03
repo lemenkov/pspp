@@ -18,6 +18,7 @@
 #define str_h 1
 
 #include <assert.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,6 +31,7 @@
 #include "xstrndup.h"
 #include "xvasprintf.h"
 
+#include "gl/verify.h"
 #include "gl/xalloc.h"
 
 /* Miscellaneous. */
@@ -51,8 +53,15 @@ void str_copy_buf_trunc (char *, size_t, const char *, size_t);
 void str_uppercase (char *);
 void str_lowercase (char *);
 
-bool str_format_26adic (unsigned long int number, bool uppercase,
-                        char buffer[], size_t);
+/* Maximum number of digits needed to express ULONG_MAX in 26-adic notation. */
+#define F26ADIC_STRLEN_MAX 14
+verify (ULONG_MAX <= UINT64_MAX);
+
+bool str_format_26adic__ (unsigned long int number, bool uppercase,
+                          char buffer[], size_t);
+void str_format_26adic  (unsigned long int number, bool uppercase,
+                         char buffer[], size_t);
+int str_parse_26adic (const char *str);
 
 void str_ellipsize (struct substring in, char *out, size_t out_size);
 

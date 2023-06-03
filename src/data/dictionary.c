@@ -1168,13 +1168,11 @@ make_hinted_name (const struct dictionary *dict, const char *hint)
       for (i = 0; i < ULONG_MAX; i++)
         {
           char suffix[INT_BUFSIZE_BOUND (i) + 1];
-          char *name;
 
           suffix[0] = '_';
-          if (!str_format_26adic (i + 1, true, &suffix[1], sizeof suffix - 1))
-            NOT_REACHED ();
+          str_format_26adic (i + 1, true, &suffix[1], sizeof suffix - 1);
 
-          name = utf8_encoding_concat (root, suffix, dict->encoding, 64);
+          char *name = utf8_encoding_concat (root, suffix, dict->encoding, 64);
           if (var_name_is_insertable (dict, name))
             {
               free (root);

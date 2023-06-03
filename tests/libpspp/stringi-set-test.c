@@ -79,8 +79,9 @@ make_string (int value)
   s = &string_table[value];
   if (*s == NULL)
     {
-      *s = xmalloc (16);
-      str_format_26adic (value + 1, true, *s, 16);
+      size_t size = F26ADIC_STRLEN_MAX + 1;
+      *s = xmalloc (size);
+      str_format_26adic (value + 1, true, *s, size);
     }
   return *s;
 }

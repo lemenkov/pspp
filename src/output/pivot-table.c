@@ -1547,7 +1547,7 @@ pivot_footnote_format_marker (const struct pivot_footnote *f,
     ds_put_format (s, "%zu", f->idx + 1);
   else
     {
-      char text[INT_BUFSIZE_BOUND (size_t)];
+      char text[F26ADIC_STRLEN_MAX + 1];
       str_format_26adic (f->idx + 1, false, text, sizeof text);
       ds_put_cstr (s, text);
     }

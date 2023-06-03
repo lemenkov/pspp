@@ -32,7 +32,7 @@ check_die (void)
 static void
 check_26adic (unsigned long int number, const char *expected_string)
 {
-  char string[8];
+  char string[F26ADIC_STRLEN_MAX + 1];
   str_format_26adic (number, true, string, sizeof string);
   if (strcmp (string, expected_string))
     {

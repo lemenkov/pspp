@@ -21,6 +21,7 @@
 #include "psppire-import-spreadsheet.h"
 #include "builder-wrapper.h"
 
+#include "libpspp/assertion.h"
 #include "libpspp/misc.h"
 #include "psppire-spreadsheet-model.h"
 #include "psppire-spreadsheet-data-model.h"
@@ -33,9 +34,9 @@
 static void
 set_column_header_label (GtkWidget *button, int i, gpointer user_data)
 {
-  gchar *x = int_to_ps26 (i);
+  char x[F26ADIC_STRLEN_MAX + 1];
+  str_format_26adic (i + 1, true, x, sizeof x);
   gtk_button_set_label (GTK_BUTTON (button), x);
-  g_free (x);
 }
 
 static void do_selection_update (PsppireImportAssistant *ia);
@@ -146,19 +147,19 @@ static gboolean
 column_output (GtkSpinButton *sb, gpointer unused)
 {
   gint value = gtk_spin_button_get_value_as_int (sb);
-  char *text = int_to_ps26 (value);
-  if (text == NULL)
+  if (value < 0)
     return FALSE;
 
+  char text[F26ADIC_STRLEN_MAX + 1];
+  str_format_26adic (value + 1, true, text, sizeof text);
   gtk_entry_set_text (GTK_ENTRY (sb), text);
-  free (text);
 
   return TRUE;
 }
 
 /* Interprets the SBs text as 1 based instead of zero based.  */
 static gint
-row_input (GtkSpinButton *sb, gpointer new_value, gpointer unused)
+row_input (GtkSpinButton *sb, gdouble *new_value, gpointer unused)
 {
   const char *text = gtk_entry_get_text (GTK_ENTRY (sb));
   gdouble value = g_strtod (text, NULL) - 1;
@@ -166,7 +167,7 @@ row_input (GtkSpinButton *sb, gpointer new_value, gpointer unused)
   if (value < 0)
     return FALSE;
 
-  memcpy (new_value, &value, sizeof (value));
+  *new_value = value;
 
   return TRUE;
 }
@@ -175,15 +176,15 @@ row_input (GtkSpinButton *sb, gpointer new_value, gpointer unused)
 /* Interprets the SBs text of the form A, B, C etc and
    sets NEW_VALUE as a double.  */
 static gint
-column_input (GtkSpinButton *sb, gpointer new_value, gpointer unused)
+column_input (GtkSpinButton *sb, gdouble *new_value, gpointer unused)
 {
   const char *text = gtk_entry_get_text (GTK_ENTRY (sb));
-  double value = ps26_to_int (text);
+  double value = str_parse_26adic (text);
 
   if (value < 0)
     return FALSE;
 
-  memcpy (new_value, &value, sizeof (value));
+  *new_value = value;
 
   return TRUE;
 }

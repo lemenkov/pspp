@@ -62,7 +62,7 @@ assign_short_name (struct variable *v, size_t i,
       else
         {
           suffix[0] = '_';
-          str_format_26adic (trial, true, &suffix[1], sizeof suffix - 1);
+          str_format_26adic__ (trial, true, &suffix[1], sizeof suffix - 1);
         }
 
       /* Set name. */
