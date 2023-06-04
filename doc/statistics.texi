@@ -284,7 +284,7 @@ The @subcmd{ORDER} subcommand is accepted but ignored.
 
 @ref{frequencies:ex} runs a frequency analysis on the @exvar{sex}
 and @exvar{occupation} variables from the @file{personnel.sav} file.
-This is useful to get an general idea of the way in which these nominal
+This is useful to get a general idea of the way in which these nominal
 variables are distributed.
 
 @float Example, frequencies:ex
@@ -2786,10 +2786,10 @@ values.
 If more than two distinct, non-missing values for a variable
 under test are encountered then an error occurs.
 
-If the test proportion is equal to 0.5, then a two tailed test is
-reported.   For any other test proportion, a one tailed test is
+If the test proportion is equal to 0.5, then a two-tailed test is
+reported.   For any other test proportion, a one-tailed test is
 reported.
-For one tailed tests, if the test proportion is less than
+For one-tailed tests, if the test proportion is less than
 or equal to the observed proportion, then the significance of
 observing the observed proportion or more is reported.
 If the test proportion is more than the observed proportion, then the
@@ -2923,7 +2923,7 @@ unity indicates complete agreement.
      [ /KOLMOGOROV-SMIRNOV (@{NORMAL [@var{mu}, @var{sigma}], UNIFORM [@var{min}, @var{max}], POISSON [@var{lambda}], EXPONENTIAL [@var{scale}] @}) = @var{var_list} ]
 @end display
 
-The one sample Kolmogorov-Smirnov subcommand is used to test whether or not a dataset is
+The one-sample Kolmogorov-Smirnov subcommand is used to test whether or not a dataset is
 drawn from a particular distribution.  Four distributions are supported, @i{viz:}
 Normal, Uniform, Poisson and Exponential.
 
@@ -3209,7 +3209,7 @@ which you wish to test.
 In this mode, you must also use the @subcmd{/VARIABLES} subcommand to
 tell @pspp{} which variables you wish to test.
 
-@subsubsection Example - One Sample T-test
+@subsubsection Example - One-Sample T-test
 
 A researcher wishes to know whether the weight of persons in a population
 is different from the national average.
@@ -3228,12 +3228,12 @@ using the @cmd{SELECT} command.
 
 @float Example, one-sample-t:ex
 @psppsyntax {one-sample-t.sps}
-@caption {Running a one sample T-Test after excluding all non-positive values}
+@caption {Running a one-sample T-Test after excluding all non-positive values}
 @end float
 
 @float Screenshot, one-sample-t:scr
 @psppimage {one-sample-t}
-@caption {Using the One Sample T-Test dialog box to test @exvar{weight} for a mean of 76.8kg}
+@caption {Using the One-Sample T-Test dialog box to test @exvar{weight} for a mean of 76.8kg}
 @end float
 
 
@@ -3245,7 +3245,7 @@ from 76.8kg.
 
 @float Results, one-sample-t:res
 @psppoutput {one-sample-t}
-@caption {The results of a one sample T-test of @exvar{weight} using a test value of 76.8kg}
+@caption {The results of a one-sample T-test of @exvar{weight} using a test value of 76.8kg}
 @end float
 
 @node Independent Samples Mode

@@ -394,7 +394,7 @@ abt_changed (struct abt *abt, struct abt_node *p)
 }
 
 /* ABT nodes may be moved around in memory as necessary, e.g. as
-   the result of an realloc operation on a block that contains a
+   the result of a realloc operation on a block that contains a
    node.  Once this is done, call this function passing node P
    that was moved and its ABT before attempting any other
    operation on ABT.

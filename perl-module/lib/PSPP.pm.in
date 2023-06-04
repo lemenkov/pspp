@@ -505,7 +505,7 @@ must be in UTF-8 encoding.
 
 =head3 get_case_cnt ()
 
-Returns the number of cases in a open system file.  Some files
+Returns the number of cases in an open system file.  Some files
 do not store the number of cases.  In these instances undef
 will be returned.  Therefore, then programmer must check that the
 returned value is not undef before using it.

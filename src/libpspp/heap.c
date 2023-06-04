@@ -109,7 +109,7 @@ heap_count (const struct heap *h)
 }
 
 /* Heap nodes may be moved around in memory as necessary, e.g. as
-   the result of an realloc operation on a block that contains a
+   the result of a realloc operation on a block that contains a
    heap node.  Once this is done, call this function passing the
    NODE that was moved and its heap H before attempting any other
    operation on H. */

@@ -244,7 +244,7 @@ struct ll *ll_find_partition (const struct ll *r0, const struct ll *r1,
              DATA != NULL;                                      \
              DATA = ll_prev__ (DATA, STRUCT, MEMBER, LIST))
 
-/* Continues a iteration of LIST, starting from the object
+/* Continues an iteration of LIST, starting from the object
    currently in DATA and continuing, in forward or reverse order,
    through the remainder of the list, assuming that each `struct
    ll' in LIST is embedded as the given MEMBER name in data type
@@ -281,7 +281,7 @@ struct ll *ll_find_partition (const struct ll *r0, const struct ll *r1,
               : 0);                                                     \
              DATA = PREV)
 
-/* Continues a iteration of LIST, in forward or reverse order,
+/* Continues an iteration of LIST, in forward or reverse order,
    starting from the object currently in DATA and continuing
    forward through the remainder of the list, assuming that each
    `struct ll' in LIST is embedded as the given MEMBER name in

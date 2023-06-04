@@ -205,7 +205,7 @@ frequencies.sps:17: warning: FREQUENCIES: Suppressed 1 additional warning about 
 AT_CLEANUP
 
 # Tests for a bug where pspp would crash if two FREQUENCIES commands
-# existed in a input file.
+# existed in an input file.
 AT_SETUP([FREQUENCIES two runs crash])
 AT_DATA([frequencies.sps],
   [data list free /v1 v2.

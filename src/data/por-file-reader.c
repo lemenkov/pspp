@@ -125,7 +125,7 @@ error (struct pfm_reader *r, const char *msg, ...)
   longjmp (r->bail_out, 1);
 }
 
-/* Displays MSG as an warning for the current position in
+/* Displays MSG as a warning for the current position in
    portable file reader R. */
 static void
 warning (struct pfm_reader *r, const char *msg, ...)

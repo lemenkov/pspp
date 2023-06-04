@@ -14,7 +14,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* This casewindow implementation in terms of an class interface
+/* This casewindow implementation in terms of a class interface
    is undoubtedly a form of over-abstraction.  However, it works
    and the extra abstraction seems to be harmless. */
 

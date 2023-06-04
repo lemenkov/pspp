@@ -231,7 +231,7 @@ is_utf32be_bom (const uint8_t *data, size_t n)
    UTF-8 cannot be distinguished from other ASCII-based encodings until a
    non-ASCII text character is encountered.  If ENCODING specifies
    autodetection and this function returns "ASCII", then the client should
-   process the input until it encounters an non-ASCII character (as returned by
+   process the input until it encounters a non-ASCII character (as returned by
    encoding_guess_is_ascii_text()) and then use encoding_guess_tail_encoding()
    to make a final encoding guess.  See encoding-guesser.h for details.
 

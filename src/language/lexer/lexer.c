@@ -1073,7 +1073,7 @@ lex_force_num_range_closed (struct lexer *lexer, const char *name,
 
   if (min > max)
     {
-      /* Weird, maybe a bug in the caller.  Just report that we needed an
+      /* Weird, maybe a bug in the caller.  Just report that we needed a
          number. */
       if (name)
         lex_error (lexer, _("Syntax error expecting number for %s."), name);
@@ -1166,7 +1166,7 @@ lex_force_num_range_co (struct lexer *lexer, const char *name,
 
   if (min >= max)
     {
-      /* Weird, maybe a bug in the caller.  Just report that we needed an
+      /* Weird, maybe a bug in the caller.  Just report that we needed a
          number. */
       if (name)
         lex_error (lexer, _("Syntax error expecting number for %s."), name);
@@ -1327,7 +1327,7 @@ lex_force_num_range_open (struct lexer *lexer, const char *name,
 
   if (min >= max)
     {
-      /* Weird, maybe a bug in the caller.  Just report that we needed an
+      /* Weird, maybe a bug in the caller.  Just report that we needed a
          number. */
       if (name)
         lex_error (lexer, _("Syntax error expecting number for %s."), name);

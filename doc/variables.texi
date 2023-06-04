@@ -571,7 +571,7 @@ one of the following roles for the variables that follow it:
 An input variable, such as an independent variable.
 
 @item TARGET
-An output variable, such as an dependent variable.
+An output variable, such as a dependent variable.
 
 @item BOTH
 A variable used for input and output.

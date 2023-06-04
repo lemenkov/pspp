@@ -129,7 +129,7 @@ id_is_valid (const char *id, const char *dict_encoding, enum dict_class classes)
   return error_to_bool (id_is_valid__ (id, dict_encoding, classes));
 }
 
-/* Checks whether UTF-8 string ID is an plausible identifier.  Returns NULL if
+/* Checks whether UTF-8 string ID is a plausible identifier.  Returns NULL if
    it is, otherwise an error message that the caller must free().  */
 char * WARN_UNUSED_RESULT
 id_is_plausible__ (const char *id)
@@ -161,7 +161,7 @@ id_is_plausible__ (const char *id)
     {
       char ucname[16];
       return xasprintf (_("Character %s (in `%s') may not appear "
-                          "as the first character in a identifier."),
+                          "as the first character in an identifier."),
                         uc_name (uc, ucname), id);
     }
 
@@ -179,7 +179,7 @@ id_is_plausible__ (const char *id)
   return NULL;
 }
 
-/* Returns true if UTF-8 string ID is an plausible identifier, false
+/* Returns true if UTF-8 string ID is a plausible identifier, false
    otherwise. */
 bool
 id_is_plausible (const char *id)

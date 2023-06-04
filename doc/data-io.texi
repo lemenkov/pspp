@@ -650,7 +650,7 @@ either convention on any kind of system, regardless of ENDS.
 In IMAGE mode, the data file is treated as a series of fixed-length
 binary records.  LRECL should be used to specify the record length in
 bytes, with a default of 1024.  On input, it is an error if an IMAGE
-file's length is not a integer multiple of the record length.  On
+file's length is not an integer multiple of the record length.  On
 output, each record is padded with spaces or truncated, if necessary,
 to make it exactly the correct length.
 

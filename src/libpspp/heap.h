@@ -25,7 +25,7 @@
 
         - Delete any node in the heap: O(lg N).
 
-        - Change value of an node: O(lg N) in general; O(1) in
+        - Change value of a node: O(lg N) in general; O(1) in
           the typically common case where the node does not
           change its position relative to other nodes.
 

@@ -147,7 +147,7 @@ A forward slash (@samp{/}).
 Integer fields take a form identical to floating-point fields, but they
 may not contain a fraction.
 
-String fields take the form of a integer field having value @var{n},
+String fields take the form of an integer field having value @var{n},
 followed by exactly @var{n} characters, which are the string content.
 
 @node Portable File Header

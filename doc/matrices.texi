@@ -1614,7 +1614,7 @@ equivalent to @code{@{A(1,1)*B, A(1,2)*B; A(2,1)*B, A(2,2)*B@}}.
 @end deffn
 
 @deffn {Matrix Function} RANK (@var{M})
-Returns the rank of matrix @var{M}, a integer scalar whose value is
+Returns the rank of matrix @var{M}, an integer scalar whose value is
 the dimension of the vector space spanned by its columns or,
 equivalently, by its rows.
 

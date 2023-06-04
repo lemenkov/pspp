@@ -302,7 +302,7 @@ mv_has_range (const struct missing_values *mv)
 }
 
 /* Removes the numeric range from MV and stores it in *LOW and
-   *HIGH.  MV must contain a individual range (as determined by
+   *HIGH.  MV must contain an individual range (as determined by
    mv_has_range()). */
 void
 mv_pop_range (struct missing_values *mv, double *low, double *high)
@@ -314,7 +314,7 @@ mv_pop_range (struct missing_values *mv, double *low, double *high)
 }
 
 /* Returns the numeric range from MV  into *LOW and
-   *HIGH.  MV must contain a individual range (as determined by
+   *HIGH.  MV must contain an individual range (as determined by
    mv_has_range()). */
 void
 mv_get_range (const struct missing_values *mv, double *low, double *high)

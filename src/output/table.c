@@ -40,7 +40,7 @@
 #define V TABLE_VERT
 
 /* Increases TABLE's reference count, indicating that it has an additional
-   owner.  An table that is shared among multiple owners must not be
+   owner.  A table that is shared among multiple owners must not be
    modified. */
 struct table *
 table_ref (const struct table *table_)

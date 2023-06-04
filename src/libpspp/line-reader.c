@@ -323,7 +323,7 @@ line_reader_eof (const struct line_reader *r)
   return r->eof && !r->length;
 }
 
-/* Returns an nonzero errno value if an error has been encountered reading
+/* Returns a nonzero errno value if an error has been encountered reading
    R, zero otherwise. */
 int
 line_reader_error (const struct line_reader *r)

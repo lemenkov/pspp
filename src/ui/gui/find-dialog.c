@@ -343,7 +343,7 @@ minus1 (casenumber current, struct datasheet *data)
   return -1;
 }
 
-/* An type to facilitate iterating through casenumbers */
+/* A type to facilitate iterating through casenumbers */
 struct casenum_iterator
 {
   /* returns the first case to access */

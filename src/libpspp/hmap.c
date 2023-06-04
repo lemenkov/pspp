@@ -156,7 +156,7 @@ hmap_changed (struct hmap *map, struct hmap_node *node, size_t new_hash)
 }
 
 /* Hash map nodes may be moved around in memory as necessary,
-   e.g. as the result of an realloc operation on a block that
+   e.g. as the result of a realloc operation on a block that
    contains a node.  Once this is done, call this function
    passing NODE that was moved, its former location in memory
    OLD, and its hash map MAP before attempting any other

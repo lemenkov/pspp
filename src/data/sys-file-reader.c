@@ -3190,7 +3190,7 @@ text_get_token (struct text_record *text, struct substring delimiters,
   return ss_data (token);
 }
 
-/* Reads a integer value expressed in decimal, then a space, then a string that
+/* Reads an integer value expressed in decimal, then a space, then a string that
    consists of exactly as many bytes as specified by the integer, then a space,
    from TEXT.  Returns the string, null-terminated, as a subset of TEXT's
    buffer (so the caller should not free the string). */
