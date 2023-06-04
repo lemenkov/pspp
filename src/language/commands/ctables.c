@@ -6516,7 +6516,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
                 goto error;
               lex_match (lexer, T_EQUALS);
 
-              if (!lex_force_num_range_halfopen (lexer, "CILEVEL", 0, 100))
+              if (!lex_force_num_range_co (lexer, "CILEVEL", 0, 100))
                 goto error;
               t->cilevel = lex_number (lexer);
               lex_get (lexer);
@@ -6585,7 +6585,7 @@ cmd_ctables (struct lexer *lexer, struct dataset *ds)
                   else if (lex_match_id (lexer, "ALPHA"))
                     {
                       lex_match (lexer, T_EQUALS);
-                      if (!lex_force_num_range_halfopen (lexer, "ALPHA", 0, 1))
+                      if (!lex_force_num_range_co (lexer, "ALPHA", 0, 1))
                         goto error;
                       t->chisq->alpha = lex_number (lexer);
                       lex_get (lexer);

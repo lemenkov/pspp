@@ -139,8 +139,10 @@ bool lex_force_int_range (struct lexer *, const char *name,
 bool lex_force_num (struct lexer *) WARN_UNUSED_RESULT;
 bool lex_force_num_range_closed (struct lexer *, const char *name,
                                  double min, double max) WARN_UNUSED_RESULT;
-bool lex_force_num_range_halfopen (struct lexer *, const char *name,
-                                   double min, double max) WARN_UNUSED_RESULT;
+bool lex_force_num_range_co (struct lexer *, const char *name,
+                             double min, double max) WARN_UNUSED_RESULT;
+bool lex_force_num_range_oc (struct lexer *, const char *name,
+                             double min, double max) WARN_UNUSED_RESULT;
 bool lex_force_num_range_open (struct lexer *, const char *name,
                                double min, double max) WARN_UNUSED_RESULT;
 bool lex_force_id (struct lexer *) WARN_UNUSED_RESULT;
