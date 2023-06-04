@@ -1167,7 +1167,7 @@ make_hinted_name (const struct dictionary *dict, const char *hint)
 
       for (i = 0; i < ULONG_MAX; i++)
         {
-          char suffix[INT_BUFSIZE_BOUND (i) + 1];
+          char suffix[1 + F26ADIC_STRLEN_MAX + 1];
 
           suffix[0] = '_';
           str_format_26adic (i + 1, true, &suffix[1], sizeof suffix - 1);
