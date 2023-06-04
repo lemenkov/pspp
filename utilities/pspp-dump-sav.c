@@ -1435,7 +1435,7 @@ open_text_record (struct sfm_reader *r, size_t size, size_t count)
 {
   struct text_record *text = xmalloc (sizeof *text);
 
-  if (size_overflow_p (xsum (1, xtimes (size, count))))
+  if (size > 0 && size_overflow_p (xsum (1, xtimes (count, size))))
     sys_error (r, "Extension record too large.");
 
   size_t n_bytes = size * count;
