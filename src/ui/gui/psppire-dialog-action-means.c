@@ -98,8 +98,13 @@ static gboolean numeric_variable (GtkWidget *src, GtkWidget *dest)
   for (int i = 0; i < n_vars; i++)
     {
       if (! var_is_numeric (vars[i]))
-        return FALSE;
+        {
+          free (vars);
+          return FALSE;
+        }
     }
+
+  free (vars);
 
   return TRUE;
 }
