@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011, 2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011, 2015, 2023 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -87,6 +87,8 @@ struct settings
 
   enum settings_value_show show_values;
   enum settings_value_show show_variables;
+
+  char *table_summary;
 };
 
 static struct settings the_settings = {
@@ -129,6 +131,7 @@ static struct settings the_settings = {
   .syntax = ENHANCED,
   .styles = FMT_SETTINGS_INIT,
   .small = .0001,
+  .table_summary = 0,
 
   /* output_routing */
   .output_routing = {
@@ -190,6 +193,7 @@ settings_destroy (struct settings *s)
   if (s != NULL)
     {
       fmt_settings_uninit (&s->styles);
+      free (s->table_summary);
       if (s != &the_settings)
         free (s);
     }
@@ -638,6 +642,26 @@ const struct fmt_settings *
 settings_get_fmt_settings (void)
 {
   return &the_settings.styles;
+}
+
+char *
+settings_get_summary (void)
+{
+  return the_settings.table_summary;
+}
+
+void
+settings_set_summary (const char *s)
+{
+  free (the_settings.table_summary);
+
+  if (s == NULL)
+    {
+      the_settings.table_summary = NULL;
+      return;
+    }
+
+  the_settings.table_summary = xstrdup (s);
 }
 
 double

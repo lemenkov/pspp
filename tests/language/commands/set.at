@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2023 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -202,6 +202,7 @@ SET SCOMPRESSION=**.
 SET SEED=**.
 SET SMALL=**.
 SET SUBTITLE=**.
+SET SUMMARY=**.
 SET TNUMBERS=**.
 SET TVARS=**.
 SET TLOOK='nonexistent.xml'.
@@ -384,34 +385,38 @@ AT_CHECK([pspp -O format=csv set.sps], [1], [dnl
    43 | SET SUBTITLE=**.
       |     ^~~~~~~~"
 
-"set.sps:44.14-44.15: error: SET: Syntax error expecting LABELS, VALUES, or BOTH.
-   44 | SET TNUMBERS=**.
+"set.sps:44.13-44.14: error: SET: Syntax error expecting string.
+   44 | SET SUMMARY=**.
+      |             ^~"
+
+"set.sps:45.14-45.15: error: SET: Syntax error expecting LABELS, VALUES, or BOTH.
+   45 | SET TNUMBERS=**.
       |              ^~"
 
-"set.sps:45.11-45.12: error: SET: Syntax error expecting LABELS, NAMES, or BOTH.
-   45 | SET TVARS=**.
+"set.sps:46.11-46.12: error: SET: Syntax error expecting LABELS, NAMES, or BOTH.
+   46 | SET TVARS=**.
       |           ^~"
 
-set.sps:46: error: SET: nonexistent.xml: not found
+set.sps:47: error: SET: nonexistent.xml: not found
 
-"set.sps:47.15-47.16: error: SET: Syntax error expecting WARN or NOWARN.
-   47 | SET UNDEFINED=**.
+"set.sps:48.15-48.16: error: SET: Syntax error expecting WARN or NOWARN.
+   48 | SET UNDEFINED=**.
       |               ^~"
 
-"set.sps:48.9-48.10: error: SET: Syntax error expecting MSBFIRST, LSBFIRST, VAX, or NATIVE.
-   48 | SET WIB=**.
+"set.sps:49.9-49.10: error: SET: Syntax error expecting MSBFIRST, LSBFIRST, VAX, or NATIVE.
+   49 | SET WIB=**.
       |         ^~"
 
-"set.sps:49.9-49.10: error: SET: Syntax error expecting one of the following: NATIVE, ISL, ISB, IDL, IDB, VF, VD, VG, ZS.
-   49 | SET WRB=**.
+"set.sps:50.9-50.10: error: SET: Syntax error expecting one of the following: NATIVE, ISL, ISB, IDL, IDB, VF, VD, VG, ZS.
+   50 | SET WRB=**.
       |         ^~"
 
-"set.sps:50.11-50.12: error: SET: Syntax error expecting integer 40 or greater for WIDTH.
-   50 | SET WIDTH=**.
+"set.sps:51.11-51.12: error: SET: Syntax error expecting integer 40 or greater for WIDTH.
+   51 | SET WIDTH=**.
       |           ^~"
 
-"set.sps:51.15-51.16: error: SET: Syntax error expecting integer 1024 or greater for WORKSPACE.
-   51 | SET WORKSPACE=**.
+"set.sps:52.15-52.16: error: SET: Syntax error expecting integer 1024 or greater for WORKSPACE.
+   52 | SET WORKSPACE=**.
       |               ^~"
 ])
 AT_CLEANUP

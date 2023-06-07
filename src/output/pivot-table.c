@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2017, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2017, 2018, 2023 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include "gl/xalloc.h"
 #include "gl/xmemdup0.h"
 #include "gl/xsize.h"
+#include "time.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -850,6 +851,96 @@ pivot_table_create (const char *title)
   return pivot_table_create__ (pivot_value_new_text (title), title);
 }
 
+static const char *mtable[12] =
+  {"jan", "feb", "mar", "apr", "may", "jun",
+   "jul", "aug", "sep", "oct", "nov", "dec"};
+
+/* Expand S replacing expressions as necessary */
+static char *summary_expansion (const char *s)
+{
+  if (!s || !s[0])
+    return NULL;
+
+  struct string comment;
+  ds_init_empty (&comment);
+  time_t now = time (NULL);
+  struct tm *lt = localtime (&now);
+  while (*s)
+    {
+      switch (*s)
+        {
+        case ')':
+          if (0 == strncmp (s + 1, "DATE", 4))
+            {
+              s += 4;
+              if (lt)
+                ds_put_c_format (&comment, "%02d-%s-%04d",
+                                 lt->tm_mday, mtable[lt->tm_mon], lt->tm_year + 1900);
+            }
+          else if (0 == strncmp (s + 1, "ADATE", 5))
+            {
+              s += 5;
+              if (lt)
+                ds_put_c_format (&comment, "%02d/%02d/%04d",
+                                 lt->tm_mon + 1, lt->tm_mday, lt->tm_year + 1900);
+            }
+          else if (0 == strncmp (s + 1, "SDATE", 5))
+            {
+              s += 5;
+              if (lt)
+                ds_put_c_format (&comment, "%04d/%02d/%02d",
+                                 lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday);
+            }
+          else if (0 == strncmp (s + 1, "EDATE", 5))
+            {
+              s += 5;
+              if (lt)
+                ds_put_c_format (&comment, "%02d.%02d.%04d",
+                                 lt->tm_mday, lt->tm_mon + 1, lt->tm_year + 1900);
+            }
+          else if (0 == strncmp (s + 1, "TIME", 4))
+            {
+              s += 4;
+              if (lt)
+                {
+                  /* 12 hour time format */
+                  int hour = lt->tm_hour % 12;
+                  if (hour == 0)
+                    hour = 12;
+                  ds_put_c_format (&comment, "%02d:%02d:%02d",
+                                   hour, lt->tm_min, lt->tm_sec);
+                }
+            }
+          else if (0 == strncmp (s + 1, "ETIME", 5))
+            {
+              s += 5;
+              if (lt)
+                ds_put_c_format (&comment, "%02d:%02d:%02d",
+                                 lt->tm_hour, lt->tm_min, lt->tm_sec);
+            }
+          break;
+        case '\\':
+          if (s[1] == 'n')
+            {
+              s++;
+              ds_put_byte (&comment, '\n');
+            }
+          break;
+        default:
+          ds_put_byte (&comment, *s);
+          break;
+        }
+      s++;
+    }
+
+  char *string = ds_steal_cstr (&comment);
+
+  ds_destroy (&comment);
+
+  return string;
+}
+
+
 /* Creates and returns a new pivot table with the given TITLE, and takes
    ownership of TITLE.  The new pivot table's subtype is SUBTYPE, which should
    be an untranslated English string that describes the contents of the table
@@ -871,6 +962,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
     .show_caption = true,
     .weight_format = (struct fmt_spec) { .type = FMT_F, .w = 40 },
     .title = title,
+    .notes = summary_expansion (settings_get_summary ()),
     .subtype = subtype ? pivot_value_new_text (subtype) : NULL,
     .command_c = xstrdup_if_nonempty (output_get_command_name ()),
     .look = pivot_table_look_ref (pivot_table_look_get_default ()),

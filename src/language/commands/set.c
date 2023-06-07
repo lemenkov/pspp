@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2023 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -936,6 +936,34 @@ parse_SEED (struct lexer *lexer)
   return true;
 }
 
+
+static bool
+parse_SUMMARY (struct lexer *lexer)
+{
+  lex_match (lexer, T_EQUALS);
+
+  if (lex_match_id (lexer, "NONE"))
+    {
+      settings_set_summary (NULL);
+      return true;
+    }
+
+  if (!lex_force_string (lexer))
+    return false;
+
+  const char *s = lex_tokcstr (lexer);
+  settings_set_summary (s);
+  lex_get (lexer);
+
+  return true;
+}
+
+static char *
+show_SUMMARY (const struct dataset *ds UNUSED)
+{
+  return settings_get_summary ();
+}
+
 static bool
 parse_SMALL (struct lexer *lexer)
 {
@@ -1314,6 +1342,7 @@ static const struct setting settings[] = {
   { "SEED", parse_SEED, NULL },
   { "SMALL", parse_SMALL, show_SMALL },
   { "SPLIT", NULL, show_SPLIT },
+  { "SUMMARY", parse_SUMMARY, show_SUMMARY },
   { "TEMPDIR", NULL, show_TEMPDIR },
   { "TNUMBERS", parse_TNUMBERS, show_TNUMBERS },
   { "TVARS", parse_TVARS, show_TVARS },

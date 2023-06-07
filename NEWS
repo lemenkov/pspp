@@ -25,6 +25,8 @@ Changes from 1.6.2 to 2.0.0-pre1:
 
  * DISPLAY MACROS is now implemented.
 
+ * SET SUMMARY is now implemented.
+
  * SHOW ENVIRONMENT is now implemented.
 
  * Removed the MODIFY VARS command, which is not in SPSS.
