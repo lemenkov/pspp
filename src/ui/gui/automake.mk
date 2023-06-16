@@ -329,6 +329,8 @@ src_ui_gui_libwidgets_essential_la_SOURCES = \
 	src/ui/gui/psppire-dialog-action-weight.h \
 	src/ui/gui/psppire-dialog.c \
 	src/ui/gui/psppire-dialog.h \
+	src/ui/gui/psppire-search-dialog.c \
+	src/ui/gui/psppire-search-dialog.h \
 	src/ui/gui/psppire-dict.c \
 	src/ui/gui/psppire-dict.h \
 	src/ui/gui/psppire-dictview.c \

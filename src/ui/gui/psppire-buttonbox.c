@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2010, 2011, 2012, 2023  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -133,11 +133,13 @@ psppire_button_box_class_init (PsppireButtonBoxClass *class)
 			"Buttons",
 			"The mask that decides what buttons appear in the button box",
 			PSPPIRE_TYPE_BUTTON_MASK,
-			PSPPIRE_BUTTON_OK_MASK |
-			PSPPIRE_BUTTON_CANCEL_MASK |
-			PSPPIRE_BUTTON_RESET_MASK |
-			PSPPIRE_BUTTON_HELP_MASK |
-			PSPPIRE_BUTTON_PASTE_MASK,
+			PSPPIRE_BUTTON_OK_MASK
+			| PSPPIRE_BUTTON_CANCEL_MASK
+			| PSPPIRE_BUTTON_CLOSE_MASK
+			| PSPPIRE_BUTTON_RESET_MASK
+			| PSPPIRE_BUTTON_HELP_MASK
+			| PSPPIRE_BUTTON_PASTE_MASK
+			| PSPPIRE_BUTTON_FIND_MASK,
 			G_PARAM_READWRITE);
   g_object_class_install_property (object_class,
 				   PROP_BUTTONS,
@@ -218,7 +220,6 @@ goto_button_clicked (GtkWidget *w, gpointer data)
   if (is_acceptable (w))
     close_and_respond (w, PSPPIRE_RESPONSE_GOTO);
 }
-
 
 static void
 refresh_clicked (GtkWidget *w, gpointer data)
@@ -330,6 +331,10 @@ psppire_button_box_init (PsppireButtonBox *bb)
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_PASTE]);
   g_object_set (bb->button[PSPPIRE_BUTTON_PASTE], "no-show-all", TRUE, NULL);
 
+  bb->button[PSPPIRE_BUTTON_FIND] = gtk_button_new_with_label (_("Find"));
+  psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_FIND]);
+  g_object_set (bb->button[PSPPIRE_BUTTON_FIND], "no-show-all", TRUE, NULL);
+
   bb->button[PSPPIRE_BUTTON_CANCEL] = gtk_button_new_with_label (_("Cancel"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CANCEL], "clicked",
 		    G_CALLBACK (close_dialog), NULL);
@@ -394,6 +399,7 @@ psppire_button_flags_get_type (void)
 	  { PSPPIRE_BUTTON_HELP_MASK,    "PSPPIRE_BUTTON_HELP_MASK",     "Invoke context sensitive help" },
 	  { PSPPIRE_BUTTON_RESET_MASK,   "PSPPIRE_BUTTON_RESET_MASK",    "Restore dialog to its default settings" },
 	  { PSPPIRE_BUTTON_PASTE_MASK,   "PSPPIRE_BUTTON_PASTE_MASK",    "Accept dialog and paste syntax" },
+	  { PSPPIRE_BUTTON_FIND_MASK,    "PSPPIRE_BUTTON_FIND_MASK",     "Find something" },
 	  { 0, NULL, NULL }
 	};
 

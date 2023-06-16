@@ -55,7 +55,6 @@ struct _PsppireDialog
   gpointer acceptable_data;
   gboolean slidable;
   gchar *help_page;
-
 };
 
 struct _PsppireDialogClass

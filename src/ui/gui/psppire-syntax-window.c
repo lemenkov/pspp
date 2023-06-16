@@ -36,6 +36,7 @@
 #include "ui/gui/psppire-lex-reader.h"
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire.h"
+#include "ui/gui/psppire-search-dialog.h"
 #include "ui/gui/windows-menu.h"
 
 #include "gl/localcharset.h"
@@ -124,8 +125,6 @@ psppire_syntax_window_dispose (GObject *obj)
   if (sw->dispose_has_run)
     return;
 
-  g_object_unref (sw->search_text_buffer);
-
   g_free (sw->encoding);
   sw->encoding = NULL;
 
@@ -211,7 +210,9 @@ editor_execute_syntax (const PsppireSyntaxWindow *sw, GtkTextIter start,
 
   execute_syntax (psppire_default_data_window (), reader);
 }
+
 
+
 /* Delete the currently selected text */
 static void
 on_edit_delete (PsppireSyntaxWindow *sw)
@@ -223,84 +224,65 @@ on_edit_delete (PsppireSyntaxWindow *sw)
     gtk_text_buffer_delete (buffer, &begin, &end);
 }
 
-/* Create and run a dialog to collect the search string.
-   In future this might be expanded to include options, for example
-   backward searching, case sensitivity etc.  */
-static const char *
-get_search_text (PsppireSyntaxWindow *parent)
+typedef gboolean search_function (GtkSourceSearchContext *search,
+                                  const GtkTextIter *iter,
+                                  GtkTextIter *match_start,
+                                  GtkTextIter *match_end,
+                                   gboolean *has_wrapped_around);
+
+
+/* This function is called when the user clicks the Find button */
+static void on_find (PsppireSyntaxWindow *sw, gboolean backwards, gpointer data, gpointer junk)
 {
-  const char *search_text = NULL;
-  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL;
-  GtkWidget *dialog = gtk_dialog_new_with_buttons (_("Text Search"),
-                                                   GTK_WINDOW (parent),
-                                                   flags,
-                                                   _("_OK"),
-                                                   GTK_RESPONSE_OK,
-                                                   _("_Cancel"),
-                                                   GTK_RESPONSE_CANCEL,
-                                                   NULL);
+  PsppireSearchDialog *dialog = PSPPIRE_SEARCH_DIALOG (data);
 
-  GtkWidget *content_area =
-    gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  const char *search_text = gtk_entry_get_text (GTK_ENTRY (dialog->entry));
+  if (search_text == NULL)
+    return;
 
-  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-  GtkWidget *label = gtk_label_new (_("Text to search for:"));
-  GtkWidget *entry = gtk_entry_new_with_buffer (parent->search_text_buffer);
+  GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
+  GtkTextIter begin;
+  GtkTextIter loc;
 
-  /* Add the label, and show everything we have added.  */
-  gtk_container_add (GTK_CONTAINER (content_area), box);
-  gtk_container_add (GTK_CONTAINER (box), label);
-  gtk_container_add (GTK_CONTAINER (box), entry);
-  gtk_widget_show_all (content_area);
+  GtkTextMark *mark = gtk_text_buffer_get_insert (buffer);
 
-  int result = gtk_dialog_run (GTK_DIALOG (dialog));
-  switch (result)
+  GtkSourceSearchSettings *sss = gtk_source_search_context_get_settings (sw->search_context);
+  gtk_source_search_settings_set_search_text (sss, search_text);
+  gtk_source_search_settings_set_case_sensitive (sss,
+                                                 !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->ignore_case)));
+
+  gtk_source_search_settings_set_at_word_boundaries (sss,
+                                                     gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->whole)));
+
+  gtk_source_search_settings_set_wrap_around (sss,
+                                              gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->wrap)));
+
+  search_function *func = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->forward))
+                                                        ? gtk_source_search_context_forward
+                                                        : gtk_source_search_context_backward;
+
+  gtk_text_buffer_get_iter_at_mark (buffer, &begin, mark);
+  gtk_text_iter_forward_char (&begin);
+  if (func (sw->search_context, &begin, &loc, NULL, NULL))
     {
-    case GTK_RESPONSE_OK:
-      search_text = gtk_entry_get_text (GTK_ENTRY (entry));
-      break;
-    default:
-      search_text = NULL;
-    };
-
-  gtk_widget_destroy (dialog);
-  return search_text;
+      gtk_text_buffer_place_cursor (buffer, &loc);
+    }
 }
-
 
 /* What to do when the Find menuitem is called.  */
 static void
 on_edit_find (PsppireSyntaxWindow *sw)
 {
-  GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
-  GtkTextIter begin;
-  GtkTextIter loc;
-  const char *target = get_search_text (sw);
+  GtkWidget *ww = psppire_search_dialog_new ();
+  gtk_window_set_transient_for (GTK_WINDOW (ww), GTK_WINDOW (sw));
 
-  if (target == NULL)
-    return;
+  g_signal_connect_swapped (ww, "find", G_CALLBACK (on_find), sw);
 
-  /* This is a wrap-around search.  So start searching one
-     character after the current char.  */
-  GtkTextMark *mark = gtk_text_buffer_get_insert (buffer);
-  gtk_text_buffer_get_iter_at_mark (buffer, &begin, mark);
-  gtk_text_iter_forward_char (&begin);
-  if (gtk_text_iter_forward_search (&begin, target, 0,
-                                    &loc, 0, 0))
-    {
-      gtk_text_buffer_place_cursor (buffer, &loc);
-    }
-  else
-    {
-      /* If not found, then continue the search from the top
-         of the buffer.  */
-      gtk_text_buffer_get_start_iter (buffer, &begin);
-      if (gtk_text_iter_forward_search (&begin, target, 0,
-                                        &loc, 0, 0))
-        {
-          gtk_text_buffer_place_cursor (buffer, &loc);
-        }
-    }
+  sw->search_context = gtk_source_search_context_new (sw->buffer, NULL);
+
+  psppire_dialog_run (PSPPIRE_DIALOG (ww));
+
+  g_object_unref (sw->search_context);
 }
 
 
@@ -858,7 +840,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->cliptext = NULL;
   window->dispose_has_run = FALSE;
 
-  window->search_text_buffer = gtk_entry_buffer_new (NULL, -1);
+  window->search_context = NULL;
 
   window->edit_delete = g_simple_action_new ("delete", NULL);
   g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_delete));

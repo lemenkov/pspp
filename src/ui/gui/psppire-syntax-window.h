@@ -68,7 +68,7 @@ struct _PsppireSyntaxWindow
   GSimpleAction *edit_paste;
   GSimpleAction *edit_find;
 
-  GtkEntryBuffer *search_text_buffer;
+  GtkSourceSearchContext *search_context;
 
   gulong ps_handler;
   gulong sel_handler;
