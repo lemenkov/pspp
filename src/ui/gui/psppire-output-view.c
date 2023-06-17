@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008-2015, 2016 Free Software Foundation.
+   Copyright (C) 2008-2015, 2016, 2023 Free Software Foundation.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -594,6 +594,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   if (view->selected_item == NULL)
     return;
 
+  g_message ("clipboard paste of item type %d", info);
   td = create_temp_dir ("pspp", NULL, false);
   if (td == NULL)
     {
@@ -742,8 +743,31 @@ build_target_list (const struct output_item *item)
 {
   GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
   g_return_val_if_fail (tl, NULL);
-  if (item->type == OUTPUT_ITEM_TABLE || item->type == OUTPUT_ITEM_CHART)
-    gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
+  switch (item->type)
+    {
+    case OUTPUT_ITEM_CHART:
+    case OUTPUT_ITEM_IMAGE:
+      gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
+      gtk_target_list_add_image_targets (tl, SELECT_FMT_SVG, TRUE);
+      break;
+    case OUTPUT_ITEM_TABLE:
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_ODT);
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_HTML);
+      break;
+    case OUTPUT_ITEM_MESSAGE:
+    case OUTPUT_ITEM_TEXT:
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_UTF8);
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_TEXT);
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_HTML);
+      gtk_target_list_add_text_targets (tl, SELECT_FMT_ODT);
+      break;
+    case OUTPUT_ITEM_GROUP:
+    case OUTPUT_ITEM_PAGE_BREAK:
+      break;
+    default:
+      g_critical ("Unknown output item type: %d", item->type);
+      break;
+    }
   return tl;
 }
 
