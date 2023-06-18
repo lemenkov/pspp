@@ -588,7 +588,8 @@ tex_output_table_layer (struct tex_driver *tex, const struct pivot_table *pt,
       free (marker);
     }
 
-  shipout (&tex->token_list, "}\n\\vskip 3ex\n\n");
+  shipout (&tex->token_list, "}\n\\vskip 4ex plus 2ex minus 1ex");
+  shipout (&tex->token_list, "\\penalty -300");
 
   table_unref (title);
   table_unref (layers);
