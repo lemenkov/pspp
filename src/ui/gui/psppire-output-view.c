@@ -59,8 +59,6 @@ struct psppire_output_view
 
     GtkTreeView *overview;
 
-    GtkWidget *toplevel;
-
     guint buttontime; /* Time of the button event */
 
     struct output_view_item *items;
@@ -833,7 +831,6 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
     .object_spacing = 10,
     .output = output,
     .overview = overview,
-    .toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output)),
   };
 
   g_signal_connect (output, "draw", G_CALLBACK (layout_draw_callback), NULL);
