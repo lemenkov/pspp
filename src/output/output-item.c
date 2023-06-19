@@ -72,49 +72,49 @@ output_item_ref (const struct output_item *item_)
 void
 output_item_unref (struct output_item *item)
 {
-  if (item != NULL)
+  if (item == NULL)
+    return;
+
+  assert (item->ref_cnt > 0);
+  if (--item->ref_cnt == 0)
     {
-      assert (item->ref_cnt > 0);
-      if (--item->ref_cnt == 0)
+      switch (item->type)
         {
-          switch (item->type)
-            {
-            case OUTPUT_ITEM_CHART:
-              chart_unref (item->chart);
-              break;
+        case OUTPUT_ITEM_CHART:
+          chart_unref (item->chart);
+          break;
 
-            case OUTPUT_ITEM_GROUP:
-              for (size_t i = 0; i < item->group.n_children; i++)
-                output_item_unref (item->group.children[i]);
-              free (item->group.children);
-              break;
+        case OUTPUT_ITEM_GROUP:
+          for (size_t i = 0; i < item->group.n_children; i++)
+            output_item_unref (item->group.children[i]);
+          free (item->group.children);
+          break;
 
-            case OUTPUT_ITEM_IMAGE:
-              cairo_surface_destroy (item->image);
-              break;
+        case OUTPUT_ITEM_IMAGE:
+          cairo_surface_destroy (item->image);
+          break;
 
-            case OUTPUT_ITEM_MESSAGE:
-              msg_destroy (item->message);
-              break;
+        case OUTPUT_ITEM_MESSAGE:
+          msg_destroy (item->message);
+          break;
 
-            case OUTPUT_ITEM_PAGE_BREAK:
-              break;
+        case OUTPUT_ITEM_PAGE_BREAK:
+          break;
 
-            case OUTPUT_ITEM_TABLE:
-              pivot_table_unref (item->table);
-              break;
+        case OUTPUT_ITEM_TABLE:
+          pivot_table_unref (item->table);
+          break;
 
-            case OUTPUT_ITEM_TEXT:
-              pivot_value_destroy (item->text.content);
-              break;
-            }
-
-          free (item->label);
-          free (item->command_name);
-          free (item->cached_label);
-          spv_info_destroy (item->spv_info);
-          free (item);
+        case OUTPUT_ITEM_TEXT:
+          pivot_value_destroy (item->text.content);
+          break;
         }
+
+      free (item->label);
+      free (item->command_name);
+      free (item->cached_label);
+      spv_info_destroy (item->spv_info);
+      free (item);
     }
 }
 
