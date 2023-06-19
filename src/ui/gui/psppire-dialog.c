@@ -281,10 +281,16 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 			     dialog);
     }
 
-
   /* It's unfortunate that GTK+ doesn't have a generic
      "user-modified-state-changed" signal.  Instead, we have to try and
      predict what widgets and signals are likely to exist in our dialogs. */
+
+  if (GTK_IS_DRAWING_AREA (w))
+    {
+      g_signal_connect_swapped (w, "draw",
+				G_CALLBACK (psppire_dialog_notify_change),
+				dialog);
+    }
 
   if (GTK_IS_TOGGLE_BUTTON (w))
     {
