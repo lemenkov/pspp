@@ -167,12 +167,18 @@ on_local_options (GApplication * application,
   return -1;
 }
 
+#ifdef __APPLE__
+#define  NON_FREE_OS "MacOS"
+#elif  _WIN32
+#define  NON_FREE_OS "Windows"
+#endif
+
 /* Use the imperitive mood for all entries in this table.
    Each entry should end with a period.   */
 static const char *tips[] =
   {
-#ifdef _WIN32
-   N_("PSPP runs best on free platforms such as GNU and GNU/Linux.  Windows is a non-free system.  As such, certain features might work sub-optimally.  For best results use a free system instead."),
+#ifdef NON_FREE_OS
+   N_("PSPP runs best on free platforms such as GNU and GNU/Linux.  " NON_FREE_OS " is a non-free system.  As such, certain features might work sub-optimally.  For best results use a free system instead."),
 #endif
    N_("Right click on variable lists to change between viewing the variables' names and their labels."),
    N_("Click \"Paste\" instead of \"OK\" when running procedures.  This allows you to edit your commands before running them and you have better control over your work."),
