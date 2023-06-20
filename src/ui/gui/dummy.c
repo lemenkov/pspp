@@ -35,6 +35,7 @@
 #include "t-test-options.h"
 #include "src/language/commands/chart-category.h"
 #include "src/language/commands/aggregate.h"
+#include "libpspp/llx.h"
 
 const GEnumValue align[1];
 const GEnumValue measure[1];
@@ -75,3 +76,5 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
   assert (0);
   return FALSE;
 }
+
+const struct llx_manager llx_malloc_mgr =  {NULL, NULL, NULL};

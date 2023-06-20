@@ -27,6 +27,7 @@ UI_FILES = \
 	src/ui/gui/comments.ui \
 	src/ui/gui/crosstabs.ui \
 	src/ui/gui/chi-square.ui \
+	src/ui/gui/ctables.ui \
 	src/ui/gui/descriptives.ui \
 	src/ui/gui/entry-dialog.ui \
 	src/ui/gui/examine.ui \
@@ -317,6 +318,8 @@ src_ui_gui_libwidgets_essential_la_SOURCES = \
 	src/ui/gui/psppire-dialog-action-sort.h \
 	src/ui/gui/psppire-dialog-action-split.c \
 	src/ui/gui/psppire-dialog-action-split.h \
+	src/ui/gui/psppire-dialog-action-ctables.c \
+	src/ui/gui/psppire-dialog-action-ctables.h \
 	src/ui/gui/psppire-dialog-action-tt1s.c \
 	src/ui/gui/psppire-dialog-action-tt1s.h \
 	src/ui/gui/psppire-dialog-action-two-sample.c \

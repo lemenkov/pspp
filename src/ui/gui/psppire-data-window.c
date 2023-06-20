@@ -1,6 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
    Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014,
-   2016, 2017  Free Software Foundation
+   2016, 2017, 2023  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@
 #include "psppire-dialog-action-select.h"
 #include "psppire-dialog-action-sort.h"
 #include "psppire-dialog-action-split.h"
+#include "psppire-dialog-action-ctables.h"
 #include "psppire-dialog-action-tt1s.h"
 #include "psppire-dialog-action-two-sample.h"
 #include "psppire-dialog-action-univariate.h"
@@ -1049,7 +1050,7 @@ on_cut (PsppireDataWindow *dw)
 	  sel.start_y = sel.end_y;
 	  sel.end_y = tmp;
 	}
-	  
+
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
 				       GDK_SELECTION_CLIPBOARD);
@@ -1538,6 +1539,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RUNS, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_1SKS, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, de);

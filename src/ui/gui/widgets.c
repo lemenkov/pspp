@@ -71,6 +71,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "psppire-dialog-action-select.h"
 #include "psppire-dialog-action-sort.h"
 #include "psppire-dialog-action-split.h"
+#include "psppire-dialog-action-ctables.h"
 #include "psppire-dialog-action-tt1s.h"
 #include "psppire-dialog-action-two-sample.h"
 #include "psppire-dialog-action-univariate.h"
@@ -128,6 +129,7 @@ static const get_type_func dialog_action_types[]=
   psppire_dialog_action_select_get_type,
   psppire_dialog_action_sort_get_type,
   psppire_dialog_action_split_get_type,
+  psppire_dialog_action_ctables_get_type,
   psppire_dialog_action_tt1s_get_type,
   psppire_dialog_action_two_sample_get_type,
   psppire_dialog_action_weight_get_type,

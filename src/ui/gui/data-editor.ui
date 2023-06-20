@@ -275,6 +275,10 @@
 	    <attribute name="action">win.PsppireDialogActionCrosstabs</attribute>
 	  </item>
 	</submenu>
+	<item>
+	  <attribute name="label" translatable="yes">_Tables...</attribute>
+	  <attribute name="action">win.PsppireDialogActionCtables</attribute>
+	</item>
 	<submenu>
 	  <attribute name="label" translatable="yes">Compare _Means</attribute>
 	  <item>
