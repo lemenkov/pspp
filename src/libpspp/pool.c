@@ -32,9 +32,9 @@
 /* Fast, low-overhead memory block suballocator. */
 struct pool
   {
-    struct pool *parent;	/* Pool of which this pool is a subpool. */
-    struct pool_block *blocks;	/* Blocks owned by the pool. */
-    struct pool_gizmo *gizmos;	/* Other stuff owned by the pool. */
+    struct pool *parent;        /* Pool of which this pool is a subpool. */
+    struct pool_block *blocks;        /* Blocks owned by the pool. */
+    struct pool_gizmo *gizmos;        /* Other stuff owned by the pool. */
   };
 
 /* Pool block. */
@@ -64,30 +64,30 @@ struct pool_gizmo
     struct pool_gizmo *prev;
     struct pool_gizmo *next;
 
-    long serial;		/* Serial number. */
-    int type;			/* Type of this gizmo. */
+    long serial;                /* Serial number. */
+    int type;                        /* Type of this gizmo. */
 
     /* Type-dependent info. */
     union
       {
-	FILE *file;		/* POOL_GIZMO_FILE, POOL_GIZMO_TEMP_FILE. */
-	struct pool *subpool;	/* POOL_GIZMO_SUBPOOL. */
+        FILE *file;                /* POOL_GIZMO_FILE, POOL_GIZMO_TEMP_FILE. */
+        struct pool *subpool;        /* POOL_GIZMO_SUBPOOL. */
 
-	/* POOL_GIZMO_REGISTERED. */
-	struct
-	  {
-	    void (*free) (void *p);
-	    void *p;
-	  }
-	registered;
+        /* POOL_GIZMO_REGISTERED. */
+        struct
+          {
+            void (*free) (void *p);
+            void *p;
+          }
+        registered;
       }
     p;
   };
 
 /* Rounds X up to the next multiple of Y. */
 #ifndef ROUND_UP
-#define ROUND_UP(X, Y) 				\
-	(((X) + ((Y) - 1)) / (Y) * (Y))
+#define ROUND_UP(X, Y)                                 \
+        (((X) + ((Y) - 1)) / (Y) * (Y))
 #endif
 
 /* Types that provide typically useful alignment sizes. */
@@ -208,8 +208,8 @@ pool_destroy (struct pool *pool)
     pool->blocks->prev->next = NULL;
     for (cur = pool->blocks; cur; cur = next)
       {
-	next = cur->next;
-	free (cur);
+        next = cur->next;
+        free (cur);
       }
   }
 }
@@ -262,11 +262,11 @@ pool_alloc (struct pool *pool, size_t amt)
       struct pool_block *b = pool->blocks;
       b->ofs = ROUND_UP (b->ofs, ALIGN_SIZE);
       if (b->ofs + amt <= BLOCK_SIZE)
-	{
-	  void *const p = ((char *) b) + b->ofs;
-	  b->ofs += amt;
-	  return p;
-	}
+        {
+          void *const p = ((char *) b) + b->ofs;
+          b->ofs += amt;
+          return p;
+        }
 
       /* No space in this block, so we must make other
          arrangements. */
@@ -471,15 +471,15 @@ pool_malloc (struct pool *pool, size_t amt)
   if (pool != NULL)
     {
       if (amt != 0)
-	{
-	  struct pool_gizmo *g = xmalloc (amt + POOL_GIZMO_SIZE);
-	  g->type = POOL_GIZMO_MALLOC;
-	  add_gizmo (pool, g);
+        {
+          struct pool_gizmo *g = xmalloc (amt + POOL_GIZMO_SIZE);
+          g->type = POOL_GIZMO_MALLOC;
+          add_gizmo (pool, g);
 
-	  return ((char *) g) + POOL_GIZMO_SIZE;
-	}
+          return ((char *) g) + POOL_GIZMO_SIZE;
+        }
       else
-	return NULL;
+        return NULL;
     }
   else
     return xmalloc (amt);
@@ -539,31 +539,31 @@ pool_realloc (struct pool *pool, void *p, size_t amt)
   if (pool != NULL)
     {
       if (p != NULL)
-	{
-	  if (amt != 0)
-	    {
-	      struct pool_gizmo *g = (void *) (((char *) p) - POOL_GIZMO_SIZE);
+        {
+          if (amt != 0)
+            {
+              struct pool_gizmo *g = (void *) (((char *) p) - POOL_GIZMO_SIZE);
               check_gizmo (pool, g);
 
-	      g = xrealloc (g, amt + POOL_GIZMO_SIZE);
-	      if (g->next)
-		g->next->prev = g;
-	      if (g->prev)
-		g->prev->next = g;
-	      else
-		pool->gizmos = g;
+              g = xrealloc (g, amt + POOL_GIZMO_SIZE);
+              if (g->next)
+                g->next->prev = g;
+              if (g->prev)
+                g->prev->next = g;
+              else
+                pool->gizmos = g;
               check_gizmo (pool, g);
 
-	      return ((char *) g) + POOL_GIZMO_SIZE;
-	    }
-	  else
-	    {
-	      pool_free (pool, p);
-	      return NULL;
-	    }
-	}
+              return ((char *) g) + POOL_GIZMO_SIZE;
+            }
+          else
+            {
+              pool_free (pool, p);
+              return NULL;
+            }
+        }
       else
-	return pool_malloc (pool, amt);
+        return pool_malloc (pool, amt);
     }
   else
     return xrealloc (p, amt);
@@ -619,9 +619,9 @@ pool_nrealloc (struct pool *pool, void *p, size_t n, size_t s)
      void
      append_int (int value)
        {
-	 if (used == allocated)
-	   p = pool_2nrealloc (pool, p, &allocated, sizeof *p);
-	 p[used++] = value;
+         if (used == allocated)
+           p = pool_2nrealloc (pool, p, &allocated, sizeof *p);
+         p[used++] = value;
        }
 
    This causes x2nrealloc to allocate a block of some nonzero size the
@@ -640,12 +640,12 @@ pool_nrealloc (struct pool *pool, void *p, size_t n, size_t s)
      void
      append_int (int value)
        {
-	 if (used == allocated)
-	   {
-	     p = pool_2nrealloc (pool, p, &allocated1, sizeof *p);
-	     allocated = allocated1;
-	   }
-	 p[used++] = value;
+         if (used == allocated)
+           {
+             p = pool_2nrealloc (pool, p, &allocated1, sizeof *p);
+             allocated = allocated1;
+           }
+         p[used++] = value;
        }
 
    This function implementation is from gnulib. */
@@ -657,21 +657,21 @@ pool_2nrealloc (struct pool *pool, void *p, size_t *pn, size_t s)
   if (p == NULL)
     {
       if (n == 0)
-	{
-	  /* The approximate size to use for initial small allocation
-	     requests, when the invoking code specifies an old size of
-	     zero.  64 bytes is the largest "small" request for the
-	     GNU C library malloc.  */
-	  enum { DEFAULT_MXFAST = 64 };
+        {
+          /* The approximate size to use for initial small allocation
+             requests, when the invoking code specifies an old size of
+             zero.  64 bytes is the largest "small" request for the
+             GNU C library malloc.  */
+          enum { DEFAULT_MXFAST = 64 };
 
-	  n = DEFAULT_MXFAST / s;
-	  n += !n;
-	}
+          n = DEFAULT_MXFAST / s;
+          n += !n;
+        }
     }
   else
     {
       if (SIZE_MAX / 2 / s < n)
-	xalloc_die ();
+        xalloc_die ();
       n *= 2;
     }
 
@@ -880,10 +880,10 @@ pool_unregister (struct pool *pool, void *p)
 
     for (g = pool->gizmos; g; g = g->next)
       if (g->type == POOL_GIZMO_REGISTERED && g->p.registered.p == p)
-	{
-	  delete_gizmo (pool, g);
-	  return true;
-	}
+        {
+          delete_gizmo (pool, g);
+          return true;
+        }
   }
 
   return false;
@@ -918,14 +918,14 @@ pool_release (struct pool *pool, const struct pool_mark *mark)
 
     for (cur = pool->gizmos; cur && cur->serial >= mark->serial; cur = next)
       {
-	next = cur->next;
-	free_gizmo (cur);
+        next = cur->next;
+        free_gizmo (cur);
       }
 
     if (cur != NULL)
       {
-	cur->prev = NULL;
-	pool->gizmos = cur;
+        cur->prev = NULL;
+        pool->gizmos = cur;
       }
     else
       pool->gizmos = NULL;
@@ -998,7 +998,7 @@ free_gizmo (struct pool_gizmo *gizmo)
       free (gizmo);
       break;
     case POOL_GIZMO_FILE:
-      fclose (gizmo->p.file);	/* Ignore errors. */
+      fclose (gizmo->p.file);        /* Ignore errors. */
       break;
     case POOL_GIZMO_TEMP_FILE:
       close_temp_file (gizmo->p.file); /* Ignore errors. */

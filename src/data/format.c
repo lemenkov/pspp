@@ -236,7 +236,7 @@ fmt_for_output_from_input (struct fmt_spec input,
     case FMT_Z:
       output.w++;
       if (output.d > 0)
-	output.w++;
+        output.w++;
       break;
 
     case FMT_F:
@@ -246,7 +246,7 @@ fmt_for_output_from_input (struct fmt_spec input,
     case FMT_PCT:
       {
         const struct fmt_number_style *style =
-	  fmt_settings_get_style (settings, input.type);
+          fmt_settings_get_style (settings, input.type);
 
         output.w += fmt_affix_width (style);
         if (style->grouping != 0 && input.w - input.d >= 3)
@@ -1431,7 +1431,7 @@ get_fmt_desc (enum fmt_type type)
   static const struct fmt_desc formats[FMT_NUMBER_OF_FORMATS] =
     {
 #define FMT(NAME, METHOD, IMIN, OMIN, IO, CATEGORY) \
-	{#NAME, IMIN, OMIN, IO, CATEGORY},
+        {#NAME, IMIN, OMIN, IO, CATEGORY},
 #include "format.def"
     };
 

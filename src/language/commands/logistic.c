@@ -209,10 +209,10 @@ static void output_categories (const struct lr_spec *cmd, const struct lr_result
 static void output_depvarmap (const struct lr_spec *cmd, const struct lr_result *);
 
 static void output_variables (const struct lr_spec *cmd,
-			      const struct lr_result *);
+                              const struct lr_result *);
 
 static void output_model_summary (const struct lr_result *,
-				  double initial_likelihood, double likelihood);
+                                  double initial_likelihood, double likelihood);
 
 static void case_processing_summary (const struct lr_result *);
 
@@ -247,9 +247,9 @@ predictor_value (const struct ccase *c,
 */
 static double
 pi_hat (const struct lr_spec *cmd,
-	const struct lr_result *res,
-	const struct variable **x, size_t n_x,
-	const struct ccase *c)
+        const struct lr_result *res,
+        const struct variable **x, size_t n_x,
+        const struct ccase *c)
 {
   int v0;
   double pi = 0;
@@ -264,7 +264,7 @@ pi_hat (const struct lr_spec *cmd,
   for (v0 = 0; v0 < n_coeffs; ++v0)
     {
       pi += gsl_vector_get (res->beta_hat, v0) *
-	predictor_value (c, x, n_x, res->cats, v0);
+        predictor_value (c, x, n_x, res->cats, v0);
     }
 
   pi = 1.0 / (1.0 + exp(-pi));
@@ -284,10 +284,10 @@ pi_hat (const struct lr_spec *cmd,
 */
 static void
 hessian (const struct lr_spec *cmd,
-	 struct lr_result *res,
-	 struct casereader *input,
-	 const struct variable **x, size_t n_x,
-	 bool *converged)
+         struct lr_result *res,
+         struct casereader *input,
+         const struct variable **x, size_t n_x,
+         bool *converged)
 {
   struct casereader *reader;
   struct ccase *c;
@@ -305,19 +305,19 @@ hessian (const struct lr_spec *cmd,
       double weight = dict_get_case_weight (cmd->dict, c, &res->warn_bad_weight);
       double w = pi * (1 - pi);
       if (w > max_w)
-	max_w = w;
+        max_w = w;
       w *= weight;
 
       for (v0 = 0; v0 < res->beta_hat->size; ++v0)
-	{
-	  double in0 = predictor_value (c, x, n_x, res->cats, v0);
-	  for (v1 = 0; v1 < res->beta_hat->size; ++v1)
-	    {
-	      double in1 = predictor_value (c, x, n_x, res->cats, v1);
-	      double *o = gsl_matrix_ptr (res->hessian, v0, v1);
-	      *o += in0 * w * in1;
-	    }
-	}
+        {
+          double in0 = predictor_value (c, x, n_x, res->cats, v0);
+          for (v1 = 0; v1 < res->beta_hat->size; ++v1)
+            {
+              double in1 = predictor_value (c, x, n_x, res->cats, v1);
+              double *o = gsl_matrix_ptr (res->hessian, v0, v1);
+              *o += in0 * w * in1;
+            }
+        }
     }
   casereader_destroy (reader);
 
@@ -340,11 +340,11 @@ hessian (const struct lr_spec *cmd,
 */
 static gsl_vector *
 xt_times_y_pi (const struct lr_spec *cmd,
-	       struct lr_result *res,
-	       struct casereader *input,
-	       const struct variable **x, size_t n_x,
-	       const struct variable *y_var,
-	       double *llikelihood)
+               struct lr_result *res,
+               struct casereader *input,
+               const struct variable **x, size_t n_x,
+               const struct variable *y_var,
+               double *llikelihood)
 {
   struct casereader *reader;
   struct ccase *c;
@@ -366,29 +366,29 @@ xt_times_y_pi (const struct lr_spec *cmd,
       *llikelihood += (weight * y) * log (pi) + log (1 - pi) * weight * (1 - y);
 
       for (v0 = 0; v0 < res->beta_hat->size; ++v0)
-	{
-	  double in0 = predictor_value (c, x, n_x, res->cats, v0);
-	  double *o = gsl_vector_ptr (output, v0);
-      	  *o += in0 * (y - pi) * weight;
-	  pred_y += gsl_vector_get (res->beta_hat, v0) * in0;
-	}
+        {
+          double in0 = predictor_value (c, x, n_x, res->cats, v0);
+          double *o = gsl_vector_ptr (output, v0);
+                *o += in0 * (y - pi) * weight;
+          pred_y += gsl_vector_get (res->beta_hat, v0) * in0;
+        }
 
       /* Count the number of cases which would be correctly/incorrectly classified by this
-	 estimated model */
+         estimated model */
       if (pred_y <= cmd->ilogit_cut_point)
-	{
-	  if (y == 0)
-	    res->tn += weight;
-	  else
-	    res->fn += weight;
-	}
+        {
+          if (y == 0)
+            res->tn += weight;
+          else
+            res->fn += weight;
+        }
       else
-	{
-	  if (y == 0)
-	    res->fp += weight;
-	  else
-	    res->tp += weight;
-	}
+        {
+          if (y == 0)
+            res->fp += weight;
+          else
+            res->tp += weight;
+        }
     }
 
   casereader_destroy (reader);
@@ -411,7 +411,7 @@ frq_create  (const void *aux1 UNUSED, void *aux2 UNUSED)
 
 static void
 frq_update  (const void *aux1 UNUSED, void *aux2 UNUSED,
-	     void *ud, const struct ccase *c UNUSED , double weight)
+             void *ud, const struct ccase *c UNUSED , double weight)
 {
   double *freq = ud;
   *freq += weight;
@@ -464,7 +464,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
       res->cp.destroy = frq_destroy;
 
       res->cats = categoricals_create (cmd->cat_predictors, cmd->n_cat_predictors,
-				       cmd->wv, MV_ANY);
+                                       cmd->wv, MV_ANY);
 
       categoricals_set_payload (res->cats, &res->cp, cmd, res);
     }
@@ -479,60 +479,60 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
       const union value *depval = case_data (c, cmd->dep_var);
 
       if (var_is_value_missing (cmd->dep_var, depval) & cmd->exclude)
-	{
-	  missing = true;
-	}
+        {
+          missing = true;
+        }
       else
       for (v = 0; v < cmd->n_indep_vars; ++v)
-	{
-	  const union value *val = case_data (c, cmd->indep_vars[v]);
-	  if (var_is_value_missing (cmd->indep_vars[v], val) & cmd->exclude)
-	    {
-	      missing = true;
-	      break;
-	    }
-	}
+        {
+          const union value *val = case_data (c, cmd->indep_vars[v]);
+          if (var_is_value_missing (cmd->indep_vars[v], val) & cmd->exclude)
+            {
+              missing = true;
+              break;
+            }
+        }
 
       /* Accumulate the missing and non-missing counts */
       if (missing)
-	{
-	  res->n_missing++;
-	  continue;
-	}
+        {
+          res->n_missing++;
+          continue;
+        }
       res->n_nonmissing++;
 
       /* Find the values of the dependent variable */
       if (!v0set)
-	{
-	  value_clone (&res->y0, depval, width);
-	  v0set = true;
-	}
+        {
+          value_clone (&res->y0, depval, width);
+          v0set = true;
+        }
       else if (!v1set)
-	{
-	  if (!value_equal (&res->y0, depval, width))
-	    {
-	      value_clone (&res->y1, depval, width);
-	      v1set = true;
-	    }
-	}
+        {
+          if (!value_equal (&res->y0, depval, width))
+            {
+              value_clone (&res->y1, depval, width);
+              v1set = true;
+            }
+        }
       else
-	{
-	  if (!value_equal (&res->y0, depval, width)
-	      &&
-	      !value_equal (&res->y1, depval, width)
-	)
-	    {
-	      msg (ME, _("Dependent variable's values are not dichotomous."));
+        {
+          if (!value_equal (&res->y0, depval, width)
+              &&
+              !value_equal (&res->y1, depval, width)
+        )
+            {
+              msg (ME, _("Dependent variable's values are not dichotomous."));
               case_unref (c);
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
 
       if (v0set && value_equal (&res->y0, depval, width))
-	  sumA += weight;
+          sumA += weight;
 
       if (v1set && value_equal (&res->y1, depval, width))
-	  sumB += weight;
+          sumB += weight;
 
 
       res->cc += weight;
@@ -578,7 +578,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
 /* Start of the logistic regression routine proper */
 static bool
 run_lr (const struct lr_spec *cmd, struct casereader *input,
-	const struct dataset *ds UNUSED)
+        const struct dataset *ds UNUSED)
 {
   int i;
 
@@ -605,17 +605,17 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
   for (i = 0; i < cmd->n_cat_predictors; ++i)
     {
       if (1 >= categoricals_n_count (work.cats, i))
-	{
-	  struct string str;
-	  ds_init_empty (&str);
+        {
+          struct string str;
+          ds_init_empty (&str);
 
-	  interaction_to_string (cmd->cat_predictors[i], &str);
+          interaction_to_string (cmd->cat_predictors[i], &str);
 
-	  msg (ME, _("Category %s does not have at least two distinct values. Logistic regression will not be run."),
-	       ds_cstr(&str));
-	  ds_destroy (&str);
-	  goto error;
-      	}
+          msg (ME, _("Category %s does not have at least two distinct values. Logistic regression will not be run."),
+               ds_cstr(&str));
+          ds_destroy (&str);
+          goto error;
+              }
     }
 
   output_depvarmap (cmd, &work);
@@ -624,18 +624,18 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 
   input = casereader_create_filter_missing (input,
-					    cmd->indep_vars,
-					    cmd->n_indep_vars,
-					    cmd->exclude,
-					    NULL,
-					    NULL);
+                                            cmd->indep_vars,
+                                            cmd->n_indep_vars,
+                                            cmd->exclude,
+                                            NULL,
+                                            NULL);
 
   input = casereader_create_filter_missing (input,
-					    &cmd->dep_var,
-					    1,
-					    cmd->exclude,
-					    NULL,
-					    NULL);
+                                            &cmd->dep_var,
+                                            1,
+                                            cmd->exclude,
+                                            NULL,
+                                            NULL);
 
   work.hessian = gsl_matrix_calloc (work.beta_hat->size, work.beta_hat->size);
 
@@ -647,52 +647,52 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 
       hessian (cmd, &work, input,
-	       cmd->predictor_vars, cmd->n_predictor_vars,
-	       &converged);
+               cmd->predictor_vars, cmd->n_predictor_vars,
+               &converged);
 
       gsl_linalg_cholesky_decomp (work.hessian);
       gsl_linalg_cholesky_invert (work.hessian);
 
       v = xt_times_y_pi (cmd, &work, input,
-			 cmd->predictor_vars, cmd->n_predictor_vars,
-			 cmd->dep_var,
-			 &log_likelihood);
+                         cmd->predictor_vars, cmd->n_predictor_vars,
+                         cmd->dep_var,
+                         &log_likelihood);
 
       {
-	/* delta = M.v */
-	gsl_vector *delta = gsl_vector_alloc (v->size);
-	gsl_blas_dgemv (CblasNoTrans, 1.0, work.hessian, v, 0, delta);
-	gsl_vector_free (v);
+        /* delta = M.v */
+        gsl_vector *delta = gsl_vector_alloc (v->size);
+        gsl_blas_dgemv (CblasNoTrans, 1.0, work.hessian, v, 0, delta);
+        gsl_vector_free (v);
 
 
-	gsl_vector_add (work.beta_hat, delta);
+        gsl_vector_add (work.beta_hat, delta);
 
-	gsl_vector_minmax (delta, &min, &max);
+        gsl_vector_minmax (delta, &min, &max);
 
-	if (fabs (min) < cmd->bcon && fabs (max) < cmd->bcon)
-	  {
-	    msg (MN, _("Estimation terminated at iteration number %d because parameter estimates changed by less than %g"),
-		 i + 1, cmd->bcon);
-	    converged = true;
-	  }
+        if (fabs (min) < cmd->bcon && fabs (max) < cmd->bcon)
+          {
+            msg (MN, _("Estimation terminated at iteration number %d because parameter estimates changed by less than %g"),
+                 i + 1, cmd->bcon);
+            converged = true;
+          }
 
-	gsl_vector_free (delta);
+        gsl_vector_free (delta);
       }
 
       if (i > 0)
-	{
-	  if (-log_likelihood > -(1.0 - cmd->lcon) * prev_log_likelihood)
-	    {
-	      msg (MN, _("Estimation terminated at iteration number %d because Log Likelihood decreased by less than %g%%"), i + 1, 100 * cmd->lcon);
-	      converged = true;
-	    }
-	}
+        {
+          if (-log_likelihood > -(1.0 - cmd->lcon) * prev_log_likelihood)
+            {
+              msg (MN, _("Estimation terminated at iteration number %d because Log Likelihood decreased by less than %g%%"), i + 1, 100 * cmd->lcon);
+              converged = true;
+            }
+        }
       if (i == 0)
-	initial_log_likelihood = log_likelihood;
+        initial_log_likelihood = log_likelihood;
       prev_log_likelihood = log_likelihood;
 
       if (converged)
-	break;
+        break;
     }
 
 
@@ -788,7 +788,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
     goto error;
 
   if (!parse_variables_const (lexer, lr.dict, &pred_vars, &n_pred_vars,
-			      PV_NO_DUPLICATE))
+                              PV_NO_DUPLICATE))
     goto error;
 
   while (lex_token (lexer) != T_ENDCMD)
@@ -796,22 +796,22 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "MISSING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "INCLUDE"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "INCLUDE"))
                 lr.exclude = MV_SYSTEM;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 lr.exclude = MV_ANY;
-	      else
-		{
-		  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		  goto error;
-		}
-	    }
-	}
+              else
+                {
+                  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "ORIGIN"))
         lr.constant = false;
       else if (lex_match_id (lexer, "NOORIGIN"))
@@ -819,12 +819,12 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "NOCONST"))
         lr.constant = false;
       else if (lex_match_id (lexer, "EXTERNAL"))
-	{
-	  /* This is for compatibility.  It does nothing */
-	}
+        {
+          /* This is for compatibility.  It does nothing */
+        }
       else if (lex_match_id (lexer, "CATEGORICAL"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           struct variable **cats;
           size_t n_cats;
           if (!parse_variables (lexer, lr.dict, &cats, &n_cats, PV_NO_DUPLICATE))
@@ -836,96 +836,96 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
           for (size_t i = 0; i < n_cats; i++)
             lr.cat_predictors[lr.n_cat_predictors++] = interaction_create (cats[i]);
           free (cats);
-	}
+        }
       else if (lex_match_id (lexer, "PRINT"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "DEFAULT"))
+            {
+              if (lex_match_id (lexer, "DEFAULT"))
                 lr.print |= PRINT_DEFAULT;
-	      else if (lex_match_id (lexer, "SUMMARY"))
+              else if (lex_match_id (lexer, "SUMMARY"))
                 lr.print |= PRINT_SUMMARY;
 #if 0
-	      else if (lex_match_id (lexer, "CORR"))
+              else if (lex_match_id (lexer, "CORR"))
                 lr.print |= PRINT_CORR;
-	      else if (lex_match_id (lexer, "ITER"))
+              else if (lex_match_id (lexer, "ITER"))
                 lr.print |= PRINT_ITER;
-	      else if (lex_match_id (lexer, "GOODFIT"))
+              else if (lex_match_id (lexer, "GOODFIT"))
                 lr.print |= PRINT_GOODFIT;
 #endif
-	      else if (lex_match_id (lexer, "CI"))
-		{
-		  lr.print |= PRINT_CI;
-		  if (!lex_force_match (lexer, T_LPAREN)
+              else if (lex_match_id (lexer, "CI"))
+                {
+                  lr.print |= PRINT_CI;
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   lr.confidence = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "ALL"))
+                }
+              else if (lex_match_id (lexer, "ALL"))
                 lr.print = ~0x0000;
-	      else
-		{
-		  lex_error_expecting (lexer, "DEFAULT", "SUMMARY",
+              else
+                {
+                  lex_error_expecting (lexer, "DEFAULT", "SUMMARY",
 #if 0
                                        "CORR", "ITER", "GOODFIT",
 #endif
                                        "CI", "ALL");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "CRITERIA"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "BCON"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+            {
+              if (lex_match_id (lexer, "BCON"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   lr.bcon = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "ITERATE"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "ITERATE"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
                     goto error;
                   lr.max_iter = lex_integer (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "LCON"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "LCON"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   lr.lcon = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "EPS"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "EPS"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   lr.min_epsilon = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "CUT"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "CUT"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                        || !lex_force_num_range_closed (lexer, "CUT", 0, 1))
                     goto error;
 
@@ -934,22 +934,22 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "BCON", "ITERATE", "LCON", "EPS",
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "BCON", "ITERATE", "LCON", "EPS",
                                        "CUT");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else
-	{
-	  lex_error_expecting (lexer, "MISSING", "ORIGIN", "NOORIGIN",
+        {
+          lex_error_expecting (lexer, "MISSING", "ORIGIN", "NOORIGIN",
                                "NOCONST", "EXTERNAL", "CATEGORICAL",
                                "PRINT", "CRITERIA");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   lr.ilogit_cut_point = - log (1/cp - 1);
@@ -969,21 +969,21 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
       insert_variable (&allvars, var, hash);
 
       for (size_t cv = 0; cv < lr.n_cat_predictors; ++cv)
-	{
-	  const struct interaction *iact = lr.cat_predictors[cv];
-	  for (size_t iv = 0; iv < iact->n_vars; ++iv)
-	    {
-	      const struct variable *ivar = iact->vars[iv];
-	      unsigned int hash = hash_pointer (ivar, 0);
-	      insert_variable (&allvars, ivar, hash);
+        {
+          const struct interaction *iact = lr.cat_predictors[cv];
+          for (size_t iv = 0; iv < iact->n_vars; ++iv)
+            {
+              const struct variable *ivar = iact->vars[iv];
+              unsigned int hash = hash_pointer (ivar, 0);
+              insert_variable (&allvars, ivar, hash);
 
-	      if (var == ivar)
+              if (var == ivar)
                 drop = true;
-	    }
-	}
+            }
+        }
 
       if (drop)
-	continue;
+        continue;
 
       if (lr.n_predictor_vars >= allocated_predictor_vars)
         lr.predictor_vars = x2nrealloc (lr.predictor_vars,
@@ -1072,7 +1072,7 @@ output_depvarmap (const struct lr_spec *cmd, const struct lr_result *res)
 /* Show the Variables in the Equation box */
 static void
 output_variables (const struct lr_spec *cmd,
-		  const struct lr_result *res)
+                  const struct lr_result *res)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Variables in the Equation"));
@@ -1118,58 +1118,58 @@ output_variables (const struct lr_spec *cmd,
         var_idx = pivot_category_create_leaf (
           step1, pivot_value_new_variable (cmd->predictor_vars[idx]));
       else if (i < cmd->n_cat_predictors)
-	{
-	  const struct interaction *cat_predictors = cmd->cat_predictors[i];
-	  struct string str = DS_EMPTY_INITIALIZER;
-	  interaction_to_string (cat_predictors, &str);
-	  if (ivar != 0)
+        {
+          const struct interaction *cat_predictors = cmd->cat_predictors[i];
+          struct string str = DS_EMPTY_INITIALIZER;
+          interaction_to_string (cat_predictors, &str);
+          if (ivar != 0)
             ds_put_format (&str, "(%d)", ivar);
           var_idx = pivot_category_create_leaf (
             step1, pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
-	  int df = categoricals_df (res->cats, i);
-	  bool summary = ivar == 0;
+          int df = categoricals_df (res->cats, i);
+          bool summary = ivar == 0;
           if (summary)
-	    {
-	      /* Calculate the Wald statistic,
-		 which is \beta' C^-1 \beta .
-		 where \beta is the vector of the coefficient estimates comprising this
-		 categorial variable. and C is the corresponding submatrix of the
-		 hessian matrix.
-	      */
-	      gsl_matrix_const_view mv =
-		gsl_matrix_const_submatrix (res->hessian, idx, idx, df, df);
-	      gsl_matrix *subhessian = gsl_matrix_alloc (mv.matrix.size1, mv.matrix.size2);
-	      gsl_vector_const_view vv = gsl_vector_const_subvector (res->beta_hat, idx, df);
-	      gsl_vector *temp = gsl_vector_alloc (df);
+            {
+              /* Calculate the Wald statistic,
+                 which is \beta' C^-1 \beta .
+                 where \beta is the vector of the coefficient estimates comprising this
+                 categorial variable. and C is the corresponding submatrix of the
+                 hessian matrix.
+              */
+              gsl_matrix_const_view mv =
+                gsl_matrix_const_submatrix (res->hessian, idx, idx, df, df);
+              gsl_matrix *subhessian = gsl_matrix_alloc (mv.matrix.size1, mv.matrix.size2);
+              gsl_vector_const_view vv = gsl_vector_const_subvector (res->beta_hat, idx, df);
+              gsl_vector *temp = gsl_vector_alloc (df);
 
-	      gsl_matrix_memcpy (subhessian, &mv.matrix);
-	      gsl_linalg_cholesky_decomp (subhessian);
-	      gsl_linalg_cholesky_invert (subhessian);
+              gsl_matrix_memcpy (subhessian, &mv.matrix);
+              gsl_linalg_cholesky_decomp (subhessian);
+              gsl_linalg_cholesky_invert (subhessian);
 
-	      gsl_blas_dgemv (CblasTrans, 1.0, subhessian, &vv.vector, 0, temp);
+              gsl_blas_dgemv (CblasTrans, 1.0, subhessian, &vv.vector, 0, temp);
               double wald;
-	      gsl_blas_ddot (temp, &vv.vector, &wald);
+              gsl_blas_ddot (temp, &vv.vector, &wald);
 
               double entries[] = { wald, df, gsl_cdf_chisq_Q (wald, df) };
               for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
                 pivot_table_put2 (table, j + 2, var_idx,
                                   pivot_value_new_number (entries[j]));
 
-	      idx_correction++;
-	      gsl_matrix_free (subhessian);
-	      gsl_vector_free (temp);
-      	    }
+              idx_correction++;
+              gsl_matrix_free (subhessian);
+              gsl_vector_free (temp);
+                  }
 
-	  if (ivar++ == df)
-	    {
-	      ++i; /* next interaction */
-	      ivar = 0;
-	    }
+          if (ivar++ == df)
+            {
+              ++i; /* next interaction */
+              ivar = 0;
+            }
 
-	  if (summary)
-	    continue;
-	}
+          if (summary)
+            continue;
+        }
       else
         var_idx = pivot_category_create_leaves (step1, N_("Constant"));
 
@@ -1204,7 +1204,7 @@ output_variables (const struct lr_spec *cmd,
 /* Show the model summary box */
 static void
 output_model_summary (const struct lr_result *res,
-		      double initial_log_likelihood, double log_likelihood)
+                      double initial_log_likelihood, double log_likelihood)
 {
   struct pivot_table *table = pivot_table_create (N_("Model Summary"));
 
@@ -1283,7 +1283,7 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
       size_t n = categoricals_n_count (res->cats, i);
       size_t df = categoricals_df (res->cats, i);
       if (max_df < df)
-	max_df = df;
+        max_df = df;
       total_cats += n;
     }
 
@@ -1315,30 +1315,30 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
         pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
       for (cat = 0; cat < categoricals_n_count (res->cats, v); ++cat)
-	{
-	  const struct ccase *c = categoricals_get_case_by_category_real (
+        {
+          const struct ccase *c = categoricals_get_case_by_category_real (
             res->cats, v, cat);
           struct string label = DS_EMPTY_INITIALIZER;
-	  for (int x = 0; x < cat_predictors->n_vars; ++x)
-	    {
+          for (int x = 0; x < cat_predictors->n_vars; ++x)
+            {
               if (!ds_is_empty (&label))
                 ds_put_byte (&label, ' ');
 
-	      const union value *val = case_data (c, cat_predictors->vars[x]);
-	      var_append_value_name (cat_predictors->vars[x], val, &label);
-	    }
+              const union value *val = case_data (c, cat_predictors->vars[x]);
+              var_append_value_name (cat_predictors->vars[x], val, &label);
+            }
           int cat_idx = pivot_category_create_leaf (
             var_group,
             pivot_value_new_user_text_nocopy (ds_steal_cstr (&label)));
 
-	  double *freq = categoricals_get_user_data_by_category_real (
+          double *freq = categoricals_get_user_data_by_category_real (
             res->cats, v, cat);
           pivot_table_put2 (table, 0, cat_idx, pivot_value_new_number (*freq));
 
-	  for (int x = 0; x < df; ++x)
+          for (int x = 0; x < df; ++x)
             pivot_table_put2 (table, x + 1, cat_idx,
                               pivot_value_new_number (cat == x));
-	}
+        }
       cumulative_df += df;
     }
 

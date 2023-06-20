@@ -90,7 +90,7 @@ dialog_state_valid (gpointer data)
   for (i = 0; i < 4; ++i)
     {
       if (TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
-	break;
+        break;
     }
   if (i >= 4)
     return FALSE;

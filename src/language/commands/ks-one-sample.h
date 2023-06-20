@@ -42,9 +42,9 @@ struct dataset;
 
 
 void ks_one_sample_execute (const struct dataset *ds,
-			    struct casereader *input,
-			    enum mv_class exclude,
-			    const struct npar_test *test,
-			    bool, double);
+                            struct casereader *input,
+                            enum mv_class exclude,
+                            const struct npar_test *test,
+                            bool, double);
 
 #endif

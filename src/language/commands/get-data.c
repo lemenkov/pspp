@@ -47,7 +47,7 @@
 #define N_(msgid) (msgid)
 
 static bool parse_spreadsheet (struct lexer *lexer, char **filename,
-			       struct spreadsheet_read_options *opts);
+                               struct spreadsheet_read_options *opts);
 
 static void destroy_spreadsheet_read_info (struct spreadsheet_read_options *);
 
@@ -129,33 +129,33 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
   while (lex_match (lexer, T_SLASH))
     {
       if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_int_range (lexer, "ASSUMEDSTRWIDTH", 1, 32767))
             goto done;
           psql.str_width = lex_integer (lexer);
           lex_get (lexer);
-	}
+        }
       else if (lex_match_id (lexer, "BSIZE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_int_range (lexer, "BSIZE", 1, INT_MAX))
             goto done;
           psql.bsize = lex_integer (lexer);
           lex_get (lexer);
-	}
+        }
       else if (lex_match_id (lexer, "UNENCRYPTED"))
         psql.allow_clear = true;
       else if (lex_match_id (lexer, "SQL"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto done;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto done;
 
           free (psql.sql);
           psql.sql = ss_xstrdup (lex_tokss (lexer));
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
      }
 
   struct dictionary *dict = NULL;
@@ -175,7 +175,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
 
 static bool
 parse_spreadsheet (struct lexer *lexer, char **filename,
-		   struct spreadsheet_read_options *opts)
+                   struct spreadsheet_read_options *opts)
 {
   *opts = (struct spreadsheet_read_options) {
     .sheet_index = 1,
@@ -193,79 +193,79 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
   while (lex_match (lexer, T_SLASH))
     {
       if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_int_range (lexer, "ASSUMEDSTRWIDTH", 1, 32767))
             goto error;
           opts->asw = lex_integer (lexer);
           lex_get (lexer);
-	}
+        }
       else if (lex_match_id (lexer, "SHEET"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "NAME"))
-	    {
-	      if (!lex_force_string (lexer))
-		goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "NAME"))
+            {
+              if (!lex_force_string (lexer))
+                goto error;
 
-	      opts->sheet_name = ss_xstrdup (lex_tokss (lexer));
-	      opts->sheet_index = -1;
+              opts->sheet_name = ss_xstrdup (lex_tokss (lexer));
+              opts->sheet_index = -1;
 
-	      lex_get (lexer);
-	    }
-	  else if (lex_match_id (lexer, "INDEX"))
-	    {
+              lex_get (lexer);
+            }
+          else if (lex_match_id (lexer, "INDEX"))
+            {
               if (!lex_force_int_range (lexer, "INDEX", 1, INT_MAX))
                 goto error;
-	      opts->sheet_index = lex_integer (lexer);
-	      lex_get (lexer);
-	    }
-	  else
-	    {
+              opts->sheet_index = lex_integer (lexer);
+              lex_get (lexer);
+            }
+          else
+            {
               lex_error_expecting (lexer, "NAME", "INDEX");
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "CELLRANGE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  if (lex_match_id (lexer, "FULL"))
+          if (lex_match_id (lexer, "FULL"))
             opts->cell_range = NULL;
-	  else if (lex_match_id (lexer, "RANGE"))
-	    {
-	      if (!lex_force_string (lexer))
-		goto error;
+          else if (lex_match_id (lexer, "RANGE"))
+            {
+              if (!lex_force_string (lexer))
+                goto error;
 
-	      opts->cell_range = ss_xstrdup (lex_tokss (lexer));
-	      lex_get (lexer);
-	    }
-	  else
-	    {
+              opts->cell_range = ss_xstrdup (lex_tokss (lexer));
+              lex_get (lexer);
+            }
+          else
+            {
               lex_error_expecting (lexer, "FULL", "RANGE");
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "READNAMES"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  if (lex_match_id (lexer, "ON"))
+          if (lex_match_id (lexer, "ON"))
             opts->read_names = true;
-	  else if (lex_match_id (lexer, "OFF"))
+          else if (lex_match_id (lexer, "OFF"))
             opts->read_names = false;
-	  else
-	    {
+          else
+            {
               lex_error_expecting (lexer, "ON", "OFF");
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
       else
-	{
-	  lex_error_expecting (lexer, "ASSUMEDSTRWIDTH", "SHEET", "CELLRANGE",
+        {
+          lex_error_expecting (lexer, "ASSUMEDSTRWIDTH", "SHEET", "CELLRANGE",
                                "READNAMES");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   return true;
@@ -330,21 +330,21 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         goto error;
 
       if (lex_match_id (lexer, "ENCODING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (lexer));
 
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "ARRANGEMENT"))
         {
           bool ok;
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "FIXED"))
             ok = set_type (lexer, parser, DP_FIXED,
                            lex_ofs (lexer) - 3, lex_ofs (lexer) - 1,
@@ -363,7 +363,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "FIRSTCASE"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_int_range (lexer, "FIRSTCASE", 1, INT_MAX))
             goto error;
           data_parser_set_skip (parser, lex_integer (lexer) - 1);
@@ -516,8 +516,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         {
           lex_error (lexer, "%s", error);
           free (error);
-      	  goto error;
-      	}
+                goto error;
+              }
       lex_get (lexer);
 
       struct fmt_spec input, output;
@@ -528,11 +528,11 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
             goto error;
           error = fmt_check_input__ (input);
           if (error)
-	    {
+            {
               lex_next_error (lexer, -1, -1, "%s", error);
               free (error);
-	      goto error;
-	    }
+              goto error;
+            }
           output = fmt_for_output_from_input (input,
                                               settings_get_fmt_settings ());
         }

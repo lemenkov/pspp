@@ -232,8 +232,8 @@ static struct ccase *can_translate (struct ccase *, void *can_);
    when the translating casereader is destroyed. */
 struct casereader *
 casereader_create_append_numeric (struct casereader *subreader,
-				  new_value_func func, void *aux,
-				  void (*destroy) (void *aux))
+                                  new_value_func func, void *aux,
+                                  void (*destroy) (void *aux))
 {
   struct casereader_append_numeric *can = xmalloc (sizeof *can);
   can->proto = caseproto_ref (casereader_get_proto (subreader));
@@ -281,8 +281,8 @@ struct arithmetic_sequence
 
 static double
 next_arithmetic (const struct ccase *c UNUSED,
-		 casenumber n,
-		 void *aux)
+                 casenumber n,
+                 void *aux)
 {
   struct arithmetic_sequence *as = aux;
   return n * as->increment + as->first;
@@ -305,7 +305,7 @@ casereader_create_arithmetic_sequence (struct casereader *subreader,
   as->first = first;
   as->increment = increment;
   return casereader_create_append_numeric (subreader, next_arithmetic,
-					   as, free);
+                                           as, free);
 }
 
 
@@ -356,12 +356,12 @@ static struct ccase *car_translate (struct ccase *input, void *car_);
    when the translating casereader is destroyed. */
 struct casereader *
 casereader_create_append_rank (struct casereader *subreader,
-			       const struct variable *v,
-			       const struct variable *w,
-			       enum rank_error *err,
-			       distinct_func *distinct_callback,
-			       void *aux
-			)
+                               const struct variable *v,
+                               const struct variable *w,
+                               enum rank_error *err,
+                               distinct_func *distinct_callback,
+                               void *aux
+                        )
 {
   struct casereader_append_rank *car = xmalloc (sizeof *car);
   car->proto = caseproto_ref (casereader_get_proto (subreader));
@@ -404,7 +404,7 @@ car_translate (struct ccase *input, void *car_)
   if (car->prev_value != SYSMIS)
     {
       if (car->err && value < car->prev_value)
-	*car->err |= RANK_ERR_UNSORTED;
+        *car->err |= RANK_ERR_UNSORTED;
     }
 
   if (car->n_common == 1)
@@ -413,42 +413,42 @@ car_translate (struct ccase *input, void *car_)
       casenumber k = 0;
       double weight = 1.0;
       if (car->weight)
-	{
-	  weight = case_num (input, car->weight);
-	  if (car->err && weight < 0)
-	    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
-	}
+        {
+          weight = case_num (input, car->weight);
+          if (car->err && weight < 0)
+            *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
+        }
 
       do
-	{
-	  struct ccase *c = casereader_peek (car->clone, car->n + ++k);
-	  if (c == NULL)
-	    break;
-	  vxx = case_num (c, car->var);
+        {
+          struct ccase *c = casereader_peek (car->clone, car->n + ++k);
+          if (c == NULL)
+            break;
+          vxx = case_num (c, car->var);
 
-	  if (vxx == value)
-	    {
-	      if (car->weight)
-		{
-		  double w = case_num (c, car->weight);
+          if (vxx == value)
+            {
+              if (car->weight)
+                {
+                  double w = case_num (c, car->weight);
 
-		  if (car->err && w < 0)
-		    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
+                  if (car->err && w < 0)
+                    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
 
-		  weight += w;
-		}
-	      else
-		weight += 1.0;
-	      car->n_common++;
-	    }
+                  weight += w;
+                }
+              else
+                weight += 1.0;
+              car->n_common++;
+            }
           case_unref (c);
-	}
+        }
       while (vxx == value);
       car->mean_rank = car->cc + (weight + 1) / 2.0;
       car->cc += weight;
 
       if (car->distinct)
-	car->distinct (value, car->n_common, weight, car->aux);
+        car->distinct (value, car->n_common, weight, car->aux);
     }
   else
     car->n_common--;
@@ -495,7 +495,7 @@ uniquify (const struct ccase *c, void *aux)
       goto end;
 
   dir = value_compare_3way (case_data (next_case, cdr->key),
-			    current_value, key_width);
+                            current_value, key_width);
   if (dir > 0)
     dir = 1;
   if (dir < 0)
@@ -566,8 +566,8 @@ uniquify_destroy (void *aux)
 */
 struct casereader *
 casereader_create_distinct (struct casereader *input,
-					       const struct variable *key,
-					       const struct variable *weight)
+                                               const struct variable *key,
+                                               const struct variable *weight)
 {
   struct casereader *u ;
   struct caseproto *output_proto = caseproto_ref (casereader_get_proto (input));
@@ -586,7 +586,7 @@ casereader_create_distinct (struct casereader *input,
   cdr->proto = output_proto;
 
   u = casereader_create_filter_func (input, uniquify,
-				     NULL, cdr, NULL);
+                                     NULL, cdr, NULL);
 
   static const struct casereader_translator_class class = {
     consolodate_weight, uniquify_destroy,

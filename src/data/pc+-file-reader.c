@@ -70,8 +70,8 @@ struct pcp_main_header
   {
     char product[63];           /* "PCSPSS SYSTEM FILE..." */
     unsigned int nominal_case_size; /* Number of var positions. */
-    char creation_date[9];	/* "[m]m/dd/yy". */
-    char creation_time[9];	/* "[H]H:MM:SS". */
+    char creation_date[9];        /* "[m]m/dd/yy". */
+    char creation_time[9];        /* "[H]H:MM:SS". */
     char file_label[65];        /* File label. */
     unsigned int weight_index;  /* Index of weighting variable, 0 if none. */
   };

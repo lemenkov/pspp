@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_ROC (psppire_dialog_action_roc_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_ROC(obj)	\
+#define PSPPIRE_DIALOG_ACTION_ROC(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_ROC, PsppireDialogActionRoc))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_ROC, PsppireDialogActionRoc))
 
 #define PSPPIRE_DIALOG_ACTION_ROC_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_ROC, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_ROC, \
                                  PsppireDialogActionRocClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_ROC(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_ROC))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_ROC))
 
 #define PSPPIRE_IS_DIALOG_ACTION_ROC_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_ROC))
 
 
 #define PSPPIRE_DIALOG_ACTION_ROC_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_ROC, \
-				   PsppireDialogActionRocClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_ROC, \
+                                   PsppireDialogActionRocClass))
 
 typedef struct _PsppireDialogActionRoc       PsppireDialogActionRoc;
 typedef struct _PsppireDialogActionRocClass  PsppireDialogActionRocClass;

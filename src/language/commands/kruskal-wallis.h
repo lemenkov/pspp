@@ -31,11 +31,11 @@ struct casereader;
 struct dataset;
 
 void kruskal_wallis_execute (const struct dataset *ds,
-		       struct casereader *input,
-		       enum mv_class exclude,
-		       const struct npar_test *test,
-		       bool exact,
-		       double timer
-		);
+                       struct casereader *input,
+                       enum mv_class exclude,
+                       const struct npar_test *test,
+                       bool exact,
+                       double timer
+                );
 
 #endif

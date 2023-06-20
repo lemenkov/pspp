@@ -91,7 +91,7 @@ static GObject *psppire_var_type_dialog_constructor (GType type, guint,
 static void psppire_var_type_dialog_set_state (PsppireVarTypeDialog *);
 
 static void psppire_var_type_dialog_set_format (PsppireVarTypeDialog *dialog,
-						struct fmt_spec format);
+                                                struct fmt_spec format);
 
 static int find_format (struct fmt_spec target,
                         const struct fmt_spec formats[], int n_formats);
@@ -541,7 +541,7 @@ psppire_var_type_dialog_constructor (GType                  type,
   dialog = PSPPIRE_VAR_TYPE_DIALOG (obj);
 
   g_object_set (dialog, "help-page", "Input-and-Output-Formats",
-		"title", _("Variable Type and Format"), NULL);
+                "title", _("Variable Type and Format"), NULL);
 
   xml = builder_new ("var-type-dialog.ui");
 
@@ -552,7 +552,7 @@ psppire_var_type_dialog_constructor (GType                  type,
   dialog->active_button = -1;
 
   g_signal_connect (dialog, "delete-event",
-		    G_CALLBACK (gtk_widget_hide_on_delete), NULL);
+                    G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
   dialog->radioButton[BUTTON_NUMERIC] =
     get_widget_assert (xml,"radiobutton1");
@@ -587,7 +587,7 @@ psppire_var_type_dialog_constructor (GType                  type,
   dialog->adj_width = gtk_spin_button_get_adjustment (
     GTK_SPIN_BUTTON (dialog->entry_width));
   dialog->custom_currency_hbox = get_widget_assert (xml,
-						   "custom_currency_hbox");
+                                                   "custom_currency_hbox");
 
   dialog->dollar_window = get_widget_assert (xml, "dollar_window");
   dialog->dollar_treeview =
@@ -612,7 +612,7 @@ psppire_var_type_dialog_constructor (GType                  type,
   GtkSizeGroup *sizeGroup = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
   gtk_container_foreach (GTK_CONTAINER (get_widget_assert (xml, "middle_box")),
-			add_to_group, sizeGroup);
+                        add_to_group, sizeGroup);
 
 
   for (i = 0 ; i < num_BUTTONS; ++i)
@@ -621,18 +621,18 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   /* Populate the date format tree view */
   dialog->date_format_treeview = GTK_TREE_VIEW (get_widget_assert (xml,
-					      "date_format_list_view"));
+                                              "date_format_list_view"));
 
   renderer = gtk_cell_renderer_text_new ();
 
   column = gtk_tree_view_column_new_with_attributes ("Title",
-						     renderer,
-						     "text",
-						     0,
-						     NULL);
+                                                     renderer,
+                                                     "text",
+                                                     0,
+                                                     NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (dialog->date_format_treeview),
-			       column);
+                               column);
 
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
@@ -643,16 +643,16 @@ psppire_var_type_dialog_constructor (GType                  type,
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
                           0, fmt_date_template (f.type, f.w),
-			  -1);
+                          -1);
     }
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->date_format_treeview),
-			  GTK_TREE_MODEL (list_store));
+                          GTK_TREE_MODEL (list_store));
 
   g_object_unref (list_store);
 
   g_signal_connect (dialog->date_format_treeview, "cursor-changed",
-		   G_CALLBACK (set_date_format_from_treeview), dialog);
+                   G_CALLBACK (set_date_format_from_treeview), dialog);
 
 
   /* populate the dollar treeview */
@@ -660,13 +660,13 @@ psppire_var_type_dialog_constructor (GType                  type,
   renderer = gtk_cell_renderer_text_new ();
 
   column = gtk_tree_view_column_new_with_attributes ("Title",
-						     renderer,
-						     "text",
-						     0,
-						     NULL);
+                                                     renderer,
+                                                     "text",
+                                                     0,
+                                                     NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (dialog->dollar_treeview),
-			       column);
+                               column);
 
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
@@ -677,22 +677,22 @@ psppire_var_type_dialog_constructor (GType                  type,
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
                           0, template,
-			  -1);
+                          -1);
       free (template);
     }
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->dollar_treeview),
-			  GTK_TREE_MODEL (list_store));
+                          GTK_TREE_MODEL (list_store));
 
   g_object_unref (list_store);
 
   g_signal_connect (dialog->dollar_treeview,
-		   "cursor-changed",
-		   G_CALLBACK (set_dollar_format_from_treeview), dialog);
+                   "cursor-changed",
+                   G_CALLBACK (set_dollar_format_from_treeview), dialog);
 
   g_signal_connect_swapped (dialog->dollar_treeview,
-		   "cursor-changed",
-		   G_CALLBACK (update_width_decimals), dialog);
+                   "cursor-changed",
+                   G_CALLBACK (update_width_decimals), dialog);
 
 
   /* populate the custom treeview */
@@ -700,13 +700,13 @@ psppire_var_type_dialog_constructor (GType                  type,
   renderer = gtk_cell_renderer_text_new ();
 
   column = gtk_tree_view_column_new_with_attributes ("Title",
-						     renderer,
-						     "text",
-						     0,
-						     NULL);
+                                                     renderer,
+                                                     "text",
+                                                     0,
+                                                     NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (dialog->custom_treeview),
-			       column);
+                               column);
 
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
@@ -717,23 +717,23 @@ psppire_var_type_dialog_constructor (GType                  type,
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
                           0, fmt_name (cc_fmts[i]),
-			  -1);
+                          -1);
     }
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->custom_treeview),
-			  GTK_TREE_MODEL (list_store));
+                          GTK_TREE_MODEL (list_store));
 
   g_object_unref (list_store);
 
 
   g_signal_connect (dialog->custom_treeview,
-		   "cursor-changed",
-		   G_CALLBACK (set_custom_format_from_treeview), dialog);
+                   "cursor-changed",
+                   G_CALLBACK (set_custom_format_from_treeview), dialog);
 
 
   g_signal_connect (dialog->custom_treeview,
-		   "cursor-changed",
-		   G_CALLBACK (preview_custom), dialog);
+                   "cursor-changed",
+                   G_CALLBACK (preview_custom), dialog);
 
 
   g_signal_connect (dialog->entry_width, "changed",
@@ -742,13 +742,13 @@ psppire_var_type_dialog_constructor (GType                  type,
                     G_CALLBACK (on_decimals_changed), dialog);
 
   g_signal_connect (dialog->entry_width,
-		   "changed",
-		   G_CALLBACK (preview_custom), dialog);
+                   "changed",
+                   G_CALLBACK (preview_custom), dialog);
 
 
   g_signal_connect (dialog->entry_decimals,
-		   "changed",
-		   G_CALLBACK (preview_custom), dialog);
+                   "changed",
+                   G_CALLBACK (preview_custom), dialog);
 
   }
 
@@ -765,7 +765,7 @@ static void
 var_type_dialog_set_active_button (PsppireVarTypeDialog *dialog, gint b)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->radioButton[b]),
-			       TRUE);
+                               TRUE);
 }
 
 

@@ -56,15 +56,15 @@ correlation_from_covariance (const gsl_matrix *cv, const gsl_matrix *v)
   for (i = 0 ; i < cv->size1; ++i)
     {
       for (j = 0 ; j < cv->size2; ++j)
-	{
-	  double rho = gsl_matrix_get (cv, i, j);
+        {
+          double rho = gsl_matrix_get (cv, i, j);
 
-	  rho /= sqrt (gsl_matrix_get (v, i, j))
-	    *
-	    sqrt (gsl_matrix_get (v, j, i));
+          rho /= sqrt (gsl_matrix_get (v, i, j))
+            *
+            sqrt (gsl_matrix_get (v, j, i));
 
-	  gsl_matrix_set (corr, i, j, rho);
-	}
+          gsl_matrix_set (corr, i, j, rho);
+        }
     }
 
   return corr;
@@ -81,15 +81,15 @@ covariance_from_correlation (const gsl_matrix *corr, const gsl_matrix *v)
   for (i = 0 ; i < corr->size1; ++i)
     {
       for (j = 0 ; j < corr->size2; ++j)
-	{
-	  double r = gsl_matrix_get (corr, i, j);
+        {
+          double r = gsl_matrix_get (corr, i, j);
 
-	  r *= sqrt (gsl_matrix_get (v, i, j))
-	    *
-	    sqrt (gsl_matrix_get (v, j, i));
+          r *= sqrt (gsl_matrix_get (v, i, j))
+            *
+            sqrt (gsl_matrix_get (v, j, i));
 
-	  gsl_matrix_set (output, i, j, r);
-	}
+          gsl_matrix_set (output, i, j, r);
+        }
     }
 
   return output;

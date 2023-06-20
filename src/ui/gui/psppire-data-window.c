@@ -117,8 +117,8 @@ static void psppire_data_window_get_property (GObject         *object,
 
 
 G_DEFINE_TYPE_WITH_CODE (PsppireDataWindow, psppire_data_window, PSPPIRE_TYPE_WINDOW,
-			 G_IMPLEMENT_INTERFACE (PSPPIRE_TYPE_WINDOW_MODEL,
-						psppire_data_window_iface_init))
+                         G_IMPLEMENT_INTERFACE (PSPPIRE_TYPE_WINDOW_MODEL,
+                                                psppire_data_window_iface_init))
 
 static GObjectClass *parent_class ;
 
@@ -139,10 +139,10 @@ psppire_data_window_class_init (PsppireDataWindowClass *class)
   object_class->get_property = psppire_data_window_get_property;
 
   g_object_class_install_property (
-				   object_class, PROP_DATASET,
-				   g_param_spec_pointer ("dataset", "Dataset",
-							 "'struct datset *' represented by the window",
-							 G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+                                   object_class, PROP_DATASET,
+                                   g_param_spec_pointer ("dataset", "Dataset",
+                                                         "'struct datset *' represented by the window",
+                                                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 }
 
 
@@ -156,7 +156,7 @@ execute (PsppireDataWindow *dw)
 
 static void
 transformation_change_callback (bool transformations_pending,
-				gpointer data)
+                                gpointer data)
 {
   PsppireDataWindow  *de = PSPPIRE_DATA_WINDOW (data);
 
@@ -165,15 +165,15 @@ transformation_change_callback (bool transformations_pending,
 
   {
     GAction *action = g_action_map_lookup_action (G_ACTION_MAP (de),
-						  "transform-pending");
+                                                  "transform-pending");
 
     g_simple_action_set_enabled (G_SIMPLE_ACTION (action),
-				 transformations_pending);
+                                 transformations_pending);
   }
 
   if (transformations_pending)
     gtk_label_set_text (GTK_LABEL (status_label),
-			_("Transformations Pending"));
+                        _("Transformations Pending"));
   else
     gtk_label_set_text (GTK_LABEL (status_label), "");
 }
@@ -229,14 +229,14 @@ on_split_change (PsppireDict *dict, gpointer data)
       gint i;
       GString *text;
       const struct variable *const * split_vars =
-	dict_get_split_vars (dict->dict);
+        dict_get_split_vars (dict->dict);
 
       text = g_string_new (_("Split by "));
 
       for (i = 0 ; i < n_split_vars - 1; ++i)
-	{
-	  g_string_append_printf (text, "%s, ", var_get_name (split_vars[i]));
-	}
+        {
+          g_string_append_printf (text, "%s, ", var_get_name (split_vars[i]));
+        }
       g_string_append (text, var_get_name (split_vars[i]));
 
       gtk_label_set_text (GTK_LABEL (split_status_area), text->str);
@@ -293,11 +293,11 @@ dump_rm (GtkRecentManager *rm)
       GtkRecentInfo *ri = i->data;
 
       g_print ("Item: %s (Mime: %s) (Desc: %s) (URI: %s)\n",
-	       gtk_recent_info_get_short_name (ri),
-	       gtk_recent_info_get_mime_type (ri),
-	       gtk_recent_info_get_description (ri),
-	       gtk_recent_info_get_uri (ri)
-	);
+               gtk_recent_info_get_short_name (ri),
+               gtk_recent_info_get_mime_type (ri),
+               gtk_recent_info_get_description (ri),
+               gtk_recent_info_get_uri (ri)
+        );
 
 
       gtk_recent_info_unref (ri);
@@ -351,7 +351,7 @@ load_file (PsppireWindow *de, const gchar *file_name, const char *encoding,
       utf8_file_name = g_filename_to_utf8 (file_name, -1, NULL, NULL, NULL);
 
       if (NULL == utf8_file_name)
-	return FALSE;
+        return FALSE;
 
       ds_init_empty (&filename);
       syntax_gen_string (&filename, ss_cstr (utf8_file_name));
@@ -377,9 +377,9 @@ load_file (PsppireWindow *de, const gchar *file_name, const char *encoding,
   if (ok && syn == NULL)
     {
       if (name_has_por_suffix (file_name))
-	mime_type = "application/x-spss-por";
+        mime_type = "application/x-spss-por";
       else if (name_has_sav_suffix (file_name))
-	mime_type = "application/x-spss-sav";
+        mime_type = "application/x-spss-sav";
 
       add_most_recent (file_name, mime_type, encoding);
     }
@@ -454,12 +454,12 @@ sysfile_info (PsppireDataWindow *de)
     {
       struct string filename;
       gchar *file_name =
-	gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+        gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
       gchar *utf8_file_name = g_filename_to_utf8 (file_name, -1, NULL, NULL,
                                                   NULL);
 
       const gchar *encoding = psppire_encoding_selector_get_encoding (
-								      gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
+                                                                      gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
       gchar *syntax;
 
@@ -492,11 +492,11 @@ data_pick_filename (PsppireWindow *window)
   GtkFileFilter *filter;
   GtkWidget *dialog =
     gtk_file_chooser_dialog_new (_("Save"),
-				 GTK_WINDOW (de),
-				 GTK_FILE_CHOOSER_ACTION_SAVE,
-				 _("Cancel"), GTK_RESPONSE_CANCEL,
-				 _("Save"), GTK_RESPONSE_ACCEPT,
-				 NULL);
+                                 GTK_WINDOW (de),
+                                 GTK_FILE_CHOOSER_ACTION_SAVE,
+                                 _("Cancel"), GTK_RESPONSE_CANCEL,
+                                 _("Save"), GTK_RESPONSE_ACCEPT,
+                                 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
 
@@ -571,11 +571,11 @@ data_pick_filename (PsppireWindow *window)
     {
     case GTK_RESPONSE_ACCEPT:
       {
-	GString *filename =
-	  g_string_new
-	  (
-	   gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog))
-	);
+        GString *filename =
+          g_string_new
+          (
+           gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog))
+        );
 
         GtkTreeIter iter;
         int format;
@@ -584,15 +584,15 @@ data_pick_filename (PsppireWindow *window)
         gtk_tree_model_get (GTK_TREE_MODEL (list_store), &iter,
                             0, &format,
                             -1);
-	de->format = format;
+        de->format = format;
 
-	if (! name_has_suffix (filename->str))
+        if (! name_has_suffix (filename->str))
           g_string_append (filename,
                            psppire_data_window_format_to_string (format));
 
-	psppire_window_set_filename (PSPPIRE_WINDOW (de), filename->str);
+        psppire_window_set_filename (PSPPIRE_WINDOW (de), filename->str);
 
-	g_string_free (filename, TRUE);
+        g_string_free (filename, TRUE);
       }
       break;
     default:
@@ -612,14 +612,14 @@ confirm_delete_dataset (PsppireDataWindow *de,
   int result;
 
   dialog = gtk_message_dialog_new (
-				   GTK_WINDOW (de), 0, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
-				   _("Delete Existing Dataset?"));
+                                   GTK_WINDOW (de), 0, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
+                                   _("Delete Existing Dataset?"));
 
   gtk_message_dialog_format_secondary_text (
-					    GTK_MESSAGE_DIALOG (dialog),
-					    _("Renaming \"%s\" to \"%s\" will destroy the existing "
-					      "dataset named \"%s\".  Are you sure that you want to do this?"),
-					    old_dataset, new_dataset, existing_dataset);
+                                            GTK_MESSAGE_DIALOG (dialog),
+                                            _("Renaming \"%s\" to \"%s\" will destroy the existing "
+                                              "dataset named \"%s\".  Are you sure that you want to do this?"),
+                                            old_dataset, new_dataset, existing_dataset);
 
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                           _("Cancel"), GTK_RESPONSE_CANCEL,
@@ -761,7 +761,7 @@ fonts_activate (PsppireDataWindow  *de)
   gtk_font_chooser_set_font_desc (GTK_FONT_CHOOSER (dialog), current_font);
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
-				GTK_WINDOW (toplevel));
+                                GTK_WINDOW (toplevel));
 
   if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
     {
@@ -789,7 +789,7 @@ value_labels_activate (GAction *action, GVariant *param,  PsppireDataWindow  *de
   g_object_set (de->data_editor, "value-labels", labels_active, NULL);
 
   gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (de->ti_value_labels_button),
-				     labels_active);
+                                     labels_active);
 }
 
 static void
@@ -808,7 +808,7 @@ on_labels_button_toggle (GtkToggleToolButton *ttb, PsppireDataWindow *de)
 
 static void
 on_recent_data_select (GtkMenuShell *menushell,
-		       PsppireWindow *window)
+                       PsppireWindow *window)
 {
   gchar *file;
 
@@ -940,9 +940,9 @@ file_import (PsppireDataWindow *dw)
     {
     case GTK_RESPONSE_APPLY:
       {
-	gchar *fn = g_path_get_basename (asst->file_name);
-	open_data_window (PSPPIRE_WINDOW (dw), fn, NULL, psppire_import_assistant_generate_syntax (asst));
-	g_free (fn);
+        gchar *fn = g_path_get_basename (asst->file_name);
+        open_data_window (PSPPIRE_WINDOW (dw), fn, NULL, psppire_import_assistant_generate_syntax (asst));
+        g_free (fn);
       }
       break;
     case PSPPIRE_RESPONSE_PASTE:
@@ -961,8 +961,8 @@ static void
 connect_dialog_action (GType type, PsppireDataWindow *de)
 {
   GAction *act = g_object_new (type,
-			       "top-level", de,
-			       NULL);
+                               "top-level", de,
+                               NULL);
 
   g_action_map_add_action (G_ACTION_MAP (de), act);
 }
@@ -986,7 +986,7 @@ connect_action_to_menuitem (GActionMap *map, const gchar *action_name, GtkWidget
       GtkApplication *app = GTK_APPLICATION (g_application_get_default());
 
       /* First set the label for the accellerator so that it appears
-	 on the menuitem */
+         on the menuitem */
       GtkWidget *child = gtk_bin_get_child (GTK_BIN (w));
       guint key;
       GdkModifierType modifier;
@@ -994,20 +994,20 @@ connect_action_to_menuitem (GActionMap *map, const gchar *action_name, GtkWidget
       gtk_accel_label_set_accel (GTK_ACCEL_LABEL (child), key, modifier);
 
       /* Now tell the application that it must do something when that
-	 key combination is pressed */
+         key combination is pressed */
       const gchar *accels[2];
       accels[0] = accel;
       accels[1] = NULL;
 
       gchar *detailed_action_name = NULL;
       if (GTK_IS_WINDOW (map))
-	detailed_action_name = g_strdup_printf ("win.%s", action_name);
+        detailed_action_name = g_strdup_printf ("win.%s", action_name);
       else if (GTK_IS_APPLICATION (map))
-	detailed_action_name = g_strdup_printf ("app.%s", action_name);
+        detailed_action_name = g_strdup_printf ("app.%s", action_name);
 
       gtk_application_set_accels_for_action (app,
-					     detailed_action_name,
-					     accels);
+                                             detailed_action_name,
+                                             accels);
       free (detailed_action_name);
     }
 
@@ -1036,52 +1036,52 @@ on_cut (PsppireDataWindow *dw)
       SswRange sel = *sheet->selection;
 
       if (ssw_sheet_try_cut (sheet))
-	return;
+        return;
 
       if (sel.start_x > sel.end_x)
-	{
-	  gint tmp = sel.start_x;
-	  sel.start_x = sel.end_x;
-	  sel.end_x = tmp;
-	}
+        {
+          gint tmp = sel.start_x;
+          sel.start_x = sel.end_x;
+          sel.end_x = tmp;
+        }
       if (sel.start_y > sel.end_y)
-	{
-	  gint tmp = sel.start_y;
-	  sel.start_y = sel.end_y;
-	  sel.end_y = tmp;
-	}
+        {
+          gint tmp = sel.start_y;
+          sel.start_y = sel.end_y;
+          sel.end_y = tmp;
+        }
 
       GtkClipboard *clip =
-	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
-				       GDK_SELECTION_CLIPBOARD);
+        gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+                                       GDK_SELECTION_CLIPBOARD);
 
       /* Save the selected area to a string */
       GString *str = g_string_new ("");
       for (y = sel.start_y ; y <= sel.end_y; ++y)
-	{
-	  for (x = sel.start_x ; x <= sel.end_x; ++x)
-	    {
-	      const struct variable * var = psppire_dict_get_variable (dict, x);
-	      gboolean use_value_label = FALSE;
-	      g_object_get (dw->data_editor, "value-labels", &use_value_label, NULL);
-	      gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
-							  y, var, use_value_label);
-	      g_string_append (str, s);
+        {
+          for (x = sel.start_x ; x <= sel.end_x; ++x)
+            {
+              const struct variable * var = psppire_dict_get_variable (dict, x);
+              gboolean use_value_label = FALSE;
+              g_object_get (dw->data_editor, "value-labels", &use_value_label, NULL);
+              gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
+                                                          y, var, use_value_label);
+              g_string_append (str, s);
               if (x < sel.end_x)
                 g_string_append (str, "\t");
-	      g_free (s);
-	    }
+              g_free (s);
+            }
           if (y < sel.end_y)
             g_string_append (str, "\n");
-	}
+        }
 
       gtk_clipboard_set_text (clip, str->str, str->len);
       g_string_free (str, TRUE);
 
       /* Now fill the selected area with SYSMIS or blanks */
       for (x = sel.start_x ; x <= sel.end_x; ++x)
-	{
-	  const struct variable *var = psppire_dict_get_variable (dict, x);
+        {
+          const struct variable *var = psppire_dict_get_variable (dict, x);
           int width = var_get_width (var);
           union value sm ;
           value_init (&sm, width);
@@ -1089,14 +1089,14 @@ on_cut (PsppireDataWindow *dw)
             sm.f = SYSMIS;
           else
             memset (sm.s, 0, width);
-	  for (y = sel.start_y ; y <= sel.end_y; ++y)
-	    {
-	      psppire_data_store_set_value (dw->data_editor->data_store,
-					    y,
-					    var, &sm);
-	    }
+          for (y = sel.start_y ; y <= sel.end_y; ++y)
+            {
+              psppire_data_store_set_value (dw->data_editor->data_store,
+                                            y,
+                                            var, &sm);
+            }
           value_destroy (&sm, width);
-	}
+        }
     }
 }
 
@@ -1107,8 +1107,8 @@ on_copy (PsppireDataWindow *dw)
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
       GtkClipboard *clip =
-	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
-				   GDK_SELECTION_CLIPBOARD);
+        gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+                                   GDK_SELECTION_CLIPBOARD);
 
       ssw_sheet_set_clip (SSW_SHEET (dw->data_editor->data_sheet), clip);
     }
@@ -1134,7 +1134,7 @@ on_clear_cases (PsppireDataWindow *dw)
       SswRange *range = SSW_SHEET(de->data_sheet)->selection;
       g_return_if_fail (range->start_y >= 0);
       psppire_data_store_delete_cases (de->data_store, range->start_y,
-				       range->end_y - range->start_y + 1);
+                                       range->end_y - range->start_y + 1);
       gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
     }
 }
@@ -1325,7 +1325,7 @@ create_file_menu (PsppireDataWindow *dw)
     gtk_menu_attach (GTK_MENU (menu), quit,     0, 1, 14, 15);
 
     connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()),
-				"quit", quit, "<Primary>Q");
+                                "quit", quit, "<Primary>Q");
   }
 
   g_object_set (menuitem, "submenu", menu, NULL);
@@ -1377,21 +1377,21 @@ create_edit_menu (PsppireDataWindow *dw)
     gtk_window_add_accel_group (GTK_WINDOW (dw), ag);
     gtk_accelerator_parse ("<Primary>X", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_cut, "activate", ag,
-				key, modifier, GTK_ACCEL_VISIBLE);
+                                key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_copy = gtk_menu_item_new_with_mnemonic (_("_Copy"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_copy,     0, 1, i, i + 1); ++i;
     g_signal_connect_swapped (dw->mi_copy, "activate", G_CALLBACK (on_copy), dw);
     gtk_accelerator_parse ("<Primary>C", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_copy, "activate", ag,
-				key, modifier, GTK_ACCEL_VISIBLE);
+                                key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_paste = gtk_menu_item_new_with_mnemonic (_("_Paste"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_paste,     0, 1, i, i + 1); ++i;
     g_signal_connect_swapped (dw->mi_paste, "activate", G_CALLBACK (on_paste), dw);
     gtk_accelerator_parse ("<Primary>V", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_paste, "activate", ag,
-				key, modifier, GTK_ACCEL_VISIBLE);
+                                key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_clear_variables = gtk_menu_item_new_with_mnemonic (_("Clear _Variables"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_clear_variables,     0, 1, i, i + 1); ++i;
@@ -1415,7 +1415,7 @@ create_edit_menu (PsppireDataWindow *dw)
   {
     dw->mi_options = gtk_menu_item_new_with_mnemonic (_("_Options..."));
     g_signal_connect_swapped (dw->mi_options, "activate",
-			      G_CALLBACK (options_dialog), dw);
+                              G_CALLBACK (options_dialog), dw);
     gtk_menu_attach (GTK_MENU (menu), dw->mi_options, 0, 1,  i, i + 1); ++i;
   }
 
@@ -1461,7 +1461,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
                     G_CALLBACK (on_realize), de);
 
   g_signal_connect_swapped (de->data_store, "case-changed",
-			    G_CALLBACK (set_unsaved), de);
+                            G_CALLBACK (set_unsaved), de);
 
   dataset_set_callbacks (de->dataset, &cbs, de);
 
@@ -1473,16 +1473,16 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   gtk_container_add (GTK_CONTAINER (de), box);
 
   g_signal_connect (de->dict, "weight-changed",
-		    G_CALLBACK (on_weight_change),
-		    de);
+                    G_CALLBACK (on_weight_change),
+                    de);
 
   g_signal_connect (de->dict, "filter-changed",
-		    G_CALLBACK (on_filter_change),
-		    de);
+                    G_CALLBACK (on_filter_change),
+                    de);
 
   g_signal_connect (de->dict, "split-changed",
-		    G_CALLBACK (on_split_change),
-		    de);
+                    G_CALLBACK (on_split_change),
+                    de);
 
   g_signal_connect_swapped (de->dict, "items-changed",
                             G_CALLBACK (enable_save), de);
@@ -1577,7 +1577,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   {
     GSimpleAction *rename_dataset_act = g_simple_action_new ("rename-dataset", NULL);
     g_signal_connect_swapped (rename_dataset_act, "activate",
-			      G_CALLBACK (on_rename_dataset), de);
+                              G_CALLBACK (on_rename_dataset), de);
     g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (rename_dataset_act));
   }
 
@@ -1607,7 +1607,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   {
     GSimpleAction *act_view_data = g_simple_action_new_stateful ("view_dv", G_VARIANT_TYPE_STRING,
-								 g_variant_new_string ("DATA"));
+                                                                 g_variant_new_string ("DATA"));
     g_signal_connect (act_view_data, "activate", G_CALLBACK (activate_change_view), de);
     g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_view_data));
   }
@@ -1621,7 +1621,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   {
     GSimpleAction *act_value_labels =
       g_simple_action_new_stateful ("value_labels", NULL,
-				    g_variant_new_boolean (FALSE));
+                                    g_variant_new_boolean (FALSE));
     g_signal_connect (act_value_labels, "activate", G_CALLBACK (value_labels_activate), de);
     g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_value_labels));
   }
@@ -1685,7 +1685,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "PsppireDialogActionVarInfo");
       g_assert (a);
       g_signal_connect_swapped (de->ti_jump_to_variable, "clicked",
-				G_CALLBACK (psppire_dialog_action_activate_null), a);
+                                G_CALLBACK (psppire_dialog_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_variable, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_variable), "pspp-edit-go-to-variable");
@@ -1698,7 +1698,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "jump-to-case");
       g_assert (a);
       g_signal_connect_swapped (de->ti_jump_to_case, "clicked",
-				G_CALLBACK (g_action_activate_null), a);
+                                G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_case, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_case), "pspp-edit-go-to-case");
@@ -1711,7 +1711,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "find");
       g_assert (a);
       g_signal_connect_swapped (de->ti_find, "clicked",
-				G_CALLBACK (g_action_activate_null), a);
+                                G_CALLBACK (g_action_activate_null), a);
 
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_find, idx++);
@@ -1724,7 +1724,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "insert-case");
       g_assert (a);
       g_signal_connect_swapped (de->ti_insert_case, "clicked",
-				G_CALLBACK (g_action_activate_null), a);
+                                G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_case, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_case), "pspp-edit-insert-case");
@@ -1736,7 +1736,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "insert-variable");
       g_assert (a);
       g_signal_connect_swapped (de->ti_insert_variable, "clicked",
-				G_CALLBACK (g_action_activate_null), a);
+                                G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_variable, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_variable), "pspp-edit-insert-variable");
@@ -1748,10 +1748,10 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     {
       GtkToolItem *ti = gtk_tool_button_new (NULL, "Split");
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),
-					       "PsppireDialogActionSplit");
+                                               "PsppireDialogActionSplit");
       g_assert (a);
       g_signal_connect_swapped (ti, "clicked",
-				G_CALLBACK (psppire_dialog_action_activate_null), a);
+                                G_CALLBACK (psppire_dialog_action_activate_null), a);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "pspp-data-split-file");
       gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Split the active dataset"));
@@ -1760,10 +1760,10 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     {
       GtkToolItem *ti = gtk_tool_button_new (NULL, "Weight");
       GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),
-					       "PsppireDialogActionWeight");
+                                               "PsppireDialogActionWeight");
       g_assert (a);
       g_signal_connect_swapped (ti, "clicked",
-				G_CALLBACK (psppire_dialog_action_activate_null), a);
+                                G_CALLBACK (psppire_dialog_action_activate_null), a);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "pspp-data-weight-cases");
       gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Weight cases by variable"));
@@ -1772,9 +1772,9 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     {
       de->ti_value_labels_button = gtk_toggle_tool_button_new ();
       gtk_tool_button_set_label (GTK_TOOL_BUTTON (de->ti_value_labels_button),
-				 "Value Labels");
+                                 "Value Labels");
       g_signal_connect (de->ti_value_labels_button, "toggled",
-			G_CALLBACK (on_labels_button_toggle), de);
+                        G_CALLBACK (on_labels_button_toggle), de);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_value_labels_button, idx++);
       gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_value_labels_button), "pspp-view-value-labels");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_value_labels_button), _("Show/hide value labels"));
@@ -1915,11 +1915,11 @@ psppire_data_window_new (struct dataset *ds)
   assert (dataset_session (ds) == the_session);
 
   dw = GTK_WIDGET (
-		   g_object_new (
-				 psppire_data_window_get_type (),
-				 "description", _("Data Editor"),
-				 "dataset", ds,
-				 NULL));
+                   g_object_new (
+                                 psppire_data_window_get_type (),
+                                 "description", _("Data Editor"),
+                                 "dataset", ds,
+                                 NULL));
 
   if (dataset_name (ds) != NULL)
     g_object_set (dw, "id", dataset_name (ds), (void *) NULL);

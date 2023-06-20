@@ -109,9 +109,9 @@ cache_invalidate (PsppireDelimitedText *tf)
 
 static void
 psppire_delimited_text_set_property (GObject         *object,
-				guint            prop_id,
-				const GValue    *value,
-				GParamSpec      *pspec)
+                                guint            prop_id,
+                                const GValue    *value,
+                                GParamSpec      *pspec)
 {
   PsppireDelimitedText *tf = PSPPIRE_DELIMITED_TEXT (object);
 
@@ -142,9 +142,9 @@ psppire_delimited_text_set_property (GObject         *object,
 
 static void
 psppire_delimited_text_get_property (GObject         *object,
-				guint            prop_id,
-				GValue          *value,
-				GParamSpec      *pspec)
+                                guint            prop_id,
+                                GValue          *value,
+                                GParamSpec      *pspec)
 {
   PsppireDelimitedText *text_file = PSPPIRE_DELIMITED_TEXT (object);
 
@@ -180,8 +180,8 @@ n_lines (PsppireDelimitedText *file)
 
 static gboolean
 __tree_get_iter (GtkTreeModel *tree_model,
-		 GtkTreeIter *iter,
-		 GtkTreePath *path)
+                 GtkTreeIter *iter,
+                 GtkTreePath *path)
 {
   PsppireDelimitedText *file = PSPPIRE_DELIMITED_TEXT (tree_model);
   if (path == NULL)
@@ -210,7 +210,7 @@ __tree_get_iter (GtkTreeModel *tree_model,
 
 static gboolean
 __tree_iter_next (GtkTreeModel *tree_model,
-		  GtkTreeIter *iter)
+                  GtkTreeIter *iter)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
   g_return_val_if_fail (file->stamp == iter->stamp, FALSE);
@@ -231,7 +231,7 @@ __tree_iter_next (GtkTreeModel *tree_model,
 
 static GType
 __tree_get_column_type (GtkTreeModel *tree_model,
-			gint          index)
+                        gint          index)
 {
   if (index == 0)
     return G_TYPE_INT;
@@ -241,7 +241,7 @@ __tree_get_column_type (GtkTreeModel *tree_model,
 
 static gboolean
 __iter_has_child (GtkTreeModel *tree_model,
-		  GtkTreeIter  *iter)
+                  GtkTreeIter  *iter)
 {
   return 0;
 }
@@ -249,15 +249,15 @@ __iter_has_child (GtkTreeModel *tree_model,
 
 static gboolean
 __iter_parent     (GtkTreeModel *tree_model,
-		   GtkTreeIter  *iter,
-		   GtkTreeIter  *child)
+                   GtkTreeIter  *iter,
+                   GtkTreeIter  *child)
 {
   return 0;
 }
 
 static GtkTreePath *
 __tree_get_path (GtkTreeModel *tree_model,
-		 GtkTreeIter  *iter)
+                 GtkTreeIter  *iter)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
   g_return_val_if_fail (file->stamp == iter->stamp, FALSE);
@@ -284,7 +284,7 @@ __iter_children (GtkTreeModel *tree_model,
 
 static gint
 __tree_model_iter_n_children (GtkTreeModel *tree_model,
-			      GtkTreeIter *iter)
+                              GtkTreeIter *iter)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
   g_assert (iter == NULL);
@@ -314,9 +314,9 @@ __tree_model_get_n_columns (GtkTreeModel *tree_model)
 
 static gboolean
 __iter_nth_child (GtkTreeModel *tree_model,
-		  GtkTreeIter *iter,
-		  GtkTreeIter *parent,
-		  gint n)
+                  GtkTreeIter *iter,
+                  GtkTreeIter *parent,
+                  gint n)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
@@ -368,9 +368,9 @@ psppire_delimited_text_get_header_title (PsppireDelimitedText *file, gint column
 
 static void
 __get_value (GtkTreeModel *tree_model,
-	     GtkTreeIter *iter,
-	     gint column,
-	     GValue *value)
+             GtkTreeIter *iter,
+             gint column,
+             GValue *value)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
@@ -415,8 +415,8 @@ __tree_model_init (GtkTreeModelIface *iface)
 }
 
 G_DEFINE_TYPE_WITH_CODE (PsppireDelimitedText, psppire_delimited_text, G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
-						__tree_model_init))
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+                                                __tree_model_init))
 
 static void
 psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
@@ -428,16 +428,16 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
 
   GParamSpec *first_line_spec =
     g_param_spec_int ("first-line",
-		      "First Line",
-		      P_("The first line to be considered."),
-		      0, 1000, 0,
-		      G_PARAM_READWRITE);
+                      "First Line",
+                      P_("The first line to be considered."),
+                      0, 1000, 0,
+                      G_PARAM_READWRITE);
 
   GParamSpec *delimiters_spec =
     g_param_spec_pointer ("delimiters",
-			  "Field Delimiters",
-			  P_("A GSList of gunichars which delimit the fields."),
-			  G_PARAM_READWRITE);
+                          "Field Delimiters",
+                          P_("A GSList of gunichars which delimit the fields."),
+                          G_PARAM_READWRITE);
 
   GParamSpec *quote_spec =
     g_param_spec_unichar ("quote",
@@ -448,10 +448,10 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
 
   GParamSpec *child_spec =
     g_param_spec_object ("child",
-			 "Child Model",
-			 P_("The GtkTextModel which this object wraps."),
-			 GTK_TYPE_TREE_MODEL,
-			 G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
+                         "Child Model",
+                         P_("The GtkTextModel which this object wraps."),
+                         GTK_TYPE_TREE_MODEL,
+                         G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
 
   object_class->set_property = psppire_delimited_text_set_property;
   object_class->get_property = psppire_delimited_text_get_property;
@@ -502,8 +502,8 @@ psppire_delimited_text_new (GtkTreeModel *child)
 {
   return
     g_object_new (PSPPIRE_TYPE_DELIMITED_TEXT,
-		  "child", child,
-		  NULL);
+                  "child", child,
+                  NULL);
 }
 
 static void

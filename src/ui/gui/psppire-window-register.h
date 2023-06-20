@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_WINDOW_REGISTER (psppire_window_register_get_type ())
 
-#define PSPPIRE_WINDOW_REGISTER(obj)	\
+#define PSPPIRE_WINDOW_REGISTER(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-		    PSPPIRE_TYPE_WINDOW_REGISTER, PsppireWindowRegister))
+                    PSPPIRE_TYPE_WINDOW_REGISTER, PsppireWindowRegister))
 
 #define PSPPIRE_WINDOW_REGISTER_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_WINDOW_REGISTER, \
+                                 PSPPIRE_TYPE_WINDOW_REGISTER, \
                                  PsppireWindowRegisterClass))
 
 
 #define PSPPIRE_IS_WINDOW_REGISTER(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_WINDOW_REGISTER))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_WINDOW_REGISTER))
 
 #define PSPPIRE_IS_WINDOW_REGISTER_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_WINDOW_REGISTER))
 
 
 #define PSPPIRE_WINDOW_REGISTER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_WINDOW_REGISTER, \
-				   PsppireWindowRegisterClass))
+                                   PSPPIRE_TYPE_WINDOW_REGISTER, \
+                                   PsppireWindowRegisterClass))
 
 typedef struct _PsppireWindowRegister       PsppireWindowRegister;
 typedef struct _PsppireWindowRegisterClass  PsppireWindowRegisterClass;
@@ -73,7 +73,7 @@ GType psppire_window_register_get_type (void) G_GNUC_CONST;
 PsppireWindowRegister * psppire_window_register_new (void);
 
 void psppire_window_register_insert (PsppireWindowRegister *wr, PsppireWindow *window,
-				     const gchar *name);
+                                     const gchar *name);
 
 void psppire_window_register_remove (PsppireWindowRegister *wr, const gchar *name);
 
@@ -82,7 +82,7 @@ PsppireWindow *psppire_window_register_lookup (PsppireWindowRegister *wr, const 
 
 
 void psppire_window_register_foreach (PsppireWindowRegister *wr, GHFunc func,
-				      gpointer);
+                                      gpointer);
 
 gint psppire_window_register_n_items (PsppireWindowRegister *wr);
 

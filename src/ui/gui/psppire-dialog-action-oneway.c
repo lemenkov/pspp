@@ -76,25 +76,25 @@ generate_syntax (const PsppireDialogAction *act)
     {
       ds_put_cstr (&dss, "\n\t/STATISTICS=");
       if (descriptives)
-	ds_put_cstr (&dss, "DESCRIPTIVES ");
+        ds_put_cstr (&dss, "DESCRIPTIVES ");
       if (homogeneity)
-	ds_put_cstr (&dss, "HOMOGENEITY ");
+        ds_put_cstr (&dss, "HOMOGENEITY ");
     }
   if (ow->posthoc)
     {
       ds_put_cstr (&dss, "\n\t/POSTHOC=");
       if (ow->posthoc & POSTHOC_BONFERRONI)
-	ds_put_cstr (&dss, "BONFERRONI ");
+        ds_put_cstr (&dss, "BONFERRONI ");
       if (ow->posthoc & POSTHOC_GH)
-	ds_put_cstr (&dss, "GH ");
+        ds_put_cstr (&dss, "GH ");
       if (ow->posthoc & POSTHOC_LSD)
-	ds_put_cstr (&dss, "LSD ");
+        ds_put_cstr (&dss, "LSD ");
       if (ow->posthoc & POSTHOC_SCHEFFE)
-	ds_put_cstr (&dss, "SCHEFFE ");
+        ds_put_cstr (&dss, "SCHEFFE ");
       if (ow->posthoc & POSTHOC_SIDAK)
-	ds_put_cstr (&dss, "SIDAK ");
+        ds_put_cstr (&dss, "SIDAK ");
       if (ow->posthoc & POSTHOC_TUKEY)
-	ds_put_cstr (&dss, "TUKEY ");
+        ds_put_cstr (&dss, "TUKEY ");
       }
   for (i = 0 ; i < ow->contrasts_array->len ; ++i)
     {
@@ -105,16 +105,16 @@ generate_syntax (const PsppireDialogAction *act)
       ds_put_cstr (&dss, "\n\t/CONTRAST=");
 
       for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(ls),
-					       &iter);
- 	   ok;
-	   ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ls), &iter))
-	{
-	  gdouble v;
+                                               &iter);
+            ok;
+           ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ls), &iter))
+        {
+          gdouble v;
 
-	  gtk_tree_model_get (GTK_TREE_MODEL (ls), &iter, 0, &v, -1);
+          gtk_tree_model_get (GTK_TREE_MODEL (ls), &iter, 0, &v, -1);
 
-	  ds_put_c_format (&dss, " %.*g", DBL_DIG + 1, v);
-	}
+          ds_put_c_format (&dss, " %.*g", DBL_DIG + 1, v);
+        }
     }
 
   ds_put_cstr (&dss, ".\n");
@@ -173,7 +173,7 @@ list_store_changed (PsppireDialogActionOneway *csd)
   GtkTreeModel *ls = NULL;
   gchar *text =
     g_strdup_printf (_("Contrast %d of %d"),
-		     csd->c, csd->temp_contrasts->len);
+                     csd->c, csd->temp_contrasts->len);
 
   gtk_label_set_label (GTK_LABEL (csd->stack_label), text);
 
@@ -188,8 +188,8 @@ list_store_changed (PsppireDialogActionOneway *csd)
 
   /* Sensitive iff the liststore has two items or more */
   gtk_widget_set_sensitive (csd->next,
-			    gtk_tree_model_iter_nth_child
-			    (ls, &iter,  NULL, 1));
+                            gtk_tree_model_iter_nth_child
+                            (ls, &iter,  NULL, 1));
 
   for (ok = gtk_tree_model_get_iter_first (ls, &iter);
        ok;
@@ -217,7 +217,7 @@ clone_contrasts_array (GArray *src_array)
 
   GArray *dest_array =
     g_array_sized_new (FALSE, FALSE, sizeof (GtkListStore *),
-		       src_array->len);
+                       src_array->len);
 
   for (i = 0 ; i < src_array->len ; ++i)
     {
@@ -228,8 +228,8 @@ clone_contrasts_array (GArray *src_array)
 
       /* Refuse to copy empty stores */
       if (! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (src),
-					   &src_iter))
-	continue;
+                                           &src_iter))
+        continue;
 
       dest = clone_list_store (src);
 
@@ -273,7 +273,7 @@ psppire_dialog_action_oneway_activate (PsppireDialogAction *a, GVariant *param)
   act->tukey_button = get_widget_assert (xml, "tukey-button");
 
   g_signal_connect_swapped (posthoc_button, "clicked",
-		    G_CALLBACK (run_posthoc_dialog), act);
+                    G_CALLBACK (run_posthoc_dialog), act);
 
 /* Contrast dialog */
   act->contrasts_dialog = get_widget_assert (xml, "contrasts-dialog");
@@ -292,11 +292,11 @@ psppire_dialog_action_oneway_activate (PsppireDialogAction *a, GVariant *param)
   psppire_acr_set_entry (PSPPIRE_ACR (act->acr), entry);
 
   gtk_window_set_transient_for (GTK_WINDOW (act->contrasts_dialog),
-				  GTK_WINDOW (pda->toplevel));
+                                  GTK_WINDOW (pda->toplevel));
 
 
   g_signal_connect_swapped (contrasts_button, "clicked",
-		    G_CALLBACK (run_contrasts_dialog), act);
+                    G_CALLBACK (run_contrasts_dialog), act);
 
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
@@ -326,22 +326,22 @@ run_posthoc_dialog (PsppireDialogActionOneway *ow)
   gint response;
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->bonferroni_button),
-				ow->posthoc & POSTHOC_BONFERRONI);
+                                ow->posthoc & POSTHOC_BONFERRONI);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->gh_button),
-				ow->posthoc & POSTHOC_GH);
+                                ow->posthoc & POSTHOC_GH);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->lsd_button),
-				ow->posthoc & POSTHOC_LSD);
+                                ow->posthoc & POSTHOC_LSD);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->scheffe_button),
-				ow->posthoc & POSTHOC_SCHEFFE);
+                                ow->posthoc & POSTHOC_SCHEFFE);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->sidak_button),
-				ow->posthoc & POSTHOC_SIDAK);
+                                ow->posthoc & POSTHOC_SIDAK);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ow->tukey_button),
-				ow->posthoc & POSTHOC_TUKEY);
+                                ow->posthoc & POSTHOC_TUKEY);
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (ow->posthoc_dialog));
 
@@ -349,22 +349,22 @@ run_posthoc_dialog (PsppireDialogActionOneway *ow)
     {
       ow->posthoc= 0;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->bonferroni_button)))
-	ow->posthoc |= POSTHOC_BONFERRONI;
+        ow->posthoc |= POSTHOC_BONFERRONI;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->gh_button)))
-	ow->posthoc |= POSTHOC_GH;
+        ow->posthoc |= POSTHOC_GH;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->lsd_button)))
-	ow->posthoc |= POSTHOC_LSD;
+        ow->posthoc |= POSTHOC_LSD;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->scheffe_button)))
-	ow->posthoc |= POSTHOC_SCHEFFE;
+        ow->posthoc |= POSTHOC_SCHEFFE;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->sidak_button)))
-	ow->posthoc |= POSTHOC_SIDAK;
+        ow->posthoc |= POSTHOC_SIDAK;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ow->tukey_button)))
-	ow->posthoc |= POSTHOC_TUKEY;
+        ow->posthoc |= POSTHOC_TUKEY;
     }
 }
 
@@ -396,10 +396,10 @@ push_new_store (GArray *contrast_stack, PsppireDialogActionOneway *csd)
   g_array_append_val (contrast_stack, ls);
 
   g_signal_connect_swapped (ls, "row-deleted",
-			    G_CALLBACK (list_store_changed), csd);
+                            G_CALLBACK (list_store_changed), csd);
 
   g_signal_connect_swapped (ls, "row-changed",
-			    G_CALLBACK (list_store_changed), csd);
+                            G_CALLBACK (list_store_changed), csd);
 
   list_store_changed (csd);
 }

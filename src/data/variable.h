@@ -74,7 +74,7 @@ enum val_type var_get_type (const struct variable *);
 int var_get_width (const struct variable *);
 void var_set_width (struct variable *, int width);
 void var_set_width_and_formats (struct variable *v, int new_width,
-				const struct fmt_spec *print, const struct fmt_spec *write);
+                                const struct fmt_spec *print, const struct fmt_spec *write);
 
 bool var_is_numeric (const struct variable *);
 bool var_is_alpha (const struct variable *);
@@ -94,7 +94,7 @@ const char *var_lookup_value_label (const struct variable *,
                                     const union value *);
 struct string;
 void var_append_value_name (const struct variable *, const union value *,
-			    struct string *);
+                            struct string *);
 void var_append_value_name__ (const struct variable *, const union value *,
                               enum settings_value_show, struct string *);
 
@@ -212,6 +212,6 @@ const char *var_get_encoding (const struct variable *);
 typedef bool var_predicate_func (const struct variable *);
 
 double var_force_valid_weight (const struct variable *wv, double w,
-			       bool *warn_on_invalid);
+                               bool *warn_on_invalid);
 
 #endif /* data/variable.h */

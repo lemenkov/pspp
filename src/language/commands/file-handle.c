@@ -367,7 +367,7 @@ fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
       if (lex_token (lexer) == T_ID)
         handle = fh_from_id (lex_tokcstr (lexer));
       if (handle == NULL)
-	handle = fh_create_file (NULL, lex_tokcstr (lexer), lex_get_encoding (lexer),
+        handle = fh_create_file (NULL, lex_tokcstr (lexer), lex_get_encoding (lexer),
                                      fh_default_properties ());
       lex_get (lexer);
     }

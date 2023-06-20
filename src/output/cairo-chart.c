@@ -114,37 +114,37 @@ pango_layout_get_baseline (PangoLayout    *layout)
     http://tango.freedesktop.org/static/cvs/tango-art-tools/palettes/Tango-Palette.gpl */
 const struct xrchart_colour data_colour[XRCHART_N_COLOURS] =
   {
-    {252, 233,  79},	/* Butter 1 */
-    {138, 226,  52},	/* Chameleon 1 */
-    {252, 175,  62},	/* Orange 1 */
-    {114, 159, 207},	/* Sky Blue 1 */
-    {173, 127, 168},	/* Plum 1 */
-    {233, 185, 110},	/* Chocolate 1 */
-    {239,  41,  41},	/* Scarlet Red 1 */
-    {238, 238, 236},	/* Aluminium 1 */
+    {252, 233,  79},        /* Butter 1 */
+    {138, 226,  52},        /* Chameleon 1 */
+    {252, 175,  62},        /* Orange 1 */
+    {114, 159, 207},        /* Sky Blue 1 */
+    {173, 127, 168},        /* Plum 1 */
+    {233, 185, 110},        /* Chocolate 1 */
+    {239,  41,  41},        /* Scarlet Red 1 */
+    {238, 238, 236},        /* Aluminium 1 */
 
-    {237, 212,   0},	/* Butter 2 */
-    {115, 210,  22},	/* Chameleon 2 */
-    {245, 121,   0},	/* Orange 2 */
-    {52,  101, 164},	/* Sky Blue 2 */
-    {117,  80, 123},	/* Plum 2 */
-    {193, 125,  17},	/* Chocolate 2 */
-    {204,   0,   0},	/* Scarlet Red 2 */
+    {237, 212,   0},        /* Butter 2 */
+    {115, 210,  22},        /* Chameleon 2 */
+    {245, 121,   0},        /* Orange 2 */
+    {52,  101, 164},        /* Sky Blue 2 */
+    {117,  80, 123},        /* Plum 2 */
+    {193, 125,  17},        /* Chocolate 2 */
+    {204,   0,   0},        /* Scarlet Red 2 */
 
-    {136, 138, 133},	/* Aluminium 4 */
+    {136, 138, 133},        /* Aluminium 4 */
 
-    {196, 160,   0},	/* Butter 3 */
-    {78,  154,   6},	/* Chameleon 3 */
-    {206,  92,   0},	/* Orange 3 */
-    {32,   74, 135},	/* Sky Blue 3 */
-    {92,   53, 102},	/* Plum 3 */
-    {143,  89,   2},	/* Chocolate 3 */
-    {164,   0,   0},	/* Scarlet Red 3 */
-    {85,   87,  83},	/* Aluminium 5 */
+    {196, 160,   0},        /* Butter 3 */
+    {78,  154,   6},        /* Chameleon 3 */
+    {206,  92,   0},        /* Orange 3 */
+    {32,   74, 135},        /* Sky Blue 3 */
+    {92,   53, 102},        /* Plum 3 */
+    {143,  89,   2},        /* Chocolate 3 */
+    {164,   0,   0},        /* Scarlet Red 3 */
+    {85,   87,  83},        /* Aluminium 5 */
 
-    {211, 215, 207},	/* Aluminium 2 */
-    {186, 189, 182},	/* Aluminium 3 */
-    {46,   52,  54},	/* Aluminium 6 */
+    {211, 215, 207},        /* Aluminium 2 */
+    {186, 189, 182},        /* Aluminium 3 */
+    {46,   52,  54},        /* Aluminium 6 */
   };
 
 void
@@ -182,7 +182,7 @@ xrchart_draw_marker (cairo_t *cr, double x, double y,
 
 void
 xrchart_label_rotate (cairo_t *cr, int horz_justify, int vert_justify,
-		      double font_size, const char *string, double angle)
+                      double font_size, const char *string, double angle)
 {
   PangoFontDescription *desc;
   PangoLayout *layout;
@@ -259,15 +259,15 @@ xrchart_label (cairo_t *cr, int horz_justify, int vert_justify,
 */
 static void
 draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
-		    enum tick_orientation orientation,
-		    bool rotated,
-		    double position,
-		    const char *s);
+                    enum tick_orientation orientation,
+                    bool rotated,
+                    double position,
+                    const char *s);
 
 void
 draw_tick (cairo_t *cr, const struct xrchart_geometry *geom,
            enum tick_orientation orientation,
-	   bool rotated,
+           bool rotated,
            double position,
            const char *label, ...)
 {
@@ -287,10 +287,10 @@ draw_tick (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static void
 draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
-		    enum tick_orientation orientation,
-		    bool rotated,
-		    double position,
-		    const char *s)
+                    enum tick_orientation orientation,
+                    bool rotated,
+                    double position,
+                    const char *s)
 {
   const int tickSize = 10;
   double x, y;
@@ -318,12 +318,12 @@ draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
       cairo_move_to (cr, x, y);
 
       if (orientation == SCALE_ABSCISSA)
-	{
-	  if (rotated)
-	    xrchart_label_rotate (cr, 'l', 'c', geom->font_size, s, -G_PI_4);
-	  else
-	    xrchart_label (cr, 'c', 't', geom->font_size, s);
-	}
+        {
+          if (rotated)
+            xrchart_label_rotate (cr, 'l', 'c', geom->font_size, s, -G_PI_4);
+          else
+            xrchart_label (cr, 'c', 't', geom->font_size, s);
+        }
       else if (orientation == SCALE_ORDINATE)
         {
           xrchart_label (cr, 'r', 'c', geom->font_size, s);
@@ -354,8 +354,8 @@ xrchart_write_title (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static void
 xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
-		      const char *utf8,
-		      double *width, double *height)
+                      const char *utf8,
+                      double *width, double *height)
 {
   PangoFontDescription *desc;
   PangoLayout *layout;
@@ -378,7 +378,7 @@ xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static bool
 xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
-		     double smin, double smax, enum tick_orientation orient)
+                     double smin, double smax, enum tick_orientation orient)
 {
   int s;
   int ticks;
@@ -404,7 +404,7 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
 
   struct xrchart_axis *axis = &geom->axis[orient];
   geom->axis[orient].scale = (fabs ((double) axis->data_max - axis->data_min)
-			      / fabs (axis->max - axis->min));
+                              / fabs (axis->max - axis->min));
 
   if (orient == SCALE_ABSCISSA)
     {
@@ -418,7 +418,7 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
       free(test_text);
       width = MAX(lower_txt_width, upper_txt_width);
       tickoversize = width > 0.9 *
-	((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/(ticks+1);
+        ((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/(ticks+1);
     }
 
   double pos = lower;
@@ -426,8 +426,8 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
   for (s = 0 ; s <= ticks; ++s)
     {
       draw_tick (cr, geom, orient, tickoversize,
-		 s * interval * geom->axis[orient].scale,
-		 tick_format_string, pos*tickscale);
+                 s * interval * geom->axis[orient].scale,
+                 tick_format_string, pos*tickscale);
       pos += interval;
     }
   free(tick_format_string);
@@ -446,7 +446,7 @@ xrchart_write_yscale (cairo_t *cr, struct xrchart_geometry *geom,
 /* Set the scale for the abscissa */
 bool
 xrchart_write_xscale (cairo_t *cr, struct xrchart_geometry *geom,
-		      double smin, double smax)
+                      double smin, double smax)
 {
   return xrchart_write_scale (cr, geom, smin, smax, SCALE_ABSCISSA);
 }
@@ -589,7 +589,7 @@ xrchart_vector (cairo_t *cr, struct xrchart_geometry *geom, double x, double y)
 void
 xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
            double slope, double intercept,
-	   double limit1, double limit2, enum xrchart_dim lim_dim)
+           double limit1, double limit2, enum xrchart_dim lim_dim)
 {
   double x1, y1;
   double x2, y2;
@@ -701,8 +701,8 @@ xr_write_png_image (cairo_surface_t *surface,
 char *
 xr_draw_png_chart (const struct chart *chart,
                    const char *file_name_template, int number,
-		   const struct cell_color *fg,
-		   const struct cell_color *bg)
+                   const struct cell_color *fg,
+                   const struct cell_color *bg)
 {
   cairo_surface_t *surface = xr_draw_image_chart (chart, fg, bg);
   char *file_name = xr_write_png_image (surface, file_name_template, number);
@@ -713,8 +713,8 @@ xr_draw_png_chart (const struct chart *chart,
 char *
 xr_draw_eps_chart (const struct chart *chart,
                    const char *file_name_template, int number,
-		   const struct cell_color *fg,
-		   const struct cell_color *bg)
+                   const struct cell_color *fg,
+                   const struct cell_color *bg)
 {
   const int width = 640;
   const int length = 480;

@@ -38,19 +38,19 @@ get_base_tree_path (GtkTreeModel *m, GtkTreePath *op)
       GtkTreePath *oldp = p;
 
       if (GTK_IS_TREE_MODEL_FILTER (m))
-	{
-	  p = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (m), oldp);
-	  m = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (m));
-	}
+        {
+          p = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (m), oldp);
+          m = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (m));
+        }
       else if (GTK_IS_TREE_MODEL_SORT (m))
-	{
-	  p = gtk_tree_model_sort_convert_path_to_child_path (GTK_TREE_MODEL_SORT (m), oldp);
-	  m = gtk_tree_model_sort_get_model (GTK_TREE_MODEL_SORT (m));
-	}
+        {
+          p = gtk_tree_model_sort_convert_path_to_child_path (GTK_TREE_MODEL_SORT (m), oldp);
+          m = gtk_tree_model_sort_get_model (GTK_TREE_MODEL_SORT (m));
+        }
       else
-	{
-	  g_error ("Unexpected model type: %s", G_OBJECT_TYPE_NAME (m));
-	}
+        {
+          g_error ("Unexpected model type: %s", G_OBJECT_TYPE_NAME (m));
+        }
 
       gtk_tree_path_free (oldp);
     }
@@ -173,10 +173,10 @@ numeric_only (GtkWidget *source, GtkWidget *dest)
       gtk_tree_path_free (p);
 
       if (var_is_alpha (v))
-	{
-	  retval = FALSE;
-	  break;
-	}
+        {
+          retval = FALSE;
+          break;
+        }
     }
 
   g_list_foreach (list, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
@@ -203,7 +203,7 @@ set_sensitivity_from_toggle (GtkToggleButton *togglebutton,  GtkWidget *w)
 /* */
 void
 set_sensitivity_from_toggle_invert (GtkToggleButton *togglebutton,
-				    GtkWidget *w)
+                                    GtkWidget *w)
 {
   gboolean active = gtk_toggle_button_get_active (togglebutton);
 

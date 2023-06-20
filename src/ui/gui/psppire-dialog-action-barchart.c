@@ -45,7 +45,7 @@ dialog_state_valid (gpointer rd_)
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->button_summary_func)))
     {
       if (0 == g_strcmp0 ("", gtk_entry_get_text (GTK_ENTRY (rd->var))))
-	return FALSE;
+        return FALSE;
     }
 
   if (0 == g_strcmp0 ("", gtk_entry_get_text (GTK_ENTRY (rd->variable_xaxis))))
@@ -95,12 +95,12 @@ populate_combo_model (GtkComboBox *cb)
       const struct ag_func *af = ag_func + i;
 
       if (af->arity == 0)
-	continue;
+        continue;
 
       gtk_list_store_append (list, &iter);
       gtk_list_store_set (list, &iter,
                           0, af->description,
-			  1, af->name,
+                          1, af->name,
                           -1);
     }
 
@@ -140,12 +140,12 @@ psppire_dialog_action_barchart_activate (PsppireDialogAction *a, GVariant *param
   populate_combo_model (GTK_COMBO_BOX(act->combobox));
 
   g_signal_connect_swapped (act->button_summary_func, "toggled",
-			    G_CALLBACK (on_summary_toggle), act);
+                            G_CALLBACK (on_summary_toggle), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
+                                             dialog_state_valid);
 
   return xml;
 }
@@ -163,13 +163,13 @@ generate_syntax (const PsppireDialogAction *a)
     {
       GtkTreeIter iter;
       if (gtk_combo_box_get_active_iter (GTK_COMBO_BOX (rd->combobox), &iter))
-	{
-	  GValue value = {0};
-	  GtkTreeModel *model = gtk_combo_box_get_model (GTK_COMBO_BOX (rd->combobox));
-	  gtk_tree_model_get_value (model, &iter, 1, &value);
-	  g_string_append (string, g_value_get_string (&value));
-	  g_value_unset (&value);
-	}
+        {
+          GValue value = {0};
+          GtkTreeModel *model = gtk_combo_box_get_model (GTK_COMBO_BOX (rd->combobox));
+          gtk_tree_model_get_value (model, &iter, 1, &value);
+          g_string_append (string, g_value_get_string (&value));
+          g_value_unset (&value);
+        }
       g_string_append (string, " (");
       g_string_append (string, gtk_entry_get_text (GTK_ENTRY (rd->var)));
       g_string_append (string, ")");
@@ -178,28 +178,28 @@ generate_syntax (const PsppireDialogAction *a)
     {
       int b;
       for (b = 0; b < 4; ++b)
-	{
-	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->button_freq_func[b])))
-	    break;
-	}
+        {
+          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->button_freq_func[b])))
+            break;
+        }
       switch (b)
-	{
-	case 0:
-	  g_string_append (string, "COUNT");
-	  break;
-	case 1:
-	  g_string_append (string, "PCT");
-	  break;
-	case 2:
-	  g_string_append (string, "CUFREQ");
-	  break;
-	case 3:
-	  g_string_append (string, "CUPCT");
-	  break;
-	default:
-	  g_assert_not_reached ();
-	  break;
-	}
+        {
+        case 0:
+          g_string_append (string, "COUNT");
+          break;
+        case 1:
+          g_string_append (string, "PCT");
+          break;
+        case 2:
+          g_string_append (string, "CUFREQ");
+          break;
+        case 3:
+          g_string_append (string, "CUPCT");
+          break;
+        default:
+          g_assert_not_reached ();
+          break;
+        }
     }
 
   g_string_append (string, " BY ");

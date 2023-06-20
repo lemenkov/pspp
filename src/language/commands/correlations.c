@@ -79,7 +79,7 @@ struct corr_opts
 static void
 output_descriptives (const struct corr *corr, const struct corr_opts *opts,
                      const gsl_matrix *means,
-		     const gsl_matrix *vars, const gsl_matrix *ns)
+                     const gsl_matrix *vars, const gsl_matrix *ns)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Descriptive Statistics"));
@@ -114,8 +114,8 @@ output_descriptives (const struct corr *corr, const struct corr_opts *opts,
 
 static void
 output_correlation (const struct corr *corr, const struct corr_opts *opts,
-		    const gsl_matrix *cm, const gsl_matrix *samples,
-		    const gsl_matrix *cv)
+                    const gsl_matrix *cm, const gsl_matrix *samples,
+                    const gsl_matrix *cv)
 {
   struct pivot_table *table = pivot_table_create (N_("Correlations"));
   pivot_table_set_weight_var (table, opts->wv);
@@ -130,7 +130,7 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
   for (size_t c = 0; c < matrix_cols; c++)
     {
       const struct variable *v = corr->n_vars_total > corr->n_vars1 ?
-	corr->vars[corr->n_vars1 + c] : corr->vars[c];
+        corr->vars[corr->n_vars1 + c] : corr->vars[c];
       pivot_category_create_leaf (columns->root, pivot_value_new_variable (v));
     }
 
@@ -269,7 +269,7 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
               else if (lex_match_id (lexer, "INCLUDE"))
                 opts.exclude = MV_SYSTEM;
               else if (lex_match_id (lexer, "EXCLUDE"))
-		opts.exclude = MV_ANY;
+                opts.exclude = MV_ANY;
               else
                 {
                   lex_error_expecting (lexer, "PAIRWISE", "LISTWISE",
@@ -280,63 +280,63 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
             }
         }
       else if (lex_match_id (lexer, "PRINT"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "TWOTAIL"))
-		opts.tails = 2;
-	      else if (lex_match_id (lexer, "ONETAIL"))
-		opts.tails = 1;
-	      else if (lex_match_id (lexer, "SIG"))
-		opts.sig = false;
-	      else if (lex_match_id (lexer, "NOSIG"))
-		opts.sig = true;
-	      else
-		{
-		  lex_error_expecting (lexer, "TWOTAIL", "ONETAIL",
+            {
+              if (lex_match_id (lexer, "TWOTAIL"))
+                opts.tails = 2;
+              else if (lex_match_id (lexer, "ONETAIL"))
+                opts.tails = 1;
+              else if (lex_match_id (lexer, "SIG"))
+                opts.sig = false;
+              else if (lex_match_id (lexer, "NOSIG"))
+                opts.sig = true;
+              else
+                {
+                  lex_error_expecting (lexer, "TWOTAIL", "ONETAIL",
                                        "SIG", "NOSIG");
-		  goto error;
-		}
+                  goto error;
+                }
 
               lex_match (lexer, T_COMMA);
-	    }
-	}
+            }
+        }
       else if (lex_match_id (lexer, "STATISTICS"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "DESCRIPTIVES"))
-		opts.descriptive_stats = true;
-	      else if (lex_match_id (lexer, "XPROD"))
-		opts.xprod_stats = true;
-	      else if (lex_token (lexer) == T_ALL)
-		{
-		  opts.descriptive_stats = opts.xprod_stats = true;
-		  lex_get (lexer);
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "DESCRIPTIVES", "XPROD", "ALL");
-		  goto error;
-		}
+            {
+              if (lex_match_id (lexer, "DESCRIPTIVES"))
+                opts.descriptive_stats = true;
+              else if (lex_match_id (lexer, "XPROD"))
+                opts.xprod_stats = true;
+              else if (lex_token (lexer) == T_ALL)
+                {
+                  opts.descriptive_stats = opts.xprod_stats = true;
+                  lex_get (lexer);
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "DESCRIPTIVES", "XPROD", "ALL");
+                  goto error;
+                }
 
               lex_match (lexer, T_COMMA);
-	    }
-	}
+            }
+        }
       else
-	{
-	  if (lex_match_id (lexer, "VARIABLES"))
+        {
+          if (lex_match_id (lexer, "VARIABLES"))
             lex_match (lexer, T_EQUALS);
 
           const struct variable **vars;
           size_t n_vars1;
-	  if (!parse_variables_const (lexer, dict, &vars, &n_vars1, PV_NUMERIC))
+          if (!parse_variables_const (lexer, dict, &vars, &n_vars1, PV_NUMERIC))
             goto error;
 
           size_t n_vars_total = n_vars1;
-	  if (lex_match (lexer, T_WITH)
+          if (lex_match (lexer, T_WITH)
               && !parse_variables_const (lexer, dict, &vars, &n_vars_total,
                                          PV_NUMERIC | PV_APPEND))
             goto error;
@@ -349,8 +349,8 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
             .vars = vars,
           };
 
-	  n_all_vars += n_vars_total;
-	}
+          n_all_vars += n_vars_total;
+        }
     }
   if (n_corrs == 0)
     {
@@ -373,18 +373,18 @@ cmd_correlations (struct lexer *lexer, struct dataset *ds)
   while (casegrouper_get_next_group (grouper, &group))
     {
       for (size_t i = 0; i < n_corrs; ++i)
-	{
-	  /* FIXME: No need to iterate the data multiple times */
-	  struct casereader *r = casereader_clone (group);
+        {
+          /* FIXME: No need to iterate the data multiple times */
+          struct casereader *r = casereader_clone (group);
 
-	  if (opts.missing_type == CORR_LISTWISE)
-	    r = casereader_create_filter_missing (r, all_vars, n_all_vars,
-						  opts.exclude, NULL, NULL);
+          if (opts.missing_type == CORR_LISTWISE)
+            r = casereader_create_filter_missing (r, all_vars, n_all_vars,
+                                                  opts.exclude, NULL, NULL);
 
 
-	  run_corr (r, &opts, &corrs[i]);
-	  casereader_destroy (r);
-	}
+          run_corr (r, &opts, &corrs[i]);
+          casereader_destroy (r);
+        }
       casereader_destroy (group);
     }
   bool ok = casegrouper_destroy (grouper);

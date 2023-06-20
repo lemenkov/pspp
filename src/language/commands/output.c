@@ -45,64 +45,64 @@ cmd_output_modify (struct lexer *lexer, struct dataset *ds UNUSED)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "SELECT"))
-	{
-	  if (!lex_force_match_id (lexer, "TABLES"))
+        {
+          if (!lex_force_match_id (lexer, "TABLES"))
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "TABLECELLS"))
-	{
+        {
           string_set_clear (&rc_names);
-	  struct fmt_spec fmt = { .type = 0 };
+          struct fmt_spec fmt = { .type = 0 };
 
-	  while (lex_token (lexer) != T_SLASH &&
-		 lex_token (lexer) != T_ENDCMD)
-	    {
-	      if (lex_match_id (lexer, "SELECT"))
-		{
-		  if (!lex_force_match (lexer, T_EQUALS))
-		    goto error;
+          while (lex_token (lexer) != T_SLASH &&
+                 lex_token (lexer) != T_ENDCMD)
+            {
+              if (lex_match_id (lexer, "SELECT"))
+                {
+                  if (!lex_force_match (lexer, T_EQUALS))
+                    goto error;
 
-		  if (!lex_force_match (lexer, T_LBRACK))
-		    goto error;
+                  if (!lex_force_match (lexer, T_LBRACK))
+                    goto error;
 
-		  while (lex_token (lexer) == T_ID)
+                  while (lex_token (lexer) == T_ID)
                     {
                       string_set_insert (&rc_names, lex_tokcstr (lexer));
                       lex_get (lexer);
                     }
 
-		  if (!lex_force_match (lexer, T_RBRACK))
-		    goto error;
-		}
-	      else if (lex_match_id (lexer, "FORMAT"))
-		{
-		  char type[FMT_TYPE_LEN_MAX + 1];
-		  uint16_t width;
-		  uint8_t decimals;
+                  if (!lex_force_match (lexer, T_RBRACK))
+                    goto error;
+                }
+              else if (lex_match_id (lexer, "FORMAT"))
+                {
+                  char type[FMT_TYPE_LEN_MAX + 1];
+                  uint16_t width;
+                  uint8_t decimals;
 
-		  if (!lex_force_match (lexer, T_EQUALS)
+                  if (!lex_force_match (lexer, T_EQUALS)
                       || !parse_abstract_format_specifier (lexer, type,
                                                            &width, &decimals))
                     goto error;
 
-		  if (width <= 0)
+                  if (width <= 0)
                     width = settings_get_format ().w;
 
                   if (!fmt_from_name (type, &fmt.type))
                     {
                       lex_error (lexer, _("Unknown format type `%s'."), type);
-		      goto error;
+                      goto error;
                     }
 
-		  fmt.w = width;
-		  fmt.d = decimals;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "SELECT", "FORMAT");
-		  goto error;
-		}
-	    }
+                  fmt.w = width;
+                  fmt.d = decimals;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "SELECT", "FORMAT");
+                  goto error;
+                }
+            }
 
           if (fmt.w)
             {
@@ -112,12 +112,12 @@ cmd_output_modify (struct lexer *lexer, struct dataset *ds UNUSED)
                 if (!pivot_result_class_change (s, fmt))
                   lex_error (lexer, _("Unknown cell class %s."), s);
             }
-	}
+        }
       else
-	{
-	  lex_error_expecting (lexer, "SELECT", "TABLECELLS");
-	  goto error;
-	}
+        {
+          lex_error_expecting (lexer, "SELECT", "TABLECELLS");
+          goto error;
+        }
     }
 
   string_set_destroy (&rc_names);

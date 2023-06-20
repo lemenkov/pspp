@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY (psppire_dialog_action_oneway_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_ONEWAY(obj)	\
+#define PSPPIRE_DIALOG_ACTION_ONEWAY(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, PsppireDialogActionOneway))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, PsppireDialogActionOneway))
 
 #define PSPPIRE_DIALOG_ACTION_ONEWAY_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, \
                                  PsppireDialogActionOnewayClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_ONEWAY(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY))
 
 #define PSPPIRE_IS_DIALOG_ACTION_ONEWAY_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY))
 
 
 #define PSPPIRE_DIALOG_ACTION_ONEWAY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, \
-				   PsppireDialogActionOnewayClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, \
+                                   PsppireDialogActionOnewayClass))
 
 typedef struct _PsppireDialogActionOneway       PsppireDialogActionOneway;
 typedef struct _PsppireDialogActionOnewayClass  PsppireDialogActionOnewayClass;

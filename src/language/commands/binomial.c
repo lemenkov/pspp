@@ -45,7 +45,7 @@
 #define _(msgid) gettext (msgid)
 
 static double calculate_binomial_internal (double n1, double n2,
-					   double p);
+                                           double p);
 
 
 static void
@@ -86,12 +86,12 @@ calculate_binomial_internal (double n1, double n2, double p)
 
 static bool
 do_binomial (const struct dictionary *dict,
-	     struct casereader *input,
-	     const struct one_sample_test *ost,
-	     struct freq *cat1,
-	     struct freq *cat2,
+             struct casereader *input,
+             const struct one_sample_test *ost,
+             struct freq *cat1,
+             struct freq *cat2,
              enum mv_class exclude
-	)
+        )
 {
   const struct binomial_test *bst = UP_CAST (ost, const struct binomial_test, parent);
   bool warn = true;
@@ -104,40 +104,40 @@ do_binomial (const struct dictionary *dict,
       double w = dict_get_case_weight (dict, c, &warn);
 
       for (v = 0 ; v < ost->n_vars ; ++v)
-	{
-	  const struct variable *var = ost->vars[v];
-	  double value = case_num (c, var);
+        {
+          const struct variable *var = ost->vars[v];
+          double value = case_num (c, var);
 
-	  if (var_is_num_missing (var, value) & exclude)
-	    continue;
+          if (var_is_num_missing (var, value) & exclude)
+            continue;
 
-	  if (bst->cutpoint != SYSMIS)
-	    {
-	      if (cat1[v].values[0].f >= value)
-		  cat1[v].count  += w;
-	      else
-		  cat2[v].count += w;
-	    }
-	  else
-	    {
-	      if (SYSMIS == cat1[v].values[0].f)
-		{
-		  cat1[v].values[0].f = value;
-		  cat1[v].count = w;
-		}
-	      else if (cat1[v].values[0].f == value)
-		cat1[v].count += w;
-	      else if (SYSMIS == cat2[v].values[0].f)
-		{
-		  cat2[v].values[0].f = value;
-		  cat2[v].count = w;
-		}
-	      else if (cat2[v].values[0].f == value)
-		cat2[v].count += w;
-	      else if (bst->category1 == SYSMIS)
-		msg (ME, _("Variable %s is not dichotomous"), var_get_name (var));
-	    }
-	}
+          if (bst->cutpoint != SYSMIS)
+            {
+              if (cat1[v].values[0].f >= value)
+                  cat1[v].count  += w;
+              else
+                  cat2[v].count += w;
+            }
+          else
+            {
+              if (SYSMIS == cat1[v].values[0].f)
+                {
+                  cat1[v].values[0].f = value;
+                  cat1[v].count = w;
+                }
+              else if (cat1[v].values[0].f == value)
+                cat1[v].count += w;
+              else if (SYSMIS == cat2[v].values[0].f)
+                {
+                  cat2[v].values[0].f = value;
+                  cat2[v].count = w;
+                }
+              else if (cat2[v].values[0].f == value)
+                cat2[v].count += w;
+              else if (bst->category1 == SYSMIS)
+                msg (ME, _("Variable %s is not dichotomous"), var_get_name (var));
+            }
+        }
     }
   return casereader_destroy (input);
 }
@@ -146,11 +146,11 @@ do_binomial (const struct dictionary *dict,
 
 void
 binomial_execute (const struct dataset *ds,
-		  struct casereader *input,
+                  struct casereader *input,
                   enum mv_class exclude,
-		  const struct npar_test *test,
-		  bool exact UNUSED,
-		  double timer UNUSED)
+                  const struct npar_test *test,
+                  bool exact UNUSED,
+                  double timer UNUSED)
 {
   const struct dictionary *dict = dataset_dict (ds);
   const struct one_sample_test *ost = UP_CAST (test, const struct one_sample_test, parent);

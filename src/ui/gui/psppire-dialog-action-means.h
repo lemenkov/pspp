@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_MEANS (psppire_dialog_action_means_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_MEANS(obj)	\
+#define PSPPIRE_DIALOG_ACTION_MEANS(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_MEANS, PsppireDialogActionMeans))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_MEANS, PsppireDialogActionMeans))
 
 #define PSPPIRE_DIALOG_ACTION_MEANS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_MEANS, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_MEANS, \
                                  PsppireDialogActionMeansClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_MEANS(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_MEANS))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_MEANS))
 
 #define PSPPIRE_IS_DIALOG_ACTION_MEANS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_MEANS))
 
 
 #define PSPPIRE_DIALOG_ACTION_MEANS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_MEANS, \
-				   PsppireDialogActionMeansClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_MEANS, \
+                                   PsppireDialogActionMeansClass))
 
 typedef struct _PsppireDialogActionMeans       PsppireDialogActionMeans;
 typedef struct _PsppireDialogActionMeansClass  PsppireDialogActionMeansClass;

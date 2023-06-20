@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO (psppire_dialog_action_var_info_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_VAR_INFO(obj)	\
+#define PSPPIRE_DIALOG_ACTION_VAR_INFO(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, PsppireDialogActionVarInfo))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, PsppireDialogActionVarInfo))
 
 #define PSPPIRE_DIALOG_ACTION_VAR_INFO_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, \
                                  PsppireDialogActionVarInfoClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_VAR_INFO(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO))
 
 #define PSPPIRE_IS_DIALOG_ACTION_VAR_INFO_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO))
 
 
 #define PSPPIRE_DIALOG_ACTION_VAR_INFO_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, \
-				   PsppireDialogActionVarInfoClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, \
+                                   PsppireDialogActionVarInfoClass))
 
 typedef struct _PsppireDialogActionVarInfo       PsppireDialogActionVarInfo;
 typedef struct _PsppireDialogActionVarInfoClass  PsppireDialogActionVarInfoClass;

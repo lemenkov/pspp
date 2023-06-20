@@ -89,58 +89,58 @@ reg_sweep (gsl_matrix * A, int last_col)
     {
       const double sweep_element = gsl_matrix_get (A, k, k);
       if (fabs (sweep_element) > GSL_DBL_MIN)
-	{
-	  gsl_matrix_set (B, k, k, -1.0 / sweep_element);
-	  /*
-	    Rows before current row k.
-	  */
-	  for (i = 0; i < k; i++)
-	    {
-	      for (j = i; j < A->size2; j++)
-		{
-		  /* Use only the upper triangle of A. */
-		  double tmp;
-		  if (j < k)
-		    {
-		      tmp = gsl_matrix_get (A, i, j) -
-			gsl_matrix_get (A, i, k)
-			* gsl_matrix_get (A, j, k) / sweep_element;
-		    }
-		  else if (j > k)
-		    {
-		      tmp = gsl_matrix_get (A, i, j) -
-			gsl_matrix_get (A, i, k)
-			* gsl_matrix_get (A, k, j) / sweep_element;
-		    }
-		  else
-		    {
-		      tmp = gsl_matrix_get (A, i, k) / sweep_element;
-		    }
-		  gsl_matrix_set (B, i, j, tmp);
-		}
-	    }
-	  /*
-	    Current row k.
-	  */
-	  for (j = k + 1; j < A->size1; j++)
-	    {
-	      double tmp = gsl_matrix_get (A, k, j) / sweep_element;
-	      gsl_matrix_set (B, k, j, tmp);
-	    }
-	  /*
-	    Rows after the current row k.
-	  */
-	  for (i = k + 1; i < A->size1; i++)
-	    {
-	      for (j = i; j < A->size2; j++)
-		{
-		  double tmp = gsl_matrix_get (A, i, j) -
-		    gsl_matrix_get (A, k, i)
-		    * gsl_matrix_get (A, k, j) / sweep_element;
-		  gsl_matrix_set (B, i, j, tmp);
-		}
-	    }
-	}
+        {
+          gsl_matrix_set (B, k, k, -1.0 / sweep_element);
+          /*
+            Rows before current row k.
+          */
+          for (i = 0; i < k; i++)
+            {
+              for (j = i; j < A->size2; j++)
+                {
+                  /* Use only the upper triangle of A. */
+                  double tmp;
+                  if (j < k)
+                    {
+                      tmp = gsl_matrix_get (A, i, j) -
+                        gsl_matrix_get (A, i, k)
+                        * gsl_matrix_get (A, j, k) / sweep_element;
+                    }
+                  else if (j > k)
+                    {
+                      tmp = gsl_matrix_get (A, i, j) -
+                        gsl_matrix_get (A, i, k)
+                        * gsl_matrix_get (A, k, j) / sweep_element;
+                    }
+                  else
+                    {
+                      tmp = gsl_matrix_get (A, i, k) / sweep_element;
+                    }
+                  gsl_matrix_set (B, i, j, tmp);
+                }
+            }
+          /*
+            Current row k.
+          */
+          for (j = k + 1; j < A->size1; j++)
+            {
+              double tmp = gsl_matrix_get (A, k, j) / sweep_element;
+              gsl_matrix_set (B, k, j, tmp);
+            }
+          /*
+            Rows after the current row k.
+          */
+          for (i = k + 1; i < A->size1; i++)
+            {
+              for (j = i; j < A->size2; j++)
+                {
+                  double tmp = gsl_matrix_get (A, i, j) -
+                    gsl_matrix_get (A, k, i)
+                    * gsl_matrix_get (A, k, j) / sweep_element;
+                  gsl_matrix_set (B, i, j, tmp);
+                }
+            }
+        }
       gsl_matrix_memcpy (A, B);
     }
   gsl_matrix_free (B);

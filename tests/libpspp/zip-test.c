@@ -53,11 +53,11 @@ main (int argc, char **argv)
       int i;
       struct zip_writer *zw = zip_writer_create (argv[2]);
       for (i = 3; i < argc; ++i)
-	{
-	  FILE *fp = fopen (argv[i], "rb");
-	  if (!fp) check_die ();
-	  zip_writer_add (zw, fp, argv[i]);
-	}
+        {
+          FILE *fp = fopen (argv[i], "rb");
+          if (!fp) check_die ();
+          zip_writer_add (zw, fp, argv[i]);
+        }
       zip_writer_close (zw);
     }
   else if (0  == strcmp ("r", argv[1]))
@@ -68,45 +68,45 @@ main (int argc, char **argv)
       struct zip_reader *zr;
       char *error = zip_reader_create (argv[2], &zr);
       if (error)
-	{
-	  fprintf (stderr, "Could not create zip reader: %s\n", error);
-	  check_die ();
-	}
+        {
+          fprintf (stderr, "Could not create zip reader: %s\n", error);
+          check_die ();
+        }
       for (i = 3; i < argc; ++i)
-	{
-	  int x = 0;
-	  FILE *fp = fopen (argv[i], "wb");
-	  if (NULL == fp)
-	    {
-	      int e = errno;
-	      fprintf (stderr, "Could not create file %s: %s\n", argv[i], strerror(e));
-	      check_die ();
-	    }
+        {
+          int x = 0;
+          FILE *fp = fopen (argv[i], "wb");
+          if (NULL == fp)
+            {
+              int e = errno;
+              fprintf (stderr, "Could not create file %s: %s\n", argv[i], strerror(e));
+              check_die ();
+            }
 
-	  struct zip_member *zm ;
-	  char *error = zip_member_open (zr, argv[i], &zm);
-	  if (error)
-	    {
-	      fprintf (stderr, "Could not open zip member %s from archive: %s\n",
-		       argv[i], error);
-	      check_die ();
-	    }
+          struct zip_member *zm ;
+          char *error = zip_member_open (zr, argv[i], &zm);
+          if (error)
+            {
+              fprintf (stderr, "Could not open zip member %s from archive: %s\n",
+                       argv[i], error);
+              check_die ();
+            }
 
-	  while ((x = zip_member_read (zm, buf, BUFSIZE)) > 0)
-	    {
-	      fwrite (buf, x, 1, fp);
-	    }
+          while ((x = zip_member_read (zm, buf, BUFSIZE)) > 0)
+            {
+              fwrite (buf, x, 1, fp);
+            }
           error = zip_member_steal_error (zm);
           zip_member_finish (zm);
-	  fclose (fp);
+          fclose (fp);
 
           assert ((error != NULL) == (x < 0));
-	  if (x < 0)
-	    {
-	      fprintf (stderr, "Unzip failed: %s\n", error);
-	      check_die ();
-	    }
-	}
+          if (x < 0)
+            {
+              fprintf (stderr, "Unzip failed: %s\n", error);
+              check_die ();
+            }
+        }
       zip_reader_unref (zr);
     }
   else

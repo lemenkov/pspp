@@ -83,20 +83,20 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       for (int i = 0; i < ps.n_ps; i++)
-	{
+        {
           struct pair_stats *pp = &ps.ps[i];
-	  const union value *val0 = case_data (c, pp->var0);
-	  const union value *val1 = case_data (c, pp->var1);
+          const union value *val0 = case_data (c, pp->var0);
+          const union value *val1 = case_data (c, pp->var1);
           if (var_is_value_missing (pp->var0, val0) & tt->exclude)
-	    continue;
+            continue;
 
           if (var_is_value_missing (pp->var1, val1) & tt->exclude)
-	    continue;
+            continue;
 
-	  moments_pass_one (pp->mom0, val0->f, w);
-	  moments_pass_one (pp->mom1, val1->f, w);
-	  moments_pass_one (pp->mom_diff, val0->f - val1->f, w);
-	}
+          moments_pass_one (pp->mom0, val0->f, w);
+          moments_pass_one (pp->mom1, val1->f, w);
+          moments_pass_one (pp->mom_diff, val0->f - val1->f, w);
+        }
     }
   casereader_destroy (r);
 
@@ -106,21 +106,21 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       for (int i = 0; i < ps.n_ps; i++)
-	{
+        {
           struct pair_stats *pp = &ps.ps[i];
-	  const union value *val0 = case_data (c, pp->var0);
-	  const union value *val1 = case_data (c, pp->var1);
+          const union value *val0 = case_data (c, pp->var0);
+          const union value *val1 = case_data (c, pp->var1);
           if (var_is_value_missing (pp->var0, val0) & tt->exclude)
-	    continue;
+            continue;
 
           if (var_is_value_missing (pp->var1, val1) & tt->exclude)
-	    continue;
+            continue;
 
-	  moments_pass_two (pp->mom0, val0->f, w);
-	  moments_pass_two (pp->mom1, val1->f, w);
-	  moments_pass_two (pp->mom_diff, val0->f - val1->f, w);
-	  pp->sum_of_prod += val0->f * val1->f * w;
-	}
+          moments_pass_two (pp->mom0, val0->f, w);
+          moments_pass_two (pp->mom1, val1->f, w);
+          moments_pass_two (pp->mom_diff, val0->f - val1->f, w);
+          pp->sum_of_prod += val0->f * val1->f * w;
+        }
     }
   casereader_destroy (r);
 

@@ -30,7 +30,7 @@ freq_clone (const struct freq *in, int values, int *widths)
 {
   int i;
   struct freq *f = xmalloc (sizeof (struct freq) +
-			    (sizeof (union value) * (values - 1)));
+                            (sizeof (union value) * (values - 1)));
 
   f->node = in->node;
   f->count = in->count;

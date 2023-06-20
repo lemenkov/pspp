@@ -119,8 +119,8 @@ psppire_dialog_action_k_related_activate (PsppireDialogAction *a, GVariant *para
   psppire_dialog_action_set_refresh (pda, refresh);
 
   g_object_set (pda->source,
-		"predicate", var_is_numeric,
-		NULL);
+                "predicate", var_is_numeric,
+                NULL);
 
   return xml;
 }

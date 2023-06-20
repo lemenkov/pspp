@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE (psppire_dialog_action_two_sample_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_TWO_SAMPLE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_TWO_SAMPLE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, PsppireDialogActionTwoSample))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, PsppireDialogActionTwoSample))
 
 #define PSPPIRE_DIALOG_ACTION_TWO_SAMPLE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, \
                                  PsppireDialogActionTwoSampleClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_TWO_SAMPLE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_TWO_SAMPLE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE))
 
 
 #define PSPPIRE_DIALOG_ACTION_TWO_SAMPLE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, \
-				   PsppireDialogActionTwoSampleClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, \
+                                   PsppireDialogActionTwoSampleClass))
 
 typedef struct _PsppireDialogActionTwoSample       PsppireDialogActionTwoSample;
 typedef struct _PsppireDialogActionTwoSampleClass  PsppireDialogActionTwoSampleClass;

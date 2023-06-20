@@ -32,7 +32,7 @@ static const struct xrchart_colour black = {0,0,0};
 
 void
 xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
-			  struct xrchart_geometry *geom)
+                          struct xrchart_geometry *geom)
 {
   const struct scatterplot_chart *spc = to_scatterplot_chart (chart);
   struct casereader *data;
@@ -63,35 +63,35 @@ xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
   for (; (c = casereader_read (data)) != NULL; case_unref (c))
     {
       if (spc->byvar)
-	{
-	  const union value *val = case_data_idx (c,SP_IDX_BY);
-	  for(i=0;i<n_catvals && !value_equal (&catvals[i],val,byvar_width);i++);
-	  if (i == n_catvals) /* No entry found */
-	    {
-	      if (n_catvals < MAX_PLOT_CATS)
-		{
-		  struct string label;
-		  ds_init_empty (&label);
-		  if (var_is_value_missing (spc->byvar,val))
-		    ds_put_cstr (&label,"missing");
-		  else
-		    var_append_value_name (spc->byvar,val,&label);
-		  value_clone (&catvals[n_catvals++],val,byvar_width);
-		  geom->n_datasets++;
-		  geom->dataset = xrealloc (geom->dataset,
-					    geom->n_datasets * sizeof (*geom->dataset));
+        {
+          const union value *val = case_data_idx (c,SP_IDX_BY);
+          for(i=0;i<n_catvals && !value_equal (&catvals[i],val,byvar_width);i++);
+          if (i == n_catvals) /* No entry found */
+            {
+              if (n_catvals < MAX_PLOT_CATS)
+                {
+                  struct string label;
+                  ds_init_empty (&label);
+                  if (var_is_value_missing (spc->byvar,val))
+                    ds_put_cstr (&label,"missing");
+                  else
+                    var_append_value_name (spc->byvar,val,&label);
+                  value_clone (&catvals[n_catvals++],val,byvar_width);
+                  geom->n_datasets++;
+                  geom->dataset = xrealloc (geom->dataset,
+                                            geom->n_datasets * sizeof (*geom->dataset));
 
-		  geom->dataset[geom->n_datasets - 1] = strdup (ds_cstr(&label));
-		  ds_destroy (&label);
-		}
-	      else /* Use the last plot category */
-		{
-		  *(spc->byvar_overflow) = true;
-		  i--;
-		}
-	    }
+                  geom->dataset[geom->n_datasets - 1] = strdup (ds_cstr(&label));
+                  ds_destroy (&label);
+                }
+              else /* Use the last plot category */
+                {
+                  *(spc->byvar_overflow) = true;
+                  i--;
+                }
+            }
           colour = &data_colour[i % XRCHART_N_COLOURS];
-	}
+        }
       else
         colour = &black;
 
@@ -101,8 +101,8 @@ xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
                             colour->blue / 255.0);
 
       xrchart_datum (cr, geom, 0,
-		     case_num_idx (c, SP_IDX_X),
-		     case_num_idx (c, SP_IDX_Y));
+                     case_num_idx (c, SP_IDX_X),
+                     case_num_idx (c, SP_IDX_Y));
     }
   casereader_destroy (data);
   cairo_restore (cr);

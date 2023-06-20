@@ -160,7 +160,7 @@ cmd_break (struct lexer *lexer, struct dataset *ds)
    Returns true if successful, false on failure. */
 static bool
 parse_if_clause (struct lexer *lexer, struct dataset *ds,
-		 struct expression **condition)
+                 struct expression **condition)
 {
   if (*condition != NULL)
     {

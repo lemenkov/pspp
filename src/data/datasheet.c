@@ -51,8 +51,8 @@ static bool axis_allocate (struct axis *, unsigned long int request,
                            unsigned long int *start,
                            unsigned long int *width);
 static void axis_make_available (struct axis *,
-				 unsigned long int start,
-				 unsigned long int width);
+                                 unsigned long int start,
+                                 unsigned long int width);
 static unsigned long int axis_extend (struct axis *, unsigned long int width);
 
 static unsigned long int axis_map (const struct axis *, unsigned long log_pos);
@@ -526,7 +526,7 @@ datasheet_resize_column (struct datasheet *ds, size_t column, int new_width,
       value_destroy (&src, old_width);
       value_destroy (&dst, new_width);
       if (lrow < n_rows)
-	return false;
+        return false;
 
       release_source (ds, old_col.source);
     }
@@ -869,7 +869,7 @@ rw_case (struct datasheet *ds, enum rw_op op,
 struct axis
 {
   struct tower log_to_phy;     /* Map from logical to physical ordinates;
-				  contains "struct axis_group"s. */
+                                  contains "struct axis_group"s. */
   struct range_set *available; /* Set of unused, available ordinates. */
   unsigned long int phy_size;  /* Current physical length of axis. */
 };

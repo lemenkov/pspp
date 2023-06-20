@@ -67,7 +67,7 @@ cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
         var_set_alignment (v[i], align);
 
       while (lex_token (lexer) == T_SLASH)
-	lex_get (lexer);
+        lex_get (lexer);
       free (v);
       continue;
 
@@ -103,7 +103,7 @@ cmd_variable_width (struct lexer *lexer, struct dataset *ds)
         var_set_display_width (v[i], width);
 
       while (lex_token (lexer) == T_SLASH)
-	lex_get (lexer);
+        lex_get (lexer);
       free (v);
       continue;
 
@@ -147,10 +147,10 @@ cmd_variable_level (struct lexer *lexer, struct dataset *ds)
         goto error;
 
       for (size_t i = 0; i < nv; ++i)
-	var_set_measure (v[i], level);
+        var_set_measure (v[i], level);
 
       while (lex_token (lexer) == T_SLASH)
-	lex_get (lexer);
+        lex_get (lexer);
       free (v);
       continue;
 
@@ -196,7 +196,7 @@ cmd_variable_role (struct lexer *lexer, struct dataset *ds)
         return CMD_FAILURE;
 
       for (size_t i = 0; i < nv; i++)
-	var_set_role (v[i], role);
+        var_set_role (v[i], role);
 
       free (v);
     }

@@ -56,7 +56,7 @@ dialog_state_valid (gpointer data)
     {
       const gchar *text = gtk_entry_get_text (GTK_ENTRY (act->entry));
       if (!psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION (act)->dict, text))
-	return FALSE;
+        return FALSE;
     }
 
   return TRUE;
@@ -99,9 +99,9 @@ sample_consistent (GtkSpinButton *spin, PsppireDialogActionSelect *act)
   if (limit < size)
     {
       if (spin == GTK_SPIN_BUTTON (act->spin_sample_size))
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_limit), size);
+        gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_limit), size);
       if (spin == GTK_SPIN_BUTTON (act->spin_sample_limit))
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_size), limit);
+        gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_size), limit);
     }
 }
 
@@ -115,8 +115,8 @@ sample_subdialog (GtkButton *b, gpointer data)
 
   PsppireDataStore *data_store = NULL;
   g_object_get (PSPPIRE_DATA_WINDOW (pda->toplevel)->data_editor,
-		"data-store", &data_store,
-		NULL);
+                "data-store", &data_store,
+                NULL);
 
   gint case_count = psppire_data_store_get_case_count (data_store);
 
@@ -127,12 +127,12 @@ sample_subdialog (GtkButton *b, gpointer data)
       gtk_widget_show (scd->hbox1);
 
       gtk_grid_attach (GTK_GRID (scd->table),
-		       scd->hbox1,
-		       1, 0,
-		       1, 1);
+                       scd->hbox1,
+                       1, 0,
+                       1, 1);
 
       g_signal_connect (scd->percent, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox1);
+                        G_CALLBACK (set_sensitivity_from_toggle), scd->hbox1);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (scd->percent), TRUE);
     }
@@ -141,13 +141,13 @@ sample_subdialog (GtkButton *b, gpointer data)
   if (!scd->hbox2)
     {
       scd->hbox2 =
-	psppire_scanf_new (gettext (label2), &scd->spin_sample_size, &scd->spin_sample_limit);
+        psppire_scanf_new (gettext (label2), &scd->spin_sample_size, &scd->spin_sample_limit);
 
       gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spin_sample_size),
-				 1, case_count);
+                                 1, case_count);
 
       gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spin_sample_limit),
-				 1, case_count);
+                                 1, case_count);
 
       g_signal_connect (scd->spin_sample_size, "value-changed", G_CALLBACK (sample_consistent), scd);
       g_signal_connect (scd->spin_sample_limit, "value-changed", G_CALLBACK (sample_consistent), scd);
@@ -157,32 +157,32 @@ sample_subdialog (GtkButton *b, gpointer data)
       gtk_widget_set_sensitive (scd->hbox2, FALSE);
 
       gtk_grid_attach (GTK_GRID (scd->table),
-		       scd->hbox2,
-		       1, 1, 1, 1);
+                       scd->hbox2,
+                       1, 1, 1, 1);
 
       g_signal_connect (scd->sample_n_cases, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox2);
+                        G_CALLBACK (set_sensitivity_from_toggle), scd->hbox2);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (scd->sample_n_cases), FALSE);
     }
 
 
   gtk_window_set_transient_for (GTK_WINDOW (scd->rsample_dialog),
-				GTK_WINDOW (pda->dialog));
+                                GTK_WINDOW (pda->dialog));
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (scd->rsample_dialog));
 
   if (response != PSPPIRE_RESPONSE_CONTINUE)
     {
       g_signal_handlers_disconnect_by_func
-	(G_OBJECT (scd->percent),
-	 G_CALLBACK (set_sensitivity_from_toggle),
-	 scd->hbox1);
+        (G_OBJECT (scd->percent),
+         G_CALLBACK (set_sensitivity_from_toggle),
+         scd->hbox1);
 
       g_signal_handlers_disconnect_by_func
-	(G_OBJECT (scd->sample_n_cases),
-	 G_CALLBACK (set_sensitivity_from_toggle),
-	 scd->hbox2);
+        (G_OBJECT (scd->sample_n_cases),
+         G_CALLBACK (set_sensitivity_from_toggle),
+         scd->hbox2);
 
       gtk_widget_destroy(scd->hbox1);
       gtk_widget_destroy(scd->hbox2);
@@ -193,17 +193,17 @@ sample_subdialog (GtkButton *b, gpointer data)
       gchar *text;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
-	{
-	  text = widget_printf (gettext(label1), scd->spinbutton);
-	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
-	}
+        {
+          text = widget_printf (gettext(label1), scd->spinbutton);
+          gtk_label_set_text (GTK_LABEL (scd->l0), text);
+        }
       else
-	{
-	  text =
-	    widget_printf (gettext(label2), scd->spin_sample_size, scd->spin_sample_limit);
-	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
+        {
+          text =
+            widget_printf (gettext(label2), scd->spin_sample_size, scd->spin_sample_limit);
+          gtk_label_set_text (GTK_LABEL (scd->l0), text);
 
-	}
+        }
       g_free (text);
     }
 }
@@ -219,8 +219,8 @@ range_subdialog (GtkButton *b, gpointer data)
 
   PsppireDataStore *data_store = NULL;
   g_object_get (PSPPIRE_DATA_WINDOW (pda->toplevel)->data_editor,
-		"data-store", &data_store,
-		NULL);
+                "data-store", &data_store,
+                NULL);
 
   gint n_cases = psppire_data_store_get_case_count (data_store);
 
@@ -228,7 +228,7 @@ range_subdialog (GtkButton *b, gpointer data)
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->first), 1,  n_cases);
 
   gtk_window_set_transient_for (GTK_WINDOW (scd->range_subdialog),
-				GTK_WINDOW (pda->dialog));
+                                GTK_WINDOW (pda->dialog));
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (scd->range_subdialog));
   if (response == PSPPIRE_RESPONSE_CONTINUE)
@@ -249,9 +249,9 @@ consistency (GtkSpinButton *spin, PsppireDialogActionSelect *act)
   if (last < first)
     {
       if (spin == GTK_SPIN_BUTTON (act->first))
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->last), first);
+        gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->last), first);
       if (spin == GTK_SPIN_BUTTON (act->last))
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->first), last);
+        gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->first), last);
     }
 }
 
@@ -281,14 +281,14 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
   pda->source = get_widget_assert   (xml, "select-cases-treeview");
 
   g_object_set (pda->source,
-		"selection-mode", GTK_SELECTION_SINGLE,
-		NULL);
+                "selection-mode", GTK_SELECTION_SINGLE,
+                NULL);
 
   act->entry = get_widget_assert (xml, "filter-variable-entry");
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector-filter");
   psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-				    is_currently_in_entry);
+                                    is_currently_in_entry);
 
   act->rsample_dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
   act->percent = get_widget_assert (xml, "radiobutton-sample-percent");
@@ -328,45 +328,45 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
   GtkWidget *sample_label = get_widget_assert (xml, "random-sample-label");
 
   g_signal_connect (act->radiobutton_all, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle_invert),
-		    get_widget_assert (xml, "filter-delete-button-box"));
+                    G_CALLBACK (set_sensitivity_from_toggle_invert),
+                    get_widget_assert (xml, "filter-delete-button-box"));
 
   g_signal_connect (button_if, "clicked",
-		    G_CALLBACK (set_radiobutton), radiobutton_if);
+                    G_CALLBACK (set_radiobutton), radiobutton_if);
 
   g_signal_connect (button_sample, "clicked",
-		    G_CALLBACK (set_radiobutton), act->radiobutton_sample);
+                    G_CALLBACK (set_radiobutton), act->radiobutton_sample);
 
   g_signal_connect (button_range,  "clicked",
-		    G_CALLBACK (set_radiobutton), act->radiobutton_range);
+                    G_CALLBACK (set_radiobutton), act->radiobutton_range);
 
   g_signal_connect (selector, "clicked",
-		    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+                    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
 
   g_signal_connect (selector, "selected",
-		    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+                    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
 
   g_signal_connect (act->radiobutton_range, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    act->l1);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    act->l1);
 
   g_signal_connect (act->radiobutton_sample, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    sample_label);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    sample_label);
 
   g_signal_connect (act->radiobutton_filter_variable, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    act->entry);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    act->entry);
 
   g_signal_connect (button_range,
-		    "clicked", G_CALLBACK (range_subdialog), act);
+                    "clicked", G_CALLBACK (range_subdialog), act);
 
   g_signal_connect (button_sample,
-		    "clicked", G_CALLBACK (sample_subdialog), act);
+                    "clicked", G_CALLBACK (sample_subdialog), act);
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
+                                             dialog_state_valid);
   return xml;
 }
 
@@ -388,75 +388,75 @@ generate_syntax_filter (const PsppireDialogAction *a)
       (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
     {
       ds_put_c_format (&dss,
-		       "COMPUTE filter_$ = ($CASENUM >= %ld "
-		       "AND $CASENUM <= %ld).\n",
-		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
-		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
+                       "COMPUTE filter_$ = ($CASENUM >= %ld "
+                       "AND $CASENUM <= %ld).\n",
+                       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
+                       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
 
       ds_put_cstr (&dss, "EXECUTE.\n");
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
+            (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
-	{
-	  const double percentage =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
+        {
+          const double percentage =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
 
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = RV.UNIFORM (0,1) < %.*g.\n",
-			   filter,
-			   DBL_DIG + 1, percentage / 100.0);
-	}
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = RV.UNIFORM (0,1) < %.*g.\n",
+                           filter,
+                           DBL_DIG + 1, percentage / 100.0);
+        }
       else
-	{
-	  const gint n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
-	  const gint from_n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
+        {
+          const gint n_cases =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
+          const gint from_n_cases =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
 
 
-	  const gchar ranvar[]="rv_$";
+          const gchar ranvar[]="rv_$";
 
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = $CASENUM.\n", key);
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = $CASENUM.\n", key);
 
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = %s > %d.\n",
-			   filter, key, from_n_cases);
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = %s > %d.\n",
+                           filter, key, from_n_cases);
 
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = RV.UNIFORM (0, 1).\n",
-			   ranvar);
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = RV.UNIFORM (0, 1).\n",
+                           ranvar);
 
-	  ds_put_c_format (&dss,
-			   "SORT CASES BY %s, %s.\n",
-			   filter, ranvar);
+          ds_put_c_format (&dss,
+                           "SORT CASES BY %s, %s.\n",
+                           filter, ranvar);
 
-	  ds_put_cstr (&dss, "EXECUTE.\n");
-
-
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = $CASENUM.\n",
-			   filter);
-
-	  ds_put_c_format (&dss,
-			   "COMPUTE %s = %s <= %d\n",
-			   filter,
-			   filter,
-			   n_cases);
-
-	  ds_put_cstr (&dss, "EXECUTE.\n");
+          ds_put_cstr (&dss, "EXECUTE.\n");
 
 
-	  ds_put_c_format (&dss,
-			   "SORT CASES BY %s.\n",
-			   key);
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = $CASENUM.\n",
+                           filter);
 
-	  ds_put_c_format (&dss,
-			   "DELETE VARIABLES %s, %s.\n",
-			   key, ranvar);
-	}
+          ds_put_c_format (&dss,
+                           "COMPUTE %s = %s <= %d\n",
+                           filter,
+                           filter,
+                           n_cases);
+
+          ds_put_cstr (&dss, "EXECUTE.\n");
+
+
+          ds_put_c_format (&dss,
+                           "SORT CASES BY %s.\n",
+                           key);
+
+          ds_put_c_format (&dss,
+                           "DELETE VARIABLES %s, %s.\n",
+                           key, ranvar);
+        }
 
       ds_put_cstr (&dss, "EXECUTE.\n");
     }
@@ -496,39 +496,39 @@ generate_syntax_delete (const PsppireDialogAction *a)
       ds_put_cstr (&dss, "SAMPLE ");
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
-	{
-	  const double percentage =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
-	  ds_put_c_format (&dss, "%g.", percentage / 100.0);
-	}
+        {
+          const double percentage =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
+          ds_put_c_format (&dss, "%g.", percentage / 100.0);
+        }
       else
-	{
-	  const gint n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
-	  const gint from_n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
+        {
+          const gint n_cases =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
+          const gint from_n_cases =
+            gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
 
-	  ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
-	}
+          ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
+        }
 
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
+            (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
     {
       ds_put_c_format (&dss,
-		       "COMPUTE filter_$ = ($CASENUM >= %ld "
-		       "AND $CASENUM <= %ld).\n",
-		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
-		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
+                       "COMPUTE filter_$ = ($CASENUM >= %ld "
+                       "AND $CASENUM <= %ld).\n",
+                       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
+                       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
       ds_put_cstr (&dss, "EXECUTE.\n");
       ds_put_c_format (&dss, "SELECT IF filter_$.\n");
 
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (scd->radiobutton_filter_variable)))
+            (GTK_TOGGLE_BUTTON (scd->radiobutton_filter_variable)))
     {
       ds_put_c_format (&dss, "SELECT IF (%s <> 0).",
-		       gtk_entry_get_text (GTK_ENTRY (scd->entry)));
+                       gtk_entry_get_text (GTK_ENTRY (scd->entry)));
     }
 
 

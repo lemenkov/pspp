@@ -96,7 +96,7 @@ void dict_set_names_must_be_ids (struct dictionary *, bool);
 
 /* Weight variable. */
 double dict_get_case_weight (const struct dictionary *,
-			     const struct ccase *, bool *);
+                             const struct ccase *, bool *);
 double dict_get_rounded_case_weight (const struct dictionary *,
                                      const struct ccase *, bool *);
 struct variable *dict_get_weight (const struct dictionary *);
@@ -213,12 +213,12 @@ struct dict_callbacks
  };
 
 void dict_set_callbacks (struct dictionary *, const struct dict_callbacks *,
-			 void *);
+                         void *);
 void dict_copy_callbacks (struct dictionary *, const struct dictionary *);
 
 void dict_set_change_callback (struct dictionary *d,
-			       void (*changed) (struct dictionary *, void*),
-			       void *data);
+                               void (*changed) (struct dictionary *, void*),
+                               void *data);
 
 
 /* Debug use only. */

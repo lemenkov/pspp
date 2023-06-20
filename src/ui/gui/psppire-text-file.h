@@ -25,9 +25,9 @@ G_BEGIN_DECLS
 
 
 
-#define PSPPIRE_TYPE_TEXT_FILE	       (psppire_text_file_get_type ())
+#define PSPPIRE_TYPE_TEXT_FILE               (psppire_text_file_get_type ())
 
-#define PSPPIRE_TEXT_FILE(obj)	\
+#define PSPPIRE_TEXT_FILE(obj)        \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj),                                   \
                                PSPPIRE_TYPE_TEXT_FILE, PsppireTextFile))
 

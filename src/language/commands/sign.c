@@ -60,8 +60,8 @@ add_pair_leaf (struct pivot_dimension *dimension, variable_pair *pair)
 
 static void
 output_frequency_table (const struct two_sample_test *t2s,
-			const struct sign_test_params *param,
-			const struct dictionary *dict)
+                        const struct sign_test_params *param,
+                        const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create (N_("Frequencies"));
   pivot_table_set_weight_var (table, dict_get_weight (dict));
@@ -95,7 +95,7 @@ output_frequency_table (const struct two_sample_test *t2s,
 
 static void
 output_statistics_table (const struct two_sample_test *t2s,
-			 const struct sign_test_params *param)
+                         const struct sign_test_params *param)
 {
   struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
@@ -126,11 +126,11 @@ output_statistics_table (const struct two_sample_test *t2s,
 
 void
 sign_execute (const struct dataset *ds,
-		  struct casereader *input,
-		  enum mv_class exclude,
-		  const struct npar_test *test,
-		  bool exact UNUSED,
-		  double timer UNUSED)
+                  struct casereader *input,
+                  enum mv_class exclude,
+                  const struct npar_test *test,
+                  bool exact UNUSED,
+                  double timer UNUSED)
 {
   int i;
   bool warn = true;
@@ -147,25 +147,25 @@ sign_execute (const struct dataset *ds,
       const double weight = dict_get_case_weight (dict, c, &warn);
 
       for (i = 0 ; i < t2s->n_pairs; ++i)
-	{
-	  variable_pair *vp = &t2s->pairs[i];
-	  const union value *value0 = case_data (c, (*vp)[0]);
-	  const union value *value1 = case_data (c, (*vp)[1]);
-	  const double diff = value0->f - value1->f;
+        {
+          variable_pair *vp = &t2s->pairs[i];
+          const union value *value0 = case_data (c, (*vp)[0]);
+          const union value *value1 = case_data (c, (*vp)[1]);
+          const double diff = value0->f - value1->f;
 
-	  if (var_is_value_missing ((*vp)[0], value0) & exclude)
-	    continue;
+          if (var_is_value_missing ((*vp)[0], value0) & exclude)
+            continue;
 
-	  if (var_is_value_missing ((*vp)[1], value1) & exclude)
-	    continue;
+          if (var_is_value_missing ((*vp)[1], value1) & exclude)
+            continue;
 
-	  if (diff > 0)
-	    stp[i].pos += weight;
-	  else if (diff < 0)
-	    stp[i].neg += weight;
-	  else
-	    stp[i].ties += weight;
-	}
+          if (diff > 0)
+            stp[i].pos += weight;
+          else if (diff < 0)
+            stp[i].neg += weight;
+          else
+            stp[i].ties += weight;
+        }
     }
 
   casereader_destroy (r);
@@ -174,11 +174,11 @@ sign_execute (const struct dataset *ds,
     {
       int r = MIN (stp[i].pos, stp[i].neg);
       stp[i].one_tailed_sig = gsl_cdf_binomial_P (r,
-						  0.5,
-						  stp[i].pos + stp[i].neg);
+                                                  0.5,
+                                                  stp[i].pos + stp[i].neg);
 
       stp[i].point_prob = gsl_ran_binomial_pdf (r, 0.5,
-						stp[i].pos + stp[i].neg);
+                                                stp[i].pos + stp[i].neg);
     }
 
   output_frequency_table (t2s, stp, dict);

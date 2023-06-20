@@ -49,7 +49,7 @@
 struct variable;
 
 struct linreg *linreg_alloc (const struct variable *, const struct variable **,
-			     double, size_t, bool);
+                             double, size_t, bool);
 
 void linreg_unref (struct linreg *);
 void linreg_ref (struct linreg *);

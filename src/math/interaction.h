@@ -62,7 +62,7 @@ bool interaction_is_subset (const struct interaction *,
 
 unsigned int interaction_case_hash (const struct interaction *,
                                     const struct ccase *,
-				    unsigned int base) WARN_UNUSED_RESULT;
+                                    unsigned int base) WARN_UNUSED_RESULT;
 bool interaction_case_equal (const struct interaction *, const struct ccase *,
                              const struct ccase *);
 bool interaction_case_is_missing (const struct interaction *,

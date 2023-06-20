@@ -872,13 +872,13 @@ lex_force_match (struct lexer *lexer, enum token_type type)
     {
       const char *type_string = token_type_to_string (type);
       if (type_string)
-	{
-	  char *s = xasprintf ("`%s'", type_string);
-	  lex_error_expecting (lexer, s);
-	  free (s);
-	}
+        {
+          char *s = xasprintf ("`%s'", type_string);
+          lex_error_expecting (lexer, s);
+          free (s);
+        }
       else
-	lex_error_expecting (lexer, token_type_to_name (type));
+        lex_error_expecting (lexer, token_type_to_name (type));
 
       return false;
     }

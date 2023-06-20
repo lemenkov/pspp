@@ -341,7 +341,7 @@ str_parse_26adic (const char *str)
                    : c >= 'a' && c <= 'z' ? c - 'a'
                    : -1);
       if (digit < 0)
-	return -1;
+        return -1;
       assert (digit >= 0 && digit < RADIX);
 
       result += (digit + (i > 0)) * multiplier;
@@ -1195,7 +1195,7 @@ ds_extend (struct string *st, size_t min_capacity)
     {
       st->capacity *= 2;
       if (st->capacity < min_capacity)
-	st->capacity = 2 * min_capacity;
+        st->capacity = 2 * min_capacity;
 
       st->ss.string = xrealloc (st->ss.string, st->capacity + 1);
     }
@@ -1793,7 +1793,7 @@ ds_relocate (struct string *st)
       ds_clear (st);
       ds_put_cstr (st, rel);
       /* The documentation for relocate says that casting away const
-	and then freeing is appropriate ... */
+        and then freeing is appropriate ... */
       free (CONST_CAST (char *, rel));
     }
 }
@@ -1831,8 +1831,8 @@ relocate_format (const char *format, ...)
    copies of PAD as needed. */
 void
 u8_buf_copy_rpad (uint8_t *dst, size_t dst_size,
-		  const uint8_t *src, size_t src_size,
-		  char pad)
+                  const uint8_t *src, size_t src_size,
+                  char pad)
 {
   if (src_size >= dst_size)
     memmove (dst, src, dst_size);

@@ -119,7 +119,7 @@ u (const struct group_data *grp0, const struct group_data *grp1)
           else if (x0 < x1)
             {
               usum += w0 * (grp1->cc - prev_cc1);
-	      case_unref (c1);
+              case_unref (c1);
               break;
             }
           else
@@ -129,7 +129,7 @@ u (const struct group_data *grp0, const struct group_data *grp1)
 #else
               usum += w0 * (grp1->cc - (prev_cc1 + cc1) / 2.0);
 #endif
-	      case_unref (c1);
+              case_unref (c1);
               break;
             }
 
@@ -227,11 +227,11 @@ static void show_jt (const struct n_sample_test *, const struct jt *,
 
 void
 jonckheere_terpstra_execute (const struct dataset *ds,
-			struct casereader *input,
-			enum mv_class exclude,
-			const struct npar_test *test,
-			bool exact UNUSED,
-			double timer UNUSED)
+                        struct casereader *input,
+                        enum mv_class exclude,
+                        const struct npar_test *test,
+                        bool exact UNUSED,
+                        double timer UNUSED)
 {
   int v;
   bool warn = true;
@@ -244,16 +244,16 @@ jonckheere_terpstra_execute (const struct dataset *ds,
 
   /* If the independent variable is missing, then we ignore the case */
   input = casereader_create_filter_missing (input,
-					    &nst->indep_var, 1,
-					    exclude,
-					    NULL, NULL);
+                                            &nst->indep_var, 1,
+                                            exclude,
+                                            NULL, NULL);
 
   /* Remove cases with invalid weigths */
   input = casereader_create_filter_weight (input, dict, &warn, NULL);
 
   /* Remove all those cases which are outside the range (val1, val2) */
   input = casereader_create_filter_func (input, include_func_bi, NULL,
-	CONST_CAST (struct n_sample_test *, nst), NULL);
+        CONST_CAST (struct n_sample_test *, nst), NULL);
 
   /* Sort the data by the independent variable */
   input = sort_execute_1var (input, nst->indep_var);
@@ -328,7 +328,7 @@ jonckheere_terpstra_execute (const struct dataset *ds,
         for (i = 0; i < 3; ++i)
           sums[i] += mff[i] (grp[g0].cc);
 
-	casereader_destroy (grp[g0].reader);
+        casereader_destroy (grp[g0].reader);
       }
 
     free (grp);

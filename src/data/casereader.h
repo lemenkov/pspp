@@ -100,7 +100,7 @@ struct casereader *
 casereader_create_filter_missing (struct casereader *,
                                   const struct variable *const *vars, size_t n_vars,
                                   enum mv_class,
-				  casenumber *n_missing,
+                                  casenumber *n_missing,
                                   struct casewriter *exclude);
 
 struct casereader *
@@ -135,8 +135,8 @@ typedef double new_value_func (const struct ccase *, casenumber, void *);
 
 struct casereader *
 casereader_create_append_numeric (struct casereader *subreader,
-				  new_value_func func, void *aux,
-				  void (*destroy) (void *aux));
+                                  new_value_func func, void *aux,
+                                  void (*destroy) (void *aux));
 
 struct casereader *
 casereader_create_arithmetic_sequence (struct casereader *,
@@ -154,14 +154,14 @@ typedef void distinct_func (double v, casenumber n, double w, void *aux);
 
 struct casereader *
 casereader_create_append_rank (struct casereader *,
-			       const struct variable *v, const struct variable *w,
-			       enum rank_error *err,
-			       distinct_func *distinct_callback, void *aux);
+                               const struct variable *v, const struct variable *w,
+                               enum rank_error *err,
+                               distinct_func *distinct_callback, void *aux);
 
 struct casereader *
 casereader_create_distinct (struct casereader *input,
-			    const struct variable *key,
-			    const struct variable *weight);
+                            const struct variable *key,
+                            const struct variable *weight);
 
 
 #endif /* data/casereader.h */

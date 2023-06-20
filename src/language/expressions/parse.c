@@ -309,13 +309,13 @@ type_check (const struct expression *e, const struct expr_node *n,
     {
     case VAL_NUMERIC:
       if (actual_type != OP_number && actual_type != OP_boolean)
-	{
-	  msg_at (SE, expr_location (e, n),
+        {
+          msg_at (SE, expr_location (e, n),
                   _("Type mismatch: expression has type '%s', "
                      "but a numeric value is required."),
                atom_type_name (actual_type));
-	  return false;
-	}
+          return false;
+        }
       break;
 
     case VAL_STRING:
@@ -981,15 +981,15 @@ parse_primary__ (struct lexer *lexer, struct expression *e)
                            ss_length (lex_tokss (lexer)), e->expr_pool);
         node = expr_allocate_string (e, ss_cstr (s));
 
-	lex_get (lexer);
-	return node;
+        lex_get (lexer);
+        return node;
       }
 
     case T_LPAREN:
       {
         lex_get (lexer);
         struct expr_node *node = parse_or (lexer, e);
-	return !node || !lex_force_match (lexer, T_RPAREN) ? NULL : node;
+        return !node || !lex_force_match (lexer, T_RPAREN) ? NULL : node;
       }
 
     default:

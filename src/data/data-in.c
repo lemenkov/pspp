@@ -881,7 +881,7 @@ parse_month (struct data_in *i, long *month)
     {
       char *error = parse_int (i, month, SIZE_MAX);
       if (error != NULL)
-	return error;
+        return error;
       if (*month >= 1 && *month <= 12)
         return NULL;
     }

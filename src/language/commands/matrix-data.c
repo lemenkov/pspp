@@ -988,49 +988,49 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (!lex_force_match (lexer, T_SLASH))
-	goto error;
+        goto error;
 
       if (lex_match_id (lexer, "N"))
-	{
+        {
           n_start = lex_ofs (lexer) - 1;
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  if (!lex_force_int_range (lexer, "N", 0, INT_MAX))
-	    goto error;
+          if (!lex_force_int_range (lexer, "N", 0, INT_MAX))
+            goto error;
 
-	  mf.n = lex_integer (lexer);
+          mf.n = lex_integer (lexer);
           n_end = lex_ofs (lexer);
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "FORMAT"))
-	{
+        {
           int start_ofs = lex_ofs (lexer) - 1;
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
-	    {
-	      if (lex_match_id (lexer, "LIST"))
+          while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+            {
+              if (lex_match_id (lexer, "LIST"))
                 mf.span = false;
-	      else if (lex_match_id (lexer, "FREE"))
+              else if (lex_match_id (lexer, "FREE"))
                 mf.span = true;
-	      else if (lex_match_id (lexer, "UPPER"))
+              else if (lex_match_id (lexer, "UPPER"))
                 mf.triangle = UPPER;
-	      else if (lex_match_id (lexer, "LOWER"))
+              else if (lex_match_id (lexer, "LOWER"))
                 mf.triangle = LOWER;
-	      else if (lex_match_id (lexer, "FULL"))
+              else if (lex_match_id (lexer, "FULL"))
                 mf.triangle = FULL;
-	      else if (lex_match_id (lexer, "DIAGONAL"))
+              else if (lex_match_id (lexer, "DIAGONAL"))
                 mf.diagonal = DIAGONAL;
-	      else if (lex_match_id (lexer, "NODIAGONAL"))
+              else if (lex_match_id (lexer, "NODIAGONAL"))
                 mf.diagonal = NO_DIAGONAL;
-	      else
-		{
-		  lex_error_expecting (lexer, "LIST", "FREE",
+              else
+                {
+                  lex_error_expecting (lexer, "LIST", "FREE",
                                        "UPPER", "LOWER", "FULL",
                                        "DIAGONAL", "NODIAGONAL");
-		  goto error;
-		}
-	    }
+                  goto error;
+                }
+            }
           int end_ofs = lex_ofs (lexer) - 1;
 
           if (mf.diagonal == NO_DIAGONAL && mf.triangle == FULL)
@@ -1040,15 +1040,15 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
                                "mutually exclusive."));
               goto error;
             }
-	}
+        }
       else if (lex_match_id (lexer, "FILE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           fh_unref (fh);
-	  fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
-	  if (!fh)
-	    goto error;
-	}
+          fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
+          if (!fh)
+            goto error;
+        }
       else if (!mf.n_svars && lex_match_id (lexer, "SPLIT"))
         {
           lex_match (lexer, T_EQUALS);
@@ -1079,20 +1079,20 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
             goto error;
         }
       else if (lex_match_id (lexer, "CELLS"))
-	{
+        {
           if (mf.input_rowtype)
             lex_next_msg (lexer, SW,
                           -1, -1, _("CELLS is ignored when VARIABLES "
                                     "includes ROWTYPE_"));
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  if (!lex_force_int_range (lexer, "CELLS", 0, INT_MAX))
-	    goto error;
+          if (!lex_force_int_range (lexer, "CELLS", 0, INT_MAX))
+            goto error;
 
-	  mf.cells = lex_integer (lexer);
-	  lex_get (lexer);
-	}
+          mf.cells = lex_integer (lexer);
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "CONTENTS"))
         {
           lex_match (lexer, T_EQUALS);
@@ -1142,11 +1142,11 @@ cmd_matrix_data (struct lexer *lexer, struct dataset *ds)
             }
         }
       else
-	{
-	  lex_error_expecting (lexer, "N", "FORMAT", "FILE", "SPLIT", "FACTORS",
+        {
+          lex_error_expecting (lexer, "N", "FORMAT", "FILE", "SPLIT", "FACTORS",
                                "CELLS", "CONTENTS");
-	  goto error;
-	}
+          goto error;
+        }
     }
   if (!mf.input_rowtype)
     {

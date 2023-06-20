@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL (psppire_dialog_action_binomial_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_BINOMIAL(obj)	\
+#define PSPPIRE_DIALOG_ACTION_BINOMIAL(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, PsppireDialogActionBinomial))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, PsppireDialogActionBinomial))
 
 #define PSPPIRE_DIALOG_ACTION_BINOMIAL_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, \
                                  PsppireDialogActionBinomialClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_BINOMIAL(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL))
 
 #define PSPPIRE_IS_DIALOG_ACTION_BINOMIAL_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL))
 
 
 #define PSPPIRE_DIALOG_ACTION_BINOMIAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, \
-				   PsppireDialogActionBinomialClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, \
+                                   PsppireDialogActionBinomialClass))
 
 typedef struct _PsppireDialogActionBinomial       PsppireDialogActionBinomial;
 typedef struct _PsppireDialogActionBinomialClass  PsppireDialogActionBinomialClass;

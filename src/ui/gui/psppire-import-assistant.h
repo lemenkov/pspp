@@ -37,25 +37,25 @@ struct spreadsheet;
 
 #define PSPPIRE_TYPE_IMPORT_ASSISTANT (psppire_import_assistant_get_type ())
 
-#define PSPPIRE_IMPORT_ASSISTANT(obj)	\
+#define PSPPIRE_IMPORT_ASSISTANT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_IMPORT_ASSISTANT, PsppireImportAssistant))
+                                                  PSPPIRE_TYPE_IMPORT_ASSISTANT, PsppireImportAssistant))
 
 #define PSPPIRE_IMPORT_ASSISTANT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_IMPORT_ASSISTANT, \
+                                 PSPPIRE_TYPE_IMPORT_ASSISTANT, \
                                  PsppireImportAssistantClass))
 
 #define PSPPIRE_IS_IMPORT_ASSISTANT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_IMPORT_ASSISTANT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_IMPORT_ASSISTANT))
 
 #define PSPPIRE_IS_IMPORT_ASSISTANT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_IMPORT_ASSISTANT))
 
 
 #define PSPPIRE_IMPORT_ASSISTANT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_IMPORT_ASSISTANT, \
-				   PsppireImportAssistantClass))
+                                   PSPPIRE_TYPE_IMPORT_ASSISTANT, \
+                                   PsppireImportAssistantClass))
 
 typedef struct _PsppireImportAssistant       PsppireImportAssistant;
 typedef struct _PsppireImportAssistantClass  PsppireImportAssistantClass;

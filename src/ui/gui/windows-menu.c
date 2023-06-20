@@ -63,7 +63,7 @@ add_menuitem (gpointer key, gpointer value, gpointer user_data)
   GtkWidget *mi = gtk_check_menu_item_new_with_label (key);
 
   gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mi),
-				  pw == g_object_get_data (G_OBJECT (menu), "toplevel"));
+                                  pw == g_object_get_data (G_OBJECT (menu), "toplevel"));
 
   g_signal_connect (mi, "toggled", G_CALLBACK (reset_check_state), pw);
 
@@ -100,7 +100,7 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
       GtkWidget *split = gtk_check_menu_item_new_with_mnemonic (_("_Split"));
       gtk_menu_attach (GTK_MENU (menu), split, 0, 1, 1, 2);
       g_signal_connect_swapped (split, "toggled",
-				G_CALLBACK (toggle_split_window), toplevel);
+                                G_CALLBACK (toggle_split_window), toplevel);
     }
 
   gtk_container_add (GTK_CONTAINER (menu), sep);

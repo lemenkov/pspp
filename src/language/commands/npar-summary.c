@@ -37,10 +37,10 @@
 
 void
 npar_summary_calc_descriptives (struct descriptives *desc,
-				struct casereader *input,
-				const struct dictionary *dict,
-				const struct variable *const *vv,
-				int n_vars,
+                                struct casereader *input,
+                                const struct dictionary *dict,
+                                const struct variable *const *vv,
+                                int n_vars,
                                 enum mv_class filter)
 {
   int i = 0;
@@ -60,21 +60,21 @@ npar_summary_calc_descriptives (struct descriptives *desc,
                                                filter, NULL, NULL);
       pass = casereader_create_filter_weight (pass, dict, NULL, NULL);
       while ((c = casereader_read (pass)) != NULL)
-	{
+        {
           double val = case_num (c, v);
           double w = dict_get_case_weight (dict, c, NULL);
           minimum = MIN (minimum, val);
           maximum = MAX (maximum, val);
           moments1_add (moments, val, w);
-	  case_unref (c);
-	}
+          case_unref (c);
+        }
       casereader_destroy (pass);
 
       moments1_calculate (moments,
-			  &desc[i].n,
-			  &desc[i].mean,
-			  &var,
-			  NULL, NULL);
+                          &desc[i].n,
+                          &desc[i].mean,
+                          &var,
+                          NULL, NULL);
 
       desc[i].std_dev = sqrt (var);
 
@@ -91,8 +91,8 @@ npar_summary_calc_descriptives (struct descriptives *desc,
 
 void
 do_summary_box (const struct descriptives *desc,
-		const struct variable *const *vv,
-		int n_vars,
+                const struct variable *const *vv,
+                int n_vars,
                 const struct fmt_spec wfmt)
 {
   if (!desc)

@@ -75,9 +75,9 @@ enum ATTRIBUTE ((packed)) fmt_type
 /* Display format. */
 struct fmt_spec
   {
-    enum fmt_type type;		/* One of FMT_*. */
-    uint8_t d;			/* Number of decimal places. */
-    uint16_t w;			/* Width. */
+    enum fmt_type type;                /* One of FMT_*. */
+    uint8_t d;                        /* Number of decimal places. */
+    uint16_t w;                        /* Width. */
   };
 
 /* Maximum width of any numeric format. */

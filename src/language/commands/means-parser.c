@@ -34,14 +34,14 @@
 /* Parse the /TABLES stanza of the command.  */
 static bool
 parse_means_table_syntax (struct lexer *lexer, const struct means *cmd,
-			  struct mtable *table)
+                          struct mtable *table)
 {
   memset (table, 0, sizeof *table);
 
   /* Dependent variable (s) */
   if (!parse_variables_const_pool (lexer, cmd->pool, cmd->dict,
-				   &table->dep_vars, &table->n_dep_vars,
-				   PV_NO_DUPLICATE | PV_NUMERIC))
+                                   &table->dep_vars, &table->n_dep_vars,
+                                   PV_NO_DUPLICATE | PV_NUMERIC))
     return false;
 
   /* Factor variable (s) */
@@ -50,17 +50,17 @@ parse_means_table_syntax (struct lexer *lexer, const struct means *cmd,
       struct layer *layer = pool_zalloc (cmd->pool, sizeof *layer);
 
       table->layers =
-	pool_nrealloc (cmd->pool, table->layers, table->n_layers + 1,
-		       sizeof *table->layers);
+        pool_nrealloc (cmd->pool, table->layers, table->n_layers + 1,
+                       sizeof *table->layers);
       table->layers[table->n_layers] = layer;
       table->n_layers++;
 
       if (!parse_variables_const_pool
-	  (lexer, cmd->pool, cmd->dict,
-	   &layer->factor_vars,
-	   &layer->n_factor_vars,
-	   PV_NO_DUPLICATE))
-	return false;
+          (lexer, cmd->pool, cmd->dict,
+           &layer->factor_vars,
+           &layer->n_factor_vars,
+           PV_NO_DUPLICATE))
+        return false;
     }
 
   return true;
@@ -71,7 +71,7 @@ parse_means_table_syntax (struct lexer *lexer, const struct means *cmd,
    Returns true if successful */
 static bool
 lex_is_variable (struct lexer *lexer, const struct dictionary *dict,
-		 int n)
+                 int n)
 {
   if (lex_next_token (lexer, n) != T_ID)
     return false;
@@ -122,7 +122,7 @@ means_parse (struct lexer *lexer, struct means *means)
   for (;;)
     {
       means->table = pool_realloc (means->pool, means->table,
-				   (means->n_tables + 1) * sizeof *means->table);
+                                   (means->n_tables + 1) * sizeof *means->table);
 
       if (!parse_means_table_syntax (lexer, means,
                                      &means->table[means->n_tables]))
@@ -142,21 +142,21 @@ means_parse (struct lexer *lexer, struct means *means)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "MISSING"))
-	{
-	  /* If no MISSING subcommand is specified, each combination of a
+        {
+          /* If no MISSING subcommand is specified, each combination of a
              dependent variable and categorical variables is handled
              separately. */
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "INCLUDE"))
-	    {
-	      /* Use the subcommand "/MISSING=INCLUDE" to include user-missing
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "INCLUDE"))
+            {
+              /* Use the subcommand "/MISSING=INCLUDE" to include user-missing
                  values in the analysis. */
 
-	      means->ctrl_exclude = MV_SYSTEM;
-	      means->dep_exclude = MV_SYSTEM;
-	    }
-	  else if (lex_match_id (lexer, "DEPENDENT"))
-	    /* Use the command "/MISSING=DEPENDENT" to include user-missing
+              means->ctrl_exclude = MV_SYSTEM;
+              means->dep_exclude = MV_SYSTEM;
+            }
+          else if (lex_match_id (lexer, "DEPENDENT"))
+            /* Use the command "/MISSING=DEPENDENT" to include user-missing
                values for the categorical variables, while excluding them for
                the dependent variables.
 
@@ -166,56 +166,56 @@ means_parse (struct lexer *lexer, struct means *means)
 
                Cases are ALWAYS dropped when System Missing values appear in
                the categorical variables. */
-	    {
-	      means->dep_exclude = MV_ANY;
-	      means->ctrl_exclude = MV_SYSTEM;
-	    }
-	  else
-	    {
-	      lex_error_expecting (lexer, "INCLUDE", "DEPENDENT");
-	      return false;
-	    }
-	}
+            {
+              means->dep_exclude = MV_ANY;
+              means->ctrl_exclude = MV_SYSTEM;
+            }
+          else
+            {
+              lex_error_expecting (lexer, "INCLUDE", "DEPENDENT");
+              return false;
+            }
+        }
       else if (lex_match_id (lexer, "CELLS"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  /* The default values become overwritten */
-	  means->n_statistics = 0;
-	  while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match (lexer, T_ALL))
-	      	{
-		  means->n_statistics = 0;
-		  for (int i = 0; i < n_MEANS_STATISTICS; ++i)
+          /* The default values become overwritten */
+          means->n_statistics = 0;
+          while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match (lexer, T_ALL))
+                      {
+                  means->n_statistics = 0;
+                  for (int i = 0; i < n_MEANS_STATISTICS; ++i)
                     add_statistic (means, i);
-	      	}
-	      else if (lex_match_id (lexer, "NONE"))
+                      }
+              else if (lex_match_id (lexer, "NONE"))
                 means->n_statistics = 0;
-	      else if (lex_match_id (lexer, "DEFAULT"))
+              else if (lex_match_id (lexer, "DEFAULT"))
                 means_set_default_statistics (means);
               else
-		{
+                {
                   const struct cell_spec *cs = match_cell (lexer);
                   if (cs)
                     add_statistic (means, cs - cell_spec);
                   else
-		    {
+                    {
                       const char *keywords[n_MEANS_STATISTICS];
                       for (int i = 0; i < n_MEANS_STATISTICS; ++i)
                         keywords[i] = cell_spec[i].keyword;
-		      lex_error_expecting_array (lexer, keywords,
+                      lex_error_expecting_array (lexer, keywords,
                                                  n_MEANS_STATISTICS);
-		      return false;
-		    }
-		}
-	    }
-	}
+                      return false;
+                    }
+                }
+            }
+        }
       else
-	{
-	  lex_error_expecting (lexer, "MISSING", "CELLS");
-	  return false;
-	}
+        {
+          lex_error_expecting (lexer, "MISSING", "CELLS");
+          return false;
+        }
     }
   return true;
 }

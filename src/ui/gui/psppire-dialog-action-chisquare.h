@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE (psppire_dialog_action_chisquare_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_CHISQUARE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_CHISQUARE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, PsppireDialogActionChisquare))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, PsppireDialogActionChisquare))
 
 #define PSPPIRE_DIALOG_ACTION_CHISQUARE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, \
                                  PsppireDialogActionChisquareClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_CHISQUARE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_CHISQUARE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE))
 
 
 #define PSPPIRE_DIALOG_ACTION_CHISQUARE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, \
-				   PsppireDialogActionChisquareClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, \
+                                   PsppireDialogActionChisquareClass))
 
 typedef struct _PsppireDialogActionChisquare       PsppireDialogActionChisquare;
 typedef struct _PsppireDialogActionChisquareClass  PsppireDialogActionChisquareClass;

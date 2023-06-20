@@ -47,8 +47,8 @@ freaderror (FILE *fp)
   if (ferror (fp))
     {
       /* The stream had an error earlier, but its errno was lost.
-	 If the error was not temporary, we can get the same
-	 errno by reading one more byte.  */
+         If the error was not temporary, we can get the same
+         errno by reading one more byte.  */
       getc (fp);
       fclose (fp);
       return -1;

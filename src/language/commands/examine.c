@@ -289,7 +289,7 @@ show_boxplot_variabled (const struct examine *cmd, int iact_idx)
       double y_max = -DBL_MAX;
 
       const struct ccase *c =
-	categoricals_get_case_by_category_real (cmd->cats,  iact_idx, grp);
+        categoricals_get_case_by_category_real (cmd->cats,  iact_idx, grp);
 
       struct string title;
       ds_init_empty (&title);
@@ -413,7 +413,7 @@ show_npplot (const struct examine *cmd, int iact_idx)
               chart_submit (npp);
               chart_submit (dnpp);
             }
-	  casereader_destroy (reader);
+          casereader_destroy (reader);
 
           ds_destroy (&label);
         }
@@ -439,14 +439,14 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
 
       struct string label;
       ds_init_cstr (&label,
-		    var_to_string (cmd->dep_vars[v]));
+                    var_to_string (cmd->dep_vars[v]));
 
       if (iact->n_vars > 0)
-	{
-	  ds_put_cstr (&label, " (");
-	  interaction_to_string (iact, &label);
-	  ds_put_cstr (&label, ")");
-	}
+        {
+          ds_put_cstr (&label, " (");
+          interaction_to_string (iact, &label);
+          ds_put_cstr (&label, ")");
+        }
 
       sl = spreadlevel_plot_create (ds_cstr (&label), cmd->sl_power);
 
@@ -455,18 +455,18 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
           const struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
-	  double median = percentile_calculate (es[v].quartiles[1], cmd->pc_alg);
+          double median = percentile_calculate (es[v].quartiles[1], cmd->pc_alg);
 
-	  double iqr = percentile_calculate (es[v].quartiles[2], cmd->pc_alg) -
-	    percentile_calculate (es[v].quartiles[0], cmd->pc_alg);
+          double iqr = percentile_calculate (es[v].quartiles[2], cmd->pc_alg) -
+            percentile_calculate (es[v].quartiles[0], cmd->pc_alg);
 
-	  spreadlevel_plot_add (sl, iqr, median);
-	}
+          spreadlevel_plot_add (sl, iqr, median);
+        }
 
       if (sl == NULL)
-	msg (MW, _("Not creating spreadlevel chart for %s"), ds_cstr (&label));
+        msg (MW, _("Not creating spreadlevel chart for %s"), ds_cstr (&label));
       else
-	chart_submit (sl);
+        chart_submit (sl);
 
       ds_destroy (&label);
     }
@@ -497,8 +497,8 @@ show_histogram (const struct examine *cmd, int iact_idx)
 
           struct string label;
 
-	  if (es[v].histogram == NULL)
-	    continue;
+          if (es[v].histogram == NULL)
+            continue;
 
           ds_init_cstr (&label,
                         var_to_string (cmd->dep_vars[v]));
@@ -658,9 +658,9 @@ normality_report (const struct examine *cmd, int iact_idx)
 
   struct pivot_dimension *test =
     pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Shapiro-Wilk"),
-			    N_("Statistic"),
-			    N_("df"), PIVOT_RC_COUNT,
-			    N_("Sig."));
+                            N_("Statistic"),
+                            N_("df"), PIVOT_RC_COUNT,
+                            N_("Sig."));
 
   test->root->show_label = true;
 
@@ -677,37 +677,37 @@ normality_report (const struct examine *cmd, int iact_idx)
   for (size_t v = 0; v < cmd->n_dep_vars; ++v)
     {
       indexes[table->n_dimensions - 1] =
-	pivot_category_create_leaf (dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
+        pivot_category_create_leaf (dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
 
       for (size_t i = 0; i < n_cats; ++i)
         {
-	  indexes[1] = i;
+          indexes[1] = i;
 
           const struct exploratory_stats *es
             = categoricals_get_user_data_by_category_real (
               cmd->cats, iact_idx, i);
 
-	  struct shapiro_wilk *sw =  es[v].shapiro_wilk;
+          struct shapiro_wilk *sw =  es[v].shapiro_wilk;
 
-	  if (sw == NULL)
-	    continue;
+          if (sw == NULL)
+            continue;
 
-	  double w = shapiro_wilk_calculate (sw);
+          double w = shapiro_wilk_calculate (sw);
 
-	  int j = 0;
-	  indexes[0] = j;
+          int j = 0;
+          indexes[0] = j;
 
-	  pivot_table_put (table, indexes, table->n_dimensions,
-			   pivot_value_new_number (w));
+          pivot_table_put (table, indexes, table->n_dimensions,
+                           pivot_value_new_number (w));
 
-	  indexes[0] = ++j;
-	  pivot_table_put (table, indexes, table->n_dimensions,
-			   pivot_value_new_number (sw->n));
+          indexes[0] = ++j;
+          pivot_table_put (table, indexes, table->n_dimensions,
+                           pivot_value_new_number (sw->n));
 
-	  indexes[0] = ++j;
-	  pivot_table_put (table, indexes, table->n_dimensions,
-			   pivot_value_new_number (shapiro_wilk_significance (sw->n, w)));
-	}
+          indexes[0] = ++j;
+          pivot_table_put (table, indexes, table->n_dimensions,
+                           pivot_value_new_number (shapiro_wilk_significance (sw->n, w)));
+        }
     }
 
   free (indexes);
@@ -831,8 +831,8 @@ extremes_report (const struct examine *cmd, int iact_idx)
     pivot_category_create_leaf (order->root, pivot_value_new_integer (i + 1));
 
   pivot_dimension_create (table, PIVOT_AXIS_ROW,
-			  /* TRANSLATORS: This is a noun, not an adjective.  */
-			  N_("Extreme"),
+                          /* TRANSLATORS: This is a noun, not an adjective.  */
+                          N_("Extreme"),
                           N_("Highest"), N_("Lowest"));
 
   const struct interaction *iact = cmd->iacts[iact_idx];
@@ -1035,16 +1035,16 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
   if (!examine->missing_pw)
     {
       for (v = 0; v < examine->n_dep_vars; v++)
-	{
-	  const struct variable *var = examine->dep_vars[v];
+        {
+          const struct variable *var = examine->dep_vars[v];
 
-	  if (var_is_value_missing (var, case_data (c, var))
+          if (var_is_value_missing (var, case_data (c, var))
               & examine->dep_excl)
-	    {
-	      es[v].missing += weight;
-	      this_case_is_missing = true;
-	    }
-	}
+            {
+              es[v].missing += weight;
+              this_case_is_missing = true;
+            }
+        }
     }
 
   if (this_case_is_missing)
@@ -1135,7 +1135,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
         {
           const double val = case_num_idx (c, EX_VAL);
           double wt = case_num_idx (c, EX_WT);
-	  wt = var_force_valid_weight (examine->wv, wt, &warn);
+          wt = var_force_valid_weight (examine->wv, wt, &warn);
 
           moments_pass_two (es[v].mom, val, wt);
 
@@ -1177,41 +1177,41 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       if (examine->calc_extremes > 0 && es[v].non_missing > 0)
         {
           assert (es[v].minima[0].val == es[v].minimum);
-	  assert (es[v].maxima[0].val == es[v].maximum);
+          assert (es[v].maxima[0].val == es[v].maximum);
         }
 
       {
-	const int n_os = 5 + examine->n_percentiles;
-	es[v].percentiles = pool_calloc (examine->pool, examine->n_percentiles, sizeof (*es[v].percentiles));
+        const int n_os = 5 + examine->n_percentiles;
+        es[v].percentiles = pool_calloc (examine->pool, examine->n_percentiles, sizeof (*es[v].percentiles));
 
-	es[v].trimmed_mean = trimmed_mean_create (es[v].cc, 0.05);
-	es[v].shapiro_wilk = NULL;
+        es[v].trimmed_mean = trimmed_mean_create (es[v].cc, 0.05);
+        es[v].shapiro_wilk = NULL;
 
-	struct order_stats **os = XCALLOC (n_os, struct order_stats *);
-	os[0] = &es[v].trimmed_mean->parent;
+        struct order_stats **os = XCALLOC (n_os, struct order_stats *);
+        os[0] = &es[v].trimmed_mean->parent;
 
-	es[v].quartiles[0] = percentile_create (0.25, es[v].cc);
-	es[v].quartiles[1] = percentile_create (0.5,  es[v].cc);
-	es[v].quartiles[2] = percentile_create (0.75, es[v].cc);
+        es[v].quartiles[0] = percentile_create (0.25, es[v].cc);
+        es[v].quartiles[1] = percentile_create (0.5,  es[v].cc);
+        es[v].quartiles[2] = percentile_create (0.75, es[v].cc);
 
-	os[1] = &es[v].quartiles[0]->parent;
-	os[2] = &es[v].quartiles[1]->parent;
-	os[3] = &es[v].quartiles[2]->parent;
+        os[1] = &es[v].quartiles[0]->parent;
+        os[2] = &es[v].quartiles[1]->parent;
+        os[3] = &es[v].quartiles[2]->parent;
 
-	es[v].hinges = tukey_hinges_create (es[v].cc, es[v].cmin);
-	os[4] = &es[v].hinges->parent;
+        es[v].hinges = tukey_hinges_create (es[v].cc, es[v].cmin);
+        os[4] = &es[v].hinges->parent;
 
-	for (i = 0; i < examine->n_percentiles; ++i)
-	  {
-	    es[v].percentiles[i] = percentile_create (examine->ptiles[i] / 100.00, es[v].cc);
-	    os[5 + i] = &es[v].percentiles[i]->parent;
-	  }
+        for (i = 0; i < examine->n_percentiles; ++i)
+          {
+            es[v].percentiles[i] = percentile_create (examine->ptiles[i] / 100.00, es[v].cc);
+            os[5 + i] = &es[v].percentiles[i]->parent;
+          }
 
-	order_stats_accumulate_idx (os, n_os,
-				    casereader_clone (es[v].sorted_reader),
-				    EX_WT, EX_VAL);
+        order_stats_accumulate_idx (os, n_os,
+                                    casereader_clone (es[v].sorted_reader),
+                                    EX_WT, EX_VAL);
 
-	free (os);
+        free (os);
       }
 
       if (examine->plot_boxplot)
@@ -1222,27 +1222,27 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
                                                   EX_ID, examine->id_var);
 
           os = &es[v].box_whisker->parent;
-	  order_stats_accumulate_idx (&os, 1,
-				      casereader_clone (es[v].sorted_reader),
-				      EX_WT, EX_VAL);
+          order_stats_accumulate_idx (&os, 1,
+                                      casereader_clone (es[v].sorted_reader),
+                                      EX_WT, EX_VAL);
         }
 
       if (examine->plot_boxplot || examine->plot_histogram
           || examine->plot_npplot || examine->plot_spreadlevel)
         {
-	  double mean;
+          double mean;
 
-	  moments_calculate (es[v].mom, NULL, &mean, NULL, NULL, NULL);
+          moments_calculate (es[v].mom, NULL, &mean, NULL, NULL, NULL);
 
           es[v].shapiro_wilk = shapiro_wilk_create (es[v].non_missing, mean);
 
-	  if (es[v].shapiro_wilk)
-	    {
-	      struct order_stats *os = &es[v].shapiro_wilk->parent;
-	      order_stats_accumulate_idx (&os, 1,
-					  casereader_clone (es[v].sorted_reader),
-					  EX_WT, EX_VAL);
-	    }
+          if (es[v].shapiro_wilk)
+            {
+              struct order_stats *os = &es[v].shapiro_wilk->parent;
+              order_stats_accumulate_idx (&os, 1,
+                                          casereader_clone (es[v].sorted_reader),
+                                          EX_WT, EX_VAL);
+            }
         }
 
       if (examine->plot_npplot)
@@ -1257,8 +1257,8 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
           os = &es[v].np->parent;
 
           order_stats_accumulate_idx (&os, 1,
-				      casereader_clone (es[v].sorted_reader),
-				      EX_WT, EX_VAL);
+                                      casereader_clone (es[v].sorted_reader),
+                                      EX_WT, EX_VAL);
         }
 
     }
@@ -1274,31 +1274,31 @@ cleanup_exploratory_stats (struct examine *cmd)
       const size_t n_cats =  categoricals_n_count (cmd->cats, i);
 
       for (v = 0; v < cmd->n_dep_vars; ++v)
-	{
-	  int grp;
-	  for (grp = 0; grp < n_cats; ++grp)
-	    {
-	      int q;
-	      const struct exploratory_stats *es =
-		categoricals_get_user_data_by_category_real (cmd->cats, i, grp);
+        {
+          int grp;
+          for (grp = 0; grp < n_cats; ++grp)
+            {
+              int q;
+              const struct exploratory_stats *es =
+                categoricals_get_user_data_by_category_real (cmd->cats, i, grp);
 
-	      struct order_stats *os = &es[v].hinges->parent;
-	      struct statistic  *stat = &os->parent;
-	      stat->destroy (stat);
+              struct order_stats *os = &es[v].hinges->parent;
+              struct statistic  *stat = &os->parent;
+              stat->destroy (stat);
 
-	      for (q = 0; q < 3; q++)
-		{
-		  os = &es[v].quartiles[q]->parent;
-		  stat = &os->parent;
-		  stat->destroy (stat);
-		}
+              for (q = 0; q < 3; q++)
+                {
+                  os = &es[v].quartiles[q]->parent;
+                  stat = &os->parent;
+                  stat->destroy (stat);
+                }
 
-	      for (q = 0; q < cmd->n_percentiles; q++)
-		{
-		  os = &es[v].percentiles[q]->parent;
-		  stat = &os->parent;
-		  stat->destroy (stat);
-		}
+              for (q = 0; q < cmd->n_percentiles; q++)
+                {
+                  os = &es[v].percentiles[q]->parent;
+                  stat = &os->parent;
+                  stat->destroy (stat);
+                }
 
               if (es[v].shapiro_wilk)
                 {
@@ -1306,19 +1306,19 @@ cleanup_exploratory_stats (struct examine *cmd)
                   stat->destroy (stat);
                 }
 
-	      os = &es[v].trimmed_mean->parent;
-	      stat = &os->parent;
-	      stat->destroy (stat);
+              os = &es[v].trimmed_mean->parent;
+              stat = &os->parent;
+              stat->destroy (stat);
 
-	      os = &es[v].np->parent;
-	      if (os)
-		{
-		  stat = &os->parent;
-		  stat->destroy (stat);
-		}
+              os = &es[v].np->parent;
+              if (os)
+                {
+                  stat = &os->parent;
+                  stat->destroy (stat);
+                }
 
-	      statistic_destroy (&es[v].histogram->parent);
-	      moments_destroy (es[v].mom);
+              statistic_destroy (&es[v].histogram->parent);
+              moments_destroy (es[v].mom);
 
               if (es[v].box_whisker)
                 {
@@ -1326,9 +1326,9 @@ cleanup_exploratory_stats (struct examine *cmd)
                   stat->destroy (stat);
                 }
 
-	      casereader_destroy (es[v].sorted_reader);
-	    }
-	}
+              casereader_destroy (es[v].sorted_reader);
+            }
+        }
     }
 }
 
@@ -1377,7 +1377,7 @@ run_examine (struct examine *cmd, struct casereader *input)
 
       const size_t n_cats =  categoricals_n_count (cmd->cats, i);
       if (n_cats == 0)
-	continue;
+        continue;
 
       if (cmd->disp_extremes > 0)
         extremes_report (cmd, i);
@@ -1415,7 +1415,7 @@ run_examine (struct examine *cmd, struct casereader *input)
 
       if (cmd->plot_histogram || cmd->plot_npplot
           || cmd->plot_spreadlevel || cmd->plot_boxplot)
-	normality_report (cmd, i);
+        normality_report (cmd, i);
     }
 
   cleanup_exploratory_stats (cmd);
@@ -1469,8 +1469,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
     goto error;
 
   if (!parse_variables_const (lexer, examine.dict,
-			      &examine.dep_vars, &examine.n_dep_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
+                              &examine.dep_vars, &examine.n_dep_vars,
+                              PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
   if (lex_match (lexer, T_BY))
@@ -1491,12 +1491,12 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "STATISTICS"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "DESCRIPTIVES"))
                 examine.descriptives = true;
               else if (lex_match_id (lexer, "EXTREME"))
@@ -1555,11 +1555,11 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "HAVERAGE"))
                 examine.pc_alg = PC_HAVERAGE;
               else if (lex_match_id (lexer, "WAVERAGE"))
@@ -1590,11 +1590,11 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "MISSING"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "LISTWISE"))
                 examine.missing_pw = false;
               else if (lex_match_id (lexer, "PAIRWISE"))
@@ -1618,7 +1618,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "COMPARE"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "VARIABLES"))
             examine.boxplot_mode = BP_VARIABLES;
           else if (lex_match_id (lexer, "GROUPS"))
@@ -1631,11 +1631,11 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "PLOT"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "BOXPLOT"))
                 examine.plot_boxplot = true;
               else if (lex_match_id (lexer, "NPPLOT"))
@@ -1645,15 +1645,15 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
               else if (lex_match_id (lexer, "SPREADLEVEL"))
                 {
                   examine.plot_spreadlevel = true;
-		  examine.sl_power = 0;
-		  if (lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
-		    {
+                  examine.sl_power = 0;
+                  if (lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
+                    {
                       examine.sl_power = lex_number (lexer);
 
                       lex_get (lexer);
                       if (!lex_force_match (lexer, T_RPAREN))
                         goto error;
-		    }
+                    }
                 }
               else if (lex_match_id (lexer, "NONE"))
                 examine.plot_boxplot = examine.plot_npplot

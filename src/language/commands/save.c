@@ -155,7 +155,7 @@ parse_output_trns (struct lexer *lexer, struct dataset *ds, enum writer_type wri
    On failure, returns a null pointer. */
 static struct casewriter *
 parse_write_command (struct lexer *lexer, struct dataset *ds,
-		     enum writer_type writer_type,
+                     enum writer_type writer_type,
                      enum command_type command_type,
                      bool *retain_unselected)
 {
@@ -195,33 +195,33 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   for (;;)
     {
       if (lex_match_id (lexer, "OUTFILE"))
-	{
+        {
           if (handle != NULL)
             {
               lex_sbc_only_once (lexer, "OUTFILE");
               goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  handle = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (handle == NULL)
-	    goto error;
-	}
+          handle = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (handle == NULL)
+            goto error;
+        }
       else if (lex_match_id (lexer, "METADATA"))
-	{
+        {
           if (metadata != NULL)
             {
               lex_sbc_only_once (lexer, "METADATA");
               goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  metadata = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (metadata == NULL)
-	    goto error;
-	}
+          metadata = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (metadata == NULL)
+            goto error;
+        }
       else if (lex_match_id (lexer, "NAMES"))
         {
           /* Not yet implemented. */
@@ -257,22 +257,22 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
         }
       else if (writer_type == SYSFILE_WRITER
                && lex_match_id (lexer, "COMPRESSED"))
-	sysfile_opts.compression = ANY_COMP_SIMPLE;
+        sysfile_opts.compression = ANY_COMP_SIMPLE;
       else if (writer_type == SYSFILE_WRITER
                && lex_match_id (lexer, "UNCOMPRESSED"))
-	sysfile_opts.compression = ANY_COMP_NONE;
+        sysfile_opts.compression = ANY_COMP_NONE;
       else if (writer_type == SYSFILE_WRITER
                && lex_match_id (lexer, "ZCOMPRESSED"))
-	sysfile_opts.compression = ANY_COMP_ZLIB;
+        sysfile_opts.compression = ANY_COMP_ZLIB;
       else if (writer_type == SYSFILE_WRITER
                && lex_match_id (lexer, "VERSION"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_int_range (lexer, "VERSION", 2, 3))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_int_range (lexer, "VERSION", 2, 3))
             goto error;
           sysfile_opts.version = lex_integer (lexer);
           lex_get (lexer);
-	}
+        }
       else if (writer_type == PORFILE_WRITER && lex_match_id (lexer, "TYPE"))
         {
           lex_match (lexer, T_EQUALS);
@@ -298,7 +298,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
         goto error;
 
       if (!lex_match (lexer, T_SLASH))
-	break;
+        break;
     }
   if (lex_end_of_command (lexer) != CMD_SUCCESS)
     goto error;

@@ -60,7 +60,7 @@ struct cmd_roc
   bool print_coords;
   bool print_se;
   bool bi_neg_exp; /* True iff the bi-negative exponential critieria
-		      should be used */
+                      should be used */
   enum mv_class exclude;
 
   bool invert; /* True iff a smaller test result variable indicates
@@ -91,7 +91,7 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 
   lex_match (lexer, T_SLASH);
   if (!parse_variables_const (lexer, dict, &roc.vars, &roc.n_vars,
-			      PV_APPEND | PV_NO_DUPLICATE | PV_NUMERIC))
+                              PV_APPEND | PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
   if (!lex_force_match (lexer, T_BY))
@@ -118,132 +118,132 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
-	      if (lex_match_id (lexer, "INCLUDE"))
+              if (lex_match_id (lexer, "INCLUDE"))
                 roc.exclude = MV_SYSTEM;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 roc.exclude = MV_ANY;
-	      else
-		{
+              else
+                {
                   lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "PLOT"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "CURVE"))
-	    {
-	      roc.curve = true;
-	      if (lex_match (lexer, T_LPAREN))
-		{
-		  roc.reference = true;
-		  if (!lex_force_match_id (lexer, "REFERENCE")
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "CURVE"))
+            {
+              roc.curve = true;
+              if (lex_match (lexer, T_LPAREN))
+                {
+                  roc.reference = true;
+                  if (!lex_force_match_id (lexer, "REFERENCE")
                       || !lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	    }
-	  else if (lex_match_id (lexer, "NONE"))
+                    goto error;
+                }
+            }
+          else if (lex_match_id (lexer, "NONE"))
             roc.curve = false;
-	  else
-	    {
-	      lex_error_expecting (lexer, "CURVE", "NONE");
-	      goto error;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "CURVE", "NONE");
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "PRINT"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "SE"))
+            {
+              if (lex_match_id (lexer, "SE"))
                 roc.print_se = true;
-	      else if (lex_match_id (lexer, "COORDINATES"))
+              else if (lex_match_id (lexer, "COORDINATES"))
                 roc.print_coords = true;
-	      else
-		{
-		  lex_error_expecting (lexer, "SE", "COORDINATES");
-		  goto error;
-		}
-	    }
-	}
+              else
+                {
+                  lex_error_expecting (lexer, "SE", "COORDINATES");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "CRITERIA"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "CUTOFF"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_match_id (lexer, "INCLUDE"))
+            {
+              if (lex_match_id (lexer, "CUTOFF"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN))
+                    goto error;
+                  if (lex_match_id (lexer, "INCLUDE"))
                     roc.exclude = MV_SYSTEM;
-		  else if (lex_match_id (lexer, "EXCLUDE"))
+                  else if (lex_match_id (lexer, "EXCLUDE"))
                     roc.exclude = MV_USER | MV_SYSTEM;
-		  else
-		    {
-		      lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		      goto error;
-		    }
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	      else if (lex_match_id (lexer, "TESTPOS"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_match_id (lexer, "LARGE"))
+                  else
+                    {
+                      lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
+                      goto error;
+                    }
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
+              else if (lex_match_id (lexer, "TESTPOS"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN))
+                    goto error;
+                  if (lex_match_id (lexer, "LARGE"))
                     roc.invert = false;
-		  else if (lex_match_id (lexer, "SMALL"))
+                  else if (lex_match_id (lexer, "SMALL"))
                     roc.invert = true;
-		  else
-		    {
-		      lex_error_expecting (lexer, "LARGE", "SMALL");
-		      goto error;
-		    }
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	      else if (lex_match_id (lexer, "CI"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (!lex_force_num (lexer))
-		    goto error;
-		  roc.ci = lex_number (lexer);
-		  lex_get (lexer);
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	      else if (lex_match_id (lexer, "DISTRIBUTION"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN))
-		    goto error;
-		  if (lex_match_id (lexer, "FREE"))
+                  else
+                    {
+                      lex_error_expecting (lexer, "LARGE", "SMALL");
+                      goto error;
+                    }
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
+              else if (lex_match_id (lexer, "CI"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN))
+                    goto error;
+                  if (!lex_force_num (lexer))
+                    goto error;
+                  roc.ci = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
+              else if (lex_match_id (lexer, "DISTRIBUTION"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN))
+                    goto error;
+                  if (lex_match_id (lexer, "FREE"))
                     roc.bi_neg_exp = false;
-		  else if (lex_match_id (lexer, "NEGEXPO"))
+                  else if (lex_match_id (lexer, "NEGEXPO"))
                     roc.bi_neg_exp = true;
-		  else
-		    {
-		      lex_error_expecting (lexer, "FREE", "NEGEXPO");
-		      goto error;
-		    }
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "CUTOFF", "TESTPOS", "CI",
+                  else
+                    {
+                      lex_error_expecting (lexer, "FREE", "NEGEXPO");
+                      goto error;
+                    }
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "CUTOFF", "TESTPOS", "CI",
                                        "DISTRIBUTION");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else
-	{
-	  lex_error_expecting (lexer, "MISSING", "PLOT", "PRINT", "CRITERIA");
-	  goto error;
-	}
+        {
+          lex_error_expecting (lexer, "MISSING", "PLOT", "PRINT", "CRITERIA");
+          goto error;
+        }
     }
 
   if (!run_roc (ds, &roc))
@@ -363,9 +363,9 @@ struct roc_state
  */
 static struct casereader *
 accumulate_counts (struct casereader *input,
-		   double result, double weight,
-		   bool (*pos_cond) (double, double),
-		   int true_index, int false_index)
+                   double result, double weight,
+                   bool (*pos_cond) (double, double),
+                   int true_index, int false_index)
 {
   const struct caseproto *proto = casereader_get_proto (input);
   struct casewriter *w =
@@ -382,7 +382,7 @@ accumulate_counts (struct casereader *input,
 
       /* We don't want duplicates here */
       if (cp == prev_cp)
-	continue;
+        continue;
 
       new_case = case_clone (cpc);
 
@@ -419,13 +419,13 @@ static void output_roc (struct roc_state *rs, const struct cmd_roc *roc);
 */
 static struct casereader *
 process_group (const struct variable *var, struct casereader *reader,
-	       bool (*pred) (double, double),
-	       const struct dictionary *dict,
-	       double *cc,
-	       struct casereader **cutpoint_rdr,
-	       bool (*pos_cond) (double, double),
-	       int true_index,
-	       int false_index)
+               bool (*pred) (double, double),
+               const struct dictionary *dict,
+               double *cc,
+               struct casereader **cutpoint_rdr,
+               bool (*pos_cond) (double, double),
+               int true_index,
+               int false_index)
 {
   const struct variable *w = dict_get_weight (dict);
 
@@ -461,26 +461,26 @@ process_group (const struct variable *var, struct casereader *reader,
       double n_pred = 0.0;
 
       *cutpoint_rdr = accumulate_counts (*cutpoint_rdr, d1, weight1,
-					 pos_cond,
-					 true_index, false_index);
+                                         pos_cond,
+                                         true_index, false_index);
 
       *cc += weight1;
 
       for (; (c2 = casereader_read (r2)); case_unref (c2))
-	{
-	  const double d2 = case_num (c2, var);
-	  const double weight2 = case_num_idx (c2, weight_idx);
+        {
+          const double d2 = case_num (c2, var);
+          const double weight2 = case_num_idx (c2, weight_idx);
 
-	  if (d1 == d2)
-	    {
-	      n_eq += weight2;
-	      continue;
-	    }
-	  else  if (pred (d2, d1))
-	    {
-	      n_pred += weight2;
-	    }
-	}
+          if (d1 == d2)
+            {
+              n_eq += weight2;
+              continue;
+            }
+          else  if (pred (d2, d1))
+            {
+              n_pred += weight2;
+            }
+        }
 
       *case_num_rw_idx (new_case, VALUE) = d1;
       *case_num_rw_idx (new_case, N_EQ) = n_eq;
@@ -534,13 +534,13 @@ lt (double d1, double d2)
 */
 static struct casereader *
 process_positive_group (const struct variable *var, struct casereader *reader,
-			const struct dictionary *dict,
-			struct roc_state *rs)
+                        const struct dictionary *dict,
+                        struct roc_state *rs)
 {
   return process_group (var, reader, gt, dict, &rs->n1,
-			&rs->cutpoint_rdr,
-			ge,
-			ROC_TP, ROC_FN);
+                        &rs->cutpoint_rdr,
+                        ge,
+                        ROC_TP, ROC_FN);
 }
 
 /*
@@ -552,13 +552,13 @@ process_positive_group (const struct variable *var, struct casereader *reader,
 */
 static struct casereader *
 process_negative_group (const struct variable *var, struct casereader *reader,
-			const struct dictionary *dict,
-			struct roc_state *rs)
+                        const struct dictionary *dict,
+                        struct roc_state *rs)
 {
   return process_group (var, reader, lt, dict, &rs->n2,
-			&rs->cutpoint_rdr,
-			lt,
-			ROC_TN, ROC_FP);
+                        &rs->cutpoint_rdr,
+                        lt,
+                        ROC_TN, ROC_FP);
 }
 
 
@@ -682,7 +682,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
       struct casereader *pos = casereader_clone (positives);
 
       struct casereader *n_pos_reader =
-	process_positive_group (var, pos, dict, &rs[i]);
+        process_positive_group (var, pos, dict, &rs[i]);
 
       if (!negatives)
         negatives = casewriter_make_reader (neg_wtr);
@@ -695,40 +695,40 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
       struct casewriter *w = sort_create_writer (&up_ordering, n_proto);
       struct ccase *cpos;
       for (; (cpos = casereader_read (n_pos_reader)); case_unref (cpos))
-	{
-	  struct ccase *pos_case = case_create (n_proto);
-	  const double jpos = case_num_idx (cpos, VALUE);
+        {
+          struct ccase *pos_case = case_create (n_proto);
+          const double jpos = case_num_idx (cpos, VALUE);
 
-	  struct ccase *cneg;
-	  while ((cneg = casereader_read (n_neg_reader)))
-	    {
-	      struct ccase *nc = case_create (n_proto);
+          struct ccase *cneg;
+          while ((cneg = casereader_read (n_neg_reader)))
+            {
+              struct ccase *nc = case_create (n_proto);
 
-	      const double jneg = case_num_idx (cneg, VALUE);
+              const double jneg = case_num_idx (cneg, VALUE);
 
-	      *case_num_rw_idx (nc, VALUE) = jneg;
-	      *case_num_rw_idx (nc, N_POS_EQ) = 0;
+              *case_num_rw_idx (nc, VALUE) = jneg;
+              *case_num_rw_idx (nc, N_POS_EQ) = 0;
 
-	      *case_num_rw_idx (nc, N_POS_GT) = SYSMIS;
+              *case_num_rw_idx (nc, N_POS_GT) = SYSMIS;
 
-	      *case_data_rw_idx (nc, N_NEG_EQ) = *case_data_idx (cneg, N_EQ);
-	      *case_data_rw_idx (nc, N_NEG_LT) = *case_data_idx (cneg, N_PRED);
+              *case_data_rw_idx (nc, N_NEG_EQ) = *case_data_idx (cneg, N_EQ);
+              *case_data_rw_idx (nc, N_NEG_LT) = *case_data_idx (cneg, N_PRED);
 
-	      casewriter_write (w, nc);
+              casewriter_write (w, nc);
 
-	      case_unref (cneg);
-	      if (jneg > jpos)
-		break;
-	    }
+              case_unref (cneg);
+              if (jneg > jpos)
+                break;
+            }
 
-	  *case_num_rw_idx (pos_case, VALUE) = jpos;
-	  *case_data_rw_idx (pos_case, N_POS_EQ) = *case_data_idx (cpos, N_EQ);
-	  *case_data_rw_idx (pos_case, N_POS_GT) = *case_data_idx (cpos, N_PRED);
-	  *case_num_rw_idx (pos_case, N_NEG_EQ) = 0;
-	  *case_num_rw_idx (pos_case, N_NEG_LT) = SYSMIS;
+          *case_num_rw_idx (pos_case, VALUE) = jpos;
+          *case_data_rw_idx (pos_case, N_POS_EQ) = *case_data_idx (cpos, N_EQ);
+          *case_data_rw_idx (pos_case, N_POS_GT) = *case_data_idx (cpos, N_PRED);
+          *case_num_rw_idx (pos_case, N_NEG_EQ) = 0;
+          *case_num_rw_idx (pos_case, N_NEG_LT) = SYSMIS;
 
-	  casewriter_write (w, pos_case);
-	}
+          casewriter_write (w, pos_case);
+        }
 
       casereader_destroy (n_pos_reader);
       casereader_destroy (n_neg_reader);
@@ -736,7 +736,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
       struct casereader *r = casewriter_make_reader (w);
 
       /* Propagate the N_POS_GT values from the positive cases
-	 to the negative ones */
+         to the negative ones */
       double prev_pos_gt = rs[i].n1;
       w = sort_create_writer (&down_ordering, n_proto);
 
@@ -759,7 +759,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
       r = casewriter_make_reader (w);
 
       /* Propagate the N_NEG_LT values from the negative cases
-	 to the positive ones */
+         to the positive ones */
       double prev_neg_lt = rs[i].n2;
       w = sort_create_writer (&up_ordering, n_proto);
 
@@ -891,17 +891,17 @@ show_auc (struct roc_state *rs, const struct cmd_roc *roc)
       pivot_table_put2 (table, 0, var_idx, pivot_value_new_number (rs[i].auc));
 
       if (roc->print_se)
-	{
-	  double se = (rs[i].auc * (1 - rs[i].auc)
+        {
+          double se = (rs[i].auc * (1 - rs[i].auc)
                        + (rs[i].n1 - 1) * (rs[i].q1hat - pow2 (rs[i].auc))
                        + (rs[i].n2 - 1) * (rs[i].q2hat - pow2 (rs[i].auc)));
-	  se /= rs[i].n1 * rs[i].n2;
-	  se = sqrt (se);
+          se /= rs[i].n1 * rs[i].n2;
+          se = sqrt (se);
 
-	  double ci = 1 - roc->ci / 100.0;
-	  double yy = gsl_cdf_gaussian_Qinv (ci, se);
+          double ci = 1 - roc->ci / 100.0;
+          double yy = gsl_cdf_gaussian_Qinv (ci, se);
 
-	  double sd_0_5 = sqrt ((rs[i].n1 + rs[i].n2 + 1) /
+          double sd_0_5 = sqrt ((rs[i].n1 + rs[i].n2 + 1) /
                                 (12 * rs[i].n1 * rs[i].n2));
           double sig = 2.0 * gsl_cdf_ugaussian_Q (fabs ((rs[i].auc - 0.5)
                                                         / sd_0_5));
@@ -909,7 +909,7 @@ show_auc (struct roc_state *rs, const struct cmd_roc *roc)
           for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
             pivot_table_put2 (table, i + 1, var_idx,
                               pivot_value_new_number (entries[i]));
-	}
+        }
     }
 
   pivot_table_submit (table);
@@ -982,12 +982,12 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
       struct ccase *cc;
       int coord_idx = 0;
       for (; (cc = casereader_read (r)) != NULL; case_unref (cc))
-	{
-	  const double se = case_num_idx (cc, ROC_TP) /
-	    (case_num_idx (cc, ROC_TP) + case_num_idx (cc, ROC_FN));
+        {
+          const double se = case_num_idx (cc, ROC_TP) /
+            (case_num_idx (cc, ROC_TP) + case_num_idx (cc, ROC_FN));
 
-	  const double sp = case_num_idx (cc, ROC_TN) /
-	    (case_num_idx (cc, ROC_TN) + case_num_idx (cc, ROC_FP));
+          const double sp = case_num_idx (cc, ROC_TN) /
+            (case_num_idx (cc, ROC_TN) + case_num_idx (cc, ROC_FP));
 
           if (coord_idx >= n_coords)
             {
@@ -1006,7 +1006,7 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
           pivot_table_put3 (table, 2, coord_idx, var_idx,
                             pivot_value_new_number (1 - sp));
           coord_idx++;
-	}
+        }
 
       casereader_destroy (r);
     }

@@ -36,20 +36,20 @@
 #define N_(msgid) msgid
 
 
-#define FREQUENCY_STATS					\
-  FS (MEAN, N_("Mean"))					\
-  FS (STDDEV, N_("Standard deviation"))			\
-  FS (MINIMUM, N_("Minimum"))				\
-  FS (MAXIMUM, N_("Maximum"))				\
-  FS (SEMEAN, N_("Standard error of the mean"))		\
-  FS (VARIANCE, N_("Variance"))				\
-  FS (SKEWNESS, N_("Skewness"))				\
-  FS (SESKEW, N_("Standard error of the skewness"))	\
-  FS (RANGE, N_("Range"))				\
-  FS (MODE, N_("Mode"))					\
-  FS (KURTOSIS, N_("Kurtosis"))				\
-  FS (SEKURT, N_("Standard error of the kurtosis"))	\
-  FS (MEDIAN, N_("Median"))				\
+#define FREQUENCY_STATS                                        \
+  FS (MEAN, N_("Mean"))                                        \
+  FS (STDDEV, N_("Standard deviation"))                        \
+  FS (MINIMUM, N_("Minimum"))                                \
+  FS (MAXIMUM, N_("Maximum"))                                \
+  FS (SEMEAN, N_("Standard error of the mean"))                \
+  FS (VARIANCE, N_("Variance"))                                \
+  FS (SKEWNESS, N_("Skewness"))                                \
+  FS (SESKEW, N_("Standard error of the skewness"))        \
+  FS (RANGE, N_("Range"))                                \
+  FS (MODE, N_("Mode"))                                        \
+  FS (KURTOSIS, N_("Kurtosis"))                                \
+  FS (SEKURT, N_("Standard error of the kurtosis"))        \
+  FS (MEDIAN, N_("Median"))                                \
   FS (SUM, N_("Sum"))
 
 
@@ -195,13 +195,13 @@ on_charts_clicked (PsppireDialogActionFrequencies *fd)
       fd->charts_opts_draw_hist = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->hist));
       fd->charts_opts_draw_normal = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->normal));
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->freqs)))
-	fd->charts_opts_scale = FRQ_FREQ;
+        fd->charts_opts_scale = FRQ_FREQ;
       else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->percents)))
-	fd->charts_opts_scale = FRQ_PERCENT;
+        fd->charts_opts_scale = FRQ_PERCENT;
 
       fd->charts_opts_draw_pie = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->pie));
       fd->charts_opts_pie_include_missing
-	= gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->pie_include_missing));
+        = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->pie_include_missing));
 
 
       fd->charts_opts_draw_bar = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->bar));
@@ -262,7 +262,7 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *pa
   GtkWidget *stats_treeview = get_widget_assert (xml, "stats-treeview");
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
-				      B_FS_DEFAULT, N_FREQUENCY_STATS, stats);
+                                      B_FS_DEFAULT, N_FREQUENCY_STATS, stats);
 
   act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
 
@@ -283,8 +283,8 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *pa
   act->limit_spinbutton = get_widget_assert (xml, "limit-spin");
 
   g_signal_connect (act->limit, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    act->limit_spinbutton);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    act->limit_spinbutton);
 
   act->avalue = get_widget_assert (xml, "avalue");
   act->dvalue = get_widget_assert (xml, "dvalue");
@@ -308,16 +308,16 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *pa
   act->min = get_widget_assert (xml, "min");
   act->min_spin = get_widget_assert (xml, "min-spin");
   g_signal_connect (act->min, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle), act->min_spin);
+                    G_CALLBACK (set_sensitivity_from_toggle), act->min_spin);
   act->max = get_widget_assert (xml, "max");
   act->max_spin = get_widget_assert (xml, "max-spin");
   g_signal_connect (act->max, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle), act->max_spin);
+                    G_CALLBACK (set_sensitivity_from_toggle), act->max_spin);
 
   act->hist = get_widget_assert (xml, "hist");
   act->normal = get_widget_assert (xml, "normal");
   g_signal_connect (act->hist, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle), act->normal);
+                    G_CALLBACK (set_sensitivity_from_toggle), act->normal);
 
   act->pie =  (get_widget_assert (xml, "pie"));
   act->pie_include_missing = get_widget_assert (xml, "pie-include-missing");
@@ -329,10 +329,10 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *pa
   act->tables_opts_limit = 50;
 
   g_signal_connect_swapped (tables_button, "clicked",
-			    G_CALLBACK (on_tables_clicked),  act);
+                            G_CALLBACK (on_tables_clicked),  act);
 
   g_signal_connect_swapped (charts_button, "clicked",
-			    G_CALLBACK (on_charts_clicked),  act);
+                            G_CALLBACK (on_charts_clicked),  act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
@@ -437,7 +437,7 @@ generate_syntax (const PsppireDialogAction * a)
     {
       ds_put_cstr (&str, "\n\t/HISTOGRAM=");
       ds_put_cstr (&str,
-		   fd->charts_opts_draw_normal ? "NORMAL" : "NONORMAL");
+                   fd->charts_opts_draw_normal ? "NORMAL" : "NONORMAL");
 
       if (fd->charts_opts_scale == FRQ_PERCENT)
         ds_put_cstr (&str, " PERCENT");

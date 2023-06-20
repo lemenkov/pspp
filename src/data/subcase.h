@@ -27,8 +27,8 @@ struct variable;
 /* Sort order. */
 enum subcase_direction
   {
-    SC_ASCEND,			/* A, B, C, ..., X, Y, Z. */
-    SC_DESCEND			/* Z, Y, X, ..., C, B, A. */
+    SC_ASCEND,                        /* A, B, C, ..., X, Y, Z. */
+    SC_DESCEND                        /* Z, Y, X, ..., C, B, A. */
   };
 
 /* A value within a case. */
@@ -55,7 +55,7 @@ void subcase_init_vars (struct subcase *,
 void subcase_init_var (struct subcase *,
                        const struct variable *, enum subcase_direction);
 void subcase_init (struct subcase *, int index, int width,
-		   enum subcase_direction);
+                   enum subcase_direction);
 
 void subcase_clone (struct subcase *, const struct subcase *);
 void subcase_clear (struct subcase *);
@@ -65,7 +65,7 @@ bool subcase_contains (const struct subcase *, int case_index);
 bool subcase_contains_var (const struct subcase *, const struct variable *);
 
 bool subcase_add (struct subcase *, int case_index, int width,
-		  enum subcase_direction direction);
+                  enum subcase_direction direction);
 bool subcase_add_var (struct subcase *, const struct variable *,
                       enum subcase_direction);
 

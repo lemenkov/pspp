@@ -109,7 +109,7 @@ generate_syntax (const PsppireDialogAction *act)
     {
       gboolean toggled;
       gtk_tree_model_get (scd->stats, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+                          CHECKBOX_COLUMN_SELECTED, &toggled, -1);
       if (toggled)
         selected |= 1u << i;
     }
@@ -179,7 +179,7 @@ dialog_refresh (PsppireDialogAction *scd_)
   for (i = 0, ok = gtk_tree_model_get_iter_first (scd->stats, &iter); ok;
        i++, ok = gtk_tree_model_iter_next (scd->stats, &iter))
     gtk_list_store_set (GTK_LIST_STORE (scd->stats), &iter,
-			CHECKBOX_COLUMN_SELECTED,
+                        CHECKBOX_COLUMN_SELECTED,
                         (B_DS_DEFAULT & (1u << i)) ? true : false, -1);
 
   gtk_toggle_button_set_active (scd->exclude_missing_listwise, false);
@@ -198,8 +198,8 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a, GVariant *p
 
   GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
-				      B_DS_DEFAULT,
-				      N_DESCRIPTIVE_STATS, stats);
+                                      B_DS_DEFAULT,
+                                      N_DESCRIPTIVE_STATS, stats);
   act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
 
   pda->dialog = get_widget_assert   (xml, "descriptives-dialog");
@@ -207,7 +207,7 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a, GVariant *p
   act->variables =   get_widget_assert   (xml, "stat-variables");
 
   g_object_set (pda->source,
-		"predicate", var_is_numeric, NULL);
+                "predicate", var_is_numeric, NULL);
 
   act->stat_vars = GTK_TREE_VIEW (act->variables);
 

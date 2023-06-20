@@ -82,9 +82,9 @@ hist_find_pretty_no_of_bins (double bin_width_in, double min, double max,
     {
       binwidth = 1.5 * interval;
       if (min < (lower + 0.5 * interval))
-	*adjusted_min = lower;
+        *adjusted_min = lower;
       else
-	*adjusted_min = lower + 0.5 * interval;
+        *adjusted_min = lower + 0.5 * interval;
     }
   else if (bin_width_in >= interval)
     {
@@ -95,9 +95,9 @@ hist_find_pretty_no_of_bins (double bin_width_in, double min, double max,
     {
       binwidth = (2.0/3.0 * interval);
       if (min >= lower + binwidth)
-	*adjusted_min = lower + binwidth;
+        *adjusted_min = lower + binwidth;
       else
-	*adjusted_min = lower;
+        *adjusted_min = lower;
     }
   else
     {

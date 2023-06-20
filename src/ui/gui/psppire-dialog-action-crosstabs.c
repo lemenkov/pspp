@@ -70,7 +70,7 @@ refresh (PsppireDialogAction *rd_)
 #define CROSSTABS_STATS                                             \
   CS (CHISQ, N_("Chisq"), N_("Pearson chi-square, "                 \
    "likelihood ratio, Fisher’s exact test, continuity correction, " \
-   "linear-by-linear association."))				    \
+   "linear-by-linear association."))                                    \
   CS (PHI, N_("Phi and Cramer's V"), NULL)                          \
   CS (CC, N_("CC"), N_("Contingency coefficient"))                  \
   CS (LAMBDA, N_("Lambda"), NULL)                                   \
@@ -156,13 +156,13 @@ on_format_clicked (PsppireDialogActionCrosstabs *cd)
   if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       cd->format_options_avalue =
-	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->avalue_button));
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->avalue_button));
 
       cd->format_options_table =
-	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->table_button));
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->table_button));
 
       cd->format_options_pivot =
-	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->pivot_button));
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->pivot_button));
     }
 }
 
@@ -235,32 +235,32 @@ psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a, GVariant *para
   act->format_options_pivot = TRUE;
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->cell_view),
-				      B_CS_CELL_DEFAULT,
-				      N_CROSSTABS_CELLS,
-				      cells);
+                                      B_CS_CELL_DEFAULT,
+                                      N_CROSSTABS_CELLS,
+                                      cells);
 
   act->cell = gtk_tree_view_get_model (GTK_TREE_VIEW (act->cell_view));
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->stat_view),
-				      B_CS_STATS_DEFAULT,
-				      N_CROSSTABS_STATS,
-				      stats);
+                                      B_CS_STATS_DEFAULT,
+                                      N_CROSSTABS_STATS,
+                                      stats);
 
   act->stat = gtk_tree_view_get_model (GTK_TREE_VIEW (act->stat_view));
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
+                                             dialog_state_valid);
 
   g_signal_connect_swapped (act->cell_button, "clicked",
-			    G_CALLBACK (on_cell_clicked), act);
+                            G_CALLBACK (on_cell_clicked), act);
 
   g_signal_connect_swapped (act->stat_button, "clicked",
-			    G_CALLBACK (on_statistics_clicked), act);
+                            G_CALLBACK (on_statistics_clicked), act);
 
   g_signal_connect_swapped (act->format_button, "clicked",
-			    G_CALLBACK (on_format_clicked), act);
+                            G_CALLBACK (on_format_clicked), act);
 
   return xml;
 }
@@ -302,27 +302,27 @@ generate_syntax (const PsppireDialogAction *a)
     {
       gboolean toggled;
       gtk_tree_model_get (cd->stat, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+                          CHECKBOX_COLUMN_SELECTED, &toggled, -1);
       if (toggled)
-	selected |= 1u << i;
+        selected |= 1u << i;
       else
-	selected &= ~(1u << i);
+        selected &= ~(1u << i);
     }
 
   if (!(selected & (1u << CS_STATS_NONE)))
     {
       if (selected)
-	{
-	  g_string_append (string, "\n\t/STATISTICS=");
-	  n = 0;
-	  for (i = 0; i < N_CROSSTABS_STATS; i++)
-	    if (selected & (1u << i))
-	      {
-		if (n++)
-		  g_string_append (string, " ");
-		g_string_append (string, stats[i].name);
-	      }
-	}
+        {
+          g_string_append (string, "\n\t/STATISTICS=");
+          n = 0;
+          for (i = 0; i < N_CROSSTABS_STATS; i++)
+            if (selected & (1u << i))
+              {
+                if (n++)
+                  g_string_append (string, " ");
+                g_string_append (string, stats[i].name);
+              }
+        }
     }
 
   selected = 0;
@@ -331,11 +331,11 @@ generate_syntax (const PsppireDialogAction *a)
     {
       gboolean toggled;
       gtk_tree_model_get (cd->cell, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+                          CHECKBOX_COLUMN_SELECTED, &toggled, -1);
       if (toggled)
-	selected |= 1u << i;
+        selected |= 1u << i;
       else
-	selected &= ~(1u << i);
+        selected &= ~(1u << i);
     }
 
 
@@ -347,12 +347,12 @@ generate_syntax (const PsppireDialogAction *a)
     {
       n = 0;
       for (i = 0; i < N_CROSSTABS_CELLS; i++)
-	if (selected & (1u << i))
-	  {
-	    if (n++)
-	      g_string_append (string, " ");
-	    g_string_append (string, cells[i].name);
-	  }
+        if (selected & (1u << i))
+          {
+            if (n++)
+              g_string_append (string, " ");
+            g_string_append (string, cells[i].name);
+          }
     }
 
   g_string_append (string, ".\n");

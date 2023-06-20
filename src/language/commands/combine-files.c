@@ -58,8 +58,8 @@ enum comb_command_type
 /* File types. */
 enum comb_file_type
   {
-    COMB_FILE,			/* Specified on FILE= subcommand. */
-    COMB_TABLE			/* Specified on TABLE= subcommand. */
+    COMB_FILE,                        /* Specified on FILE= subcommand. */
+    COMB_TABLE                        /* Specified on TABLE= subcommand. */
   };
 
 /* These commands combine multiple input files into a single master file.  The
@@ -91,7 +91,7 @@ struct comb_file
 
     /* Input files. */
     struct file_handle *handle; /* Input file handle. */
-    struct dictionary *dict;	/* Input file dictionary. */
+    struct dictionary *dict;        /* Input file dictionary. */
     struct casereader *reader;  /* Input data source. */
     struct ccase *data;         /* The current input case. */
     bool is_minimal;            /* Does 'data' have minimum BY values across
@@ -331,20 +331,20 @@ combine_files (enum comb_command_type command,
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match (lexer, T_BY))
-	{
+        {
           if (saw_by)
-	    {
+            {
               lex_sbc_only_once (lexer, "BY");
-	      goto error;
-	    }
+              goto error;
+            }
           saw_by = true;
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
           const struct variable **by_vars;
           if (!parse_sort_criteria (lexer, proc.dict, &proc.by_vars,
                                     &by_vars, NULL))
-	    goto error;
+            goto error;
           size_t n_by_vars = subcase_get_n_fields (&proc.by_vars);
 
           for (size_t i = 0; i < n_by_vars; i++)
@@ -387,7 +387,7 @@ combine_files (enum comb_command_type command,
 
           if (!ok)
             goto error;
-	}
+        }
       else if (command != COMB_UPDATE && lex_match_id (lexer, "FIRST"))
         {
           if (first_name != NULL)
@@ -396,7 +396,7 @@ combine_files (enum comb_command_type command,
               goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_id (lexer))
             goto error;
           first_name = xstrdup (lex_tokcstr (lexer));
@@ -411,7 +411,7 @@ combine_files (enum comb_command_type command,
               goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
           if (!lex_force_id (lexer))
             goto error;
           last_name = xstrdup (lex_tokcstr (lexer));
@@ -419,9 +419,9 @@ combine_files (enum comb_command_type command,
           lex_get (lexer);
         }
       else if (lex_match_id (lexer, "MAP"))
-	{
-	  /* FIXME. */
-	}
+        {
+          /* FIXME. */
+        }
       else if (lex_match_id (lexer, "DROP"))
         {
           if (!parse_dict_drop (lexer, proc.dict))
@@ -433,14 +433,14 @@ combine_files (enum comb_command_type command,
             goto error;
         }
       else
-	{
+        {
           if (command == COMB_UPDATE)
             lex_error_expecting (lexer, "BY", "MAP", "DROP", "KEEP");
           else
             lex_error_expecting (lexer, "BY", "FIRST", "LAST",
                                  "MAP", "DROP", "KEEP");
-	  goto error;
-	}
+          goto error;
+        }
 
       if (!lex_match (lexer, T_SLASH) && lex_token (lexer) != T_ENDCMD)
         {

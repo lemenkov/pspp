@@ -45,7 +45,7 @@ variable_free (gpointer var)
 /* Convert to a string, by using the variable's name */
 static void
 variable_to_string (const GValue *src,
-		    GValue *dest)
+                    GValue *dest)
 {
   const struct variable *v = g_value_get_boxed (src);
 
@@ -59,7 +59,7 @@ variable_to_string (const GValue *src,
 /* Convert to an int, using the dictionary index. */
 static void
 variable_to_int (const GValue *src,
-		 GValue *dest)
+                 GValue *dest)
 {
   const struct variable *v = g_value_get_boxed (src);
 
@@ -80,14 +80,14 @@ psppire_var_ptr_get_type (void)
   if (t == 0)
     {
       t = g_boxed_type_register_static  ("psppire-var-ptr",
-					 (GBoxedCopyFunc) variable_copy,
-					 (GBoxedFreeFunc) variable_free);
+                                         (GBoxedCopyFunc) variable_copy,
+                                         (GBoxedFreeFunc) variable_free);
 
       g_value_register_transform_func (t, G_TYPE_STRING,
-				       variable_to_string);
+                                       variable_to_string);
 
       g_value_register_transform_func (t, G_TYPE_INT,
-				       variable_to_int);
+                                       variable_to_int);
 
     }
 

@@ -60,31 +60,31 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
       int start_ofs = lex_ofs (lexer);
       if (!parse_variables (lexer, dataset_dict (ds),
                             &vars_to_be_renamed, &n_vars_to_be_renamed, opts))
-	{
-	  goto lossage;
-	}
+        {
+          goto lossage;
+        }
       if (!lex_force_match (lexer, T_EQUALS))
-	{
-	  goto lossage;
-	}
+        {
+          goto lossage;
+        }
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                  &new_names, &n_new_names, opts))
-	{
-	  goto lossage;
-	}
+        {
+          goto lossage;
+        }
       int end_ofs = lex_ofs (lexer) - 1;
       if (n_new_names != n_vars_to_be_renamed)
         {
           lex_ofs_error (lexer, start_ofs, end_ofs,
                          _("Differing number of variables in old name list "
                            "(%zu) and in new name list (%zu)."),
-	       n_vars_to_be_renamed, n_new_names);
+               n_vars_to_be_renamed, n_new_names);
           goto lossage;
         }
       if (!(opts & PV_SINGLE) && !lex_force_match (lexer, T_RPAREN))
-	{
-	  goto lossage;
-	}
+        {
+          goto lossage;
+        }
     }
   while (lex_token (lexer) != T_ENDCMD);
 

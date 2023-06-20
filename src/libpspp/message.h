@@ -48,9 +48,9 @@ const char *msg_severity_to_string (enum msg_severity);
 /* Combination of a category and a severity for convenience. */
 enum msg_class
   {
-    ME, MW, MN,			/* General error/warning/note. */
-    SE, SW, SN,			/* Script error/warning/note. */
-    DE, DW, DN,			/* Data-file error/note. */
+    ME, MW, MN,                        /* General error/warning/note. */
+    SE, SW, SN,                        /* Script error/warning/note. */
+    DE, DW, DN,                        /* Data-file error/note. */
     MSG_CLASS_CNT,
   };
 

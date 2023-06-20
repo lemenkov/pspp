@@ -65,9 +65,9 @@ enum
 
 static void
 psppire_import_assistant_set_property (GObject         *object,
-				       guint            prop_id,
-				       const GValue    *value,
-				       GParamSpec      *pspec)
+                                       guint            prop_id,
+                                       const GValue    *value,
+                                       GParamSpec      *pspec)
 {
   //   PsppireImportAssistant *act = PSPPIRE_IMPORT_ASSISTANT (object);
 
@@ -82,9 +82,9 @@ psppire_import_assistant_set_property (GObject         *object,
 
 static void
 psppire_import_assistant_get_property (GObject    *object,
-				       guint            prop_id,
-				       GValue          *value,
-				       GParamSpec      *pspec)
+                                       guint            prop_id,
+                                       GValue          *value,
+                                       GParamSpec      *pspec)
 {
   //  PsppireImportAssistant *assistant = PSPPIRE_IMPORT_ASSISTANT (object);
 
@@ -256,23 +256,23 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
       gtk_assistant_set_page_complete (GTK_ASSISTANT(ia), GTK_WIDGET (fc), TRUE);
 
       if (ia->spreadsheet)
-	spreadsheet_unref (ia->spreadsheet);
+        spreadsheet_unref (ia->spreadsheet);
 
       ia->spreadsheet = gnumeric_probe (f, FALSE);
 
       if (!ia->spreadsheet)
-	ia->spreadsheet = ods_probe (f, FALSE);
+        ia->spreadsheet = ods_probe (f, FALSE);
 
       if (ia->spreadsheet)
-	{
-	  sheet_spec_page_create (ia);
-	}
+        {
+          sheet_spec_page_create (ia);
+        }
       else
-	{
-	  intro_page_create (ia);
-	  first_line_page_create (ia);
-	  separators_page_create (ia);
-	}
+        {
+          intro_page_create (ia);
+          first_line_page_create (ia);
+          separators_page_create (ia);
+        }
 
       formats_page_create (ia);
     }
@@ -326,7 +326,7 @@ chooser_page_leave (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASS
       gchar *encoding = psppire_encoding_selector_get_encoding (ia->encoding_selector);
       ia->text_file = psppire_text_file_new (ia->file_name, encoding);
       gtk_tree_view_set_model (GTK_TREE_VIEW (ia->first_line_tree_view),
-			       GTK_TREE_MODEL (ia->text_file));
+                               GTK_TREE_MODEL (ia->text_file));
 
       g_free (encoding);
     }
@@ -419,7 +419,7 @@ chooser_page_create (PsppireImportAssistant *ia)
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (chooser), ia->encoding_selector);
 
   add_page_to_assistant (ia, chooser,
-			 GTK_ASSISTANT_PAGE_INTRO, _("Select File to Import"));
+                         GTK_ASSISTANT_PAGE_INTRO, _("Select File to Import"));
 
   g_signal_connect_swapped (chooser, "selection-changed", G_CALLBACK (on_chosen), ia);
   g_signal_connect_swapped (chooser, "map", G_CALLBACK (on_map), ia);
@@ -476,7 +476,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
    that represents the page. */
 GtkWidget *
 add_page_to_assistant (PsppireImportAssistant *ia,
-		       GtkWidget *page, GtkAssistantPageType type, const gchar *title)
+                       GtkWidget *page, GtkAssistantPageType type, const gchar *title)
 {
   GtkWidget *content = page;
 
@@ -493,12 +493,12 @@ GtkWidget *
 psppire_import_assistant_new (GtkWindow *toplevel)
 {
   return GTK_WIDGET (g_object_new (PSPPIRE_TYPE_IMPORT_ASSISTANT,
-				   /* Some window managers (notably ratpoison)
-				      ignore the maximise command when a window is
-				      transient.  This causes problems for this
-				      window. */
-				   /* "transient-for", toplevel, */
-				   NULL));
+                                   /* Some window managers (notably ratpoison)
+                                      ignore the maximise command when a window is
+                                      transient.  This causes problems for this
+                                      window. */
+                                   /* "transient-for", toplevel, */
+                                   NULL));
 }
 
 
@@ -520,10 +520,10 @@ prepare_formats_page (PsppireImportAssistant *ia)
   /* Show half-half the data sheet and the variable sheet.  */
   gint pmax;
   g_object_get (get_widget_assert (ia->text_builder, "vpaned1"),
-		"max-position", &pmax, NULL);
+                "max-position", &pmax, NULL);
 
   g_object_set (get_widget_assert (ia->text_builder, "vpaned1"),
-		"position", pmax / 2, NULL);
+                "position", pmax / 2, NULL);
 
   gtk_widget_show (ia->paste_button);
 }
@@ -541,7 +541,7 @@ formats_page_create (PsppireImportAssistant *ia)
   ia->var_sheet = get_widget_assert (builder, "variable-sheet");
 
   add_page_to_assistant (ia, w,
-			 GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));
+                         GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));
 }
 
 
@@ -565,25 +565,25 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia, struct string *s)
   else
     g_object_get (ia->text_file, "file-name", &filename, NULL);
   syntax_gen_pspp (s,
-		   "GET DATA"
-		   "\n  /TYPE=%ss"
-		   "\n  /FILE=%sq"
-		   "\n  /SHEET=index %d"
-		   "\n  /READNAMES=%ss",
-		   ia->spreadsheet->type,
-		   filename,
-		   sheet_index,
-		   read_names ? "ON" : "OFF");
+                   "GET DATA"
+                   "\n  /TYPE=%ss"
+                   "\n  /FILE=%sq"
+                   "\n  /SHEET=index %d"
+                   "\n  /READNAMES=%ss",
+                   ia->spreadsheet->type,
+                   filename,
+                   sheet_index,
+                   read_names ? "ON" : "OFF");
 
   if (range && 0 != strcmp ("", range))
     {
       syntax_gen_pspp (s,
-		       "\n  /CELLRANGE=RANGE %sq", range);
+                       "\n  /CELLRANGE=RANGE %sq", range);
     }
   else
     {
       syntax_gen_pspp (s,
-		       "\n  /CELLRANGE=FULL");
+                       "\n  /CELLRANGE=FULL");
     }
 
 

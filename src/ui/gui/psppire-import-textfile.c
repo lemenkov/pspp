@@ -77,9 +77,9 @@ revise_fields_preview (PsppireImportAssistant *ia)
       const struct separator *s = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, s->name);
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
-	{
-	  delimiters = g_slist_prepend (delimiters,  GINT_TO_POINTER (s->c));
-	}
+        {
+          delimiters = g_slist_prepend (delimiters,  GINT_TO_POINTER (s->c));
+        }
     }
 
   g_object_set (ia->delimiters_model,
@@ -114,28 +114,28 @@ repopulate_delimiter_columns (PsppireImportAssistant *ia)
       const gchar *title = NULL;
 
       if (f == 0)
-	title = _("line");
+        title = _("line");
       else
-	{
-	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
-	    {
-	      title =
-		psppire_delimited_text_get_header_title
-		(PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), f - 1);
-	    }
-	  if (title == NULL)
-	    title = _("var");
-	}
+        {
+          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
+            {
+              title =
+                psppire_delimited_text_get_header_title
+                (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), f - 1);
+            }
+          if (title == NULL)
+            title = _("var");
+        }
 
       GtkTreeViewColumn *column =
-	gtk_tree_view_column_new_with_attributes (title,
-						  renderer,
-						  "text", f,
-						  NULL);
+        gtk_tree_view_column_new_with_attributes (title,
+                                                  renderer,
+                                                  "text", f,
+                                                  NULL);
       g_object_set (column,
-		    "resizable", TRUE,
-		    "sizing", GTK_TREE_VIEW_COLUMN_AUTOSIZE,
-		    NULL);
+                    "resizable", TRUE,
+                    "sizing", GTK_TREE_VIEW_COLUMN_AUTOSIZE,
+                    NULL);
 
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->fields_tree_view), column);
     }
@@ -177,10 +177,10 @@ static void
 on_intro_amount_changed (PsppireImportAssistant *ia)
 {
   gtk_widget_set_sensitive (ia->n_cases_spin,
-			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)));
+                            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)));
 
   gtk_widget_set_sensitive (ia->percent_spin,
-			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)));
+                            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)));
 }
 
 static void
@@ -200,19 +200,19 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
       gtk_tree_path_free (path);
       g_object_get (model, "maximum-lines", &max_lines, NULL);
       gtk_widget_set_sensitive (ia->variable_names_cb,
-				(n > 0 && n < max_lines));
+                                (n > 0 && n < max_lines));
       ia->delimiters_model =
-	psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
+        psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
     }
 }
 
 static void
 render_text_preview_line (GtkTreeViewColumn *tree_column,
-		GtkCellRenderer *cell,
-		GtkTreeModel *tree_model,
-		GtkTreeIter *iter,
-		gpointer data)
+                GtkCellRenderer *cell,
+                GtkTreeModel *tree_model,
+                GtkTreeIter *iter,
+                gpointer data)
 {
   /*
      Set the text  to a "insensitive" state if the row
@@ -248,7 +248,7 @@ first_line_page_create (PsppireImportAssistant *ia)
   g_object_set_data (G_OBJECT (w), "on-reset", reset_first_line_page);
 
   add_page_to_assistant (ia, w,
-			 GTK_ASSISTANT_PAGE_CONTENT, _("Select the First Line"));
+                         GTK_ASSISTANT_PAGE_CONTENT, _("Select the First Line"));
 
   GtkWidget *scrolled_window = get_widget_assert (ia->text_builder, "first-line-scroller");
 
@@ -261,8 +261,8 @@ first_line_page_create (PsppireImportAssistant *ia)
 
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
       GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes (_("Line"), renderer,
-									    "text", 0,
-									    NULL);
+                                                                            "text", 0,
+                                                                            NULL);
 
       gtk_tree_view_column_set_cell_data_func (column, renderer, render_text_preview_line, ia, 0);
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->first_line_tree_view), column);
@@ -274,7 +274,7 @@ first_line_page_create (PsppireImportAssistant *ia)
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->first_line_tree_view), column);
 
       g_signal_connect_swapped (ia->first_line_tree_view, "cursor-changed",
-				G_CALLBACK (on_treeview_selection_change), ia);
+                                G_CALLBACK (on_treeview_selection_change), ia);
       gtk_container_add (GTK_CONTAINER (scrolled_window), ia->first_line_tree_view);
     }
 
@@ -327,30 +327,30 @@ intro_on_enter (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASSISTA
   if (ia->text_file)
     {
       if (ia->text_file->total_is_exact)
-	{
-	  ds_put_format (
-			 &s, ngettext ("The selected file contains %'lu line of text.  ",
-				       "The selected file contains %'lu lines of text.  ",
-				       ia->text_file->total_lines),
-			 ia->text_file->total_lines);
-	}
+        {
+          ds_put_format (
+                         &s, ngettext ("The selected file contains %'lu line of text.  ",
+                                       "The selected file contains %'lu lines of text.  ",
+                                       ia->text_file->total_lines),
+                         ia->text_file->total_lines);
+        }
       else if (ia->text_file->total_lines > 0)
-	{
-	  ds_put_format (
-			 &s, ngettext (
-				       "The selected file contains approximately %'lu line of text.  ",
-				       "The selected file contains approximately %'lu lines of text.  ",
-				       ia->text_file->total_lines),
-			 ia->text_file->total_lines);
-	  ds_put_format (
-			 &s, ngettext (
-				       "Only the first %zu line of the file will be shown for "
-				       "preview purposes in the following screens.  ",
-				       "Only the first %zu lines of the file will be shown for "
-				       "preview purposes in the following screens.  ",
-				       ia->text_file->n_lines),
-			 ia->text_file->n_lines);
-	}
+        {
+          ds_put_format (
+                         &s, ngettext (
+                                       "The selected file contains approximately %'lu line of text.  ",
+                                       "The selected file contains approximately %'lu lines of text.  ",
+                                       ia->text_file->total_lines),
+                         ia->text_file->total_lines);
+          ds_put_format (
+                         &s, ngettext (
+                                       "Only the first %zu line of the file will be shown for "
+                                       "preview purposes in the following screens.  ",
+                                       "Only the first %zu lines of the file will be shown for "
+                                       "preview purposes in the following screens.  ",
+                                       ia->text_file->n_lines),
+                         ia->text_file->n_lines);
+        }
     }
 
   ds_put_cstr (&s, _("You may choose below how much of the file should "
@@ -364,8 +364,8 @@ intro_on_enter (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASSISTA
     {
       GtkWidget *hbox_n_cases = psppire_scanf_new (_("Only the first %4d cases"), &ia->n_cases_spin);
       gtk_grid_attach (GTK_GRID (table), hbox_n_cases,
-		       1, 1,
-		       1, 1);
+                       1, 1,
+                       1, 1);
     }
 
   GtkAdjustment *adj = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (ia->n_cases_spin));
@@ -374,11 +374,11 @@ intro_on_enter (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASSISTA
   if (gtk_grid_get_child_at (GTK_GRID (table), 1, 2) == NULL)
     {
       GtkWidget *hbox_percent = psppire_scanf_new (_("Only the first %3d %% of file (approximately)"),
-        					   &ia->percent_spin);
+                                                   &ia->percent_spin);
 
       gtk_grid_attach (GTK_GRID (table), hbox_percent,
-		       1, 2,
-		       1, 1);
+                       1, 2,
+                       1, 1);
     }
 
   gtk_widget_show_all (table);
@@ -408,11 +408,11 @@ intro_page_create (PsppireImportAssistant *ia)
   ia->percent_button = get_widget_assert (builder, "import-percent");
 
   g_signal_connect_swapped (ia->all_cases_button, "toggled",
-			    G_CALLBACK (on_intro_amount_changed), ia);
+                            G_CALLBACK (on_intro_amount_changed), ia);
   g_signal_connect_swapped (ia->n_cases_button, "toggled",
-			    G_CALLBACK (on_intro_amount_changed), ia);
+                            G_CALLBACK (on_intro_amount_changed), ia);
   g_signal_connect_swapped (ia->percent_button, "toggled",
-			    G_CALLBACK (on_intro_amount_changed), ia);
+                            G_CALLBACK (on_intro_amount_changed), ia);
 
   g_object_set_data (G_OBJECT (w), "on-leaving", intro_on_leave);
   g_object_set_data (G_OBJECT (w), "on-entering", intro_on_enter);
@@ -441,9 +441,9 @@ choose_column_names (PsppireImportAssistant *ia)
       const gchar *candidate_name = NULL;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
-	{
-	  candidate_name = psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
-	}
+        {
+          candidate_name = psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
+        }
 
       dict_create_var_with_unique_name (ia->dict, candidate_name, 0);
     }
@@ -531,10 +531,10 @@ prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *new_page, enum I
     return;
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (ia->fields_tree_view),
-			   GTK_TREE_MODEL (ia->delimiters_model));
+                           GTK_TREE_MODEL (ia->delimiters_model));
 
   g_signal_connect_swapped (GTK_TREE_MODEL (ia->delimiters_model), "notify::delimiters",
-  			G_CALLBACK (reset_tree_view_model), ia);
+                          G_CALLBACK (reset_tree_view_model), ia);
 
 
   reset_separators_page (ia);
@@ -565,7 +565,7 @@ separators_page_create (PsppireImportAssistant *ia)
   ia->quote_custom_entry = get_widget_assert (builder, "quote-custom-entry");
 
   gtk_widget_set_sensitive (ia->custom_entry,
-			    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)));
+                            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)));
 
   gtk_entry_set_max_length (GTK_ENTRY (ia->quote_custom_entry), 1);
 
@@ -615,33 +615,33 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
       c = case_create (proto);
       int i;
       for (i = 0 ; i < caseproto_get_n_widths (proto); ++i)
-	{
-	  GValue value = {0};
-	  gtk_tree_model_get_value (tm, &iter, i + 1, &value);
+        {
+          GValue value = {0};
+          gtk_tree_model_get_value (tm, &iter, i + 1, &value);
 
-	  const struct variable *var = dict_get_var (ia->casereader_dict, i);
+          const struct variable *var = dict_get_var (ia->casereader_dict, i);
 
-	  const gchar *ss = g_value_get_string (&value);
-	  if (ss)
-	    {
-	      union value *v = case_data_rw (c, var);
-	      /* In this reader we derive the union value from the
-		 string in the tree_model. We retrieve the width and format
-		 from a dictionary which is stored directly after
-		 the reader creation. Changes in ia->dict in the
-		 variable window are not reflected here and therefore
-		 this is always compatible with the width in the
-		 caseproto. See bug #58298 */
-	      char *xx = data_in (ss_cstr (ss),
-				  "UTF-8",
-				  var_get_write_format (var).type,
+          const gchar *ss = g_value_get_string (&value);
+          if (ss)
+            {
+              union value *v = case_data_rw (c, var);
+              /* In this reader we derive the union value from the
+                 string in the tree_model. We retrieve the width and format
+                 from a dictionary which is stored directly after
+                 the reader creation. Changes in ia->dict in the
+                 variable window are not reflected here and therefore
+                 this is always compatible with the width in the
+                 caseproto. See bug #58298 */
+              char *xx = data_in (ss_cstr (ss),
+                                  "UTF-8",
+                                  var_get_write_format (var).type,
                                   settings_get_fmt_settings (),
-				  v, var_get_width (var), "UTF-8");
+                                  v, var_get_width (var), "UTF-8");
 
-	      free (xx);
-	    }
-	  g_value_unset (&value);
-	}
+              free (xx);
+            }
+          g_value_unset (&value);
+        }
     }
 
   gtk_tree_path_free (tp);
@@ -683,13 +683,13 @@ textfile_create_reader (PsppireImportAssistant *ia)
        ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->delimiters_model), &iter))
     {
       for (i = 0 ; i < n_vars; ++i)
-	{
-	  gchar *s = NULL;
-	  gtk_tree_model_get (GTK_TREE_MODEL (ia->delimiters_model), &iter, i+1, &s, -1);
-	  if (s)
-	    fmt_guesser_add (fg[i], ss_cstr (s));
-	  free (s);
-	}
+        {
+          gchar *s = NULL;
+          gtk_tree_model_get (GTK_TREE_MODEL (ia->delimiters_model), &iter, i+1, &s, -1);
+          if (s)
+            fmt_guesser_add (fg[i], ss_cstr (s));
+          free (s);
+        }
     }
 
   struct caseproto *proto = caseproto_create ();
@@ -704,7 +704,7 @@ textfile_create_reader (PsppireImportAssistant *ia)
       int width = fmt_var_width (fs);
 
       var_set_width_and_formats (var, width,
-				 &fs, &fs);
+                                 &fs, &fs);
 
       proto = caseproto_add_width (proto, width);
       fmt_guesser_destroy (fg[i]);
@@ -732,7 +732,7 @@ textfile_create_reader (PsppireImportAssistant *ia)
    the string information. */
 static void
 ia_variable_changed_cb (GObject *obj, gint var_num, guint what,
-			const struct variable *oldvar, gpointer data)
+                        const struct variable *oldvar, gpointer data)
 {
   PsppireImportAssistant *ia  = PSPPIRE_IMPORT_ASSISTANT (data);
 
@@ -750,7 +750,7 @@ ia_variable_changed_cb (GObject *obj, gint var_num, guint what,
   g_object_get (ia->data_sheet, "data-model", &store, NULL);
 
   struct casereader *cr = casereader_create_random (proto, n_rows,
-						    &my_casereader_class, ia);
+                                                    &my_casereader_class, ia);
   psppire_data_store_set_reader (store, cr);
   dict_unref (ia->casereader_dict);
   ia->casereader_dict = dict_clone (ia->dict);
@@ -876,10 +876,10 @@ intro_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)))
     ds_put_format (s, "SELECT IF ($CASENUM <= %d).\n",
-		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)) - first_line);
+                   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)) - first_line);
   else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)))
     ds_put_format (s, "SAMPLE %.4g.\n",
-		   gtk_spin_button_get_value (GTK_SPIN_BUTTON (ia->percent_spin)) / 100.0);
+                   gtk_spin_button_get_value (GTK_SPIN_BUTTON (ia->percent_spin)) / 100.0);
 }
 
 
@@ -897,8 +897,8 @@ formats_append_syntax (const PsppireImportAssistant *ia, struct string *s)
       char format_string[FMT_STRING_LEN_MAX + 1];
       fmt_to_string (var_get_print_format (var), format_string);
       ds_put_format (s, "    %s %s%s\n",
-		     var_get_name (var), format_string,
-		     i == n_vars - 1 ? "." : "");
+                     var_get_name (var), format_string,
+                     i == n_vars - 1 ? "." : "");
     }
 }
 
@@ -916,12 +916,12 @@ separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
       const struct separator *seps = &separators[i];
       GtkWidget *button = get_widget_assert (ia->text_builder, seps->name);
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
-	{
-	  if (seps->c == '\t')
-	    continue;
+        {
+          if (seps->c == '\t')
+            continue;
 
-	  ds_put_byte (s, seps->c);
-	}
+          ds_put_byte (s, seps->c);
+        }
     }
   ds_put_cstr (s, "\"\n");
 

@@ -87,9 +87,9 @@ welcome (void)
     return;
   welcomed = true;
   fputs ("PSPP is free software and you are welcome to distribute copies of "
-	 "it\nunder certain conditions; type \"show copying.\" to see the "
-	 "conditions.\nThere is ABSOLUTELY NO WARRANTY for PSPP; type \"show "
-	 "warranty.\" for details.\n", stdout);
+         "it\nunder certain conditions; type \"show copying.\" to see the "
+         "conditions.\nThere is ABSOLUTELY NO WARRANTY for PSPP; type \"show "
+         "warranty.\" for details.\n", stdout);
   puts (announced_version);
   journal_init ();
 }
@@ -122,9 +122,9 @@ rl_echo_signal_char (int sig)
       cc_t c = t.c_cc[VINTR];
 
       if (c >= 0  && c <= 'Z' - 'A')
-	fprintf (rl_outstream, "^%c", 'A' + c - 1);
+        fprintf (rl_outstream, "^%c", 'A' + c - 1);
       else
-	fprintf (rl_outstream, "%c", c);
+        fprintf (rl_outstream, "%c", c);
     }
   else
 #endif
@@ -151,11 +151,11 @@ terminal_reader_read (struct lex_reader *r_, char *buf, size_t n,
 
       ss_dealloc (&r->s);
       if (! readline_read (&r->s, prompt_style))
-	{
+        {
           *buf = '\n';
           fprintf (rl_outstream, "\n");
-	  return 1;
-	}
+          return 1;
+        }
       r->offset = 0;
       r->eof = ss_is_empty (r->s);
     }
@@ -267,21 +267,21 @@ interruptible_getc (FILE *fp)
       FD_SET (fd, &what);
       ret = select (max_fd + 1, &what, NULL, NULL, &timeout);
       if (ret == -1 && errno != EINTR)
-	{
-	  perror ("Select failed");
-	  continue;
-	}
+        {
+          perror ("Select failed");
+          continue;
+        }
 
       if (ret > 0)
-	{
-	  if (FD_ISSET (pfd[0], &what))
-	    {
-	      char dummy[1];
-	      read (pfd[0], dummy, 1);
-	      sigint_received = true;
-	      return EOF;
-	    }
-	}
+        {
+          if (FD_ISSET (pfd[0], &what))
+            {
+              char dummy[1];
+              read (pfd[0], dummy, 1);
+              sigint_received = true;
+              return EOF;
+            }
+        }
     }
   while (ret <= 0);
 

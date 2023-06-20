@@ -19,10 +19,10 @@
 #define CHART_GEOMETRY_H
 
 void chart_get_scale (double high, double low,
-		      double *lower, double *interval, int *n_ticks);
+                      double *lower, double *interval, int *n_ticks);
 
 char *
 chart_get_ticks_format (const double lower, const double interval, const unsigned int nticks,
-			double *scale);
+                        double *scale);
 
 #endif

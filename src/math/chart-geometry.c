@@ -52,8 +52,8 @@
 */
 void
 chart_get_scale (double high, double low,
-		 double *lower, double *interval,
-		 int *n_ticks)
+                 double *lower, double *interval,
+                 int *n_ticks)
 {
   assert (high >= low);
   if ((high - low) < 10 * DBL_MIN)
@@ -156,7 +156,7 @@ gen_pango_markup_scientific_format_string (int n_decimals, int exponent)
  */
 char *
 chart_get_ticks_format (const double lower, const double interval,
-			const unsigned int nticks, double *scale)
+                        const unsigned int nticks, double *scale)
 {
   double logmax = log10(fmax(fabs(lower + (nticks+1)*interval),fabs(lower)));
   double logintv = log10(interval);
@@ -169,42 +169,42 @@ chart_get_ticks_format (const double lower, const double interval,
       nrdecs = MIN(6,(int)(ceil(fabs(logintv))));
       logshift = 0;
       if (logmax < 12.0)
-	format_string = xasprintf("%%.%dlf",nrdecs);
+        format_string = xasprintf("%%.%dlf",nrdecs);
       else
-	format_string = xasprintf("%%lg");
+        format_string = xasprintf("%%lg");
     }
   else if (logmax > 0.0) /*logintv is > 0*/
     {
       if (logintv < 5.0 && logmax < 10.0)
-	{
-	  logshift = 0; /* No scientific format */
-	  nrdecs = 0;
-	  format_string = xstrdup("%.0lf");
-	}
+        {
+          logshift = 0; /* No scientific format */
+          nrdecs = 0;
+          format_string = xstrdup("%.0lf");
+        }
       else
-	{
-	  logshift = (int)logmax;
-	  /* Possible intervals are 0.2Ex, 0.5Ex, 1.0Ex                    */
-	  /* log10(0.2E9) = 8.30, log10(0.5E9) = 8.69, log10(1.0E9) = 9    */
-	  /* 0.2 and 0.5 need one decimal more. For stability subtract 0.1 */
-	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
-	}
+        {
+          logshift = (int)logmax;
+          /* Possible intervals are 0.2Ex, 0.5Ex, 1.0Ex                    */
+          /* log10(0.2E9) = 8.30, log10(0.5E9) = 8.69, log10(1.0E9) = 9    */
+          /* 0.2 and 0.5 need one decimal more. For stability subtract 0.1 */
+          nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
+          format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
+        }
     }
   else /* logmax and logintv are < 0 */
     {
       if (logmax > -3.0)
-	{
-	  logshift = 0; /* No scientific format */
-	  nrdecs = MIN(8,(int)(ceil(-logintv)));
-	  format_string = xasprintf("%%.%dlf",nrdecs);
-	}
+        {
+          logshift = 0; /* No scientific format */
+          nrdecs = MIN(8,(int)(ceil(-logintv)));
+          format_string = xasprintf("%%.%dlf",nrdecs);
+        }
       else
-	{
-	  logshift = (int)logmax-1;
-	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
-	}
+        {
+          logshift = (int)logmax-1;
+          nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
+          format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
+        }
       }
   *scale = pow(10.0,-(double)logshift);
   return format_string;

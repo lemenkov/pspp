@@ -138,15 +138,15 @@ struct freq_tab
   {
     struct hmap data;           /* Hash table for accumulating counts. */
     struct freq *valid;         /* Valid freqs. */
-    size_t n_valid;		/* Number of total freqs. */
+    size_t n_valid;                /* Number of total freqs. */
     const struct dictionary *dict; /* Source of entries in the table. */
 
     struct freq *missing;       /* Missing freqs. */
-    size_t n_missing;		/* Number of missing freqs. */
+    size_t n_missing;                /* Number of missing freqs. */
 
     /* Statistics. */
-    double total_cases;		/* Sum of weights of all cases. */
-    double valid_cases;		/* Sum of weights of valid cases. */
+    double total_cases;                /* Sum of weights of all cases. */
+    double valid_cases;                /* Sum of weights of valid cases. */
   };
 
 struct frq_chart
@@ -169,7 +169,7 @@ struct var_freqs
     const struct variable *var;
 
     /* Freqency table. */
-    struct freq_tab tab;	/* Frequencies table to use. */
+    struct freq_tab tab;        /* Frequencies table to use. */
 
     /* Statistics. */
     double stat[FRQ_ST_count];
@@ -217,12 +217,12 @@ static void calc_stats (const struct frq_proc *,
                         const struct var_freqs *, double d[FRQ_ST_count]);
 
 static void do_piechart(const struct frq_chart *pie,
-			const struct variable *var,
-			const struct freq_tab *frq_tab);
+                        const struct variable *var,
+                        const struct freq_tab *frq_tab);
 
 static void do_barchart(const struct frq_chart *bar,
-			const struct variable **var,
-			const struct freq_tab *frq_tab);
+                        const struct variable **var,
+                        const struct freq_tab *frq_tab);
 
 static struct frq_stats_table *frq_stats_table_submit (
   struct frq_stats_table *, const struct frq_proc *,
@@ -495,27 +495,27 @@ postcalc (struct frq_proc *frq, const struct dataset *ds,
         }
 
       if (frq->hist && var_is_numeric (vf->var) && vf->tab.n_valid > 0)
-	{
-	  double d[FRQ_ST_count];
-	  struct histogram *histogram;
+        {
+          double d[FRQ_ST_count];
+          struct histogram *histogram;
 
-	  calc_stats (frq, vf, d);
+          calc_stats (frq, vf, d);
 
-	  histogram = freq_tab_to_hist (frq, vf);
+          histogram = freq_tab_to_hist (frq, vf);
 
-	  if (histogram)
-	    {
+          if (histogram)
+            {
               output_splits_once (&need_splits, ds, example);
-	      chart_submit (histogram_chart_create (
+              chart_submit (histogram_chart_create (
                               histogram->gsl_hist, var_to_string(vf->var),
                               vf->tab.valid_cases,
                               d[FRQ_ST_MEAN],
                               d[FRQ_ST_STDDEV],
                               frq->hist->draw_normal));
 
-	      statistic_destroy (&histogram->parent);
-	    }
-	}
+              statistic_destroy (&histogram->parent);
+            }
+        }
 
       if (frq->pie)
         {
@@ -601,7 +601,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
     goto done;
 
   if (!parse_variables_const (lexer, dataset_dict (ds),
-			      &vars, &frq.n_vars, PV_NO_DUPLICATE))
+                              &vars, &frq.n_vars, PV_NO_DUPLICATE))
     goto done;
 
   frq.vars = xcalloc (frq.n_vars, sizeof *frq.vars);
@@ -616,14 +616,14 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "STATISTICS"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
-	  frq.stats = 0;
+          frq.stats = 0;
 
           int ofs = lex_ofs (lexer);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               for (int s = 0; s < FRQ_ST_count; s++)
                 if (lex_match_id (lexer, st_keywords[s]))
                   {
@@ -655,28 +655,28 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "PERCENTILES"))
         {
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (!lex_force_num_range_closed (lexer, "PERCENTILES", 0, 100))
                 goto done;
               add_percentile (&frq, lex_number (lexer) / 100.0, true,
                               &allocated_percentiles);
               lex_get (lexer);
               lex_match (lexer, T_COMMA);
-	    }
-	}
+            }
+        }
       else if (lex_match_id (lexer, "FORMAT"))
         {
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "TABLE"))
-		{
-		}
-	      else if (lex_match_id (lexer, "NOTABLE"))
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "TABLE"))
+                {
+                }
+              else if (lex_match_id (lexer, "NOTABLE"))
                 frq.max_categories = 0;
               else if (lex_match_id (lexer, "LIMIT"))
                 {
@@ -690,49 +690,49 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto done;
                 }
-	      else if (lex_match_id (lexer, "AVALUE"))
+              else if (lex_match_id (lexer, "AVALUE"))
                 frq.sort = FRQ_AVALUE;
-	      else if (lex_match_id (lexer, "DVALUE"))
+              else if (lex_match_id (lexer, "DVALUE"))
                 frq.sort = FRQ_DVALUE;
-	      else if (lex_match_id (lexer, "AFREQ"))
+              else if (lex_match_id (lexer, "AFREQ"))
                 frq.sort = FRQ_AFREQ;
-	      else if (lex_match_id (lexer, "DFREQ"))
+              else if (lex_match_id (lexer, "DFREQ"))
                 frq.sort = FRQ_DFREQ;
-	      else
-		{
-		  lex_error_expecting (lexer, "TABLE", "NOTABLE",
+              else
+                {
+                  lex_error_expecting (lexer, "TABLE", "NOTABLE",
                                        "LIMIT", "AVALUE", "DVALUE",
                                        "AFREQ", "DFREQ");
-		  goto done;
-		}
-	    }
-	}
+                  goto done;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "NTILES"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  if (!lex_force_int_range (lexer, "NTILES", 0, INT_MAX))
+          if (!lex_force_int_range (lexer, "NTILES", 0, INT_MAX))
             goto done;
 
           int n = lex_integer (lexer);
           lex_get (lexer);
           for (int i = 0; i < n + 1; ++i)
             add_percentile (&frq, i / (double) n, true, &allocated_percentiles);
-	}
+        }
       else if (lex_match_id (lexer, "ALGORITHM"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  if (lex_match_id (lexer, "COMPATIBLE"))
+          if (lex_match_id (lexer, "COMPATIBLE"))
             settings_set_cmd_algorithm (COMPATIBLE);
-	  else if (lex_match_id (lexer, "ENHANCED"))
+          else if (lex_match_id (lexer, "ENHANCED"))
             settings_set_cmd_algorithm (ENHANCED);
-	  else
-	    {
-	      lex_error_expecting (lexer, "COMPATIBLE", "ENHANCED");
-	      goto done;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "COMPATIBLE", "ENHANCED");
+              goto done;
+            }
+        }
       else if (lex_match_id (lexer, "HISTOGRAM"))
         {
           double hi_min = -DBL_MAX;
@@ -742,17 +742,17 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
           int hi_pcnt = INT_MIN;
           bool hi_draw_normal = false;
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "NORMAL"))
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "NORMAL"))
                 hi_draw_normal = true;
-	      else if (lex_match_id (lexer, "NONORMAL"))
+              else if (lex_match_id (lexer, "NONORMAL"))
                 hi_draw_normal = false;
-	      else if (lex_match_id (lexer, "FREQ"))
-		{
+              else if (lex_match_id (lexer, "FREQ"))
+                {
                   hi_scale = FRQ_FREQ;
                   if (lex_match (lexer, T_LPAREN))
                     {
@@ -763,9 +763,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                       if (!lex_force_match (lexer, T_RPAREN))
                         goto done;
                     }
-		}
-	      else if (lex_match_id (lexer, "PERCENT"))
-		{
+                }
+              else if (lex_match_id (lexer, "PERCENT"))
+                {
                   hi_scale = FRQ_PERCENT;
                   if (lex_match (lexer, T_LPAREN))
                     {
@@ -776,36 +776,36 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                       if (!lex_force_match (lexer, T_RPAREN))
                         goto done;
                     }
-		}
-	      else if (lex_match_id (lexer, "MINIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "MINIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MINIMUM",
                                                       -DBL_MAX, hi_max))
                     goto done;
                   hi_min = lex_number (lexer);
                   lex_get (lexer);
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else if (lex_match_id (lexer, "MAXIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else if (lex_match_id (lexer, "MAXIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MAXIMUM",
                                                       hi_min, DBL_MAX))
-		    goto done;
+                    goto done;
                   hi_max = lex_number (lexer);
                   lex_get (lexer);
- 		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "NORMAL", "NONORMAL",
+                   if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "NORMAL", "NONORMAL",
                                        "FREQ", "PERCENT", "MINIMUM", "MAXIMUM");
-		  goto done;
-		}
-	    }
+                  goto done;
+                }
+            }
 
           free (frq.hist);
           frq.hist = xmalloc (sizeof *frq.hist);
@@ -820,50 +820,50 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
           add_percentile (&frq, .25, false, &allocated_percentiles);
           add_percentile (&frq, .75, false, &allocated_percentiles);
-	}
+        }
       else if (lex_match_id (lexer, "PIECHART"))
         {
           double pie_min = -DBL_MAX;
           double pie_max = DBL_MAX;
           bool pie_missing = true;
 
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "MINIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "MINIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MINIMUM",
                                                       -DBL_MAX, pie_max))
-		    goto done;
+                    goto done;
                   pie_min = lex_number (lexer);
                   lex_get (lexer);
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else if (lex_match_id (lexer, "MAXIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else if (lex_match_id (lexer, "MAXIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MAXIMUM",
                                                       pie_min, DBL_MAX))
-		    goto done;
+                    goto done;
                   pie_max = lex_number (lexer);
                   lex_get (lexer);
- 		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else if (lex_match_id (lexer, "MISSING"))
+                   if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else if (lex_match_id (lexer, "MISSING"))
                 pie_missing = true;
-	      else if (lex_match_id (lexer, "NOMISSING"))
+              else if (lex_match_id (lexer, "NOMISSING"))
                 pie_missing = false;
-	      else
-		{
-		  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
+              else
+                {
+                  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
                                        "MISSING", "NOMISSING");
-		  goto done;
-		}
-	    }
+                  goto done;
+                }
+            }
 
           free (frq.pie);
           frq.pie = xmalloc (sizeof *frq.pie);
@@ -879,66 +879,66 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
           double bar_max = DBL_MAX;
           bool bar_freq = true;
 
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "MINIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "MINIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MINIMUM",
                                                       -DBL_MAX, bar_max))
                     goto done;
                   bar_min = lex_number (lexer);
                   lex_get (lexer);
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else if (lex_match_id (lexer, "MAXIMUM"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else if (lex_match_id (lexer, "MAXIMUM"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num_range_closed (lexer, "MAXIMUM",
                                                       bar_min, DBL_MAX))
-		    goto done;
+                    goto done;
                   bar_max = lex_number (lexer);
                   lex_get (lexer);
- 		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto done;
-		}
-	      else if (lex_match_id (lexer, "FREQ"))
-		{
-		  if (lex_match (lexer, T_LPAREN))
-		    {
+                   if (!lex_force_match (lexer, T_RPAREN))
+                    goto done;
+                }
+              else if (lex_match_id (lexer, "FREQ"))
+                {
+                  if (lex_match (lexer, T_LPAREN))
+                    {
                       if (!lex_force_num_range_open (lexer, "FREQ", 0, DBL_MAX))
                         goto done;
                       /* XXX TODO */
                       lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto done;
-		    }
-		  bar_freq = true;
-		}
-	      else if (lex_match_id (lexer, "PERCENT"))
-		{
-		  if (lex_match (lexer, T_LPAREN))
-		    {
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto done;
+                    }
+                  bar_freq = true;
+                }
+              else if (lex_match_id (lexer, "PERCENT"))
+                {
+                  if (lex_match (lexer, T_LPAREN))
+                    {
                       if (!lex_force_num_range_open (lexer, "PERCENT",
                                                      0, DBL_MAX))
                         goto done;
                       /* XXX TODO */
                       lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto done;
-		    }
-		  bar_freq = false;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto done;
+                    }
+                  bar_freq = false;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "MINIMUM", "MAXIMUM",
                                        "FREQ", "PERCENT");
-		  goto done;
-		}
-	    }
+                  goto done;
+                }
+            }
 
           free (frq.bar);
           frq.bar = xmalloc (sizeof *frq.bar);
@@ -948,14 +948,14 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
             .include_missing = false,
             .y_scale = bar_freq ? FRQ_FREQ : FRQ_PERCENT,
           };
-	}
+        }
       else if (lex_match_id (lexer, "MISSING"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "EXCLUDE"))
                 {
                   /* XXX TODO */
@@ -1125,8 +1125,8 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct var_freqs *vf)
 */
 static struct freq *
 pick_cat_counts (const struct frq_chart *catchart,
-		 const struct freq_tab *frq_tab,
-		 int *n_slicesp)
+                 const struct freq_tab *frq_tab,
+                 int *n_slicesp)
 {
   int n_slices = 0;
   struct freq *slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
@@ -1142,16 +1142,16 @@ pick_cat_counts (const struct frq_chart *catchart,
   if (catchart->include_missing)
     {
       for (size_t i = 0; i < frq_tab->n_missing; i++)
-	{
-	  const struct freq *f = &frq_tab->missing[i];
-	  slices[n_slices].count += f->count;
+        {
+          const struct freq *f = &frq_tab->missing[i];
+          slices[n_slices].count += f->count;
 
-	  if (i == 0)
-	    slices[n_slices].values[0] = f->values[0];
-	}
+          if (i == 0)
+            slices[n_slices].values[0] = f->values[0];
+        }
 
       if (frq_tab->n_missing > 0)
-	n_slices++;
+        n_slices++;
     }
 
   *n_slicesp = n_slices;
@@ -1166,8 +1166,8 @@ pick_cat_counts (const struct frq_chart *catchart,
 */
 static struct freq **
 pick_cat_counts_ptr (const struct frq_chart *catchart,
-		     const struct freq_tab *frq_tab,
-		     int *n_slicesp)
+                     const struct freq_tab *frq_tab,
+                     int *n_slicesp)
 {
   int n_slices = 0;
   struct freq **slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);

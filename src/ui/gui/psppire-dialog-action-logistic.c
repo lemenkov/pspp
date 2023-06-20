@@ -125,11 +125,11 @@ psppire_dialog_action_logistic_activate (PsppireDialogAction *a, GVariant *param
   opts_button = get_widget_assert (xml, "options-button");
 
   g_signal_connect_swapped (opts_button, "clicked",
-			    G_CALLBACK (on_opts_clicked),  act);
+                            G_CALLBACK (on_opts_clicked),  act);
 
   g_signal_connect (act->conf_checkbox, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    act->conf_entry);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    act->conf_entry);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(act->conf_checkbox), TRUE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(act->conf_checkbox), FALSE);
@@ -137,7 +137,7 @@ psppire_dialog_action_logistic_activate (PsppireDialogAction *a, GVariant *param
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
 
   return xml;
 }
@@ -179,10 +179,10 @@ generate_syntax (const PsppireDialogAction *a)
       enum measure m = var_get_measure (v);
 
       if (m == MEASURE_NOMINAL || m == MEASURE_ORDINAL || var_is_alpha (v))
-	{
-	  g_string_prepend (categoricals, var_get_name (v));
-	  g_string_prepend (categoricals, " ");
-	}
+        {
+          g_string_prepend (categoricals, var_get_name (v));
+          g_string_prepend (categoricals, " ");
+        }
     }
   if (0 != strcmp (categoricals->str, ""))
     g_string_prepend (categoricals, "\n\t/CATEGORICAL =");

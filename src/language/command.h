@@ -53,7 +53,7 @@ struct dataset;
 struct lexer;
 
 enum cmd_result cmd_parse_in_state (struct lexer *lexer, struct dataset *ds,
-				    enum cmd_state);
+                                    enum cmd_state);
 
 enum cmd_result cmd_parse (struct lexer *lexer, struct dataset *ds);
 

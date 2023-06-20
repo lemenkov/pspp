@@ -58,9 +58,9 @@ main (int argc, char **argv)
     {
       switch (opt)
         {
-	case OPT_METADATA:
-	  get_n_sheets = true;
-	  break;
+        case OPT_METADATA:
+          get_n_sheets = true;
+          break;
         case OPT_REFCHECK:
           refcheck = true;
           break;
@@ -110,7 +110,7 @@ main (int argc, char **argv)
       int r = reverse ? (rows - r_ - 1) : r_;
       for (int c_ = 0; c_ < columns; c_++)
         {
-	  int c = reverse ? (columns - c_ - 1) : c_ ;
+          int c = reverse ? (columns - c_ - 1) : c_ ;
           char *s = spreadsheet_get_cell (ss, sheet, r, c);
           if (refcheck)
             {
@@ -119,11 +119,11 @@ main (int argc, char **argv)
               assert (row == r);
               assert (col == c);
             }
-	  else
+          else
             {
               fputs (s ? s : "", stdout);
-	      if (c_ < columns - 1)
-		putchar ('\t');
+              if (c_ < columns - 1)
+                putchar ('\t');
             }
 
 
@@ -131,7 +131,7 @@ main (int argc, char **argv)
         }
       if (!refcheck)
         {
-	  putchar ('\n');
+          putchar ('\n');
         }
     }
 

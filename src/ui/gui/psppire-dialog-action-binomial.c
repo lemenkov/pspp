@@ -115,12 +115,12 @@ psppire_dialog_action_binomial_activate (PsppireDialogAction *a, GVariant *param
   act->cutpoint_button =    get_widget_assert   (xml, "radiobutton4");
 
   g_signal_connect (act->cutpoint_button, "toggled", G_CALLBACK (set_sensitivity_from_toggle),
-		    act->cutpoint_entry);
+                    act->cutpoint_entry);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
+                                             dialog_state_valid);
   return xml;
 }
 

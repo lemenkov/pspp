@@ -130,10 +130,10 @@ barchart_dump (const struct barchart *bc, FILE *fp)
     {
       fprintf (fp, "Sub-categories:\n");
       for (int i = 0; i < bc->n_nzcats / bc->n_pcats; ++i)
-	{
-	  const struct category *cat = bc->ss[i];
-	  fprintf (fp, "  %d \"%s\"\n", cat->idx, ds_cstr(&cat->label));
-	}
+        {
+          const struct category *cat = bc->ss[i];
+          fprintf (fp, "  %d \"%s\"\n", cat->idx, ds_cstr(&cat->label));
+        }
     }
 
   fprintf (fp, "All Categories:\n");
@@ -149,10 +149,10 @@ barchart_dump (const struct barchart *bc, FILE *fp)
       ds_clear (&s);
 
       if (bc->ss)
-	{
-	  var_append_value_name (bc->var[1], &frq->values[1], &s);
-	  fprintf (fp, ", \"%s\"", ds_cstr (&s));
-	}
+        {
+          var_append_value_name (bc->var[1], &frq->values[1], &s);
+          fprintf (fp, ", \"%s\"", ds_cstr (&s));
+        }
       ds_destroy (&s);
       fputc ('\n', fp);
     }
@@ -172,8 +172,8 @@ barchart_dump (const struct barchart *bc, FILE *fp)
 */
 struct chart *
 barchart_create (const struct variable **var, int n_vars,
-		 const char *ylabel, bool percent,
-		 struct freq *const *cats, int n_cats)
+                 const char *ylabel, bool percent,
+                 struct freq *const *cats, int n_cats)
 {
   int i;
 
@@ -200,38 +200,38 @@ barchart_create (const struct variable **var, int n_vars,
       hmap_init (&bar->primaries);
 
       /*
-	 Iterate the categories and create a hash table of the primary categories.
-	 We need to do this to find out how many there are and to cache the labels.
+         Iterate the categories and create a hash table of the primary categories.
+         We need to do this to find out how many there are and to cache the labels.
       */
       for (i = 0; i < n_cats; i++)
-	{
-	  const struct freq *src = cats[i];
-	  size_t hash = value_hash (&src->values[pidx], width, 0);
+        {
+          const struct freq *src = cats[i];
+          size_t hash = value_hash (&src->values[pidx], width, 0);
 
-	  struct category *foo;
-	  int flag = 0;
-	  HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bar->primaries)
-	    {
-	      if (value_equal (&foo->val, &src->values[pidx], width))
-		{
-		  flag = 1;
-		  break;
-		}
-	    }
+          struct category *foo;
+          int flag = 0;
+          HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bar->primaries)
+            {
+              if (value_equal (&foo->val, &src->values[pidx], width))
+                {
+                  flag = 1;
+                  break;
+                }
+            }
 
-	  if (!flag)
-	    {
-	      struct category *s = XZALLOC (struct category);
-	      s->idx = idx++;
-	      s->width = var_get_width (var[pidx]);
-	      value_init (&s->val, s->width);
-	      value_copy (&s->val, &src->values[pidx], s->width);
-	      ds_init_empty (&s->label);
-	      var_append_value_name (var[pidx], &s->val, &s->label);
+          if (!flag)
+            {
+              struct category *s = XZALLOC (struct category);
+              s->idx = idx++;
+              s->width = var_get_width (var[pidx]);
+              value_init (&s->val, s->width);
+              value_copy (&s->val, &src->values[pidx], s->width);
+              ds_init_empty (&s->label);
+              var_append_value_name (var[pidx], &s->val, &s->label);
 
-	      hmap_insert (&bar->primaries, &s->node, hash);
-	    }
-	}
+              hmap_insert (&bar->primaries, &s->node, hash);
+            }
+        }
 
       bar->n_pcats = hmap_count (&bar->primaries);
     }
@@ -242,41 +242,41 @@ barchart_create (const struct variable **var, int n_vars,
       int idx = 0;
       /* Iterate the categories, and create a hash table of secondary categories */
       for (i = 0; i < n_cats; i++)
-	{
-	  struct freq *src = cats[i];
+        {
+          struct freq *src = cats[i];
 
-	  struct category *foo;
-	  int flag = 0;
-	  size_t hash = value_hash (&src->values[sidx], var_get_width (var[sidx]), 0);
-	  HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bar->secondaries)
-	    {
-	      if (value_equal (&foo->val, &src->values[sidx], var_get_width (var[sidx])))
-		{
-		  flag = 1;
-		  break;
-		}
-	    }
+          struct category *foo;
+          int flag = 0;
+          size_t hash = value_hash (&src->values[sidx], var_get_width (var[sidx]), 0);
+          HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bar->secondaries)
+            {
+              if (value_equal (&foo->val, &src->values[sidx], var_get_width (var[sidx])))
+                {
+                  flag = 1;
+                  break;
+                }
+            }
 
-	  if (!flag)
-	    {
-	      struct category *s = XZALLOC (struct category);
-	      s->idx = idx++;
-	      s->width = var_get_width (var[sidx]);
-	      value_init (&s->val, s->width);
-	      value_copy (&s->val, &src->values[sidx], var_get_width (var[sidx]));
-	      ds_init_empty (&s->label);
-	      var_append_value_name (var[sidx], &s->val, &s->label);
+          if (!flag)
+            {
+              struct category *s = XZALLOC (struct category);
+              s->idx = idx++;
+              s->width = var_get_width (var[sidx]);
+              value_init (&s->val, s->width);
+              value_copy (&s->val, &src->values[sidx], var_get_width (var[sidx]));
+              ds_init_empty (&s->label);
+              var_append_value_name (var[sidx], &s->val, &s->label);
 
-	      hmap_insert (&bar->secondaries, &s->node, hash);
-	      bar->ss = xrealloc (bar->ss, idx * sizeof *bar->ss);
-	      bar->ss[idx - 1] = s;
-	    }
-	}
+              hmap_insert (&bar->secondaries, &s->node, hash);
+              bar->ss = xrealloc (bar->ss, idx * sizeof *bar->ss);
+              bar->ss[idx - 1] = s;
+            }
+        }
 
       int n_category = hmap_count (&bar->secondaries);
 
       sort (bar->ss, n_category, sizeof *bar->ss,
-	    compare_category_3way, bar);
+            compare_category_3way, bar);
     }
 
 
@@ -297,37 +297,37 @@ barchart_create (const struct variable **var, int n_vars,
 
     for (i = 0; i < n_cats; i++)
       {
-	struct freq *c = cats[i];
+        struct freq *c = cats[i];
 
-	struct freq *foo;
-	bool flag = false;
-	size_t hash = hash_freq_2level_ptr (&c, bar);
-	HMAP_FOR_EACH_WITH_HASH (foo, struct freq, node, hash, &level2table)
-	  {
-	    if (0 == compare_freq_2level_ptr_3way (&foo, &c, bar))
-	      {
-		foo->count += c->count;
-		bar->total_count += c->count;
+        struct freq *foo;
+        bool flag = false;
+        size_t hash = hash_freq_2level_ptr (&c, bar);
+        HMAP_FOR_EACH_WITH_HASH (foo, struct freq, node, hash, &level2table)
+          {
+            if (0 == compare_freq_2level_ptr_3way (&foo, &c, bar))
+              {
+                foo->count += c->count;
+                bar->total_count += c->count;
 
-		if (foo->count > bar->largest)
-		  bar->largest = foo->count;
+                if (foo->count > bar->largest)
+                  bar->largest = foo->count;
 
-		flag = true;
-		break;
-	      }
-	  }
+                flag = true;
+                break;
+              }
+          }
 
-	if (!flag)
-	  {
-	    struct freq *aggregated_freq = freq_clone (c, n_vars, bar->widths);
-	    hmap_insert (&level2table, &aggregated_freq->node, hash);
+        if (!flag)
+          {
+            struct freq *aggregated_freq = freq_clone (c, n_vars, bar->widths);
+            hmap_insert (&level2table, &aggregated_freq->node, hash);
 
-	    if (c->count > bar->largest)
-	      bar->largest = aggregated_freq->count;
+            if (c->count > bar->largest)
+              bar->largest = aggregated_freq->count;
 
-	    bar->total_count += c->count;
-	    bar->cats[x++] = aggregated_freq;
-	  }
+            bar->total_count += c->count;
+            bar->cats[x++] = aggregated_freq;
+          }
       }
 
     bar->n_nzcats = hmap_count (&level2table);
@@ -335,7 +335,7 @@ barchart_create (const struct variable **var, int n_vars,
   }
 
   sort (bar->cats, bar->n_nzcats, sizeof *bar->cats,
-	compare_freq_2level_ptr_3way, bar);
+        compare_freq_2level_ptr_3way, bar);
 
   if (settings_get_testing_mode ())
     barchart_dump (bar, stdout);

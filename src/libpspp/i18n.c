@@ -76,11 +76,11 @@ create_iconv (const char* tocode, const char* fromcode, bool warn)
   HMAPX_FOR_EACH_WITH_HASH (converter, node, hash, &map)
     {
       if (!converter)
-	return NULL;
+        return NULL;
 
       if (!strcmp (tocode, converter->tocode)
-	  && !strcmp (fromcode, converter->fromcode))
-	return converter;
+          && !strcmp (fromcode, converter->fromcode))
+        return converter;
     }
 
   converter = xmalloc (sizeof *converter);
@@ -119,7 +119,7 @@ create_iconv (const char* tocode, const char* fromcode, bool warn)
       char *outptr = outbuf;
       size_t outbytes = sizeof outbuf;
       if (-1 != iconv (bconv, &inptr, &inbytes, &outptr, &outbytes))
-	converter->null_char_width = outptr - outbuf;
+        converter->null_char_width = outptr - outbuf;
       iconv_close (bconv);
     }
 
@@ -149,7 +149,7 @@ recode_byte (const char *to, const char *from, char c)
    returned value. */
 char *
 recode_string (const char *to, const char *from,
-	       const char *text, int length)
+               const char *text, int length)
 {
   return recode_string_pool (to, from, text, length, NULL);
 }
@@ -209,8 +209,8 @@ try_recode (struct converter *cvtr, char fallbackchar,
             if (!fallbackchar)
               return -EINVAL;
             *out++ = fallbackchar;
-	    for (j = 0 ; j < null_bytes ; ++j)
-	      *out++ = '\0';
+            for (j = 0 ; j < null_bytes ; ++j)
+              *out++ = '\0';
             return out - 1 - out_;
 
           case EILSEQ:
@@ -784,7 +784,7 @@ i18n_done (void)
   HMAPX_FOR_EACH (cvtr, node, &map)
     {
       if (cvtr == NULL)
-	continue;
+        continue;
       free (cvtr->tocode);
       free (cvtr->fromcode);
       if (cvtr->conv != (iconv_t) -1)
@@ -1045,10 +1045,10 @@ bool
 get_encoding_info (struct encoding_info *e, const char *name)
 {
   const struct substring in = SS_LITERAL_INITIALIZER (
-						      "\t\n\v\f\r "
-						      "!\"#$%&'()*+,-./0123456789:;<=>?@"
-						      "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-						      "abcdefghijklmnopqrstuvwxyz{|}~");
+                                                      "\t\n\v\f\r "
+                                                      "!\"#$%&'()*+,-./0123456789:;<=>?@"
+                                                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                                                      "abcdefghijklmnopqrstuvwxyz{|}~");
 
   struct substring out, cr, lf, space;
   bool ok;

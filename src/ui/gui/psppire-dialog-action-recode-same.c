@@ -63,7 +63,7 @@ dialog_state_valid (gpointer data)
     return FALSE;
 
   if (! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					&not_used))
+                                        &not_used))
     return FALSE;
 
   return difx_variable_treeview_is_populated (rd);
@@ -105,20 +105,20 @@ psppire_dialog_action_recode_same_activate (PsppireDialogAction *a, GVariant *pa
   GtkBuilder *xml = psppire_dialog_action_recode_pre_activate (act, NULL);
 
   gtk_window_set_title (GTK_WINDOW (pda->dialog),
-			_("Recode into Same Variables"));
+                        _("Recode into Same Variables"));
 
   g_signal_connect_swapped (act->old_and_new_dialog, "show",
-			    G_CALLBACK (on_old_new_show), act);
+                            G_CALLBACK (on_old_new_show), act);
 
   gtk_window_set_title (GTK_WINDOW (act->old_and_new_dialog),
-			_("Recode into Same Variables: Old and New Values"));
+                        _("Recode into Same Variables: Old and New Values"));
 
   gtk_widget_hide (act->output_variable_box);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
 
   return xml;
 }

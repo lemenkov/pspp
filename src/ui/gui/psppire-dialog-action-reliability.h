@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY (psppire_dialog_action_reliability_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_RELIABILITY(obj)	\
+#define PSPPIRE_DIALOG_ACTION_RELIABILITY(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, PsppireDialogActionReliability))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, PsppireDialogActionReliability))
 
 #define PSPPIRE_DIALOG_ACTION_RELIABILITY_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, \
                                  PsppireDialogActionReliabilityClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_RELIABILITY(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY))
 
 #define PSPPIRE_IS_DIALOG_ACTION_RELIABILITY_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY))
 
 
 #define PSPPIRE_DIALOG_ACTION_RELIABILITY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, \
-				   PsppireDialogActionReliabilityClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, \
+                                   PsppireDialogActionReliabilityClass))
 
 typedef struct _PsppireDialogActionReliability       PsppireDialogActionReliability;
 typedef struct _PsppireDialogActionReliabilityClass  PsppireDialogActionReliabilityClass;

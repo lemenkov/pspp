@@ -240,7 +240,7 @@ settings_get_output_integer_format (void)
 /* Sets the output integer format to INTEGER_FORMAT. */
 void
 settings_set_output_integer_format (
-			   enum integer_format integer_format)
+                           enum integer_format integer_format)
 {
   the_settings.output_integer_format = integer_format;
 }
@@ -396,17 +396,17 @@ settings_set_max_messages (enum msg_severity severity, int max)
   if (severity == MSG_S_WARNING)
     {
       if (max == 0)
-	{
-	  msg (MW,
-	       _("MXWARNS set to zero.  No further warnings will be given even when potentially problematic situations are encountered."));
-	  msg_ui_disable_warnings (true);
-	}
+        {
+          msg (MW,
+               _("MXWARNS set to zero.  No further warnings will be given even when potentially problematic situations are encountered."));
+          msg_ui_disable_warnings (true);
+        }
       else if (the_settings.max_messages [MSG_S_WARNING] == 0)
-	{
-	  msg_ui_disable_warnings (false);
-	  the_settings.max_messages[MSG_S_WARNING] = max;
-	  msg (MW, _("Warnings re-enabled. %d warnings will be issued before aborting syntax processing."), max);
-	}
+        {
+          msg_ui_disable_warnings (false);
+          the_settings.max_messages[MSG_S_WARNING] = max;
+          msg (MW, _("Warnings re-enabled. %d warnings will be issued before aborting syntax processing."), max);
+        }
     }
 
   the_settings.max_messages[severity] = max;

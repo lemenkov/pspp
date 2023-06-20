@@ -244,9 +244,9 @@ select_treeview_from_value (GtkTreeView *treeview, union value *val)
       v.f = g_value_get_double (&gvalue);
 
       if (0 == memcmp (&v, val, sizeof (union value)))
-	{
-	  break;
-	}
+        {
+          break;
+        }
     }
 
   path = gtk_tree_model_get_path (model, &iter);
@@ -274,7 +274,7 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
   text_to_value__ (text, dialog->format, dialog->encoding, &v);
 
   g_signal_handler_block (GTK_ENTRY (dialog->label_entry),
-			 dialog->change_handler_id);
+                         dialog->change_handler_id);
 
   gtk_entry_set_text (GTK_ENTRY (dialog->label_entry),"");
 
@@ -293,7 +293,7 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
     }
 
   g_signal_handler_unblock (GTK_ENTRY (dialog->label_entry),
-			 dialog->change_handler_id);
+                         dialog->change_handler_id);
 
   value_destroy (&v, val_labs_get_width (dialog->labs));
 }
@@ -362,7 +362,7 @@ do_change (PsppireValLabsDialog *dialog)
   if (text_to_value__ (val_text, dialog->format, dialog->encoding, &v))
     {
       val_labs_replace (dialog->labs, &v,
-			gtk_entry_get_text (GTK_ENTRY (dialog->label_entry)));
+                        gtk_entry_get_text (GTK_ENTRY (dialog->label_entry)));
 
       gtk_widget_set_sensitive (dialog->change_button, FALSE);
 
@@ -386,14 +386,14 @@ on_add (GtkWidget *w, gpointer data)
   if (text_to_value__ (text, dialog->format, dialog->encoding, &v))
     {
       if (val_labs_add (dialog->labs, &v,
-			gtk_entry_get_text
-			(GTK_ENTRY (dialog->label_entry))))
-	{
-	  gtk_widget_set_sensitive (dialog->add_button, FALSE);
+                        gtk_entry_get_text
+                        (GTK_ENTRY (dialog->label_entry))))
+        {
+          gtk_widget_set_sensitive (dialog->add_button, FALSE);
 
-	  repopulate_dialog (dialog);
-	  gtk_widget_grab_focus (dialog->value_entry);
-	}
+          repopulate_dialog (dialog);
+          gtk_widget_grab_focus (dialog->value_entry);
+        }
 
       value_destroy (&v, val_labs_get_width (dialog->labs));
     }
@@ -441,23 +441,23 @@ on_select_row (GtkTreeView *treeview, gpointer data)
   text = value_to_text__ (value, dialog->format, dialog->encoding);
 
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),
-			 dialog->value_handler_id);
+                         dialog->value_handler_id);
 
   gtk_entry_set_text (GTK_ENTRY (dialog->value_entry), text);
 
   g_signal_handler_unblock (GTK_ENTRY (dialog->value_entry),
-			 dialog->value_handler_id);
+                         dialog->value_handler_id);
   g_free (text);
 
   g_signal_handler_block (GTK_ENTRY (dialog->label_entry),
-			 dialog->change_handler_id);
+                         dialog->change_handler_id);
 
 
   gtk_entry_set_text (GTK_ENTRY (dialog->label_entry),
-		      label);
+                      label);
 
   g_signal_handler_unblock (GTK_ENTRY (dialog->label_entry),
-			 dialog->change_handler_id);
+                         dialog->change_handler_id);
 
   gtk_widget_set_sensitive (dialog->remove_button, TRUE);
   gtk_widget_set_sensitive (dialog->change_button, FALSE);
@@ -486,7 +486,7 @@ psppire_val_labs_dialog_constructor (GType                  type,
   dialog = PSPPIRE_VAL_LABS_DIALOG (obj);
 
   g_object_set (dialog, "help-page", "VALUE-LABELS",
-		"title", _("Value Labels"), NULL);
+                "title", _("Value Labels"), NULL);
 
   content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   gtk_container_add (GTK_CONTAINER (content_area),
@@ -506,40 +506,40 @@ psppire_val_labs_dialog_constructor (GType                  type,
   renderer = gtk_cell_renderer_text_new ();
 
   column = gtk_tree_view_column_new_with_attributes ("Title",
-						     renderer,
-						     "text",
-						     0,
-						     NULL);
+                                                     renderer,
+                                                     "text",
+                                                     0,
+                                                     NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (dialog->treeview), column);
 
   dialog->change_handler_id =
     g_signal_connect (dialog->label_entry,
-		     "changed",
-		     G_CALLBACK (on_label_entry_change), dialog);
+                     "changed",
+                     G_CALLBACK (on_label_entry_change), dialog);
   g_signal_connect (dialog->label_entry, "activate",
                     G_CALLBACK (on_label_entry_activate), dialog);
 
   dialog->value_handler_id  =
     g_signal_connect (dialog->value_entry,
-		     "changed",
-		     G_CALLBACK (on_value_entry_change), dialog);
+                     "changed",
+                     G_CALLBACK (on_value_entry_change), dialog);
   g_signal_connect (dialog->value_entry, "activate",
                     G_CALLBACK (on_value_entry_activate), dialog);
 
   g_signal_connect (dialog->change_button,
-		   "clicked",
-		   G_CALLBACK (on_change), dialog);
+                   "clicked",
+                   G_CALLBACK (on_change), dialog);
 
 
   g_signal_connect (dialog->treeview, "cursor-changed",
-		   G_CALLBACK (on_select_row), dialog);
+                   G_CALLBACK (on_select_row), dialog);
 
   g_signal_connect (dialog->remove_button, "clicked",
-		   G_CALLBACK (on_remove), dialog);
+                   G_CALLBACK (on_remove), dialog);
 
   g_signal_connect (dialog->add_button, "clicked",
-		   G_CALLBACK (on_add), dialog);
+                   G_CALLBACK (on_add), dialog);
 
   /* dialog->labs must not be set here, because as a member of a singleton
      class its value persists "between" objects.  */
@@ -563,21 +563,21 @@ repopulate_dialog (PsppireValLabsDialog *dialog)
   GtkTreeIter iter;
 
   GtkListStore *list_store = gtk_list_store_new (2,
-						 G_TYPE_STRING,
-						 G_TYPE_DOUBLE);
+                                                 G_TYPE_STRING,
+                                                 G_TYPE_DOUBLE);
 
   g_signal_handler_block (GTK_ENTRY (dialog->label_entry),
-			 dialog->change_handler_id);
+                         dialog->change_handler_id);
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),
-			 dialog->value_handler_id);
+                         dialog->value_handler_id);
 
   gtk_entry_set_text (GTK_ENTRY (dialog->value_entry), "");
   gtk_entry_set_text (GTK_ENTRY (dialog->label_entry), "");
 
   g_signal_handler_unblock (GTK_ENTRY (dialog->value_entry),
-			 dialog->value_handler_id);
+                         dialog->value_handler_id);
   g_signal_handler_unblock (GTK_ENTRY (dialog->label_entry),
-			   dialog->change_handler_id);
+                           dialog->change_handler_id);
 
   labels = val_labs_sorted (dialog->labs);
   n_labels = val_labs_count (dialog->labs);
@@ -594,8 +594,8 @@ repopulate_dialog (PsppireValLabsDialog *dialog)
       gtk_list_store_append (list_store, &iter);
       gtk_list_store_set (list_store, &iter,
                           0, text,
-			  1, vl->value.f,
-			  -1);
+                          1, vl->value.f,
+                          -1);
 
       g_free (text);
       g_free (vstr);
@@ -603,7 +603,7 @@ repopulate_dialog (PsppireValLabsDialog *dialog)
   free (labels);
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->treeview),
-			  GTK_TREE_MODEL (list_store));
+                          GTK_TREE_MODEL (list_store));
 
   g_object_unref (list_store);
 }

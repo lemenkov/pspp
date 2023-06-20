@@ -75,12 +75,12 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
   if (lex_match_id (lexer, "READONLY"))
     {
       if (! change_permissions (fn, PER_RO))
-	goto error;
+        goto error;
     }
   else if (lex_match_id (lexer, "WRITEABLE"))
     {
       if (! change_permissions (fn, PER_RW))
-	goto error;
+        goto error;
     }
   else
     {

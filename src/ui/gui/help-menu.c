@@ -150,28 +150,28 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), PACKAGE_URL);
 
   gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about),
-				announced_version);
+                                announced_version);
 
   gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about),
-				(const gchar **) authors);
+                                (const gchar **) authors);
 
   gtk_about_dialog_set_artists (GTK_ABOUT_DIALOG (about),
-				artists);
+                                artists);
 
   gtk_about_dialog_set_license (GTK_ABOUT_DIALOG (about),
-				copyleft);
+                                copyleft);
 
   gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about),
-				 _("A program for the analysis of sampled data"));
+                                 _("A program for the analysis of sampled data"));
 
   gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about),
-				  "Free Software Foundation");
+                                  "Free Software Foundation");
 
   gtk_about_dialog_set_translator_credits
     (
      GTK_ABOUT_DIALOG (about),
      /* TRANSLATORS: Do not translate this string.  Instead, put the names of the people
-	who have helped in the translation. */
+        who have helped in the translation. */
      _("translator-credits")
 );
 
@@ -211,7 +211,7 @@ online_help (const char *page)
          which is valid for the multiple page html doc*/
       tokens = g_strsplit (page, "#", maxtokens);
       for (idx = 0; idx < maxtokens && tokens[idx]; idx++)
-	;
+        ;
       htmlfilename = xasprintf ("%s.html", tokens[idx-1]);
       g_strfreev (tokens);
     }
@@ -279,9 +279,9 @@ create_help_menu (GtkWindow *toplevel)
   gtk_window_add_accel_group (toplevel, accel_group);
 
   gtk_widget_add_accelerator (help_ref,
-			      "activate", accel_group,
-			      GDK_KEY_F1, 0,
-			      GTK_ACCEL_VISIBLE);
+                              "activate", accel_group,
+                              GDK_KEY_F1, 0,
+                              GTK_ACCEL_VISIBLE);
 
   gtk_menu_attach (GTK_MENU (menu), help_ref, 0, 1, 0, 1);
   gtk_menu_attach (GTK_MENU (menu), help_system_info, 0, 1, 1, 2);

@@ -77,7 +77,7 @@ on_curve_button_toggle (GtkCheckButton *curve, PsppireDialogActionRoc *rd)
   if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (curve)))
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
-	g_object_set (rd->reference, "inconsistent", TRUE, NULL);
+        g_object_set (rd->reference, "inconsistent", TRUE, NULL);
       g_object_set (rd->reference, "sensitive", FALSE, NULL);
     }
   else
@@ -141,15 +141,15 @@ psppire_dialog_action_roc_activate (PsppireDialogAction *a, GVariant *param)
   act->coordinates    = get_widget_assert   (xml, "co-ordinates");
 
   g_signal_connect_swapped (act->state_variable, "changed",
-			    G_CALLBACK (on_state_var_changed), act);
+                            G_CALLBACK (on_state_var_changed), act);
 
   g_signal_connect (act->curve, "toggled",
-		    G_CALLBACK (on_curve_button_toggle), act);
+                    G_CALLBACK (on_curve_button_toggle), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
   return xml;
 }
 
@@ -177,7 +177,7 @@ generate_syntax (const PsppireDialogAction *a)
     value_init (&val, var_get_width (var));
 
     psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (rd->state_value),
-				   &val, var_get_width (var));
+                                   &val, var_get_width (var));
 
     g_return_val_if_fail (var, NULL);
 
@@ -203,7 +203,7 @@ generate_syntax (const PsppireDialogAction *a)
     {
       g_string_append (string, "CURVE");
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
-	g_string_append (string, " (REFERENCE)");
+        g_string_append (string, " (REFERENCE)");
     }
   else
     g_string_append (string, "NONE");
@@ -216,10 +216,10 @@ generate_syntax (const PsppireDialogAction *a)
       g_string_append (string, "\n\t/PRINT");
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->standard_error)))
-	g_string_append (string, " SE");
+        g_string_append (string, " SE");
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->coordinates)))
-	g_string_append (string, " COORDINATES");
+        g_string_append (string, " COORDINATES");
     }
 
   g_string_append (string, ".\n");

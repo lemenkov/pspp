@@ -57,13 +57,13 @@ expr_optimize (struct expr_node *node, struct expression *e)
     {
       node->args[i] = expr_optimize (node->args[i], e);
       if (node->args[i]->type == OP_number)
-	{
-	  if (node->args[i]->number == SYSMIS)
-	    n_sysmis++;
-	}
+        {
+          if (node->args[i]->number == SYSMIS)
+            n_sysmis++;
+        }
 
       if (!is_atom (node->args[i]->type))
-	n_nonconst++;
+        n_nonconst++;
     }
 
   op = &operations[node->type];

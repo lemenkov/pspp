@@ -70,7 +70,7 @@ struct sfm_writer
   {
     struct file_handle *fh;     /* File handle. */
     struct fh_lock *lock;       /* Mutual exclusion for file. */
-    FILE *file;			/* File stream. */
+    FILE *file;                        /* File stream. */
     struct replace_file *rf;    /* Ticket for replacing output file. */
 
     enum any_compression compression;
@@ -123,10 +123,10 @@ static void write_longvar_table (struct sfm_writer *w,
                                  const struct dictionary *dict);
 
 static void write_encoding_record (struct sfm_writer *w,
-				   const struct dictionary *);
+                                   const struct dictionary *);
 
 static void write_vls_length_table (struct sfm_writer *w,
-			      const struct dictionary *dict);
+                              const struct dictionary *dict);
 
 static void write_long_string_value_labels (struct sfm_writer *,
                                             const struct dictionary *);
@@ -936,7 +936,7 @@ write_mrsets (struct sfm_writer *w, const struct dictionary *dict,
 /* Write the alignment, width and scale values. */
 static void
 write_variable_display_parameters (struct sfm_writer *w,
-				   const struct dictionary *dict)
+                                   const struct dictionary *dict)
 {
   int i;
 
@@ -972,7 +972,7 @@ write_variable_display_parameters (struct sfm_writer *w,
 /* Writes the table of lengths for very long string variables. */
 static void
 write_vls_length_table (struct sfm_writer *w,
-			const struct dictionary *dict)
+                        const struct dictionary *dict)
 {
   struct string map;
   int i;
@@ -1130,7 +1130,7 @@ write_long_string_missing_values (struct sfm_writer *w,
 
 static void
 write_encoding_record (struct sfm_writer *w,
-		       const struct dictionary *d)
+                       const struct dictionary *d)
 {
   /* IANA says "...character set names may be up to 40 characters taken
      from the printable characters of US-ASCII," so character set names

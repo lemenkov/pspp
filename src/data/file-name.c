@@ -99,7 +99,7 @@ fn_search_path (const char *base_name, char **path)
 
       struct stat temp;
       if (((stat (file, &temp) == 0) && (! S_ISDIR (temp.st_mode))))
-	return file;
+        return file;
 
       free (file);
     }
@@ -164,7 +164,7 @@ fn_open (const struct file_handle *fh, const char *mode)
   if (fn[0] == '|')
     {
       if (settings_get_safer_mode ())
-	return safety_violation (fn);
+        return safety_violation (fn);
 
       return popen (&fn[1], mode[0] == 'r' ? "r" : "w");
     }
@@ -174,7 +174,7 @@ fn_open (const struct file_handle *fh, const char *mode)
       FILE *f;
 
       if (settings_get_safer_mode ())
-	return safety_violation (fn);
+        return safety_violation (fn);
 
       s = xmalloca (strlen (fn));
       memcpy (s, fn, strlen (fn) - 1);
@@ -238,22 +238,22 @@ default_output_path (void)
   if (path == NULL)
     {
       /* Windows NT defines HOMEDRIVE and HOMEPATH.  But give preference
-	 to HOME, because the user can change HOME.  */
+         to HOME, because the user can change HOME.  */
       const char *home_dir = getenv ("HOME");
       int i;
 
       if (home_dir == NULL)
-	{
-	  const char *home_drive = getenv ("HOMEDRIVE");
-	  const char *home_path = getenv ("HOMEPATH");
+        {
+          const char *home_drive = getenv ("HOMEDRIVE");
+          const char *home_path = getenv ("HOMEPATH");
 
-	  if (home_drive != NULL && home_path != NULL)
-	    home_dir = xasprintf ("%s%s",
-				  home_drive, home_path);
-	}
+          if (home_drive != NULL && home_path != NULL)
+            home_dir = xasprintf ("%s%s",
+                                  home_drive, home_path);
+        }
 
       if (home_dir == NULL)
-	home_dir = "c:/users/default"; /* poor default */
+        home_dir = "c:/users/default"; /* poor default */
 
       /* Copy home_dir into path.  Add a slash at the end but
          only if there isn't already one there, because Windows
@@ -265,7 +265,7 @@ default_output_path (void)
         path = xstrdup (home_dir);
 
       for(i = 0; i < strlen (path); i++)
-	if (path[i] == '\\') path[i] = '/';
+        if (path[i] == '\\') path[i] = '/';
     }
 
   return path;

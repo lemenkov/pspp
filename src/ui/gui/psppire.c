@@ -107,10 +107,10 @@ initialize (const struct init_source *is)
       break;
     case 8:
       if (! gtk_parse_args (is->argc, is->argv))
-	{
-	  perror ("Error parsing arguments");
-	  exit (1);
-	}
+        {
+          perror ("Error parsing arguments");
+          exit (1);
+        }
       break;
     case 9:
       journal_init ();
@@ -173,9 +173,9 @@ psppire_preload_file (const gchar *file, GtkWindow *victim)
   const gchar *local_encoding = "UTF-8";
 
   struct file_handle *fh = fh_create_file (NULL,
-					   file,
-					   local_encoding,
-					   fh_default_properties ());
+                                           file,
+                                           local_encoding,
+                                           fh_default_properties ());
   const char *filename = fh_get_file_name (fh);
 
   int retval = any_reader_detect (fh, NULL);

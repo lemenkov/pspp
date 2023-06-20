@@ -218,9 +218,9 @@ casereader_filter_weight_include (const struct ccase *c, void *cfw_)
     {
       if (*cfw->warn_on_invalid)
         {
-	  msg (SW, _("At least one case in the data read had a weight value "
-		     "that was user-missing, system-missing, zero, or "
-		     "negative.  These case(s) were ignored."));
+          msg (SW, _("At least one case in the data read had a weight value "
+                     "that was user-missing, system-missing, zero, or "
+                     "negative.  These case(s) were ignored."));
           *cfw->warn_on_invalid = false;
         }
       return false;
@@ -275,7 +275,7 @@ struct casereader *
 casereader_create_filter_missing (struct casereader *reader,
                                   const struct variable *const *vars, size_t n_vars,
                                   enum mv_class class,
-				  casenumber *n_missing,
+                                  casenumber *n_missing,
                                   struct casewriter *exclude)
 {
   if (n_vars > 0 && class)
@@ -309,11 +309,11 @@ casereader_filter_missing_include (const struct ccase *c, void *cfm_)
       struct variable *var = cfm->vars[i];
       const union value *value = case_data (c, var);
       if (var_is_value_missing (var, value) & cfm->class)
-	{
-	  if (cfm->n_missing)
-	    (*cfm->n_missing)++;
-	  return false;
-	}
+        {
+          if (cfm->n_missing)
+            (*cfm->n_missing)++;
+          return false;
+        }
     }
   return true;
 }

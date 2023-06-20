@@ -19,17 +19,17 @@
   This widget is a GtkBox which looks roughly like:
 
   +-----------------------------+
-  |+------------+  +----------+	|
-  ||   Add      |  |	      |	|
-  |+------------+  |	      |	|
-  |                |	      |	|
-  |+------------+  |	      |	|
-  ||   Edit     |  |	      |	|
-  |+------------+  |	      |	|
-  |      	   |	      |	|
-  |+------------+  |	      |	|
-  ||  Remove    |  |	      |	|
-  |+------------+  +----------+	|
+  |+------------+  +----------+        |
+  ||   Add      |  |              |        |
+  |+------------+  |              |        |
+  |                |              |        |
+  |+------------+  |              |        |
+  ||   Edit     |  |              |        |
+  |+------------+  |              |        |
+  |                 |              |        |
+  |+------------+  |              |        |
+  ||  Remove    |  |              |        |
+  |+------------+  +----------+        |
   +-----------------------------+
 
 */
@@ -109,7 +109,7 @@ on_entry_change (GtkEntry *entry, PsppireAcr *acr)
   gtk_widget_set_sensitive (acr->add_button, acr->enabled (entry));
 
   gtk_widget_set_sensitive (acr->change_button, acr->enabled (entry)
-			    && row_is_selected (acr));
+                            && row_is_selected (acr));
 }
 
 void
@@ -141,10 +141,10 @@ on_add_button_clicked (PsppireAcr *acr)
     {
       static GValue value;
       if (! acr->get_value (i, &value, acr->get_value_data))
-	continue;
+        continue;
 
       gtk_list_store_set_value (acr->list_store, &iter,
-				i, &value);
+                                i, &value);
       g_value_unset (&value);
     }
 
@@ -162,7 +162,7 @@ on_change_button_clicked (PsppireAcr *acr)
 
   GList *l=
     gtk_tree_selection_get_selected_rows (acr->selection,
-					  &model);
+                                          &model);
 
   GtkTreePath *path = l->data;
 
@@ -176,10 +176,10 @@ on_change_button_clicked (PsppireAcr *acr)
     {
       static GValue value;
       if (! acr->get_value (i, &value, acr->get_value_data))
-	continue;
+        continue;
 
       gtk_list_store_set_value (acr->list_store, &iter,
-				i, &value);
+                                i, &value);
       g_value_unset (&value);
     }
 
@@ -199,7 +199,7 @@ on_remove_button_clicked (PsppireAcr *acr)
 
   GList *l=
     gtk_tree_selection_get_selected_rows (acr->selection,
-					  &model);
+                                          &model);
 
   GtkTreePath *path = l->data;
 
@@ -221,7 +221,7 @@ row_is_selected (const PsppireAcr *acr)
   gboolean result;
   GtkTreeModel *model = GTK_TREE_MODEL (acr->list_store);
   GList *l = gtk_tree_selection_get_selected_rows (acr->selection,
-						   &model);
+                                                   &model);
 
   result = (l != NULL);
 
@@ -242,8 +242,8 @@ on_select (GtkTreeSelection *selection, gpointer data)
   gtk_widget_set_sensitive (acr->remove_button, row_is_selected (acr));
 
   gtk_widget_set_sensitive (acr->change_button,
-			    row_is_selected (acr)
-			);
+                            row_is_selected (acr)
+                        );
 }
 
 
@@ -254,7 +254,7 @@ psppire_acr_set_enabled (PsppireAcr *acr, gboolean status)
   gtk_widget_set_sensitive (acr->add_button, status);
 
   gtk_widget_set_sensitive (acr->change_button, status
-			    && row_is_selected (acr));
+                            && row_is_selected (acr));
 }
 
 static void
@@ -290,10 +290,10 @@ psppire_acr_init (PsppireAcr *acr)
   gtk_box_pack_start (GTK_BOX (acr), bb, FALSE, TRUE, 5);
 
   g_object_set (sw,
-		"hscrollbar-policy", GTK_POLICY_NEVER,
-		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_ETCHED_IN,
-		NULL);
+                "hscrollbar-policy", GTK_POLICY_NEVER,
+                "vscrollbar-policy", GTK_POLICY_AUTOMATIC,
+                "shadow-type", GTK_SHADOW_ETCHED_IN,
+                NULL);
 
   gtk_container_add (GTK_CONTAINER (sw), GTK_WIDGET (acr->tv));
 
@@ -301,11 +301,11 @@ psppire_acr_init (PsppireAcr *acr)
 
 
   g_signal_connect_swapped (acr->add_button, "clicked",
-			    G_CALLBACK (on_add_button_clicked), acr);
+                            G_CALLBACK (on_add_button_clicked), acr);
   g_signal_connect_swapped (acr->change_button, "clicked",
-			    G_CALLBACK (on_change_button_clicked), acr);
+                            G_CALLBACK (on_change_button_clicked), acr);
   g_signal_connect_swapped (acr->remove_button, "clicked",
-			    G_CALLBACK (on_remove_button_clicked), acr);
+                            G_CALLBACK (on_remove_button_clicked), acr);
 
   gtk_widget_show_all (bb);
 
@@ -328,9 +328,9 @@ psppire_acr_init (PsppireAcr *acr)
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
     GtkTreeViewColumn *column =
       gtk_tree_view_column_new_with_attributes ("value",
-						renderer,
-						"text", 0,
-						NULL);
+                                                renderer,
+                                                "text", 0,
+                                                NULL);
 
     gtk_tree_view_append_column (acr->tv, column);
   }
@@ -359,7 +359,7 @@ psppire_acr_set_model (PsppireAcr *acr, GtkListStore *liststore)
   acr->list_store = liststore;
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (acr->tv),
-			   GTK_TREE_MODEL (liststore));
+                           GTK_TREE_MODEL (liststore));
 
   gtk_widget_set_sensitive (GTK_WIDGET (acr), liststore != NULL);
 }
@@ -374,7 +374,7 @@ psppire_acr_set_enable_func (PsppireAcr *acr, EnabledFunc func, gpointer p)
 
 void
 psppire_acr_set_get_value_func (PsppireAcr *acr,
-				GetValueFunc getvalue, gpointer data)
+                                GetValueFunc getvalue, gpointer data)
 {
   acr->get_value_data = data;
   acr->get_value = getvalue;

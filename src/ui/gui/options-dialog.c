@@ -56,10 +56,10 @@ pspp_options_var_order_get_type (void)
   if (G_UNLIKELY(etype == 0)) {
     static const GEnumValue values[] =
       {
-	{ PSPP_OPTIONS_VAR_ORDER_UNSORTED, "PSPP_OPTIONS_VAR_ORDER_UNSORTED", "unsorted" },
-	{ PSPP_OPTIONS_VAR_ORDER_NAME,     "PSPP_OPTIONS_VAR_ORDER_NAME",     "name" },
-	{ PSPP_OPTIONS_VAR_ORDER_LABEL,    "PSPP_OPTIONS_VAR_ORDER_LABEL",    "label" },
-	{ 0, NULL, NULL }
+        { PSPP_OPTIONS_VAR_ORDER_UNSORTED, "PSPP_OPTIONS_VAR_ORDER_UNSORTED", "unsorted" },
+        { PSPP_OPTIONS_VAR_ORDER_NAME,     "PSPP_OPTIONS_VAR_ORDER_NAME",     "name" },
+        { PSPP_OPTIONS_VAR_ORDER_LABEL,    "PSPP_OPTIONS_VAR_ORDER_LABEL",    "label" },
+        { 0, NULL, NULL }
       };
     etype = g_enum_register_static (g_intern_static_string ("PsppOptionsVarOrder"), values);
   }
@@ -101,26 +101,26 @@ options_dialog (PsppireDataWindow *de)
   fd.conf = psppire_conf_new ();
 
   if (psppire_conf_get_boolean (fd.conf,
-				"VariableLists", "display-labels", &disp_labels))
+                                "VariableLists", "display-labels", &disp_labels))
     {
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.show_labels),
-				    disp_labels);
+                                    disp_labels);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.show_names),
-				    !disp_labels);
+                                    !disp_labels);
     }
 
   if (psppire_conf_get_boolean (fd.conf,
-				"startup", "show-user-tips", &show_tips))
+                                "startup", "show-user-tips", &show_tips))
     {
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.show_tips),
-				    show_tips);
+                                    show_tips);
     }
 
 
   int what = -1;
   psppire_conf_get_enum (fd.conf, "VariableLists", "sort-order",
-			 PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
+                         PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
 
   switch (what)
     {
@@ -138,7 +138,7 @@ options_dialog (PsppireDataWindow *de)
   {
     gboolean status;
     if (psppire_conf_get_boolean (fd.conf, "OutputWindowAction", "maximize",
-				  &status))
+                                  &status))
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.maximize), status);
   }
 
@@ -151,7 +151,7 @@ options_dialog (PsppireDataWindow *de)
   {
     gboolean status;
     if (psppire_conf_get_boolean (fd.conf, "OutputWindowAction", "raise",
-				  &status))
+                                  &status))
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.raise), status);
   }
 
@@ -163,41 +163,41 @@ options_dialog (PsppireDataWindow *de)
       gboolean sl = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd.show_labels));
 
       psppire_conf_set_boolean (fd.conf,
-				"VariableLists", "display-labels", sl);
+                                "VariableLists", "display-labels", sl);
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd.sort_labels)))
-	{
-	  sort_order = PSPP_OPTIONS_VAR_ORDER_LABEL;
-	}
+        {
+          sort_order = PSPP_OPTIONS_VAR_ORDER_LABEL;
+        }
       else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd.sort_names)))
-	{
-	  sort_order = PSPP_OPTIONS_VAR_ORDER_NAME;
-	}
+        {
+          sort_order = PSPP_OPTIONS_VAR_ORDER_NAME;
+        }
       else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd.sort_none)))
-	{
-	  sort_order = PSPP_OPTIONS_VAR_ORDER_UNSORTED;
-	}
+        {
+          sort_order = PSPP_OPTIONS_VAR_ORDER_UNSORTED;
+        }
 
       psppire_conf_set_enum (fd.conf,
-			     "VariableLists", "sort-order",
-			     PSPP_TYPE_OPTIONS_VAR_ORDER,
-			     sort_order);
+                             "VariableLists", "sort-order",
+                             PSPP_TYPE_OPTIONS_VAR_ORDER,
+                             sort_order);
 
       psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "maximize",
-				gtk_toggle_button_get_active
-				(GTK_TOGGLE_BUTTON (fd.maximize)));
+                                gtk_toggle_button_get_active
+                                (GTK_TOGGLE_BUTTON (fd.maximize)));
 
       psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "raise",
-				gtk_toggle_button_get_active
-				(GTK_TOGGLE_BUTTON (fd.raise)));
+                                gtk_toggle_button_get_active
+                                (GTK_TOGGLE_BUTTON (fd.raise)));
 
       psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "alert",
-				gtk_toggle_button_get_active
-				(GTK_TOGGLE_BUTTON (fd.alert)));
+                                gtk_toggle_button_get_active
+                                (GTK_TOGGLE_BUTTON (fd.alert)));
 
       psppire_conf_set_boolean (fd.conf, "startup", "show-user-tips",
-				gtk_toggle_button_get_active
-				(GTK_TOGGLE_BUTTON (fd.show_tips)));
+                                gtk_toggle_button_get_active
+                                (GTK_TOGGLE_BUTTON (fd.show_tips)));
     }
 
   g_object_unref (fd.xml);

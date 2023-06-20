@@ -167,7 +167,7 @@ binary_to_utf8 (const char *in, struct pool *pool)
    If POOL is non-null, then the return value is allocated on that pool.  */
 char *
 data_out_pool (const union value *input, const char *input_encoding,
-	       struct fmt_spec format,
+               struct fmt_spec format,
                const struct fmt_settings *settings, struct pool *pool)
 {
   assert (fmt_check_output (format));
@@ -353,7 +353,7 @@ output_IB (const union value *input, struct fmt_spec format,
       if (number < 0)
         integer = -integer;
       output_binary_integer (integer, format.w,
-			     settings_get_output_integer_format (),
+                             settings_get_output_integer_format (),
                              output);
     }
 
@@ -371,7 +371,7 @@ output_PIB (const union value *input, struct fmt_spec format,
     memset (output, 0, format.w);
   else
     output_binary_integer (number, format.w,
-			   settings_get_output_integer_format (), output);
+                           settings_get_output_integer_format (), output);
 
   output[format.w] = '\0';
 }
@@ -532,11 +532,11 @@ output_date (const union value *input, struct fmt_spec format,
               int d = MIN (format.d, excess_width - 4);
               int w = d + 3;
               c_snprintf (p, 64, ":%0*.*f", w, d, number);
-	      if (settings->decimal != '.')
+              if (settings->decimal != '.')
                 {
                   char *cp = strchr (p, '.');
                   if (cp != NULL)
-		    *cp = settings->decimal;
+                    *cp = settings->decimal;
                 }
               p += strlen (p);
             }

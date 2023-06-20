@@ -659,7 +659,7 @@ parse_LENGTH (struct lexer *lexer)
   else
     {
       if (!lex_force_int_range (lexer, "LENGTH", 1, INT_MAX))
-	return false;
+        return false;
       page_length = lex_integer (lexer);
       lex_get (lexer);
     }
@@ -928,7 +928,7 @@ parse_SEED (struct lexer *lexer)
   else
     {
       if (!lex_force_num (lexer))
-	return false;
+        return false;
       set_rng (lex_number (lexer));
       lex_get (lexer);
     }
@@ -1169,7 +1169,7 @@ parse_WIDTH (struct lexer *lexer)
   else
     {
       if (!lex_force_int_range (lexer, "WIDTH", 40, INT_MAX))
-	return false;
+        return false;
       settings_set_viewwidth (lex_integer (lexer));
       lex_get (lexer);
     }

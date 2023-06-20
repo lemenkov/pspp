@@ -104,14 +104,14 @@ value_entry_contains_invalid (PsppireValueEntry *ve, const struct variable *var)
       value_init (&val, width);
 
       if (psppire_value_entry_get_value (ve, &val, width))
-	{
-	  if (var_is_value_missing (var, &val) == MV_SYSTEM)
-	    {
-	      result = TRUE;
-	    }
-	}
+        {
+          if (var_is_value_missing (var, &val) == MV_SYSTEM)
+            {
+              result = TRUE;
+            }
+        }
       else
-	result = TRUE;
+        result = TRUE;
 
       value_destroy (&val, width);
     }
@@ -133,17 +133,17 @@ define_groups_state_valid (gpointer data)
       (GTK_TOGGLE_BUTTON (act->dg_values_toggle_button)))
     {
       if (value_entry_contains_invalid (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[0]),
-					act->grp_var))
+                                        act->grp_var))
         return FALSE;
 
       if (value_entry_contains_invalid (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]),
-					act->grp_var))
+                                        act->grp_var))
         return FALSE;
     }
   else
     {
       if (value_entry_contains_invalid (PSPPIRE_VALUE_ENTRY (act->dg_cut_point_entry),
-					act->grp_var))
+                                        act->grp_var))
         return FALSE;
     }
 
@@ -170,7 +170,7 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   if (var_is_numeric (act->grp_var))
     {
       gtk_grid_attach (GTK_GRID (act->dg_table1), act->dg_table2,
-		       1, 1, 1, 1);
+                       1, 1, 1, 1);
 
       gtk_container_add (GTK_CONTAINER (act->dg_box), act->dg_table1);
     }
@@ -182,7 +182,7 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
 
 
   psppire_dialog_set_valid_predicate (PSPPIRE_DIALOG (act->dg_dialog),
-  				      define_groups_state_valid, act);
+                                        define_groups_state_valid, act);
 
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[0]), act->grp_var);
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]), act->grp_var);
@@ -191,18 +191,18 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   if (act->group_defn != GROUPS_CUT_POINT)
     {
       gtk_toggle_button_set_active
-  	(GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
+          (GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
 
       gtk_toggle_button_set_active
-  	(GTK_TOGGLE_BUTTON (act->dg_values_toggle_button), TRUE);
+          (GTK_TOGGLE_BUTTON (act->dg_values_toggle_button), TRUE);
     }
   else
     {
       gtk_toggle_button_set_active
-  	(GTK_TOGGLE_BUTTON (act->dg_values_toggle_button), TRUE);
+          (GTK_TOGGLE_BUTTON (act->dg_values_toggle_button), TRUE);
 
       gtk_toggle_button_set_active
-  	(GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
+          (GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
     }
 
   g_signal_emit_by_name (act->dg_grp_entry[0], "changed");
@@ -216,22 +216,22 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
       const int width = var_get_width (act->grp_var);
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->dg_values_toggle_button)))
-	{
-	  act->group_defn = GROUPS_VALUES;
+        {
+          act->group_defn = GROUPS_VALUES;
 
           psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[0]),
-					 &act->grp_val[0], width);
+                                         &act->grp_val[0], width);
 
           psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]),
-					 &act->grp_val[1], width);
-	}
+                                         &act->grp_val[1], width);
+        }
       else
-	{
-	  act->group_defn = GROUPS_CUT_POINT;
+        {
+          act->group_defn = GROUPS_CUT_POINT;
 
           psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (act->dg_cut_point_entry),
-					 &act->cut_point, width);
-	}
+                                         &act->cut_point, width);
+        }
 
       psppire_dialog_notify_change (PSPPIRE_DIALOG (da->dialog));
     }
@@ -271,9 +271,9 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
         }
       else
         {
-	  act->cut_point.s[0] = '\0';
-	  act->grp_val[0].s[0] = '\0';
-	  act->grp_val[1].s[0] = '\0';
+          act->cut_point.s[0] = '\0';
+          act->grp_val[0].s[0] = '\0';
+          act->grp_val[1].s[0] = '\0';
         }
     }
 
@@ -287,7 +287,7 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
 
 static void
 set_group_criterion_type (GtkToggleButton *button,
-			  PsppireDialogActionIndepSamps *act)
+                          PsppireDialogActionIndepSamps *act)
 {
   gboolean by_values = gtk_toggle_button_get_active (button);
 
@@ -334,22 +334,22 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a, GVariant *pa
   g_object_ref (act->dg_table2);
 
   g_signal_connect (act->dg_values_toggle_button, "toggled",
-		    G_CALLBACK (set_group_criterion_type), act);
+                    G_CALLBACK (set_group_criterion_type), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
 
   g_signal_connect_swapped (act->define_groups_button, "clicked",
-			    G_CALLBACK (run_define_groups), act);
+                            G_CALLBACK (run_define_groups), act);
 
   g_signal_connect_swapped (act->options_button, "clicked",
-			    G_CALLBACK (tt_options_dialog_run), act->opts);
+                            G_CALLBACK (tt_options_dialog_run), act->opts);
 
 
   g_signal_connect (act->group_var_entry, "changed",
-		    G_CALLBACK (on_grp_var_change), act);
+                    G_CALLBACK (on_grp_var_change), act);
 
   on_grp_var_change (GTK_ENTRY (act->group_var_entry), act);
 
@@ -391,8 +391,8 @@ generate_syntax (const PsppireDialogAction *a)
       }
 
       if (act->group_defn == GROUPS_VALUES)
-	{
-	  g_string_append (str, ",");
+        {
+          g_string_append (str, ",");
 
           {
             struct string strx;
@@ -405,7 +405,7 @@ generate_syntax (const PsppireDialogAction *a)
             g_string_append (str, ds_cstr (&strx));
             ds_destroy (&strx);
           }
-	}
+        }
 
       g_string_append (str, ")");
     }

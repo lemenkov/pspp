@@ -223,12 +223,12 @@ struct table
        cell and the corresponding element of cc[] points to a struct
        table_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
-    unsigned char *cp;		/* Cell properties; unsigned char[nr][nc]. */
+    unsigned char *cp;                /* Cell properties; unsigned char[nr][nc]. */
     struct table_area_style *styles[8];
 
     /* Rules. */
-    unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
-    unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
+    unsigned char *rh;                /* Horiz rules; unsigned char[nr+1][nc]. */
+    unsigned char *rv;                /* Vert rules; unsigned char[nr][nc+1]. */
     struct table_border_style *borders;
     size_t n_borders;
   };

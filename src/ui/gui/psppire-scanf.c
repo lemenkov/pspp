@@ -49,7 +49,7 @@ enum
 */
 static void
 ship_label (PsppireScanf *box, const char **s,
-	    const char_directives *dirs, size_t dir_idx)
+            const char_directives *dirs, size_t dir_idx)
 {
   GtkWidget *label ;
   GString *str = g_string_new (*s);
@@ -60,18 +60,18 @@ ship_label (PsppireScanf *box, const char **s,
       int n = 0;
 
       while (dir_idx < dirs->count && dir.conversion == '%')
-	{
-	  g_string_erase (str, dir.dir_start - *s, 1);
-	  dir = dirs->dir[++dir_idx];
-	  n++;
-	}
+        {
+          g_string_erase (str, dir.dir_start - *s, 1);
+          dir = dirs->dir[++dir_idx];
+          n++;
+        }
 
       g_string_truncate (str, dir.dir_start - *s - n);
 
       if (dir_idx >= dirs->count)
-	*s = NULL;
+        *s = NULL;
       else
-	*s = dir.dir_end;
+        *s = dir.dir_end;
     }
 
   label = gtk_label_new (str->str);
@@ -107,36 +107,36 @@ guts (PsppireScanf *scanf)
       int width = 0;
 
       if (dir.precision_start && dir.precision_end)
-	precision = g_ascii_strtoll (dir.precision_start + 1,
-			    (char **) &dir.precision_end, 10);
+        precision = g_ascii_strtoll (dir.precision_start + 1,
+                            (char **) &dir.precision_end, 10);
 
       if (dir.width_start && dir.width_end)
-	width = g_ascii_strtoll (dir.width_start, (char **) &dir.width_end, 10);
+        width = g_ascii_strtoll (dir.width_start, (char **) &dir.width_end, 10);
 
       if (dir.dir_start > s)
-	ship_label (scanf, &s, &scanf->d, i);
+        ship_label (scanf, &s, &scanf->d, i);
 
       if (dir.conversion == '%')
-	{
-	  if (s) s++;
-	  continue;
-	}
+        {
+          if (s) s++;
+          continue;
+        }
 
       w = &scanf->widgets [dir.arg_index];
       switch (dir.conversion)
-	{
-	case 'd':
-	case 'i':
-	case 'f':
-	  {
-	    *w = gtk_spin_button_new_with_range (0, 100.0, 1.0);
-	    g_object_set (*w, "digits", precision, NULL);
-	  }
-	  break;
-	case 's':
-	  *w = gtk_entry_new ();
-	  break;
-	};
+        {
+        case 'd':
+        case 'i':
+        case 'f':
+          {
+            *w = gtk_spin_button_new_with_range (0, 100.0, 1.0);
+            g_object_set (*w, "digits", precision, NULL);
+          }
+          break;
+        case 's':
+          *w = gtk_entry_new ();
+          break;
+        };
       g_object_set (*w, "width-chars", width, NULL);
       gtk_box_pack_start (GTK_BOX (scanf), *w, FALSE, FALSE, 0);
       gtk_widget_show (*w);
@@ -155,31 +155,31 @@ set_mnemonic (PsppireScanf *scanf)
     {
       GList *l = gtk_container_get_children (GTK_CONTAINER (scanf));
       while (l)
-	{
-	  if (GTK_IS_LABEL (l->data))
-	    {
-	      const gchar *t = gtk_label_get_label (l->data);
-	      if  (g_strstr_len (t, -1,  "_"))
-		{
-		  g_object_set (l->data,
-				"use-underline", TRUE,
-				"mnemonic-widget", scanf->mnemonic_widget,
-				NULL);
+        {
+          if (GTK_IS_LABEL (l->data))
+            {
+              const gchar *t = gtk_label_get_label (l->data);
+              if  (g_strstr_len (t, -1,  "_"))
+                {
+                  g_object_set (l->data,
+                                "use-underline", TRUE,
+                                "mnemonic-widget", scanf->mnemonic_widget,
+                                NULL);
 
-		  break;
-		}
-	    }
-	  l = l->next;
-	}
+                  break;
+                }
+            }
+          l = l->next;
+        }
       g_list_free (l);
     }
 }
 
 static void
 psppire_scanf_set_property (GObject         *object,
-			    guint            prop_id,
-			    const GValue    *value,
-			    GParamSpec      *pspec)
+                            guint            prop_id,
+                            const GValue    *value,
+                            GParamSpec      *pspec)
 {
   PsppireScanf *scanf = PSPPIRE_SCANF (object);
 
@@ -206,9 +206,9 @@ psppire_scanf_set_property (GObject         *object,
 
 static void
 psppire_scanf_get_property (GObject         *object,
-			    guint            prop_id,
-			    GValue          *value,
-			    GParamSpec      *pspec)
+                            guint            prop_id,
+                            GValue          *value,
+                            GParamSpec      *pspec)
 {
   PsppireScanf *scanf = PSPPIRE_SCANF (object);
 
@@ -272,33 +272,33 @@ psppire_scanf_class_init (PsppireScanfClass *class)
 
   GParamSpec *format_spec =
     g_param_spec_string ("format",
-		       "Format",
-		       "A Scanf style format string",
-		       NULL,
-		       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+                       "Format",
+                       "A Scanf style format string",
+                       NULL,
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
 
   GParamSpec *nconv_spec =
     g_param_spec_int ("n-conv",
-		       "Conversions",
-		       "The number of conversions in the format string",
-		      0, G_MAXINT, 0,
-		       G_PARAM_READABLE);
+                       "Conversions",
+                       "The number of conversions in the format string",
+                      0, G_MAXINT, 0,
+                       G_PARAM_READABLE);
 
 
   GParamSpec *use_underline_spec =
     g_param_spec_boolean ("use-underline",
-		       "Use Underline",
-		       "If set, an underline in the text indicates the next character should be used for the mnemonic accelerator key",
-			  FALSE,
-			  G_PARAM_READWRITE);
+                       "Use Underline",
+                       "If set, an underline in the text indicates the next character should be used for the mnemonic accelerator key",
+                          FALSE,
+                          G_PARAM_READWRITE);
 
 
   GParamSpec *mnemonic_widget_spec =
     g_param_spec_object ("mnemonic-widget",
-		       "Mnemonic widget",
-		       "The widget which is to be activated when the Scanf's mnemonic key is pressed.  Has no effect if use-underline is false.",
-			 GTK_TYPE_WIDGET,
-			 G_PARAM_READWRITE);
+                       "Mnemonic widget",
+                       "The widget which is to be activated when the Scanf's mnemonic key is pressed.  Has no effect if use-underline is false.",
+                         GTK_TYPE_WIDGET,
+                         G_PARAM_READWRITE);
 
 
   parent_class = g_type_class_peek_parent (class);
@@ -367,7 +367,7 @@ psppire_scanf_new (const gchar *fmt, ...)
   va_list ap;
 
   GtkWidget *w = GTK_WIDGET (g_object_new (psppire_scanf_get_type (),
-				   "format", fmt, NULL));
+                                   "format", fmt, NULL));
 
   g_object_get (w, "n-conv", &n, NULL);
 
@@ -378,7 +378,7 @@ psppire_scanf_new (const gchar *fmt, ...)
       GtkWidget **field;
 
       if (psppire_get_conversion_char (PSPPIRE_SCANF (w), i) == '%')
-	continue;
+        continue;
 
       field = va_arg (ap, GtkWidget **);
 

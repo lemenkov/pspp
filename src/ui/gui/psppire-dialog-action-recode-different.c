@@ -62,7 +62,7 @@ dialog_state_valid (gpointer data)
     return FALSE;
 
   if (! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					&not_used))
+                                        &not_used))
     return FALSE;
 
 
@@ -144,10 +144,10 @@ nlp_destroy (gpointer data)
 
 static void
 render_new_var_name (GtkTreeViewColumn *tree_column,
-		     GtkCellRenderer *cell,
-		     GtkTreeModel *tree_model,
-		     GtkTreeIter *iter,
-		     gpointer data)
+                     GtkCellRenderer *cell,
+                     GtkTreeModel *tree_model,
+                     GtkTreeIter *iter,
+                     gpointer data)
 {
   struct nlp *nlp = NULL;
   PsppireDialogActionRecode *rd = data;
@@ -156,8 +156,8 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
   struct variable *var = NULL;
 
   gtk_tree_model_get (tree_model, iter,
-		      0, &var,
-		      -1);
+                      0, &var,
+                      -1);
 
   nlp = g_hash_table_lookup (rdd->varmap, var);
 
@@ -245,21 +245,21 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
       g_return_if_fail (ok);
 
       gtk_tree_model_get (model, &iter,
-			  0, &var,
-			  -1);
+                          0, &var,
+                          -1);
 
       nlp = g_hash_table_lookup (rdd->varmap, var);
 
       if (nlp)
-	{
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), nlp->name ? nlp->name : "");
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), nlp->label ? nlp->label : "");
-	}
+        {
+          gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), nlp->name ? nlp->name : "");
+          gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), nlp->label ? nlp->label : "");
+        }
       else
-	{
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), "");
-	}
+        {
+          gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
+          gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), "");
+        }
     }
   else
     {
@@ -286,13 +286,13 @@ populate_treeview (PsppireDialogActionRecode *act)
   PsppireDialogActionRecodeDifferent *rdd = PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT (act);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes (_("New"),
-								     renderer,
-								     "text", NULL,
-								     NULL);
+                                                                     renderer,
+                                                                     "text", NULL,
+                                                                     NULL);
 
   gtk_tree_view_column_set_cell_data_func (col, renderer,
-					   render_new_var_name,
-					   act, NULL);
+                                           render_new_var_name,
+                                           act, NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (act->variable_treeview), col);
 
@@ -307,10 +307,10 @@ populate_treeview (PsppireDialogActionRecode *act)
   sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (act->variable_treeview));
 
   g_signal_connect (sel, "changed",
-		    G_CALLBACK (on_selection_change), act);
+                    G_CALLBACK (on_selection_change), act);
 
   g_signal_connect (act->change_button, "clicked",
-		    G_CALLBACK (on_change_clicked),  act);
+                    G_CALLBACK (on_change_clicked),  act);
 }
 
 
@@ -321,23 +321,23 @@ psppire_dialog_action_recode_different_activate (PsppireDialogAction *a, GVarian
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
   GtkBuilder *xml = psppire_dialog_action_recode_pre_activate (act,
-							       populate_treeview);
+                                                               populate_treeview);
 
   gtk_window_set_title (GTK_WINDOW (pda->dialog),
-			_("Recode into Different Variables"));
+                        _("Recode into Different Variables"));
 
   gtk_window_set_title (GTK_WINDOW (act->old_and_new_dialog),
-			_("Recode into Different Variables: Old and New Values "));
+                        _("Recode into Different Variables: Old and New Values "));
 
   gtk_widget_show (act->output_variable_box);
 
   g_signal_connect_swapped (act->old_and_new_dialog, "show",
-			    G_CALLBACK (on_old_new_show), act);
+                            G_CALLBACK (on_old_new_show), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
+                                             dialog_state_valid);
   return xml;
 }
 
@@ -380,13 +380,13 @@ append_string_declarations (const PsppireDialogActionRecode *rd, struct string *
 
       g_hash_table_iter_init (&iter, rdd->varmap);
       while (g_hash_table_iter_next (&iter, (void**) &var, (void**) &nlp))
-	{
-	  ds_put_cstr (dds, "\nSTRING ");
-	  ds_put_cstr (dds, nlp->name);
-	  ds_put_c_format (dds, " (A%d).",
-			   (int)
-			   gtk_spin_button_get_value (GTK_SPIN_BUTTON (rd->width_entry)));
-	}
+        {
+          ds_put_cstr (dds, "\nSTRING ");
+          ds_put_cstr (dds, nlp->name);
+          ds_put_c_format (dds, " (A%d).",
+                           (int)
+                           gtk_spin_button_get_value (GTK_SPIN_BUTTON (rd->width_entry)));
+        }
     }
 }
 
@@ -405,15 +405,15 @@ append_new_value_labels (const PsppireDialogActionRecode *rd, struct string *dds
   while (g_hash_table_iter_next (&iter, (void**) &var, (void**) &nlp))
     {
       if (nlp->label)
-	{
-	  struct string sl;
-	  ds_init_empty (&sl);
-	  syntax_gen_string (&sl, ss_cstr (nlp->label));
-	  ds_put_c_format (dds, "\nVARIABLE LABELS %s %s.",
-			   nlp->name, ds_cstr (&sl));
+        {
+          struct string sl;
+          ds_init_empty (&sl);
+          syntax_gen_string (&sl, ss_cstr (nlp->label));
+          ds_put_c_format (dds, "\nVARIABLE LABELS %s %s.",
+                           nlp->name, ds_cstr (&sl));
 
-	  ds_destroy (&sl);
-	}
+          ds_destroy (&sl);
+        }
     }
 }
 
@@ -421,9 +421,9 @@ static char *
 diff_generate_syntax (const PsppireDialogAction *act)
 {
   return psppire_dialog_action_recode_generate_syntax (act,
-						       append_string_declarations,
-						       append_into_clause,
-						       append_new_value_labels);
+                                                       append_string_declarations,
+                                                       append_into_clause,
+                                                       append_new_value_labels);
 }
 
 static gboolean

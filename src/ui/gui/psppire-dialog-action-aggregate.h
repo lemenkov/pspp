@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE (psppire_dialog_action_aggregate_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_AGGREGATE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_AGGREGATE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, PsppireDialogActionAggregate))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, PsppireDialogActionAggregate))
 
 #define PSPPIRE_DIALOG_ACTION_AGGREGATE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, \
                                  PsppireDialogActionAggregateClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_AGGREGATE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_AGGREGATE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE))
 
 
 #define PSPPIRE_DIALOG_ACTION_AGGREGATE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, \
-				   PsppireDialogActionAggregateClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE, \
+                                   PsppireDialogActionAggregateClass))
 
 typedef struct _PsppireDialogActionAggregate       PsppireDialogActionAggregate;
 typedef struct _PsppireDialogActionAggregateClass  PsppireDialogActionAggregateClass;

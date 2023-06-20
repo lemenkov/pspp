@@ -49,8 +49,8 @@ generate_syntax (const PsppireDialogAction *act)
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (rd->rank_vars), 0, str);
 
   g_string_append_printf (str, " (%c)",
-		   gtk_toggle_button_get_active (rd->ascending_togglebutton)
-		   ?'A':'D');
+                   gtk_toggle_button_get_active (rd->ascending_togglebutton)
+                   ?'A':'D');
 
   if (gtk_tree_model_get_iter_first (gs, &notused))
     {
@@ -94,13 +94,13 @@ generate_syntax (const PsppireDialogAction *act)
       g_string_append (str, "\n\t/FRACTION=");
 
       if (gtk_toggle_button_get_active (rd->blom))
-	g_string_append (str, "BLOM");
+        g_string_append (str, "BLOM");
       else if (gtk_toggle_button_get_active (rd->tukey))
-	g_string_append (str, "TUKEY");
+        g_string_append (str, "TUKEY");
       else if (gtk_toggle_button_get_active (rd->rankit))
-	g_string_append (str, "RANKIT");
+        g_string_append (str, "RANKIT");
       else if (gtk_toggle_button_get_active (rd->vw))
-	g_string_append (str, "VW");
+        g_string_append (str, "VW");
     }
 
   g_string_append (str, "\n\t/TIES=");
@@ -153,7 +153,7 @@ types_dialog_reset (PsppireDialogActionRank *rd)
 
   for (i = 0 ; i < n_RANK_FUNCS ; ++i)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->func_button [i]),
-				  FALSE);
+                                  FALSE);
 
   gtk_widget_set_sensitive (rd->ntiles_entry, FALSE);
 
@@ -166,7 +166,7 @@ run_types_dialog (GtkButton *b, PsppireDialogActionRank *dar)
   PsppireDialogAction *act  = PSPPIRE_DIALOG_ACTION (dar);
 
   gtk_window_set_transient_for (GTK_WINDOW (dar->types_dialog),
-				GTK_WINDOW (act->dialog));
+                                GTK_WINDOW (act->dialog));
 
   types_dialog_reset (dar);
 
@@ -179,7 +179,7 @@ run_ties_dialog (GtkButton *b,  PsppireDialogActionRank *dar)
   PsppireDialogAction *act  = PSPPIRE_DIALOG_ACTION (dar);
 
   gtk_window_set_transient_for (GTK_WINDOW (dar->ties_dialog),
-				GTK_WINDOW (act->dialog));
+                                GTK_WINDOW (act->dialog));
 
   psppire_dialog_run (PSPPIRE_DIALOG (dar->ties_dialog));
 }
@@ -267,22 +267,22 @@ psppire_dialog_action_rank_activate (PsppireDialogAction *a, GVariant *param)
   act->condense = GTK_TOGGLE_BUTTON (get_widget_assert (xml, "condense-button"));
 
   g_signal_connect_swapped (act->func_button[PROPORTION], "toggled",
-			    G_CALLBACK (set_sensitivity),
-			    act);
+                            G_CALLBACK (set_sensitivity),
+                            act);
 
   g_signal_connect_swapped (act->func_button[NORMAL], "toggled",
-			    G_CALLBACK (set_sensitivity),
-			    act);
+                            G_CALLBACK (set_sensitivity),
+                            act);
 
   g_signal_connect (types_button, "clicked",
-		    G_CALLBACK (run_types_dialog),  act);
+                    G_CALLBACK (run_types_dialog),  act);
 
   g_signal_connect (ties_button, "clicked",
-		    G_CALLBACK (run_ties_dialog),  act);
+                    G_CALLBACK (run_ties_dialog),  act);
 
   g_signal_connect (act->func_button[NTILES], "toggled",
-		    G_CALLBACK (on_ntiles_toggle),
-		    act->ntiles_entry);
+                    G_CALLBACK (on_ntiles_toggle),
+                    act->ntiles_entry);
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);

@@ -286,8 +286,8 @@ static const struct trns_class end_case_trns_class = {
 /* REREAD transformation. */
 struct reread_trns
   {
-    struct dfm_reader *reader;	/* File to move file pointer back on. */
-    struct expression *column;	/* Column to reset file pointer to. */
+    struct dfm_reader *reader;        /* File to move file pointer back on. */
+    struct expression *column;        /* Column to reset file pointer to. */
   };
 
 /* Parses REREAD command. */
@@ -300,43 +300,43 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "COLUMN"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  if (e)
-	    {
+          if (e)
+            {
               lex_sbc_only_once (lexer, "COLUMN");
               goto error;
-	    }
+            }
 
-	  e = expr_parse (lexer, ds, VAL_NUMERIC);
-	  if (!e)
+          e = expr_parse (lexer, ds, VAL_NUMERIC);
+          if (!e)
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "FILE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           fh_unref (fh);
           fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
-	  if (fh == NULL)
+          if (fh == NULL)
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "ENCODING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (lexer));
 
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else
-	{
-	  lex_error_expecting (lexer, "COLUMN", "FILE", "ENCODING");
+        {
+          lex_error_expecting (lexer, "COLUMN", "FILE", "ENCODING");
           goto error;
-	}
+        }
     }
 
   struct reread_trns *t = xmalloc (sizeof *t);
@@ -368,13 +368,13 @@ reread_trns_proc (void *t_, struct ccase **c, casenumber case_num)
     {
       double column = expr_evaluate_num (t->column, *c, case_num);
       if (!isfinite (column) || column < 1)
-	{
-	  msg (SE, _("REREAD: Column numbers must be positive finite "
-	       "numbers.  Column set to 1."));
-	  dfm_reread_record (t->reader, 1);
-	}
+        {
+          msg (SE, _("REREAD: Column numbers must be positive finite "
+               "numbers.  Column set to 1."));
+          dfm_reread_record (t->reader, 1);
+        }
       else
-	dfm_reread_record (t->reader, column);
+        dfm_reread_record (t->reader, column);
     }
   return TRNS_CONTINUE;
 }

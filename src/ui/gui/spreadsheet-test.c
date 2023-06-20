@@ -76,18 +76,18 @@ on_clicked (GtkButton *button, struct xxx *stuff)
 
       for (i = 0; i < nvals ; ++i)
       {
-	const int width = caseproto_get_width (proto, i);
-	const union value *val = case_data_idx (c, i);
-	if (0 == width)
-	  printf ("%.*g ", DBL_DIG + 1, val->f);
-	else
-	  {
-	    char *ss = xzalloc (width + 1);
+        const int width = caseproto_get_width (proto, i);
+        const union value *val = case_data_idx (c, i);
+        if (0 == width)
+          printf ("%.*g ", DBL_DIG + 1, val->f);
+        else
+          {
+            char *ss = xzalloc (width + 1);
             memcpy (ss, val->s, width);
 
-	    printf ("%s ", ss);
-	    free (ss);
-	  }
+            printf ("%s ", ss);
+            free (ss);
+          }
       }
       printf ("\n");
     }
@@ -154,8 +154,8 @@ main (int argc, char *argv[])
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (stuff.combo_box), renderer, TRUE);
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (stuff.combo_box), renderer,
-				    "text", 0,
-				    NULL);
+                                    "text", 0,
+                                    NULL);
   }
 
   gtk_combo_box_set_model (GTK_COMBO_BOX (stuff.combo_box), tm);
@@ -165,17 +165,17 @@ main (int argc, char *argv[])
   treeview = gtk_tree_view_new_with_model (tm);
 
   gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview),
-					       0, "sheet name",
-					       gtk_cell_renderer_text_new (),
-					       "text", 0,
-					       NULL);
+                                               0, "sheet name",
+                                               gtk_cell_renderer_text_new (),
+                                               "text", 0,
+                                               NULL);
 
 
   gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview),
-					       1, "range",
-					       gtk_cell_renderer_text_new (),
-					       "text", 1,
-					       NULL);
+                                               1, "range",
+                                               gtk_cell_renderer_text_new (),
+                                               "text", 1,
+                                               NULL);
 
 
   gtk_box_pack_start (GTK_BOX (hbox), treeview, TRUE, TRUE, 5);

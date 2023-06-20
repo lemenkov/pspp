@@ -48,27 +48,27 @@ generate_syntax (const PsppireDialogAction *pda)
       gint n_vars = psppire_var_view_append_names (PSPPIRE_VAR_VIEW (act->tv), 0, varlist);
 
       if (n_vars > 0)
-	{
-	  g_string_assign (string, "");
+        {
+          g_string_assign (string, "");
 
-	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->sort)))
-	    {
-	      g_string_append (string, "SORT CASES BY");
-	      g_string_append (string, varlist->str);
-	      g_string_append (string, ".\n");
-	    }
+          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->sort)))
+            {
+              g_string_append (string, "SORT CASES BY");
+              g_string_append (string, varlist->str);
+              g_string_append (string, ".\n");
+            }
 
-	  g_string_append (string, "SPLIT FILE ");
+          g_string_append (string, "SPLIT FILE ");
 
-	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->layered)))
-	    g_string_append (string, "LAYERED ");
-	  else
-	    g_string_append (string, "SEPARATE ");
+          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->layered)))
+            g_string_append (string, "LAYERED ");
+          else
+            g_string_append (string, "SEPARATE ");
 
-	  g_string_append (string, "BY ");
-	  g_string_append (string, varlist->str);
-	  g_string_append (string, ".");
-	}
+          g_string_append (string, "BY ");
+          g_string_append (string, varlist->str);
+          g_string_append (string, ".");
+        }
       g_string_free (varlist, TRUE);
     }
 
@@ -102,13 +102,13 @@ refresh (PsppireDialogAction *pda)
       const struct variable *const *vars = dict_get_split_vars (pda->dict->dict);
 
       for (i = 0 ; i < n_vars; ++i)
-	{
-	  gtk_list_store_append (GTK_LIST_STORE (liststore), &iter);
+        {
+          gtk_list_store_append (GTK_LIST_STORE (liststore), &iter);
 
-	  gtk_list_store_set (GTK_LIST_STORE (liststore), &iter,
-			      0, vars[i],
-			      -1);
-	}
+          gtk_list_store_set (GTK_LIST_STORE (liststore), &iter,
+                              0, vars[i],
+                              -1);
+        }
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (act->layered), TRUE);
     }
@@ -120,7 +120,7 @@ refresh (PsppireDialogAction *pda)
 
 static void
 on_off_toggled (GtkToggleButton *togglebutton,
-		gpointer         user_data)
+                gpointer         user_data)
 {
   PsppireDialogActionSplit *act = PSPPIRE_DIALOG_ACTION_SPLIT (user_data);
 

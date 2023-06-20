@@ -48,8 +48,8 @@ static PsppireWindowRegister *the_instance = NULL;
 
 static GObject*
 psppire_window_register_construct   (GType                  type,
-				     guint                  n_construct_params,
-				     GObjectConstructParam *construct_params)
+                                     guint                  n_construct_params,
+                                     GObjectConstructParam *construct_params)
 {
   GObject *object;
 
@@ -80,25 +80,25 @@ psppire_window_register_class_init (PsppireWindowRegisterClass *class)
 
   signals [INSERTED] =
     g_signal_new ("inserted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__POINTER,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_POINTER);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__POINTER,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_POINTER);
 
   signals [REMOVED] =
     g_signal_new ("removed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__POINTER,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_POINTER);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__POINTER,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_POINTER);
 }
 
 static void
@@ -130,7 +130,7 @@ psppire_window_register_lookup (PsppireWindowRegister *wr, const gchar *name)
 
 void
 psppire_window_register_foreach (PsppireWindowRegister *wr,
-				 GHFunc func, gpointer data)
+                                 GHFunc func, gpointer data)
 {
   g_hash_table_foreach (wr->name_table, func, data);
 }

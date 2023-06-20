@@ -30,12 +30,12 @@
 /* Creates a scatterplot */
 struct scatterplot_chart *
 scatterplot_create (struct casereader *reader,
-		    const char *xlabel,
-		    const char *ylabel,
-		    const struct variable *byvar,
-		    bool *byvar_overflow,
-		    const char *label,
-		    double xmin, double xmax, double ymin, double ymax)
+                    const char *xlabel,
+                    const char *ylabel,
+                    const struct variable *byvar,
+                    bool *byvar_overflow,
+                    const char *label,
+                    double xmin, double xmax, double ymin, double ymax)
 {
   struct scatterplot_chart *spc = XZALLOC (struct scatterplot_chart);
   chart_init (&spc->chart, &scatterplot_chart_class, label);

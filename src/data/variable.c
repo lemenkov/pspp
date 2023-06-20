@@ -87,12 +87,12 @@ struct variable
     int ref_cnt;
     /* Dictionary information. */
     char *name;                 /* Variable name.  Mixed case. */
-    int width;			/* 0 for numeric, otherwise string width. */
+    int width;                        /* 0 for numeric, otherwise string width. */
     struct missing_values miss; /* Missing values. */
-    struct fmt_spec print;	/* Default format for PRINT. */
-    struct fmt_spec write;	/* Default format for WRITE. */
+    struct fmt_spec print;        /* Default format for PRINT. */
+    struct fmt_spec write;        /* Default format for WRITE. */
     struct val_labs *val_labs;  /* Value labels. */
-    char *label;		/* Variable label. */
+    char *label;                /* Variable label. */
     struct string name_and_label; /* The name and label in the same string */
 
     /* GUI information. */
@@ -300,7 +300,7 @@ var_get_width (const struct variable *v)
 
 void
 var_set_width_and_formats (struct variable *v, int new_width,
-			   const struct fmt_spec *print, const struct fmt_spec *write)
+                           const struct fmt_spec *print, const struct fmt_spec *write)
 {
   struct variable *ov;
   unsigned int traits = 0;
@@ -566,7 +566,7 @@ var_lookup_value_label (const struct variable *v, const union value *value)
 */
 static void
 append_value (const struct variable *v, const union value *value,
-	      struct string *str)
+              struct string *str)
 {
   char *s = data_out (value, var_get_encoding (v), v->print,
                       settings_get_fmt_settings ());
@@ -591,9 +591,9 @@ var_append_value_name__ (const struct variable *v, const union value *value,
     default:
     case SETTINGS_VALUE_SHOW_LABEL:
       if (label)
-	ds_put_cstr (str, label);
+        ds_put_cstr (str, label);
       else
-	append_value (v, value, str);
+        append_value (v, value, str);
       break;
 
     case SETTINGS_VALUE_SHOW_BOTH:
@@ -611,7 +611,7 @@ var_append_value_name__ (const struct variable *v, const union value *value,
 */
 void
 var_append_value_name (const struct variable *v, const union value *value,
-		       struct string *str)
+                       struct string *str)
 {
   var_append_value_name__ (v, value, settings_get_show_values (), str);
 }

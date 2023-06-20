@@ -41,11 +41,11 @@ struct runs_test
 
 
 void runs_execute (const struct dataset *ds,
-			struct casereader *input,
+                        struct casereader *input,
                         enum mv_class exclude,
-			const struct npar_test *test,
-			bool,
-		   double);
+                        const struct npar_test *test,
+                        bool,
+                   double);
 
 
 #endif

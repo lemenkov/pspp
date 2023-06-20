@@ -88,7 +88,7 @@ struct mdd_writer
   {
     struct file_handle *fh;     /* File handle. */
     struct fh_lock *lock;       /* Mutual exclusion for file. */
-    FILE *file;			/* File stream. */
+    FILE *file;                        /* File stream. */
     struct replace_file *rf;    /* Ticket for replacing output file. */
 
     xmlTextWriter *writer;
@@ -470,7 +470,7 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
   if (!w->writer)
     {
       msg (ME, _("Internal error creating xmlTextWriter.  "
-		 "Please report this to %s."), PACKAGE_BUGREPORT);
+                 "Please report this to %s."), PACKAGE_BUGREPORT);
       goto error;
     }
 

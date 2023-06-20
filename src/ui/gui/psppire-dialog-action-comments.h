@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS (psppire_dialog_action_comments_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_COMMENTS(obj)	\
+#define PSPPIRE_DIALOG_ACTION_COMMENTS(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, PsppireDialogActionComments))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, PsppireDialogActionComments))
 
 #define PSPPIRE_DIALOG_ACTION_COMMENTS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, \
                                  PsppireDialogActionCommentsClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_COMMENTS(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS))
 
 #define PSPPIRE_IS_DIALOG_ACTION_COMMENTS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS))
 
 
 #define PSPPIRE_DIALOG_ACTION_COMMENTS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, \
-				   PsppireDialogActionCommentsClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, \
+                                   PsppireDialogActionCommentsClass))
 
 typedef struct _PsppireDialogActionComments       PsppireDialogActionComments;
 typedef struct _PsppireDialogActionCommentsClass  PsppireDialogActionCommentsClass;

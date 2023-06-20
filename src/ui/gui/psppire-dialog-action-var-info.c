@@ -116,7 +116,7 @@ populate_output (GtkTreeSelection *selection, gpointer data)
   struct variable **vars;
 
   g_object_get (treeview, "model", &dict,
-		NULL);
+                NULL);
 
   psppire_dict_view_get_selected_variables (PSPPIRE_DICT_VIEW (treeview),
                                             &vars, &n_vars);
@@ -164,18 +164,18 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a, GVariant *param
   pda->source = get_widget_assert (xml, "treeview2");
 
   g_object_set (pda->source,
-		"selection-mode", GTK_SELECTION_MULTIPLE,
-		NULL);
+                "selection-mode", GTK_SELECTION_MULTIPLE,
+                NULL);
 
   g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (pda->source)),
-		    "changed", G_CALLBACK (populate_output),
-		    act);
+                    "changed", G_CALLBACK (populate_output),
+                    act);
 
   g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
-		    pda);
+                    pda);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					     treeview_item_selected);
+                                             treeview_item_selected);
 
   return xml;
 }

@@ -350,7 +350,7 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
   ia->preview_sheet = get_widget_assert (builder, "preview-sheet");
 
   g_signal_connect (ia->preview_sheet, "selection-changed",
-		    G_CALLBACK (on_preview_selection_changed), ia);
+                    G_CALLBACK (on_preview_selection_changed), ia);
 
   gtk_widget_show (ia->preview_sheet);
 
@@ -360,8 +360,8 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo_box));
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo_box), renderer, TRUE);
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_box), renderer,
-				    "text", 0,
-				    NULL);
+                                    "text", 0,
+                                    NULL);
 
     g_signal_connect (combo_box, "changed", G_CALLBACK (on_sheet_combo_changed), ia);
   }
@@ -382,7 +382,7 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
 
 
   add_page_to_assistant (ia, page,
-			 GTK_ASSISTANT_PAGE_CONTENT, _("Importing Spreadsheet Data"));
+                         GTK_ASSISTANT_PAGE_CONTENT, _("Importing Spreadsheet Data"));
 
   g_object_set_data (G_OBJECT (page), "on-entering", prepare_sheet_spec_page);
   g_object_set_data (G_OBJECT (page), "on-reset",   reset_page);

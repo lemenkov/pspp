@@ -69,7 +69,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   for (;;)
     {
       if (lex_match_id (lexer, "OUTFILE"))
-	{
+        {
           outfile_start = lex_ofs (lexer) - 1;
           if (handle != NULL)
             {
@@ -77,13 +77,13 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
               goto error;
             }
 
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  handle = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (handle == NULL)
-	    goto error;
+          handle = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (handle == NULL)
+            goto error;
           outfile_end = lex_ofs (lexer) - 1;
-	}
+        }
       else if (lex_match_id (lexer, "TYPE"))
         {
           if (type != 0)

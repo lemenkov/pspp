@@ -47,10 +47,10 @@ enum
 static guint signals [n_SIGNALS];
 
 G_DEFINE_TYPE_WITH_CODE (PsppireSpreadsheetDataModel,\
-			 psppire_spreadsheet_data_model,\
-			 G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
-						spreadsheet_tree_model_init))
+                         psppire_spreadsheet_data_model,\
+                         G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+                                                spreadsheet_tree_model_init))
 
 /* Properties */
 enum
@@ -158,16 +158,16 @@ psppire_spreadsheet_data_model_class_init (PsppireSpreadsheetDataModelClass * cl
 
   signals [ITEMS_CHANGED] =
     g_signal_new ("items-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__UINT_UINT_UINT,
-		  G_TYPE_NONE,
-		  3,
-		  G_TYPE_UINT,  /* Index of the start of the change */
-		  G_TYPE_UINT,  /* The number of items deleted */
-		  G_TYPE_UINT); /* The number of items inserted */
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_VOID__UINT_UINT_UINT,
+                  G_TYPE_NONE,
+                  3,
+                  G_TYPE_UINT,  /* Index of the start of the change */
+                  G_TYPE_UINT,  /* The number of items deleted */
+                  G_TYPE_UINT); /* The number of items inserted */
 
 
 

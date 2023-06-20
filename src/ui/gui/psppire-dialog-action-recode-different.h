@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT (psppire_dialog_action_recode_different_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, PsppireDialogActionRecodeDifferent))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, PsppireDialogActionRecodeDifferent))
 
 #define PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, \
                                  PsppireDialogActionRecodeDifferentClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_RECODE_DIFFERENT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_RECODE_DIFFERENT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT))
 
 
 #define PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, \
-				   PsppireDialogActionRecodeDifferentClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT, \
+                                   PsppireDialogActionRecodeDifferentClass))
 
 typedef struct _PsppireDialogActionRecodeDifferent       PsppireDialogActionRecodeDifferent;
 typedef struct _PsppireDialogActionRecodeDifferentClass  PsppireDialogActionRecodeDifferentClass;

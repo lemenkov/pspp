@@ -118,13 +118,13 @@ write_style_data (struct odt_driver *odt)
 
   xmlTextWriterStartElement (w, _xml ("office:document-styles"));
   xmlTextWriterWriteAttribute (w, _xml ("xmlns:office"),
-			       _xml ("urn:oasis:names:tc:opendocument:xmlns:office:1.0"));
+                               _xml ("urn:oasis:names:tc:opendocument:xmlns:office:1.0"));
 
   xmlTextWriterWriteAttribute (w, _xml ("xmlns:style"),
-			       _xml ("urn:oasis:names:tc:opendocument:xmlns:style:1.0"));
+                               _xml ("urn:oasis:names:tc:opendocument:xmlns:style:1.0"));
 
   xmlTextWriterWriteAttribute (w, _xml ("xmlns:fo"),
-			       _xml ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"));
+                               _xml ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"));
 
   xmlTextWriterWriteAttribute (w, _xml ("office:version"),  _xml ("1.1"));
 
@@ -136,13 +136,13 @@ write_style_data (struct odt_driver *odt)
   {
     xmlTextWriterStartElement (w, _xml ("style:style"));
     xmlTextWriterWriteAttribute (w, _xml ("style:name"),
-				 _xml ("Standard"));
+                                 _xml ("Standard"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:family"),
-				 _xml ("paragraph"));
+                                 _xml ("paragraph"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:class"),
-				 _xml ("text"));
+                                 _xml ("text"));
 
     xmlTextWriterEndElement (w); /* style:style */
   }
@@ -150,19 +150,19 @@ write_style_data (struct odt_driver *odt)
   {
     xmlTextWriterStartElement (w, _xml ("style:style"));
     xmlTextWriterWriteAttribute (w, _xml ("style:name"),
-				 _xml ("Table_20_Contents"));
+                                 _xml ("Table_20_Contents"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:display-name"),
-				 _xml ("Table Contents"));
+                                 _xml ("Table Contents"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:family"),
-				 _xml ("paragraph"));
+                                 _xml ("paragraph"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:parent-style-name"),
-				 _xml ("Standard"));
+                                 _xml ("Standard"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:class"),
-				 _xml ("extra"));
+                                 _xml ("extra"));
 
     xmlTextWriterEndElement (w); /* style:style */
   }
@@ -170,19 +170,19 @@ write_style_data (struct odt_driver *odt)
   {
     xmlTextWriterStartElement (w, _xml ("style:style"));
     xmlTextWriterWriteAttribute (w, _xml ("style:name"),
-				 _xml ("Table_20_Heading"));
+                                 _xml ("Table_20_Heading"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:display-name"),
-				 _xml ("Table Heading"));
+                                 _xml ("Table Heading"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:family"),
-				 _xml ("paragraph"));
+                                 _xml ("paragraph"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:parent-style-name"),
-				 _xml ("Table_20_Contents"));
+                                 _xml ("Table_20_Contents"));
 
     xmlTextWriterWriteAttribute (w, _xml ("style:class"),
-				 _xml ("extra"));
+                                 _xml ("extra"));
 
 
     xmlTextWriterStartElement (w, _xml ("style:text-properties"));
@@ -309,7 +309,7 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
 
   xmlTextWriterStartElement (odt->manifest_wtr, _xml("manifest:manifest"));
   xmlTextWriterWriteAttribute (odt->manifest_wtr, _xml("xmlns:manifest"),
-			       _xml("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"));
+                               _xml("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"));
 
 
   /* Add a manifest entry for the document as a whole */
@@ -329,13 +329,13 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
   /* Some necessary junk at the start */
   xmlTextWriterStartElement (odt->content_wtr, _xml("office:document-content"));
   xmlTextWriterWriteAttribute (odt->content_wtr, _xml("xmlns:office"),
-			       _xml("urn:oasis:names:tc:opendocument:xmlns:office:1.0"));
+                               _xml("urn:oasis:names:tc:opendocument:xmlns:office:1.0"));
 
   xmlTextWriterWriteAttribute (odt->content_wtr, _xml("xmlns:text"),
-			       _xml("urn:oasis:names:tc:opendocument:xmlns:text:1.0"));
+                               _xml("urn:oasis:names:tc:opendocument:xmlns:text:1.0"));
 
   xmlTextWriterWriteAttribute (odt->content_wtr, _xml("xmlns:table"),
-			       _xml("urn:oasis:names:tc:opendocument:xmlns:table:1.0"));
+                               _xml("urn:oasis:names:tc:opendocument:xmlns:table:1.0"));
 
   xmlTextWriterWriteAttribute (odt->content_wtr, _xml("office:version"), _xml("1.1"));
 
@@ -485,7 +485,7 @@ write_table_layer (struct odt_driver *odt, const struct pivot_table *pt,
   /* Start table */
   xmlTextWriterStartElement (odt->content_wtr, _xml("table:table"));
   xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("table:name"),
-				     "TABLE-%d", odt->table_num++);
+                                     "TABLE-%d", odt->table_num++);
 
 
   /* Start column definitions */
@@ -507,7 +507,7 @@ write_table_layer (struct odt_driver *odt, const struct pivot_table *pt,
 
       /* Write all the columns */
       for (int c = 0 ; c < body->n[H] ; ++c)
-	{
+        {
           struct table_cell cell;
 
           table_get_cell (body, c, r, &cell);
@@ -541,19 +541,19 @@ write_table_layer (struct odt_driver *odt, const struct pivot_table *pt,
 
               xmlTextWriterEndElement (odt->content_wtr); /* text:p */
               xmlTextWriterEndElement (odt->content_wtr); /* table:table-cell */
-	    }
-	  else
-	    {
-	      xmlTextWriterStartElement (odt->content_wtr, _xml("table:covered-table-cell"));
-	      xmlTextWriterEndElement (odt->content_wtr);
-	    }
-	}
+            }
+          else
+            {
+              xmlTextWriterStartElement (odt->content_wtr, _xml("table:covered-table-cell"));
+              xmlTextWriterEndElement (odt->content_wtr);
+            }
+        }
 
       xmlTextWriterEndElement (odt->content_wtr); /* row */
 
       int ht = body->h[V][0];
       if (ht > 0 && r == ht - 1)
-	xmlTextWriterEndElement (odt->content_wtr); /* table-header-rows */
+        xmlTextWriterEndElement (odt->content_wtr); /* table-header-rows */
     }
 
   xmlTextWriterEndElement (odt->content_wtr); /* table */

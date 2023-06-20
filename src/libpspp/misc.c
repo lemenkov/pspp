@@ -46,10 +46,10 @@ c_dtoastr (char *buf, size_t bufsize, int flags, int width, double x)
   for (i = 0; i < result; ++i)
     {
       if (buf[i] == ',')
-	{
-	  buf[i] = '.';
-	  break;
-	}
+        {
+          buf[i] = '.';
+          break;
+        }
     }
 
   return result;

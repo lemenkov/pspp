@@ -58,7 +58,7 @@ cmd_split_file (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_BY);
       int vars_start = lex_ofs (lexer);
       if (!parse_variables (lexer, dataset_dict (ds), &v, &n, PV_NO_DUPLICATE))
-	return CMD_CASCADING_FAILURE;
+        return CMD_CASCADING_FAILURE;
       int vars_end = lex_ofs (lexer) - 1;
 
       if (n > MAX_SPLITS)

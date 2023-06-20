@@ -80,7 +80,7 @@ struct variable;
 struct freq;
 
 struct chart *barchart_create (const struct variable **, int n_vars,
-				    const char *ylabel, bool percent,
+                                    const char *ylabel, bool percent,
                                     struct freq *const *, int n_cats);
 
 /* This boilerplate for barchart, a subclass of chart, was

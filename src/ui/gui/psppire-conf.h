@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_CONF (psppire_conf_get_type ())
 
-#define PSPPIRE_CONF(obj)	\
+#define PSPPIRE_CONF(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-		    PSPPIRE_TYPE_CONF, PsppireConf))
+                    PSPPIRE_TYPE_CONF, PsppireConf))
 
 #define PSPPIRE_CONF_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_CONF, \
+                                 PSPPIRE_TYPE_CONF, \
                                  PsppireConfClass))
 
 
 #define PSPPIRE_IS_CONF(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_CONF))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_CONF))
 
 #define PSPPIRE_IS_CONF_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_CONF))
 
 
 #define PSPPIRE_CONF_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_CONF, \
-				   PsppireConfClass))
+                                   PSPPIRE_TYPE_CONF, \
+                                   PsppireConfClass))
 
 typedef struct _PsppireConf       PsppireConf;
 typedef struct _PsppireConfClass  PsppireConfClass;
@@ -76,54 +76,54 @@ GType psppire_conf_get_type (void) G_GNUC_CONST;
 PsppireConf * psppire_conf_new (void);
 
 gboolean psppire_conf_get_int (PsppireConf *,
-			       const gchar *, const gchar *, int *);
+                               const gchar *, const gchar *, int *);
 
 gboolean psppire_conf_get_string (PsppireConf *,
-			       const gchar *, const gchar *, gchar **);
+                               const gchar *, const gchar *, gchar **);
 
 gboolean psppire_conf_get_boolean (PsppireConf *,
-				   const gchar *, const gchar *, gboolean *);
+                                   const gchar *, const gchar *, gboolean *);
 
 
 gboolean psppire_conf_get_variant (PsppireConf *,
-				   const gchar *, const gchar *, GVariant **);
+                                   const gchar *, const gchar *, GVariant **);
 
 
 gboolean psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
-				const gchar *name,
-				GType t,
-				int *v);
+                                const gchar *name,
+                                GType t,
+                                int *v);
 
 void psppire_conf_set_int (PsppireConf *conf,
-			   const gchar *base, const gchar *name,
-			   gint value);
+                           const gchar *base, const gchar *name,
+                           gint value);
 
 void psppire_conf_set_boolean (PsppireConf *conf,
-			       const gchar *base, const gchar *name,
-			       gboolean value);
+                               const gchar *base, const gchar *name,
+                               gboolean value);
 
 void psppire_conf_set_string (PsppireConf *conf,
-			       const gchar *base, const gchar *name,
-			      const gchar *value);
+                               const gchar *base, const gchar *name,
+                              const gchar *value);
 
 
 void psppire_conf_set_variant (PsppireConf *conf,
-			       const gchar *base, const gchar *name,
-			       GVariant *value);
+                               const gchar *base, const gchar *name,
+                               GVariant *value);
 
 
 void psppire_conf_set_enum (PsppireConf *conf,
-			    const gchar *base, const gchar *name,
-			    GType enum_type,
-			    int value);
+                            const gchar *base, const gchar *name,
+                            GType enum_type,
+                            int value);
 
 void psppire_conf_set_window_geometry (PsppireConf *conf,
-				       const gchar *base,
-				       GtkWindow *window);
+                                       const gchar *base,
+                                       GtkWindow *window);
 
 void psppire_conf_save_window_geometry (PsppireConf *,
-					const gchar *,
-					GtkWindow *);
+                                        const gchar *,
+                                        GtkWindow *);
 
 
 G_END_DECLS

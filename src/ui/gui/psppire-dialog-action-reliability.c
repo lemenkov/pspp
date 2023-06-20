@@ -51,8 +51,8 @@ generate_syntax (const PsppireDialogAction *act)
     g_string_append (string, "ALPHA");
   else
     g_string_append_printf (string, "SPLIT (%d)",
-			    gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (rd->split_spinbutton))
-			);
+                            gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (rd->split_spinbutton))
+                        );
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->scale_if_item_deleted_checkbutton)))
     g_string_append (string, "\n\t/SUMMARY = TOTAL");
@@ -87,10 +87,10 @@ update_split_control (PsppireDialogActionReliability *pda)
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (pda->split_spinbutton), n_vars - 1);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (pda->split_spinbutton),
-			     0, n_vars - 1);
+                             0, n_vars - 1);
 
   gtk_widget_set_sensitive (pda->split_point_hbox,
-			    (SPLIT == gtk_combo_box_get_active (GTK_COMBO_BOX (pda->model_combo))));
+                            (SPLIT == gtk_combo_box_get_active (GTK_COMBO_BOX (pda->model_combo))));
 }
 
 
@@ -108,10 +108,10 @@ refresh (PsppireDialogAction *pda_)
   gtk_spin_button_set_value (GTK_SPIN_BUTTON (pda->split_spinbutton), 0);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (pda->split_spinbutton),
-			     0, 0);
+                             0, 0);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pda->scale_if_item_deleted_checkbutton),
-				FALSE);
+                                FALSE);
 }
 
 static GtkBuilder *
@@ -142,13 +142,13 @@ psppire_dialog_action_reliability_activate (PsppireDialogAction *a, GVariant *pa
   act->scale_if_item_deleted_checkbutton = get_widget_assert (xml, "totals-checkbutton");
 
   g_signal_connect_swapped (act->model_combo, "changed",
-			    G_CALLBACK (update_split_control), pda);
+                            G_CALLBACK (update_split_control), pda);
 
 
   g_signal_connect_swapped (liststore, "row-inserted",
-			    G_CALLBACK (update_split_control), pda);
+                            G_CALLBACK (update_split_control), pda);
   g_signal_connect_swapped (liststore, "row-deleted",
-			    G_CALLBACK (update_split_control), pda);
+                            G_CALLBACK (update_split_control), pda);
 
 
   psppire_dialog_action_set_refresh (pda, refresh);

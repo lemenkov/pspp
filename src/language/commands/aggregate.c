@@ -71,11 +71,11 @@ struct agr_argument
 struct agr_var
   {
     /* Collected during parsing. */
-    const struct variable *src;	/* Source variable. */
-    struct variable *dest;	/* Target variable. */
+    const struct variable *src;        /* Source variable. */
+    struct variable *dest;        /* Target variable. */
     enum agr_function function; /* Function. */
     enum mv_class exclude;      /* Classes of missing values to exclude. */
-    struct agr_argument arg[2];	/* Arguments. */
+    struct agr_argument arg[2];        /* Arguments. */
 
     /* Accumulated during AGGREGATE execution. */
     double dbl;
@@ -105,8 +105,8 @@ AGGREGATE_FUNCTIONS
 /* Missing value types. */
 enum missing_treatment
   {
-    ITEMWISE,		/* Missing values item by item. */
-    COLUMNWISE		/* Missing values column by column. */
+    ITEMWISE,                /* Missing values item by item. */
+    COLUMNWISE                /* Missing values column by column. */
   };
 
 /* An entire AGGREGATE procedure. */
@@ -125,7 +125,7 @@ struct agr_proc
     int n_cases;                        /* Counts aggregated cases. */
 
     bool add_variables;                 /* True iff the aggregated variables should
-					   be appended to the existing dictionary */
+                                           be appended to the existing dictionary */
   };
 
 static void initialize_aggregate_info (struct agr_proc *);
@@ -134,11 +134,11 @@ static void accumulate_aggregate_info (struct agr_proc *,
                                        const struct ccase *);
 /* Prototypes. */
 static bool parse_aggregate_functions (struct lexer *, const struct dictionary *,
-				       struct agr_proc *);
+                                       struct agr_proc *);
 static void agr_destroy (struct agr_proc *);
 static void dump_aggregate_info (const struct agr_proc *agr,
                                  struct casewriter *output,
-				 const struct ccase *break_case);
+                                 const struct ccase *break_case);
 
 /* Parsing. */
 
@@ -316,27 +316,27 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
       initialize_aggregate_info (&agr);
 
       if (agr.add_variables)
-	placeholder = casereader_clone (group);
+        placeholder = casereader_clone (group);
 
       {
-	struct ccase *cg;
-	for (; (cg = casereader_read (group)) != NULL; case_unref (cg))
-	  accumulate_aggregate_info (&agr, cg);
+        struct ccase *cg;
+        for (; (cg = casereader_read (group)) != NULL; case_unref (cg))
+          accumulate_aggregate_info (&agr, cg);
       }
 
 
       if  (agr.add_variables)
-	{
-	  struct ccase *cg;
-	  for (; (cg = casereader_read (placeholder)) != NULL; case_unref (cg))
-	    dump_aggregate_info (&agr, output, cg);
+        {
+          struct ccase *cg;
+          for (; (cg = casereader_read (placeholder)) != NULL; case_unref (cg))
+            dump_aggregate_info (&agr, output, cg);
 
-	  casereader_destroy (placeholder);
-	}
+          casereader_destroy (placeholder);
+        }
       else
-	{
-	  dump_aggregate_info (&agr, output, c);
-	}
+        {
+          dump_aggregate_info (&agr, output, c);
+        }
       case_unref (c);
     }
   if (!casegrouper_destroy (grouper))
@@ -405,7 +405,7 @@ parse_agr_func_name (struct lexer *lexer, int *func_index,
 /* Parse all the aggregate functions. */
 static bool
 parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
-			   struct agr_proc *agr)
+                           struct agr_proc *agr)
 {
   if (!lex_force_match (lexer, T_SLASH))
     return false;
@@ -427,25 +427,25 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
       /* Parse the list of target variables. */
       int dst_start_ofs = lex_ofs (lexer);
       while (!lex_match (lexer, T_EQUALS))
-	{
-	  size_t n_vars_prev = n_vars;
+        {
+          size_t n_vars_prev = n_vars;
 
-	  if (!parse_DATA_LIST_vars (lexer, dict, &dest, &n_vars,
+          if (!parse_DATA_LIST_vars (lexer, dict, &dest, &n_vars,
                                      (PV_APPEND | PV_SINGLE | PV_NO_SCRATCH
                                       | PV_NO_DUPLICATE)))
-	    goto error;
+            goto error;
 
-	  /* Assign empty labels. */
+          /* Assign empty labels. */
           dest_label = xnrealloc (dest_label, n_vars, sizeof *dest_label);
           for (size_t j = n_vars_prev; j < n_vars; j++)
             dest_label[j] = NULL;
 
-	  if (lex_is_string (lexer))
-	    {
-	      dest_label[n_vars - 1] = xstrdup (lex_tokcstr (lexer));
-	      lex_get (lexer);
-	    }
-	}
+          if (lex_is_string (lexer))
+            {
+              dest_label[n_vars - 1] = xstrdup (lex_tokcstr (lexer));
+              lex_get (lexer);
+            }
+        }
       int dst_end_ofs = lex_ofs (lexer) - 2;
 
       /* Get the name of the aggregation function. */
@@ -457,16 +457,16 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 
       /* Check for leading lparen. */
       if (!lex_match (lexer, T_LPAREN))
-	{
-	  if (function->src_vars == AGR_SV_YES)
-	    {
+        {
+          if (function->src_vars == AGR_SV_YES)
+            {
               bool ok UNUSED = lex_force_match (lexer, T_LPAREN);
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
       else
         {
-	  /* Parse list of source variables. */
+          /* Parse list of source variables. */
           int pv_opts = PV_NO_SCRATCH;
           if (func_index == AGRF_SUM || func_index == AGRF_MEAN
               || func_index == AGRF_MEDIAN || func_index == AGRF_SD)
@@ -480,31 +480,31 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
             goto error;
           int src_end_ofs = lex_ofs (lexer) - 1;
 
-	  /* Parse function arguments, for those functions that
-	     require arguments. */
+          /* Parse function arguments, for those functions that
+             require arguments. */
           int args_start_ofs = 0;
-	  if (function->n_args != 0)
-	    for (size_t i = 0; i < function->n_args; i++)
-	      {
-		lex_match (lexer, T_COMMA);
+          if (function->n_args != 0)
+            for (size_t i = 0; i < function->n_args; i++)
+              {
+                lex_match (lexer, T_COMMA);
 
-		enum val_type type;
-		if (lex_is_string (lexer))
+                enum val_type type;
+                if (lex_is_string (lexer))
                   type = VAL_STRING;
                 else if (lex_is_number (lexer))
                   type = VAL_NUMERIC;
                 else
                   {
-		    lex_error (lexer, _("Missing argument %zu to %s."),
+                    lex_error (lexer, _("Missing argument %zu to %s."),
                                i + 1, function->name);
-		    goto error;
-		  }
+                    goto error;
+                  }
 
-		if (type != var_get_type (src[0]))
-		  {
-		    msg (SE, _("Arguments to %s must be of same type as "
-			       "source variables."),
-			 function->name);
+                if (type != var_get_type (src[0]))
+                  {
+                    msg (SE, _("Arguments to %s must be of same type as "
+                               "source variables."),
+                         function->name);
                     if (type == VAL_NUMERIC)
                       {
                         lex_next_msg (lexer, SN, 0, 0,
@@ -519,42 +519,42 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
                         lex_ofs_msg (lexer, SN, src_start_ofs, src_end_ofs,
                                      _("The variables are numeric."));
                       }
-		    goto error;
-		  }
+                    goto error;
+                  }
 
                 if (i == 0)
                   args_start_ofs = lex_ofs (lexer);
-		if (type == VAL_NUMERIC)
+                if (type == VAL_NUMERIC)
                   arg[i].f = lex_tokval (lexer);
                 else
                   arg[i].s = recode_substring_pool (dict_get_encoding (agr->dict),
                                                     "UTF-8", lex_tokss (lexer),
                                                     NULL);
-		lex_get (lexer);
-	      }
+                lex_get (lexer);
+              }
           int args_end_ofs = lex_ofs (lexer) - 1;
 
-	  /* Trailing rparen. */
-	  if (!lex_force_match (lexer, T_RPAREN))
+          /* Trailing rparen. */
+          if (!lex_force_match (lexer, T_RPAREN))
             goto error;
 
-	  /* Now check that the number of source variables match
-	     the number of target variables.  If we check earlier
-	     than this, the user can get very misleading error
-	     message, i.e. `AGGREGATE x=SUM(y t).' will get this
-	     error message when a proper message would be more
-	     like `unknown variable t'. */
-	  if (n_src != n_vars)
-	    {
-	      msg (SE, _("Number of source variables (%zu) does not match "
-			 "number of target variables (%zu)."),
+          /* Now check that the number of source variables match
+             the number of target variables.  If we check earlier
+             than this, the user can get very misleading error
+             message, i.e. `AGGREGATE x=SUM(y t).' will get this
+             error message when a proper message would be more
+             like `unknown variable t'. */
+          if (n_src != n_vars)
+            {
+              msg (SE, _("Number of source variables (%zu) does not match "
+                         "number of target variables (%zu)."),
                    n_src, n_vars);
               lex_ofs_msg (lexer, SN, src_start_ofs, src_end_ofs,
                            _("These are the source variables."));
               lex_ofs_msg (lexer, SN, dst_start_ofs, dst_end_ofs,
                            _("These are the target variables."));
-	      goto error;
-	    }
+              goto error;
+            }
 
           if ((func_index == AGRF_PIN || func_index == AGRF_POUT
               || func_index == AGRF_FIN || func_index == AGRF_FOUT)
@@ -573,32 +573,32 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
                              "they had been specified in the correct order."),
                            function->name);
             }
-	}
+        }
 
       /* Finally add these to the aggregation variables. */
       for (size_t i = 0; i < n_vars; i++)
-	{
+        {
           const struct variable *existing_var = dict_lookup_var (agr->dict,
                                                                  dest[i]);
           if (existing_var)
             {
               if (var_get_dict_index (existing_var) >= starting_n_vars)
-		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
                                _("Duplicate target variable name %s."),
                                dest[i]);
               else if (agr->add_variables)
-		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
                                _("Variable name %s duplicates the name of a "
                                  "variable in the active file dictionary."),
                                dest[i]);
               else
-		lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
+                lex_ofs_error (lexer, dst_start_ofs, dst_end_ofs,
                                _("Variable name %s duplicates the name of a "
                                  "break variable."), dest[i]);
               goto error;
             }
 
-	  /* Add variable. */
+          /* Add variable. */
           if (agr->n_agr_vars >= allocated_agr_vars)
             agr->agr_vars = x2nrealloc (agr->agr_vars, &allocated_agr_vars,
                                         sizeof *agr->agr_vars);
@@ -610,7 +610,7 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
             .src = src ? src[i] : NULL,
           };
 
-	  /* Create the target variable in the aggregate dictionary. */
+          /* Create the target variable in the aggregate dictionary. */
           if (v->src && var_is_alpha (v->src))
             v->string = xmalloc (var_get_width (v->src));
 
@@ -631,42 +631,42 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
           if (dest_label[i])
             var_set_label (v->dest, dest_label[i]);
 
-	  if (v->src != NULL)
+          if (v->src != NULL)
             for (size_t j = 0; j < function->n_args; j++)
               v->arg[j] = (struct agr_argument) {
                 .f = arg[j].f,
                 .s = arg[j].s.string ? ss_clone (arg[j].s) : ss_empty (),
               };
-	}
+        }
 
       ss_dealloc (&arg[0].s);
       ss_dealloc (&arg[1].s);
 
       free (src);
       for (size_t i = 0; i < n_vars; i++)
-	{
-	  free (dest[i]);
-	  free (dest_label[i]);
-	}
+        {
+          free (dest[i]);
+          free (dest_label[i]);
+        }
       free (dest);
       free (dest_label);
 
       if (!lex_match (lexer, T_SLASH))
-	{
-	  if (lex_token (lexer) == T_ENDCMD)
-	    return true;
+        {
+          if (lex_token (lexer) == T_ENDCMD)
+            return true;
 
-	  lex_error (lexer, "Syntax error expecting end of command.");
-	  return false;
-	}
+          lex_error (lexer, "Syntax error expecting end of command.");
+          return false;
+        }
       continue;
 
     error:
       for (size_t i = 0; i < n_vars; i++)
-	{
-	  free (dest[i]);
-	  free (dest_label[i]);
-	}
+        {
+          free (dest[i]);
+          free (dest_label[i]);
+        }
       free (dest);
       free (dest_label);
       ss_dealloc (&arg[0].s);
@@ -931,13 +931,13 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
       int value_idx = 0;
 
       for (size_t i = 0; i < agr->break_n_vars; i++)
-	{
-	  const struct variable *v = agr->break_vars[i];
-	  value_copy (case_data_rw_idx (c, value_idx),
-		      case_data (break_case, v),
-		      var_get_width (v));
-	  value_idx++;
-	}
+        {
+          const struct variable *v = agr->break_vars[i];
+          value_copy (case_data_rw_idx (c, value_idx),
+                      case_data (break_case, v),
+                      var_get_width (v));
+          value_idx++;
+        }
     }
 
   for (size_t i = 0; i < agr->n_agr_vars; i++)
@@ -1065,41 +1065,41 @@ initialize_aggregate_info (struct agr_proc *agr)
 
       int width = av->src ? var_get_width (av->src) : 0;
       switch (av->function)
-	{
-	case AGRF_MIN:
+        {
+        case AGRF_MIN:
           if (!width)
             av->dbl = DBL_MAX;
           else
             memset (av->string, 255, width);
-	  break;
+          break;
 
-	case AGRF_MAX:
+        case AGRF_MAX:
           if (!width)
             av->dbl = -DBL_MAX;
-	  else
+          else
             memset (av->string, 0, width);
-	  break;
+          break;
 
-	case AGRF_MEDIAN:
-	  {
+        case AGRF_MEDIAN:
+          {
             struct caseproto *proto = caseproto_create ();
             proto = caseproto_add_width (proto, 0);
             proto = caseproto_add_width (proto, 0);
 
             if (!av->dict)
               av->dict = dict_create ("UTF-8");
-	    if (! av->subject)
-	      av->subject = dict_create_var (av->dict, "subject", 0);
-	    if (! av->weight)
-	      av->weight = dict_create_var (av->dict, "weight", 0);
+            if (! av->subject)
+              av->subject = dict_create_var (av->dict, "subject", 0);
+            if (! av->weight)
+              av->weight = dict_create_var (av->dict, "weight", 0);
 
             struct subcase ordering;
             subcase_init_var (&ordering, av->subject, SC_ASCEND);
-	    av->writer = sort_create_writer (&ordering, proto);
+            av->writer = sort_create_writer (&ordering, proto);
             subcase_uninit (&ordering);
             caseproto_unref (proto);
-	  }
-	  break;
+          }
+          break;
 
         case AGRF_SD:
           if (av->moments == NULL)
@@ -1129,6 +1129,6 @@ initialize_aggregate_info (struct agr_proc *agr)
         case AGRF_FIRST:
         case AGRF_LAST:
           break;
-	}
+        }
     }
 }

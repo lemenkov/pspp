@@ -57,21 +57,21 @@ generate_syntax (const PsppireDialogAction *act)
       g_string_append (string, "\n\t");
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (kid->checkbutton[i])))
-	{
-	  g_string_append_printf (string, "/%s = ", keyword[i]);
-	  psppire_var_view_append_names (PSPPIRE_VAR_VIEW (kid->vars_treeview),
-					 0, string);
+        {
+          g_string_append_printf (string, "/%s = ", keyword[i]);
+          psppire_var_view_append_names (PSPPIRE_VAR_VIEW (kid->vars_treeview),
+                                         0, string);
 
-	  g_string_append (string, " BY ");
+          g_string_append (string, " BY ");
 
-	  g_string_append (string,
-			   gtk_entry_get_text (GTK_ENTRY (kid->groupvar_entry)));
+          g_string_append (string,
+                           gtk_entry_get_text (GTK_ENTRY (kid->groupvar_entry)));
 
 
-	  g_string_append_printf (string, " (%g, %g)",
-				  kid->lower_limit_value.f,
-				  kid->upper_limit_value.f);
-	}
+          g_string_append_printf (string, " (%g, %g)",
+                                  kid->lower_limit_value.f,
+                                  kid->upper_limit_value.f);
+        }
     }
 
   g_string_append (string, ".\n");
@@ -101,7 +101,7 @@ dialog_state_valid (gpointer data)
   for (i = 0; i < n_KIDS; ++i)
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (kid->checkbutton[i])))
-	method_set = TRUE;
+        method_set = TRUE;
     }
 
   return method_set;
@@ -123,7 +123,7 @@ refresh (PsppireDialogAction *rd_)
   for (i = 0; i < n_KIDS; ++i)
     {
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (kid->checkbutton[i]),
-				    FALSE);
+                                    FALSE);
     }
 }
 
@@ -132,20 +132,20 @@ run_define_groups_dialog (PsppireDialogActionKIndependent *kid)
 {
   if (kid->lower_limit_value.f != SYSMIS)
     psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (kid->lower_limit_entry),
-				   &kid->lower_limit_value, 0);
+                                   &kid->lower_limit_value, 0);
 
   if (kid->upper_limit_value.f != SYSMIS)
     psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (kid->upper_limit_entry),
-				   &kid->upper_limit_value, 0);
+                                   &kid->upper_limit_value, 0);
 
   if (PSPPIRE_RESPONSE_CONTINUE ==
       psppire_dialog_run (PSPPIRE_DIALOG (kid->subdialog)))
     {
       psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (kid->lower_limit_entry),
-				     &kid->lower_limit_value, 0);
+                                     &kid->lower_limit_value, 0);
 
       psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (kid->upper_limit_entry),
-				     &kid->upper_limit_value, 0);
+                                     &kid->upper_limit_value, 0);
     }
 }
 
@@ -184,16 +184,16 @@ psppire_dialog_action_k_independent_activate (PsppireDialogAction *a, GVariant *
   kid->upper_limit_entry = get_widget_assert (xml, "upper-limit-entry");
 
   kid->checkbutton[KID_KRUSKAL_WALLIS] = get_widget_assert (xml,
-							    "kruskal-wallis");
+                                                            "kruskal-wallis");
 
   kid->checkbutton[KID_MEDIAN] = get_widget_assert (xml, "median");
 
   g_signal_connect_swapped (get_widget_assert (xml, "define-groups-button"),
-			    "clicked",
-			    G_CALLBACK (run_define_groups_dialog), kid);
+                            "clicked",
+                            G_CALLBACK (run_define_groups_dialog), kid);
 
   g_signal_connect_swapped (kid->groupvar_entry, "changed",
-			    G_CALLBACK (set_value_entry_variable), kid);
+                            G_CALLBACK (set_value_entry_variable), kid);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);

@@ -93,7 +93,7 @@ psppire_means_layer_update (PsppireMeansLayer *ml)
     return;
 
   l = g_strdup_printf (_("Layer %d of %d"),
-			      ml->current_layer + 1, ml->n_layers);
+                              ml->current_layer + 1, ml->n_layers);
 
   gtk_label_set_text (GTK_LABEL (ml->label), l);
   g_free (l);
@@ -107,7 +107,7 @@ psppire_means_layer_update (PsppireMeansLayer *ml)
     g_return_if_fail (GTK_IS_TREE_MODEL (tm));
 
     gtk_widget_set_sensitive (ml->forward,
-			      gtk_tree_model_get_iter_first (tm, &dummy));
+                              gtk_tree_model_get_iter_first (tm, &dummy));
   }
 }
 
@@ -172,16 +172,16 @@ psppire_means_layer_init  (PsppireMeansLayer      *ml)
   ml->label = gtk_label_new ("");
 
   g_signal_connect_swapped (ml->forward, "clicked", G_CALLBACK (on_forward),
-			    ml);
+                            ml);
 
   g_signal_connect_swapped (ml->back, "clicked", G_CALLBACK (on_back), ml);
 
 
   g_object_set (ml->var_view, "headers-visible", FALSE, NULL);
   g_object_set (sw,
-		"shadow-type", GTK_SHADOW_ETCHED_IN,
-		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		NULL);
+                "shadow-type", GTK_SHADOW_ETCHED_IN,
+                "hscrollbar-policy", GTK_POLICY_AUTOMATIC,
+                NULL);
 
   g_signal_connect_swapped (ml->var_view, "notify::model", G_CALLBACK (psppire_means_layer_update), ml);
 

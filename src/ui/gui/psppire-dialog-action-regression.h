@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION (psppire_dialog_action_regression_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_REGRESSION(obj)	\
+#define PSPPIRE_DIALOG_ACTION_REGRESSION(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, PsppireDialogActionRegression))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, PsppireDialogActionRegression))
 
 #define PSPPIRE_DIALOG_ACTION_REGRESSION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, \
                                  PsppireDialogActionRegressionClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_REGRESSION(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION))
 
 #define PSPPIRE_IS_DIALOG_ACTION_REGRESSION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION))
 
 
 #define PSPPIRE_DIALOG_ACTION_REGRESSION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, \
-				   PsppireDialogActionRegressionClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, \
+                                   PsppireDialogActionRegressionClass))
 
 typedef struct _PsppireDialogActionRegression       PsppireDialogActionRegression;
 typedef struct _PsppireDialogActionRegressionClass  PsppireDialogActionRegressionClass;

@@ -41,8 +41,8 @@
 /* Value or range? */
 enum value_type
   {
-    CNT_SINGLE,			/* Single value. */
-    CNT_RANGE			/* a <= x <= b. */
+    CNT_SINGLE,                        /* Single value. */
+    CNT_RANGE                        /* a <= x <= b. */
   };
 
 /* Numeric count criteria. */
@@ -68,8 +68,8 @@ struct criteria
     size_t n_values;
     union
       {
-	struct num_value *num;
-	char **str;
+        struct num_value *num;
+        char **str;
       }
     values;
   };
@@ -116,7 +116,7 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
 
       /* Get destination variable, or at least its name. */
       if (!lex_force_id (lexer))
-	goto fail;
+        goto fail;
       dv->var = dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer));
       if (dv->var != NULL)
         {
@@ -131,24 +131,24 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
 
       lex_get (lexer);
       if (!lex_force_match (lexer, T_EQUALS))
-	goto fail;
+        goto fail;
 
       crit = dv->crit = pool_alloc (trns->pool, sizeof *crit);
       for (;;)
-	{
+        {
           struct dictionary *dict = dataset_dict (ds);
           bool ok;
 
-	  crit->next = NULL;
-	  crit->vars = NULL;
-	  if (!parse_variables_const (lexer, dict, &crit->vars,
-				      &crit->n_vars,
+          crit->next = NULL;
+          crit->vars = NULL;
+          if (!parse_variables_const (lexer, dict, &crit->vars,
+                                      &crit->n_vars,
                                       PV_DUPLICATE | PV_SAME_TYPE))
-	    goto fail;
+            goto fail;
           pool_register (trns->pool, free, crit->vars);
 
-	  if (!lex_force_match (lexer, T_LPAREN))
-	    goto fail;
+          if (!lex_force_match (lexer, T_LPAREN))
+            goto fail;
 
           crit->n_values = 0;
           if (var_is_numeric (crit->vars[0]))
@@ -156,20 +156,20 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
           else
             ok = parse_string_criteria (lexer, trns->pool, crit,
                                         dict_get_encoding (dict));
-	  if (!ok)
-	    goto fail;
+          if (!ok)
+            goto fail;
 
-	  if (lex_token (lexer) == T_SLASH || lex_token (lexer) == T_ENDCMD)
-	    break;
+          if (lex_token (lexer) == T_SLASH || lex_token (lexer) == T_ENDCMD)
+            break;
 
-	  crit = crit->next = pool_alloc (trns->pool, sizeof *crit);
-	}
+          crit = crit->next = pool_alloc (trns->pool, sizeof *crit);
+        }
 
       if (lex_token (lexer) == T_ENDCMD)
-	break;
+        break;
 
       if (!lex_force_match (lexer, T_SLASH))
-	goto fail;
+        goto fail;
       dv = dv->next = pool_alloc (trns->pool, sizeof *dv);
     }
 
@@ -177,11 +177,11 @@ cmd_count (struct lexer *lexer, struct dataset *ds)
   for (dv = trns->dst_vars; dv; dv = dv->next)
     if (dv->var == NULL)
       {
-	/* It's valid, though motivationally questionable, to count to
-	   the same dest var more than once. */
-	dv->var = dict_lookup_var (dataset_dict (ds), dv->name);
+        /* It's valid, though motivationally questionable, to count to
+           the same dest var more than once. */
+        dv->var = dict_lookup_var (dataset_dict (ds), dv->name);
 
-	if (dv->var == NULL)
+        if (dv->var == NULL)
           dv->var = dict_create_var_assert (dataset_dict (ds), dv->name, 0);
       }
 
@@ -209,7 +209,7 @@ parse_numeric_criteria (struct lexer *lexer, struct pool *pool, struct criteria 
       if (lex_match_id (lexer, "SYSMIS"))
         crit->count_system_missing = true;
       else if (lex_match_id (lexer, "MISSING"))
-	crit->count_system_missing = crit->count_user_missing = true;
+        crit->count_system_missing = crit->count_user_missing = true;
       else if (parse_num_range (lexer, &low, &high, NULL))
         {
           struct num_value *cur;
@@ -228,7 +228,7 @@ parse_numeric_criteria (struct lexer *lexer, struct pool *pool, struct criteria 
 
       lex_match (lexer, T_COMMA);
       if (lex_match (lexer, T_RPAREN))
-	break;
+        break;
     }
   return true;
 }
@@ -258,7 +258,7 @@ parse_string_criteria (struct lexer *lexer, struct pool *pool,
                                            sizeof *crit->values.str);
 
       if (!lex_force_string (lexer))
-	return false;
+        return false;
 
       s = recode_string (dict_encoding, "UTF-8", lex_tokcstr (lexer),
                          ss_length (lex_tokss (lexer)));
@@ -272,7 +272,7 @@ parse_string_criteria (struct lexer *lexer, struct pool *pool,
 
       lex_match (lexer, T_COMMA);
       if (lex_match (lexer, T_RPAREN))
-	break;
+        break;
     }
 
   return true;
@@ -328,7 +328,7 @@ count_string (struct criteria *crit, const struct ccase *c)
         if (!memcmp (case_str (c, crit->vars[i]), *v,
                      var_get_width (crit->vars[i])))
           {
-	    counter++;
+            counter++;
             break;
           }
     }
@@ -352,10 +352,10 @@ count_trns_proc (void *trns_, struct ccase **c,
 
       counter = 0;
       for (crit = dv->crit; crit; crit = crit->next)
-	if (var_is_numeric (crit->vars[0]))
-	  counter += count_numeric (crit, *c);
-	else
-	  counter += count_string (crit, *c);
+        if (var_is_numeric (crit->vars[0]))
+          counter += count_numeric (crit, *c);
+        else
+          counter += count_string (crit, *c);
       *case_num_rw (*c, dv->var) = counter;
     }
   return TRNS_CONTINUE;

@@ -59,7 +59,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
       gtk_text_buffer_get_iter_at_line (buffer, &start, i);
       if (gtk_text_iter_ends_line (&start))
-	line = g_strdup ("");
+        line = g_strdup ("");
       else
         {
           GtkTextIter end = start;
@@ -135,7 +135,7 @@ set_column_number (GtkTextBuffer *textbuffer,
   gchar *text ;
 
   text = g_strdup_printf (_("Column Number: %d"),
-			   1 + gtk_text_iter_get_line_offset (iter));
+                           1 + gtk_text_iter_get_line_offset (iter));
 
   gtk_label_set_text (label, text);
 
@@ -188,23 +188,23 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda, GVariant *par
       GError *err = NULL;
       gtk_css_provider_load_from_data (cssp, css, -1, &err);
       if (err)
-	{
-	  g_warning ("Failed to load font css \"%s\": %s", css, err->message);
-	  g_error_free (err);
-	}
+        {
+          g_warning ("Failed to load font css \"%s\": %s", css, err->message);
+          g_error_free (err);
+        }
 
       gtk_style_context_add_provider (style,
-				      GTK_STYLE_PROVIDER (cssp),
-				      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+                                      GTK_STYLE_PROVIDER (cssp),
+                                      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
       g_object_unref (cssp);
     }
   }
   GtkTextIter iter;
   g_signal_connect (buffer, "mark-set",
-		    G_CALLBACK (set_column_number), label);
+                    G_CALLBACK (set_column_number), label);
 
   g_signal_connect_after (buffer, "insert-text",
-			  G_CALLBACK (wrap_line), NULL);
+                          G_CALLBACK (wrap_line), NULL);
 
   gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
   gtk_text_buffer_place_cursor (buffer, &iter);

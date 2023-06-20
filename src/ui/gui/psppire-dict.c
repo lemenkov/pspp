@@ -64,7 +64,7 @@ enum  {
 
 
 /* --- prototypes --- */
-static void psppire_dict_dispose	(GObject		*object);
+static void psppire_dict_dispose        (GObject                *object);
 
 static void dictionary_tree_model_init (GtkTreeModelIface *iface);
 
@@ -103,21 +103,21 @@ gi (GListModel *list, guint id)
       gtk_widget_set_tooltip_text (button, var_get_label (v));
 
       {
-	PangoContext *context = gtk_widget_create_pango_context (button);
-	PangoLayout *layout = pango_layout_new (context);
-	PangoRectangle rect;
+        PangoContext *context = gtk_widget_create_pango_context (button);
+        PangoLayout *layout = pango_layout_new (context);
+        PangoRectangle rect;
 
-	pango_layout_set_text (layout, "M", 1);
+        pango_layout_set_text (layout, "M", 1);
 
-	pango_layout_get_extents (layout, NULL, &rect);
+        pango_layout_get_extents (layout, NULL, &rect);
 
-	g_object_unref (G_OBJECT (layout));
-	g_object_unref (G_OBJECT (context));
+        g_object_unref (G_OBJECT (layout));
+        g_object_unref (G_OBJECT (context));
 
-	gtk_widget_set_size_request (button,
-				     (0.25 + var_get_display_width (v))
-				     * rect.width / PANGO_SCALE,
-				     -1);
+        gtk_widget_set_size_request (button,
+                                     (0.25 + var_get_display_width (v))
+                                     * rect.width / PANGO_SCALE,
+                                     -1);
       }
     }
 
@@ -142,10 +142,10 @@ static guint signals [n_SIGNALS];
 /* --- functions --- */
 
 G_DEFINE_TYPE_WITH_CODE (PsppireDict, psppire_dict, G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
-						dictionary_tree_model_init)
-			 G_IMPLEMENT_INTERFACE (G_TYPE_LIST_MODEL,
-						ssw_init_iface))
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+                                                dictionary_tree_model_init)
+                         G_IMPLEMENT_INTERFACE (G_TYPE_LIST_MODEL,
+                                                ssw_init_iface))
 
 static void
 psppire_dict_class_init (PsppireDictClass *class)
@@ -158,95 +158,95 @@ psppire_dict_class_init (PsppireDictClass *class)
 
   signals [RESIZE_ITEM] =
     g_signal_new ("resize-item",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_LAST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_BOOLEAN__INT_INT,
-		  G_TYPE_BOOLEAN,
-		  2,
-		  G_TYPE_INT,
-		  G_TYPE_INT);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_BOOLEAN__INT_INT,
+                  G_TYPE_BOOLEAN,
+                  2,
+                  G_TYPE_INT,
+                  G_TYPE_INT);
 
   signals [VARIABLE_CHANGED] =
     g_signal_new ("variable-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__INT_UINT_POINTER,
-		  G_TYPE_NONE,
-		  3,
-		  G_TYPE_INT,
-		  G_TYPE_UINT,
-		  G_TYPE_POINTER);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_VOID__INT_UINT_POINTER,
+                  G_TYPE_NONE,
+                  3,
+                  G_TYPE_INT,
+                  G_TYPE_UINT,
+                  G_TYPE_POINTER);
 
   signals [VARIABLE_INSERTED] =
     g_signal_new ("variable-inserted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_INT);
 
   signals [VARIABLES_DELETED] =
     g_signal_new ("variables-deleted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__INT_UINT,
-		  G_TYPE_NONE,
-		  2,
-		  G_TYPE_INT,
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_VOID__INT_UINT,
+                  G_TYPE_NONE,
+                  2,
+                  G_TYPE_INT,
                   G_TYPE_UINT);
 
   signals [VARIABLE_MOVED] =
     g_signal_new ("variable-moved",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__INT_INT,
-		  G_TYPE_NONE,
-		  2,
-		  G_TYPE_INT,
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_VOID__INT_INT,
+                  G_TYPE_NONE,
+                  2,
+                  G_TYPE_INT,
                   G_TYPE_INT);
 
   signals [WEIGHT_CHANGED] =
     g_signal_new ("weight-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_INT);
 
   signals [FILTER_CHANGED] =
     g_signal_new ("filter-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_INT);
 
   signals [SPLIT_CHANGED] =
     g_signal_new ("split-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE,
+                  0);
 }
 
 static void
@@ -559,7 +559,7 @@ psppire_dict_clear (PsppireDict *d)
 */
 gboolean
 psppire_dict_check_name (const PsppireDict *dict,
-			 const gchar *name)
+                         const gchar *name)
 {
   return (dict_id_is_valid (dict->dict, name, DC_ORDINARY)
           && !psppire_dict_lookup_var (dict, name));
@@ -574,32 +574,32 @@ static gint tree_model_n_columns (GtkTreeModel *model);
 static GType tree_model_column_type (GtkTreeModel *model, gint index);
 
 static gboolean tree_model_get_iter (GtkTreeModel *model, GtkTreeIter *iter,
-				     GtkTreePath *path);
+                                     GtkTreePath *path);
 
 static gboolean tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter);
 
 static GtkTreePath * tree_model_get_path (GtkTreeModel *model,
-					  GtkTreeIter *iter);
+                                          GtkTreeIter *iter);
 
 static void tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
-				  gint column, GValue *value);
+                                  gint column, GValue *value);
 
 static gboolean tree_model_nth_child (GtkTreeModel *model, GtkTreeIter *iter,
-				      GtkTreeIter *parent, gint n);
+                                      GtkTreeIter *parent, gint n);
 
 static gint tree_model_n_children (GtkTreeModel *tree_model,
-				   GtkTreeIter  *iter);
+                                   GtkTreeIter  *iter);
 
 static gboolean tree_model_iter_children (GtkTreeModel *,
-					  GtkTreeIter *,
-					  GtkTreeIter *);
+                                          GtkTreeIter *,
+                                          GtkTreeIter *);
 
 static gboolean tree_model_iter_parent (GtkTreeModel *tree_model,
-					GtkTreeIter *iter,
-					GtkTreeIter *child);
+                                        GtkTreeIter *iter,
+                                        GtkTreeIter *child);
 
 static gboolean tree_model_iter_has_child  (GtkTreeModel *tree_model,
-					    GtkTreeIter  *iter);
+                                            GtkTreeIter  *iter);
 
 static void
 dictionary_tree_model_init (GtkTreeModelIface *iface)
@@ -621,15 +621,15 @@ dictionary_tree_model_init (GtkTreeModelIface *iface)
 
 static gboolean
 tree_model_iter_has_child  (GtkTreeModel *tree_model,
-			    GtkTreeIter  *iter)
+                            GtkTreeIter  *iter)
 {
   return FALSE;
 }
 
 static gboolean
 tree_model_iter_parent (GtkTreeModel *tree_model,
-		        GtkTreeIter *iter,
-		        GtkTreeIter *child)
+                        GtkTreeIter *iter,
+                        GtkTreeIter *child)
 {
   return TRUE;
 }
@@ -773,7 +773,7 @@ struct fmt_spec var_get_write_format (const struct variable *);
 
 static void
 tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
-		      gint column, GValue *value)
+                      gint column, GValue *value)
 {
   struct variable *var;
   PsppireDict *dict = PSPPIRE_DICT (model);
@@ -831,15 +831,15 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
 
 static gboolean
 tree_model_iter_children (GtkTreeModel *tree_model,
-			  GtkTreeIter *iter,
-			  GtkTreeIter *parent)
+                          GtkTreeIter *iter,
+                          GtkTreeIter *parent)
 {
   return FALSE;
 }
 
 static gint
 tree_model_n_children (GtkTreeModel *model,
-		       GtkTreeIter  *iter)
+                       GtkTreeIter  *iter)
 {
   PsppireDict *dict = PSPPIRE_DICT (model);
 
@@ -851,7 +851,7 @@ tree_model_n_children (GtkTreeModel *model,
 
 static gboolean
 tree_model_nth_child (GtkTreeModel *model, GtkTreeIter *iter,
-		      GtkTreeIter *parent, gint n)
+                      GtkTreeIter *parent, gint n)
 {
   PsppireDict *dict;
 
@@ -877,7 +877,7 @@ tree_model_nth_child (GtkTreeModel *model, GtkTreeIter *iter,
 
 gboolean
 psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
-			 const gchar *name)
+                         const gchar *name)
 {
   if (! dict_id_is_valid (dict->dict, name, DC_ORDINARY))
     return FALSE;

@@ -44,7 +44,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
       int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                  &v, &nv, PV_NO_DUPLICATE))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
       int vars_end = lex_ofs (lexer) - 1;
 
       bool ok = false;
@@ -52,9 +52,9 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
       /* Get the optional format specification. */
       struct fmt_spec f = var_default_formats (0);
       if (lex_match (lexer, T_LPAREN))
-	{
-	  if (!parse_format_specifier (lexer, &f))
-	    goto done;
+        {
+          if (!parse_format_specifier (lexer, &f))
+            goto done;
 
           char *error = fmt_check_output__ (f);
           if (error)
@@ -64,38 +64,38 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
               goto done;
             }
 
-	  if (fmt_is_string (f.type))
-	    {
+          if (fmt_is_string (f.type))
+            {
               char str[FMT_STRING_LEN_MAX + 1];
-	      lex_next_error (lexer, -1, -1,
+              lex_next_error (lexer, -1, -1,
                               _("Format type %s may not be used with a numeric "
                                 "variable."), fmt_to_string (f, str));
-	      goto done;
-	    }
+              goto done;
+            }
 
-	  if (!lex_match (lexer, T_RPAREN))
-	    {
+          if (!lex_match (lexer, T_RPAREN))
+            {
               lex_error_expecting (lexer, "`)'");
-	      goto done;
-	    }
-	}
+              goto done;
+            }
+        }
 
       /* Create each variable. */
       for (size_t i = 0; i < nv; i++)
-	{
-	  struct variable *new_var = dict_create_var (dataset_dict (ds),
+        {
+          struct variable *new_var = dict_create_var (dataset_dict (ds),
                                                       v[i], 0);
-	  if (!new_var)
-	    lex_ofs_error (lexer, vars_start, vars_end,
+          if (!new_var)
+            lex_ofs_error (lexer, vars_start, vars_end,
                            _("There is already a variable named %s."), v[i]);
-	  else
+          else
             var_set_both_formats (new_var, f);
-	}
+        }
       ok = true;
 
     done:
       for (size_t i = 0; i < nv; i++)
-	free (v[i]);
+        free (v[i]);
       free (v);
       if (!ok)
         return CMD_FAILURE;
@@ -116,7 +116,7 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
       int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                  &v, &nv, PV_NO_DUPLICATE))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
       int vars_end = lex_ofs (lexer) - 1;
 
       bool ok = false;
@@ -124,7 +124,7 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
       struct fmt_spec f;
       if (!lex_force_match (lexer, T_LPAREN)
           || !parse_format_specifier (lexer, &f))
-	goto done;
+        goto done;
 
       char *error = fmt_check_type_compat__ (f, NULL, VAL_STRING);
       if (!error)
@@ -142,20 +142,20 @@ cmd_string (struct lexer *lexer, struct dataset *ds)
       /* Create each variable. */
       int width = fmt_var_width (f);
       for (size_t i = 0; i < nv; i++)
-	{
-	  struct variable *new_var = dict_create_var (dataset_dict (ds), v[i],
+        {
+          struct variable *new_var = dict_create_var (dataset_dict (ds), v[i],
                                                       width);
-	  if (!new_var)
-	    lex_ofs_error (lexer, vars_start, vars_end,
+          if (!new_var)
+            lex_ofs_error (lexer, vars_start, vars_end,
                            _("There is already a variable named %s."), v[i]);
-	  else
+          else
             var_set_both_formats (new_var, f);
-	}
+        }
       ok = true;
 
     done:
       for (size_t i = 0; i < nv; i++)
-	free (v[i]);
+        free (v[i]);
       free (v);
       if (!ok)
         return CMD_FAILURE;

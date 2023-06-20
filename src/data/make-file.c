@@ -213,10 +213,10 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       fd = Topen (Tfile_name, O_WRONLY);
       if (fd < 0)
         {
-	  saved_errno = errno;
+          saved_errno = errno;
           msg (ME, _("Opening %s for writing: %s."),
                file_name, strerror (saved_errno));
-	  free (Tfile_name);
+          free (Tfile_name);
           return NULL;
         }
 
@@ -224,11 +224,11 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       *fp = fdopen (fd, mode);
       if (*fp == NULL)
         {
-	  saved_errno = errno;
-	  msg (ME, _("Opening stream for %s: %s."),
+          saved_errno = errno;
+          msg (ME, _("Opening stream for %s: %s."),
                file_name, strerror (saved_errno));
           close (fd);
-	  free (Tfile_name);
+          free (Tfile_name);
           return NULL;
         }
 
@@ -256,7 +256,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       rf->tmp_name_verbatim = xasprintf ("%stmpXXXXXX", file_name);
       if (gen_tempname (rf->tmp_name_verbatim, 0, 0600, GT_NOCREATE) < 0)
         {
-	  saved_errno = errno;
+          saved_errno = errno;
           msg (ME, _("Creating temporary file to replace %s: %s."),
                file_name, strerror (saved_errno));
           goto error;
@@ -273,7 +273,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
         break;
       if (errno != EEXIST)
         {
-	  saved_errno = errno;
+          saved_errno = errno;
           msg (ME, _("Creating temporary file %s: %s."),
                rf->tmp_name_verbatim, strerror (saved_errno));
           goto error;

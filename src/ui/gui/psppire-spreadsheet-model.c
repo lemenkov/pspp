@@ -41,10 +41,10 @@ static GObjectClass *parent_class = NULL;
 static void spreadsheet_tree_model_init (GtkTreeModelIface * iface);
 
 G_DEFINE_TYPE_WITH_CODE (PsppireSpreadsheetModel,\
-			 psppire_spreadsheet_model,\
-			 G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
-						spreadsheet_tree_model_init))
+                         psppire_spreadsheet_model,\
+                         G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+                                                spreadsheet_tree_model_init))
 
 /* Properties */
 enum
@@ -67,10 +67,10 @@ psppire_spreadsheet_model_set_property (GObject * object,
     {
     case PROP_SPREADSHEET:
       {
-	struct spreadsheet *old = spreadsheetModel->spreadsheet;
-	spreadsheetModel->spreadsheet = spreadsheet_ref (g_value_get_pointer (value));
-	if (old)
-	  spreadsheet_unref (old);
+        struct spreadsheet *old = spreadsheetModel->spreadsheet;
+        spreadsheetModel->spreadsheet = spreadsheet_ref (g_value_get_pointer (value));
+        if (old)
+          spreadsheet_unref (old);
       }
       break;
     default:
@@ -243,8 +243,8 @@ tree_model_get_value (GtkTreeModel * model, GtkTreeIter * iter,
           spreadsheet_get_sheet_range (spreadsheetModel->spreadsheet,
                                        (intptr_t) iter->user_data);
 
-	g_value_set_string (value, x ? x : _("(empty)"));
-	g_free (x);
+        g_value_set_string (value, x ? x : _("(empty)"));
+        g_free (x);
       }
       break;
     case PSPPIRE_SPREADSHEET_MODEL_COL_SHEET_ROWS:
@@ -269,7 +269,7 @@ tree_model_get_value (GtkTreeModel * model, GtkTreeIter * iter,
       break;
     default:
       g_error ("%s:%d Invalid column in spreadsheet model",
-	       __FILE__, __LINE__);
+               __FILE__, __LINE__);
       break;
     }
 }

@@ -69,9 +69,9 @@ bool parse_DATA_LIST_vars_pool (struct lexer *, const struct dictionary *,
                                 struct pool *,
                                 char ***names, size_t *n, int opts);
 bool parse_mixed_vars (struct lexer *, const struct dictionary *dict,
-		       char ***names, size_t *n, int opts);
+                       char ***names, size_t *n, int opts);
 bool parse_mixed_vars_pool (struct lexer *, const struct dictionary *dict,
-			    struct pool *,
+                            struct pool *,
                            char ***names, size_t *n, int opts);
 
 /* This variable parser supports the unusual situation where set of variables
@@ -111,16 +111,16 @@ parse_variable_const (struct lexer *l, const struct dictionary *d)
 
 static inline bool
 parse_variables_const (struct lexer *l, const struct dictionary *d,
-		       const struct variable ***v, size_t *s,
-		       int opts)
+                       const struct variable ***v, size_t *s,
+                       int opts)
 {
   return parse_variables (l, d, (struct variable ***) v, s, opts);
 }
 
 static inline bool
 parse_variables_const_pool (struct lexer *l, struct pool *p,
-			    const struct dictionary *d,
-			    const struct variable ***v, size_t *s, int opts)
+                            const struct dictionary *d,
+                            const struct variable ***v, size_t *s, int opts)
 {
   return parse_variables_pool (l, p, d, (struct variable ***) v, s, opts);
 }
@@ -135,7 +135,7 @@ const_var_set_create_from_dict (const struct dictionary *d)
 
 static inline struct const_var_set *
 const_var_set_create_from_array (const struct variable *const *var,
-				 size_t s)
+                                 size_t s)
 {
   return (struct const_var_set *) var_set_create_from_array ((struct variable *const *) var, s);
 }
@@ -143,10 +143,10 @@ const_var_set_create_from_array (const struct variable *const *var,
 
 static inline bool
 parse_const_var_set_vars (struct lexer *l, const struct const_var_set *vs,
-			  const struct variable ***v, size_t *s, int opts)
+                          const struct variable ***v, size_t *s, int opts)
 {
   return parse_var_set_vars (l, (const struct var_set *) vs,
-			     (struct variable ***) v, s, opts);
+                             (struct variable ***) v, s, opts);
 }
 
 static inline void

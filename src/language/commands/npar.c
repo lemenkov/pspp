@@ -70,7 +70,7 @@ struct npar_specs
   size_t n_tests;
 
   const struct variable **vv; /* Compendium of all variables
-				  (those mentioned on ANY subcommand */
+                                  (those mentioned on ANY subcommand */
   int n_vars; /* Number of variables in vv */
 
   enum mv_class filter;    /* Missing values to filter. */
@@ -113,25 +113,25 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds,
   do
     {
       if (lex_match_id (lexer, "COCHRAN"))
-	{
+        {
           if (!npar_cochran (lexer, ds, nps))
             return false;
-	}
+        }
       else if (lex_match_id (lexer, "FRIEDMAN"))
-	{
+        {
           if (!npar_friedman (lexer, ds, nps))
             return false;
-	}
+        }
       else if (lex_match_id (lexer, "KENDALL"))
-	{
+        {
           if (!npar_kendall (lexer, ds, nps))
             return false;
-	}
+        }
       else if (lex_match_id (lexer, "RUNS"))
-	{
+        {
           if (!npar_runs (lexer, ds, nps))
             return false;
-	}
+        }
       else if (lex_match_id (lexer, "CHISQUARE"))
         {
           lex_match (lexer, T_EQUALS);
@@ -145,21 +145,21 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds,
             return false;
         }
       else if (lex_match_phrase (lexer, "K-S") ||
-	       lex_match_phrase (lexer, "KOLMOGOROV-SMIRNOV"))
+               lex_match_phrase (lexer, "KOLMOGOROV-SMIRNOV"))
         {
           lex_match (lexer, T_EQUALS);
           if (!npar_ks_one_sample (lexer, ds, nps))
             return false;
         }
       else if (lex_match_phrase (lexer, "J-T") ||
-	       lex_match_phrase (lexer, "JONCKHEERE-TERPSTRA"))
+               lex_match_phrase (lexer, "JONCKHEERE-TERPSTRA"))
         {
           lex_match (lexer, T_EQUALS);
           if (!npar_jonckheere_terpstra (lexer, ds, nps))
             return false;
         }
       else if (lex_match_phrase (lexer, "K-W") ||
-	       lex_match_phrase (lexer, "KRUSKAL-WALLIS"))
+               lex_match_phrase (lexer, "KRUSKAL-WALLIS"))
         {
           lex_match (lexer, T_EQUALS);
           if (!npar_kruskal_wallis (lexer, ds, nps))
@@ -172,12 +172,12 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds,
             return false;
         }
       else if (lex_match_phrase (lexer, "M-W") ||
-	       lex_match_phrase (lexer, "MANN-WHITNEY"))
+               lex_match_phrase (lexer, "MANN-WHITNEY"))
         {
           lex_match (lexer, T_EQUALS);
           if (!npar_mann_whitney (lexer, ds, nps))
             return false;
-	}
+        }
       else if (lex_match_phrase (lexer, "MEDIAN"))
         {
           if (!npar_median (lexer, ds, nps))
@@ -284,18 +284,18 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds,
 }
 
 static void one_sample_insert_variables (const struct npar_test *test,
-					 struct hmapx *);
+                                         struct hmapx *);
 
 static void two_sample_insert_variables (const struct npar_test *test,
-					 struct hmapx *);
+                                         struct hmapx *);
 
 static void n_sample_insert_variables (const struct npar_test *test,
-				       struct hmapx *);
+                                       struct hmapx *);
 
 static void
 npar_execute (struct casereader *input,
              const struct npar_specs *specs,
-	     const struct dataset *ds)
+             const struct dataset *ds)
 {
   struct descriptives *summary_descriptives = NULL;
 
@@ -309,12 +309,12 @@ npar_execute (struct casereader *input,
   if (specs->descriptives && specs->n_vars > 0)
     {
       summary_descriptives = xnmalloc (sizeof (*summary_descriptives),
-				       specs->n_vars);
+                                       specs->n_vars);
 
       npar_summary_calc_descriptives (summary_descriptives,
                                       casereader_clone (input),
-				      dataset_dict (ds),
-				      specs->vv, specs->n_vars,
+                                      dataset_dict (ds),
+                                      specs->vv, specs->n_vars,
                                       specs->filter);
     }
 
@@ -358,7 +358,7 @@ cmd_npar_tests (struct lexer *lexer, struct dataset *ds)
   assert (npar_specs.n_vars == hmapx_count (&var_map));
 
   sort (npar_specs.vv, npar_specs.n_vars, sizeof *npar_specs.vv,
-	 compare_var_ptrs_by_name, NULL);
+         compare_var_ptrs_by_name, NULL);
 
   struct casereader *input = proc_open (ds);
   if (npar_specs.listwise_missing)
@@ -385,14 +385,14 @@ static void
 add_test (struct npar_specs *specs, struct npar_test *nt)
 {
   specs->test = pool_realloc (specs->pool, specs->test,
-			      (specs->n_tests + 1) * sizeof *specs->test);
+                              (specs->n_tests + 1) * sizeof *specs->test);
 
   specs->test[specs->n_tests++] = nt;
 }
 
 static bool
 npar_runs (struct lexer *lexer, struct dataset *ds,
-	   struct npar_specs *specs)
+           struct npar_specs *specs)
 {
   struct runs_test *rt = pool_alloc (specs->pool, sizeof (*rt));
   struct one_sample_test *tp = &rt->parent;
@@ -437,7 +437,7 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_friedman (struct lexer *lexer, struct dataset *ds,
-	       struct npar_specs *specs)
+               struct npar_specs *specs)
 {
   struct friedman_test *ft = pool_alloc (specs->pool, sizeof (*ft));
   struct one_sample_test *ost = &ft->parent;
@@ -450,8 +450,8 @@ npar_friedman (struct lexer *lexer, struct dataset *ds,
   lex_match (lexer, T_EQUALS);
 
   if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
-				   &ost->vars, &ost->n_vars,
-				   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
+                                   &ost->vars, &ost->n_vars,
+                                   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
     return false;
 
   add_test (specs, nt);
@@ -460,7 +460,7 @@ npar_friedman (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_kendall (struct lexer *lexer, struct dataset *ds,
-	       struct npar_specs *specs)
+               struct npar_specs *specs)
 {
   struct friedman_test *kt = pool_alloc (specs->pool, sizeof (*kt));
   struct one_sample_test *ost = &kt->parent;
@@ -473,8 +473,8 @@ npar_kendall (struct lexer *lexer, struct dataset *ds,
   lex_match (lexer, T_EQUALS);
 
   if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
-				   &ost->vars, &ost->n_vars,
-				   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
+                                   &ost->vars, &ost->n_vars,
+                                   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
     return false;
 
   add_test (specs, nt);
@@ -484,7 +484,7 @@ npar_kendall (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_cochran (struct lexer *lexer, struct dataset *ds,
-	       struct npar_specs *specs)
+               struct npar_specs *specs)
 {
   struct one_sample_test *ft = pool_alloc (specs->pool, sizeof (*ft));
   struct npar_test *nt = &ft->parent;
@@ -495,8 +495,8 @@ npar_cochran (struct lexer *lexer, struct dataset *ds,
   lex_match (lexer, T_EQUALS);
 
   if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
-				   &ft->vars, &ft->n_vars,
-				   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
+                                   &ft->vars, &ft->n_vars,
+                                   PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
     return false;
 
   add_test (specs, nt);
@@ -505,7 +505,7 @@ npar_cochran (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_chisquare (struct lexer *lexer, struct dataset *ds,
-		struct npar_specs *specs)
+                struct npar_specs *specs)
 {
   struct chisquare_test *cstp = pool_alloc (specs->pool, sizeof (*cstp));
   struct one_sample_test *tp = &cstp->parent;
@@ -515,8 +515,8 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
   nt->insert_variables = one_sample_insert_variables;
 
   if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
-				   &tp->vars, &tp->n_vars,
-				   PV_NO_SCRATCH | PV_NO_DUPLICATE))
+                                   &tp->vars, &tp->n_vars,
+                                   PV_NO_SCRATCH | PV_NO_DUPLICATE))
     return false;
 
   cstp->ranged = false;
@@ -594,7 +594,7 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_binomial (struct lexer *lexer, struct dataset *ds,
-	       struct npar_specs *specs)
+               struct npar_specs *specs)
 {
   struct binomial_test *btp = pool_alloc (specs->pool, sizeof (*btp));
   struct one_sample_test *tp = &btp->parent;
@@ -610,7 +610,7 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
   if (lex_match (lexer, T_LPAREN))
     {
       if (!lex_force_num (lexer))
-	return false;
+        return false;
       btp->p = lex_number (lexer);
       lex_get (lexer);
       if (!lex_force_match (lexer, T_RPAREN))
@@ -658,14 +658,14 @@ ks_one_sample_parse_params (struct lexer *lexer, struct ks_one_sample_test *kst,
 
       lex_get (lexer);
       if (params == 2)
-	{
-	  lex_match (lexer, T_COMMA);
-	  if (lex_force_num (lexer))
-	    {
-	      kst->p[1] = lex_number (lexer);
-	      lex_get (lexer);
-	    }
-	}
+        {
+          lex_match (lexer, T_COMMA);
+          if (lex_force_num (lexer))
+            {
+              kst->p[1] = lex_number (lexer);
+              lex_get (lexer);
+            }
+        }
     }
 }
 
@@ -728,9 +728,9 @@ npar_ks_one_sample (struct lexer *lexer, struct dataset *ds, struct npar_specs *
 
 static bool
 parse_two_sample_related_test (struct lexer *lexer,
-			       const struct dictionary *dict,
-			       struct two_sample_test *tp,
-			       struct pool *pool)
+                               const struct dictionary *dict,
+                               struct two_sample_test *tp,
+                               struct pool *pool)
 {
   tp->parent.insert_variables = two_sample_insert_variables;
 
@@ -738,7 +738,7 @@ parse_two_sample_related_test (struct lexer *lexer,
   size_t n1;
   int vars_start = lex_ofs (lexer);
   if (!parse_variables_const_pool (lexer, pool, dict, &v1, &n1,
-				   PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE))
+                                   PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE))
     return false;
 
   bool with = false;
@@ -750,7 +750,7 @@ parse_two_sample_related_test (struct lexer *lexer,
       with = true;
       if (!parse_variables_const_pool (lexer, pool, dict, &v2, &n2,
                                        PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE))
-	return false;
+        return false;
       int vars_end = lex_ofs (lexer) - 1;
 
       if (lex_match (lexer, T_LPAREN))
@@ -759,9 +759,9 @@ parse_two_sample_related_test (struct lexer *lexer,
             return false;
           paired = true;
 
-	  if (n1 != n2)
+          if (n1 != n2)
             {
-	      lex_ofs_error (lexer, vars_start, vars_end,
+              lex_ofs_error (lexer, vars_start, vars_end,
                              _("PAIRED was specified, but the number of "
                                "variables preceding WITH (%zu) does not match "
                                "the number following (%zu)."),
@@ -813,10 +813,10 @@ parse_two_sample_related_test (struct lexer *lexer,
 
 static bool
 parse_n_sample_related_test (struct lexer *lexer, const struct dictionary *dict,
-			     struct n_sample_test *nst, struct pool *pool)
+                             struct n_sample_test *nst, struct pool *pool)
 {
   if (!parse_variables_const_pool (lexer, pool, dict, &nst->vars, &nst->n_vars,
-				   PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE))
+                                   PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE))
     return false;
 
   if (!lex_force_match (lexer, T_BY))
@@ -853,15 +853,15 @@ parse_n_sample_related_test (struct lexer *lexer, const struct dictionary *dict,
 
 static bool
 npar_wilcoxon (struct lexer *lexer,
-	       struct dataset *ds,
-	       struct npar_specs *specs)
+               struct dataset *ds,
+               struct npar_specs *specs)
 {
   struct two_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
   nt->execute = wilcoxon_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool))
+                                      tp, specs->pool))
     return false;
 
   add_test (specs, nt);
@@ -888,8 +888,8 @@ npar_mann_whitney (struct lexer *lexer,
 
 static bool
 npar_median (struct lexer *lexer,
-	     struct dataset *ds,
-	     struct npar_specs *specs)
+             struct dataset *ds,
+             struct npar_specs *specs)
 {
   struct median_test *mt = pool_alloc (specs->pool, sizeof (*mt));
   struct n_sample_test *tp = &mt->parent;
@@ -905,7 +905,7 @@ npar_median (struct lexer *lexer,
       lex_get (lexer);
 
       if (!lex_force_match (lexer, T_RPAREN))
-	return false;
+        return false;
     }
 
   lex_match (lexer, T_EQUALS);
@@ -922,7 +922,7 @@ npar_median (struct lexer *lexer,
 
 static bool
 npar_sign (struct lexer *lexer, struct dataset *ds,
-	   struct npar_specs *specs)
+           struct npar_specs *specs)
 {
   struct two_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
@@ -930,7 +930,7 @@ npar_sign (struct lexer *lexer, struct dataset *ds,
   nt->execute = sign_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool))
+                                      tp, specs->pool))
     return false;
 
   add_test (specs, nt);
@@ -939,7 +939,7 @@ npar_sign (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_mcnemar (struct lexer *lexer, struct dataset *ds,
-	   struct npar_specs *specs)
+           struct npar_specs *specs)
 {
   struct two_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
@@ -947,7 +947,7 @@ npar_mcnemar (struct lexer *lexer, struct dataset *ds,
   nt->execute = mcnemar_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool))
+                                      tp, specs->pool))
     return false;
 
   add_test (specs, nt);
@@ -957,7 +957,7 @@ npar_mcnemar (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_jonckheere_terpstra (struct lexer *lexer, struct dataset *ds,
-		      struct npar_specs *specs)
+                      struct npar_specs *specs)
 {
   struct n_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
@@ -974,7 +974,7 @@ npar_jonckheere_terpstra (struct lexer *lexer, struct dataset *ds,
 
 static bool
 npar_kruskal_wallis (struct lexer *lexer, struct dataset *ds,
-		      struct npar_specs *specs)
+                      struct npar_specs *specs)
 {
   struct n_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
@@ -1007,7 +1007,7 @@ insert_variable_into_map (struct hmapx *var_map, const struct variable *var)
 /* Insert the variables for TEST into VAR_MAP */
 static void
 one_sample_insert_variables (const struct npar_test *test,
-			     struct hmapx *var_map)
+                             struct hmapx *var_map)
 {
   const struct one_sample_test *ost = UP_CAST (test, const struct one_sample_test, parent);
 
@@ -1018,7 +1018,7 @@ one_sample_insert_variables (const struct npar_test *test,
 
 static void
 two_sample_insert_variables (const struct npar_test *test,
-			     struct hmapx *var_map)
+                             struct hmapx *var_map)
 {
   const struct two_sample_test *tst = UP_CAST (test, const struct two_sample_test, parent);
 
@@ -1033,7 +1033,7 @@ two_sample_insert_variables (const struct npar_test *test,
 
 static void
 n_sample_insert_variables (const struct npar_test *test,
-			   struct hmapx *var_map)
+                           struct hmapx *var_map)
 {
   const struct n_sample_test *tst = UP_CAST (test, const struct n_sample_test, parent);
 
@@ -1051,19 +1051,19 @@ npar_method (struct lexer *lexer,  struct npar_specs *specs)
       specs->exact = true;
       specs->timer = 0.0;
       if (lex_match_id (lexer, "TIMER"))
-	{
-	  specs->timer = 5.0;
+        {
+          specs->timer = 5.0;
 
-	  if (lex_match (lexer, T_LPAREN))
-	    {
-	      if (!lex_force_num (lexer))
+          if (lex_match (lexer, T_LPAREN))
+            {
+              if (!lex_force_num (lexer))
                 return false;
               specs->timer = lex_number (lexer);
               lex_get (lexer);
-	      if (!lex_force_match (lexer, T_RPAREN))
-		return false;
-	    }
-	}
+              if (!lex_force_match (lexer, T_RPAREN))
+                return false;
+            }
+        }
     }
 
   return true;

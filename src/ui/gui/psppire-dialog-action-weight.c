@@ -49,7 +49,7 @@ generate_syntax (const PsppireDialogAction *pda)
     syntax = g_strdup ("WEIGHT OFF.\n");
   else
     syntax = g_strdup_printf ("WEIGHT BY %s.\n",
-			      var_get_name (var));
+                              var_get_name (var));
 
   return syntax;
 }
@@ -77,7 +77,7 @@ refresh (PsppireDialogAction *pda)
   else
     {
       gchar *text =
-	g_strdup_printf (_("Weight cases by %s"), var_get_name (var));
+        g_strdup_printf (_("Weight cases by %s"), var_get_name (var));
 
       gtk_entry_set_text (GTK_ENTRY (wcd->entry), var_get_name (var));
       gtk_label_set_text (GTK_LABEL (wcd->status), text);
@@ -140,12 +140,12 @@ psppire_dialog_action_weight_activate (PsppireDialogAction *pda, GVariant *param
   g_signal_connect (act->off, "toggled", G_CALLBACK (on_toggle), act);
 
   g_object_set (pda->source,
-		"selection-mode", GTK_SELECTION_SINGLE,
-		"predicate", var_is_numeric,
-		NULL);
+                "selection-mode", GTK_SELECTION_SINGLE,
+                "predicate", var_is_numeric,
+                NULL);
 
   psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-				    is_currently_in_entry);
+                                    is_currently_in_entry);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);

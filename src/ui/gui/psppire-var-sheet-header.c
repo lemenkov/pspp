@@ -123,12 +123,12 @@ psppire_var_sheet_header_class_init (PsppireVarSheetHeaderClass *dc)
   /* This signal is never emitted.  It is just to satisfy the interface. */
   signals [CHANGED] =
     g_signal_new ("changed",
-		  G_TYPE_FROM_CLASS (object_class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
+                  G_TYPE_FROM_CLASS (object_class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE,
+                  0);
 }
 

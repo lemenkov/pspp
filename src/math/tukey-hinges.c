@@ -40,22 +40,22 @@ tukey_hinges_calculate (const struct tukey_hinges *th, double hinge[3])
       a[i] = a_star[i] / os->k[i].c_p1;
 
       if (a_star[i] < 1)
-	{
-	  if (os->k[i].c_p1 >= 1)
-	    {
-	      hinge[i] = (1 - a_star[i]) * os->k[i].y
-		+ a_star[i] * os->k[i].y_p1;
-	    }
-	  else
-	    {
-	      hinge[i] = (1 - a[i]) * os->k[i].y
-		+ a[i] * os->k[i].y_p1;
-	    }
-	}
+        {
+          if (os->k[i].c_p1 >= 1)
+            {
+              hinge[i] = (1 - a_star[i]) * os->k[i].y
+                + a_star[i] * os->k[i].y_p1;
+            }
+          else
+            {
+              hinge[i] = (1 - a[i]) * os->k[i].y
+                + a[i] * os->k[i].y_p1;
+            }
+        }
       else
-	{
-	  hinge[i] = os->k[i].y_p1;
-	}
+        {
+          hinge[i] = os->k[i].y_p1;
+        }
 
     }
 }

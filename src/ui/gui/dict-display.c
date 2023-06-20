@@ -39,7 +39,7 @@
 
 void
 get_base_model (GtkTreeModel *top_model, GtkTreeIter *top_iter,
-		GtkTreeModel **model, GtkTreeIter *iter)
+                GtkTreeModel **model, GtkTreeIter *iter)
 {
   *model = top_model;
 
@@ -50,40 +50,40 @@ get_base_model (GtkTreeModel *top_model, GtkTreeIter *top_iter,
     {
       GtkTreeIter parent_iter;
       if (iter)
-	parent_iter = *iter;
+        parent_iter = *iter;
 
       if (GTK_IS_TREE_MODEL_FILTER (*model))
-	{
-	  GtkTreeModelFilter *parent_model = GTK_TREE_MODEL_FILTER (*model);
+        {
+          GtkTreeModelFilter *parent_model = GTK_TREE_MODEL_FILTER (*model);
 
-	  *model = gtk_tree_model_filter_get_model (parent_model);
+          *model = gtk_tree_model_filter_get_model (parent_model);
 
-	  if (iter)
-	    gtk_tree_model_filter_convert_iter_to_child_iter (parent_model,
-							      iter,
-							      &parent_iter);
-	}
+          if (iter)
+            gtk_tree_model_filter_convert_iter_to_child_iter (parent_model,
+                                                              iter,
+                                                              &parent_iter);
+        }
       else if (GTK_IS_TREE_MODEL_SORT (*model))
-	{
-	  GtkTreeModelSort *parent_model = GTK_TREE_MODEL_SORT (*model);
+        {
+          GtkTreeModelSort *parent_model = GTK_TREE_MODEL_SORT (*model);
 
-	  *model = gtk_tree_model_sort_get_model (parent_model);
+          *model = gtk_tree_model_sort_get_model (parent_model);
 
-	  if (iter)
-	    gtk_tree_model_sort_convert_iter_to_child_iter (parent_model,
-							    iter,
-							    &parent_iter);
-	}
+          if (iter)
+            gtk_tree_model_sort_convert_iter_to_child_iter (parent_model,
+                                                            iter,
+                                                            &parent_iter);
+        }
     }
 }
 
 
 void
 insert_source_row_into_entry (GtkTreeIter iter,
-			      GtkWidget *dest,
-			      GtkTreeModel *model,
-			      gpointer data
-			)
+                              GtkWidget *dest,
+                              GtkTreeModel *model,
+                              gpointer data
+                        )
 {
   GtkTreePath *path;
   GtkTreeModel *dict;
@@ -110,9 +110,9 @@ insert_source_row_into_entry (GtkTreeIter iter,
 
 static void
 insert_source_row_into_tree_model (GtkTreeIter source_iter,
-				     GtkTreeModel *dest_model,
-				     GtkTreeModel *source_model,
-				     gpointer data)
+                                     GtkTreeModel *dest_model,
+                                     GtkTreeModel *source_model,
+                                     gpointer data)
 {
   GtkTreePath *path;
   GtkTreeIter dest_iter;
@@ -141,9 +141,9 @@ insert_source_row_into_tree_model (GtkTreeIter source_iter,
 
 void
 insert_source_row_into_tree_view (GtkTreeIter iter,
-				  GtkWidget *dest,
-				  GtkTreeModel *model,
-				  gpointer data)
+                                  GtkWidget *dest,
+                                  GtkTreeModel *model,
+                                  gpointer data)
 {
   GtkTreeModel *destmodel = gtk_tree_view_get_model (GTK_TREE_VIEW (dest));
 
@@ -153,9 +153,9 @@ insert_source_row_into_tree_view (GtkTreeIter iter,
 
 void
 insert_source_row_into_layers (GtkTreeIter iter,
-			       GtkWidget *dest,
-			       GtkTreeModel *model,
-			       gpointer data)
+                               GtkWidget *dest,
+                               GtkTreeModel *model,
+                               gpointer data)
 {
   GtkTreeModel *destmodel = psppire_means_layer_get_model (PSPPIRE_MEANS_LAYER (dest));
 
@@ -169,7 +169,7 @@ insert_source_row_into_layers (GtkTreeIter iter,
 
 gboolean
 is_currently_in_entry (GtkTreeModel *model, GtkTreeIter *iter,
-		       PsppireSelector *selector)
+                       PsppireSelector *selector)
 {
   gboolean result;
   GtkTreeIter dict_iter;

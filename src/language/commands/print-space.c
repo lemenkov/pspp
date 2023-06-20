@@ -38,7 +38,7 @@
 struct print_space_trns
   {
     struct dfm_writer *writer;  /* Output data file. */
-    struct expression *expr;	/* Number of lines; NULL means 1. */
+    struct expression *expr;        /* Number of lines; NULL means 1. */
     struct msg_location *expr_location;
   };
 
@@ -58,18 +58,18 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
 
       handle = fh_parse (lexer, FH_REF_FILE, NULL);
       if (handle == NULL)
-	return CMD_FAILURE;
+        return CMD_FAILURE;
 
       if (lex_match_id (lexer, "ENCODING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto error;
 
           encoding = ss_xstrdup (lex_tokss (lexer));
 
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
     }
   else
     handle = NULL;
@@ -84,10 +84,10 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
         goto error;
 
       if (lex_token (lexer) != T_ENDCMD)
-	{
+        {
           lex_error (lexer, _("Syntax error expecting end of command."));
           goto error;
-	}
+        }
     }
   else
     expr = NULL;

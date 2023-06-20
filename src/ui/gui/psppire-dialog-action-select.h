@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_SELECT (psppire_dialog_action_select_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_SELECT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_SELECT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_SELECT, PsppireDialogActionSelect))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_SELECT, PsppireDialogActionSelect))
 
 #define PSPPIRE_DIALOG_ACTION_SELECT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_SELECT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_SELECT, \
                                  PsppireDialogActionSelectClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_SELECT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_SELECT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_SELECT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_SELECT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_SELECT))
 
 
 #define PSPPIRE_DIALOG_ACTION_SELECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_SELECT, \
-				   PsppireDialogActionSelectClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_SELECT, \
+                                   PsppireDialogActionSelectClass))
 
 typedef struct _PsppireDialogActionSelect       PsppireDialogActionSelect;
 typedef struct _PsppireDialogActionSelectClass  PsppireDialogActionSelectClass;

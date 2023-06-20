@@ -101,7 +101,7 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 
       /* Get a stand-in variable name and make sure it's unique. */
       if (!lex_force_id (lexer))
-	goto error;
+        goto error;
       struct substring name = lex_tokss (lexer);
       if (dict_lookup_var (dict, name.string))
         lex_msg (lexer, SW,
@@ -125,23 +125,23 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
       /* Skip equals sign. */
       lex_get (lexer);
       if (!lex_force_match (lexer, T_EQUALS))
-	goto error;
+        goto error;
 
       /* Get the details of the variable's possible values. */
       bool ok;
       if (lex_token (lexer) == T_ID || lex_token (lexer) == T_ALL)
-	ok = parse_ids (lexer, dict, dv);
+        ok = parse_ids (lexer, dict, dv);
       else if (lex_is_number (lexer))
-	ok = parse_numbers (lexer, dv);
+        ok = parse_numbers (lexer, dv);
       else if (lex_is_string (lexer))
-	ok = parse_strings (lexer, dv);
+        ok = parse_strings (lexer, dv);
       else
-	{
-	  lex_error (lexer, _("Syntax error expecting substitution values."));
-	  goto error;
-	}
+        {
+          lex_error (lexer, _("Syntax error expecting substitution values."));
+          goto error;
+        }
       if (!ok)
-	goto error;
+        goto error;
       assert (dv->n_values > 0);
       if (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
         {
@@ -151,11 +151,11 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
       dv->end_ofs = lex_ofs (lexer) - 1;
 
       /* If this is the first variable then it defines how many replacements
-	 there must be; otherwise enforce this number of replacements. */
+         there must be; otherwise enforce this number of replacements. */
       if (first_dv == NULL)
         first_dv = dv;
       else if (first_dv->n_values != dv->n_values)
-	{
+        {
           msg (SE, _("Each dummy variable must have the same number of "
                      "substitutions."));
 
@@ -169,8 +169,8 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
                                  "Dummy variable %s had %zu substitutions.",
                                  dv->n_values),
                        dv->name.string, dv->n_values);
-	  goto error;
-	}
+          goto error;
+        }
 
       lex_match (lexer, T_SLASH);
     }
@@ -324,7 +324,7 @@ destroy_dummies (struct hmap *dummies)
 /* Parses a set of ids for DO REPEAT. */
 static bool
 parse_ids (struct lexer *lexer, const struct dictionary *dict,
-	   struct dummy_var *dv)
+           struct dummy_var *dv)
 {
   return parse_mixed_vars (lexer, dict, &dv->values, &dv->n_values, PV_NONE);
 }
@@ -349,15 +349,15 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
   do
     {
       if (!lex_force_num (lexer))
-	return false;
+        return false;
 
       if (lex_next_token (lexer, 1) == T_TO)
         {
           if (!lex_is_integer (lexer))
-	    {
-	      lex_error (lexer, _("Ranges may only have integer bounds."));
-	      return false;
-	    }
+            {
+              lex_error (lexer, _("Ranges may only have integer bounds."));
+              return false;
+            }
 
           long a = lex_integer (lexer);
           lex_get (lexer);
@@ -366,14 +366,14 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
           if (!lex_force_int_range (lexer, NULL, a, LONG_MAX))
             return false;
 
-	  long b = lex_integer (lexer);
+          long b = lex_integer (lexer);
           if (b < a)
             {
               lex_next_error (lexer, -2, 0,
                               _("%ld TO %ld is an invalid range."), a, b);
               return false;
             }
-	  lex_get (lexer);
+          lex_get (lexer);
 
           for (long i = a; i <= b; i++)
             add_replacement (dv, xasprintf ("%ld", i), &allocated);

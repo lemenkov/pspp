@@ -73,7 +73,7 @@ main (int argc UNUSED, char **argv UNUSED)
       nticks = tv[i].nticks;
       fs = chart_get_ticks_format (lower, interval, nticks, &scale);
       printf("lower: %lg, interval: %lg, nticks: %d, fs: %s, scale: %lg, ex: ",
-	     lower, interval, nticks, fs, scale);
+             lower, interval, nticks, fs, scale);
       printf(fs,(lower + 3 * interval)*scale);
       printf(", ex 2: ");
       printf(fs,(lower + 4 * interval)*scale);

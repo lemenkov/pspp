@@ -148,7 +148,7 @@ char recode_byte (const char *to, const char *from, char);
 char *recode_string (const char *to, const char *from,
                      const char *text, int len);
 char *recode_string_pool (const char *to, const char *from,
-			  const char *text, int length, struct pool *);
+                          const char *text, int length, struct pool *);
 struct substring recode_substring_pool (const char *to, const char *from,
                                         struct substring text, struct pool *);
 int recode_pedantically (const char *to, const char *from,

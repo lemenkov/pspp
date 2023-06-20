@@ -131,10 +131,10 @@ static void show_results (const struct ks *, const struct ks_one_sample_test *, 
 
 void
 ks_one_sample_execute (const struct dataset *ds,
-		       struct casereader *input,
-		       enum mv_class exclude,
-		       const struct npar_test *test,
-		       bool x UNUSED, double y UNUSED)
+                       struct casereader *input,
+                       enum mv_class exclude,
+                       const struct npar_test *test,
+                       bool x UNUSED, double y UNUSED)
 {
   const struct dictionary *dict = dataset_dict (ds);
   const struct ks_one_sample_test *kst = UP_CAST (test, const struct ks_one_sample_test, parent.parent);
@@ -163,20 +163,20 @@ ks_one_sample_execute (const struct dataset *ds,
       const double weight = dict_get_case_weight (dict, c, &warn);
 
       for (v = 0; v < ost->n_vars; ++v)
-	{
-	  const struct variable *var = ost->vars[v];
-	  const union value *val = case_data (c, var);
+        {
+          const struct variable *var = ost->vars[v];
+          const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val) & exclude)
-	    continue;
+          if (var_is_value_missing (var, val) & exclude)
+            continue;
 
-	  minimize (&ks[v].test_min, val->f);
-	  maximize (&ks[v].test_max, val->f);
+          minimize (&ks[v].test_min, val->f);
+          maximize (&ks[v].test_max, val->f);
 
-	  ks[v].obs_cc += weight;
-	  ks[v].sum += val->f;
-	  ks[v].ssq += pow2 (val->f);
-	}
+          ks[v].obs_cc += weight;
+          ks[v].sum += val->f;
+          ks[v].ssq += pow2 (val->f);
+        }
     }
   casereader_destroy (r);
 
@@ -187,73 +187,73 @@ ks_one_sample_execute (const struct dataset *ds,
       double prev_empirical = 0;
 
       switch (kst->dist)
-	{
-	case KS_UNIFORM:
-	  if (kst->p[0] != SYSMIS)
-	    ks[v].test_min = kst->p[0];
+        {
+        case KS_UNIFORM:
+          if (kst->p[0] != SYSMIS)
+            ks[v].test_min = kst->p[0];
 
-	  if (kst->p[1] != SYSMIS)
-	    ks[v].test_max = kst->p[1];
-	  break;
-	case KS_NORMAL:
-	  if (kst->p[0] != SYSMIS)
-	    ks[v].mu = kst->p[0];
-	  else
-	    ks[v].mu = ks[v].sum / ks[v].obs_cc;
+          if (kst->p[1] != SYSMIS)
+            ks[v].test_max = kst->p[1];
+          break;
+        case KS_NORMAL:
+          if (kst->p[0] != SYSMIS)
+            ks[v].mu = kst->p[0];
+          else
+            ks[v].mu = ks[v].sum / ks[v].obs_cc;
 
-	  if (kst->p[1] != SYSMIS)
-	    ks[v].sigma = kst->p[1];
-	  else
-	    {
-	      ks[v].sigma = ks[v].ssq - pow2 (ks[v].sum) / ks[v].obs_cc;
-	      ks[v].sigma /= ks[v].obs_cc - 1;
-	      ks[v].sigma = sqrt (ks[v].sigma);
-	    }
+          if (kst->p[1] != SYSMIS)
+            ks[v].sigma = kst->p[1];
+          else
+            {
+              ks[v].sigma = ks[v].ssq - pow2 (ks[v].sum) / ks[v].obs_cc;
+              ks[v].sigma /= ks[v].obs_cc - 1;
+              ks[v].sigma = sqrt (ks[v].sigma);
+            }
 
-	  break;
-	case KS_POISSON:
-	case KS_EXPONENTIAL:
-	  if (kst->p[0] != SYSMIS)
-	    ks[v].mu = ks[v].sigma = kst->p[0];
-	  else
-	    ks[v].mu = ks[v].sigma = ks[v].sum / ks[v].obs_cc;
-	  break;
-	default:
-	  NOT_REACHED ();
-	}
+          break;
+        case KS_POISSON:
+        case KS_EXPONENTIAL:
+          if (kst->p[0] != SYSMIS)
+            ks[v].mu = ks[v].sigma = kst->p[0];
+          else
+            ks[v].mu = ks[v].sigma = ks[v].sum / ks[v].obs_cc;
+          break;
+        default:
+          NOT_REACHED ();
+        }
 
       r = sort_execute_1var (casereader_clone (input), var);
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
-	{
-	  double theoretical, empirical;
-	  double d, dp;
-	  const double weight = dict_get_case_weight (dict, c, &warn);
-	  const union value *val = case_data (c, var);
+        {
+          double theoretical, empirical;
+          double d, dp;
+          const double weight = dict_get_case_weight (dict, c, &warn);
+          const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val) & exclude)
-	    continue;
+          if (var_is_value_missing (var, val) & exclude)
+            continue;
 
-	  cc += weight;
+          cc += weight;
 
-	  empirical = cc / ks[v].obs_cc;
+          empirical = cc / ks[v].obs_cc;
 
-	  theoretical = theoreticalf[kst->dist] (&ks[v], val->f);
+          theoretical = theoreticalf[kst->dist] (&ks[v], val->f);
 
-	  d = empirical - theoretical;
-	  dp = prev_empirical - theoretical;
+          d = empirical - theoretical;
+          dp = prev_empirical - theoretical;
 
-	  if (d > 0)
-	    maximize (&ks[v].diff_pos, d);
-	  else
-	    minimize (&ks[v].diff_neg, d);
+          if (d > 0)
+            maximize (&ks[v].diff_pos, d);
+          else
+            minimize (&ks[v].diff_neg, d);
 
-	  if (dp > 0)
-	    maximize (&ks[v].diff_pos, dp);
-	  else
-	    minimize (&ks[v].diff_neg, dp);
+          if (dp > 0)
+            maximize (&ks[v].diff_pos, dp);
+          else
+            minimize (&ks[v].diff_neg, dp);
 
-	  prev_empirical = empirical;
-	}
+          prev_empirical = empirical;
+        }
 
       casereader_destroy (r);
     }
@@ -267,8 +267,8 @@ ks_one_sample_execute (const struct dataset *ds,
 
 static void
 show_results (const struct ks *ks,
-	      const struct ks_one_sample_test *kst,
-	      const struct fmt_spec wfmt)
+              const struct ks_one_sample_test *kst,
+              const struct fmt_spec wfmt)
 {
   struct pivot_table *table = pivot_table_create (
     N_("One-Sample Kolmogorov-Smirnov Test"));
@@ -326,25 +326,25 @@ show_results (const struct ks *ks,
       values[n++] = ks[i].obs_cc;
 
       switch (kst->dist)
-	{
-	case KS_UNIFORM:
+        {
+        case KS_UNIFORM:
           values[n++] = ks[i].test_min;
           values[n++] = ks[i].test_max;
-	  break;
+          break;
 
-	case KS_NORMAL:
+        case KS_NORMAL:
           values[n++] = ks[i].mu;
           values[n++] = ks[i].sigma;
-	  break;
+          break;
 
-	case KS_POISSON:
-	case KS_EXPONENTIAL:
+        case KS_POISSON:
+        case KS_EXPONENTIAL:
           values[n++] = ks[i].mu;
-	  break;
+          break;
 
-	default:
-	  NOT_REACHED ();
-	}
+        default:
+          NOT_REACHED ();
+        }
 
       double abs = ks[i].diff_pos;
       maximize (&abs, -ks[i].diff_neg);

@@ -38,9 +38,9 @@ struct dataset;
 
 
 void binomial_execute (const struct dataset *,
-		       struct casereader *,
+                       struct casereader *,
                        enum mv_class,
-		       const struct npar_test *,
-		       bool, double);
+                       const struct npar_test *,
+                       bool, double);
 
 #endif

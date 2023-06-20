@@ -65,7 +65,7 @@ struct find_dialog
 
 static void
 find_value (const struct find_dialog *fd, casenumber current_row,
-	   casenumber *row, int *column);
+           casenumber *row, int *column);
 
 
 /* A callback which occurs whenever the "Refresh" button is clicked,
@@ -87,7 +87,7 @@ refresh (GObject *obj, const struct find_dialog *fd)
   gtk_entry_set_text (GTK_ENTRY (fd->value_entry), "");
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->match_regexp_checkbox),
-				FALSE);
+                                FALSE);
 
   gtk_toggle_button_set_active
     (GTK_TOGGLE_BUTTON (fd->match_substring_checkbox), FALSE);
@@ -113,7 +113,7 @@ do_find (GObject *obj, const struct find_dialog *fd)
   if (x != -1)
     {
       gtk_notebook_set_current_page (GTK_NOTEBOOK (fd->de->data_editor),
-				     PSPPIRE_DATA_EDITOR_DATA_VIEW);
+                                     PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
       ssw_sheet_scroll_to (sheet, column, x);
       ssw_sheet_set_active_cell (sheet, column, x, NULL);
@@ -133,17 +133,17 @@ on_select (GtkEntry *entry, gpointer data)
   g_return_if_fail (var);
 
   gtk_widget_set_sensitive (fd->value_labels_checkbox,
-			    var_has_value_labels (var));
+                            var_has_value_labels (var));
 
   search_labels =
     gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->value_labels_checkbox));
 
   gtk_widget_set_sensitive (fd->match_regexp_checkbox,
-			    var_is_alpha (var) || search_labels);
+                            var_is_alpha (var) || search_labels);
 
 
   gtk_widget_set_sensitive (fd->match_substring_checkbox,
-			    var_is_alpha (var) || search_labels);
+                            var_is_alpha (var) || search_labels);
 }
 
 /* Callback on the selector.
@@ -169,10 +169,10 @@ value_labels_toggled (GtkToggleButton *tb, gpointer data)
   gboolean active = gtk_toggle_button_get_active  (tb) ;
 
   gtk_widget_set_sensitive (fd->match_substring_checkbox,
-			    active || (var && var_is_alpha (var)));
+                            active || (var && var_is_alpha (var)));
 
   gtk_widget_set_sensitive (fd->match_regexp_checkbox,
-			      active || (var && var_is_alpha (var)));
+                              active || (var && var_is_alpha (var)));
 }
 
 /* Pops up the Find dialog box
@@ -207,9 +207,9 @@ find_dialog (PsppireDataWindow *de)
   selector = get_widget_assert (fd.xml, "find-selector");
 
   g_object_get (de->data_editor,
-		"dictionary", &fd.dict,
-		"data-store", &ds,
-		NULL);
+                "dictionary", &fd.dict,
+                "data-store", &ds,
+                NULL);
 
   fd.data = ds->datasheet;
 
@@ -217,15 +217,15 @@ find_dialog (PsppireDataWindow *de)
   fd.value_entry           = get_widget_assert (fd.xml, "find-value-entry");
   fd.value_labels_checkbox =
     get_widget_assert (fd.xml,
-		       "find-value-labels-checkbutton");
+                       "find-value-labels-checkbutton");
 
   fd.match_regexp_checkbox =
     get_widget_assert (fd.xml,
-		       "find-match-regexp-checkbutton");
+                       "find-match-regexp-checkbutton");
 
   fd.match_substring_checkbox =
     get_widget_assert (fd.xml,
-		       "find-match-substring-checkbutton");
+                       "find-match-substring-checkbutton");
 
 
 
@@ -233,25 +233,25 @@ find_dialog (PsppireDataWindow *de)
 
 
   g_object_set (source, "model", fd.dict,
-	"selection-mode", GTK_SELECTION_SINGLE,
-	NULL);
+        "selection-mode", GTK_SELECTION_SINGLE,
+        NULL);
 
 
   psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-				    is_currently_in_entry);
+                                    is_currently_in_entry);
 
   g_signal_connect (dialog, "refresh", G_CALLBACK (refresh),  &fd);
 
   g_signal_connect (find_button, "clicked", G_CALLBACK (do_find),  &fd);
 
   g_signal_connect (selector, "selected",
-		    G_CALLBACK (on_select),  &fd);
+                    G_CALLBACK (on_select),  &fd);
 
   g_signal_connect (selector, "de-selected",
-		    G_CALLBACK (on_deselect),  &fd);
+                    G_CALLBACK (on_deselect),  &fd);
 
   g_signal_connect (fd.value_labels_checkbox, "toggled",
-		    G_CALLBACK (value_labels_toggled),  &fd);
+                    G_CALLBACK (value_labels_toggled),  &fd);
 
 
   psppire_dialog_run (PSPPIRE_DIALOG (dialog));
@@ -394,16 +394,16 @@ get_iteration_params (const struct find_dialog *fd)
   if (wrap)
     {
       if (reverse)
-	return &case_iterator[REVERSE_WRAP];
+        return &case_iterator[REVERSE_WRAP];
       else
-	return &case_iterator[FORWARD_WRAP];
+        return &case_iterator[FORWARD_WRAP];
     }
   else
     {
       if (reverse)
-	return &case_iterator[REVERSE];
+        return &case_iterator[REVERSE];
       else
-	return &case_iterator[FORWARD];
+        return &case_iterator[FORWARD];
     }
 }
 
@@ -411,11 +411,11 @@ get_iteration_params (const struct find_dialog *fd)
 enum string_cmp_flags
   {
     STR_CMP_SUBSTR = 0x01, /* Find strings which are substrings of the
-			      values */
+                              values */
     STR_CMP_REGEXP = 0x02, /* Match against a regular expression */
 
     STR_CMP_LABELS = 0x04  /* Match against the values' labels instead
-			      of the data */
+                              of the data */
   };
 
 
@@ -426,7 +426,7 @@ struct comparator
   enum string_cmp_flags flags;
 
   bool (*compare) (const struct comparator *,
-		   const union value *);
+                   const union value *);
 
   void (*destroy) (struct comparator *);
 };
@@ -470,7 +470,7 @@ int_pow10 (int x)
 
 static bool
 value_compare (const struct comparator *cmptr,
-	       const union value *v)
+               const union value *v)
 {
   const struct numeric_comparator *nc = (const struct numeric_comparator *) cmptr;
   struct fmt_spec fs = var_get_print_format (cmptr->var);
@@ -484,7 +484,7 @@ value_compare (const struct comparator *cmptr,
 /* Return true if the label of VAL matches the reference string*/
 static bool
 string_label_compare (const struct comparator *cmptr,
-		const union value *val)
+                const union value *val)
 {
   const struct string_comparator *ssc =
     (const struct string_comparator *) cmptr;
@@ -510,7 +510,7 @@ string_label_compare (const struct comparator *cmptr,
 /* Return true if VAL matches the reference string*/
 static bool
 string_value_compare (const struct comparator *cmptr,
-		      const union value *val)
+                      const union value *val)
 {
   bool found;
   char *text;
@@ -537,7 +537,7 @@ string_value_compare (const struct comparator *cmptr,
 /* Return true if VAL matched the regexp */
 static bool
 regexp_value_compare (const struct comparator *cmptr,
-		const union value *val)
+                const union value *val)
 {
   char *text;
   bool retval;
@@ -565,7 +565,7 @@ regexp_value_compare (const struct comparator *cmptr,
 /* Return true if the label of VAL matched the regexp */
 static bool
 regexp_label_compare (const struct comparator *cmptr,
-		      const union value *val)
+                      const union value *val)
 {
   const char *text;
   const struct regexp_comparator *rec =
@@ -615,7 +615,7 @@ numeric_comparator_create (const struct variable *var, const char *target)
 
 static struct comparator *
 string_comparator_create (const struct variable *var, const char *target,
-			  enum string_cmp_flags flags)
+                          enum string_cmp_flags flags)
 {
   struct string_comparator *ssc = XZALLOC (struct string_comparator);
   struct comparator *cmptr = &ssc->parent;
@@ -636,7 +636,7 @@ string_comparator_create (const struct variable *var, const char *target,
 
 static struct comparator *
 regexp_comparator_create (const struct variable *var, const char *target,
-			  enum string_cmp_flags flags)
+                          enum string_cmp_flags flags)
 {
   int code;
   struct regexp_comparator *rec = XZALLOC (struct regexp_comparator);
@@ -673,7 +673,7 @@ regexp_comparator_create (const struct variable *var, const char *target,
 /* Compare V against CMPTR's reference */
 static bool
 comparator_compare (const struct comparator *cmptr,
-		    const union value *v)
+                    const union value *v)
 {
   return cmptr->compare (cmptr, v);
 }
@@ -694,7 +694,7 @@ comparator_destroy (struct comparator *cmptr)
 
 static struct comparator *
 comparator_factory (const struct variable *var, const char *str,
-		    enum string_cmp_flags flags)
+                    enum string_cmp_flags flags)
 {
   if (flags & STR_CMP_REGEXP)
     return regexp_comparator_create (var, str, flags);
@@ -712,7 +712,7 @@ comparator_factory (const struct variable *var, const char *str,
  */
 static void
 find_value (const struct find_dialog *fd, casenumber current_row,
-	   casenumber *row, int *column)
+           casenumber *row, int *column)
 {
   int width;
   const struct variable *var;
@@ -754,16 +754,16 @@ find_value (const struct find_dialog *fd, casenumber current_row,
       goto finish;
 
     for (i = ip->start (current_row, fd->data);
-	 i != ip->end (current_row, fd->data);
-	 ip->next (&i, fd->data))
+         i != ip->end (current_row, fd->data);
+         ip->next (&i, fd->data))
       {
-	datasheet_get_value (fd->data, i, var_get_dict_index (var), &val);
+        datasheet_get_value (fd->data, i, var_get_dict_index (var), &val);
 
-	if (comparator_compare (cmptr, &val))
-	  {
-	    *row = i;
-	    break;
-	  }
+        if (comparator_compare (cmptr, &val))
+          {
+            *row = i;
+            break;
+          }
       }
 
   finish:

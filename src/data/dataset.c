@@ -87,7 +87,7 @@ struct dataset {
   time_t last_proc_invocation;
 
   /* Cases just before ("lagging") the current one. */
-  int n_lag;			/* Number of cases to lag. */
+  int n_lag;                        /* Number of cases to lag. */
   struct deque lag;             /* Deque of lagged cases. */
   struct ccase **lag_cases;     /* Lagged cases managed by deque. */
 

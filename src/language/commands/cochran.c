@@ -57,10 +57,10 @@ static void show_sig_box (const struct cochran *ch);
 
 void
 cochran_execute (const struct dataset *ds,
-	      struct casereader *input,
-	      enum mv_class exclude,
-	      const struct npar_test *test,
-	      bool exact UNUSED, double timer UNUSED)
+              struct casereader *input,
+              enum mv_class exclude,
+              const struct npar_test *test,
+              bool exact UNUSED, double timer UNUSED)
 {
   struct one_sample_test *ct = UP_CAST (test, struct one_sample_test, parent);
   int v;
@@ -82,36 +82,36 @@ cochran_execute (const struct dataset *ds,
       double case_hits = 0.0;
       const double w = weight ? case_num (c, weight) : 1.0;
       for (v = 0; v < ct->n_vars; ++v)
-	{
-	  const struct variable *var = ct->vars[v];
-	  const union value *val = case_data (c, var);
+        {
+          const struct variable *var = ct->vars[v];
+          const union value *val = case_data (c, var);
 
-	  if (var_is_value_missing (var, val) & exclude)
-	    continue;
+          if (var_is_value_missing (var, val) & exclude)
+            continue;
 
-	  if (ch.success == SYSMIS)
-	    {
-	      ch.success = val->f;
-	    }
-	  else if (ch.failure == SYSMIS && val->f != ch.success)
-	    {
-	      ch.failure = val->f;
-	    }
-	  if (ch.success == val->f)
-	    {
-	      ch.hits[v] += w;
-	      case_hits += w;
-	    }
-	  else if (ch.failure == val->f)
-	    {
-	      ch.misses[v] += w;
-	    }
-	  else
-	    {
-	      msg (MW, _("More than two values encountered.  Cochran Q test will not be run."));
-	      goto finish;
-	    }
-	}
+          if (ch.success == SYSMIS)
+            {
+              ch.success = val->f;
+            }
+          else if (ch.failure == SYSMIS && val->f != ch.success)
+            {
+              ch.failure = val->f;
+            }
+          if (ch.success == val->f)
+            {
+              ch.hits[v] += w;
+              case_hits += w;
+            }
+          else if (ch.failure == val->f)
+            {
+              ch.misses[v] += w;
+            }
+          else
+            {
+              msg (MW, _("More than two values encountered.  Cochran Q test will not be run."));
+              goto finish;
+            }
+        }
       ch.cc += w;
       rowsq += pow2 (case_hits);
     }
@@ -122,8 +122,8 @@ cochran_execute (const struct dataset *ds,
     double c_l2 = 0;
     for (v = 0; v < ct->n_vars; ++v)
       {
-	c_l += ch.hits[v];
-	c_l2 += pow2 (ch.hits[v]);
+        c_l += ch.hits[v];
+        c_l2 += pow2 (ch.hits[v]);
       }
 
     ch.q = ct->n_vars * c_l2;

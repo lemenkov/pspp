@@ -25,9 +25,9 @@
 
 G_BEGIN_DECLS
 
-#define PSPPIRE_TYPE_DATA_STORE	       (psppire_data_store_get_type ())
+#define PSPPIRE_TYPE_DATA_STORE               (psppire_data_store_get_type ())
 
-#define PSPPIRE_DATA_STORE(obj)	\
+#define PSPPIRE_DATA_STORE(obj)        \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj),                                   \
                                PSPPIRE_TYPE_DATA_STORE, PsppireDataStore))
 
@@ -90,17 +90,17 @@ PsppireDataStore *psppire_data_store_new     (PsppireDict *dict);
 
 
 void psppire_data_store_set_reader (PsppireDataStore *ds,
-				    struct casereader *reader);
+                                    struct casereader *reader);
 
 void psppire_data_store_set_dictionary (PsppireDataStore *data_store,
-					PsppireDict *dict);
+                                        PsppireDict *dict);
 
 void psppire_data_store_clear (PsppireDataStore *data_store);
 
 gboolean psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn);
 
 gboolean psppire_data_store_insert_value (PsppireDataStore *ds,
-					  gint width, gint where);
+                                          gint width, gint where);
 
 gboolean psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first, casenumber count);
 
@@ -112,20 +112,20 @@ gchar *psppire_data_store_get_string (PsppireDataStore *,
                                       bool use_value_label);
 
 gchar * psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store,
-					    gint col, gint row,
-					    const GValue *v);
+                                            gint col, gint row,
+                                            const GValue *v);
 
 gchar * psppire_data_store_value_to_string_with_labels (gpointer unused,
-							PsppireDataStore *store,
-							gint col, gint row,
-							const GValue *v);
+                                                        PsppireDataStore *store,
+                                                        gint col, gint row,
+                                                        const GValue *v);
 
 gboolean psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
-					     const gchar *in, GValue *out);
+                                             const gchar *in, GValue *out);
 
 gboolean psppire_data_store_get_value (PsppireDataStore *store,
-				       glong row, const struct variable *var,
-				       union value *val);
+                                       glong row, const struct variable *var,
+                                       union value *val);
 
 gboolean psppire_data_store_set_value (PsppireDataStore *,
                                        casenumber casenum,
@@ -134,13 +134,13 @@ gboolean psppire_data_store_set_value (PsppireDataStore *,
 
 
 gboolean psppire_data_store_set_string (PsppireDataStore *ds,
-					const gchar *text,
-					glong row, const struct variable *,
+                                        const gchar *text,
+                                        glong row, const struct variable *,
                                         gboolean use_value_label);
 
 
 gboolean psppire_data_store_filtered (PsppireDataStore *ds,
-				      glong row);
+                                      glong row);
 
 
 casenumber psppire_data_store_get_case_count (const PsppireDataStore *ds);

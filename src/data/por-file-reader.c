@@ -73,12 +73,12 @@ struct pfm_reader
     struct any_read_info info;
     struct file_handle *fh;     /* File handle. */
     struct fh_lock *lock;       /* Read lock for file. */
-    FILE *file;			/* File stream. */
+    FILE *file;                        /* File stream. */
     int line_length;            /* Number of characters so far on this line. */
-    char cc;			/* Current character. */
+    char cc;                        /* Current character. */
     char *trans;                /* 256-byte character set translation table. */
     int n_vars;                 /* Number of variables. */
-    int weight_index;		/* 0-based index of weight variable, or -1. */
+    int weight_index;                /* 0-based index of weight variable, or -1. */
     struct caseproto *proto;    /* Format of output cases. */
     bool ok;                    /* Set false on I/O error. */
   };
@@ -359,7 +359,7 @@ read_float (struct pfm_reader *r)
   /* `*' indicates system-missing. */
   if (match (r, '*'))
     {
-      advance (r);	/* Probably a dot (.) but doesn't appear to matter. */
+      advance (r);        /* Probably a dot (.) but doesn't appear to matter. */
       return SYSMIS;
     }
 
@@ -368,33 +368,33 @@ read_float (struct pfm_reader *r)
     {
       int digit = base_30_value (r->cc);
       if (digit != -1)
-	{
-	  got_digit = true;
+        {
+          got_digit = true;
 
-	  /* Make sure that multiplication by 30 will not overflow.  */
-	  if (num > DBL_MAX * (1. / 30.))
-	    /* The value of the digit doesn't matter, since we have already
-	       gotten as many digits as can be represented in a `double'.
-	       This doesn't necessarily mean the result will overflow.
-	       The exponent may reduce it to within range.
+          /* Make sure that multiplication by 30 will not overflow.  */
+          if (num > DBL_MAX * (1. / 30.))
+            /* The value of the digit doesn't matter, since we have already
+               gotten as many digits as can be represented in a `double'.
+               This doesn't necessarily mean the result will overflow.
+               The exponent may reduce it to within range.
 
-	       We just need to record that there was another
-	       digit so that we can multiply by 10 later.  */
-	    ++exponent;
-	  else
-	    num = (num * 30.0) + digit;
+               We just need to record that there was another
+               digit so that we can multiply by 10 later.  */
+            ++exponent;
+          else
+            num = (num * 30.0) + digit;
 
-	  /* Keep track of the number of digits after the decimal point.
-	     If we just divided by 30 here, we would lose precision.  */
-	  if (got_dot)
-	    --exponent;
-	}
+          /* Keep track of the number of digits after the decimal point.
+             If we just divided by 30 here, we would lose precision.  */
+          if (got_dot)
+            --exponent;
+        }
       else if (!got_dot && r->cc == '.')
-	/* Record that we have found the decimal point.  */
-	got_dot = 1;
+        /* Record that we have found the decimal point.  */
+        got_dot = 1;
       else
-	/* Any other character terminates the number.  */
-	break;
+        /* Any other character terminates the number.  */
+        break;
 
       advance (r);
     }
@@ -411,19 +411,19 @@ read_float (struct pfm_reader *r)
       int digit;
 
       for (advance (r); (digit = base_30_value (r->cc)) != -1; advance (r))
-	{
-	  if (exp > LONG_MAX / 30)
+        {
+          if (exp > LONG_MAX / 30)
             {
               exp = LONG_MAX;
               break;
             }
-	  exp = exp * 30 + digit;
-	}
+          exp = exp * 30 + digit;
+        }
 
       /* We don't check whether there were actually any digits, but we
          probably should. */
       if (negative_exponent)
-	exp = -exp;
+        exp = -exp;
       exponent += exp;
     }
 
@@ -700,18 +700,18 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
       int j;
 
       if (!match (r, '7'))
-	error (r, _("Expected variable record."));
+        error (r, _("Expected variable record."));
 
       width = read_int (r);
       if (width < 0)
-	error (r, _("Invalid variable width %d."), width);
+        error (r, _("Invalid variable width %d."), width);
 
       read_string (r, name);
       for (j = 0; j < 6; j++)
         fmt[j] = read_int (r);
 
       if (width < 0 || width > 255)
-	error (r, _("Bad width %d for variable %s."), width, name);
+        error (r, _("Bad width %d for variable %s."), width, name);
 
       v = dict_create_var_with_unique_name (dict, name, width);
       if (utf8_strcasecmp (name, var_get_name (v)))
@@ -807,12 +807,12 @@ read_value_label (struct pfm_reader *r, struct dictionary *dict)
 
       v[i] = dict_lookup_var (dict, name);
       if (v[i] == NULL)
-	error (r, _("Unknown variable %s while parsing value labels."), name);
+        error (r, _("Unknown variable %s while parsing value labels."), name);
 
       if (var_get_type (v[0]) != var_get_type (v[i]))
-	error (r, _("Cannot assign value labels to %s and %s, which "
-		    "have different variable types."),
-	       var_get_name (v[0]), var_get_name (v[i]));
+        error (r, _("Cannot assign value labels to %s and %s, which "
+                    "have different variable types."),
+               var_get_name (v[0]), var_get_name (v[i]));
     }
 
   n_labels = read_int (r);

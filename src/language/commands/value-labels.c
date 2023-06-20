@@ -39,7 +39,7 @@
 /* Declarations. */
 
 static int do_value_labels (struct lexer *,
-			    const struct dictionary *dict, bool);
+                            const struct dictionary *dict, bool);
 static void erase_labels (struct variable **vars, size_t n_vars);
 static int get_label (struct lexer *, struct variable **vars, size_t n_vars,
                       const char *dict_encoding);
@@ -72,23 +72,23 @@ do_value_labels (struct lexer *lexer, const struct dictionary *dict, bool erase)
   while (lex_token (lexer) != T_ENDCMD)
     {
       parse_err = !parse_variables (lexer, dict, &vars, &n_vars,
-				    PV_SAME_WIDTH);
+                                    PV_SAME_WIDTH);
       if (n_vars < 1)
-	{
-	  free(vars);
-	  return CMD_FAILURE;
-	}
+        {
+          free(vars);
+          return CMD_FAILURE;
+        }
       if (erase)
         erase_labels (vars, n_vars);
       while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
-	if (!get_label (lexer, vars, n_vars, dict_get_encoding (dict)))
+        if (!get_label (lexer, vars, n_vars, dict_get_encoding (dict)))
           goto lossage;
 
       if (lex_token (lexer) != T_SLASH)
-	{
+        {
           free (vars);
           break;
-	}
+        }
 
       lex_get (lexer);
 
@@ -148,12 +148,12 @@ get_label (struct lexer *lexer, struct variable **vars, size_t n_vars,
       trunc_len = utf8_encoding_trunc_len (ds_cstr (&label), dict_encoding,
                                            MAX_LABEL_LEN);
       if (ds_length (&label) > trunc_len)
-	{
-	  lex_next_msg (lexer, SW, 0, 0,
+        {
+          lex_next_msg (lexer, SW, 0, 0,
                         _("Truncating value label to %d bytes."),
                         MAX_LABEL_LEN);
-	  ds_truncate (&label, trunc_len);
-	}
+          ds_truncate (&label, trunc_len);
+        }
 
       for (i = 0; i < n_vars; i++)
         var_replace_value_label (vars[i], &value, ds_cstr (&label));

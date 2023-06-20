@@ -81,9 +81,9 @@ enum
   };
 
 void psppire_checkbox_treeview_populate (PsppireCheckboxTreeview *pctv,
-					 guint default_items,
-					 gint n_items,
-					 const struct checkbox_entry_item *items);
+                                         guint default_items,
+                                         gint n_items,
+                                         const struct checkbox_entry_item *items);
 
 G_END_DECLS
 

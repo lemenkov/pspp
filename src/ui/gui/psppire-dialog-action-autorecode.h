@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE (psppire_dialog_action_autorecode_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_AUTORECODE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_AUTORECODE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, PsppireDialogActionAutorecode))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, PsppireDialogActionAutorecode))
 
 #define PSPPIRE_DIALOG_ACTION_AUTORECODE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, \
                                  PsppireDialogActionAutorecodeClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_AUTORECODE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_AUTORECODE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE))
 
 
 #define PSPPIRE_DIALOG_ACTION_AUTORECODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, \
-				   PsppireDialogActionAutorecodeClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE, \
+                                   PsppireDialogActionAutorecodeClass))
 
 typedef struct _PsppireDialogActionAutorecode       PsppireDialogActionAutorecode;
 typedef struct _PsppireDialogActionAutorecodeClass  PsppireDialogActionAutorecodeClass;

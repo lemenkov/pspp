@@ -52,13 +52,13 @@ generate_syntax (const PsppireDialogAction *act)
       GtkTreeModel *m = psppire_means_layer_get_model_n (layer, l);
       gboolean ok = gtk_tree_model_get_iter_first (m, &iter);
       if (ok)
-	g_string_append (string, "\n\tBY");
+        g_string_append (string, "\n\tBY");
       for (; ok; ok = gtk_tree_model_iter_next (m, &iter))
-	  {
-	    const struct variable *var = psppire_var_view_get_var_from_model (m, 0, &iter);
-	    g_string_append (string, " ");
-	    g_string_append (string, var_get_name (var));
-	  }
+          {
+            const struct variable *var = psppire_var_view_get_var_from_model (m, 0, &iter);
+            g_string_append (string, " ");
+            g_string_append (string, var_get_name (var));
+          }
     }
 
   g_string_append (string, ".\n");
@@ -132,8 +132,8 @@ psppire_dialog_action_means_activate (PsppireDialogAction *a, GVariant *param)
   psppire_selector_set_allow (PSPPIRE_SELECTOR (dep_selector),  numeric_variable);
 
   g_object_set (selector,
-		"dest-widget", act->layer,
-		NULL);
+                "dest-widget", act->layer,
+                NULL);
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);

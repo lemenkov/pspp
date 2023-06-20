@@ -51,13 +51,13 @@ piechart_create (const struct variable *var, const struct freq *slices, int n_sl
       ds_init_empty (&dst->label);
 
       if (var_is_value_missing (var, &src->values[0]))
-	ds_assign_cstr (&dst->label, _("*MISSING*"));
+        ds_assign_cstr (&dst->label, _("*MISSING*"));
       else
-	var_append_value_name (var, &src->values[0], &dst->label);
+        var_append_value_name (var, &src->values[0], &dst->label);
 
       /* Chomp any whitespace from the RHS of the label.
-	 Doing this ensures that those labels to the right
-	 of the pie, appear right justified. */
+         Doing this ensures that those labels to the right
+         of the pie, appear right justified. */
       ds_rtrim (&dst->label, ss_cstr (" \t"));
       ds_ltrim (&dst->label, ss_cstr (" \t"));
       dst->magnitude = src->count;

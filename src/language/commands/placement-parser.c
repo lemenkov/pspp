@@ -139,25 +139,25 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t n_vars,
     {
       /* Get format type. */
       if (lex_token (lexer) == T_ID)
-	{
-	  if (!parse_format_specifier_name (lexer, &type))
+        {
+          if (!parse_format_specifier_name (lexer, &type))
             return false;
-	  lex_match (lexer, T_COMMA);
-	}
+          lex_match (lexer, T_COMMA);
+        }
       else
-	type = FMT_F;
+        type = FMT_F;
 
       /* Get decimal places. */
       if (lex_is_integer (lexer))
-	{
-	  d = lex_integer (lexer);
-	  lex_get (lexer);
-	}
+        {
+          d = lex_integer (lexer);
+          lex_get (lexer);
+        }
       else
-	d = 0;
+        d = 0;
 
       if (!lex_force_match (lexer, T_RPAREN))
-	return false;
+        return false;
     }
   else
     {
@@ -203,12 +203,12 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
 
       /* Parse count. */
       if (lex_is_integer (lexer))
-	{
-	  count = lex_integer (lexer);
-	  lex_get (lexer);
-	}
+        {
+          count = lex_integer (lexer);
+          lex_get (lexer);
+        }
       else
-	count = 1;
+        count = 1;
 
       /* Parse format specifier. */
       if (lex_match (lexer, T_LPAREN))
@@ -386,12 +386,12 @@ parse_column_range (struct lexer *lexer, int base,
         return false;
 
       if (*last_column < *first_column)
-	{
-	  lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
+        {
+          lex_ofs_error (lexer, start_ofs, lex_ofs (lexer) - 1,
                          _("The ending column for a field must be "
                            "greater than the starting column."));
-	  return false;
-	}
+          return false;
+        }
 
       if (range_specified)
         *range_specified = true;

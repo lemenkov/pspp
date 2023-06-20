@@ -64,7 +64,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   ds_put_cstr (&dds, "(");
   for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (cnt->value_list),
-					   &iter);
+                                           &iter);
        ok;
        ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (cnt->value_list), &iter))
     {
@@ -72,7 +72,7 @@ generate_syntax (const PsppireDialogAction *act)
       struct old_value *ov;
 
       gtk_tree_model_get_value (GTK_TREE_MODEL (cnt->value_list), &iter,
-				0, &a_value);
+                                0, &a_value);
 
       ov = g_value_get_boxed (&a_value);
 
@@ -117,7 +117,7 @@ dialog_state_valid (gpointer data)
   if (! cnt->value_list)
     return FALSE;
 
-  if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (cnt->value_list),	&iter))
+  if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (cnt->value_list),        &iter))
     return FALSE;
 
   if (!gtk_tree_model_get_iter_first (gtk_tree_view_get_model (GTK_TREE_VIEW (cnt->variable_treeview)), &iter))
@@ -211,7 +211,7 @@ on_acr_selection_change (GtkTreeSelection *selection, gpointer data)
     return;
 
   gtk_tree_model_get_value (GTK_TREE_MODEL (model), &iter,
-			    0, &ov_value);
+                            0, &ov_value);
 
   ov = g_value_get_boxed (&ov_value);
   psppire_val_chooser_set_status (PSPPIRE_VAL_CHOOSER (cnt->chooser), ov);
@@ -258,7 +258,7 @@ values_dialog (PsppireDialogActionCount *cd)
   {
     GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (PSPPIRE_ACR(acr)->tv));
     g_signal_connect (sel, "changed",
-		    G_CALLBACK (on_acr_selection_change), cd);
+                    G_CALLBACK (on_acr_selection_change), cd);
   }
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));

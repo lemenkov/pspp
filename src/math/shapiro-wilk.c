@@ -81,7 +81,7 @@ acc (struct statistic *s, const struct ccase *cx UNUSED, double c,
   if (frac_part != 0 && !sw->warned)
     {
       msg (MW, N_ ("One or more weight values are non-integer."
-		   "  Fractional parts will be ignored when calculating the Shapiro-Wilk statistic."));
+                   "  Fractional parts will be ignored when calculating the Shapiro-Wilk statistic."));
       sw->warned = true;
     }
 
@@ -123,10 +123,10 @@ shapiro_wilk_create (int n, double mean)
   struct statistic *stat = &os->parent;
 
   const double c1[] = {0, 0.221157,  -0.147981,
-		       -2.071190, 4.434685, -2.706056};
+                       -2.071190, 4.434685, -2.706056};
 
   const double c2[] = {0, 0.042981, -0.293762,
-		       -1.752461, 5.682633, -3.582633};
+                       -1.752461, 5.682633, -3.582633};
 
   sw->n = n;
 

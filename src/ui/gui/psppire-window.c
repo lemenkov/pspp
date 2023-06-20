@@ -147,9 +147,9 @@ psppire_window_name_changed (PsppireWindow *window)
 
 static void
 psppire_window_set_property (GObject         *object,
-			     guint            prop_id,
-			     const GValue    *value,
-			     GParamSpec      *pspec)
+                             guint            prop_id,
+                             const GValue    *value,
+                             GParamSpec      *pspec)
 {
   PsppireWindow *window = PSPPIRE_WINDOW (object);
 
@@ -183,9 +183,9 @@ psppire_window_set_property (GObject         *object,
 
 static void
 psppire_window_get_property (GObject         *object,
-			     guint            prop_id,
-			     GValue          *value,
-			     GParamSpec      *pspec)
+                             guint            prop_id,
+                             GValue          *value,
+                             GParamSpec      *pspec)
 {
   PsppireWindow *window = PSPPIRE_WINDOW (object);
 
@@ -241,25 +241,25 @@ psppire_window_class_init (PsppireWindowClass *class)
 
   GParamSpec *description_spec =
     null_if_empty_param ("description",
-		       "Description",
-		       "A string describing the usage of the window",
-			 NULL, /*Should be overridden by derived classes */
-		       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+                       "Description",
+                       "A string describing the usage of the window",
+                         NULL, /*Should be overridden by derived classes */
+                       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
 
   GParamSpec *filename_spec =
     null_if_empty_param ("filename",
-		       "File name",
-		       "The name of the file associated with this window, if any",
-			 NULL,
-			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+                       "File name",
+                       "The name of the file associated with this window, if any",
+                         NULL,
+                         G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
   GParamSpec *id_spec =
     null_if_empty_param ("id",
                          "Identifier",
                          "The PSPP language identifier for the data associated "
                          "with this window (e.g. dataset name)",
-			 NULL,
-			 G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+                         NULL,
+                         G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
   object_class->set_property = psppire_window_set_property;
   object_class->get_property = psppire_window_get_property;
@@ -338,22 +338,22 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
       gint response = psppire_window_query_save (w);
 
       switch (response)
-	{
-	default:
-	case GTK_RESPONSE_CANCEL:
-	  return TRUE;
-	  break;
-	case GTK_RESPONSE_APPLY:
-	  psppire_window_save (w);
+        {
+        default:
+        case GTK_RESPONSE_CANCEL:
+          return TRUE;
+          break;
+        case GTK_RESPONSE_APPLY:
+          psppire_window_save (w);
           if (w->edited != NULL)
             {
               /* Save failed, or user exited Save As dialog with Cancel. */
               return TRUE;
             }
-	  break;
-	case GTK_RESPONSE_REJECT:
-	  break;
-	}
+          break;
+        case GTK_RESPONSE_REJECT:
+          break;
+        }
     }
 
   if (1 == psppire_window_register_n_items (reg))
@@ -381,14 +381,14 @@ psppire_window_init (PsppireWindow *window)
 
   PsppireWindowRegister *reg = psppire_window_register_new ();
   window->insert_handler = g_signal_connect (reg,
-					     "inserted",
-					     G_CALLBACK (insert_menuitem),
-					     window);
+                                             "inserted",
+                                             G_CALLBACK (insert_menuitem),
+                                             window);
 
   window->remove_handler = g_signal_connect (reg,
-					     "removed",
-					     G_CALLBACK (remove_menuitem),
-					     window);
+                                             "removed",
+                                             G_CALLBACK (remove_menuitem),
+                                             window);
 
   window->added_separator = FALSE;
 
@@ -422,30 +422,30 @@ psppire_window_query_save (PsppireWindow *se)
     description = g_strdup (se->description);
   dialog =
     gtk_message_dialog_new (GTK_WINDOW (se),
-			    GTK_DIALOG_MODAL,
-			    GTK_MESSAGE_WARNING,
-			    GTK_BUTTONS_NONE,
-			    _("Save the changes to `%s' before closing?"),
-			    description);
+                            GTK_DIALOG_MODAL,
+                            GTK_MESSAGE_WARNING,
+                            GTK_BUTTONS_NONE,
+                            _("Save the changes to `%s' before closing?"),
+                            description);
   g_free (description);
 
   g_object_set (dialog, "icon-name", "org.gnu.pspp", NULL);
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-					    _("If you don't save, changes from the last %ld seconds will be permanently lost."),
-					    (long int) (timespan / G_TIME_SPAN_SECOND));
+                                            _("If you don't save, changes from the last %ld seconds will be permanently lost."),
+                                            (long int) (timespan / G_TIME_SPAN_SECOND));
 
   gtk_dialog_add_button  (GTK_DIALOG (dialog),
-			  _("Close _without saving"),
-			  GTK_RESPONSE_REJECT);
+                          _("Close _without saving"),
+                          GTK_RESPONSE_REJECT);
 
   cancel_button = gtk_dialog_add_button  (GTK_DIALOG (dialog),
-					  _("Cancel"),
-					  GTK_RESPONSE_CANCEL);
+                                          _("Cancel"),
+                                          GTK_RESPONSE_CANCEL);
 
   gtk_dialog_add_button  (GTK_DIALOG (dialog),
-			  _("Save"),
-			  GTK_RESPONSE_APPLY);
+                          _("Save"),
+                          GTK_RESPONSE_APPLY);
 
   gtk_widget_grab_focus (cancel_button);
 
@@ -519,20 +519,20 @@ psppire_window_model_get_type (void)
       static const GTypeInfo window_model_info =
       {
         sizeof (PsppireWindowIface), /* class_size */
-	NULL,           /* base_init */
-	NULL,		/* base_finalize */
-	NULL,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-	0,
-	0,              /* n_preallocs */
-	NULL,
-	NULL            /* value_table */
+        NULL,           /* base_init */
+        NULL,                /* base_finalize */
+        NULL,
+        NULL,                /* class_finalize */
+        NULL,                /* class_data */
+        0,
+        0,              /* n_preallocs */
+        NULL,
+        NULL            /* value_table */
       };
 
       window_model_type =
-	g_type_register_static (G_TYPE_INTERFACE, "PsppireWindowModel",
-				&window_model_info, 0);
+        g_type_register_static (G_TYPE_INTERFACE, "PsppireWindowModel",
+                                &window_model_info, 0);
 
       g_type_interface_add_prerequisite (window_model_type, G_TYPE_OBJECT);
     }
@@ -621,11 +621,11 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
   GtkFileFilter *filter = gtk_file_filter_new ();
   GtkWidget *dialog =
     gtk_file_chooser_dialog_new (_("Open"),
-				 GTK_WINDOW (toplevel),
-				 GTK_FILE_CHOOSER_ACTION_OPEN,
-				 _("Cancel"), GTK_RESPONSE_CANCEL,
-				 _("Open"), GTK_RESPONSE_ACCEPT,
-				 NULL);
+                                 GTK_WINDOW (toplevel),
+                                 GTK_FILE_CHOOSER_ACTION_OPEN,
+                                 _("Cancel"), GTK_RESPONSE_CANCEL,
+                                 _("Open"), GTK_RESPONSE_ACCEPT,
+                                 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
 
@@ -726,21 +726,21 @@ psppire_window_open (PsppireWindow *de)
     {
     case GTK_RESPONSE_ACCEPT:
       {
-	gchar *name =
-	  gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+        gchar *name =
+          gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 
-	const gchar **cs = NULL;
-	g_get_filename_charsets (&cs);
+        const gchar **cs = NULL;
+        g_get_filename_charsets (&cs);
 
         gchar *encoding = psppire_encoding_selector_get_encoding (
           gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
-	struct file_handle *fh = fh_create_file (NULL, name, cs[0], fh_default_properties ());
+        struct file_handle *fh = fh_create_file (NULL, name, cs[0], fh_default_properties ());
 
         int retval = any_reader_detect (fh, NULL);
-	if (retval == 1)
+        if (retval == 1)
           open_data_window (de, name, encoding, NULL);
-	else if (retval == 0)
+        else if (retval == 0)
           {
             char *error = spv_detect (name);
             if (!error)
@@ -753,8 +753,8 @@ psppire_window_open (PsppireWindow *de)
           }
 
         g_free (encoding);
-	fh_unref (fh);
-	g_free (name);
+        fh_unref (fh);
+        g_free (name);
       }
       break;
     default:

@@ -74,9 +74,9 @@ which_group (const union value *v, const struct indep_samples *is)
 
 void
 indep_run (struct tt *tt, const struct variable *gvar,
-	   bool cut,
-	   const union value *gval0, const union value *gval1,
-	   struct casereader *reader)
+           bool cut,
+           const union value *gval0, const union value *gval1,
+           struct casereader *reader)
 {
   struct indep_samples is;
   struct ccase *c;
@@ -107,17 +107,17 @@ indep_run (struct tt *tt, const struct variable *gvar,
 
       int grp = which_group (gv, &is);
       if (grp < 0)
-	continue;
+        continue;
 
       for (v = 0; v < tt->n_vars; ++v)
-	{
-	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
-	    continue;
+        {
+          const union value *val = case_data (c, tt->vars[v]);
+          if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
+            continue;
 
-	  moments_pass_one (ps[v].mom[grp], val->f, w);
-	  levene_pass_one (ps[v].nl, val->f, w, gv);
-	}
+          moments_pass_one (ps[v].mom[grp], val->f, w);
+          levene_pass_one (ps[v].nl, val->f, w, gv);
+        }
     }
   casereader_destroy (r);
 
@@ -130,17 +130,17 @@ indep_run (struct tt *tt, const struct variable *gvar,
 
       int grp = which_group (gv, &is);
       if (grp < 0)
-	continue;
+        continue;
 
       for (v = 0; v < tt->n_vars; ++v)
-	{
-	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
-	    continue;
+        {
+          const union value *val = case_data (c, tt->vars[v]);
+          if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
+            continue;
 
-	  moments_pass_two (ps[v].mom[grp], val->f, w);
-	  levene_pass_two (ps[v].nl, val->f, w, gv);
-	}
+          moments_pass_two (ps[v].mom[grp], val->f, w);
+          levene_pass_two (ps[v].nl, val->f, w, gv);
+        }
     }
   casereader_destroy (r);
 
@@ -153,16 +153,16 @@ indep_run (struct tt *tt, const struct variable *gvar,
 
       int grp = which_group (gv, &is);
       if (grp < 0)
-	continue;
+        continue;
 
       for (v = 0; v < tt->n_vars; ++v)
-	{
-	  const union value *val = case_data (c, tt->vars[v]);
-	  if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
-	    continue;
+        {
+          const union value *val = case_data (c, tt->vars[v]);
+          if (var_is_value_missing (tt->vars[v], val) & tt->exclude)
+            continue;
 
-	  levene_pass_three (ps[v].nl, val->f, w, gv);
-	}
+          levene_pass_three (ps[v].nl, val->f, w, gv);
+        }
     }
   casereader_destroy (r);
 
@@ -234,15 +234,15 @@ indep_summary (const struct tt *tt, struct indep_samples *is, const struct pair_
         dep_vars->root, pivot_value_new_variable (var));
 
       for (int i = 0 ; i < 2; ++i)
-	{
-	  double cc, mean, sigma;
-	  moments_calculate (ps[v].mom[i], &cc, &mean, &sigma, NULL, NULL);
+        {
+          double cc, mean, sigma;
+          moments_calculate (ps[v].mom[i], &cc, &mean, &sigma, NULL, NULL);
 
           double entries[] = { cc, mean, sqrt (sigma), sqrt (sigma / cc) };
           for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
             pivot_table_put3 (table, j, i, dep_var_idx,
                               pivot_value_new_number (entries[j]));
-	}
+        }
     }
 
   pivot_table_submit (table);

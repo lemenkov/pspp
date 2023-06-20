@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS (psppire_dialog_action_indep_samps_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_INDEP_SAMPS(obj)	\
+#define PSPPIRE_DIALOG_ACTION_INDEP_SAMPS(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, PsppireDialogActionIndepSamps))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, PsppireDialogActionIndepSamps))
 
 #define PSPPIRE_DIALOG_ACTION_INDEP_SAMPS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, \
                                  PsppireDialogActionIndepSampsClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_INDEP_SAMPS(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS))
 
 #define PSPPIRE_IS_DIALOG_ACTION_INDEP_SAMPS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS))
 
 
 #define PSPPIRE_DIALOG_ACTION_INDEP_SAMPS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, \
-				   PsppireDialogActionIndepSampsClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS, \
+                                   PsppireDialogActionIndepSampsClass))
 
 typedef struct _PsppireDialogActionIndepSamps       PsppireDialogActionIndepSamps;
 typedef struct _PsppireDialogActionIndepSampsClass  PsppireDialogActionIndepSampsClass;

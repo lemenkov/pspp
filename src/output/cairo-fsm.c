@@ -468,22 +468,22 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
       cairo_save (xr->cairo);
       int bg_clip[TABLE_N_AXES][2];
       for (int axis = 0; axis < TABLE_N_AXES; axis++)
-	{
-	  bg_clip[axis][0] = clip[axis][0];
-	  if (bb[axis][0] == clip[axis][0])
-	    bg_clip[axis][0] -= spill[axis][0];
+        {
+          bg_clip[axis][0] = clip[axis][0];
+          if (bb[axis][0] == clip[axis][0])
+            bg_clip[axis][0] -= spill[axis][0];
 
-	  bg_clip[axis][1] = clip[axis][1];
-	  if (bb[axis][1] == clip[axis][1])
-	    bg_clip[axis][1] += spill[axis][1];
-	}
+          bg_clip[axis][1] = clip[axis][1];
+          if (bb[axis][1] == clip[axis][1])
+            bg_clip[axis][1] += spill[axis][1];
+        }
       xr_clip (xr, bg_clip);
       xr_set_source_rgba (xr->cairo, bg);
       fill_rectangle (xr,
-		      bb[H][0] - spill[H][0],
-		      bb[V][0] - spill[V][0],
-		      bb[H][1] + spill[H][1],
-		      bb[V][1] + spill[V][1]);
+                      bb[H][0] - spill[H][0],
+                      bb[V][0] - spill[V][0],
+                      bb[H][1] + spill[H][1],
+                      bb[V][1] + spill[V][1]);
       cairo_restore (xr->cairo);
     }
   cairo_save (xr->cairo);

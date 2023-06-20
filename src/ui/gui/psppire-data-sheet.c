@@ -109,7 +109,7 @@ change_data_value (PsppireDataSheet *sheet, gint col, gint row, GValue *value)
 
 static void
 show_cases_row_popup (PsppireDataSheet *sheet, int row,
-		      guint button, guint state, gpointer p)
+                      guint button, guint state, gpointer p)
 {
   GListModel *vmodel = NULL;
   g_object_get (sheet, "vmodel", &vmodel, NULL);
@@ -125,7 +125,7 @@ show_cases_row_popup (PsppireDataSheet *sheet, int row,
     return;
 
   g_object_set_data (G_OBJECT (sheet->data_sheet_cases_row_popup), "item",
-		     GINT_TO_POINTER (row));
+                     GINT_TO_POINTER (row));
 
   gtk_menu_popup_at_pointer (GTK_MENU (sheet->data_sheet_cases_row_popup), NULL);
 }
@@ -138,7 +138,7 @@ insert_new_case (PsppireDataSheet *sheet)
   g_object_get (sheet, "data-model", &data_store, NULL);
 
   gint posn = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (sheet->data_sheet_cases_row_popup), "item"));
+                                (G_OBJECT (sheet->data_sheet_cases_row_popup), "item"));
 
   psppire_data_store_insert_new_case (data_store, posn);
 
@@ -154,7 +154,7 @@ delete_cases (PsppireDataSheet *sheet)
   g_object_get (sheet, "data-model", &data_store, NULL);
 
   psppire_data_store_delete_cases (data_store, range->start_y,
-  				   range->end_y - range->start_y + 1);
+                                     range->end_y - range->start_y + 1);
 
   gtk_widget_queue_draw (GTK_WIDGET (sheet));
 }
@@ -181,7 +181,7 @@ create_data_row_header_popup_menu (PsppireDataSheet *sheet)
   gtk_widget_set_sensitive (sheet->data_clear_cases_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), sheet->data_clear_cases_menu_item);
   g_signal_connect_swapped (sheet->data_clear_cases_menu_item, "activate",
-			    G_CALLBACK (delete_cases), sheet);
+                            G_CALLBACK (delete_cases), sheet);
 
   gtk_widget_show_all (menu);
   return menu;
@@ -190,7 +190,7 @@ create_data_row_header_popup_menu (PsppireDataSheet *sheet)
 
 static void
 show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guint state,
-			 gpointer p)
+                         gpointer p)
 {
   GListModel *hmodel = NULL;
   g_object_get (sheet, "hmodel", &hmodel, NULL);
@@ -206,7 +206,7 @@ show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guin
     return;
 
   g_object_set_data (G_OBJECT (sheet->data_sheet_cases_column_popup), "item",
-		     GINT_TO_POINTER (column));
+                     GINT_TO_POINTER (column));
 
   gtk_menu_popup_at_pointer (GTK_MENU (sheet->data_sheet_cases_column_popup), NULL);
 }
@@ -214,16 +214,16 @@ show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guin
 /* Insert a new variable before the variable at POSN.  */
 void
 psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet,
-						gint posn)
+                                                gint posn)
 {
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
 
   const struct variable *v = psppire_dict_insert_variable (data_store->dict,
-							   posn, NULL);
+                                                           posn, NULL);
 
   psppire_data_store_insert_value (data_store, var_get_width(v),
-				   var_get_dict_index (v));
+                                   var_get_dict_index (v));
 
   ssw_sheet_scroll_to (SSW_SHEET (sheet), posn, -1);
 
@@ -237,8 +237,8 @@ insert_new_variable (PsppireDataSheet *sheet)
   g_object_get (sheet, "data-model", &data_store, NULL);
 
   gint posn = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (sheet->data_sheet_cases_column_popup),
-				 "item"));
+                                (G_OBJECT (sheet->data_sheet_cases_column_popup),
+                                 "item"));
 
   psppire_data_sheet_insert_new_variable_at_posn (sheet, posn);
 }
@@ -263,11 +263,11 @@ set_menu_items_sensitivity (PsppireDataSheet *sheet, gpointer selection, gpointe
   gboolean whole_column_selected =
     (range->start_y == 0 && range->end_y == length - 1);
   gtk_widget_set_sensitive (sheet->data_clear_variables_menu_item,
-			    whole_column_selected);
+                            whole_column_selected);
   gtk_widget_set_sensitive (sheet->data_sort_ascending_menu_item,
-			    whole_column_selected);
+                            whole_column_selected);
   gtk_widget_set_sensitive (sheet->data_sort_descending_menu_item,
-			    whole_column_selected);
+                            whole_column_selected);
 }
 
 void
@@ -286,7 +286,7 @@ psppire_data_sheet_delete_variables (PsppireDataSheet *sheet)
     }
 
   psppire_dict_delete_variables (data_store->dict, range->start_x,
-				 (range->end_x - range->start_x + 1));
+                                 (range->end_x - range->start_x + 1));
 
   ssw_sheet_scroll_to (SSW_SHEET (sheet), range->start_x, -1);
 
@@ -305,7 +305,7 @@ create_data_column_header_popup_menu (PsppireDataSheet *sheet)
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
   g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_variable),
-			    sheet);
+                            sheet);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   item = gtk_separator_menu_item_new ();
@@ -314,8 +314,8 @@ create_data_column_header_popup_menu (PsppireDataSheet *sheet)
   sheet->data_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
   g_signal_connect_swapped (sheet->data_clear_variables_menu_item, "activate",
-			    G_CALLBACK (psppire_data_sheet_delete_variables),
-			    sheet);
+                            G_CALLBACK (psppire_data_sheet_delete_variables),
+                            sheet);
   gtk_widget_set_sensitive (sheet->data_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), sheet->data_clear_variables_menu_item);
 
@@ -326,14 +326,14 @@ create_data_column_header_popup_menu (PsppireDataSheet *sheet)
   sheet->data_sort_ascending_menu_item =
     gtk_menu_item_new_with_mnemonic (_("Sort _Ascending"));
   g_signal_connect_swapped (sheet->data_sort_ascending_menu_item, "activate",
-			    G_CALLBACK (sort_ascending), sheet);
+                            G_CALLBACK (sort_ascending), sheet);
   gtk_widget_set_sensitive (sheet->data_sort_ascending_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), sheet->data_sort_ascending_menu_item);
 
   sheet->data_sort_descending_menu_item =
     gtk_menu_item_new_with_mnemonic (_("Sort _Descending"));
   g_signal_connect_swapped (sheet->data_sort_descending_menu_item, "activate",
-			    G_CALLBACK (sort_descending), sheet);
+                            G_CALLBACK (sort_descending), sheet);
   gtk_widget_set_sensitive (sheet->data_sort_descending_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), sheet->data_sort_descending_menu_item);
 
@@ -463,16 +463,16 @@ set_dictionary (PsppireDataSheet *sheet)
   g_object_set (sheet, "hmodel", store->dict, NULL);
 
   g_signal_connect (store->dict, "resize-item", G_CALLBACK (resize_display_width),
-		    sheet);
+                    sheet);
 
   SswAxisModel *vmodel = NULL;
   g_object_get (sheet, "vmodel", &vmodel, NULL);
   g_assert (SSW_IS_AXIS_MODEL (vmodel));
 
   g_object_set (vmodel,
-		"post-button-create-func", button_post_create,
-		"post-button-create-func-data", store,
-		NULL);
+                "post-button-create-func", button_post_create,
+                "post-button-create-func-data", store,
+                NULL);
 }
 
 static void
@@ -508,19 +508,19 @@ psppire_data_sheet_init (PsppireDataSheet *sheet)
     create_data_row_header_popup_menu (sheet);
 
   g_signal_connect (sheet, "selection-changed",
-		    G_CALLBACK (set_menu_items_sensitivity), sheet);
+                    G_CALLBACK (set_menu_items_sensitivity), sheet);
 
   g_signal_connect (sheet, "column-header-pressed",
-		    G_CALLBACK (show_cases_column_popup), sheet);
+                    G_CALLBACK (show_cases_column_popup), sheet);
 
   g_signal_connect (sheet, "row-header-pressed",
-		    G_CALLBACK (show_cases_row_popup), sheet);
+                    G_CALLBACK (show_cases_row_popup), sheet);
 
   g_signal_connect (sheet, "value-changed",
-		    G_CALLBACK (change_data_value), NULL);
+                    G_CALLBACK (change_data_value), NULL);
 
   g_signal_connect (sheet, "notify::data-model",
-		    G_CALLBACK (set_dictionary), NULL);
+                    G_CALLBACK (set_dictionary), NULL);
 
   g_signal_connect (sheet, "column-moved", G_CALLBACK (move_variable), NULL);
 }

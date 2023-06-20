@@ -64,9 +64,9 @@ source_init_option_callback (int id, void *aux UNUSED)
     {
     case OPT_ALGORITHM:
       if (!strcmp (optarg, "compatible"))
-	settings_set_algorithm (COMPATIBLE);
+        settings_set_algorithm (COMPATIBLE);
       else if (!strcmp (optarg, "enhanced"))
-	settings_set_algorithm (ENHANCED);
+        settings_set_algorithm (ENHANCED);
       else
         error (1, 0,
                _("Algorithm must be either `%s' or `%s'."), "compatible", "enhanced");
@@ -89,9 +89,9 @@ source_init_option_callback (int id, void *aux UNUSED)
 
     case OPT_SYNTAX:
       if (!strcmp (optarg, "compatible"))
-	settings_set_syntax (COMPATIBLE);
+        settings_set_syntax (COMPATIBLE);
       else if (!strcmp (optarg, "enhanced"))
-	settings_set_syntax (ENHANCED);
+        settings_set_syntax (ENHANCED);
       else
         error (1, 0,
                _("Syntax must be either `%s' or `%s'."), "compatible", "enhanced");

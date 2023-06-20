@@ -130,31 +130,31 @@ psppire_button_box_class_init (PsppireButtonBoxClass *class)
 
   button_flags =
     g_param_spec_flags ("buttons",
-			"Buttons",
-			"The mask that decides what buttons appear in the button box",
-			PSPPIRE_TYPE_BUTTON_MASK,
-			PSPPIRE_BUTTON_OK_MASK
-			| PSPPIRE_BUTTON_CANCEL_MASK
-			| PSPPIRE_BUTTON_CLOSE_MASK
-			| PSPPIRE_BUTTON_RESET_MASK
-			| PSPPIRE_BUTTON_HELP_MASK
-			| PSPPIRE_BUTTON_PASTE_MASK
-			| PSPPIRE_BUTTON_FIND_MASK,
-			G_PARAM_READWRITE);
+                        "Buttons",
+                        "The mask that decides what buttons appear in the button box",
+                        PSPPIRE_TYPE_BUTTON_MASK,
+                        PSPPIRE_BUTTON_OK_MASK
+                        | PSPPIRE_BUTTON_CANCEL_MASK
+                        | PSPPIRE_BUTTON_CLOSE_MASK
+                        | PSPPIRE_BUTTON_RESET_MASK
+                        | PSPPIRE_BUTTON_HELP_MASK
+                        | PSPPIRE_BUTTON_PASTE_MASK
+                        | PSPPIRE_BUTTON_FIND_MASK,
+                        G_PARAM_READWRITE);
   g_object_class_install_property (object_class,
-				   PROP_BUTTONS,
-				   button_flags);
+                                   PROP_BUTTONS,
+                                   button_flags);
 
   default_flags =
     g_param_spec_flags ("default",
-			"Default",
-			"The mask that decides what button grabs the default",
-			PSPPIRE_TYPE_BUTTON_MASK,
-			0,
-			G_PARAM_READWRITE);
+                        "Default",
+                        "The mask that decides what button grabs the default",
+                        PSPPIRE_TYPE_BUTTON_MASK,
+                        0,
+                        G_PARAM_READWRITE);
   g_object_class_install_property (object_class,
-				   PROP_DEFAULT,
-				   default_flags);
+                                   PROP_DEFAULT,
+                                   default_flags);
 }
 
 static void
@@ -282,10 +282,10 @@ on_realize (GtkWidget *buttonbox, gpointer data)
   if (PSPPIRE_IS_DIALOG (toplevel))
     {
       g_signal_connect (toplevel, "validity-changed",
-			G_CALLBACK (on_validity_change), buttonbox);
+                        G_CALLBACK (on_validity_change), buttonbox);
 
       g_signal_connect (toplevel, "key-press-event",
-			G_CALLBACK (on_key_press), buttonbox);
+                        G_CALLBACK (on_key_press), buttonbox);
     }
 
   set_default (PSPPIRE_BUTTON_BOX (buttonbox));
@@ -300,7 +300,7 @@ psppire_button_box_init (PsppireButtonBox *bb)
   bb->button[PSPPIRE_BUTTON_OK] = gtk_button_new_with_label (_("OK"));
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_OK]);
   g_signal_connect (bb->button[PSPPIRE_BUTTON_OK], "clicked",
-		    G_CALLBACK (ok_button_clicked), NULL);
+                    G_CALLBACK (ok_button_clicked), NULL);
   g_object_set (bb->button[PSPPIRE_BUTTON_OK], "no-show-all", TRUE, NULL);
 
 
@@ -308,7 +308,7 @@ psppire_button_box_init (PsppireButtonBox *bb)
     gtk_button_new_with_label (_("Go To"));
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_GOTO]);
   g_signal_connect (bb->button[PSPPIRE_BUTTON_GOTO], "clicked",
-		    G_CALLBACK (goto_button_clicked), NULL);
+                    G_CALLBACK (goto_button_clicked), NULL);
   g_object_set (bb->button[PSPPIRE_BUTTON_GOTO], "no-show-all", TRUE, NULL);
 
 
@@ -316,18 +316,18 @@ psppire_button_box_init (PsppireButtonBox *bb)
     gtk_button_new_with_mnemonic (_("Continue"));
 
   psppire_box_pack_start_defaults (GTK_BOX (bb),
-			       bb->button[PSPPIRE_BUTTON_CONTINUE]);
+                               bb->button[PSPPIRE_BUTTON_CONTINUE]);
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CONTINUE], "clicked",
-		    G_CALLBACK (continue_button_clicked), NULL);
+                    G_CALLBACK (continue_button_clicked), NULL);
 
   g_object_set (bb->button[PSPPIRE_BUTTON_CONTINUE],
-		"no-show-all", TRUE, NULL);
+                "no-show-all", TRUE, NULL);
 
 
 
   bb->button[PSPPIRE_BUTTON_PASTE] = gtk_button_new_with_label (_("Paste"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_PASTE], "clicked",
-		    G_CALLBACK (paste_button_clicked), NULL);
+                    G_CALLBACK (paste_button_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_PASTE]);
   g_object_set (bb->button[PSPPIRE_BUTTON_PASTE], "no-show-all", TRUE, NULL);
 
@@ -337,27 +337,27 @@ psppire_button_box_init (PsppireButtonBox *bb)
 
   bb->button[PSPPIRE_BUTTON_CANCEL] = gtk_button_new_with_label (_("Cancel"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CANCEL], "clicked",
-		    G_CALLBACK (close_dialog), NULL);
+                    G_CALLBACK (close_dialog), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_CANCEL]);
   g_object_set (bb->button[PSPPIRE_BUTTON_CANCEL], "no-show-all", TRUE, NULL);
 
   bb->button[PSPPIRE_BUTTON_CLOSE] = gtk_button_new_with_label (_("Close"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CLOSE], "clicked",
-		    G_CALLBACK (close_dialog), NULL);
+                    G_CALLBACK (close_dialog), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_CLOSE]);
   g_object_set (bb->button[PSPPIRE_BUTTON_CLOSE], "no-show-all", TRUE, NULL);
 
 
   bb->button[PSPPIRE_BUTTON_RESET] = gtk_button_new_with_label (_("Reset"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_RESET], "clicked",
-		    G_CALLBACK (refresh_clicked), NULL);
+                    G_CALLBACK (refresh_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_RESET]);
   g_object_set (bb->button[PSPPIRE_BUTTON_RESET], "no-show-all", TRUE, NULL);
 
 
   bb->button[PSPPIRE_BUTTON_HELP] = gtk_button_new_with_label (_("Help"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_HELP], "clicked",
-		    G_CALLBACK (help_clicked), NULL);
+                    G_CALLBACK (help_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_HELP]);
   g_object_set (bb->button[PSPPIRE_BUTTON_HELP], "no-show-all", TRUE, NULL);
 
@@ -390,21 +390,21 @@ psppire_button_flags_get_type (void)
   if (ftype == 0)
     {
       static const GFlagsValue values[] =
-	{
-	  { PSPPIRE_BUTTON_OK_MASK,      "PSPPIRE_BUTTON_OK_MASK",       "Accept dialog and run it" },
-	  { PSPPIRE_BUTTON_GOTO_MASK,    "PSPPIRE_BUTTON_GOTO_MASK",     "Goto case/variable" },
-	  { PSPPIRE_BUTTON_CONTINUE_MASK,"PSPPIRE_BUTTON_CONTINUE_MASK", "Accept and close the subdialog" },
-	  { PSPPIRE_BUTTON_CANCEL_MASK,  "PSPPIRE_BUTTON_CANCEL_MASK",   "Close dialog and discard settings" },
-	  { PSPPIRE_BUTTON_CLOSE_MASK,   "PSPPIRE_BUTTON_CLOSE_MASK",    "Close dialog" },
-	  { PSPPIRE_BUTTON_HELP_MASK,    "PSPPIRE_BUTTON_HELP_MASK",     "Invoke context sensitive help" },
-	  { PSPPIRE_BUTTON_RESET_MASK,   "PSPPIRE_BUTTON_RESET_MASK",    "Restore dialog to its default settings" },
-	  { PSPPIRE_BUTTON_PASTE_MASK,   "PSPPIRE_BUTTON_PASTE_MASK",    "Accept dialog and paste syntax" },
-	  { PSPPIRE_BUTTON_FIND_MASK,    "PSPPIRE_BUTTON_FIND_MASK",     "Find something" },
-	  { 0, NULL, NULL }
-	};
+        {
+          { PSPPIRE_BUTTON_OK_MASK,      "PSPPIRE_BUTTON_OK_MASK",       "Accept dialog and run it" },
+          { PSPPIRE_BUTTON_GOTO_MASK,    "PSPPIRE_BUTTON_GOTO_MASK",     "Goto case/variable" },
+          { PSPPIRE_BUTTON_CONTINUE_MASK,"PSPPIRE_BUTTON_CONTINUE_MASK", "Accept and close the subdialog" },
+          { PSPPIRE_BUTTON_CANCEL_MASK,  "PSPPIRE_BUTTON_CANCEL_MASK",   "Close dialog and discard settings" },
+          { PSPPIRE_BUTTON_CLOSE_MASK,   "PSPPIRE_BUTTON_CLOSE_MASK",    "Close dialog" },
+          { PSPPIRE_BUTTON_HELP_MASK,    "PSPPIRE_BUTTON_HELP_MASK",     "Invoke context sensitive help" },
+          { PSPPIRE_BUTTON_RESET_MASK,   "PSPPIRE_BUTTON_RESET_MASK",    "Restore dialog to its default settings" },
+          { PSPPIRE_BUTTON_PASTE_MASK,   "PSPPIRE_BUTTON_PASTE_MASK",    "Accept dialog and paste syntax" },
+          { PSPPIRE_BUTTON_FIND_MASK,    "PSPPIRE_BUTTON_FIND_MASK",     "Find something" },
+          { 0, NULL, NULL }
+        };
 
       ftype = g_flags_register_static
-	(g_intern_static_string ("PsppireButtonFlags"), values);
+        (g_intern_static_string ("PsppireButtonFlags"), values);
 
     }
   return ftype;

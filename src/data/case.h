@@ -109,7 +109,7 @@ int case_compare (const struct ccase *, const struct ccase *,
                   const struct variable *const *, size_t n_vars);
 int case_compare_2dict (const struct ccase *, const struct ccase *,
                         const struct variable *const *,
-			const struct variable *const *,
+                        const struct variable *const *,
                         size_t n_vars);
 
 const union value *case_data_all (const struct ccase *);

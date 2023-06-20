@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC (psppire_dialog_action_logistic_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_LOGISTIC(obj)	\
+#define PSPPIRE_DIALOG_ACTION_LOGISTIC(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, PsppireDialogActionLogistic))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, PsppireDialogActionLogistic))
 
 #define PSPPIRE_DIALOG_ACTION_LOGISTIC_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, \
                                  PsppireDialogActionLogisticClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_LOGISTIC(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC))
 
 #define PSPPIRE_IS_DIALOG_ACTION_LOGISTIC_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC))
 
 
 #define PSPPIRE_DIALOG_ACTION_LOGISTIC_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, \
-				   PsppireDialogActionLogisticClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, \
+                                   PsppireDialogActionLogisticClass))
 
 typedef struct _PsppireDialogActionLogistic       PsppireDialogActionLogistic;
 typedef struct _PsppireDialogActionLogisticClass  PsppireDialogActionLogisticClass;

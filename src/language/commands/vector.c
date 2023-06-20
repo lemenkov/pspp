@@ -57,7 +57,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
       size_t n_vectors = 0;
       size_t allocated_vectors = 0;
       while (lex_token (lexer) == T_ID)
-	{
+        {
           char *error = dict_id_is_valid__ (dict, lex_tokcstr (lexer),
                                             DC_ORDINARY | DC_SCRATCH);
           if (error)
@@ -67,54 +67,54 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
               goto error;
             }
 
-	  if (dict_lookup_vector (dict, lex_tokcstr (lexer)))
-	    {
-	      lex_next_error (lexer, 0, 0,
+          if (dict_lookup_vector (dict, lex_tokcstr (lexer)))
+            {
+              lex_next_error (lexer, 0, 0,
                               _("A vector named %s already exists."),
                               lex_tokcstr (lexer));
-	      goto error;
-	    }
+              goto error;
+            }
 
           for (size_t i = 0; i < n_vectors; i++)
             if (!utf8_strcasecmp (vectors[i], lex_tokcstr (lexer)))
-	      {
-		lex_ofs_error (lexer, vectors_start, lex_ofs (lexer),
+              {
+                lex_ofs_error (lexer, vectors_start, lex_ofs (lexer),
                                _("Vector name %s is given twice."),
                                lex_tokcstr (lexer));
-		goto error;
-	      }
+                goto error;
+              }
 
           if (n_vectors == allocated_vectors)
             vectors = pool_2nrealloc (pool, vectors, &allocated_vectors,
                                       sizeof *vectors);
           vectors[n_vectors++] = pool_strdup (pool, lex_tokcstr (lexer));
 
-	  lex_get (lexer);
-	  lex_match (lexer, T_COMMA);
-	}
+          lex_get (lexer);
+          lex_match (lexer, T_COMMA);
+        }
 
       /* Now that we have the names it's time to check for the short
          or long forms. */
       if (lex_match (lexer, T_EQUALS))
-	{
-	  if (n_vectors > 1)
-	    {
-	      lex_ofs_error (lexer, vectors_start, lex_ofs (lexer) - 1,
+        {
+          if (n_vectors > 1)
+            {
+              lex_ofs_error (lexer, vectors_start, lex_ofs (lexer) - 1,
                              _("Only a single vector name may be specified "
                                "when a list of variables is given."));
-	      goto error;
-	    }
+              goto error;
+            }
 
           struct variable **v;
           size_t nv;
-	  if (!parse_variables_pool (lexer, pool, dict, &v, &nv,
+          if (!parse_variables_pool (lexer, pool, dict, &v, &nv,
                                      PV_SAME_WIDTH | PV_DUPLICATE))
-	    goto error;
+            goto error;
 
           dict_create_vector (dict, vectors[0], v, nv);
-	}
+        }
       else if (lex_match (lexer, T_LPAREN))
-	{
+        {
           struct fmt_spec format = fmt_for_output (FMT_F, 8, 2);
           bool seen_format = false;
           size_t n_vars = 0;
@@ -170,7 +170,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
               goto error;
             }
 
-	  /* Check that none of the variables exist and that their names are
+          /* Check that none of the variables exist and that their names are
              not excessively long. */
           struct string_set new_names = STRING_SET_INITIALIZER (new_names);
           for (size_t i = 0; i < n_vectors; i++)
@@ -208,26 +208,26 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
               }
           string_set_destroy (&new_names);
 
-	  /* Finally create the variables and vectors. */
+          /* Finally create the variables and vectors. */
           struct variable **vars = pool_nmalloc (pool, n_vars, sizeof *vars);
           for (size_t i = 0; i < n_vectors; i++)
-	    {
-	      for (size_t j = 0; j < n_vars; j++)
-		{
+            {
+              for (size_t j = 0; j < n_vars; j++)
+                {
                   char *name = xasprintf ("%s%zu", vectors[i], j + 1);
-		  vars[j] = dict_create_var_assert (dict, name,
+                  vars[j] = dict_create_var_assert (dict, name,
                                                     fmt_var_width (format));
                   var_set_both_formats (vars[j], format);
                   free (name);
-		}
+                }
               dict_create_vector_assert (dict, vectors[i], vars, n_vars);
-	    }
-	}
+            }
+        }
       else
-	{
+        {
           lex_error_expecting (lexer, "`='", "`('");
-	  goto error;
-	}
+          goto error;
+        }
     }
   while (lex_match (lexer, T_SLASH));
 

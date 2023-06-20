@@ -40,7 +40,7 @@ generate_syntax (const PsppireDialogAction *act)
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (km->variables), 0, string);
 
   g_string_append_printf (string, "\n\t/CRITERIA=CLUSTERS(%d)",
-			  atoi (gtk_entry_get_text (GTK_ENTRY (km->entry))));
+                          atoi (gtk_entry_get_text (GTK_ENTRY (km->entry))));
 
   g_string_append (string, ".\n");
 

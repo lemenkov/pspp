@@ -54,7 +54,7 @@ widget_printf (const gchar *fmt, ...)
   for (i = 0 ; i < d.count ; ++i)
     {
       if (d.dir[i].conversion != '%')
-	widgets[i] = va_arg (ap, GtkWidget *);
+        widgets[i] = va_arg (ap, GtkWidget *);
     }
   va_end (ap);
 
@@ -70,16 +70,16 @@ widget_printf (const gchar *fmt, ...)
       const gchar *entry_text;
 
       if (dir.conversion == '%')
-	{
-	  s++;
-	  continue;
-	}
+        {
+          s++;
+          continue;
+        }
 
       w = widgets [dir.arg_index];
       entry_text = gtk_entry_get_text (GTK_ENTRY (w));
 
       if (dir.dir_start > s)
-	g_string_append_len (output, s, dir.dir_start - s);
+        g_string_append_len (output, s, dir.dir_start - s);
 
       s = dir.dir_end;
 

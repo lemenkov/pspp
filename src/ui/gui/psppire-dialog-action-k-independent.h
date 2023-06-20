@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT (psppire_dialog_action_k_independent_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_K_INDEPENDENT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_K_INDEPENDENT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, PsppireDialogActionKIndependent))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, PsppireDialogActionKIndependent))
 
 #define PSPPIRE_DIALOG_ACTION_K_INDEPENDENT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, \
                                  PsppireDialogActionKIndependentClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_K_INDEPENDENT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_K_INDEPENDENT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT))
 
 
 #define PSPPIRE_DIALOG_ACTION_K_INDEPENDENT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, \
-				   PsppireDialogActionKIndependentClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, \
+                                   PsppireDialogActionKIndependentClass))
 
 typedef struct _PsppireDialogActionKIndependent       PsppireDialogActionKIndependent;
 typedef struct _PsppireDialogActionKIndependentClass  PsppireDialogActionKIndependentClass;

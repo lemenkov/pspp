@@ -287,7 +287,7 @@ main (int argc, char *argv[])
                          ds_cstr (&alphabet), length, password_list))
         goto exit;
       else
-	goto error;
+        goto error;
     }
 
 
@@ -390,8 +390,8 @@ error:
 
 static bool
 decrypt_file (struct encrypted_file *enc,
-	      const struct file_handle *ifh,
-	      const struct file_handle *ofh,
+              const struct file_handle *ifh,
+              const struct file_handle *ofh,
               const char *password,
               const char *alphabet,
               int max_length,

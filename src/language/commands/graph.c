@@ -221,10 +221,10 @@ parse_function_name (struct lexer *lexer, int *agr)
   for (size_t i = 0; i < N_AG_FUNCS; ++i)
     {
       if (lex_match_id (lexer, ag_func[i].name))
-	{
-	  *agr = i;
+        {
+          *agr = i;
           return true;
-	}
+        }
     }
 
   const char *ag_func_names[N_AG_FUNCS];
@@ -245,18 +245,18 @@ parse_function (struct lexer *lexer, struct graph *graph)
   if (arity > 0)
     {
       if (!lex_force_match (lexer, T_LPAREN))
-	return false;
+        return false;
 
       graph->dep_vars = xcalloc (graph->n_dep_vars, sizeof (graph->dep_vars));
       for (int v = 0; v < arity; ++v)
-	{
-	  graph->dep_vars[v] = parse_variable (lexer, graph->dict);
-	  if (!graph->dep_vars[v])
-	    return false;
-	}
+        {
+          graph->dep_vars[v] = parse_variable (lexer, graph->dict);
+          if (!graph->dep_vars[v])
+            return false;
+        }
 
       if (!lex_force_match (lexer, T_RPAREN))
-	return false;
+        return false;
     }
 
   if (!lex_force_match (lexer, T_BY))
@@ -296,14 +296,14 @@ show_scatterplot (const struct graph *cmd, struct casereader *input)
                               var_to_string (cmd->dep_vars[0])));;
 
   scatterplot = scatterplot_create (input,
-				    var_to_string(cmd->dep_vars[0]),
-				    var_to_string(cmd->dep_vars[1]),
-				    (cmd->n_by_vars > 0) ? cmd->by_var[0]
-				                         : NULL,
-				    &byvar_overflow,
-				    title,
-				    cmd->es[0].minimum, cmd->es[0].maximum,
-				    cmd->es[1].minimum, cmd->es[1].maximum);
+                                    var_to_string(cmd->dep_vars[0]),
+                                    var_to_string(cmd->dep_vars[1]),
+                                    (cmd->n_by_vars > 0) ? cmd->by_var[0]
+                                                         : NULL,
+                                    &byvar_overflow,
+                                    title,
+                                    cmd->es[0].minimum, cmd->es[0].maximum,
+                                    cmd->es[1].minimum, cmd->es[1].maximum);
   scatterplot_chart_submit (scatterplot);
   free (title);
 
@@ -412,21 +412,21 @@ run_barchart (struct graph *cmd, struct casereader *input)
     {
       struct ccase *c = casereader_peek (group, 0);
       if (any_categorical_missing (cmd, c))
-	{
-	  case_unref (c);
-	  continue;
-	}
+        {
+          case_unref (c);
+          continue;
+        }
 
       if (n_cells >= allocated_cells)
         cells = x2nrealloc (cells, &allocated_cells, sizeof *cells);
       cells[n_cells++] = xzalloc (table_entry_size (cmd->n_by_vars));
 
       if (ag_func[cmd->agr].cumulative && n_cells >= 2)
-	cells[n_cells - 1]->count = cells[n_cells - 2]->count;
+        cells[n_cells - 1]->count = cells[n_cells - 2]->count;
       else
-	cells[n_cells - 1]->count = 0;
+        cells[n_cells - 1]->count = 0;
       if (ag_func[cmd->agr].pre)
-	cells[n_cells - 1]->count = ag_func[cmd->agr].pre();
+        cells[n_cells - 1]->count = ag_func[cmd->agr].pre();
 
       if (cmd->n_by_vars > 1)
         {
@@ -453,19 +453,19 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
       double cc = 0;
       for (; (c = casereader_read (group)) != NULL; case_unref (c))
-	{
-	  const double weight = dict_get_case_weight (cmd->dict, c, NULL);
-	  const double x = (cmd->n_dep_vars > 0
+        {
+          const double weight = dict_get_case_weight (cmd->dict, c, NULL);
+          const double x = (cmd->n_dep_vars > 0
                             ? case_num (c, cmd->dep_vars[0]) : SYSMIS);
 
-	  cc += weight;
-	  cells[n_cells - 1]->count
-	    = ag_func[cmd->agr].calc (cells[n_cells - 1]->count, x, weight);
-	}
+          cc += weight;
+          cells[n_cells - 1]->count
+            = ag_func[cmd->agr].calc (cells[n_cells - 1]->count, x, weight);
+        }
 
       if (ag_func[cmd->agr].post)
-      	cells[n_cells - 1]->count
-      	  = ag_func[cmd->agr].post (cells[n_cells - 1]->count, cc);
+              cells[n_cells - 1]->count
+                = ag_func[cmd->agr].post (cells[n_cells - 1]->count, cc);
 
       ccc += cc;
     }
@@ -475,31 +475,31 @@ run_barchart (struct graph *cmd, struct casereader *input)
   for (int i = 0; i < n_cells; ++i)
     {
       if (ag_func[cmd->agr].ppost)
-	{
-	  struct freq *cell = cells[i];
-	  if (cmd->n_by_vars > 1)
-	    {
-	      const union value *vv = &cell->values[1];
+        {
+          struct freq *cell = cells[i];
+          if (cmd->n_by_vars > 1)
+            {
+              const union value *vv = &cell->values[1];
 
-	      int v1_width = var_get_width (cmd->by_var[1]);
-	      size_t hash = value_hash (vv, v1_width, 0);
+              int v1_width = var_get_width (cmd->by_var[1]);
+              size_t hash = value_hash (vv, v1_width, 0);
 
-	      struct freq *fcol = find_fcol (&columns, vv, hash, v1_width);
-	      cell->count = ag_func[cmd->agr].ppost (cell->count, fcol->count);
-	    }
-	  else
-	    cell->count = ag_func[cmd->agr].ppost (cell->count, ccc);
-	}
+              struct freq *fcol = find_fcol (&columns, vv, hash, v1_width);
+              cell->count = ag_func[cmd->agr].ppost (cell->count, fcol->count);
+            }
+          else
+            cell->count = ag_func[cmd->agr].ppost (cell->count, ccc);
+        }
     }
 
   if (cmd->n_by_vars > 1)
     {
       struct freq *cell, *next;
       HMAP_FOR_EACH_SAFE (cell, next, struct freq, node, &columns)
-	{
-	  value_destroy (cell->values, var_get_width (cmd->by_var[1]));
-	  free (cell);
-	}
+        {
+          value_destroy (cell->values, var_get_width (cmd->by_var[1]));
+          free (cell);
+        }
     }
   hmap_destroy (&columns);
 
@@ -558,40 +558,40 @@ run_graph (struct graph *cmd, struct casereader *input)
       struct ccase *outcase = case_create (cmd->gr_proto);
       const double weight = dict_get_case_weight (cmd->dict, c, NULL);
       if (cmd->chart_type == CT_HISTOGRAM)
-	*case_num_rw_idx (outcase, HG_IDX_WT) = weight;
+        *case_num_rw_idx (outcase, HG_IDX_WT) = weight;
       if (cmd->chart_type == CT_SCATTERPLOT && cmd->n_by_vars > 0)
-	value_copy (case_data_rw_idx (outcase, SP_IDX_BY),
-		    case_data (c, cmd->by_var[0]),
-		    var_get_width (cmd->by_var[0]));
+        value_copy (case_data_rw_idx (outcase, SP_IDX_BY),
+                    case_data (c, cmd->by_var[0]),
+                    var_get_width (cmd->by_var[0]));
       for (int v = 0; v < cmd->n_dep_vars; v++)
-	{
-	  const struct variable *var = cmd->dep_vars[v];
-	  const double x = case_num (c, var);
+        {
+          const struct variable *var = cmd->dep_vars[v];
+          const double x = case_num (c, var);
 
-	  if (var_is_value_missing (var, case_data (c, var)) & cmd->dep_excl)
-	    {
-	      cmd->es[v].missing += weight;
-	      continue;
-	    }
+          if (var_is_value_missing (var, case_data (c, var)) & cmd->dep_excl)
+            {
+              cmd->es[v].missing += weight;
+              continue;
+            }
 
-	  /* Magically v value fits to SP_IDX_X, SP_IDX_Y, HG_IDX_X. */
-	  *case_num_rw_idx (outcase, v) = x;
+          /* Magically v value fits to SP_IDX_X, SP_IDX_Y, HG_IDX_X. */
+          *case_num_rw_idx (outcase, v) = x;
 
-	  if (x > cmd->es[v].maximum)
-	    cmd->es[v].maximum = x;
+          if (x > cmd->es[v].maximum)
+            cmd->es[v].maximum = x;
 
-	  if (x < cmd->es[v].minimum)
-	    cmd->es[v].minimum =  x;
+          if (x < cmd->es[v].minimum)
+            cmd->es[v].minimum =  x;
 
-	  cmd->es[v].non_missing += weight;
+          cmd->es[v].non_missing += weight;
 
-	  moments_pass_one (cmd->es[v].mom, x, weight);
+          moments_pass_one (cmd->es[v].mom, x, weight);
 
-	  cmd->es[v].cc += weight;
+          cmd->es[v].cc += weight;
 
-	  if (cmd->es[v].cmin > weight)
-	    cmd->es[v].cmin = weight;
-	}
+          if (cmd->es[v].cmin > weight)
+            cmd->es[v].cmin = weight;
+        }
       casewriter_write (writer, outcase);
     }
 
@@ -644,13 +644,13 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "HISTOGRAM"))
-	{
-	  if (graph.chart_type != CT_NONE)
-	    {
-	      lex_next_error (lexer, -1, -1,
+        {
+          if (graph.chart_type != CT_NONE)
+            {
+              lex_next_error (lexer, -1, -1,
                               _("Only one chart type is allowed."));
-	      goto error;
-	    }
+              goto error;
+            }
           graph.normal = false;
           if (lex_match (lexer, T_LPAREN))
             {
@@ -659,210 +659,210 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 
               graph.normal = true;
             }
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
-	  graph.chart_type = CT_HISTOGRAM;
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
+          graph.chart_type = CT_HISTOGRAM;
           int vars_start = lex_ofs (lexer);
-	  if (!parse_variables_const (lexer, graph.dict,
-				      &graph.dep_vars, &graph.n_dep_vars,
-				      PV_NO_DUPLICATE | PV_NUMERIC))
-	    goto error;
-	  if (graph.n_dep_vars > 1)
-	    {
-	      lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
+          if (!parse_variables_const (lexer, graph.dict,
+                                      &graph.dep_vars, &graph.n_dep_vars,
+                                      PV_NO_DUPLICATE | PV_NUMERIC))
+            goto error;
+          if (graph.n_dep_vars > 1)
+            {
+              lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
                              _("Only one variable is allowed."));
-	      goto error;
-	    }
-	}
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "BAR"))
-	{
-	  if (graph.chart_type != CT_NONE)
-	    {
-	      lex_next_error (lexer, -1, -1,
+        {
+          if (graph.chart_type != CT_NONE)
+            {
+              lex_next_error (lexer, -1, -1,
                               _("Only one chart type is allowed."));
-	      goto error;
-	    }
-	  graph.chart_type = CT_BAR;
-	  graph.bar_type = CBT_SIMPLE;
+              goto error;
+            }
+          graph.chart_type = CT_BAR;
+          graph.bar_type = CBT_SIMPLE;
 
-	  if (lex_match (lexer, T_LPAREN))
-	    {
-	      if (lex_match_id (lexer, "SIMPLE"))
-		{
-		  /* This is the default anyway */
-		}
-	      else if (lex_match_id (lexer, "GROUPED"))
-		{
-		  graph.bar_type = CBT_GROUPED;
-		  lex_next_error (lexer, -1, -1,
+          if (lex_match (lexer, T_LPAREN))
+            {
+              if (lex_match_id (lexer, "SIMPLE"))
+                {
+                  /* This is the default anyway */
+                }
+              else if (lex_match_id (lexer, "GROUPED"))
+                {
+                  graph.bar_type = CBT_GROUPED;
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."), "GROUPED");
-		  goto error;
-		}
-	      else if (lex_match_id (lexer, "STACKED"))
-		{
-		  graph.bar_type = CBT_STACKED;
-		  lex_next_error (lexer, -1, -1,
+                  goto error;
+                }
+              else if (lex_match_id (lexer, "STACKED"))
+                {
+                  graph.bar_type = CBT_STACKED;
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."), "STACKED");
-		  goto error;
-		}
-	      else if (lex_match_id (lexer, "RANGE"))
-		{
-		  graph.bar_type = CBT_RANGE;
-		  lex_next_error (lexer, -1, -1,
+                  goto error;
+                }
+              else if (lex_match_id (lexer, "RANGE"))
+                {
+                  graph.bar_type = CBT_RANGE;
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."), "RANGE");
-		  goto error;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "SIMPLE", "GROUPED",
+                  goto error;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "SIMPLE", "GROUPED",
                                        "STACKED", "RANGE");
-		  goto error;
-		}
-	      if (!lex_force_match (lexer, T_RPAREN))
-		goto error;
-	    }
+                  goto error;
+                }
+              if (!lex_force_match (lexer, T_RPAREN))
+                goto error;
+            }
 
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
 
-	  if (!parse_function (lexer, &graph))
-	    goto error;
-	}
+          if (!parse_function (lexer, &graph))
+            goto error;
+        }
       else if (lex_match_id (lexer, "SCATTERPLOT"))
-	{
-	  if (graph.chart_type != CT_NONE)
-	    {
-	      lex_next_error (lexer, -1, -1,
+        {
+          if (graph.chart_type != CT_NONE)
+            {
+              lex_next_error (lexer, -1, -1,
                               _("Only one chart type is allowed."));
-	      goto error;
-	    }
-	  graph.chart_type = CT_SCATTERPLOT;
-	  if (lex_match (lexer, T_LPAREN))
-	    {
-	      if (lex_match_id (lexer, "BIVARIATE"))
-		{
-		  /* This is the default anyway */
-		}
-	      else if (lex_match_id (lexer, "OVERLAY"))
-		{
-		  lex_next_error (lexer, -1, -1,
+              goto error;
+            }
+          graph.chart_type = CT_SCATTERPLOT;
+          if (lex_match (lexer, T_LPAREN))
+            {
+              if (lex_match_id (lexer, "BIVARIATE"))
+                {
+                  /* This is the default anyway */
+                }
+              else if (lex_match_id (lexer, "OVERLAY"))
+                {
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."),"OVERLAY");
-		  goto error;
-		}
-	      else if (lex_match_id (lexer, "MATRIX"))
-		{
-		  lex_next_error (lexer, -1, -1,
+                  goto error;
+                }
+              else if (lex_match_id (lexer, "MATRIX"))
+                {
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."),"MATRIX");
-		  goto error;
-		}
-	      else if (lex_match_id (lexer, "XYZ"))
-		{
-		  lex_next_error (lexer, -1, -1,
+                  goto error;
+                }
+              else if (lex_match_id (lexer, "XYZ"))
+                {
+                  lex_next_error (lexer, -1, -1,
                                   _("%s is not yet implemented."),"XYZ");
-		  goto error;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "BIVARIATE", "OVERLAY",
+                  goto error;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "BIVARIATE", "OVERLAY",
                                        "MATRIX", "XYZ");
-		  goto error;
-		}
-	      if (!lex_force_match (lexer, T_RPAREN))
-		goto error;
-	    }
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
+                  goto error;
+                }
+              if (!lex_force_match (lexer, T_RPAREN))
+                goto error;
+            }
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
 
           int vars_start = lex_ofs (lexer);
-	  if (!parse_variables_const (lexer, graph.dict,
-				      &graph.dep_vars, &graph.n_dep_vars,
-				      PV_NO_DUPLICATE | PV_NUMERIC))
-	    goto error;
+          if (!parse_variables_const (lexer, graph.dict,
+                                      &graph.dep_vars, &graph.n_dep_vars,
+                                      PV_NO_DUPLICATE | PV_NUMERIC))
+            goto error;
 
-	  if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 1)
-	    {
-	      lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
+          if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 1)
+            {
+              lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
                              _("Only one variable is allowed."));
-	      goto error;
-	    }
+              goto error;
+            }
 
-	  if (!lex_force_match (lexer, T_WITH))
-	    goto error;
+          if (!lex_force_match (lexer, T_WITH))
+            goto error;
 
           vars_start = lex_ofs (lexer);
-	  if (!parse_variables_const (lexer, graph.dict,
-				      &graph.dep_vars, &graph.n_dep_vars,
-				      PV_NO_DUPLICATE | PV_NUMERIC | PV_APPEND))
-	    goto error;
+          if (!parse_variables_const (lexer, graph.dict,
+                                      &graph.dep_vars, &graph.n_dep_vars,
+                                      PV_NO_DUPLICATE | PV_NUMERIC | PV_APPEND))
+            goto error;
 
-	  if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 2)
-	    {
-	      lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
+          if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 2)
+            {
+              lex_ofs_error (lexer, vars_start, lex_ofs (lexer) - 1,
                              _("Only one variable is allowed."));
-	      goto error;
-	    }
+              goto error;
+            }
 
-	  if (lex_match (lexer, T_BY))
-	    {
-	      const struct variable *v = NULL;
-	      if (!lex_match_variable (lexer,graph.dict,&v))
-		{
-		  lex_error (lexer, _("Syntax error expecting variable name."));
-		  goto error;
-		}
-	      graph.by_var[0] = v;
+          if (lex_match (lexer, T_BY))
+            {
+              const struct variable *v = NULL;
+              if (!lex_match_variable (lexer,graph.dict,&v))
+                {
+                  lex_error (lexer, _("Syntax error expecting variable name."));
+                  goto error;
+                }
+              graph.by_var[0] = v;
               graph.n_by_vars = 1;
-	    }
-	}
+            }
+        }
       else if (lex_match_id (lexer, "LINE"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"LINE");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "PIE"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"PIE");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "ERRORBAR"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"ERRORBAR");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "PARETO"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"PARETO");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "TITLE"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"TITLE");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "SUBTITLE"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"SUBTITLE");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "FOOTNOTE"))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("%s is not yet implemented."),"FOOTNOTE");
-	  goto error;
-	}
+          goto error;
+        }
       else if (lex_match_id (lexer, "MISSING"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
               if (lex_match_id (lexer, "LISTWISE"))
                 graph.missing_pw = false;
               else if (lex_match_id (lexer, "VARIABLE"))
@@ -904,10 +904,10 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
       /* y value - SP_IDX_Y*/
       graph.gr_proto = caseproto_add_width (graph.gr_proto, 0);
       /* The by_var contains the plot categories for the different xy
-	 plot colors */
+         plot colors */
       if (graph.n_by_vars > 0) /* SP_IDX_BY */
-	graph.gr_proto = caseproto_add_width (graph.gr_proto,
-					      var_get_width(graph.by_var[0]));
+        graph.gr_proto = caseproto_add_width (graph.gr_proto,
+                                              var_get_width(graph.by_var[0]));
       break;
 
     case CT_HISTOGRAM:

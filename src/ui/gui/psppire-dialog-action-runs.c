@@ -92,7 +92,7 @@ dialog_state_valid (gpointer data)
   for (i = 0; i < 4; ++i)
     {
       if (TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
-	break;
+        break;
     }
   if (i >= 4)
     return FALSE;
@@ -101,7 +101,7 @@ dialog_state_valid (gpointer data)
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[CB_CUSTOM])))
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (fd->entry))))
-	return FALSE;
+        return FALSE;
     }
 
   return TRUE;

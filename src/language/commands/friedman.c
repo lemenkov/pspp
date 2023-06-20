@@ -46,10 +46,10 @@ struct friedman
 };
 
 static void show_ranks_box (const struct one_sample_test *ost,
-			    const struct friedman *fr);
+                            const struct friedman *fr);
 
 static void show_sig_box (const struct one_sample_test *ost,
-			  const struct friedman *fr);
+                          const struct friedman *fr);
 
 struct datum
 {
@@ -83,11 +83,11 @@ cmp_posn (const void *a_, const void *b_)
 
 void
 friedman_execute (const struct dataset *ds,
-		  struct casereader *input,
-		  enum mv_class exclude,
-		  const struct npar_test *test,
-		  bool exact UNUSED,
-		  double timer UNUSED)
+                  struct casereader *input,
+                  enum mv_class exclude,
+                  const struct npar_test *test,
+                  bool exact UNUSED,
+                  double timer UNUSED)
 {
   double numerator = 0.0;
   double denominator = 0.0;
@@ -115,8 +115,8 @@ friedman_execute (const struct dataset *ds,
 
   input = casereader_create_filter_weight (input, dict, &warn, NULL);
   input = casereader_create_filter_missing (input,
-					    ost->vars, ost->n_vars,
-					    exclude, 0, 0);
+                                            ost->vars, ost->n_vars,
+                                            exclude, 0, 0);
 
   for (; (c = casereader_read (input)); case_unref (c))
     {
@@ -128,52 +128,52 @@ friedman_execute (const struct dataset *ds,
       fr.cc += w;
 
       for (v = 0; v < ost->n_vars; ++v)
-	{
-	  const struct variable *var = ost->vars[v];
-	  const union value *val = case_data (c, var);
-	  row[v].x = val->f;
-	}
+        {
+          const struct variable *var = ost->vars[v];
+          const union value *val = case_data (c, var);
+          row[v].x = val->f;
+        }
 
       qsort (row, ost->n_vars, sizeof *row, cmp_x);
       for (v = 0; v < ost->n_vars; ++v)
-	{
-	  double x = row[v].x;
-	  /* Replace value by the Rank */
-	  if (prev_x == x)
-	    {
-	      /* Deal with ties */
-	      int i;
-	      run_length++;
-	      for (i = v - run_length; i < v; ++i)
-		{
-		  row[i].x *= run_length ;
-		  row[i].x += v + 1;
-		  row[i].x /= run_length + 1;
-		}
-	      row[v].x = row[v-1].x;
-	    }
-	  else
-	    {
-	      row[v].x = v + 1;
-	      if (run_length > 0)
-		{
-		  double t = run_length + 1;
-		  sigma_t += w * (pow3 (t) - t);
-		}
-	      run_length = 0;
-	    }
-	  prev_x = x;
-	}
+        {
+          double x = row[v].x;
+          /* Replace value by the Rank */
+          if (prev_x == x)
+            {
+              /* Deal with ties */
+              int i;
+              run_length++;
+              for (i = v - run_length; i < v; ++i)
+                {
+                  row[i].x *= run_length ;
+                  row[i].x += v + 1;
+                  row[i].x /= run_length + 1;
+                }
+              row[v].x = row[v-1].x;
+            }
+          else
+            {
+              row[v].x = v + 1;
+              if (run_length > 0)
+                {
+                  double t = run_length + 1;
+                  sigma_t += w * (pow3 (t) - t);
+                }
+              run_length = 0;
+            }
+          prev_x = x;
+        }
       if (run_length > 0)
-	{
-	  double t = run_length + 1;
-	  sigma_t += w * (pow3 (t) - t);
-	}
+        {
+          double t = run_length + 1;
+          sigma_t += w * (pow3 (t) - t);
+        }
 
       qsort (row, ost->n_vars, sizeof *row, cmp_posn);
 
       for (v = 0; v < ost->n_vars; ++v)
-	fr.rank_sum[v] += row[v].x * w;
+        fr.rank_sum[v] += row[v].x * w;
     }
   casereader_destroy (input);
   free (row);
@@ -197,10 +197,10 @@ friedman_execute (const struct dataset *ds,
     {
       fr.w = 12 * rsq ;
       fr.w -= 3 * pow2 (fr.cc) *
-	ost->n_vars * pow2 (ost->n_vars + 1);
+        ost->n_vars * pow2 (ost->n_vars + 1);
 
       fr.w /= pow2 (fr.cc) * (pow3 (ost->n_vars) - ost->n_vars)
-	- fr.cc * sigma_t;
+        - fr.cc * sigma_t;
     }
   else
     fr.w = SYSMIS;

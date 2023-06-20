@@ -249,11 +249,11 @@ read_paper_conf (const char *file_name, double *h, double *v)
       struct substring name;
 
       if (!ds_read_config_line (&line, &line_number, file))
-	{
-	  if (ferror (file))
-	    msg_error (errno, _("error reading file `%s'"), file_name);
-	  break;
-	}
+        {
+          if (ferror (file))
+            msg_error (errno, _("error reading file `%s'"), file_name);
+          break;
+        }
 
       name = ds_ss (&line);
       ss_trim (&name, ss_cstr (CC_SPACES));

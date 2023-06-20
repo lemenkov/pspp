@@ -41,25 +41,25 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION (psppire_dialog_action_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION(obj)	\
+#define PSPPIRE_DIALOG_ACTION(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION, PsppireDialogAction))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION, PsppireDialogAction))
 
 #define PSPPIRE_DIALOG_ACTION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION, \
                                  PsppireDialogActionClass))
 
 #define PSPPIRE_IS_DIALOG_ACTION(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION))
 
 #define PSPPIRE_IS_DIALOG_ACTION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION))
 
 
 #define PSPPIRE_DIALOG_ACTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION, \
-				   PsppireDialogActionClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION, \
+                                   PsppireDialogActionClass))
 
 typedef struct _PsppireDialogAction       PsppireDialogAction;
 typedef struct _PsppireDialogActionClass  PsppireDialogActionClass;
@@ -93,10 +93,10 @@ GType psppire_dialog_action_get_type (void) ;
 typedef void (*PsppireDialogActionRefresh) (PsppireDialogAction *) ;
 
 void psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
-					PsppireDialogActionRefresh refresh);
+                                        PsppireDialogActionRefresh refresh);
 
 void psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act,
-						ContentsAreValid dialog_state_valid);
+                                                ContentsAreValid dialog_state_valid);
 
 GtkBuilder * psppire_dialog_action_get_xml (PsppireDialogAction *da);
 

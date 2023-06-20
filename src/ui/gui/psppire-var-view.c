@@ -50,7 +50,7 @@ var_view_contains_var (PsppireSelectDestWidget *sdm, const GValue *v)
     {
       const struct variable *var = psppire_var_view_get_variable (vv, 0, &iter);
       if (var == g_value_get_boxed (v))
-	return TRUE;
+        return TRUE;
     }
 
   return FALSE;
@@ -97,10 +97,10 @@ enum
 */
 static void
 display_cell_var_name (GtkTreeViewColumn *tree_column,
-		       GtkCellRenderer *cell,
-		       GtkTreeModel *treemodel,
-		       GtkTreeIter *iter,
-		       gpointer data)
+                       GtkCellRenderer *cell,
+                       GtkTreeModel *treemodel,
+                       GtkTreeIter *iter,
+                       gpointer data)
 {
   struct variable *var;
   GValue value = {0};
@@ -122,9 +122,9 @@ display_cell_var_name (GtkTreeViewColumn *tree_column,
 
 static void
 psppire_var_view_get_property (GObject         *object,
-			       guint            prop_id,
-			       GValue          *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               GValue          *value,
+                               GParamSpec      *pspec)
 {
   PsppireVarView *var_view = PSPPIRE_VAR_VIEW (object);
 
@@ -163,8 +163,8 @@ set_renderers (PsppireVarView *var_view)
 
       gtk_tree_view_column_pack_start (col, renderer, TRUE);
       gtk_tree_view_column_set_cell_data_func (col, renderer,
-					       display_cell_var_name,
-					       &var_view->nums[c], 0);
+                                               display_cell_var_name,
+                                               &var_view->nums[c], 0);
 
       gtk_tree_view_append_column (GTK_TREE_VIEW (var_view), col);
     }
@@ -179,9 +179,9 @@ psppire_var_view_get_current_model (PsppireVarView *vv)
 
 static void
 psppire_var_view_set_property (GObject         *object,
-			       guint            prop_id,
-			       const GValue    *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               const GValue    *value,
+                               GParamSpec      *pspec)
 {
   PsppireVarView *var_view = PSPPIRE_VAR_VIEW (object);
 
@@ -189,17 +189,17 @@ psppire_var_view_set_property (GObject         *object,
     {
     case PROP_N_COLS:
       {
-	gint c;
-	var_view->n_cols = g_value_get_int (value);
+        gint c;
+        var_view->n_cols = g_value_get_int (value);
 
-	var_view->cols = g_realloc (var_view->cols, sizeof (GType) *  var_view->n_cols);
+        var_view->cols = g_realloc (var_view->cols, sizeof (GType) *  var_view->n_cols);
 
-	for (c = 0 ; c < var_view->n_cols; ++c)
-	  var_view->cols[c] = PSPPIRE_VAR_PTR_TYPE;
+        for (c = 0 ; c < var_view->n_cols; ++c)
+          var_view->cols[c] = PSPPIRE_VAR_PTR_TYPE;
 
-	set_renderers (var_view);
+        set_renderers (var_view);
 
-	psppire_var_view_clear (var_view);
+        psppire_var_view_clear (var_view);
       }
       break;
     default:
@@ -217,11 +217,11 @@ psppire_var_view_class_init (PsppireVarViewClass *class)
 
   GParamSpec *n_cols_spec =
     g_param_spec_int ("n-cols",
-		      "Number of columns",
-		      "The Number of Columns in the Variable View",
-		      1, 20,
-		      1,
-		      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READABLE | G_PARAM_WRITABLE);
+                      "Number of columns",
+                      "The Number of Columns in the Variable View",
+                      1, 20,
+                      1,
+                      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READABLE | G_PARAM_WRITABLE);
 
 
   object_class->set_property = psppire_var_view_set_property;
@@ -275,7 +275,7 @@ psppire_var_view_get_var_from_model (GtkTreeModel *model, gint column, GtkTreeIt
     var = g_value_get_boxed (&value);
   else
     g_critical ("Unsupported type `%s', in variable name treeview.",
-		G_VALUE_TYPE_NAME (&value));
+                G_VALUE_TYPE_NAME (&value));
 
   g_value_unset (&value);
 
@@ -304,13 +304,13 @@ psppire_var_view_append_names (PsppireVarView *vv, gint column, GString *string)
   if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
-	{
-	  const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
-	  g_string_append (string, " ");
-	  g_string_append (string, var_get_name (var));
+        {
+          const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
+          g_string_append (string, " ");
+          g_string_append (string, var_get_name (var));
 
-	  n_vars++;
-	}
+          n_vars++;
+        }
       while (psppire_var_view_get_iter_next (vv, &iter));
     }
 
@@ -332,10 +332,10 @@ psppire_var_view_list_names (PsppireVarView *vv, gint column)
   if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
-	{
-	  const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
-	  list = g_slist_prepend (list, CONST_CAST (struct variable *, var));
-	}
+        {
+          const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
+          list = g_slist_prepend (list, CONST_CAST (struct variable *, var));
+        }
       while (psppire_var_view_get_iter_next (vv, &iter));
     }
 
@@ -356,13 +356,13 @@ psppire_var_view_append_names_str (PsppireVarView *vv, gint column, struct strin
   if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
-	{
-	  const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
-	  ds_put_cstr (str, " ");
-	  ds_put_cstr (str, var_get_name (var));
+        {
+          const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
+          ds_put_cstr (str, " ");
+          ds_put_cstr (str, var_get_name (var));
 
-	  n_vars++;
-	}
+          n_vars++;
+        }
       while (psppire_var_view_get_iter_next (vv, &iter));
     }
 

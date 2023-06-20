@@ -90,7 +90,7 @@ static void read_variable_attributes (struct sfm_reader *r,
                                       size_t size, size_t count);
 static void read_ncases64 (struct sfm_reader *, size_t size, size_t count);
 static void read_character_encoding (struct sfm_reader *r,
-				       size_t size, size_t count);
+                                       size_t size, size_t count);
 static void read_long_string_value_labels (struct sfm_reader *r,
                                            size_t size, size_t count);
 static void read_long_string_missing_values (struct sfm_reader *r,
@@ -1093,12 +1093,12 @@ read_long_string_value_labels (struct sfm_reader *r, size_t size, size_t count)
 
       /* Read values. */
       for (i = 0; i < n_values; i++)
-	{
+        {
           char *value;
           int value_length;
 
           char *label;
-	  int label_length;
+          int label_length;
 
           posn = ftello (r->file);
 
@@ -1117,7 +1117,7 @@ read_long_string_value_labels (struct sfm_reader *r, size_t size, size_t count)
 
           free (value);
           free (label);
-	}
+        }
     }
 }
 
@@ -1153,7 +1153,7 @@ read_long_string_missing_values (struct sfm_reader *r,
 
       /* Read values. */
       for (int i = 0; i < n_missing_values; i++)
-	{
+        {
           posn = ftello (r->file);
 
           /* Read value. */
@@ -1163,7 +1163,7 @@ read_long_string_missing_values (struct sfm_reader *r,
           printf (" \"%s\"", value);
 
           free (value);
-	}
+        }
       printf ("\n");
     }
 }

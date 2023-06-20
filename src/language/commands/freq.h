@@ -24,7 +24,7 @@
 struct freq
   {
     struct hmap_node node;      /* Element in hash table. */
-    double count;		/* The number of occurrences of the value. */
+    double count;                /* The number of occurrences of the value. */
     union value values[1];      /* The value. */
   };
 

@@ -81,11 +81,11 @@ belongs_to_test (const struct ccase *c, void *aux)
 
 void
 mann_whitney_execute (const struct dataset *ds,
-		      struct casereader *input,
-		      enum mv_class exclude,
-		      const struct npar_test *test,
-		      bool exact UNUSED,
-		      double timer UNUSED)
+                      struct casereader *input,
+                      enum mv_class exclude,
+                      const struct npar_test *test,
+                      bool exact UNUSED,
+                      double timer UNUSED)
 {
   int i;
   const struct dictionary *dict = dataset_dict (ds);
@@ -106,66 +106,66 @@ mann_whitney_execute (const struct dataset *ds,
       const struct variable *var = nst->vars[i];
 
       struct casereader *reader =
-	casereader_create_filter_func (casereader_clone (input),
-				       belongs_to_test,
-				       NULL,
-				       CONST_CAST (struct n_sample_test *, nst),
-				       NULL);
+        casereader_create_filter_func (casereader_clone (input),
+                                       belongs_to_test,
+                                       NULL,
+                                       CONST_CAST (struct n_sample_test *, nst),
+                                       NULL);
 
       reader = casereader_create_filter_missing (reader, &var, 1,
-						 exclude,
-						 NULL, NULL);
+                                                 exclude,
+                                                 NULL, NULL);
 
       reader = sort_execute_1var (reader, var);
 
       rr = casereader_create_append_rank (reader, var,
-					  dict_get_weight (dict),
-					  &rerr,
-					  distinct_callback, &tiebreaker);
+                                          dict_get_weight (dict),
+                                          &rerr,
+                                          distinct_callback, &tiebreaker);
 
       for (; (c = casereader_read (rr)); case_unref (c))
-	{
-	  const union value *group = case_data (c, nst->indep_var);
-	  const size_t group_var_width = var_get_width (nst->indep_var);
-	  const double rank = case_num_idx (c, rank_idx);
+        {
+          const union value *group = case_data (c, nst->indep_var);
+          const size_t group_var_width = var_get_width (nst->indep_var);
+          const double rank = case_num_idx (c, rank_idx);
 
-	  if (value_equal (group, &nst->val1, group_var_width))
-	    {
-	      mw[i].rank_sum[0] += rank;
-	      mw[i].n[0] += dict_get_case_weight (dict, c, &warn);
-	    }
-	  else if (value_equal (group, &nst->val2, group_var_width))
-	    {
-	      mw[i].rank_sum[1] += rank;
-	      mw[i].n[1] += dict_get_case_weight (dict, c, &warn);
-	    }
-	}
+          if (value_equal (group, &nst->val1, group_var_width))
+            {
+              mw[i].rank_sum[0] += rank;
+              mw[i].n[0] += dict_get_case_weight (dict, c, &warn);
+            }
+          else if (value_equal (group, &nst->val2, group_var_width))
+            {
+              mw[i].rank_sum[1] += rank;
+              mw[i].n[1] += dict_get_case_weight (dict, c, &warn);
+            }
+        }
       casereader_destroy (rr);
 
       {
-	double n;
-	double denominator;
-	struct mw *mwv = &mw[i];
+        double n;
+        double denominator;
+        struct mw *mwv = &mw[i];
 
-	mwv->u = mwv->n[0] * mwv->n[1] ;
-	mwv->u += mwv->n[0] * (mwv->n[0] + 1) / 2.0;
-	mwv->u -= mwv->rank_sum[0];
+        mwv->u = mwv->n[0] * mwv->n[1] ;
+        mwv->u += mwv->n[0] * (mwv->n[0] + 1) / 2.0;
+        mwv->u -= mwv->rank_sum[0];
 
-	mwv->w = mwv->rank_sum[1];
-	if (mwv->u > mwv->n[0] * mwv->n[1] / 2.0)
-	  {
-	    mwv->u =  mwv->n[0] * mwv->n[1] - mwv->u;
-	    mwv->w = mwv->rank_sum[0];
-	  }
-	mwv->z = mwv->u - mwv->n[0] * mwv->n[1] / 2.0;
-	n = mwv->n[0] + mwv->n[1];
-	denominator = pow3(n) - n;
-	denominator /= 12;
-	denominator -= tiebreaker;
-	denominator *= mwv->n[0] * mwv->n[1];
-	denominator /= n * (n - 1);
+        mwv->w = mwv->rank_sum[1];
+        if (mwv->u > mwv->n[0] * mwv->n[1] / 2.0)
+          {
+            mwv->u =  mwv->n[0] * mwv->n[1] - mwv->u;
+            mwv->w = mwv->rank_sum[0];
+          }
+        mwv->z = mwv->u - mwv->n[0] * mwv->n[1] / 2.0;
+        n = mwv->n[0] + mwv->n[1];
+        denominator = pow3(n) - n;
+        denominator /= 12;
+        denominator -= tiebreaker;
+        denominator *= mwv->n[0] * mwv->n[1];
+        denominator /= n * (n - 1);
 
-	mwv->z /= sqrt (denominator);
+        mwv->z /= sqrt (denominator);
       }
     }
   casereader_destroy (input);

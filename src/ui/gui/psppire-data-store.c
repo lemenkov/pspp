@@ -50,14 +50,14 @@ static void psppire_data_store_finalize        (GObject           *object);
 static void psppire_data_store_dispose        (GObject           *object);
 
 static gboolean psppire_data_store_insert_case (PsppireDataStore *ds,
-						struct ccase *cc,
-						casenumber posn);
+                                                struct ccase *cc,
+                                                casenumber posn);
 
 
 static gboolean psppire_data_store_data_in (PsppireDataStore *ds,
-					    casenumber casenum, gint idx,
-					    struct substring input,
-					    struct fmt_spec);
+                                            casenumber casenum, gint idx,
+                                            struct substring input,
+                                            struct fmt_spec);
 
 static GObjectClass *parent_class = NULL;
 
@@ -73,7 +73,7 @@ static guint signals [n_SIGNALS];
 
 static gint
 __tree_model_iter_n_children (GtkTreeModel *tree_model,
-			     GtkTreeIter *iter)
+                             GtkTreeIter *iter)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
@@ -104,9 +104,9 @@ __tree_model_get_n_columns (GtkTreeModel *tree_model)
 
 static gboolean
 __iter_nth_child (GtkTreeModel *tree_model,
-		  GtkTreeIter *iter,
-		  GtkTreeIter *parent,
-		  gint n)
+                  GtkTreeIter *iter,
+                  GtkTreeIter *parent,
+                  gint n)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
@@ -130,16 +130,16 @@ __iter_nth_child (GtkTreeModel *tree_model,
    ROW, for MODEL.  Returns TRUE if successful. */
 gboolean
 psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
-				    const gchar *in, GValue *out)
+                                    const gchar *in, GValue *out)
 {
   PsppireDataStore *store = PSPPIRE_DATA_STORE (model);
 
   while (col >= psppire_dict_get_n_vars (store->dict))
     {
       const struct variable *var =
-	psppire_dict_insert_variable (store->dict,
-				      psppire_dict_get_n_vars (store->dict),
-				      NULL);
+        psppire_dict_insert_variable (store->dict,
+                                      psppire_dict_get_n_vars (store->dict),
+                                      NULL);
       g_return_val_if_fail (var, FALSE);
     }
 
@@ -158,13 +158,13 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
     {
       vp = val_labs_find_value (value_labels, in);
       if (vp)
-	value_copy (&val, vp, width);
+        value_copy (&val, vp, width);
     }
   char *xx = NULL;
   if (vp == NULL)
     {
       xx = data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
-		    fmt.type, settings_get_fmt_settings (),
+                    fmt.type, settings_get_fmt_settings (),
                     &val, width, "UTF-8");
     }
 
@@ -233,9 +233,9 @@ psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStor
 
 static void
 __get_value (GtkTreeModel *tree_model,
-	     GtkTreeIter *iter,
-	     gint column,
-	     GValue *value)
+             GtkTreeIter *iter,
+             gint column,
+             GValue *value)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
@@ -282,8 +282,8 @@ __tree_model_init (GtkTreeModelIface *iface)
 }
 
 G_DEFINE_TYPE_WITH_CODE (PsppireDataStore, psppire_data_store, G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
-						__tree_model_init))
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+                                                __tree_model_init))
 
 static void
 psppire_data_store_class_init (PsppireDataStoreClass *class)
@@ -298,27 +298,27 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 
   signals [ITEMS_CHANGED] =
     g_signal_new ("items-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__UINT_UINT_UINT,
-		  G_TYPE_NONE,
-		  3,
-		  G_TYPE_UINT,  /* Index of the start of the change */
-		  G_TYPE_UINT,  /* The number of items deleted */
-		  G_TYPE_UINT); /* The number of items inserted */
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  psppire_marshal_VOID__UINT_UINT_UINT,
+                  G_TYPE_NONE,
+                  3,
+                  G_TYPE_UINT,  /* Index of the start of the change */
+                  G_TYPE_UINT,  /* The number of items deleted */
+                  G_TYPE_UINT); /* The number of items inserted */
 
   signals [CASE_CHANGED] =
     g_signal_new ("case-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_INT);
 }
 
 
@@ -410,7 +410,7 @@ resize_datum (const union value *old, union value *new, const void *aux_)
 
 static void
 variable_changed_callback (GObject *obj, gint var_num, guint what, const struct variable *oldvar,
-			   gpointer data)
+                           gpointer data)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (data);
   struct variable *variable = psppire_dict_get_variable (store->dict, var_num);
@@ -464,7 +464,7 @@ psppire_data_store_new (PsppireDict *dict)
 
 void
 psppire_data_store_set_reader (PsppireDataStore *ds,
-			       struct casereader *reader)
+                               struct casereader *reader)
 {
   gint i;
   gint old_n = 0;
@@ -481,11 +481,11 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
   if (ds->dict)
     for (i = 0 ; i < n_dict_signals; ++i)
       {
-	if (ds->dict_handler_id [i] > 0)
-	  {
-	    g_signal_handler_unblock (ds->dict,
-				      ds->dict_handler_id[i]);
-	  }
+        if (ds->dict_handler_id [i] > 0)
+          {
+            g_signal_handler_unblock (ds->dict,
+                                      ds->dict_handler_id[i]);
+          }
       }
 
   g_signal_emit (ds, signals[ITEMS_CHANGED], 0, 0, old_n, new_n);
@@ -509,8 +509,8 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
   if (data_store->dict)
     for (i = 0 ; i < n_dict_signals; ++i)
       {
-	g_signal_handler_disconnect (data_store->dict,
-				     data_store->dict_handler_id[i]);
+        g_signal_handler_disconnect (data_store->dict,
+                                     data_store->dict_handler_id[i]);
       }
 
   data_store->dict = dict;
@@ -519,24 +519,24 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
     {
 
       data_store->dict_handler_id [VARIABLE_INSERTED] =
-	g_signal_connect (dict, "variable-inserted",
-			  G_CALLBACK (insert_variable_callback),
-			  data_store);
+        g_signal_connect (dict, "variable-inserted",
+                          G_CALLBACK (insert_variable_callback),
+                          data_store);
 
       data_store->dict_handler_id [VARIABLES_DELETED] =
-	g_signal_connect (dict, "variables-deleted",
-			  G_CALLBACK (delete_variables_callback),
-			  data_store);
+        g_signal_connect (dict, "variables-deleted",
+                          G_CALLBACK (delete_variables_callback),
+                          data_store);
 
       data_store->dict_handler_id [VARIABLE_MOVED] =
-	g_signal_connect (dict, "variable-moved",
-			  G_CALLBACK (move_variable_callback),
-			  data_store);
+        g_signal_connect (dict, "variable-moved",
+                          G_CALLBACK (move_variable_callback),
+                          data_store);
 
       data_store->dict_handler_id [VARIABLE_CHANGED] =
-	g_signal_connect (dict, "variable-changed",
-			  G_CALLBACK (variable_changed_callback),
-			  data_store);
+        g_signal_connect (dict, "variable-changed",
+                          G_CALLBACK (variable_changed_callback),
+                          data_store);
     }
 
 
@@ -546,11 +546,11 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
   if (data_store->dict)
     for (i = 0 ; i < n_dict_signals; ++i)
       {
-	if (data_store->dict_handler_id [i] > 0)
-	  {
-	    g_signal_handler_block (data_store->dict,
-				    data_store->dict_handler_id[i]);
-	  }
+        if (data_store->dict_handler_id [i] > 0)
+          {
+            g_signal_handler_block (data_store->dict,
+                                    data_store->dict_handler_id[i]);
+          }
       }
 }
 
@@ -613,8 +613,8 @@ psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn)
 
 gboolean
 psppire_data_store_get_value (PsppireDataStore *store,
-			      glong row, const struct variable *var,
-			      union value *val)
+                              glong row, const struct variable *var,
+                              union value *val)
 {
   g_return_val_if_fail (store != NULL, FALSE);
   g_return_val_if_fail (store->datasheet != NULL, FALSE);
@@ -669,7 +669,7 @@ psppire_data_store_get_string (PsppireDataStore *store,
    Returns true if anything was updated, false otherwise.  */
 gboolean
 psppire_data_store_set_string (PsppireDataStore *store,
-			       const gchar *text,
+                               const gchar *text,
                                glong row, const struct variable *var,
                                gboolean use_value_label)
 {
@@ -726,8 +726,8 @@ psppire_data_store_get_reader (PsppireDataStore *ds)
   if (ds->dict)
     for (int i = 0 ; i < n_dict_signals; ++i)
       {
-	g_signal_handler_block (ds->dict,
-				ds->dict_handler_id[i]);
+        g_signal_handler_block (ds->dict,
+                                ds->dict_handler_id[i]);
       }
 
   reader = datasheet_make_reader (ds->datasheet);
@@ -742,7 +742,7 @@ psppire_data_store_get_reader (PsppireDataStore *ds)
  */
 struct ccase *
 psppire_data_store_get_case (const PsppireDataStore *ds,
-			     casenumber casenum)
+                             casenumber casenum)
 {
   g_return_val_if_fail (ds, FALSE);
   g_return_val_if_fail (ds->datasheet, FALSE);
@@ -753,13 +753,13 @@ psppire_data_store_get_case (const PsppireDataStore *ds,
 
 gboolean
 psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first,
-				 casenumber n_cases)
+                                 casenumber n_cases)
 {
   g_return_val_if_fail (ds, FALSE);
   g_return_val_if_fail (ds->datasheet, FALSE);
 
   g_return_val_if_fail (first + n_cases <=
-			psppire_data_store_get_case_count (ds), FALSE);
+                        psppire_data_store_get_case_count (ds), FALSE);
 
 
   datasheet_delete_rows (ds->datasheet, first, n_cases);
@@ -774,8 +774,8 @@ psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first,
 /* Insert case CC into the case file before POSN */
 static gboolean
 psppire_data_store_insert_case (PsppireDataStore *ds,
-				struct ccase *cc,
-				casenumber posn)
+                                struct ccase *cc,
+                                casenumber posn)
 {
   bool result ;
 
@@ -801,7 +801,7 @@ psppire_data_store_insert_case (PsppireDataStore *ds,
    Returns true if successful, false on I/O error. */
 gboolean
 psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
-			      const struct variable *var, const union value *v)
+                              const struct variable *var, const union value *v)
 {
   glong n_cases;
   bool ok;
@@ -833,7 +833,7 @@ psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
 /* Set the IDXth value of case C using D_IN */
 static gboolean
 psppire_data_store_data_in (PsppireDataStore *ds, casenumber casenum, gint idx,
-			    struct substring input, struct fmt_spec fmt)
+                            struct substring input, struct fmt_spec fmt)
 {
   union value value;
   int width;

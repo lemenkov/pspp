@@ -174,10 +174,10 @@ struct crosstabulation
     size_t ns_cols, ns_rows;
 
     /* Matrix contents. */
-    double *mat;		/* Matrix proper. */
-    double *row_tot;		/* Row totals. */
-    double *col_tot;		/* Column totals. */
-    double total;		/* Grand total. */
+    double *mat;                /* Matrix proper. */
+    double *row_tot;                /* Row totals. */
+    double *col_tot;                /* Column totals. */
+    double total;                /* Grand total. */
 
     /* Syntax. */
     int start_ofs;
@@ -189,9 +189,9 @@ struct var_range
   {
     struct hmap_node hmap_node; /* In struct crosstabs_proc var_ranges map. */
     const struct variable *var; /* The variable. */
-    int min;			/* Minimum value. */
-    int max;			/* Maximum value + 1. */
-    int count;			/* max - min. */
+    int min;                        /* Minimum value. */
+    int max;                        /* Maximum value + 1. */
+    int count;                        /* max - min. */
   };
 
 struct crosstabs_proc
@@ -213,7 +213,7 @@ struct crosstabs_proc
     size_t n_pivots;
 
     /* CELLS. */
-    size_t n_cells;		/* Number of cells requested. */
+    size_t n_cells;                /* Number of cells requested. */
     unsigned int cells;         /* Bit k is 1 if cell k is requested. */
     int a_cells[CRS_N_CELLS];   /* 0...n_cells-1 are the requested cells. */
 
@@ -584,7 +584,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
   /* Ensure that this is a TABLES subcommand. */
   if (!lex_match_id (lexer, "TABLES")
       && (lex_token (lexer) != T_ID ||
-	  dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer)) == NULL)
+          dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer)) == NULL)
       && lex_token (lexer) != T_ALL)
     {
       lex_error (lexer, _("Syntax error expecting subcommand name or "
@@ -609,7 +609,7 @@ parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
       by_nvar = xnrealloc (by_nvar, n_by + 1, sizeof *by_nvar);
       if (!parse_const_var_set_vars (lexer, var_set, &by[n_by], &by_nvar[n_by],
                                      PV_NO_DUPLICATE | PV_NO_SCRATCH))
-	goto done;
+        goto done;
       size_t n = by_nvar[n_by++];
       if (xalloc_oversized (nx, n))
         overflow = true;
@@ -696,20 +696,20 @@ parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
                                   &proc->variables, &proc->n_variables,
                                   (PV_APPEND | PV_NUMERIC
                                    | PV_NO_DUPLICATE | PV_NO_SCRATCH)))
-	return false;
+        return false;
 
       if (!lex_force_match (lexer, T_LPAREN))
-	  goto error;
+          goto error;
 
       if (!lex_force_int (lexer))
-	goto error;
+        goto error;
       long min = lex_integer (lexer);
       lex_get (lexer);
 
       lex_match (lexer, T_COMMA);
 
       if (!lex_force_int_range (lexer, NULL, min, LONG_MAX))
-	goto error;
+        goto error;
       long max = lex_integer (lexer);
       lex_get (lexer);
 
@@ -728,10 +728,10 @@ parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
           };
           hmap_insert (&proc->var_ranges, &vr->hmap_node,
                        hash_pointer (var, 0));
-	}
+        }
 
       if (lex_token (lexer) == T_SLASH)
-	break;
+        break;
     }
 
   proc->mode = INTEGER;
@@ -920,7 +920,7 @@ postcalc (struct crosstabs_proc *proc, struct lexer *lexer)
 
       sort (xt->entries, xt->n_entries, sizeof *xt->entries,
             proc->descending ? compare_table_entry_3way_inv : compare_table_entry_3way,
-	    xt);
+            xt);
     }
 
   make_summary_table (proc);
@@ -1207,7 +1207,7 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt,
         display_crosstabulation (proc, &x, table, crs_leaves);
 
       if (proc->exclude == 0)
-	delete_missing (&x);
+        delete_missing (&x);
 
       if (chisq)
         display_chisq (&x, chisq);
@@ -1683,8 +1683,8 @@ enum_var_values (const struct crosstabulation *xt, int var_idx,
       hmapx_destroy (&set);
 
       sort (xv->values, xv->n_values, sizeof *xv->values,
-	    descending ? compare_value_3way_inv : compare_value_3way,
-	    &width);
+            descending ? compare_value_3way_inv : compare_value_3way,
+            &width);
     }
 }
 
@@ -1913,7 +1913,7 @@ display_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
     {
       struct symmetric_statistic *s = &ss[i];
       if (s->v == SYSMIS)
-	continue;
+        continue;
 
       indexes[1] = i;
 
@@ -1962,25 +1962,25 @@ display_risk (struct crosstabulation *xt, struct pivot_table *risk,
       const struct variable *rv = xt->vars[ROW_VAR].var;
 
       if (risk_v[i] == SYSMIS)
-	continue;
+        continue;
 
       struct string label = DS_EMPTY_INITIALIZER;
       switch (i)
-	{
-	case 0:
+        {
+        case 0:
           ds_put_format (&label, _("Odds Ratio for %s"), var_to_string (rv));
           ds_put_cstr (&label, " (");
           var_append_value_name (rv, &c[0], &label);
           ds_put_cstr (&label, " / ");
           var_append_value_name (rv, &c[1], &label);
           ds_put_cstr (&label, ")");
-	  break;
-	case 1:
-	case 2:
+          break;
+        case 1:
+        case 2:
           ds_put_format (&label, _("For cohort %s = "), var_to_string (cv));
           var_append_value_name (cv, &xt->vars[ROW_VAR].values[i - 1], &label);
-	  break;
-	}
+          break;
+        }
 
       indexes[1] = pivot_category_create_leaf (
         risk_statistics->root,
@@ -2026,7 +2026,7 @@ display_directional (struct crosstabs_proc *proc,
   for (size_t i = 0; i < N_DIRECTIONAL; i++)
     {
       if (direct_v[i] == SYSMIS)
-	continue;
+        continue;
 
       indexes[1] = i;
 
@@ -2064,10 +2064,10 @@ static inline double
 Pr (int a, int b, int c, int d)
 {
   return exp (log_gamma_int (a + b + 1.) -  log_gamma_int (a + 1.)
-	    + log_gamma_int (c + d + 1.) - log_gamma_int (b + 1.)
-	    + log_gamma_int (a + c + 1.) - log_gamma_int (c + 1.)
-	    + log_gamma_int (b + d + 1.) - log_gamma_int (d + 1.)
-	    - log_gamma_int (a + b + c + d + 1.));
+            + log_gamma_int (c + d + 1.) - log_gamma_int (b + 1.)
+            + log_gamma_int (a + c + 1.) - log_gamma_int (c + 1.)
+            + log_gamma_int (b + d + 1.) - log_gamma_int (d + 1.)
+            - log_gamma_int (a + b + c + d + 1.));
 }
 
 /* Swap the contents of A and B. */
@@ -2091,9 +2091,9 @@ calc_fisher (int a, int b, int c, int d, double *fisher1, double *fisher2)
   if (b * c < a * d)
     {
       if (b < c)
-	swap (&a, &b), swap (&c, &d);
+        swap (&a, &b), swap (&c, &d);
       else
-	swap (&a, &c), swap (&b, &d);
+        swap (&a, &c), swap (&b, &d);
     }
 
   double pn1 = Pr (a, b, c, d);
@@ -2106,7 +2106,7 @@ calc_fisher (int a, int b, int c, int d, double *fisher1, double *fisher2)
     {
       double p = Pr (a + xt, b - xt, c - xt, d + xt);
       if (p < pn1)
-	*fisher2 += p;
+        *fisher2 += p;
     }
 }
 
@@ -2116,7 +2116,7 @@ calc_fisher (int a, int b, int c, int d, double *fisher1, double *fisher2)
 static void
 calc_chisq (struct crosstabulation *xt,
             double chisq[N_CHISQ], int df[N_CHISQ],
-	    double *fisher1, double *fisher2)
+            double *fisher1, double *fisher2)
 {
   chisq[0] = chisq[1] = 0.;
   chisq[2] = chisq[3] = chisq[4] = SYSMIS;
@@ -2212,10 +2212,10 @@ calc_r (struct crosstabulation *xt,
   for (size_t i = 0; i < n_rows; i++)
     for (size_t j = 0; j < n_cols; j++)
       {
-	double fij = xt->mat[j + i * n_cols];
-	double product = XT[i] * Y[j];
-	double temp = fij * product;
-	sum_XYf += temp;
+        double fij = xt->mat[j + i * n_cols];
+        double product = XT[i] * Y[j];
+        double temp = fij * product;
+        sum_XYf += temp;
       }
 
   double sum_Xr = 0;
@@ -2282,7 +2282,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
   /* Phi, Cramer's V, contingency coefficient. */
   if (proc->statistics & (CRS_ST_PHI | CRS_ST_CC))
     {
-      double Xp = 0.;	/* Pearson chi-square. */
+      double Xp = 0.;        /* Pearson chi-square. */
 
       FOR_EACH_POPULATED_ROW (r, xt)
         FOR_EACH_POPULATED_COLUMN (c, xt)
@@ -2295,12 +2295,12 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
           }
 
       if (proc->statistics & CRS_ST_PHI)
-	{
-	  sym[0].v = sqrt (Xp / xt->total);
-	  sym[1].v = sqrt (Xp / (xt->total * (q - 1)));
-	}
+        {
+          sym[0].v = sqrt (Xp / xt->total);
+          sym[1].v = sqrt (Xp / (xt->total * (q - 1)));
+        }
       if (proc->statistics & CRS_ST_CC)
-	sym[2].v = sqrt (Xp / (Xp + xt->total));
+        sym[2].v = sqrt (Xp / (Xp + xt->total));
     }
 
   if (proc->statistics & (CRS_ST_BTAU | CRS_ST_CTAU
@@ -2358,14 +2358,14 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
         }
 
       if (proc->statistics & CRS_ST_BTAU)
-	sym[3].v = (P - Q) / sqrt (Dr * Dc);
+        sym[3].v = (P - Q) / sqrt (Dr * Dc);
       if (proc->statistics & CRS_ST_CTAU)
-	sym[4].v = (q * (P - Q)) / (pow2 (xt->total) * (q - 1));
+        sym[4].v = (q * (P - Q)) / (pow2 (xt->total) * (q - 1));
       if (proc->statistics & CRS_ST_GAMMA)
-	sym[5].v = (P - Q) / (P + Q);
+        sym[5].v = (P - Q) / (P + Q);
 
       /* ASE for tau-b, tau-c, gamma.  Calculations could be
-	 eliminated here, at expense of memory.  */
+         eliminated here, at expense of memory.  */
       double btau_cum = 0;
       double ctau_cum = 0;
       double gamma_cum = 0;
@@ -2418,44 +2418,44 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
         }
 
       if (proc->statistics & CRS_ST_BTAU)
-	{
+        {
           double btau_var = ((btau_cum
                               - (xt->total * pow2 (xt->total * (P - Q) / sqrt (Dr * Dc) * (Dr + Dc))))
                              / pow2 (Dr * Dc));
-	  sym[3].ase = sqrt (btau_var);
-	  sym[3].t = sym[3].v / (2 * sqrt ((ctau_cum - (P - Q) * (P - Q) / xt->total)
+          sym[3].ase = sqrt (btau_var);
+          sym[3].t = sym[3].v / (2 * sqrt ((ctau_cum - (P - Q) * (P - Q) / xt->total)
                                            / (Dr * Dc)));
-	}
+        }
       if (proc->statistics & CRS_ST_CTAU)
-	{
-	  sym[4].ase = ((2 * q / ((q - 1) * pow2 (xt->total)))
+        {
+          sym[4].ase = ((2 * q / ((q - 1) * pow2 (xt->total)))
                         * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
-	  sym[4].t = sym[4].v / sym[4].ase;
-	}
+          sym[4].t = sym[4].v / sym[4].ase;
+        }
       if (proc->statistics & CRS_ST_GAMMA)
-	{
-	  sym[5].ase = ((4. / ((P + Q) * (P + Q))) * sqrt (gamma_cum));
-	  sym[5].t = sym[5].v / (2. / (P + Q)
+        {
+          sym[5].ase = ((4. / ((P + Q) * (P + Q))) * sqrt (gamma_cum));
+          sym[5].t = sym[5].v / (2. / (P + Q)
                                  * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
-	}
+        }
       if (proc->statistics & CRS_ST_D)
-	{
-	  somers_d[0].v = (P - Q) / (.5 * (Dc + Dr));
-	  somers_d[0].ase = SYSMIS;
-	  somers_d[0].t = (somers_d[0].v
-			   / (4 / (Dc + Dr)
-			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
-	  somers_d[1].v = (P - Q) / Dc;
-	  somers_d[1].ase = 2. / pow2 (Dc) * sqrt (d_xy_cum);
-	  somers_d[1].t = (somers_d[1].v
-			   / (2. / Dc
-			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
-	  somers_d[2].v = (P - Q) / Dr;
-	  somers_d[2].ase = 2. / pow2 (Dr) * sqrt (d_yx_cum);
-	  somers_d[2].t = (somers_d[2].v
-			   / (2. / Dr
-			      * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
-	}
+        {
+          somers_d[0].v = (P - Q) / (.5 * (Dc + Dr));
+          somers_d[0].ase = SYSMIS;
+          somers_d[0].t = (somers_d[0].v
+                           / (4 / (Dc + Dr)
+                              * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
+          somers_d[1].v = (P - Q) / Dc;
+          somers_d[1].ase = 2. / pow2 (Dc) * sqrt (d_xy_cum);
+          somers_d[1].t = (somers_d[1].v
+                           / (2. / Dc
+                              * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
+          somers_d[2].v = (P - Q) / Dr;
+          somers_d[2].ase = 2. / pow2 (Dr) * sqrt (d_yx_cum);
+          somers_d[2].t = (somers_d[2].v
+                           / (2. / Dr
+                              * sqrt (ctau_cum - pow2 (P - Q) / xt->total)));
+        }
 
       free (cum);
     }
@@ -2504,26 +2504,26 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
       double sum_fiiri_ci = 0;
       double sum_riciri_ci = 0;
       for (size_t i = 0, j = 0; i < xt->ns_rows; i++, j++)
-	{
-	  while (xt->col_tot[j] == 0.)
-	    j++;
+        {
+          while (xt->col_tot[j] == 0.)
+            j++;
 
-	  double prod = xt->row_tot[i] * xt->col_tot[j];
-	  double sum = xt->row_tot[i] + xt->col_tot[j];
+          double prod = xt->row_tot[i] * xt->col_tot[j];
+          double sum = xt->row_tot[i] + xt->col_tot[j];
 
-	  sum_fii += xt->mat[j + i * n_cols];
-	  sum_rici += prod;
-	  sum_fiiri_ci += xt->mat[j + i * n_cols] * sum;
-	  sum_riciri_ci += prod * sum;
-	}
+          sum_fii += xt->mat[j + i * n_cols];
+          sum_rici += prod;
+          sum_fiiri_ci += xt->mat[j + i * n_cols] * sum;
+          sum_riciri_ci += prod * sum;
+        }
 
       double sum_fijri_ci2 = 0;
       for (size_t i = 0; i < xt->ns_rows; i++)
-	for (size_t j = 0; j < xt->ns_cols; j++)
-	  {
-	    double sum = xt->row_tot[i] + xt->col_tot[j];
-	    sum_fijri_ci2 += xt->mat[j + i * n_cols] * sum * sum;
-	  }
+        for (size_t j = 0; j < xt->ns_cols; j++)
+          {
+            double sum = xt->row_tot[i] + xt->col_tot[j];
+            sum_fijri_ci2 += xt->mat[j + i * n_cols] * sum * sum;
+          }
 
       sym[8].v = (xt->total * sum_fii - sum_rici) / (pow2 (xt->total) - sum_rici);
 
@@ -2593,13 +2593,13 @@ calc_risk (struct crosstabulation *xt,
 
   value[1] = (f11 * (f21 + f22)) / (f21 * (f11 + f12));
   v = sqrt ((f12 / (f11 * (f11 + f12)))
-	    + (f22 / (f21 * (f21 + f22))));
+            + (f22 / (f21 * (f21 + f22))));
   lower[1] = value[1] * exp (-1.960 * v);
   upper[1] = value[1] * exp (1.960 * v);
 
   value[2] = (f12 * (f21 + f22)) / (f22 * (f11 + f12));
   v = sqrt ((f11 / (f12 * (f11 + f12)))
-	    + (f21 / (f22 * (f21 + f22))));
+            + (f21 / (f22 * (f21 + f22))));
   lower[2] = value[2] * exp (-1.960 * v);
   upper[2] = value[2] * exp (1.960 * v);
 
@@ -2610,7 +2610,7 @@ calc_risk (struct crosstabulation *xt,
 static void
 calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
                   double v[N_DIRECTIONAL], double ase[N_DIRECTIONAL],
-		  double t[N_DIRECTIONAL], double sig[N_DIRECTIONAL])
+                  double t[N_DIRECTIONAL], double sig[N_DIRECTIONAL])
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
@@ -2625,62 +2625,62 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
       size_t *fim_index = xnmalloc (n_rows, sizeof *fim_index);
       double sum_fim = 0.0;
       for (size_t i = 0; i < n_rows; i++)
-	{
-	  double max = xt->mat[i * n_cols];
-	  size_t index = 0;
+        {
+          double max = xt->mat[i * n_cols];
+          size_t index = 0;
 
-	  for (size_t j = 1; j < n_cols; j++)
-	    if (xt->mat[j + i * n_cols] > max)
-	      {
-		max = xt->mat[j + i * n_cols];
-		index = j;
-	      }
+          for (size_t j = 1; j < n_cols; j++)
+            if (xt->mat[j + i * n_cols] > max)
+              {
+                max = xt->mat[j + i * n_cols];
+                index = j;
+              }
 
           fim[i] = max;
-	  sum_fim += max;
-	  fim_index[i] = index;
-	}
+          sum_fim += max;
+          fim_index[i] = index;
+        }
 
       /* Find maximum for each column. */
       double *fmj = xnmalloc (n_cols, sizeof *fmj);
       size_t *fmj_index = xnmalloc (n_cols, sizeof *fmj_index);
       double sum_fmj = 0.0;
       for (size_t j = 0; j < n_cols; j++)
-	{
-	  double max = xt->mat[j];
-	  size_t index = 0;
+        {
+          double max = xt->mat[j];
+          size_t index = 0;
 
-	  for (size_t i = 1; i < n_rows; i++)
-	    if (xt->mat[j + i * n_cols] > max)
-	      {
-		max = xt->mat[j + i * n_cols];
-		index = i;
-	      }
+          for (size_t i = 1; i < n_rows; i++)
+            if (xt->mat[j + i * n_cols] > max)
+              {
+                max = xt->mat[j + i * n_cols];
+                index = i;
+              }
 
           fmj[j] = max;
-	  sum_fmj += max;
-	  fmj_index[j] = index;
-	}
+          sum_fmj += max;
+          fmj_index[j] = index;
+        }
 
       /* Find maximum row total. */
       double rm = xt->row_tot[0];
       size_t rm_index = 0;
       for (size_t i = 1; i < n_rows; i++)
-	if (xt->row_tot[i] > rm)
-	  {
-	    rm = xt->row_tot[i];
-	    rm_index = i;
-	  }
+        if (xt->row_tot[i] > rm)
+          {
+            rm = xt->row_tot[i];
+            rm_index = i;
+          }
 
       /* Find maximum column total. */
       double cm = xt->col_tot[0];
       size_t cm_index = 0;
       for (size_t j = 1; j < n_cols; j++)
-	if (xt->col_tot[j] > cm)
-	  {
-	    cm = xt->col_tot[j];
-	    cm_index = j;
-	  }
+        if (xt->col_tot[j] > cm)
+          {
+            cm = xt->col_tot[j];
+            cm_index = j;
+          }
 
       v[0] = (sum_fim + sum_fmj - cm - rm) / (2. * xt->total - rm - cm);
       v[1] = (sum_fmj - rm) / (xt->total - rm);
@@ -2689,7 +2689,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
       /* ASE1 for Y given XT. */
       {
         double accum = 0.0;
-	for (size_t i = 0; i < n_rows; i++)
+        for (size_t i = 0; i < n_rows; i++)
           if (cm_index == fim_index[i])
             accum += fim[i];
         ase[2] = sqrt ((xt->total - sum_fim) * (sum_fim + cm - 2. * accum)
@@ -2698,18 +2698,18 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE0 for Y given XT. */
       {
-	double accum = 0.0;
-	for (size_t i = 0; i < n_rows; i++)
-	  if (cm_index != fim_index[i])
-	    accum += (xt->mat[i * n_cols + fim_index[i]]
-		      + xt->mat[i * n_cols + cm_index]);
-	t[2] = v[2] / (sqrt (accum - pow2 (sum_fim - cm) / xt->total) / (xt->total - cm));
+        double accum = 0.0;
+        for (size_t i = 0; i < n_rows; i++)
+          if (cm_index != fim_index[i])
+            accum += (xt->mat[i * n_cols + fim_index[i]]
+                      + xt->mat[i * n_cols + cm_index]);
+        t[2] = v[2] / (sqrt (accum - pow2 (sum_fim - cm) / xt->total) / (xt->total - cm));
       }
 
       /* ASE1 for XT given Y. */
       {
         double accum = 0.0;
-	for (size_t j = 0; j < n_cols; j++)
+        for (size_t j = 0; j < n_cols; j++)
           if (rm_index == fmj_index[j])
             accum += fmj[j];
         ase[1] = sqrt ((xt->total - sum_fmj) * (sum_fmj + rm - 2. * accum)
@@ -2718,30 +2718,30 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE0 for XT given Y. */
       {
-	double accum = 0.0;
-	for (size_t j = 0; j < n_cols; j++)
-	  if (rm_index != fmj_index[j])
-	    accum += (xt->mat[j + n_cols * fmj_index[j]]
-		      + xt->mat[j + n_cols * rm_index]);
-	t[1] = v[1] / (sqrt (accum - pow2 (sum_fmj - rm) / xt->total) / (xt->total - rm));
+        double accum = 0.0;
+        for (size_t j = 0; j < n_cols; j++)
+          if (rm_index != fmj_index[j])
+            accum += (xt->mat[j + n_cols * fmj_index[j]]
+                      + xt->mat[j + n_cols * rm_index]);
+        t[1] = v[1] / (sqrt (accum - pow2 (sum_fmj - rm) / xt->total) / (xt->total - rm));
       }
 
       /* Symmetric ASE0 and ASE1. */
       {
-	double accum0 = 0.0;
-	double accum1 = 0.0;
-	for (size_t i = 0; i < n_rows; i++)
-	  for (size_t j = 0; j < n_cols; j++)
-	    {
-	      int temp0 = (fmj_index[j] == i) + (fim_index[i] == j);
-	      int temp1 = (i == rm_index) + (j == cm_index);
-	      accum0 += xt->mat[j + i * n_cols] * pow2 (temp0 - temp1);
-	      accum1 += (xt->mat[j + i * n_cols]
-			 * pow2 (temp0 + (v[0] - 1.) * temp1));
-	    }
-	ase[0] = sqrt (accum1 - 4. * xt->total * v[0] * v[0]) / (2. * xt->total - rm - cm);
-	t[0] = v[0] / (sqrt (accum0 - pow2 (sum_fim + sum_fmj - cm - rm) / xt->total)
-		       / (2. * xt->total - rm - cm));
+        double accum0 = 0.0;
+        double accum1 = 0.0;
+        for (size_t i = 0; i < n_rows; i++)
+          for (size_t j = 0; j < n_cols; j++)
+            {
+              int temp0 = (fmj_index[j] == i) + (fim_index[i] == j);
+              int temp1 = (i == rm_index) + (j == cm_index);
+              accum0 += xt->mat[j + i * n_cols] * pow2 (temp0 - temp1);
+              accum1 += (xt->mat[j + i * n_cols]
+                         * pow2 (temp0 + (v[0] - 1.) * temp1));
+            }
+        ase[0] = sqrt (accum1 - 4. * xt->total * v[0] * v[0]) / (2. * xt->total - rm - cm);
+        t[0] = v[0] / (sqrt (accum0 - pow2 (sum_fim + sum_fmj - cm - rm) / xt->total)
+                       / (2. * xt->total - rm - cm));
       }
 
       for (size_t i = 0; i < 3; i++)
@@ -2788,36 +2788,36 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
       double UXY = 0.0;
       double P = 0.0;
       for (size_t i = 0; i < n_rows; i++)
-	for (size_t j = 0; j < n_cols; j++)
-	  {
-	    double entry = xt->mat[j + i * n_cols];
+        for (size_t j = 0; j < n_cols; j++)
+          {
+            double entry = xt->mat[j + i * n_cols];
 
-	    if (entry <= 0.)
-	      continue;
+            if (entry <= 0.)
+              continue;
 
-	    P += entry * pow2 (log (xt->col_tot[j] * xt->row_tot[i] / (xt->total * entry)));
-	    UXY -= entry / xt->total * log (entry / xt->total);
-	  }
+            P += entry * pow2 (log (xt->col_tot[j] * xt->row_tot[i] / (xt->total * entry)));
+            UXY -= entry / xt->total * log (entry / xt->total);
+          }
 
       double ase1_yx = 0.0;
       double ase1_xy = 0.0;
       double ase1_sym = 0.0;
       for (size_t i = 0; i < n_rows; i++)
-	for (size_t j = 0; j < n_cols; j++)
-	  {
-	    double entry = xt->mat[j + i * n_cols];
+        for (size_t j = 0; j < n_cols; j++)
+          {
+            double entry = xt->mat[j + i * n_cols];
 
-	    if (entry <= 0.)
-	      continue;
+            if (entry <= 0.)
+              continue;
 
-	    ase1_yx += entry * pow2 (UY * log (entry / xt->row_tot[i])
-				    + (UX - UXY) * log (xt->col_tot[j] / xt->total));
-	    ase1_xy += entry * pow2 (UX * log (entry / xt->col_tot[j])
-				    + (UY - UXY) * log (xt->row_tot[i] / xt->total));
-	    ase1_sym += entry * pow2 ((UXY
-				      * log (xt->row_tot[i] * xt->col_tot[j] / pow2 (xt->total)))
-				     - (UX + UY) * log (entry / xt->total));
-	  }
+            ase1_yx += entry * pow2 (UY * log (entry / xt->row_tot[i])
+                                    + (UX - UXY) * log (xt->col_tot[j] / xt->total));
+            ase1_xy += entry * pow2 (UX * log (entry / xt->col_tot[j])
+                                    + (UY - UXY) * log (xt->row_tot[i] / xt->total));
+            ase1_sym += entry * pow2 ((UXY
+                                      * log (xt->row_tot[i] * xt->col_tot[j] / pow2 (xt->total)))
+                                     - (UX + UY) * log (entry / xt->total));
+          }
 
       v[5] = 2. * ((UX + UY - UXY) / (UX + UY));
       ase[5] = (2. / (xt->total * pow2 (UX + UY))) * sqrt (ase1_sym);

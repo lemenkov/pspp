@@ -54,55 +54,55 @@ cmd_debug_pool (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
 
       printf ("    Populating pool with random-sized small objects...\n");
       for (i = 0; i < N_ITERATIONS; i++)
-	{
-	  size_t size = rand () % MAX_SUBALLOC;
-	  void *p = pool_alloc (pool, size);
-	  memset (p, 0, size);
-	}
+        {
+          size_t size = rand () % MAX_SUBALLOC;
+          void *p = pool_alloc (pool, size);
+          memset (p, 0, size);
+        }
 
       printf ("    Marking pool state...\n");
       pool_mark (pool, &m2);
 
       printf ("       Populating pool with random-sized small "
-	      "and large objects...\n");
+              "and large objects...\n");
       for (i = 0; i < N_ITERATIONS; i++)
-	{
-	  size_t size = rand () % (2 * MAX_SUBALLOC);
-	  void *p = pool_alloc (pool, size);
-	  memset (p, 0, size);
-	}
+        {
+          size_t size = rand () % (2 * MAX_SUBALLOC);
+          void *p = pool_alloc (pool, size);
+          memset (p, 0, size);
+        }
 
       printf ("    Releasing pool state...\n");
       pool_release (pool, &m2);
 
       printf ("    Populating pool with random objects and gizmos...\n");
       for (i = 0; i < N_FILES; i++)
-	files[i] = NULL;
+        files[i] = NULL;
       cur_file = 0;
       for (i = 0; i < N_ITERATIONS; i++)
-	{
-	  int type = rand () % 32;
+        {
+          int type = rand () % 32;
 
-	  if (type == 0)
-	    {
-	      if (files[cur_file] != NULL
-		  && EOF == pool_fclose (pool, files[cur_file]))
-		printf ("error on fclose: %s\n", strerror (errno));
+          if (type == 0)
+            {
+              if (files[cur_file] != NULL
+                  && EOF == pool_fclose (pool, files[cur_file]))
+                printf ("error on fclose: %s\n", strerror (errno));
 
-	      files[cur_file] = pool_fopen (pool, "/dev/null", "r");
+              files[cur_file] = pool_fopen (pool, "/dev/null", "r");
 
-	      if (++cur_file >= N_FILES)
-		cur_file = 0;
-	    }
-	  else if (type == 1)
-	    pool_create_subpool (pool);
-	  else
-	    {
-	      size_t size = rand () % (2 * MAX_SUBALLOC);
-	      void *p = pool_alloc (pool, size);
-	      memset (p, 0, size);
-	    }
-	}
+              if (++cur_file >= N_FILES)
+                cur_file = 0;
+            }
+          else if (type == 1)
+            pool_create_subpool (pool);
+          else
+            {
+              size_t size = rand () % (2 * MAX_SUBALLOC);
+              void *p = pool_alloc (pool, size);
+              memset (p, 0, size);
+            }
+        }
 
       printf ("Releasing pool state...\n");
       pool_release (pool, &m1);

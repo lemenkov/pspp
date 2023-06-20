@@ -29,10 +29,10 @@
    It renders the name of the variable into CELL.
 */
 void XXX_cell_var_name (GtkTreeViewColumn *tree_column,
-		    GtkCellRenderer *cell,
-		    GtkTreeModel *tree_model,
-		    GtkTreeIter *iter,
-		    gpointer data);
+                    GtkCellRenderer *cell,
+                    GtkTreeModel *tree_model,
+                    GtkTreeIter *iter,
+                    gpointer data);
 
 
 /* Returns FALSE if the variables represented by the union of the rows

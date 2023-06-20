@@ -949,10 +949,10 @@ render_page_unref (struct render_page *page)
       table_unref (page->table);
 
       for (int i = 0; i < TABLE_N_AXES; ++i)
-	{
-	  free (page->join_crossing[i]);
-	  free (page->cp[i]);
-	}
+        {
+          free (page->join_crossing[i]);
+          free (page->cp[i]);
+        }
 
       free (page);
     }
@@ -1096,11 +1096,11 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
       bb[H][0] = ofs[H] + page->cp[H][d[H]];
       bb[H][1] = ofs[H] + page->cp[H][d[H] + 1];
       if (page->params->rtl)
-	{
-	  int temp = bb[H][0];
-	  bb[H][0] = render_page_get_size (page, H) - bb[H][1];
-	  bb[H][1] = render_page_get_size (page, H) - temp;
-	}
+        {
+          int temp = bb[H][0];
+          bb[H][0] = render_page_get_size (page, H) - bb[H][1];
+          bb[H][1] = render_page_get_size (page, H) - temp;
+        }
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
       page->params->ops->draw_line (page->params->aux, bb, styles);

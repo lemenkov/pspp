@@ -59,19 +59,19 @@
 struct dictionary
   {
     int ref_cnt;
-    struct vardict_info *vars;	/* Variables. */
+    struct vardict_info *vars;        /* Variables. */
     size_t n_vars;              /* Number of variables. */
     size_t allocated_vars;      /* Allocated space in 'vars'. */
     struct caseproto *proto;    /* Prototype for dictionary cases
                                    (updated lazily). */
-    struct hmap name_map;	/* Variable index by name. */
+    struct hmap name_map;        /* Variable index by name. */
     const struct variable **split;    /* SPLIT FILE vars. */
     size_t n_splits;            /* SPLIT FILE count. */
     enum split_type split_type;
     struct variable *weight;    /* WEIGHT variable. */
     struct variable *filter;    /* FILTER variable. */
     casenumber case_limit;      /* Current case limit (N command). */
-    char *label;		/* File label. */
+    char *label;                /* File label. */
     struct string_array documents; /* Documents. */
     struct vector **vector;     /* Vectors of variables. */
     size_t n_vectors;           /* Number of vectors. */
@@ -93,7 +93,7 @@ struct dictionary
     char *encoding;             /* Character encoding of string data */
 
     const struct dict_callbacks *callbacks; /* Callbacks on dictionary
-					       modification */
+                                               modification */
     void *cb_data ;                  /* Data passed to callbacks */
 
     void (*changed) (struct dictionary *, void *); /* Generic change callback */
@@ -214,8 +214,8 @@ dict_id_is_valid (const struct dictionary *dict, const char *id,
 
 void
 dict_set_change_callback (struct dictionary *d,
-			  void (*changed) (struct dictionary *, void*),
-			  void *data)
+                          void (*changed) (struct dictionary *, void*),
+                          void *data)
 {
   d->changed = changed;
   d->changed_data = data;
@@ -246,8 +246,8 @@ dict_dump (const struct dictionary *d)
 */
 void
 dict_set_callbacks (struct dictionary *dict,
-		    const struct dict_callbacks *callbacks,
-		    void *callback_data)
+                    const struct dict_callbacks *callbacks,
+                    void *callback_data)
 {
   dict->callbacks = callbacks;
   dict->cb_data = callback_data;
@@ -256,7 +256,7 @@ dict_set_callbacks (struct dictionary *dict,
 /* Shallow copy the callbacks from SRC to DEST */
 void
 dict_copy_callbacks (struct dictionary *dest,
-		     const struct dictionary *src)
+                     const struct dictionary *src)
 {
   dest->callbacks = src->callbacks;
   dest->cb_data = src->cb_data;
@@ -568,10 +568,10 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
       dict_unset_varset_var (d, v);
 
       if (d->weight == v)
-	dict_set_weight (d, NULL);
+        dict_set_weight (d, NULL);
 
       if (d->filter == v)
-	dict_set_filter (d, NULL);
+        dict_set_filter (d, NULL);
     }
 
   dict_clear_vectors (d);
@@ -1264,7 +1264,7 @@ dict_get_weight (const struct dictionary *d)
    found. */
 double
 dict_get_case_weight (const struct dictionary *d, const struct ccase *c,
-		      bool *warn_on_invalid)
+                      bool *warn_on_invalid)
 {
   assert (c != NULL);
 
@@ -1841,7 +1841,7 @@ dict_var_changed (const struct variable *v, unsigned int what, struct variable *
       struct dictionary *d = vardict->dict;
 
       if (NULL == d)
-	return;
+        return;
 
       if (what & (VAR_TRAIT_WIDTH | VAR_TRAIT_POSITION))
         invalidate_proto (d);

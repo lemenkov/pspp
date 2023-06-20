@@ -86,9 +86,9 @@ enum
 
 static GtkTargetList *build_target_list (const struct output_item *item);
 static void clipboard_get_cb (GtkClipboard     *clipboard,
-			      GtkSelectionData *selection_data,
-			      guint             info,
-			      gpointer          data);
+                              GtkSelectionData *selection_data,
+                              guint             info,
+                              gpointer          data);
 
 /* Draws a white background on the GtkLayout to match the white background of
    each of the output items. */
@@ -115,7 +115,7 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
      which can be selected or not selected */
   GtkStyleContext *context = gtk_widget_get_style_context (widget);
   gtk_render_background (context, cr, clip.x, clip.y,
-			 clip.x + clip.width, clip.y + clip.height);
+                         clip.x + clip.width, clip.y + clip.height);
   /* Select the default foreground color based on current style
      and state of the widget */
   GtkStateFlags state = gtk_widget_get_state_flags (widget);
@@ -186,10 +186,10 @@ find_selected_item (struct psppire_output_view *view)
       GtkWidget *widget = GTK_WIDGET (item->drawing_area);
       if (GTK_IS_WIDGET (widget))
         {
-	  GtkStateFlags state = gtk_widget_get_state_flags (widget);
-	  if (state & GTK_STATE_FLAG_SELECTED)
-	    return item;
-	}
+          GtkStateFlags state = gtk_widget_get_state_flags (widget);
+          if (state & GTK_STATE_FLAG_SELECTED)
+            return item;
+        }
     }
   return NULL;
 }
@@ -197,14 +197,14 @@ find_selected_item (struct psppire_output_view *view)
 
 static void
 set_copy_action (struct psppire_output_view *view,
-		 gboolean state)
+                 gboolean state)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view->output));
   GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
-						     "copy");
+                                                     "copy");
   g_object_set (copy_action,
-		"enabled", state,
-		NULL);
+                "enabled", state,
+                NULL);
 }
 
 static void
@@ -226,8 +226,8 @@ clear_selection (struct psppire_output_view *view)
 
 static gboolean
 off_item_button_press_event_cb (GtkWidget      *widget,
-				GdkEventButton *event,
-				struct psppire_output_view *view)
+                                GdkEventButton *event,
+                                struct psppire_output_view *view)
 {
   /* buttontime is set by button_press_event_cb
      If our event->time is equal to the time from the
@@ -241,8 +241,8 @@ off_item_button_press_event_cb (GtkWidget      *widget,
 
 static gboolean
 button_press_event_cb (GtkWidget      *widget,
-		       GdkEventButton *event,
-		       struct psppire_output_view *view)
+                       GdkEventButton *event,
+                       struct psppire_output_view *view)
 {
   view->buttontime = event->time;
   clear_selection (view);
@@ -254,9 +254,9 @@ button_press_event_cb (GtkWidget      *widget,
 
 static void
 drag_data_get_cb (GtkWidget *widget, GdkDragContext *context,
-		  GtkSelectionData *selection_data,
-		  guint target_type, guint time,
-		  struct psppire_output_view *view)
+                  GtkSelectionData *selection_data,
+                  guint target_type, guint time,
+                  struct psppire_output_view *view)
 {
   view->selected_item = find_selected_item (view);
   clipboard_get_cb (NULL, selection_data, target_type, view);
@@ -270,7 +270,7 @@ create_drawing_area (struct psppire_output_view *view,
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "fsm", r, free_fsm);
   g_signal_connect (drawing_area, "button-press-event",
-		    G_CALLBACK (button_press_event_cb), view);
+                    G_CALLBACK (button_press_event_cb), view);
   gtk_widget_add_events (drawing_area, GDK_BUTTON_PRESS_MASK);
 
   { /* Drag and Drop */
@@ -280,11 +280,11 @@ create_drawing_area (struct psppire_output_view *view,
     gtk_drag_source_set_target_list (drawing_area, tl);
     gtk_target_list_unref (tl);
     g_signal_connect (drawing_area, "drag-data-get",
-		      G_CALLBACK (drag_data_get_cb), view);
+                      G_CALLBACK (drag_data_get_cb), view);
   }
   GtkStyleContext *context = gtk_widget_get_style_context (drawing_area);
   gtk_style_context_add_class (context,
-			       GTK_STYLE_CLASS_VIEW);
+                               GTK_STYLE_CLASS_VIEW);
   g_signal_connect (drawing_area, "draw",
                     G_CALLBACK (draw_callback), view);
 
@@ -356,15 +356,15 @@ rerender (struct psppire_output_view *view)
                                      item->item->table->notes);
 
       {
-	gint minw;
-	gint minh;
-	/* This code probably doesn't bring us anthing, but Gtk
-	   shows warnings if get_preferred_width/height is not
-	   called before the size_allocate below is called. */
-	gtk_widget_get_preferred_width (item->drawing_area, &minw, NULL);
-	gtk_widget_get_preferred_height (item->drawing_area, &minh, NULL);
-	if (th > minh) th = minh;
-	if (tw > minw) tw = minw;
+        gint minw;
+        gint minh;
+        /* This code probably doesn't bring us anthing, but Gtk
+           shows warnings if get_preferred_width/height is not
+           called before the size_allocate below is called. */
+        gtk_widget_get_preferred_width (item->drawing_area, &minw, NULL);
+        gtk_widget_get_preferred_height (item->drawing_area, &minh, NULL);
+        if (th > minh) th = minh;
+        if (tw > minw) tw = minw;
       }
       alloc.x = xpos;
       alloc.y = view->y;
@@ -412,13 +412,13 @@ init_output_view_item (struct output_view_item *view_item,
 
       struct xr_fsm *r = xr_fsm_create_for_scrolling (item, view->style, cr);
       if (r == NULL)
-	{
-	  gdk_window_end_draw_frame (win, ctx);
-	  cairo_region_destroy (region);
+        {
+          gdk_window_end_draw_frame (win, ctx);
+          cairo_region_destroy (region);
 
           output_item_unref (view_item->item);
-	  return false;
-	}
+          return false;
+        }
 
       xr_fsm_measure (r, cr, &view_item->width, &view_item->height);
       view_item->drawing_area = gtk_drawing_area_new ();
@@ -473,7 +473,7 @@ psppire_output_view_put__ (struct psppire_output_view *view,
 
       gtk_tree_store_set (store, &iter,
                           COL_LABEL, output_item_get_label (item),
-			  COL_ADDR, item,
+                          COL_ADDR, item,
                           COL_Y, view->y,
                           -1);
 
@@ -576,9 +576,9 @@ clear_rectangle (cairo_surface_t *surface,
 
 static void
 clipboard_get_cb (GtkClipboard     *clipboard,
-		  GtkSelectionData *selection_data,
-		  guint             info,
-		  gpointer          data)
+                  GtkSelectionData *selection_data,
+                  guint             info,
+                  gpointer          data)
 {
   struct psppire_output_view *view = data;
 
@@ -677,15 +677,15 @@ clipboard_get_cb (GtkClipboard     *clipboard,
     {
       driver = output_driver_create (&options);
       if (driver == NULL)
-	goto finish;
+        goto finish;
 
       driver->class->submit (driver, view->selected_item->item);
 
       if (driver->class->flush)
-	driver->class->flush (driver);
+        driver->class->flush (driver);
 
       /* Some drivers (eg: the odt one) don't write anything until they
-	 are closed */
+         are closed */
       output_driver_destroy (driver);
       driver = NULL;
     }
@@ -710,7 +710,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
 
 static void
 clipboard_clear_cb (GtkClipboard *clipboard,
-		    gpointer data)
+                    gpointer data)
 {
 }
 
@@ -808,10 +808,10 @@ on_realize (GtkWidget *overview, GObject *view)
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (overview));
 
   GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
-						     "copy");
+                                                     "copy");
 
   GAction *select_all_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
-							   "select-all");
+                                                           "select-all");
 
   g_object_set (copy_action, "enabled", FALSE, NULL);
   g_object_set (select_all_action, "enabled", FALSE, NULL);
@@ -841,10 +841,10 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
 
   gtk_widget_add_events (GTK_WIDGET (output), GDK_BUTTON_PRESS_MASK);
   g_signal_connect (output, "button-press-event",
-		    G_CALLBACK (off_item_button_press_event_cb), view);
+                    G_CALLBACK (off_item_button_press_event_cb), view);
 
   gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (output)),
-			       GTK_STYLE_CLASS_VIEW);
+                               GTK_STYLE_CLASS_VIEW);
 
   if (overview)
     {
@@ -991,8 +991,8 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
 
 static gboolean
 paginate (GtkPrintOperation *operation,
-	  GtkPrintContext   *context,
-	  struct psppire_output_view *view)
+          GtkPrintContext   *context,
+          struct psppire_output_view *view)
 {
   if (view->paginated)
     {
@@ -1030,8 +1030,8 @@ paginate (GtkPrintOperation *operation,
 
 static void
 begin_print (GtkPrintOperation *operation,
-	     GtkPrintContext   *context,
-	     struct psppire_output_view *view)
+             GtkPrintContext   *context,
+             struct psppire_output_view *view)
 {
   create_xr_print_driver (context, view);
 
@@ -1042,8 +1042,8 @@ begin_print (GtkPrintOperation *operation,
 
 static void
 end_print (GtkPrintOperation *operation,
-	   GtkPrintContext   *context,
-	   struct psppire_output_view *view)
+           GtkPrintContext   *context,
+           struct psppire_output_view *view)
 {
   xr_pager_destroy (view->pager);
   view->pager = NULL;
@@ -1052,9 +1052,9 @@ end_print (GtkPrintOperation *operation,
 
 static void
 draw_page (GtkPrintOperation *operation,
-	   GtkPrintContext   *context,
-	   gint               page_number,
-	   struct psppire_output_view *view)
+           GtkPrintContext   *context,
+           gint               page_number,
+           struct psppire_output_view *view)
 {
   xr_pager_add_page (view->pager,
                      get_cairo_context_from_print_context (context));

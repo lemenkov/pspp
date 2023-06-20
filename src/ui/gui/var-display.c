@@ -44,43 +44,43 @@ missing_values_to_string (const struct variable *pv, GError **err)
     {
       GString *gstr = g_string_sized_new (10);
       if (! mv_has_range (miss))
-	{
-	  const int n = mv_n_values (miss);
-	  gchar *mv[4] = {0,0,0,0};
-	  gint i;
-	  for (i = 0 ; i < n; ++i)
-	    {
-	      mv[i] = value_to_text (*mv_get_value (miss, i), pv);
-	      if (i > 0)
-		g_string_append (gstr, ", ");
-	      g_string_append (gstr, mv[i]);
-	      g_free (mv[i]);
-	    }
-	}
+        {
+          const int n = mv_n_values (miss);
+          gchar *mv[4] = {0,0,0,0};
+          gint i;
+          for (i = 0 ; i < n; ++i)
+            {
+              mv[i] = value_to_text (*mv_get_value (miss, i), pv);
+              if (i > 0)
+                g_string_append (gstr, ", ");
+              g_string_append (gstr, mv[i]);
+              g_free (mv[i]);
+            }
+        }
       else
-	{
-	  gchar *l, *h;
-	  union value low, high;
-	  mv_get_range (miss, &low.f, &high.f);
+        {
+          gchar *l, *h;
+          union value low, high;
+          mv_get_range (miss, &low.f, &high.f);
 
-	  l = value_to_text (low, pv);
-	  h = value_to_text (high, pv);
+          l = value_to_text (low, pv);
+          h = value_to_text (high, pv);
 
-	  g_string_printf (gstr, "%s - %s", l, h);
-	  g_free (l);
-	  g_free (h);
+          g_string_printf (gstr, "%s - %s", l, h);
+          g_free (l);
+          g_free (h);
 
-	  if (mv_has_value (miss))
-	    {
-	      gchar *ss = NULL;
+          if (mv_has_value (miss))
+            {
+              gchar *ss = NULL;
 
-	      ss = value_to_text (*mv_get_value (miss, 0), pv);
+              ss = value_to_text (*mv_get_value (miss, 0), pv);
 
-	      g_string_append (gstr, ", ");
-	      g_string_append (gstr, ss);
-	      free (ss);
-	    }
-	}
+              g_string_append (gstr, ", ");
+              g_string_append (gstr, ss);
+              free (ss);
+            }
+        }
 
       return g_string_free_and_steal (gstr);
     }

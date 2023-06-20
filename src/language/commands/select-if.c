@@ -37,7 +37,7 @@
 /* SELECT IF transformation. */
 struct select_if_trns
   {
-    struct expression *e;	/* Test expression. */
+    struct expression *e;        /* Test expression. */
   };
 
 static const struct trns_class select_if_trns_class;
@@ -104,21 +104,21 @@ cmd_filter (struct lexer *lexer, struct dataset *ds)
     {
       struct variable *v = parse_variable (lexer, dict);
       if (!v)
-	return CMD_FAILURE;
+        return CMD_FAILURE;
 
       if (var_is_alpha (v))
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("The filter variable must be numeric."));
-	  return CMD_FAILURE;
-	}
+          return CMD_FAILURE;
+        }
 
       if (dict_class_from_id (var_get_name (v)) == DC_SCRATCH)
-	{
-	  lex_next_error (lexer, -1, -1,
+        {
+          lex_next_error (lexer, -1, -1,
                           _("The filter variable may not be scratch."));
-	  return CMD_FAILURE;
-	}
+          return CMD_FAILURE;
+        }
 
       dict_set_filter (dict, v);
     }

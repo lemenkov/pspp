@@ -75,7 +75,7 @@ set_missing_values (PsppireVariableSheet *sheet)
   struct missing_values mv;
   if (GTK_RESPONSE_OK ==
       psppire_missing_val_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (sheet))),
-				      var, &mv))
+                                      var, &mv))
     {
       var_set_missing_values (var, &mv);
     }
@@ -114,12 +114,12 @@ create_spin_renderer (GType type)
   GtkCellRenderer *r = gtk_cell_renderer_spin_new ();
 
   GtkAdjustment *adj = gtk_adjustment_new (0,
-					   0, G_MAXDOUBLE,
-					   1, 1,
-					   0);
+                                           0, G_MAXDOUBLE,
+                                           1, 1,
+                                           0);
   g_object_set (r,
-		"adjustment", adj,
-		NULL);
+                "adjustment", adj,
+                NULL);
 
   return r;
 }
@@ -139,18 +139,18 @@ create_combo_renderer (GType type)
       gtk_list_store_append (list_store, &iter);
 
       gtk_list_store_set (list_store, &iter,
-			  0, ev->value,
-			  1, gettext (ev->value_nick),
-			  -1);
+                          0, ev->value,
+                          1, gettext (ev->value_nick),
+                          -1);
     }
 
   GtkCellRenderer *r = gtk_cell_renderer_combo_new ();
 
   g_object_set (r,
-		"model", list_store,
-		"text-column", 1,
-		"has-entry", TRUE,
-		NULL);
+                "model", list_store,
+                "text-column", 1,
+                "has-entry", TRUE,
+                NULL);
 
   return r;
 }
@@ -208,7 +208,7 @@ select_renderer_func (PsppireVariableSheet *sheet, gint col, gint row, GType typ
 
 static void
 show_variables_row_popup (SswSheet *sheet, int row, guint button,
-			  guint state, gpointer p)
+                          guint state, gpointer p)
 {
   PsppireVariableSheet *var_sheet = PSPPIRE_VARIABLE_SHEET (sheet);
   GListModel *vmodel = NULL;
@@ -225,7 +225,7 @@ show_variables_row_popup (SswSheet *sheet, int row, guint button,
     return;
 
   g_object_set_data (G_OBJECT (var_sheet->row_popup), "item",
-		     GINT_TO_POINTER (row));
+                     GINT_TO_POINTER (row));
 
   gtk_menu_popup_at_pointer (GTK_MENU (var_sheet->row_popup), NULL);
 }
@@ -234,8 +234,8 @@ static void
 insert_new_variable_var (PsppireVariableSheet *var_sheet)
 {
   gint item = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (var_sheet->row_popup),
-				 "item"));
+                                (G_OBJECT (var_sheet->row_popup),
+                                 "item"));
 
   PsppireDict *dict = NULL;
   g_object_get (var_sheet, "data-model", &dict, NULL);
@@ -262,7 +262,7 @@ delete_variables (SswSheet *sheet)
     }
 
   psppire_dict_delete_variables (dict, range->start_y,
-				 (range->end_y - range->start_y + 1));
+                                 (range->end_y - range->start_y + 1));
 
   gtk_widget_queue_draw (GTK_WIDGET (sheet));
 }
@@ -279,7 +279,7 @@ create_var_row_header_popup_menu (PsppireVariableSheet *var_sheet)
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
   g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_variable_var),
-			    var_sheet);
+                            var_sheet);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   item = gtk_separator_menu_item_new ();
@@ -289,11 +289,11 @@ create_var_row_header_popup_menu (PsppireVariableSheet *var_sheet)
     gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
 
   g_signal_connect_swapped (var_sheet->clear_variables_menu_item, "activate",
-			    G_CALLBACK (delete_variables), var_sheet);
+                            G_CALLBACK (delete_variables), var_sheet);
 
   gtk_widget_set_sensitive (var_sheet->clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu),
-			 var_sheet->clear_variables_menu_item);
+                         var_sheet->clear_variables_menu_item);
 
   gtk_widget_show_all (menu);
   return menu;
@@ -308,10 +308,10 @@ set_var_popup_sensitivity (SswSheet *sheet, gpointer selection, gpointer p)
   gint width = gtk_tree_model_get_n_columns (sheet->data_model);
 
   gboolean whole_row_selected = (range->start_x == 0 &&
-				 range->end_x == width - 1 - 1);
+                                 range->end_x == width - 1 - 1);
   /*  PsppireDict has an "extra" column: TVM_COL_VAR   ^^^ */
   gtk_widget_set_sensitive (var_sheet->clear_variables_menu_item,
-			    whole_row_selected);
+                            whole_row_selected);
 }
 
 
@@ -338,9 +338,9 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
     {
     case DICT_TVM_COL_NAME:
       {
-	const char *name = g_value_get_string (value);
-	if (psppire_dict_check_name (dict, name))
-	  dict_rename_var (dict->dict, var, g_value_get_string (value));
+        const char *name = g_value_get_string (value);
+        if (psppire_dict_check_name (dict, name))
+          dict_rename_var (dict->dict, var, g_value_get_string (value));
       }
       break;
     case DICT_TVM_COL_WIDTH:
@@ -349,13 +349,13 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
       if (var_is_numeric (var))
         {
           struct fmt_spec format = var_get_print_format (var);
-	  fmt_change_width (&format, width, FMT_FOR_OUTPUT);
+          fmt_change_width (&format, width, FMT_FOR_OUTPUT);
           var_set_both_formats (var, format);
         }
       else
-	{
-	  var_set_width (var, width);
-	}
+        {
+          var_set_width (var, width);
+        }
       }
       break;
     case DICT_TVM_COL_DECIMAL:
@@ -364,7 +364,7 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
       if (decimals >= 0)
         {
           struct fmt_spec format = var_get_print_format (var);
-	  fmt_change_decimals (&format, decimals, FMT_FOR_OUTPUT);
+          fmt_change_decimals (&format, decimals, FMT_FOR_OUTPUT);
           var_set_both_formats (var, format);
         }
       }
@@ -386,14 +386,14 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
       break;
     default:
       g_warning ("Changing unknown column %d of variable sheet column not supported",
-		 col);
+                 col);
       break;
     }
 }
 
 static gchar *
 var_sheet_data_to_string (SswSheet *sheet, GtkTreeModel *m,
-			  gint col, gint row, const GValue *in)
+                          gint col, gint row, const GValue *in)
 {
   if (col >= n_DICT_COLS - 1) /* -1 because psppire-dict has an extra column */
     return NULL;
@@ -413,12 +413,12 @@ var_sheet_data_to_string (SswSheet *sheet, GtkTreeModel *m,
     {
       const struct val_labs *vls = var_get_value_labels (var);
       if (vls == NULL || val_labs_count (vls) == 0)
-	return strdup (_("None"));
+        return strdup (_("None"));
       const struct val_lab **labels = val_labs_sorted (vls);
       const struct val_lab *vl = labels[0];
       gchar *vstr = value_to_text (vl->value, var);
       char *text = xasprintf (_("{%s, %s}..."), vstr,
-			      val_lab_get_escaped_label (vl));
+                              val_lab_get_escaped_label (vl));
       free (vstr);
       free (labels);
       return text;
@@ -578,9 +578,9 @@ on_edit_start (GtkCellRenderer *renderer,
 {
   gtk_widget_grab_focus (GTK_WIDGET (editable));
   g_signal_connect (editable, "key-press-event",
-		    G_CALLBACK (on_key_press), user_data);
+                    G_CALLBACK (on_key_press), user_data);
   g_signal_connect (editable, "button-press-event",
-		    G_CALLBACK (on_button_press), user_data);
+                    G_CALLBACK (on_button_press), user_data);
 
 }
 
@@ -594,38 +594,38 @@ psppire_variable_sheet_init (PsppireVariableSheet *sheet)
   sheet->value_label_dispatch->sheet = sheet;
   sheet->value_label_dispatch->payload = set_value_labels;
   g_signal_connect_after (sheet->value_label_renderer,
-			  "editing-started", G_CALLBACK (on_edit_start),
-			  sheet->value_label_dispatch);
+                          "editing-started", G_CALLBACK (on_edit_start),
+                          sheet->value_label_dispatch);
 
   sheet->missing_values_renderer = gtk_cell_renderer_text_new ();
   sheet->missing_values_dispatch = g_malloc (sizeof *sheet->missing_values_dispatch);
   sheet->missing_values_dispatch->sheet = sheet;
   sheet->missing_values_dispatch->payload = set_missing_values;
   g_signal_connect_after (sheet->missing_values_renderer,
-			  "editing-started", G_CALLBACK (on_edit_start),
-			  sheet->missing_values_dispatch);
+                          "editing-started", G_CALLBACK (on_edit_start),
+                          sheet->missing_values_dispatch);
 
   sheet->var_type_renderer = gtk_cell_renderer_text_new ();
   sheet->var_type_dispatch = g_malloc (sizeof *sheet->var_type_dispatch);
   sheet->var_type_dispatch->sheet = sheet;
   sheet->var_type_dispatch->payload = set_var_type;
   g_signal_connect_after (sheet->var_type_renderer,
-			  "editing-started", G_CALLBACK (on_edit_start),
-			  sheet->var_type_dispatch);
+                          "editing-started", G_CALLBACK (on_edit_start),
+                          sheet->var_type_dispatch);
 
   sheet->row_popup = create_var_row_header_popup_menu (sheet);
 
   g_signal_connect (sheet, "selection-changed",
-		    G_CALLBACK (set_var_popup_sensitivity), sheet);
+                    G_CALLBACK (set_var_popup_sensitivity), sheet);
 
   g_signal_connect (sheet, "row-header-pressed",
                     G_CALLBACK (show_variables_row_popup), sheet);
 
   g_signal_connect_swapped (sheet, "value-changed",
-			    G_CALLBACK (change_var_property), sheet);
+                            G_CALLBACK (change_var_property), sheet);
 
   g_signal_connect (sheet, "row-moved",
-		    G_CALLBACK (move_variable), NULL);
+                    G_CALLBACK (move_variable), NULL);
 
   PsppireVarSheetHeader *vsh =
     g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);

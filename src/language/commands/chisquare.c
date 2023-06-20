@@ -53,9 +53,9 @@
    required, even on failure. */
 static bool
 create_freq_hash_with_range (const struct dictionary *dict,
-			     struct casereader *input,
-			     const struct variable *var,
-			     double lo_, double hi_,
+                             struct casereader *input,
+                             const struct variable *var,
+                             double lo_, double hi_,
                              struct hmap *freq_hash)
 {
   struct freq **entries;
@@ -101,8 +101,8 @@ create_freq_hash_with_range (const struct dictionary *dict,
    failure. */
 static bool
 create_freq_hash (const struct dictionary *dict,
-		  struct casereader *input,
-		  const struct variable *var,
+                  struct casereader *input,
+                  const struct variable *var,
                   struct hmap *freq_hash)
 {
   int width = var_get_width (var);
@@ -128,11 +128,11 @@ create_freq_hash (const struct dictionary *dict,
 
 void
 chisquare_execute (const struct dataset *ds,
-		   struct casereader *input,
+                   struct casereader *input,
                    enum mv_class exclude,
-		   const struct npar_test *test,
-		   bool exact UNUSED,
-		   double timer UNUSED)
+                   const struct npar_test *test,
+                   bool exact UNUSED,
+                   double timer UNUSED)
 {
   const struct dictionary *dict = dataset_dict (ds);
   int v, i;
@@ -151,21 +151,21 @@ chisquare_execute (const struct dataset *ds,
   if (cst->ranged == false)
     {
       for (v = 0 ; v < ost->n_vars ; ++v)
-	{
+        {
           const struct variable *var = ost->vars[v];
 
-	  struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
+          struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
           struct casereader *reader =
             casereader_create_filter_missing (casereader_clone (input),
                                               &var, 1, exclude,
-					      NULL, NULL);
+                                              NULL, NULL);
           if (!create_freq_hash (dict, reader, var, &freq_hash))
             {
               freq_hmap_destroy (&freq_hash, var_get_width (var));
               return;
             }
 
-	  size_t n_cells = hmap_count (&freq_hash);
+          size_t n_cells = hmap_count (&freq_hash);
           if (cst->n_expected > 0 && n_cells != cst->n_expected)
             {
               msg (ME, _("CHISQUARE test specified %d expected values, but "
@@ -187,17 +187,17 @@ chisquare_execute (const struct dataset *ds,
 
           struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
 
-	  double total_obs = 0.0;
-	  for (size_t i = 0; i < n_cells; i++)
-	    total_obs += ff[i]->count;
+          double total_obs = 0.0;
+          for (size_t i = 0; i < n_cells; i++)
+            total_obs += ff[i]->count;
 
           struct pivot_dimension *values = pivot_dimension_create (
             table, PIVOT_AXIS_ROW, N_("Value"));
           values->root->show_label = true;
 
-	  xsq[v] = 0.0;
-	  for (size_t i = 0; i < n_cells; i++)
-	    {
+          xsq[v] = 0.0;
+          for (size_t i = 0; i < n_cells; i++)
+            {
               int row = pivot_category_create_leaf (
                 values->root, pivot_value_new_var_value (
                   var, &ff[i]->values[0]));
@@ -214,10 +214,10 @@ chisquare_execute (const struct dataset *ds,
                 pivot_table_put2 (
                   table, j, row, pivot_value_new_number (entries[j]));
 
-	      xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
-	    }
+              xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
+            }
 
-	  df[v] = n_cells - 1.0;
+          df[v] = n_cells - 1.0;
 
           int row = pivot_category_create_leaf (
             values->root, pivot_value_new_text (N_("Total")));
@@ -228,7 +228,7 @@ chisquare_execute (const struct dataset *ds,
 
           freq_hmap_destroy (&freq_hash, var_get_width (var));
           free (ff);
-	}
+        }
     }
   else  /* ranged == true */
     {
@@ -257,13 +257,13 @@ chisquare_execute (const struct dataset *ds,
       pivot_category_create_leaves (category_dim->root, N_("Total"));
 
       for (size_t v = 0 ; v < ost->n_vars ; ++v)
-	{
+        {
           const struct variable *var = ost->vars[v];
           struct casereader *reader =
             casereader_create_filter_missing (casereader_clone (input),
                                               &var, 1, exclude,
-					      NULL, NULL);
-	  struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
+                                              NULL, NULL);
+          struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
           if (!create_freq_hash_with_range (dict, reader, var,
                                             cst->lo, cst->hi, &freq_hash))
             {
@@ -271,15 +271,15 @@ chisquare_execute (const struct dataset *ds,
               continue;
             }
 
-	  struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
+          struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
 
           double total_obs = 0.0;
-	  for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
-	    total_obs += ff[i]->count;
+          for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
+            total_obs += ff[i]->count;
 
-	  xsq[v] = 0.0;
-	  for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
-	    {
+          xsq[v] = 0.0;
+          for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
+            {
               /* Category. */
               pivot_table_put3 (table, 0, v, i,
                                 pivot_value_new_var_value (
@@ -298,17 +298,17 @@ chisquare_execute (const struct dataset *ds,
                                   pivot_value_new_number (entries[j]));
 
 
-	      xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
-	    }
+              xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
+            }
 
-	  df[v] = n_cells - 1.0;
+          df[v] = n_cells - 1.0;
 
-	  freq_hmap_destroy (&freq_hash, var_get_width (var));
+          freq_hmap_destroy (&freq_hash, var_get_width (var));
           free (ff);
 
           pivot_table_put3 (table, 1, v, n_cells,
                             pivot_value_new_number (total_obs));
-	}
+        }
 
       pivot_table_submit (table);
     }

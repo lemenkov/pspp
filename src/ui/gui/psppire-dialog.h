@@ -70,8 +70,8 @@ void           psppire_dialog_help            (PsppireDialog *);
 void           psppire_dialog_close           (PsppireDialog *);
 gint           psppire_dialog_run             (PsppireDialog *);
 void           psppire_dialog_set_valid_predicate (PsppireDialog *,
-						   ContentsAreValid,
-						   gpointer);
+                                                   ContentsAreValid,
+                                                   gpointer);
 void           psppire_dialog_set_accept_predicate (PsppireDialog *,
                                                     ContentsAreValid,
                                                     gpointer);

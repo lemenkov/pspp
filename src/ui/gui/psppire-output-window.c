@@ -115,7 +115,7 @@ psppire_output_submit (struct output_driver *this,
       pod->window = PSPPIRE_OUTPUT_WINDOW (psppire_output_window_new ());
       GApplication *app = g_application_get_default ();
       gtk_application_add_window (GTK_APPLICATION (app),
-				  GTK_WINDOW (pod->window));
+                                  GTK_WINDOW (pod->window));
 
       pod->window->driver = pod;
     }
@@ -136,21 +136,21 @@ psppire_output_submit (struct output_driver *this,
   {
     gboolean status = true;
     psppire_conf_get_boolean (conf, "OutputWindowAction", "alert",
-			      &status);
+                              &status);
     gtk_window_set_urgency_hint (GTK_WINDOW (pod->window), status);
   }
 
   {
     gboolean status ;
     if (psppire_conf_get_boolean (conf, "OutputWindowAction", "maximize",
-				  &status) && status)
+                                  &status) && status)
       gtk_window_maximize (GTK_WINDOW (pod->window));
   }
 
   {
     gboolean status ;
     if (psppire_conf_get_boolean (conf, "OutputWindowAction", "raise",
-				  &status) && status)
+                                  &status) && status)
       gtk_window_present (GTK_WINDOW (pod->window));
   }
 }
@@ -265,13 +265,13 @@ on_combo_change (GtkFileChooser *chooser)
   if (fn != NULL && file_type == FT_AUTO)
     {
       for (gint i = 1 ; i < n_FT ; ++i)
-	{
-	  if (g_str_has_suffix (fn, ft[i].ext))
-	    {
-	      sensitive = TRUE;
-	      break;
-	    }
-	}
+        {
+          if (g_str_has_suffix (fn, ft[i].ext))
+            {
+              sensitive = TRUE;
+              break;
+            }
+        }
     }
   else
     sensitive = (fn != NULL);
@@ -293,9 +293,9 @@ create_file_type_list (void)
     {
       gtk_list_store_append (list, &iter);
       gtk_list_store_set (list, &iter,
-			  0,  gettext (ft[i].label),
-			  1,  ft[i].ext,
-			  -1);
+                          0,  gettext (ft[i].label),
+                          1,  ft[i].ext,
+                          -1);
     }
 
   return list;
@@ -354,20 +354,20 @@ psppire_output_window_export (PsppireOutputWindow *window)
       g_return_if_fail (filename);
 
       if (file_type == FT_AUTO)
-	{
+        {
           /* If the "Infer file type from extension" option was chosen,
              search for the respective type in the list.
              (It's a O(n) search, but fortunately n is small). */
-	  gint i;
-	  for (i = 1 ; i < n_FT ; ++i)
-	    {
-	      if (g_str_has_suffix (filename, ft[i].ext))
-		{
-		  file_type = i;
-		  break;
-		}
-	    }
-	}
+          gint i;
+          for (i = 1 ; i < n_FT ; ++i)
+            {
+              if (g_str_has_suffix (filename, ft[i].ext))
+                {
+                  file_type = i;
+                  break;
+                }
+            }
+        }
       else if (! g_str_has_suffix (filename, ft[file_type].ext))
         {
           /* If an explicit document format was chosen, and if the chosen
@@ -384,43 +384,43 @@ psppire_output_window_export (PsppireOutputWindow *window)
       string_map_insert (&options, "output-file", filename);
 
       switch (file_type)
-	{
+        {
         case FT_SPV:
           export_output (window, &options, "spv");
           break;
-	case FT_PDF:
+        case FT_PDF:
           export_output (window, &options, "pdf");
-	  break;
-	case FT_HTML:
+          break;
+        case FT_HTML:
           export_output (window, &options, "html");
-	  break;
-	case FT_ODT:
+          break;
+        case FT_ODT:
           export_output (window, &options, "odt");
-	  break;
-	case FT_PS:
+          break;
+        case FT_PS:
           export_output (window, &options, "ps");
-	  break;
-	case FT_CSV:
+          break;
+        case FT_CSV:
           export_output (window, &options, "csv");
-	  break;
-	case FT_PNG:
+          break;
+        case FT_PNG:
           export_output (window, &options, "png");
-	  break;
-	case FT_SVG:
+          break;
+        case FT_SVG:
           export_output (window, &options, "svg");
-	  break;
+          break;
 
-	case FT_TXT:
+        case FT_TXT:
           string_map_insert (&options, "box", "unicode");
-	  /* Fall through */
+          /* Fall through */
 
-	case FT_ASCII:
+        case FT_ASCII:
           string_map_insert (&options, "charts", "none");
           export_output (window, &options, "txt");
-	  break;
-	default:
-	  g_assert_not_reached ();
-	}
+          break;
+        default:
+          g_assert_not_reached ();
+        }
 
       string_map_destroy (&options);
 
@@ -447,9 +447,9 @@ psppire_output_window_init (PsppireOutputWindow *window)
     GTK_TREE_VIEW (get_widget_assert (xml, "overview")));
 
   g_signal_connect (window,
-		    "focus-in-event",
-		    G_CALLBACK (cancel_urgency),
-		    NULL);
+                    "focus-in-event",
+                    G_CALLBACK (cancel_urgency),
+                    NULL);
 
   GObject *menu = get_object_assert (xml, "output-window-menu", G_TYPE_MENU);
   GtkWidget *menubar = gtk_menu_bar_new_from_model (G_MENU_MODEL (menu));
@@ -457,10 +457,10 @@ psppire_output_window_init (PsppireOutputWindow *window)
   gtk_box_pack_start (GTK_BOX (box), paned, TRUE, TRUE, 0);
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
-			 create_windows_menu (GTK_WINDOW (window)));
+                         create_windows_menu (GTK_WINDOW (window)));
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
-			 create_help_menu (GTK_WINDOW (window)));
+                         create_help_menu (GTK_WINDOW (window)));
 
   {
     GSimpleAction *print = g_simple_action_new ("print", NULL);
@@ -470,8 +470,8 @@ psppire_output_window_init (PsppireOutputWindow *window)
 
     const gchar *accels[2] = { "<Primary>P", NULL};
     gtk_application_set_accels_for_action (app,
-					   "win.print",
-					   accels);
+                                           "win.print",
+                                           accels);
   }
 
 
@@ -501,15 +501,15 @@ psppire_output_window_init (PsppireOutputWindow *window)
 
     const gchar *accels[2] = { "<Primary>C", NULL};
     gtk_application_set_accels_for_action (app,
-					   "win.copy",
-					   accels);
+                                           "win.copy",
+                                           accels);
   }
 
 
   g_object_unref (xml);
 
   g_signal_connect (window, "delete-event",
-		    G_CALLBACK (on_delete), window);
+                    G_CALLBACK (on_delete), window);
 }
 
 
@@ -517,10 +517,10 @@ GtkWidget*
 psppire_output_window_new (void)
 {
   return GTK_WIDGET (g_object_new (psppire_output_window_get_type (),
-				   /* TRANSLATORS: This will be part of a filename.  Please avoid whitespace. */
-				   "filename", _("Output"),
-				   "description", _("Output Viewer"),
-				   NULL));
+                                   /* TRANSLATORS: This will be part of a filename.  Please avoid whitespace. */
+                                   "filename", _("Output"),
+                                   "description", _("Output Viewer"),
+                                   NULL));
 }
 
 static void

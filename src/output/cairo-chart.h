@@ -98,7 +98,7 @@ void xrchart_label (cairo_t *, int horz_justify, int vert_justify,
                     double font_size, const char *);
 
 void xrchart_label_rotate (cairo_t *cr, int horz_justify, int vert_justify,
-			   double font_size, const char *string, double angle);
+                           double font_size, const char *string, double angle);
 
 
 /* Draw a tick mark at position
@@ -106,8 +106,8 @@ void xrchart_label_rotate (cairo_t *cr, int horz_justify, int vert_justify,
 */
 void draw_tick (cairo_t *, const struct xrchart_geometry *,
                 enum tick_orientation orientation,
-		bool rotated,
-		double position,
+                bool rotated,
+                double position,
                 const char *label, ...)
   PRINTF_FORMAT (6, 7);
 
@@ -190,7 +190,7 @@ char *xr_write_png_image (cairo_surface_t *,
 char *xr_draw_png_chart (const struct chart *,
                          const char *file_name_template, int number,
                          const struct cell_color *fg,
-			 const struct cell_color *bg);
+                         const struct cell_color *bg);
 
 char *xr_draw_eps_chart (const struct chart *,
                          const char *file_name_template, int number,

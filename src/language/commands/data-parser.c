@@ -68,12 +68,12 @@ struct data_parser
 /* How to parse one variable. */
 struct field
   {
-    struct fmt_spec format;	/* Input format of this field. */
+    struct fmt_spec format;        /* Input format of this field. */
     int case_idx;               /* First value in case. */
     char *name;                 /* Var name for error messages and tables. */
 
     /* DP_FIXED only. */
-    int record;			/* Record number (1-based). */
+    int record;                        /* Record number (1-based). */
     int first_column;           /* First column in record (1-based). */
   };
 
@@ -188,7 +188,7 @@ data_parser_set_empty_line_has_field (struct data_parser *parser,
    This setting affects parsing of DP_DELIMITED files only. */
 void
 data_parser_set_warn_missing_fields (struct data_parser *parser,
-				     bool warn_missing_fields)
+                                     bool warn_missing_fields)
 {
   parser->warn_missing_fields = warn_missing_fields;
 }
@@ -627,18 +627,18 @@ parse_delimited_span (const struct data_parser *parser,
       /* Cut out a field and read in a new record if necessary. */
       while (!cut_field (parser, reader,
                          &first_column, &last_column, &tmp, &s))
-	{
-	  if (!dfm_eof (reader))
+        {
+          if (!dfm_eof (reader))
             dfm_forward_record (reader);
-	  if (dfm_eof (reader))
-	    {
-	      if (f > parser->fields)
-		msg (DW, _("Partial case discarded.  The first variable "
+          if (dfm_eof (reader))
+            {
+              if (f > parser->fields)
+                msg (DW, _("Partial case discarded.  The first variable "
                            "missing was %s."), f->name);
               ds_destroy (&tmp);
-	      return false;
-	    }
-	}
+              return false;
+            }
+        }
 
       const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
@@ -675,17 +675,17 @@ parse_delimited_no_span (const struct data_parser *parser,
       char *error;
 
       if (!cut_field (parser, reader, &first_column, &last_column, &tmp, &s))
-	{
-	  if (f < end - 1 && settings_get_undefined () && parser->warn_missing_fields)
-	    msg (DW, _("Missing value(s) for all variables from %s onward.  "
+        {
+          if (f < end - 1 && settings_get_undefined () && parser->warn_missing_fields)
+            msg (DW, _("Missing value(s) for all variables from %s onward.  "
                        "These will be filled with the system-missing value "
                        "or blanks, as appropriate."),
-		 f->name);
+                 f->name);
           for (; f < end; f++)
             value_set_missing (case_data_rw_idx (c, f->case_idx),
                                fmt_var_width (f->format));
           goto exit;
-	}
+        }
 
       const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
@@ -821,12 +821,12 @@ static const struct casereader_class data_parser_casereader_class;
    transferred to the dataset. */
 void
 data_parser_make_active_file (struct data_parser *parser, struct dataset *ds,
-			       struct dfm_reader *reader,
+                               struct dfm_reader *reader,
                               struct dictionary *dict,
-			       struct casereader* (*func)(struct casereader *,
-							  const struct dictionary *,
-							  void *),
-			       void *ud)
+                               struct casereader* (*func)(struct casereader *,
+                                                          const struct dictionary *,
+                                                          void *),
+                               void *ud)
 {
   struct data_parser_casereader *r;
   struct casereader *casereader0;

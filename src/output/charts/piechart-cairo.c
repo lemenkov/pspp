@@ -27,10 +27,10 @@
 /* Draw a single slice of the pie */
 static void
 draw_segment(cairo_t *cr,
-	     double x0, double y0,
-	     double radius,
-	     double start_angle, double segment_angle,
-	     const struct xrchart_colour *colour)
+             double x0, double y0,
+             double radius,
+             double start_angle, double segment_angle,
+             const struct xrchart_colour *colour)
 {
   cairo_move_to (cr, x0, y0);
   cairo_arc (cr, x0, y0, radius, start_angle, start_angle + segment_angle);
@@ -78,7 +78,7 @@ xrchart_draw_piechart (const struct chart *chart, cairo_t *cr,
   for (i = 0; i < pie->n_slices ; ++i)
     {
       const double segment_angle =
-	pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
+        pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
 
       /* Fill the segment */
       draw_segment (cr,
@@ -99,32 +99,32 @@ xrchart_draw_piechart (const struct chart *chart, cairo_t *cr,
   for (i = 0; i < pie->n_slices ; ++i)
     {
       const double segment_angle =
-	pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
+        pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
 
       const double label_x = centre_x +
-	radius * cos (angle + segment_angle/2.0);
+        radius * cos (angle + segment_angle/2.0);
 
       const double label_y = centre_y +
-	radius * sin (angle + segment_angle/2.0);
+        radius * sin (angle + segment_angle/2.0);
 
       if (label_x < centre_x)
-	{
+        {
           cairo_move_to (cr, label_x, label_y);
           cairo_line_to (cr, left_label, label_y);
           cairo_stroke (cr);
-	  cairo_move_to (cr, left_label, label_y + 5);
-	  xrchart_label (cr, 'l', 'x', geom->font_size,
+          cairo_move_to (cr, left_label, label_y + 5);
+          xrchart_label (cr, 'l', 'x', geom->font_size,
                          ds_cstr (&pie->slices[i].label));
-	}
+        }
       else
-	{
-	  cairo_move_to (cr, label_x, label_y);
+        {
+          cairo_move_to (cr, label_x, label_y);
           cairo_line_to (cr, right_label, label_y);
           cairo_stroke (cr);
-	  cairo_move_to (cr, right_label, label_y + 5);
-	  xrchart_label (cr, 'r', 'x', geom->font_size,
+          cairo_move_to (cr, right_label, label_y + 5);
+          xrchart_label (cr, 'r', 'x', geom->font_size,
                          ds_cstr (&pie->slices[i].label));
-	}
+        }
 
       angle += segment_angle;
     }

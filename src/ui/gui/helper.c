@@ -20,7 +20,7 @@
 */
 #include <config.h>
 
-#include	<glib-object.h>
+#include        <glib-object.h>
 
 #include <glib.h>
 #include "helper.h"
@@ -94,8 +94,8 @@ value_to_text__ (union value v, struct fmt_spec format, const char *encoding)
 */
 union value *
 text_to_value (const gchar *text,
-	       const struct variable *var,
-	       union value *val)
+               const struct variable *var,
+               union value *val)
 {
   return text_to_value__ (text, var_get_print_format (var),
                           var_get_encoding (var), val);
@@ -122,15 +122,15 @@ text_to_value__ (const gchar *text,
       if (! text) return NULL;
 
       {
-	const gchar *s = text;
-	while (*s)
-	  {
-	    if (!isspace (*s))
-	      break;
-	    s++;
-	  }
+        const gchar *s = text;
+        while (*s)
+          {
+            if (!isspace (*s))
+              break;
+            s++;
+          }
 
-	if (!*s) return NULL;
+        if (!*s) return NULL;
       }
     }
 
@@ -170,7 +170,7 @@ clone_list_store (const GtkListStore *src)
   dest = gtk_list_store_newv (n_cols, types);
 
   for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (src),
-					   &src_iter);
+                                           &src_iter);
        ok;
        ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (src), &src_iter))
     {
@@ -178,14 +178,14 @@ clone_list_store (const GtkListStore *src)
       gtk_list_store_append  (dest, &dest_iter);
 
       for (i = 0 ; i < n_cols; ++i)
-	{
-	  GValue val = {0};
+        {
+          GValue val = {0};
 
-	  gtk_tree_model_get_value (GTK_TREE_MODEL (src), &src_iter, i, &val);
-	  gtk_list_store_set_value (dest, &dest_iter, i, &val);
+          gtk_tree_model_get_value (GTK_TREE_MODEL (src), &src_iter, i, &val);
+          gtk_list_store_set_value (dest, &dest_iter, i, &val);
 
-	  g_value_unset (&val);
-	}
+          g_value_unset (&val);
+        }
     }
 
   g_free (types);
@@ -215,7 +215,7 @@ paste_syntax_to_window (gchar *syntax)
     {
       the_syntax_pasteboard = psppire_syntax_window_new (NULL);
       g_signal_connect (the_syntax_pasteboard, "delete-event", G_CALLBACK (on_delete),
-			&the_syntax_pasteboard);
+                        &the_syntax_pasteboard);
     }
 
   buffer = GTK_TEXT_BUFFER (PSPPIRE_SYNTAX_WINDOW (the_syntax_pasteboard)->buffer);

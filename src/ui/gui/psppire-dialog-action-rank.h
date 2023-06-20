@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_RANK (psppire_dialog_action_rank_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_RANK(obj)	\
+#define PSPPIRE_DIALOG_ACTION_RANK(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_RANK, PsppireDialogActionRank))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_RANK, PsppireDialogActionRank))
 
 #define PSPPIRE_DIALOG_ACTION_RANK_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_RANK, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_RANK, \
                                  PsppireDialogActionRankClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_RANK(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RANK))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RANK))
 
 #define PSPPIRE_IS_DIALOG_ACTION_RANK_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_RANK))
 
 
 #define PSPPIRE_DIALOG_ACTION_RANK_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_RANK, \
-				   PsppireDialogActionRankClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_RANK, \
+                                   PsppireDialogActionRankClass))
 
 typedef struct _PsppireDialogActionRank       PsppireDialogActionRank;
 typedef struct _PsppireDialogActionRankClass  PsppireDialogActionRankClass;

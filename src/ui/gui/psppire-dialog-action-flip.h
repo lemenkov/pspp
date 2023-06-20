@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_FLIP (psppire_dialog_action_flip_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_FLIP(obj)	\
+#define PSPPIRE_DIALOG_ACTION_FLIP(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_FLIP, PsppireDialogActionFlip))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_FLIP, PsppireDialogActionFlip))
 
 #define PSPPIRE_DIALOG_ACTION_FLIP_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_FLIP, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_FLIP, \
                                  PsppireDialogActionFlipClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_FLIP(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FLIP))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FLIP))
 
 #define PSPPIRE_IS_DIALOG_ACTION_FLIP_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_FLIP))
 
 
 #define PSPPIRE_DIALOG_ACTION_FLIP_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_FLIP, \
-				   PsppireDialogActionFlipClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_FLIP, \
+                                   PsppireDialogActionFlipClass))
 
 typedef struct _PsppireDialogActionFlip       PsppireDialogActionFlip;
 typedef struct _PsppireDialogActionFlipClass  PsppireDialogActionFlipClass;

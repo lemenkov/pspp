@@ -36,26 +36,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS (psppire_dialog_action_crosstabs_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_CROSSTABS(obj)	\
+#define PSPPIRE_DIALOG_ACTION_CROSSTABS(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, PsppireDialogActionCrosstabs))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, PsppireDialogActionCrosstabs))
 
 #define PSPPIRE_DIALOG_ACTION_CROSSTABS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, \
                                  PsppireDialogActionCrosstabsClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_CROSSTABS(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS))
 
 #define PSPPIRE_IS_DIALOG_ACTION_CROSSTABS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS))
 
 
 #define PSPPIRE_DIALOG_ACTION_CROSSTABS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, \
-				   PsppireDialogActionCrosstabsClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS, \
+                                   PsppireDialogActionCrosstabsClass))
 
 typedef struct _PsppireDialogActionCrosstabs       PsppireDialogActionCrosstabs;
 typedef struct _PsppireDialogActionCrosstabsClass  PsppireDialogActionCrosstabsClass;

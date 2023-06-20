@@ -125,8 +125,8 @@ create_cell_range (int col0, int row0, int coli, int rowi)
 */
 bool
 convert_cell_ref (const char *ref,
-		  int *col0, int *row0,
-		  int *coli, int *rowi)
+                  int *col0, int *row0,
+                  int *coli, int *rowi)
 {
   char startcol[5];
   char stopcol [5];
@@ -135,8 +135,8 @@ convert_cell_ref (const char *ref,
   int stoprow;
 
   int n = sscanf (ref, "%4[a-zA-Z]%d:%4[a-zA-Z]%d",
-	      startcol, &startrow,
-	      stopcol, &stoprow);
+              startcol, &startrow,
+              stopcol, &stoprow);
   if (n != 4)
     return false;
 

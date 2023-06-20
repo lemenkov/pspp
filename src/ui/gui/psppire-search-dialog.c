@@ -51,9 +51,9 @@ G_DEFINE_TYPE (PsppireSearchDialog, psppire_search_dialog, PSPPIRE_TYPE_DIALOG);
 
 static void
 psppire_search_dialog_get_property (GObject         *object,
-			     guint            prop_id,
-			     GValue          *value,
-			     GParamSpec      *pspec)
+                             guint            prop_id,
+                             GValue          *value,
+                             GParamSpec      *pspec)
 {
   //  PsppireSearchDialog *dialog = PSPPIRE_SEARCH_DIALOG (object);
 
@@ -67,9 +67,9 @@ psppire_search_dialog_get_property (GObject         *object,
 
 static void
 psppire_search_dialog_set_property (GObject         *object,
-			     guint            prop_id,
-			     const GValue    *value,
-			     GParamSpec      *pspec)
+                             guint            prop_id,
+                             const GValue    *value,
+                             GParamSpec      *pspec)
 
 {
   //  PsppireSearchDialog *dialog = PSPPIRE_SEARCH_DIALOG (object);
@@ -94,14 +94,14 @@ psppire_search_dialog_class_init (PsppireSearchDialogClass *class)
 
   signals [FIND] =
     g_signal_new ("find",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__BOOLEAN,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_BOOLEAN);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__BOOLEAN,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_BOOLEAN);
 
   parent_class = g_type_class_peek_parent (class);
 }

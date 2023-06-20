@@ -51,7 +51,7 @@ test_range (double low, double high)
   double lower;
 
   chart_get_scale (high, low,
-		   &lower, &interval, &n_ticks);
+                   &lower, &interval, &n_ticks);
 
   if ((high - low) < 10 * DBL_MIN){
     assert (n_ticks == 0);
@@ -65,7 +65,7 @@ test_range (double low, double high)
 
 #if 0
   printf("%s: high: %lg, low %lg, interval: %lg, nticks: %d\n",
-	 __FUNCTION__, high, low, interval, n_ticks);
+         __FUNCTION__, high, low, interval, n_ticks);
   dump_scale (lower, interval, n_ticks);
 #endif
 

@@ -144,19 +144,19 @@ on_local_options (GApplication * application,
   {
     GVariant *b =
       g_variant_dict_lookup_value (options, "no-unique",
-				   G_VARIANT_TYPE_BOOLEAN);
+                                   G_VARIANT_TYPE_BOOLEAN);
     if (b)
       {
-	GApplicationFlags flags =  g_application_get_flags (application);
-	flags |= G_APPLICATION_NON_UNIQUE;
-	g_application_set_flags (application, flags);
-	g_variant_unref (b);
+        GApplicationFlags flags =  g_application_get_flags (application);
+        flags |= G_APPLICATION_NON_UNIQUE;
+        g_application_set_flags (application, flags);
+        g_variant_unref (b);
       }
   }
   {
     GVariant *b =
       g_variant_dict_lookup_value (options, "no-splash",
-				   G_VARIANT_TYPE_BOOLEAN);
+                                   G_VARIANT_TYPE_BOOLEAN);
     if (b)
       g_variant_unref (b);
     else
@@ -357,9 +357,9 @@ wait_for_splash (GApplication *app, GtkWindow *x)
       /* Remove the splash screen after SPLASH_DURATION milliseconds */
       gint64 elapsed_time = (g_get_monotonic_time () - start_time) / 1000;
       if (SPLASH_DURATION - elapsed_time <= 0)
-	destroy_splash (wsplash);
+        destroy_splash (wsplash);
       else
-	g_timeout_add (SPLASH_DURATION - elapsed_time, destroy_splash, wsplash);
+        g_timeout_add (SPLASH_DURATION - elapsed_time, destroy_splash, wsplash);
     }
 }
 

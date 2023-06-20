@@ -56,11 +56,11 @@ resize_matrix (gsl_matrix *in, size_t new_size)
   for (i = 0; i < in->size1; ++i)
     {
       for (j = 0; j < in->size2; ++j)
-	{
-	  double x = gsl_matrix_get (in, i, j);
+        {
+          double x = gsl_matrix_get (in, i, j);
 
-	  gsl_matrix_set (out, i, j, x);
-	}
+          gsl_matrix_set (out, i, j, x);
+        }
     }
 
   gsl_matrix_free (in);
@@ -141,8 +141,8 @@ covariance_moments (const struct covariance *cov, int m)
  */
 struct covariance *
 covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
-			 const struct variable *weight, enum mv_class exclude,
-			 bool centered)
+                         const struct variable *weight, enum mv_class exclude,
+                         bool centered)
 {
   size_t i;
   struct covariance *cov = XZALLOC (struct covariance);
@@ -182,9 +182,9 @@ covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
  */
 struct covariance *
 covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
-			 struct categoricals *cats,
-			 const struct variable *wv, enum mv_class exclude,
-			 bool centered)
+                         struct categoricals *cats,
+                         const struct variable *wv, enum mv_class exclude,
+                         bool centered)
 {
   size_t i;
   struct covariance *cov = xmalloc (sizeof *cov);
@@ -290,7 +290,7 @@ dump_matrix (const gsl_matrix *m)
   for (i = 0 ; i < m->size1; ++i)
     {
       for (j = 0 ; j < m->size2; ++j)
-	printf ("%02f ", gsl_matrix_get (m, i, j));
+        printf ("%02f ", gsl_matrix_get (m, i, j));
       printf ("\n");
     }
 }
@@ -318,23 +318,23 @@ covariance_accumulate_pass1 (struct covariance *cov, const struct ccase *c)
       double v1 = get_val (cov, i, c);
 
       if (is_missing (cov, i, c))
-	continue;
+        continue;
 
       for (j = 0 ; j < cov->dim; ++j)
-	{
-	  double pwr = 1.0;
+        {
+          double pwr = 1.0;
 
-	  if (is_missing (cov, j, c))
-	    continue;
+          if (is_missing (cov, j, c))
+            continue;
 
-	  for (m = 0 ; m <= MOMENT_MEAN; ++m)
-	    {
-	      double *x = gsl_matrix_ptr (cov->moments[m], i, j);
+          for (m = 0 ; m <= MOMENT_MEAN; ++m)
+            {
+              double *x = gsl_matrix_ptr (cov->moments[m], i, j);
 
-	      *x += pwr * weight;
-	      pwr *= v1;
-	    }
-	}
+              *x += pwr * weight;
+              pwr *= v1;
+            }
+        }
     }
 
   cov->pass_one_first_case_seen = true;
@@ -358,61 +358,61 @@ covariance_accumulate_pass2 (struct covariance *cov, const struct ccase *c)
       cov->state = 2;
 
       if (cov->categoricals)
-      	categoricals_done (cov->categoricals);
+              categoricals_done (cov->categoricals);
 
       cov->dim = cov->n_vars;
 
       if (cov->categoricals)
-	cov->dim += categoricals_df_total (cov->categoricals);
+        cov->dim += categoricals_df_total (cov->categoricals);
 
       cov->n_cm = (cov->dim * (cov->dim - 1)) / 2;
       cov->cm = xcalloc (cov->n_cm, sizeof *cov->cm);
 
       /* Grow the moment matrices so that they're large enough to accommodate the
-	 categorical elements */
+         categorical elements */
       for (i = 0; i < n_MOMENTS; ++i)
-	{
-	  cov->moments[i] = resize_matrix (cov->moments[i], cov->dim);
-	}
+        {
+          cov->moments[i] = resize_matrix (cov->moments[i], cov->dim);
+        }
 
       /* Populate the moments matrices with the categorical value elements */
       for (i = cov->n_vars; i < cov->dim; ++i)
-	{
-	  for (j = 0 ; j < cov->dim ; ++j) /* FIXME: This is WRONG !!! */
-	    {
-	      double w = categoricals_get_weight_by_subscript (cov->categoricals, i - cov->n_vars);
+        {
+          for (j = 0 ; j < cov->dim ; ++j) /* FIXME: This is WRONG !!! */
+            {
+              double w = categoricals_get_weight_by_subscript (cov->categoricals, i - cov->n_vars);
 
-	      gsl_matrix_set (cov->moments[MOMENT_NONE], i, j, w);
+              gsl_matrix_set (cov->moments[MOMENT_NONE], i, j, w);
 
-	      w = categoricals_get_sum_by_subscript (cov->categoricals, i - cov->n_vars);
+              w = categoricals_get_sum_by_subscript (cov->categoricals, i - cov->n_vars);
 
-	      gsl_matrix_set (cov->moments[MOMENT_MEAN], i, j, w);
-	    }
-	}
+              gsl_matrix_set (cov->moments[MOMENT_MEAN], i, j, w);
+            }
+        }
 
       /* FIXME: This is WRONG!!  It must be fixed to properly handle missing values.  For
        now it assumes there are none */
       for (m = 0 ; m < n_MOMENTS; ++m)
-	{
-	  for (i = 0 ; i < cov->dim ; ++i)
-	    {
-	      double x = gsl_matrix_get (cov->moments[m], i, cov->n_vars -1);
-	      for (j = cov->n_vars; j < cov->dim; ++j)
-		{
-		  gsl_matrix_set (cov->moments[m], i, j, x);
-		}
-	    }
-	}
+        {
+          for (i = 0 ; i < cov->dim ; ++i)
+            {
+              double x = gsl_matrix_get (cov->moments[m], i, cov->n_vars -1);
+              for (j = cov->n_vars; j < cov->dim; ++j)
+                {
+                  gsl_matrix_set (cov->moments[m], i, j, x);
+                }
+            }
+        }
 
       /* Divide the means by the number of samples */
       for (i = 0; i < cov->dim; ++i)
-	{
-	  for (j = 0; j < cov->dim; ++j)
-	    {
-	      double *x = gsl_matrix_ptr (cov->moments[MOMENT_MEAN], i, j);
-	      *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
- 	    }
-	}
+        {
+          for (j = 0; j < cov->dim; ++j)
+            {
+              double *x = gsl_matrix_ptr (cov->moments[MOMENT_MEAN], i, j);
+              *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+             }
+        }
     }
 
   for (i = 0 ; i < cov->dim; ++i)
@@ -420,37 +420,37 @@ covariance_accumulate_pass2 (struct covariance *cov, const struct ccase *c)
       double v1 = get_val (cov, i, c);
 
       if (is_missing (cov, i, c))
-	continue;
+        continue;
 
       for (j = 0 ; j < cov->dim; ++j)
-	{
-	  int idx;
-	  double ss ;
-	  double v2 = get_val (cov, j, c);
+        {
+          int idx;
+          double ss ;
+          double v2 = get_val (cov, j, c);
 
-	  const double s = pow2 (v1 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)) * weight;
+          const double s = pow2 (v1 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)) * weight;
 
-	  if (is_missing (cov, j, c))
-	    continue;
+          if (is_missing (cov, j, c))
+            continue;
 
-	  {
-	    double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
-	    *x += s;
-	  }
+          {
+            double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
+            *x += s;
+          }
 
-	  ss =
-	    (v1 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
-	    *
-	    (v2 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
-	    * weight
-	    ;
+          ss =
+            (v1 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
+            *
+            (v2 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
+            * weight
+            ;
 
-	  idx = cm_idx (cov, i, j);
-	  if (idx >= 0)
-	    {
-	      cov->cm [idx] += ss;
-	    }
-	}
+          idx = cm_idx (cov, i, j);
+          if (idx >= 0)
+            {
+              cov->cm [idx] += ss;
+            }
+        }
     }
 
   cov->pass_two_first_case_seen = true;
@@ -479,31 +479,31 @@ covariance_accumulate (struct covariance *cov, const struct ccase *c)
       const union value *val1 = case_data (c, cov->vars[i]);
 
       if (is_missing (cov, i, c))
-	continue;
+        continue;
 
       for (j = 0 ; j < cov->dim; ++j)
-	{
-	  double pwr = 1.0;
-	  int idx;
-	  const union value *val2 = case_data (c, cov->vars[j]);
+        {
+          double pwr = 1.0;
+          int idx;
+          const union value *val2 = case_data (c, cov->vars[j]);
 
-	  if (is_missing (cov, j, c))
-	    continue;
+          if (is_missing (cov, j, c))
+            continue;
 
-	  idx = cm_idx (cov, i, j);
-	  if (idx >= 0)
-	    {
-	      cov->cm [idx] += val1->f * val2->f * weight;
-	    }
+          idx = cm_idx (cov, i, j);
+          if (idx >= 0)
+            {
+              cov->cm [idx] += val1->f * val2->f * weight;
+            }
 
-	  for (m = 0 ; m < n_MOMENTS; ++m)
-	    {
-	      double *x = gsl_matrix_ptr (cov->moments[m], i, j);
+          for (m = 0 ; m < n_MOMENTS; ++m)
+            {
+              double *x = gsl_matrix_ptr (cov->moments[m], i, j);
 
-	      *x += pwr * weight;
-	      pwr *= val1->f;
-	    }
-	}
+              *x += pwr * weight;
+              pwr *= val1->f;
+            }
+        }
     }
 
   cov->pass_one_first_case_seen = true;
@@ -524,11 +524,11 @@ cm_to_gsl (struct covariance *cov)
   for (j = 0 ; j < cov->dim - 1; ++j)
     {
       for (i = j+1 ; i < cov->dim; ++i)
-	{
-	  double x = cov->cm [cm_idx (cov, i, j)];
-	  gsl_matrix_set (m, i, j, x);
-	  gsl_matrix_set (m, j, i, x);
-	}
+        {
+          double x = cov->cm [cm_idx (cov, i, j)];
+          gsl_matrix_set (m, i, j, x);
+          gsl_matrix_set (m, j, i, x);
+        }
     }
 
   /* Copy the diagonal elements from cov->moments[2] */
@@ -549,18 +549,18 @@ covariance_calculate_double_pass (struct covariance *cov)
   for (i = 0 ; i < cov->dim; ++i)
     {
       for (j = 0 ; j < cov->dim; ++j)
-	{
-	  int idx;
-	  double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
-	  *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+        {
+          int idx;
+          double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
+          *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
 
-	  idx = cm_idx (cov, i, j);
-	  if (idx >= 0)
-	    {
-	      x = &cov->cm [idx];
-	      *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
-	    }
-	}
+          idx = cm_idx (cov, i, j);
+          if (idx >= 0)
+            {
+              x = &cov->cm [idx];
+              *x /= gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+            }
+        }
     }
 
   return  cm_to_gsl (cov);
@@ -576,38 +576,38 @@ covariance_calculate_single_pass (struct covariance *cov)
     {
       /* Divide the moments by the number of samples */
       if (m > 0)
-	{
-	  for (i = 0 ; i < cov->dim; ++i)
-	    {
-	      for (j = 0 ; j < cov->dim; ++j)
-		{
-		  double *x = gsl_matrix_ptr (cov->moments[m], i, j);
-		  *x /= gsl_matrix_get (cov->moments[0], i, j);
+        {
+          for (i = 0 ; i < cov->dim; ++i)
+            {
+              for (j = 0 ; j < cov->dim; ++j)
+                {
+                  double *x = gsl_matrix_ptr (cov->moments[m], i, j);
+                  *x /= gsl_matrix_get (cov->moments[0], i, j);
 
-		  if (m == MOMENT_VARIANCE)
-		    *x -= pow2 (gsl_matrix_get (cov->moments[1], i, j));
-		}
-	    }
-	}
+                  if (m == MOMENT_VARIANCE)
+                    *x -= pow2 (gsl_matrix_get (cov->moments[1], i, j));
+                }
+            }
+        }
     }
 
   if (cov->centered)
     {
       /* Centre the moments */
       for (j = 0 ; j < cov->dim - 1; ++j)
-	{
-	  for (i = j + 1 ; i < cov->dim; ++i)
-	    {
-	      double *x = &cov->cm [cm_idx (cov, i, j)];
+        {
+          for (i = j + 1 ; i < cov->dim; ++i)
+            {
+              double *x = &cov->cm [cm_idx (cov, i, j)];
 
-	      *x /= gsl_matrix_get (cov->moments[0], i, j);
+              *x /= gsl_matrix_get (cov->moments[0], i, j);
 
-	      *x -=
-		gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
-		*
-		gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i);
-	    }
-	}
+              *x -=
+                gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
+                *
+                gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i);
+            }
+        }
     }
 
   return cm_to_gsl (cov);
@@ -655,28 +655,28 @@ covariance_calculate_single_pass_unnormalized (struct covariance *cov)
   if (cov->centered)
     {
       for (i = 0 ; i < cov->dim; ++i)
-	{
-	  for (j = 0 ; j < cov->dim; ++j)
-	    {
-	      double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
-	      *x -= pow2 (gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
-		/ gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
-	    }
-	}
+        {
+          for (j = 0 ; j < cov->dim; ++j)
+            {
+              double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
+              *x -= pow2 (gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
+                / gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+            }
+        }
 
       for (j = 0 ; j < cov->dim - 1; ++j)
-	{
-	  for (i = j + 1 ; i < cov->dim; ++i)
-	    {
-	      double *x = &cov->cm [cm_idx (cov, i, j)];
+        {
+          for (i = j + 1 ; i < cov->dim; ++i)
+            {
+              double *x = &cov->cm [cm_idx (cov, i, j)];
 
-	      *x -=
-		gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
-		*
-		gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i)
-		/ gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
-	    }
-	}
+              *x -=
+                gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
+                *
+                gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i)
+                / gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+            }
+        }
     }
 
   return cm_to_gsl (cov);
@@ -773,7 +773,7 @@ covariance_dump_enc_header (const struct covariance *cov)
   for (size_t i = 0, n = 0; i < cov->dim - cov->n_vars; n++)
     {
       const struct interaction *iact =
-	categoricals_get_interaction_by_subscript (cov->categoricals, i);
+        categoricals_get_interaction_by_subscript (cov->categoricals, i);
 
       struct string str = DS_EMPTY_INITIALIZER;
       interaction_to_string (iact, &str);
@@ -803,7 +803,7 @@ covariance_dump_enc_header (const struct covariance *cov)
  */
 void
 covariance_dump_enc (const struct covariance *cov, const struct ccase *c,
-		     struct pivot_table *table)
+                     struct pivot_table *table)
 {
   int row = pivot_category_create_leaf (
     table->dimensions[1]->root,

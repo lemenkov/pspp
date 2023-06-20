@@ -3089,7 +3089,7 @@ __DATA__
 #  define PL_errgv                  errgv
 #  define PL_hexdigit               hexdigit
 #  define PL_hints                  hints
-#  define PL_na	                    na
+#  define PL_na                            na
 #  define PL_no_modify              no_modify
 #  define PL_perl_destruct_level    perl_destruct_level
 #  define PL_perldb                 perldb
@@ -3185,15 +3185,15 @@ typedef NVTYPE NV;
 #undef STMT_START
 #undef STMT_END
 #if defined(__GNUC__) && !defined(PERL_GCC_BRACE_GROUPS_FORBIDDEN) && !defined(__cplusplus)
-#  define STMT_START	(void)(	/* gcc supports ``({ STATEMENTS; })'' */
-#  define STMT_END	)
+#  define STMT_START        (void)(        /* gcc supports ``({ STATEMENTS; })'' */
+#  define STMT_END        )
 #else
 #  if defined(VOIDFLAGS) && (VOIDFLAGS) && (defined(sun) || defined(__sun__)) && !defined(__GNUC__)
-#    define STMT_START	if (1)
-#    define STMT_END	else (void)0
+#    define STMT_START        if (1)
+#    define STMT_END        else (void)0
 #  else
-#    define STMT_START	do
-#    define STMT_END	while (0)
+#    define STMT_START        do
+#    define STMT_END        while (0)
 #  endif
 #endif
 #ifndef boolSV
@@ -3432,7 +3432,7 @@ DPPP_(my_eval_pv)(char *p, I32 croak_on_error)
     PUTBACK;
 
     if (croak_on_error && SvTRUE(GvSV(errgv)))
-	croak(SvPVx(GvSV(errgv), na));
+        croak(SvPVx(GvSV(errgv), na));
 
     return sv;
 }
@@ -3493,35 +3493,35 @@ extern void DPPP_(my_newCONSTSUB)(HV *stash, char *name, SV *sv);
 void
 DPPP_(my_newCONSTSUB)(HV *stash, char *name, SV *sv)
 {
-	U32 oldhints = PL_hints;
-	HV *old_cop_stash = PL_curcop->cop_stash;
-	HV *old_curstash = PL_curstash;
-	line_t oldline = PL_curcop->cop_line;
-	PL_curcop->cop_line = PL_copline;
+        U32 oldhints = PL_hints;
+        HV *old_cop_stash = PL_curcop->cop_stash;
+        HV *old_curstash = PL_curstash;
+        line_t oldline = PL_curcop->cop_line;
+        PL_curcop->cop_line = PL_copline;
 
-	PL_hints &= ~HINT_BLOCK_SCOPE;
-	if (stash)
-		PL_curstash = PL_curcop->cop_stash = stash;
+        PL_hints &= ~HINT_BLOCK_SCOPE;
+        if (stash)
+                PL_curstash = PL_curcop->cop_stash = stash;
 
-	newSUB(
+        newSUB(
 
 #if   ((PERL_VERSION < 3) || ((PERL_VERSION == 3) && (PERL_SUBVERSION < 22)))
-		start_subparse(),
+                start_subparse(),
 #elif ((PERL_VERSION == 3) && (PERL_SUBVERSION == 22))
-     		start_subparse(0),
+                     start_subparse(0),
 #else  /* 5.003_23  onwards */
-     		start_subparse(FALSE, 0),
+                     start_subparse(FALSE, 0),
 #endif
 
-		newSVOP(OP_CONST, 0, newSVpv(name,0)),
-		newSVOP(OP_CONST, 0, &PL_sv_no),   /* SvPV(&PL_sv_no) == "" -- GMB */
-		newSTATEOP(0, Nullch, newSVOP(OP_CONST, 0, sv))
-	);
+                newSVOP(OP_CONST, 0, newSVpv(name,0)),
+                newSVOP(OP_CONST, 0, &PL_sv_no),   /* SvPV(&PL_sv_no) == "" -- GMB */
+                newSTATEOP(0, Nullch, newSVOP(OP_CONST, 0, sv))
+        );
 
-	PL_hints = oldhints;
-	PL_curcop->cop_stash = old_cop_stash;
-	PL_curstash = old_curstash;
-	PL_curcop->cop_line = oldline;
+        PL_hints = oldhints;
+        PL_curcop->cop_stash = old_cop_stash;
+        PL_curstash = old_curstash;
+        PL_curcop->cop_line = oldline;
 }
 #endif
 #endif
@@ -3558,64 +3558,64 @@ DPPP_(my_newCONSTSUB)(HV *stash, char *name, SV *sv)
 #if (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION < 68))
 /* Fetches the SV that keeps the per-interpreter data. */
 #define dMY_CXT_SV \
-	SV *my_cxt_sv = get_sv(MY_CXT_KEY, FALSE)
+        SV *my_cxt_sv = get_sv(MY_CXT_KEY, FALSE)
 #else /* >= perl5.004_68 */
 #define dMY_CXT_SV \
-	SV *my_cxt_sv = *hv_fetch(PL_modglobal, MY_CXT_KEY,		\
-				  sizeof(MY_CXT_KEY)-1, TRUE)
+        SV *my_cxt_sv = *hv_fetch(PL_modglobal, MY_CXT_KEY,                \
+                                  sizeof(MY_CXT_KEY)-1, TRUE)
 #endif /* < perl5.004_68 */
 
 /* This declaration should be used within all functions that use the
  * interpreter-local data. */
-#define dMY_CXT	\
-	dMY_CXT_SV;							\
-	my_cxt_t *my_cxtp = INT2PTR(my_cxt_t*,SvUV(my_cxt_sv))
+#define dMY_CXT        \
+        dMY_CXT_SV;                                                        \
+        my_cxt_t *my_cxtp = INT2PTR(my_cxt_t*,SvUV(my_cxt_sv))
 
 /* Creates and zeroes the per-interpreter data.
  * (We allocate my_cxtp in a Perl SV so that it will be released when
  * the interpreter goes away.) */
 #define MY_CXT_INIT \
-	dMY_CXT_SV;							\
-	/* newSV() allocates one more than needed */			\
-	my_cxt_t *my_cxtp = (my_cxt_t*)SvPVX(newSV(sizeof(my_cxt_t)-1));\
-	Zero(my_cxtp, 1, my_cxt_t);					\
-	sv_setuv(my_cxt_sv, PTR2UV(my_cxtp))
+        dMY_CXT_SV;                                                        \
+        /* newSV() allocates one more than needed */                        \
+        my_cxt_t *my_cxtp = (my_cxt_t*)SvPVX(newSV(sizeof(my_cxt_t)-1));\
+        Zero(my_cxtp, 1, my_cxt_t);                                        \
+        sv_setuv(my_cxt_sv, PTR2UV(my_cxtp))
 
 /* This macro must be used to access members of the my_cxt_t structure.
  * e.g. MYCXT.some_data */
-#define MY_CXT		(*my_cxtp)
+#define MY_CXT                (*my_cxtp)
 
 /* Judicious use of these macros can reduce the number of times dMY_CXT
  * is used.  Use is similar to pTHX, aTHX etc. */
-#define pMY_CXT		my_cxt_t *my_cxtp
-#define pMY_CXT_	pMY_CXT,
-#define _pMY_CXT	,pMY_CXT
-#define aMY_CXT		my_cxtp
-#define aMY_CXT_	aMY_CXT,
-#define _aMY_CXT	,aMY_CXT
+#define pMY_CXT                my_cxt_t *my_cxtp
+#define pMY_CXT_        pMY_CXT,
+#define _pMY_CXT        ,pMY_CXT
+#define aMY_CXT                my_cxtp
+#define aMY_CXT_        aMY_CXT,
+#define _aMY_CXT        ,aMY_CXT
 
 #endif /* START_MY_CXT */
 
 #ifndef MY_CXT_CLONE
 /* Clones the per-interpreter data. */
 #define MY_CXT_CLONE \
-	dMY_CXT_SV;							\
-	my_cxt_t *my_cxtp = (my_cxt_t*)SvPVX(newSV(sizeof(my_cxt_t)-1));\
-	Copy(INT2PTR(my_cxt_t*, SvUV(my_cxt_sv)), my_cxtp, 1, my_cxt_t);\
-	sv_setuv(my_cxt_sv, PTR2UV(my_cxtp))
+        dMY_CXT_SV;                                                        \
+        my_cxt_t *my_cxtp = (my_cxt_t*)SvPVX(newSV(sizeof(my_cxt_t)-1));\
+        Copy(INT2PTR(my_cxt_t*, SvUV(my_cxt_sv)), my_cxtp, 1, my_cxt_t);\
+        sv_setuv(my_cxt_sv, PTR2UV(my_cxtp))
 #endif
 
 #else /* single interpreter */
 
 #ifndef START_MY_CXT
 
-#define START_MY_CXT	static my_cxt_t my_cxt;
-#define dMY_CXT_SV	dNOOP
-#define dMY_CXT		dNOOP
-#define MY_CXT_INIT	NOOP
-#define MY_CXT		my_cxt
+#define START_MY_CXT        static my_cxt_t my_cxt;
+#define dMY_CXT_SV        dNOOP
+#define dMY_CXT                dNOOP
+#define MY_CXT_INIT        NOOP
+#define MY_CXT                my_cxt
 
-#define pMY_CXT		void
+#define pMY_CXT                void
 #define pMY_CXT_
 #define _pMY_CXT
 #define aMY_CXT
@@ -3625,25 +3625,25 @@ DPPP_(my_newCONSTSUB)(HV *stash, char *name, SV *sv)
 #endif /* START_MY_CXT */
 
 #ifndef MY_CXT_CLONE
-#define MY_CXT_CLONE	NOOP
+#define MY_CXT_CLONE        NOOP
 #endif
 
 #endif
 
 #ifndef IVdf
 #  if IVSIZE == LONGSIZE
-#    define	IVdf      "ld"
-#    define	UVuf      "lu"
-#    define	UVof      "lo"
-#    define	UVxf      "lx"
-#    define	UVXf      "lX"
+#    define        IVdf      "ld"
+#    define        UVuf      "lu"
+#    define        UVof      "lo"
+#    define        UVxf      "lx"
+#    define        UVXf      "lX"
 #  else
 #    if IVSIZE == INTSIZE
-#      define	IVdf      "d"
-#      define	UVuf      "u"
-#      define	UVof      "o"
-#      define	UVxf      "x"
-#      define	UVXf      "X"
+#      define        IVdf      "d"
+#      define        UVuf      "u"
+#      define        UVof      "o"
+#      define        UVxf      "x"
+#      define        UVXf      "X"
 #    endif
 #  endif
 #endif
@@ -4273,8 +4273,8 @@ DPPP_(my_sv_setpvf_mg_nocontext)(SV *sv, const char *pat, ...)
 
 #ifndef CopSTASH_eq
 #  define CopSTASH_eq(c,hv)              ((hv) && (CopSTASHPV(c) == HvNAME(hv) \
-					|| (CopSTASHPV(c) && HvNAME(hv) \
-					&& strEQ(CopSTASHPV(c), HvNAME(hv)))))
+                                        || (CopSTASHPV(c) && HvNAME(hv) \
+                                        && strEQ(CopSTASHPV(c), HvNAME(hv)))))
 #endif
 
 #else
@@ -4502,7 +4502,7 @@ DPPP_(my_grok_number)(pTHX_ const char *pv, STRLEN len, UV *valuep)
               digit = *s - '0';
               if (digit >= 0 && digit <= 9) {
                 value = value * 10 + digit;
-		if (++s < send) {
+                if (++s < send) {
                   digit = *s - '0';
                   if (digit >= 0 && digit <= 9) {
                     value = value * 10 + digit;
@@ -4550,7 +4550,7 @@ DPPP_(my_grok_number)(pTHX_ const char *pv, STRLEN len, UV *valuep)
                                       }
                                     }
                                   }
-				}
+                                }
                               }
                             }
                           }
@@ -4562,7 +4562,7 @@ DPPP_(my_grok_number)(pTHX_ const char *pv, STRLEN len, UV *valuep)
               }
             }
           }
-	}
+        }
       }
     }
     numtype |= IS_NUMBER_IN_UV;
@@ -4715,22 +4715,22 @@ DPPP_(my_grok_bin)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
                 value_nv = (NV) value;
             }
             value_nv *= 2.0;
-	    /* If an NV has not enough bits in its mantissa to
-	     * represent a UV this summing of small low-order numbers
-	     * is a waste of time (because the NV cannot preserve
-	     * the low-order bits anyway): we could just remember when
-	     * did we overflow and in the end just multiply value_nv by the
-	     * right amount. */
+            /* If an NV has not enough bits in its mantissa to
+             * represent a UV this summing of small low-order numbers
+             * is a waste of time (because the NV cannot preserve
+             * the low-order bits anyway): we could just remember when
+             * did we overflow and in the end just multiply value_nv by the
+             * right amount. */
             value_nv += (NV)(bit - '0');
             continue;
         }
         if (bit == '_' && len && allow_underscores && (bit = s[1])
             && (bit == '0' || bit == '1'))
-	    {
-		--len;
-		++s;
+            {
+                --len;
+                ++s;
                 goto redo;
-	    }
+            }
         if (!(*flags & PERL_SCAN_SILENT_ILLDIGIT))
             warn("Illegal binary digit '%c' ignored", *s);
         break;
@@ -4738,10 +4738,10 @@ DPPP_(my_grok_bin)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
 
     if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff)
+        || (!overflowed && value > 0xffffffff)
 #endif
-	) {
-	warn("Binary number > 0b11111111111111111111111111111111 non-portable");
+        ) {
+        warn("Binary number > 0b11111111111111111111111111111111 non-portable");
     }
     *len_p = s - start;
     if (!overflowed) {
@@ -4801,7 +4801,7 @@ DPPP_(my_grok_hex)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
     }
 
     for (; len-- && *s; s++) {
-	xdigit = strchr((char *) PL_hexdigit, *s);
+        xdigit = strchr((char *) PL_hexdigit, *s);
         if (xdigit) {
             /* Write it in this wonky order with a goto to attempt to get the
                compiler to make the common case integer-only loop pretty tight.
@@ -4817,22 +4817,22 @@ DPPP_(my_grok_hex)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
                 value_nv = (NV) value;
             }
             value_nv *= 16.0;
-	    /* If an NV has not enough bits in its mantissa to
-	     * represent a UV this summing of small low-order numbers
-	     * is a waste of time (because the NV cannot preserve
-	     * the low-order bits anyway): we could just remember when
-	     * did we overflow and in the end just multiply value_nv by the
-	     * right amount of 16-tuples. */
+            /* If an NV has not enough bits in its mantissa to
+             * represent a UV this summing of small low-order numbers
+             * is a waste of time (because the NV cannot preserve
+             * the low-order bits anyway): we could just remember when
+             * did we overflow and in the end just multiply value_nv by the
+             * right amount of 16-tuples. */
             value_nv += (NV)((xdigit - PL_hexdigit) & 15);
             continue;
         }
         if (*s == '_' && len && allow_underscores && s[1]
-		&& (xdigit = strchr((char *) PL_hexdigit, s[1])))
-	    {
-		--len;
-		++s;
+                && (xdigit = strchr((char *) PL_hexdigit, s[1])))
+            {
+                --len;
+                ++s;
                 goto redo;
-	    }
+            }
         if (!(*flags & PERL_SCAN_SILENT_ILLDIGIT))
             warn("Illegal hexadecimal digit '%c' ignored", *s);
         break;
@@ -4840,10 +4840,10 @@ DPPP_(my_grok_hex)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
 
     if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff)
+        || (!overflowed && value > 0xffffffff)
 #endif
-	) {
-	warn("Hexadecimal number > 0xffffffff non-portable");
+        ) {
+        warn("Hexadecimal number > 0xffffffff non-portable");
     }
     *len_p = s - start;
     if (!overflowed) {
@@ -4905,22 +4905,22 @@ DPPP_(my_grok_oct)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
                 value_nv = (NV) value;
             }
             value_nv *= 8.0;
-	    /* If an NV has not enough bits in its mantissa to
-	     * represent a UV this summing of small low-order numbers
-	     * is a waste of time (because the NV cannot preserve
-	     * the low-order bits anyway): we could just remember when
-	     * did we overflow and in the end just multiply value_nv by the
-	     * right amount of 8-tuples. */
+            /* If an NV has not enough bits in its mantissa to
+             * represent a UV this summing of small low-order numbers
+             * is a waste of time (because the NV cannot preserve
+             * the low-order bits anyway): we could just remember when
+             * did we overflow and in the end just multiply value_nv by the
+             * right amount of 8-tuples. */
             value_nv += (NV)digit;
             continue;
         }
         if (digit == ('_' - '0') && len && allow_underscores
             && (digit = s[1] - '0') && (digit >= 0 && digit <= 7))
-	    {
-		--len;
-		++s;
+            {
+                --len;
+                ++s;
                 goto redo;
-	    }
+            }
         /* Allow \octal to work the DWIM way (that is, stop scanning
          * as soon as non-octal characters are seen, complain only iff
          * someone seems to want to use the digits eight and nine). */
@@ -4933,10 +4933,10 @@ DPPP_(my_grok_oct)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
 
     if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff)
+        || (!overflowed && value > 0xffffffff)
 #endif
-	) {
-	warn("Octal number > 037777777777 non-portable");
+        ) {
+        warn("Octal number > 037777777777 non-portable");
     }
     *len_p = s - start;
     if (!overflowed) {

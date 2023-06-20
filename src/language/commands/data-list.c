@@ -60,7 +60,7 @@ struct data_list_trns
     struct data_parser *parser; /* Parser. */
     struct dictionary *dict;    /* Dictionary. */
     struct dfm_reader *reader;  /* Data file reader. */
-    struct variable *end;	/* Variable specified on END subcommand. */
+    struct variable *end;        /* Variable specified on END subcommand. */
   };
 
 static bool parse_fixed (struct lexer *, struct dictionary *,
@@ -93,51 +93,51 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
   while (lex_token (lexer) != T_SLASH)
     {
       if (lex_match_id (lexer, "FILE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
           fh_unref (fh);
-	  fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
-	  if (fh == NULL)
-	    goto error;
-	}
+          fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
+          if (fh == NULL)
+            goto error;
+        }
       else if (lex_match_id (lexer, "ENCODING"))
-	{
+        {
           encoding_start = lex_ofs (lexer) - 1;
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto error;
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (lexer));
 
           encoding_end = lex_ofs (lexer);
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "RECORDS"))
-	{
+        {
           if (data_parser_get_records (parser) > 0)
             {
               lex_sbc_only_once (lexer, "RECORDS");
               goto error;
             }
-	  lex_match (lexer, T_EQUALS);
-	  lex_match (lexer, T_LPAREN);
-	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
-	    goto error;
+          lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_LPAREN);
+          if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
+            goto error;
           data_parser_set_records (parser, lex_integer (lexer));
-	  lex_get (lexer);
-	  lex_match (lexer, T_RPAREN);
-	}
+          lex_get (lexer);
+          lex_match (lexer, T_RPAREN);
+        }
       else if (lex_match_id (lexer, "SKIP"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_int_range (lexer, "SKIP", 0, INT_MAX))
-	    goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_int_range (lexer, "SKIP", 0, INT_MAX))
+            goto error;
           data_parser_set_skip (parser, lex_integer (lexer));
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "END"))
-	{
+        {
           if (!in_input_program ())
             {
               lex_next_error (lexer, -1, -1,
@@ -145,29 +145,29 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                               "END", "INPUT PROGRAM");
               goto error;
             }
-	  if (end)
-	    {
+          if (end)
+            {
               lex_sbc_only_once (lexer, "END");
-	      goto error;
-	    }
+              goto error;
+            }
 
           end_start = lex_ofs (lexer) - 1;
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_id (lexer))
-	    goto error;
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_id (lexer))
+            goto error;
           end_end = lex_ofs (lexer);
 
-	  end = dict_lookup_var (dict, lex_tokcstr (lexer));
-	  if (!end)
+          end = dict_lookup_var (dict, lex_tokcstr (lexer));
+          if (!end)
             end = dict_create_var_assert (dict, lex_tokcstr (lexer), 0);
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "NOTABLE"))
         table = 0;
       else if (lex_match_id (lexer, "TABLE"))
         table = 1;
       else if (lex_token (lexer) == T_ID)
-	{
+        {
           if (lex_match_id (lexer, "FIXED"))
             data_parser_set_type (parser, DP_FIXED);
           else if (lex_match_id (lexer, "FREE"))
@@ -248,12 +248,12 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
             }
         }
       else
-	{
+        {
           lex_error_expecting (lexer, "FILE", "ENCODING", "RECORDS",
                                "SKIP", "END", "NOTABLE", "TABLE",
                                "FIXED", "FREE", "LIST");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   if (!fh)
@@ -335,7 +335,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
    successful. */
 static bool
 parse_fixed (struct lexer *lexer, struct dictionary *dict,
-	     struct pool *tmp_pool, struct data_parser *parser)
+             struct pool *tmp_pool, struct data_parser *parser)
 {
   int max_records = data_parser_get_records (parser);
   int record = 0;
@@ -480,16 +480,16 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
 
       int vars_start = lex_ofs (lexer);
       if (!parse_DATA_LIST_vars_pool (lexer, dict, tmp_pool,
-				      &names, &n_names, PV_NONE))
-	return false;
+                                      &names, &n_names, PV_NONE))
+        return false;
       int vars_end = lex_ofs (lexer) - 1;
 
       struct fmt_spec input, output;
       if (lex_match (lexer, T_LPAREN))
-	{
+        {
           char type[FMT_TYPE_LEN_MAX + 1];
 
-	  if (!parse_abstract_format_specifier (lexer, type, &input.w,
+          if (!parse_abstract_format_specifier (lexer, type, &input.w,
                                                 &input.d))
             return NULL;
           if (!fmt_from_name (type, &input.type))
@@ -524,32 +524,32 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
           if (input.type == FMT_N)
             input.type = FMT_F;
 
-	  output = fmt_for_output_from_input (input,
+          output = fmt_for_output_from_input (input,
                                               settings_get_fmt_settings ());
-	}
+        }
       else
-	{
-	  lex_match (lexer, T_ASTERISK);
+        {
+          lex_match (lexer, T_ASTERISK);
           input = fmt_for_input (FMT_F, 8, 0);
-	  output = settings_get_format ();
-	}
+          output = settings_get_format ();
+        }
 
       for (size_t i = 0; i < n_names; i++)
-	{
-	  struct variable *v = dict_create_var (dict, names[i],
+        {
+          struct variable *v = dict_create_var (dict, names[i],
                                                 fmt_var_width (input));
-	  if (!v)
-	    {
-	      lex_ofs_error (lexer, vars_start, vars_end,
+          if (!v)
+            {
+              lex_ofs_error (lexer, vars_start, vars_end,
                              _("%s is a duplicate variable name."), names[i]);
-	      return false;
-	    }
+              return false;
+            }
           var_set_both_formats (v, output);
 
           data_parser_add_delimited_field (parser,
                                            input, var_get_dict_index (v),
                                            var_get_name (v));
-	}
+        }
     }
   while (lex_token (lexer) != T_ENDCMD);
 

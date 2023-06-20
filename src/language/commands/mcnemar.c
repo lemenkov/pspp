@@ -55,23 +55,23 @@ struct mcnemar
 
 static void
 output_freq_table (variable_pair *vp,
-		   const struct mcnemar *param,
-		   const struct dictionary *dict);
+                   const struct mcnemar *param,
+                   const struct dictionary *dict);
 
 
 static void
 output_statistics_table (const struct two_sample_test *t2s,
-			 const struct mcnemar *param,
-			 const struct dictionary *dict);
+                         const struct mcnemar *param,
+                         const struct dictionary *dict);
 
 
 void
 mcnemar_execute (const struct dataset *ds,
-		  struct casereader *input,
-		  enum mv_class exclude,
-		  const struct npar_test *test,
-		  bool exact UNUSED,
-		  double timer UNUSED)
+                  struct casereader *input,
+                  enum mv_class exclude,
+                  const struct npar_test *test,
+                  bool exact UNUSED,
+                  double timer UNUSED)
 {
   int i;
   bool warn = true;
@@ -95,55 +95,55 @@ mcnemar_execute (const struct dataset *ds,
       const double weight = dict_get_case_weight (dict, c, &warn);
 
       for (i = 0 ; i < t2s->n_pairs; ++i)
-	{
-	  variable_pair *vp = &t2s->pairs[i];
-	  const union value *value0 = case_data (c, (*vp)[0]);
-	  const union value *value1 = case_data (c, (*vp)[1]);
+        {
+          variable_pair *vp = &t2s->pairs[i];
+          const union value *value0 = case_data (c, (*vp)[0]);
+          const union value *value1 = case_data (c, (*vp)[1]);
 
-	  if (var_is_value_missing ((*vp)[0], value0) & exclude)
-	    continue;
+          if (var_is_value_missing ((*vp)[0], value0) & exclude)
+            continue;
 
-	  if (var_is_value_missing ((*vp)[1], value1) & exclude)
-	    continue;
+          if (var_is_value_missing ((*vp)[1], value1) & exclude)
+            continue;
 
 
-	  if (mc[i].val0.f == SYSMIS)
-	    {
-	      if (mc[i].val1.f != value0->f)
-		mc[i].val0.f = value0->f;
-	      else if (mc[i].val1.f != value1->f)
-		mc[i].val0.f = value1->f;
-	    }
+          if (mc[i].val0.f == SYSMIS)
+            {
+              if (mc[i].val1.f != value0->f)
+                mc[i].val0.f = value0->f;
+              else if (mc[i].val1.f != value1->f)
+                mc[i].val0.f = value1->f;
+            }
 
-	  if (mc[i].val1.f == SYSMIS)
-	    {
-	      if (mc[i].val0.f != value1->f)
-		mc[i].val1.f = value1->f;
-	      else if (mc[i].val0.f != value0->f)
-		mc[i].val1.f = value0->f;
-	    }
+          if (mc[i].val1.f == SYSMIS)
+            {
+              if (mc[i].val0.f != value1->f)
+                mc[i].val1.f = value1->f;
+              else if (mc[i].val0.f != value0->f)
+                mc[i].val1.f = value0->f;
+            }
 
-	  if (mc[i].val0.f == value0->f && mc[i].val0.f == value1->f)
-	    {
-	      mc[i].n00 += weight;
-	    }
-	  else if (mc[i].val0.f == value0->f && mc[i].val1.f == value1->f)
-	    {
-	      mc[i].n10 += weight;
-	    }
-	  else if (mc[i].val1.f == value0->f && mc[i].val0.f == value1->f)
-	    {
-	      mc[i].n01 += weight;
-	    }
-	  else if (mc[i].val1.f == value0->f && mc[i].val1.f == value1->f)
-	    {
-	      mc[i].n11 += weight;
-	    }
-	  else
-	    {
-	      msg (ME, _("The McNemar test is appropriate only for dichotomous variables"));
-	    }
-	}
+          if (mc[i].val0.f == value0->f && mc[i].val0.f == value1->f)
+            {
+              mc[i].n00 += weight;
+            }
+          else if (mc[i].val0.f == value0->f && mc[i].val1.f == value1->f)
+            {
+              mc[i].n10 += weight;
+            }
+          else if (mc[i].val1.f == value0->f && mc[i].val0.f == value1->f)
+            {
+              mc[i].n01 += weight;
+            }
+          else if (mc[i].val1.f == value0->f && mc[i].val1.f == value1->f)
+            {
+              mc[i].n11 += weight;
+            }
+          else
+            {
+              msg (ME, _("The McNemar test is appropriate only for dichotomous variables"));
+            }
+        }
     }
 
   casereader_destroy (r);
@@ -165,8 +165,8 @@ make_pair_name (const variable_pair *pair)
 
 static void
 output_freq_table (variable_pair *vp,
-		   const struct mcnemar *param,
-		   const struct dictionary *dict)
+                   const struct mcnemar *param,
+                   const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_user_text_nocopy (make_pair_name (vp)), "Frequencies");
@@ -213,8 +213,8 @@ output_freq_table (variable_pair *vp,
 
 static void
 output_statistics_table (const struct two_sample_test *t2s,
-			 const struct mcnemar *mc,
-			 const struct dictionary *dict)
+                         const struct mcnemar *mc,
+                         const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
   pivot_table_set_weight_var (table, dict_get_weight (dict));
@@ -236,7 +236,7 @@ output_statistics_table (const struct two_sample_test *t2s,
 
       double n = mc[i].n00 + mc[i].n01 + mc[i].n10 + mc[i].n11;
       double sig = gsl_cdf_binomial_P ((mc[i].n01 > mc[i].n10) ? mc[i].n10: mc[i].n01,
-				       0.5, mc[i].n01 + mc[i].n10);
+                                       0.5, mc[i].n01 + mc[i].n10);
 
       double point = gsl_ran_binomial_pdf (mc[i].n01, 0.5,
                                            mc[i].n01 + mc[i].n10);

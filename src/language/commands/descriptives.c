@@ -62,8 +62,8 @@ struct dsc_z_score
   {
     const struct variable *src_var;   /* Variable on which z-score is based. */
     struct variable *z_var;     /* New z-score variable. */
-    double mean;		/* Distribution mean. */
-    double std_dev;		/* Distribution standard deviation. */
+    double mean;                /* Distribution mean. */
+    double std_dev;                /* Distribution standard deviation. */
   };
 
 /* DESCRIPTIVES transformation (for calculating Z-scores). */
@@ -97,8 +97,8 @@ enum dsc_statistic
 struct dsc_statistic_info
   {
     const char *identifier;     /* Identifier. */
-    const char *name;		/* Full name. */
-    enum moment moment;		/* Highest moment needed to calculate. */
+    const char *name;                /* Full name. */
+    enum moment moment;                /* Highest moment needed to calculate. */
   };
 
 /* Table of statistics, indexed by DSC_*. */
@@ -121,7 +121,7 @@ static const struct dsc_statistic_info dsc_info[DSC_N_STATS] =
 /* Statistics calculated by default if none are explicitly
    requested. */
 #define DEFAULT_STATS                                                   \
-	((1UL << DSC_MEAN) | (1UL << DSC_STDDEV) | (1UL << DSC_MIN)     \
+        ((1UL << DSC_MEAN) | (1UL << DSC_STDDEV) | (1UL << DSC_MIN)     \
          | (1UL << DSC_MAX))
 
 /* A variable specified on DESCRIPTIVES. */
@@ -129,10 +129,10 @@ struct dsc_var
   {
     const struct variable *v;         /* Variable to calculate on. */
     char *z_name;                     /* Name for z-score variable. */
-    double valid, missing;	/* Valid, missing counts. */
+    double valid, missing;        /* Valid, missing counts. */
     struct moments *moments;    /* Moments. */
     double min, max;            /* Maximum and mimimum values. */
-    double stats[DSC_N_STATS];	/* All the stats' values. */
+    double stats[DSC_N_STATS];        /* All the stats' values. */
   };
 
 /* A DESCRIPTIVES procedure. */
@@ -167,7 +167,7 @@ static void free_dsc_proc (struct dsc_proc *);
 
 /* Z-score functions. */
 static bool try_name (const struct dictionary *dict,
-		      struct dsc_proc *dsc, const char *name);
+                      struct dsc_proc *dsc, const char *name);
 static char *generate_z_varname (const struct dictionary *dict,
                                  struct dsc_proc *dsc,
                                  const char *name, int *n_zs);
@@ -267,12 +267,12 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
               else if (lex_match_id (lexer, "DEFAULT"))
                 dsc->show_stats |= DEFAULT_STATS;
               else
-		{
-		  enum dsc_statistic s = match_statistic (lexer);
-		  if (s == DSC_NONE)
+                {
+                  enum dsc_statistic s = match_statistic (lexer);
+                  if (s == DSC_NONE)
                     goto error;
-		  dsc->show_stats |= 1UL << s;
-		}
+                  dsc->show_stats |= 1UL << s;
+                }
               lex_match (lexer, T_COMMA);
             }
           if (dsc->show_stats == 0)
@@ -284,11 +284,11 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
           if (lex_match_id (lexer, "NAME"))
             dsc->sort_by_stat = DSC_NAME;
           else
-	    {
-	      dsc->sort_by_stat = match_statistic (lexer);
-	      if (dsc->sort_by_stat == DSC_NONE)
-		dsc->sort_by_stat = DSC_MEAN;
-	    }
+            {
+              dsc->sort_by_stat = match_statistic (lexer);
+              if (dsc->sort_by_stat == DSC_NONE)
+                dsc->sort_by_stat = DSC_MEAN;
+            }
           if (lex_match (lexer, T_LPAREN))
             {
               if (lex_match_id (lexer, "A"))
@@ -301,7 +301,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                   goto error;
                 }
               if (!lex_force_match (lexer, T_RPAREN))
-		goto error;
+                goto error;
             }
         }
       else if (n_vars == 0)
@@ -311,7 +311,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
             {
               if (!parse_variables_const (lexer, dict, &vars, &n_vars,
                                     PV_APPEND | PV_NO_DUPLICATE | PV_NUMERIC))
-		goto error;
+                goto error;
 
               dsc->vars = xnrealloc ((void *)dsc->vars, n_vars, sizeof *dsc->vars);
               for (size_t i = dsc->n_vars; i < n_vars; i++)
@@ -335,7 +335,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                                lex_tokcstr (lexer));
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
+                    goto error;
                 }
             }
         }
@@ -456,7 +456,7 @@ match_statistic (struct lexer *lexer)
     {
       for (enum dsc_statistic stat = 0; stat < DSC_N_STATS; stat++)
         if (lex_match_id (lexer, dsc_info[stat].identifier))
-	  return stat;
+          return stat;
 
       const char *stat_names[DSC_N_STATS];
       for (enum dsc_statistic stat = 0; stat < DSC_N_STATS; stat++)
@@ -493,7 +493,7 @@ free_dsc_proc (struct dsc_proc *dsc)
    of any previously-declared z-var name; otherwise returns true. */
 static bool
 try_name (const struct dictionary *dict, struct dsc_proc *dsc,
-	  const char *name)
+          const char *name)
 {
   if (dict_lookup_var (dict, name) != NULL)
     return false;
@@ -531,20 +531,20 @@ generate_z_varname (const struct dictionary *dict, struct dsc_proc *dsc,
       (*n_zs)++;
 
       if (*n_zs <= 99)
-	sprintf (name, "ZSC%03d", *n_zs);
+        sprintf (name, "ZSC%03d", *n_zs);
       else if (*n_zs <= 108)
-	sprintf (name, "STDZ%02d", *n_zs - 99);
+        sprintf (name, "STDZ%02d", *n_zs - 99);
       else if (*n_zs <= 117)
-	sprintf (name, "ZZZZ%02d", *n_zs - 108);
+        sprintf (name, "ZZZZ%02d", *n_zs - 108);
       else if (*n_zs <= 126)
-	sprintf (name, "ZQZQ%02d", *n_zs - 117);
+        sprintf (name, "ZQZQ%02d", *n_zs - 117);
       else
-	{
-	  msg (SE, _("Ran out of generic names for Z-score variables.  "
-		     "There are only 126 generic names: ZSC001-ZSC099, "
-		     "STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."));
-	  return NULL;
-	}
+        {
+          msg (SE, _("Ran out of generic names for Z-score variables.  "
+                     "There are only 126 generic names: ZSC001-ZSC099, "
+                     "STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."));
+          return NULL;
+        }
 
       if (try_name (dict, dsc, name))
         return xstrdup (name);
@@ -635,8 +635,8 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
           if (t->ok)
             {
               msg (SE,  _("Internal error processing Z scores.  "
-			  "Please report this to %s."),
-		   PACKAGE_BUGREPORT);
+                          "Please report this to %s."),
+                   PACKAGE_BUGREPORT);
               t->ok = false;
             }
           descriptives_set_all_sysmis_zscores (t, *c);
@@ -650,14 +650,14 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
       assert (t->vars != NULL);
       for (const struct variable **vars = t->vars; vars < t->vars + t->n_vars;
            vars++)
-	{
-	  double score = case_num (*c, *vars);
-	  if (var_is_num_missing (*vars, score) & t->exclude)
-	    {
+        {
+          double score = case_num (*c, *vars);
+          if (var_is_num_missing (*vars, score) & t->exclude)
+            {
               descriptives_set_all_sysmis_zscores (t, *c);
-	      return TRNS_CONTINUE;
-	    }
-	}
+              return TRNS_CONTINUE;
+            }
+        }
     }
 
   for (struct dsc_z_score *z = t->z_scores; z < t->z_scores + t->n_z_scores;
@@ -668,9 +668,9 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
 
       if (z->mean == SYSMIS || z->std_dev == SYSMIS
           || var_is_num_missing (z->src_var, input) & t->exclude)
-	*output = SYSMIS;
+        *output = SYSMIS;
       else
-	*output = (input - z->mean) / z->std_dev;
+        *output = (input - z->mean) / z->std_dev;
     }
   return TRNS_CONTINUE;
 }
@@ -721,7 +721,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
       t->n_vars = dsc->n_vars;
       t->vars = xnmalloc (t->n_vars, sizeof *t->vars);
       for (size_t i = 0; i < t->n_vars; i++)
-	t->vars[i] = dsc->vars[i].v;
+        t->vars[i] = dsc->vars[i].v;
     }
   dsc->z_writer = NULL;
 
@@ -730,8 +730,8 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
     {
       struct dsc_var *dv = &dsc->vars[i];
       if (dv->z_name != NULL)
-	{
-	  struct variable *dst_var = dict_create_var_assert (dataset_dict (ds),
+        {
+          struct variable *dst_var = dict_create_var_assert (dataset_dict (ds),
                                                              dv->z_name, 0);
 
           char *label = xasprintf (_("Z-score of %s"), var_to_string (dv->v));
@@ -743,7 +743,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
             .src_var = dv->v,
             .z_var = dst_var,
           };
-	}
+        }
     }
 
   add_transformation (ds, &descriptives_trns_class, t);
@@ -977,7 +977,7 @@ display (struct dsc_proc *dsc)
                         pivot_value_new_number (dv->valid));
 
       for (int j = 0; j < DSC_N_STATS; j++)
-	if (dsc->show_stats & (1UL << j))
+        if (dsc->show_stats & (1UL << j))
           {
             union value v = { .f = dv->stats[j] };
             struct pivot_value *pv = (j == DSC_MIN || j == DSC_MAX

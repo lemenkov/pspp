@@ -96,8 +96,8 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
   height = geom->axis[SCALE_ORDINATE].scale * gsl_histogram_get (h, bar);
 
   cairo_rectangle (cr,
-		   x_pos,
-		   geom->axis[SCALE_ORDINATE].data_min,
+                   x_pos,
+                   geom->axis[SCALE_ORDINATE].data_min,
                    width, height);
   cairo_save (cr);
   cairo_set_source_rgb (cr,
@@ -170,15 +170,15 @@ xrchart_draw_histogram (const struct chart *chart, cairo_t *cr,
 
       cairo_move_to (cr, geom->axis[SCALE_ABSCISSA].data_min, geom->axis[SCALE_ORDINATE].data_min);
       for (x = geom->axis[SCALE_ABSCISSA].min;
-	   x <= geom->axis[SCALE_ABSCISSA].max;
-	   x += (geom->axis[SCALE_ABSCISSA].max - geom->axis[SCALE_ABSCISSA].min) / 100.0)
-	{
-	  const double y = gsl_ran_gaussian_pdf (x - h->mean, h->stddev) * ordinate_scale;
-	  /* Transform to drawing coordinates */
-	  const double x_pos = (x - geom->axis[SCALE_ABSCISSA].min) * geom->axis[SCALE_ABSCISSA].scale + geom->axis[SCALE_ABSCISSA].data_min;
-	  const double y_pos = (y - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale + geom->axis[SCALE_ORDINATE].data_min;
+           x <= geom->axis[SCALE_ABSCISSA].max;
+           x += (geom->axis[SCALE_ABSCISSA].max - geom->axis[SCALE_ABSCISSA].min) / 100.0)
+        {
+          const double y = gsl_ran_gaussian_pdf (x - h->mean, h->stddev) * ordinate_scale;
+          /* Transform to drawing coordinates */
+          const double x_pos = (x - geom->axis[SCALE_ABSCISSA].min) * geom->axis[SCALE_ABSCISSA].scale + geom->axis[SCALE_ABSCISSA].data_min;
+          const double y_pos = (y - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale + geom->axis[SCALE_ORDINATE].data_min;
           cairo_line_to (cr, x_pos, y_pos);
-	}
+        }
       cairo_stroke (cr);
 
       cairo_restore (cr);

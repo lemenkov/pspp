@@ -98,7 +98,7 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict)
         goto done;
 
       if (n_new_vars != n_old_vars)
-	{
+        {
           size_t added_old = n_old_vars - prev_n_old;
           size_t added_new = n_new_vars - prev_n_new;
 
@@ -112,8 +112,8 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict)
                                  "There are %zu new variable names.",
                                  added_new),
                        added_new);
-	  goto done;
-	}
+          goto done;
+        }
     }
   int end_ofs = lex_ofs (lexer) - 1;
 

@@ -100,9 +100,9 @@ new_value_to_string (const GValue *src, GValue *dest)
     {
     case NV_NUMERIC:
       {
-	gchar *text = g_strdup_printf ("%.*g", DBL_DIG + 1, nv->v.v);
-	g_value_set_string (dest, text);
-	g_free (text);
+        gchar *text = g_strdup_printf ("%.*g", DBL_DIG + 1, nv->v.v);
+        g_value_set_string (dest, text);
+        g_free (text);
       }
       break;
     case NV_STRING:
@@ -130,11 +130,11 @@ new_value_get_type (void)
   if (t == 0)
     {
       t = g_boxed_type_register_static  ("psppire-recode-new-values",
-					 (GBoxedCopyFunc) new_value_copy,
-					 (GBoxedFreeFunc) new_value_free);
+                                         (GBoxedCopyFunc) new_value_copy,
+                                         (GBoxedFreeFunc) new_value_free);
 
       g_value_register_transform_func (t, G_TYPE_STRING,
-				       new_value_to_string);
+                                       new_value_to_string);
     }
 
   return t;
@@ -221,10 +221,10 @@ on_acr_selection_change (GtkTreeSelection *selection, gpointer data)
 
 
   gtk_tree_model_get_value (GTK_TREE_MODEL (model), &iter,
-			    COL_VALUE_OLD, &ov_value);
+                            COL_VALUE_OLD, &ov_value);
 
   gtk_tree_model_get_value (GTK_TREE_MODEL (model), &iter,
-			    COL_VALUE_NEW, &nv_value);
+                            COL_VALUE_NEW, &nv_value);
 
   ov = g_value_get_boxed (&ov_value);
   nv = g_value_get_boxed (&nv_value);
@@ -232,38 +232,38 @@ on_acr_selection_change (GtkTreeSelection *selection, gpointer data)
   if (nv)
     {
       switch (nv->type)
-	{
-	case NV_NUMERIC:
-	  {
-	    gchar *str = num_to_string (nv->v.v);
+        {
+        case NV_NUMERIC:
+          {
+            gchar *str = num_to_string (nv->v.v);
 
-	    gtk_toggle_button_set_active
-	      (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE]), TRUE);
+            gtk_toggle_button_set_active
+              (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE]), TRUE);
 
-	    gtk_entry_set_text (GTK_ENTRY (rd->new_value_entry), str);
-	    g_free (str);
-	  }
-	  break;
-	case NV_STRING:
-	  gtk_toggle_button_set_active
-	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE]), TRUE);
+            gtk_entry_set_text (GTK_ENTRY (rd->new_value_entry), str);
+            g_free (str);
+          }
+          break;
+        case NV_STRING:
+          gtk_toggle_button_set_active
+            (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE]), TRUE);
 
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_value_entry), nv->v.s);
-	  break;
-	case NV_SYSMIS:
-	  gtk_toggle_button_set_active
-	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_SYSMIS]), TRUE);
+          gtk_entry_set_text (GTK_ENTRY (rd->new_value_entry), nv->v.s);
+          break;
+        case NV_SYSMIS:
+          gtk_toggle_button_set_active
+            (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_SYSMIS]), TRUE);
 
-	  break;
-	case NV_COPY:
-	  gtk_toggle_button_set_active
-	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_COPY]), TRUE);
+          break;
+        case NV_COPY:
+          gtk_toggle_button_set_active
+            (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_COPY]), TRUE);
 
-	  break;
-	default:
-	  g_warning ("Invalid new value type");
-	  break;
-	}
+          break;
+        default:
+          g_warning ("Invalid new value type");
+          break;
+        }
 
       g_value_unset (&nv_value);
     }
@@ -302,20 +302,20 @@ set_new_value (GValue *val, const PsppireDialogActionRecode *rd)
       nv.type = NV_NUMERIC;
 
       if (PSPPIRE_DIALOG_ACTION_RECODE_CLASS (G_OBJECT_GET_CLASS (rd))->target_is_string (rd))
-	nv.type = NV_STRING;
+        nv.type = NV_STRING;
 
       if (nv.type == NV_STRING)
-	nv.v.s = g_strdup (text);
+        nv.v.s = g_strdup (text);
       else
-	nv.v.v = g_strtod (text, 0);
+        nv.v.v = g_strtod (text, 0);
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_COPY])))
+            (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_COPY])))
     {
       nv.type = NV_COPY;
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_SYSMIS])))
+            (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_SYSMIS])))
     {
       nv.type = NV_SYSMIS;
     }
@@ -388,7 +388,7 @@ run_old_and_new_dialog (PsppireDialogActionRecode *rd)
     g_object_set (rd->old_value_chooser, "is-string", rd->input_var_is_string, NULL);
 
     gtk_widget_set_sensitive (rd->toggle [BUTTON_NEW_SYSMIS],
-			      var_is_numeric (v));
+                              var_is_numeric (v));
 
     gtk_widget_set_sensitive (rd->convert_button, var_is_alpha (v));
   }
@@ -453,7 +453,7 @@ psppire_dialog_action_recode_refresh (PsppireDialogAction *rd_)
 
 GtkBuilder *
 psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
-					   void (*populate_treeview) (PsppireDialogActionRecode *))
+                                           void (*populate_treeview) (PsppireDialogActionRecode *))
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (act);
 
@@ -474,8 +474,8 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
   act->new_label_entry = get_widget_assert (xml, "dest-label-entry");
 
   act->value_map = gtk_list_store_new (2,
-				       old_value_get_type (),
-				       new_value_get_type ());
+                                       old_value_get_type (),
+                                       new_value_get_type ());
 
   if (populate_treeview)
     populate_treeview (act);
@@ -507,13 +507,13 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
     act->acr = get_widget_assert (xml, "psppire-acr1");
 
     g_signal_connect_swapped (act->toggle[BUTTON_NEW_VALUE], "toggled",
-			      G_CALLBACK (set_acr), act);
+                              G_CALLBACK (set_acr), act);
 
     g_signal_connect_after (act->toggle[BUTTON_NEW_VALUE], "toggled",
-			    G_CALLBACK (focus_value_entry), act);
+                            G_CALLBACK (focus_value_entry), act);
 
     g_signal_connect_swapped (act->new_value_entry, "changed",
-			      G_CALLBACK (set_acr), act);
+                              G_CALLBACK (set_acr), act);
 
     {
       GtkTreeSelection *sel;
@@ -523,18 +523,18 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
 
 
       column =
-	gtk_tree_view_column_new_with_attributes (_("Old"),
-						  gtk_cell_renderer_text_new (),
-						  "text", 0,
-						  NULL);
+        gtk_tree_view_column_new_with_attributes (_("Old"),
+                                                  gtk_cell_renderer_text_new (),
+                                                  "text", 0,
+                                                  NULL);
 
       gtk_tree_view_append_column (PSPPIRE_ACR (act->acr)->tv, column);
 
       column =
-	gtk_tree_view_column_new_with_attributes (_("New"),
-						  gtk_cell_renderer_text_new (),
-						  "text", 1,
-						  NULL);
+        gtk_tree_view_column_new_with_attributes (_("New"),
+                                                  gtk_cell_renderer_text_new (),
+                                                  "text", 1,
+                                                  NULL);
 
       gtk_tree_view_append_column (PSPPIRE_ACR(act->acr)->tv, column);
       g_object_set (PSPPIRE_ACR (act->acr)->tv, "headers-visible", TRUE, NULL);
@@ -542,12 +542,12 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
 
       sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (PSPPIRE_ACR(act->acr)->tv));
       g_signal_connect (sel, "changed",
-			G_CALLBACK (on_acr_selection_change), act);
+                        G_CALLBACK (on_acr_selection_change), act);
     }
 
 
     g_signal_connect_swapped (act->old_and_new, "clicked",
-			      G_CALLBACK (run_old_and_new_dialog), act);
+                              G_CALLBACK (run_old_and_new_dialog), act);
 
 
     GtkTreeSelection *sel =
@@ -556,16 +556,16 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
                       G_CALLBACK (set_old_and_new_button_sensitivity), act);
 
     g_signal_connect (act->toggle[BUTTON_NEW_VALUE], "toggled",
-		      G_CALLBACK (toggle_sensitivity), act->new_value_entry);
+                      G_CALLBACK (toggle_sensitivity), act->new_value_entry);
 
     g_signal_connect (act->string_button, "toggled",
-		      G_CALLBACK (toggle_sensitivity), act->width_entry);
+                      G_CALLBACK (toggle_sensitivity), act->width_entry);
 
     g_signal_connect (act->string_button, "toggled",
-		      G_CALLBACK (on_string_toggled), act);
+                      G_CALLBACK (on_string_toggled), act);
 
     g_signal_connect (act->convert_button, "toggled",
-		      G_CALLBACK (on_convert_toggled), act);
+                      G_CALLBACK (on_convert_toggled), act);
     }
   return xml;
 }
@@ -599,9 +599,9 @@ new_value_append_syntax (struct string *dds, const struct new_value *nv)
 
 char *
 psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
-					      void (*append_string_decls) (const PsppireDialogActionRecode *, struct string *),
-					      void (*append_into_clause) (const PsppireDialogActionRecode *, struct string *),
-					      void (*append_new_value_labels) (const PsppireDialogActionRecode *, struct string *))
+                                              void (*append_string_decls) (const PsppireDialogActionRecode *, struct string *),
+                                              void (*append_into_clause) (const PsppireDialogActionRecode *, struct string *),
+                                              void (*append_new_value_labels) (const PsppireDialogActionRecode *, struct string *))
 {
   PsppireDialogActionRecode *rd = PSPPIRE_DIALOG_ACTION_RECODE (act);
   gboolean ok;
@@ -625,7 +625,7 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
     }
 
   for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					   &iter);
+                                           &iter);
        ok;
        ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (rd->value_map), &iter))
     {
@@ -634,10 +634,10 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
       struct old_value *ov;
       struct new_value *nv;
       gtk_tree_model_get_value (GTK_TREE_MODEL (rd->value_map), &iter,
-				COL_VALUE_OLD, &ov_value);
+                                COL_VALUE_OLD, &ov_value);
 
       gtk_tree_model_get_value (GTK_TREE_MODEL (rd->value_map), &iter,
-				COL_VALUE_NEW, &nv_value);
+                                COL_VALUE_NEW, &nv_value);
 
       ov = g_value_get_boxed (&ov_value);
       nv = g_value_get_boxed (&nv_value);

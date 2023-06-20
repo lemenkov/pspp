@@ -68,7 +68,7 @@ struct csv_writer
   {
     struct file_handle *fh;     /* File handle. */
     struct fh_lock *lock;       /* Mutual exclusion for file. */
-    FILE *file;			/* File stream. */
+    FILE *file;                        /* File stream. */
     struct replace_file *rf;    /* Ticket for replacing output file. */
 
     struct csv_writer_options opts;

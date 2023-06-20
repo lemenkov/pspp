@@ -61,13 +61,13 @@ generate_syntax (const PsppireDialogAction *act)
        NULL == psppire_dict_lookup_var (act->dict, target_name))
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->str_btn)))
-	{
-	  const char *w = gtk_entry_get_text (GTK_ENTRY (cd->width_entry));
-	  g_string_append_printf (string,
-				  "STRING %s (a%s).\n", target_name, w);
-	}
+        {
+          const char *w = gtk_entry_get_text (GTK_ENTRY (cd->width_entry));
+          g_string_append_printf (string,
+                                  "STRING %s (a%s).\n", target_name, w);
+        }
       else
-	g_string_append_printf (string, "NUMERIC %s.\n", target_name);
+        g_string_append_printf (string, "NUMERIC %s.\n", target_name);
     }
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->user_label)))
@@ -77,13 +77,13 @@ generate_syntax (const PsppireDialogAction *act)
 
   if (strlen (label) > 0)
     g_string_append_printf (string, "VARIABLE LABEL %s '%s'.\n",
-			    target_name,
-			    label);
+                            target_name,
+                            label);
 
   g_string_append_printf (string, "COMPUTE %s = %s.\n",
-			  target_name,
-			  expression
-			);
+                          target_name,
+                          expression
+                        );
 
   g_string_append (string, "EXECUTE.\n");
 
@@ -165,10 +165,10 @@ function_list_populate (GtkTreeView *tv)
       gtk_list_store_append (liststore, &iter);
 
       gtk_list_store_set (liststore, &iter,
-			  COMPUTE_COL_NAME, expr_operation_get_name (op),
-			  COMPUTE_COL_USAGE, expr_operation_get_prototype (op),
-			  COMPUTE_COL_ARITY, expr_operation_get_n_args (op),
-			  -1);
+                          COMPUTE_COL_NAME, expr_operation_get_name (op),
+                          COMPUTE_COL_USAGE, expr_operation_get_prototype (op),
+                          COMPUTE_COL_ARITY, expr_operation_get_n_args (op),
+                          -1);
     }
 
 
@@ -217,18 +217,18 @@ reset_type_label_dialog (PsppireDialogActionCompute *cd)
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->user_label), TRUE);
 
       if (label)
-	{
-	  gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
-	}
+        {
+          gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
+        }
 
       gtk_widget_set_sensitive (cd->width_entry, FALSE);
 
       if (var_is_numeric (target_var))
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->numeric_target),
-				      TRUE);
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->numeric_target),
+                                      TRUE);
       else
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->str_btn),
-				      TRUE);
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->str_btn),
+                                      TRUE);
 
       gtk_widget_set_sensitive (cd->numeric_target, FALSE);
       gtk_widget_set_sensitive (cd->str_btn, FALSE);
@@ -242,7 +242,7 @@ reset_type_label_dialog (PsppireDialogActionCompute *cd)
       gtk_widget_set_sensitive (cd->str_btn, TRUE);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->numeric_target),
-				    TRUE);
+                                    TRUE);
     }
 
 }
@@ -338,14 +338,14 @@ on_expression_toggle (GtkToggleButton *button, gpointer data)
       const gchar *target_name = gtk_entry_get_text (GTK_ENTRY (cd->target));
       const struct variable *target_var = psppire_dict_lookup_var (pda->dict, target_name);
       if (target_var)
-	{
-	  const char *label = var_get_label (target_var);
+        {
+          const char *label = var_get_label (target_var);
 
-	  if (label)
-	    gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
-	}
+          if (label)
+            gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
+        }
       else
-	gtk_entry_set_text (GTK_ENTRY (cd->entry), "");
+        gtk_entry_set_text (GTK_ENTRY (cd->entry), "");
 
       gtk_widget_set_sensitive (cd->entry, TRUE);
       gtk_widget_grab_focus (cd->entry);
@@ -358,9 +358,9 @@ on_expression_toggle (GtkToggleButton *button, gpointer data)
  */
 static void
 insert_source_row_into_text_view (GtkTreeIter iter,
-				  GtkWidget *dest,
-				  GtkTreeModel *model,
-				  gpointer data)
+                                  GtkWidget *dest,
+                                  GtkTreeModel *model,
+                                  gpointer data)
 {
   GtkTreePath *path;
   GtkTreeModel *m;
@@ -392,9 +392,9 @@ insert_source_row_into_text_view (GtkTreeIter iter,
 
 static void
 insert_function_into_syntax_area (GtkTreeIter iter,
-				  GtkWidget *text_view,
-				  GtkTreeModel *model,
-				  gpointer data)
+                                  GtkWidget *text_view,
+                                  GtkTreeModel *model,
+                                  gpointer data)
 {
   GString *string;
   GValue name_value = {0};
@@ -438,8 +438,8 @@ insert_function_into_syntax_area (GtkTreeIter iter,
     gtk_text_buffer_get_iter_at_mark (buffer, &insert, cursor);
     for (i = 0 ; i < arity ; ++i)
       {
-	gtk_text_iter_backward_cursor_position (&insert);
-	gtk_text_iter_backward_cursor_position (&insert);
+        gtk_text_iter_backward_cursor_position (&insert);
+        gtk_text_iter_backward_cursor_position (&insert);
       }
     selectbound = insert;
     gtk_text_iter_forward_cursor_position (&selectbound);
@@ -482,35 +482,35 @@ psppire_dialog_action_compute_activate (PsppireDialogAction *a, GVariant *param)
   act->str_btn    = get_widget_assert (xml, "radio-button-string");
 
   g_signal_connect (act->expression, "toggled",
-		    G_CALLBACK (on_expression_toggle), pda);
+                    G_CALLBACK (on_expression_toggle), pda);
 
   g_signal_connect (act->str_btn, "toggled",
-		    G_CALLBACK (on_type_toggled), pda);
+                    G_CALLBACK (on_type_toggled), pda);
 
 
   g_object_set (pda->source,
-		"selection-mode", GTK_SELECTION_SINGLE,
-		NULL);
+                "selection-mode", GTK_SELECTION_SINGLE,
+                NULL);
 
   psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->var_selector),
-				    insert_source_row_into_text_view, NULL);
+                                    insert_source_row_into_text_view, NULL);
 
 
   function_list_populate (GTK_TREE_VIEW (act->functions));
 
   psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->func_selector),
-				    insert_function_into_syntax_area, NULL);
+                                    insert_function_into_syntax_area, NULL);
 
   g_signal_connect (act->target, "changed", G_CALLBACK (on_target_change), act);
 
   g_signal_connect (act->keypad, "insert-syntax",
-		    G_CALLBACK (on_keypad_button),  act);
+                    G_CALLBACK (on_keypad_button),  act);
 
   g_signal_connect (act->keypad, "erase",
-		    G_CALLBACK (erase),  act);
+                    G_CALLBACK (erase),  act);
 
   g_signal_connect (act->type_and_label, "clicked",
-		    G_CALLBACK (run_type_label_dialog),  pda);
+                    G_CALLBACK (run_type_label_dialog),  pda);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);

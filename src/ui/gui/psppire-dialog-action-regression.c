@@ -37,7 +37,7 @@
 
 
 #define REGRESSION_STATS       \
-  RG (COEFF, N_("Coeff"),          N_("Show the regression coefficients"))	\
+  RG (COEFF, N_("Coeff"),          N_("Show the regression coefficients"))        \
   RG (CI,    N_("Conf. Interval"), N_("Show the confidence interval for the regression coefficients"))   \
   RG (R,     N_("R"),              N_("Show the correlation between observed and predicted values")) \
   RG (ANOVA, N_("Anova"),          N_("Show the analysis of variance table"))  \
@@ -135,9 +135,9 @@ on_save_clicked (PsppireDialogActionRegression *rd)
   if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       rd->pred = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->pred_button)) == TRUE)
-	? TRUE : FALSE;
+        ? TRUE : FALSE;
       rd->resid = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->resid_button)) == TRUE)
-	? TRUE : FALSE;
+        ? TRUE : FALSE;
     }
 }
 
@@ -165,20 +165,20 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a, GVariant *par
   act->resid_button = get_widget_assert (xml, "resid-button");
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->stat_view),
-  				  B_RG_STATS_DEFAULT,
-  				  N_REGRESSION_STATS,
-  				  stats);
+                                    B_RG_STATS_DEFAULT,
+                                    N_REGRESSION_STATS,
+                                    stats);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
 
   g_signal_connect_swapped (stat_button, "clicked",
-			    G_CALLBACK (on_statistics_clicked),  act);
+                            G_CALLBACK (on_statistics_clicked),  act);
 
   g_signal_connect_swapped (save_button, "clicked",
-			    G_CALLBACK (on_save_clicked),  act);
+                            G_CALLBACK (on_save_clicked),  act);
 
   return xml;
 }
@@ -209,11 +209,11 @@ generate_syntax (const PsppireDialogAction *a)
     {
       gboolean toggled;
       gtk_tree_model_get (model, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+                          CHECKBOX_COLUMN_SELECTED, &toggled, -1);
       if (toggled)
-	selected |= 1u << i;
+        selected |= 1u << i;
       else
-	selected &= ~(1u << i);
+        selected &= ~(1u << i);
     }
 
   if (selected)
@@ -221,21 +221,21 @@ generate_syntax (const PsppireDialogAction *a)
       g_string_append (string, "\n\t/STATISTICS=");
       int n = 0;
       for (gint i = 0; i < N_REGRESSION_STATS; i++)
-	if (selected & (1u << i))
-	  {
-	    if (n++)
-	      g_string_append (string, " ");
-	    g_string_append (string, stats[i].name);
-	  }
+        if (selected & (1u << i))
+          {
+            if (n++)
+              g_string_append (string, " ");
+            g_string_append (string, stats[i].name);
+          }
     }
 
   if (rd->pred || rd->resid)
     {
       g_string_append (string, "\n\t/SAVE=");
       if (rd->pred)
-	g_string_append (string, " PRED");
+        g_string_append (string, " PRED");
       if (rd->resid)
-	g_string_append (string, " RESID");
+        g_string_append (string, " RESID");
     }
 
   g_string_append (string, ".\n");

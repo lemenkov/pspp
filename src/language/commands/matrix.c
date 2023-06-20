@@ -6512,16 +6512,16 @@ matrix_read_parse (struct matrix_state *s)
             goto error;
         }
       else if (lex_match_id (s->lexer, "ENCODING"))
-	{
-	  lex_match (s->lexer, T_EQUALS);
-	  if (!lex_force_string (s->lexer))
-	    goto error;
+        {
+          lex_match (s->lexer, T_EQUALS);
+          if (!lex_force_string (s->lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (s->lexer));
 
-	  lex_get (s->lexer);
-	}
+          lex_get (s->lexer);
+        }
       else if (lex_match_id (s->lexer, "FIELD"))
         {
           lex_match (s->lexer, T_EQUALS);
@@ -7093,16 +7093,16 @@ matrix_write_parse (struct matrix_state *s)
             goto error;
         }
       else if (lex_match_id (s->lexer, "ENCODING"))
-	{
-	  lex_match (s->lexer, T_EQUALS);
-	  if (!lex_force_string (s->lexer))
-	    goto error;
+        {
+          lex_match (s->lexer, T_EQUALS);
+          if (!lex_force_string (s->lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (s->lexer));
 
-	  lex_get (s->lexer);
-	}
+          lex_get (s->lexer);
+        }
       else if (lex_match_id (s->lexer, "FIELD"))
         {
           lex_match (s->lexer, T_EQUALS);
@@ -7464,16 +7464,16 @@ matrix_get_parse (struct matrix_state *s)
             }
         }
       else if (lex_match_id (s->lexer, "ENCODING"))
-	{
-	  lex_match (s->lexer, T_EQUALS);
-	  if (!lex_force_string (s->lexer))
-	    goto error;
+        {
+          lex_match (s->lexer, T_EQUALS);
+          if (!lex_force_string (s->lexer))
+            goto error;
 
           free (get->encoding);
           get->encoding = ss_xstrdup (lex_tokss (s->lexer));
 
-	  lex_get (s->lexer);
-	}
+          lex_get (s->lexer);
+        }
       else if (lex_match_id (s->lexer, "VARIABLES"))
         {
           lex_match (s->lexer, T_EQUALS);
@@ -7489,7 +7489,7 @@ matrix_get_parse (struct matrix_state *s)
         }
       else if (lex_match_id (s->lexer, "NAMES"))
         {
-	  lex_match (s->lexer, T_EQUALS);
+          lex_match (s->lexer, T_EQUALS);
           if (!lex_force_id (s->lexer))
             goto error;
 
@@ -7501,7 +7501,7 @@ matrix_get_parse (struct matrix_state *s)
         }
       else if (lex_match_id (s->lexer, "MISSING"))
         {
-	  lex_match (s->lexer, T_EQUALS);
+          lex_match (s->lexer, T_EQUALS);
           if (lex_match_id (s->lexer, "ACCEPT"))
             get->user.treatment = MGET_ACCEPT;
           else if (lex_match_id (s->lexer, "OMIT"))
@@ -7521,7 +7521,7 @@ matrix_get_parse (struct matrix_state *s)
         }
       else if (lex_match_id (s->lexer, "SYSMIS"))
         {
-	  lex_match (s->lexer, T_EQUALS);
+          lex_match (s->lexer, T_EQUALS);
           if (lex_match_id (s->lexer, "OMIT"))
             get->system.treatment = MGET_OMIT;
           else if (lex_is_number (s->lexer))
@@ -8253,16 +8253,16 @@ matrix_mget_parse (struct matrix_state *s)
             goto error;
         }
       else if (lex_match_id (s->lexer, "ENCODING"))
-	{
-	  lex_match (s->lexer, T_EQUALS);
-	  if (!lex_force_string (s->lexer))
-	    goto error;
+        {
+          lex_match (s->lexer, T_EQUALS);
+          if (!lex_force_string (s->lexer))
+            goto error;
 
           free (mget->encoding);
           mget->encoding = ss_xstrdup (lex_tokss (s->lexer));
 
-	  lex_get (s->lexer);
-	}
+          lex_get (s->lexer);
+        }
       else if (lex_match_id (s->lexer, "TYPE"))
         {
           lex_match (s->lexer, T_EQUALS);

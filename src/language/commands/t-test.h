@@ -53,9 +53,9 @@ union value;
 void one_sample_run (const struct tt *tt, double testval, struct casereader *reader);
 void paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *reader);
 void indep_run (struct tt *tt, const struct variable *gvar,
-		bool cut,
-		const union value *gval0, const union value *gval1,
-		struct casereader *reader);
+                bool cut,
+                const union value *gval0, const union value *gval1,
+                struct casereader *reader);
 
 
 #endif

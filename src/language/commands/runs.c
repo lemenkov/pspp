@@ -81,11 +81,11 @@ runs_statistic (const struct run_state *rs)
   if (rs->n < 50)
     {
       if (z <= -0.5)
-	z += 0.5;
+        z += 0.5;
       else if (z >= 0.5)
-	z -= 0.5;
+        z -= 0.5;
       else
-	return 0;
+        return 0;
     }
 
   sigma = 2 * rs->np * rs->nn;
@@ -103,11 +103,11 @@ static void show_runs_result (const struct runs_test *, const struct run_state *
 
 void
 runs_execute (const struct dataset *ds,
-	      struct casereader *input,
-	      enum mv_class exclude,
-	      const struct npar_test *test,
-	      bool exact UNUSED,
-	      double timer UNUSED)
+              struct casereader *input,
+              enum mv_class exclude,
+              const struct npar_test *test,
+              bool exact UNUSED,
+              double timer UNUSED)
 {
   int v;
   struct ccase *c;
@@ -122,138 +122,138 @@ runs_execute (const struct dataset *ds,
     {
     case CP_MODE:
       {
-	for (v = 0; v < otp->n_vars; ++v)
-	  {
-	    bool multimodal = false;
-	    struct run_state *run = &rs[v];
-	    double last_cc;
-	    struct casereader *group = NULL;
-	    struct casegrouper *grouper;
-	    struct casereader *reader = casereader_clone (input);
-	    const struct variable *var = otp->vars[v];
+        for (v = 0; v < otp->n_vars; ++v)
+          {
+            bool multimodal = false;
+            struct run_state *run = &rs[v];
+            double last_cc;
+            struct casereader *group = NULL;
+            struct casegrouper *grouper;
+            struct casereader *reader = casereader_clone (input);
+            const struct variable *var = otp->vars[v];
 
-	    reader = sort_execute_1var (reader, var);
+            reader = sort_execute_1var (reader, var);
 
-	    grouper = casegrouper_create_vars (reader, &var, 1);
-	    last_cc = SYSMIS;
-	    while (casegrouper_get_next_group (grouper, &group))
-	      {
-		double x = SYSMIS;
-		double cc = 0.0;
-		struct ccase *c;
-		for (; (c = casereader_read (group)); case_unref (c))
-		  {
-		    const double w = weight ? case_num (c, weight) : 1.0;
-		    const union value *val = case_data (c, var);
-		    if (var_is_value_missing (var, val) & exclude)
-		      continue;
-		    x = val->f;
-		    cc += w;
-		  }
+            grouper = casegrouper_create_vars (reader, &var, 1);
+            last_cc = SYSMIS;
+            while (casegrouper_get_next_group (grouper, &group))
+              {
+                double x = SYSMIS;
+                double cc = 0.0;
+                struct ccase *c;
+                for (; (c = casereader_read (group)); case_unref (c))
+                  {
+                    const double w = weight ? case_num (c, weight) : 1.0;
+                    const union value *val = case_data (c, var);
+                    if (var_is_value_missing (var, val) & exclude)
+                      continue;
+                    x = val->f;
+                    cc += w;
+                  }
 
-		if (cc > last_cc)
-		  {
-		    run->cutpoint = x;
-		  }
-		else if (cc == last_cc)
-		  {
-		    multimodal = true;
-		    if (x > run->cutpoint)
-		      run->cutpoint = x;
-		  }
-		last_cc = cc;
-		casereader_destroy (group);
-	      }
-	    casegrouper_destroy (grouper);
-	    if (multimodal)
-	      msg (MW, _("Multiple modes exist for variable `%s'.  "
+                if (cc > last_cc)
+                  {
+                    run->cutpoint = x;
+                  }
+                else if (cc == last_cc)
+                  {
+                    multimodal = true;
+                    if (x > run->cutpoint)
+                      run->cutpoint = x;
+                  }
+                last_cc = cc;
+                casereader_destroy (group);
+              }
+            casegrouper_destroy (grouper);
+            if (multimodal)
+              msg (MW, _("Multiple modes exist for variable `%s'.  "
                          "Using %.*g as the threshold value."),
-		   var_get_name (var), DBL_DIG + 1, run->cutpoint);
-	  }
+                   var_get_name (var), DBL_DIG + 1, run->cutpoint);
+          }
       }
       break;
     case CP_MEDIAN:
       {
-	for (v = 0; v < otp->n_vars; ++v)
-	  {
-	    double cc = 0.0;
-	    struct ccase *c;
-	    struct run_state *run = &rs[v];
-	    struct casereader *reader = casereader_clone (input);
-	    const struct variable *var = otp->vars[v];
-	    struct casewriter *writer;
-	    struct percentile *median;
-	    struct order_stats *os;
-	    struct subcase sc;
-	    subcase_init_var (&sc, var, SC_ASCEND);
-	    writer = sort_create_writer (&sc, casereader_get_proto (reader));
+        for (v = 0; v < otp->n_vars; ++v)
+          {
+            double cc = 0.0;
+            struct ccase *c;
+            struct run_state *run = &rs[v];
+            struct casereader *reader = casereader_clone (input);
+            const struct variable *var = otp->vars[v];
+            struct casewriter *writer;
+            struct percentile *median;
+            struct order_stats *os;
+            struct subcase sc;
+            subcase_init_var (&sc, var, SC_ASCEND);
+            writer = sort_create_writer (&sc, casereader_get_proto (reader));
 
- 	    for (; (c = casereader_read (reader));)
-	      {
-		const union value *val = case_data (c, var);
-		const double w = weight ? case_num (c, weight) : 1.0;
-		if (var_is_value_missing (var, val) & exclude)
-		  {
-		    case_unref (c);
-		    continue;
-		  }
+             for (; (c = casereader_read (reader));)
+              {
+                const union value *val = case_data (c, var);
+                const double w = weight ? case_num (c, weight) : 1.0;
+                if (var_is_value_missing (var, val) & exclude)
+                  {
+                    case_unref (c);
+                    continue;
+                  }
 
-		cc += w;
-		casewriter_write (writer, c);
-	      }
-	    subcase_uninit (&sc);
-	    casereader_destroy (reader);
-	    reader = casewriter_make_reader (writer);
+                cc += w;
+                casewriter_write (writer, c);
+              }
+            subcase_uninit (&sc);
+            casereader_destroy (reader);
+            reader = casewriter_make_reader (writer);
 
-	    median = percentile_create (0.5, cc);
-	    os = &median->parent;
+            median = percentile_create (0.5, cc);
+            os = &median->parent;
 
-	    order_stats_accumulate (&os, 1,
-				    reader,
-				    weight,
-				    var,
-				    exclude);
+            order_stats_accumulate (&os, 1,
+                                    reader,
+                                    weight,
+                                    var,
+                                    exclude);
 
-	    run->cutpoint = percentile_calculate (median, PC_HAVERAGE);
-	    statistic_destroy (&median->parent.parent);
-	  }
+            run->cutpoint = percentile_calculate (median, PC_HAVERAGE);
+            statistic_destroy (&median->parent.parent);
+          }
       }
       break;
     case CP_MEAN:
       {
-	struct casereader *reader = casereader_clone (input);
-	for (; (c = casereader_read (reader)); case_unref (c))
-	  {
-	    const double w = weight ? case_num (c, weight) : 1.0;
-	    for (v = 0; v < otp->n_vars; ++v)
-	      {
-		const struct variable *var = otp->vars[v];
-		const union value *val = case_data (c, var);
-		const double x = val->f;
-		struct run_state *run = &rs[v];
+        struct casereader *reader = casereader_clone (input);
+        for (; (c = casereader_read (reader)); case_unref (c))
+          {
+            const double w = weight ? case_num (c, weight) : 1.0;
+            for (v = 0; v < otp->n_vars; ++v)
+              {
+                const struct variable *var = otp->vars[v];
+                const union value *val = case_data (c, var);
+                const double x = val->f;
+                struct run_state *run = &rs[v];
 
-		if (var_is_value_missing (var, val) & exclude)
-		  continue;
+                if (var_is_value_missing (var, val) & exclude)
+                  continue;
 
-		run->cutpoint += x * w;
-		run->n += w;
-	      }
-	  }
-	casereader_destroy (reader);
-	for (v = 0; v < otp->n_vars; ++v)
-	  {
-	    struct run_state *run = &rs[v];
-	    run->cutpoint /= run->n;
-	  }
+                run->cutpoint += x * w;
+                run->n += w;
+              }
+          }
+        casereader_destroy (reader);
+        for (v = 0; v < otp->n_vars; ++v)
+          {
+            struct run_state *run = &rs[v];
+            run->cutpoint /= run->n;
+          }
       }
       break;
     case CP_CUSTOM:
       {
       for (v = 0; v < otp->n_vars; ++v)
-	{
-	  struct run_state *run = &rs[v];
-	  run->cutpoint = rt->cutpoint;
-	}
+        {
+          struct run_state *run = &rs[v];
+          run->cutpoint = rt->cutpoint;
+        }
       }
       break;
     }
@@ -263,33 +263,33 @@ runs_execute (const struct dataset *ds,
       const double w = weight ? case_num (c, weight) : 1.0;
 
       for (v = 0; v < otp->n_vars; ++v)
-	{
-	  struct run_state *run = &rs[v];
-	  const struct variable *var = otp->vars[v];
-	  const union value *val = case_data (c, var);
-	  double x = val->f;
-	  double d = x - run->cutpoint;
-	  short sign = 0;
+        {
+          struct run_state *run = &rs[v];
+          const struct variable *var = otp->vars[v];
+          const union value *val = case_data (c, var);
+          double x = val->f;
+          double d = x - run->cutpoint;
+          short sign = 0;
 
-	  if (var_is_value_missing (var, val) & exclude)
-	    continue;
+          if (var_is_value_missing (var, val) & exclude)
+            continue;
 
-	  if (d >= 0)
-	    {
-	      sign = +1;
-	      run->np += w;
-	    }
-	  else
-	    {
-	      sign = -1;
-	      run->nn += w;
-	    }
+          if (d >= 0)
+            {
+              sign = +1;
+              run->np += w;
+            }
+          else
+            {
+              sign = -1;
+              run->nn += w;
+            }
 
-	  if (sign != run->last_sign)
-	    run->runs++;
+          if (sign != run->last_sign)
+            run->runs++;
 
-	  run->last_sign = sign;
-	}
+          run->last_sign = sign;
+        }
     }
   casereader_destroy (input);
 

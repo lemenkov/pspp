@@ -153,7 +153,7 @@ default_sort (GtkTreeModel *model,
 {
   int what = -1;
   psppire_conf_get_enum (psppire_conf_new (), "VariableLists", "sort-order",
-			 PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
+                         PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
 
   switch (what)
     {
@@ -185,16 +185,16 @@ set_model (PsppireDictView *dict_view)
   dict_view->sorted_model = gtk_tree_model_sort_new_with_model (GTK_TREE_MODEL (dict_view->dict));
   gtk_tree_sortable_set_default_sort_func (GTK_TREE_SORTABLE (dict_view->sorted_model), default_sort, dict_view, 0);
   gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (dict_view->sorted_model),
-					GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
+                                        GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
    if (dict_view->predicate)
     {
-      model = gtk_tree_model_filter_new (dict_view->sorted_model,	 NULL);
+      model = gtk_tree_model_filter_new (dict_view->sorted_model,         NULL);
 
       gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (model),
-					      filter_variables,
-					      dict_view->predicate,
-					      NULL);
+                                              filter_variables,
+                                              dict_view->predicate,
+                                              NULL);
     }
   else
     {
@@ -208,9 +208,9 @@ set_model (PsppireDictView *dict_view)
 
 static void
 psppire_dict_view_set_property (GObject         *object,
-			       guint            prop_id,
-			       const GValue    *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               const GValue    *value,
+                               GParamSpec      *pspec)
 {
   PsppireDictView *dict_view = PSPPIRE_DICT_VIEW (object);
 
@@ -224,12 +224,12 @@ psppire_dict_view_set_property (GObject         *object,
       break;
     case PROP_SELECTION_MODE:
       {
-	GtkTreeSelection *selection =
-	  gtk_tree_view_get_selection (GTK_TREE_VIEW (dict_view));
+        GtkTreeSelection *selection =
+          gtk_tree_view_get_selection (GTK_TREE_VIEW (dict_view));
 
-	GtkSelectionMode mode = g_value_get_enum (value);
+        GtkSelectionMode mode = g_value_get_enum (value);
 
-	gtk_tree_selection_set_mode (selection, mode);
+        gtk_tree_selection_set_mode (selection, mode);
       }
       break;
     default:
@@ -244,9 +244,9 @@ psppire_dict_view_set_property (GObject         *object,
 
 static void
 psppire_dict_view_get_property (GObject         *object,
-			       guint            prop_id,
-			       GValue          *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               GValue          *value,
+                               GParamSpec      *pspec)
 {
   PsppireDictView *dict_view = PSPPIRE_DICT_VIEW (object);
 
@@ -260,10 +260,10 @@ psppire_dict_view_get_property (GObject         *object,
       break;
     case PROP_SELECTION_MODE:
       {
-	GtkTreeSelection *selection =
-	  gtk_tree_view_get_selection (GTK_TREE_VIEW (dict_view));
+        GtkTreeSelection *selection =
+          gtk_tree_view_get_selection (GTK_TREE_VIEW (dict_view));
 
-	g_value_set_enum (value, gtk_tree_selection_get_mode (selection));
+        g_value_set_enum (value, gtk_tree_selection_get_mode (selection));
       }
       break;
     default:
@@ -283,25 +283,25 @@ psppire_dict_view_class_init (PsppireDictViewClass *class)
 
   GParamSpec *predicate_spec =
     g_param_spec_pointer ("predicate",
-			  "Predicate",
-			  "A predicate function",
-			  G_PARAM_READABLE | G_PARAM_WRITABLE);
+                          "Predicate",
+                          "A predicate function",
+                          G_PARAM_READABLE | G_PARAM_WRITABLE);
 
 
   GParamSpec *selection_mode_spec =
     g_param_spec_enum ("selection-mode",
-		       "Selection Mode",
-		       "How many things can be selected",
-		       GTK_TYPE_SELECTION_MODE,
-		       GTK_SELECTION_MULTIPLE,
-		       G_PARAM_CONSTRUCT | G_PARAM_READABLE | G_PARAM_WRITABLE);
+                       "Selection Mode",
+                       "How many things can be selected",
+                       GTK_TYPE_SELECTION_MODE,
+                       GTK_SELECTION_MULTIPLE,
+                       G_PARAM_CONSTRUCT | G_PARAM_READABLE | G_PARAM_WRITABLE);
 
   object_class->set_property = psppire_dict_view_set_property;
   object_class->get_property = psppire_dict_view_get_property;
 
   g_object_class_override_property (object_class,
-				    PROP_DICTIONARY,
-				    "model");
+                                    PROP_DICTIONARY,
+                                    "model");
 
   g_object_class_install_property (object_class,
                                    PROP_PREDICATE,
@@ -318,15 +318,15 @@ use_labels (PsppireDictView *dv)
   gboolean disp_labels = TRUE;
 
   if (gtk_check_menu_item_get_inconsistent (GTK_CHECK_MENU_ITEM
-					    (dv->override_button)))
+                                            (dv->override_button)))
     {
       psppire_conf_get_boolean (psppire_conf_new (),
-				"VariableLists", "display-labels", &disp_labels);
+                                "VariableLists", "display-labels", &disp_labels);
     }
   else
     {
       disp_labels = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM
-						    (dv->override_button));
+                                                    (dv->override_button));
     }
   return disp_labels;
 }
@@ -336,10 +336,10 @@ use_labels (PsppireDictView *dv)
    variable */
 static void
 var_description_cell_data_func (GtkTreeViewColumn *col,
-				GtkCellRenderer *cell,
-				GtkTreeModel *top_model,
-				GtkTreeIter *top_iter,
-				gpointer data)
+                                GtkCellRenderer *cell,
+                                GtkTreeModel *top_model,
+                                GtkTreeIter *top_iter,
+                                gpointer data)
 {
   PsppireDictView *dv = PSPPIRE_DICT_VIEW (data);
   struct variable *var;
@@ -349,13 +349,13 @@ var_description_cell_data_func (GtkTreeViewColumn *col,
   get_base_model (top_model, top_iter, &model, &iter);
 
   gtk_tree_model_get (model,
-		      &iter, DICT_TVM_COL_VAR, &var, -1);
+                      &iter, DICT_TVM_COL_VAR, &var, -1);
 
   if (var_has_label (var) && use_labels (dv))
     {
       gchar *text = g_markup_printf_escaped (
-				     "<span stretch=\"condensed\">%s</span>",
-				     var_get_label (var));
+                                     "<span stretch=\"condensed\">%s</span>",
+                                     var_get_label (var));
 
       g_object_set (cell, "markup", text, NULL);
       g_free (text);
@@ -374,19 +374,19 @@ var_description_cell_data_func (GtkTreeViewColumn *col,
    of variable */
 static void
 var_icon_cell_data_func (GtkTreeViewColumn *col,
-		       GtkCellRenderer *cell,
-		       GtkTreeModel *model,
-		       GtkTreeIter *iter,
-		       gpointer data)
+                       GtkCellRenderer *cell,
+                       GtkTreeModel *model,
+                       GtkTreeIter *iter,
+                       gpointer data)
 {
   struct variable *var;
 
   gtk_tree_model_get (model, iter, DICT_TVM_COL_VAR, &var, -1);
 
   g_object_set (cell,
-		"stock-size", GTK_ICON_SIZE_MENU,
-		"icon-name", get_var_measurement_stock_id (var_get_print_format (var).type,
-							   var_get_measure (var)),
+                "stock-size", GTK_ICON_SIZE_MENU,
+                "icon-name", get_var_measurement_stock_id (var_get_print_format (var).type,
+                                                           var_get_measure (var)),
                 NULL);
 
   var_unref (var);
@@ -399,13 +399,13 @@ get_var_measurement_stock_id (enum fmt_type type, enum measure measure)
     {
     case FMT_CAT_STRING:
       switch (measure)
-	{
-	case MEASURE_UNKNOWN: return "role-none";
-	case MEASURE_NOMINAL: return "measure-string-nominal";
-	case MEASURE_ORDINAL: return "measure-string-ordinal";
-	case MEASURE_SCALE:   return "role-none";
+        {
+        case MEASURE_UNKNOWN: return "role-none";
+        case MEASURE_NOMINAL: return "measure-string-nominal";
+        case MEASURE_ORDINAL: return "measure-string-ordinal";
+        case MEASURE_SCALE:   return "role-none";
         case n_MEASURES: break;
-	}
+        }
       break;
 
     case FMT_CAT_DATE:
@@ -428,7 +428,7 @@ get_var_measurement_stock_id (enum fmt_type type, enum measure measure)
         case MEASURE_ORDINAL: return "measure-ordinal";
         case MEASURE_SCALE:   return "measure-scale";
         case n_MEASURES: break;
-	}
+        }
       break;
     }
 
@@ -440,11 +440,11 @@ get_var_measurement_stock_id (enum fmt_type type, enum measure measure)
 /* Sets the tooltip to be the name of the variable under the cursor */
 static gboolean
 set_tooltip_for_variable (GtkTreeView  *treeview,
-			  gint        x,
-			  gint        y,
-			  gboolean    keyboard_mode,
-			  GtkTooltip *tooltip,
-			  gpointer    user_data)
+                          gint        x,
+                          gint        y,
+                          gboolean    keyboard_mode,
+                          GtkTooltip *tooltip,
+                          gpointer    user_data)
 {
   gint bx, by;
   GtkTreeIter iter;
@@ -511,7 +511,7 @@ psppire_dict_view_iter_to_var (PsppireDictView *dict_view,
   g_assert (PSPPIRE_IS_DICT (model));
 
   gtk_tree_model_get (model,
-		      &iter, DICT_TVM_COL_VAR, &var, -1);
+                      &iter, DICT_TVM_COL_VAR, &var, -1);
 
   return var;
 }
@@ -552,7 +552,7 @@ toggle_label_preference (GtkCheckMenuItem *checkbox, gpointer data)
 
   gboolean global_setting = TRUE;
   psppire_conf_get_boolean (psppire_conf_new (),
-			    "VariableLists", "display-labels", &global_setting);
+                            "VariableLists", "display-labels", &global_setting);
 
   if (gtk_check_menu_item_get_inconsistent (checkbox))
     gtk_check_menu_item_set_active (checkbox, !global_setting);
@@ -672,14 +672,14 @@ psppire_dict_view_init (PsppireDictView *dict_view)
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
 
   gtk_tree_view_column_set_cell_data_func (col, renderer,
-					   var_icon_cell_data_func,
-					   NULL, NULL);
+                                           var_icon_cell_data_func,
+                                           NULL, NULL);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func (col, renderer,
-					   var_description_cell_data_func,
-					   dict_view, NULL);
+                                           var_description_cell_data_func,
+                                           dict_view, NULL);
 
   g_object_set (renderer, "ellipsize-set", TRUE, NULL);
   g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
@@ -692,12 +692,12 @@ psppire_dict_view_init (PsppireDictView *dict_view)
   gtk_tree_view_append_column (GTK_TREE_VIEW (dict_view), col);
 
   g_object_set (dict_view,
-		"has-tooltip", TRUE,
-		"headers-visible", FALSE,
-		NULL);
+                "has-tooltip", TRUE,
+                "headers-visible", FALSE,
+                NULL);
 
   g_signal_connect (dict_view, "query-tooltip",
-		    G_CALLBACK (set_tooltip_for_variable), NULL);
+                    G_CALLBACK (set_tooltip_for_variable), NULL);
 
   dict_view->menu = gtk_menu_new ();
 
@@ -708,10 +708,10 @@ psppire_dict_view_init (PsppireDictView *dict_view)
 
     dict_view->override_button = item;
     gtk_check_menu_item_set_inconsistent (GTK_CHECK_MENU_ITEM (item),
-					  TRUE);
+                                          TRUE);
 
     g_signal_connect (item, "toggled",
-		      G_CALLBACK (toggle_label_preference), dict_view);
+                      G_CALLBACK (toggle_label_preference), dict_view);
 
     gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
 
@@ -751,7 +751,7 @@ psppire_dict_view_init (PsppireDictView *dict_view)
   gtk_widget_show_all (dict_view->menu);
 
   g_signal_connect (dict_view, "button-press-event",
-		    G_CALLBACK (show_menu), NULL);
+                    G_CALLBACK (show_menu), NULL);
 }
 
 struct get_vars_aux

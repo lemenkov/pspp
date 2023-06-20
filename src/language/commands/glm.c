@@ -102,14 +102,14 @@ design_full (struct glm_spec *glm)
       gsl_combination *c = gsl_combination_calloc (glm->n_factor_vars, sz);
 
       do
-	{
-	  struct interaction *iact = interaction_create (NULL);
+        {
+          struct interaction *iact = interaction_create (NULL);
           for (int e = 0; e < gsl_combination_k (c); ++e)
-	    interaction_add_variable (
+            interaction_add_variable (
               iact, glm->factor_vars [gsl_combination_get (c, e)]);
 
-	  glm->interactions[glm->n_interactions++] = iact;
-	}
+          glm->interactions[glm->n_interactions++] = iact;
+        }
       while (gsl_combination_next (c) == GSL_SUCCESS);
 
       gsl_combination_free (c);
@@ -118,9 +118,9 @@ design_full (struct glm_spec *glm)
 }
 
 static void output_glm (const struct glm_spec *,
-			const struct glm_workspace *ws);
+                        const struct glm_workspace *ws);
 static void run_glm (struct glm_spec *cmd, struct casereader *input,
-		     const struct dataset *ds);
+                     const struct dataset *ds);
 
 static struct interaction *parse_design_term (struct lexer *,
                                               const struct dictionary *);
@@ -142,8 +142,8 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 
   int dep_vars_start = lex_ofs (lexer);
   if (!parse_variables_const (lexer, glm.dict,
-			      &glm.dep_vars, &glm.n_dep_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
+                              &glm.dep_vars, &glm.n_dep_vars,
+                              PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
   int dep_vars_end = lex_ofs (lexer) - 1;
 
@@ -151,8 +151,8 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
     goto error;
 
   if (!parse_variables_const (lexer, glm.dict,
-			      &glm.factor_vars, &glm.n_factor_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
+                              &glm.factor_vars, &glm.n_factor_vars,
+                              PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
   if (glm.n_dep_vars > 1)
@@ -170,66 +170,66 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "MISSING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "INCLUDE"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "INCLUDE"))
                 glm.exclude = MV_SYSTEM;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 glm.exclude = MV_ANY;
-	      else
-		{
-		  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		  goto error;
-		}
-	    }
-	}
+              else
+                {
+                  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "INTERCEPT"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "INCLUDE"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "INCLUDE"))
                 glm.intercept = true;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 glm.intercept = false;
-	      else
-		{
-		  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		  goto error;
-		}
-	    }
-	}
+              else
+                {
+                  lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "CRITERIA"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_match_phrase (lexer, "ALPHA(")
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_match_phrase (lexer, "ALPHA(")
               || !lex_force_num (lexer))
             goto error;
           glm.alpha = lex_number (lexer);
           lex_get (lexer);
           if (!lex_force_match (lexer, T_RPAREN))
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "METHOD"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_match_phrase (lexer, "SSTYPE(")
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_match_phrase (lexer, "SSTYPE(")
               || !lex_force_int_range (lexer, "SSTYPE", 1, 3))
             goto error;
 
-	  glm.ss_type = lex_integer (lexer);
-	  lex_get (lexer);
+          glm.ss_type = lex_integer (lexer);
+          lex_get (lexer);
 
-	  if (!lex_force_match (lexer, T_RPAREN))
+          if (!lex_force_match (lexer, T_RPAREN))
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "DESIGN"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
           do
             {
@@ -247,20 +247,20 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
             }
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH);
 
-	  if (glm.n_interactions > 0)
-	    design = true;
-	}
+          if (glm.n_interactions > 0)
+            design = true;
+        }
       else if (lex_match_id (lexer, "SHOWCODES"))
-	{
+        {
           /* Undocumented debug option */
-	  glm.dump_coding = true;
-	}
+          glm.dump_coding = true;
+        }
       else
-	{
-	  lex_error_expecting (lexer, "MISSING", "INTERCEPT", "CRITERIA",
+        {
+          lex_error_expecting (lexer, "MISSING", "INTERCEPT", "CRITERIA",
                                "METHOD", "DESIGN");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   if (!design)
@@ -312,19 +312,19 @@ fill_submatrix (const gsl_matrix * cov, gsl_matrix * submatrix, bool *dropped_f)
   for (i = 0; i < cov->size1; i++)
     {
       if (not_dropped (i, dropped_f))
-	{
-	  m = 0;
-	  for (j = 0; j < cov->size2; j++)
-	    {
-	      if (not_dropped (j, dropped_f))
-		{
-		  gsl_matrix_set (submatrix, n, m,
-				  gsl_matrix_get (cov, i, j));
-		  m++;
-		}
-	    }
-	  n++;
-	}
+        {
+          m = 0;
+          for (j = 0; j < cov->size2; j++)
+            {
+              if (not_dropped (j, dropped_f))
+                {
+                  gsl_matrix_set (submatrix, n, m,
+                                  gsl_matrix_get (cov, i, j));
+                  m++;
+                }
+            }
+          n++;
+        }
     }
 }
 
@@ -364,16 +364,16 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
         submodel_dropped[i] = model_dropped[i];
 
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
-	{
-	  const struct interaction * x =
-	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
+        {
+          const struct interaction * x =
+            categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
-	  if (x == cmd->interactions [k])
-	    {
-	      model_dropped[i] = false;
-	      n_dropped_model--;
-	    }
-	}
+          if (x == cmd->interactions [k])
+            {
+              model_dropped[i] = false;
+              n_dropped_model--;
+            }
+        }
 
       model_cov = gsl_matrix_alloc (cm->size1 - n_dropped_model, cm->size2 - n_dropped_model);
       submodel_cov = gsl_matrix_alloc (cm->size1 - n_dropped_submodel, cm->size2 - n_dropped_submodel);
@@ -385,8 +385,8 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
       reg_sweep (submodel_cov, 0);
 
       gsl_vector_set (ssq, k + 1,
-		      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
-		);
+                      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
+                );
 
       gsl_matrix_free (model_cov);
       gsl_matrix_free (submodel_cov);
@@ -415,26 +415,26 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
       size_t n_dropped_model = 0;
       size_t n_dropped_submodel = 0;
       for (size_t i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
-	{
-	  const struct interaction * x =
-	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
+        {
+          const struct interaction * x =
+            categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
-	  model_dropped[i] = false;
-	  submodel_dropped[i] = false;
-	  if (interaction_is_subset (cmd->interactions [k], x))
-	    {
-	      assert (n_dropped_submodel < covariance_dim (cov));
-	      n_dropped_submodel++;
+          model_dropped[i] = false;
+          submodel_dropped[i] = false;
+          if (interaction_is_subset (cmd->interactions [k], x))
+            {
+              assert (n_dropped_submodel < covariance_dim (cov));
+              n_dropped_submodel++;
               submodel_dropped[i] = true;
 
-	      if (cmd->interactions [k]->n_vars < x->n_vars)
-		{
-		  assert (n_dropped_model < covariance_dim (cov));
-		  n_dropped_model++;
-		  model_dropped[i] = true;
-		}
-	    }
-	}
+              if (cmd->interactions [k]->n_vars < x->n_vars)
+                {
+                  assert (n_dropped_model < covariance_dim (cov));
+                  n_dropped_model++;
+                  model_dropped[i] = true;
+                }
+            }
+        }
 
       model_cov = gsl_matrix_alloc (cm->size1 - n_dropped_model, cm->size2 - n_dropped_model);
       submodel_cov = gsl_matrix_alloc (cm->size1 - n_dropped_submodel, cm->size2 - n_dropped_submodel);
@@ -446,8 +446,8 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
       reg_sweep (submodel_cov, 0);
 
       gsl_vector_set (ssq, k + 1,
-		      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
-		);
+                      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
+                );
 
       gsl_matrix_free (model_cov);
       gsl_matrix_free (submodel_cov);
@@ -480,19 +480,19 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
     {
       size_t n_dropped_model = 0;
       for (size_t i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
-	{
-	  const struct interaction * x =
-	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
+        {
+          const struct interaction * x =
+            categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
-	  model_dropped[i] = false;
+          model_dropped[i] = false;
 
-	  if (cmd->interactions [k] == x)
-	    {
-	      assert (n_dropped_model < covariance_dim (cov));
-	      n_dropped_model++;
-	      model_dropped[i] = true;
-	    }
-	}
+          if (cmd->interactions [k] == x)
+            {
+              assert (n_dropped_model < covariance_dim (cov));
+              n_dropped_model++;
+              model_dropped[i] = true;
+            }
+        }
 
       gsl_matrix *model_cov = gsl_matrix_alloc (cm->size1 - n_dropped_model,
                                                 cm->size2 - n_dropped_model);
@@ -510,7 +510,7 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
 static void
 run_glm (struct glm_spec *cmd, struct casereader *input,
-	 const struct dataset *ds)
+         const struct dataset *ds)
 {
   bool warn_bad_weight = true;
   struct dictionary *dict = dataset_dict (ds);
@@ -528,7 +528,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
 
   struct glm_workspace ws = {
     .cats = categoricals_create (cmd->interactions, cmd->n_interactions,
-				 cmd->wv, MV_ANY)
+                                 cmd->wv, MV_ANY)
   };
 
   struct covariance *cov = covariance_2pass_create (
@@ -547,7 +547,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
       for (int v = 0; v < cmd->n_dep_vars; ++v)
-	moments_pass_one (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
+        moments_pass_one (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass1 (cov, c);
     }
@@ -563,7 +563,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
       double weight = dict_get_case_weight (dict, c, &warn_bad_weight);
 
       for (size_t v = 0; v < cmd->n_dep_vars; ++v)
-	moments_pass_two (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
+        moments_pass_two (ws.totals, case_num (c, cmd->dep_vars[v]), weight);
 
       covariance_accumulate_pass2 (cov, c);
     }
@@ -574,10 +574,10 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
     {
       struct pivot_table *t = covariance_dump_enc_header (cov);
       for (reader = input;
-	   (c = casereader_read (reader)) != NULL; case_unref (c))
-	{
-	  covariance_dump_enc (cov, c, t);
-	}
+           (c = casereader_read (reader)) != NULL; case_unref (c))
+        {
+          covariance_dump_enc (cov, c, t);
+        }
 
       pivot_table_submit (t);
     }
@@ -601,17 +601,17 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
     switch (cmd->ss_type)
       {
       case 1:
-	ssq_type1 (cov, ws.ssq, cmd);
-	break;
+        ssq_type1 (cov, ws.ssq, cmd);
+        break;
       case 2:
-	ssq_type2 (cov, ws.ssq, cmd);
-	break;
+        ssq_type2 (cov, ws.ssq, cmd);
+        break;
       case 3:
-	ssq_type3 (cov, ws.ssq, cmd);
-	break;
+        ssq_type3 (cov, ws.ssq, cmd);
+        break;
       default:
-	NOT_REACHED ();
-	break;
+        NOT_REACHED ();
+        break;
       }
     //    dump_matrix (cm);
     gsl_matrix_free (cm);
@@ -672,7 +672,7 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
         source->root, pivot_value_new_text (N_("Intercept")));
 
       /* The intercept for unbalanced models is of limited use and
-	 nobody knows how to calculate it properly */
+         nobody knows how to calculate it properly */
       if (categoricals_isbalanced (ws->cats))
         {
           const double df = 1.0;
@@ -689,10 +689,10 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
       double ssq = gsl_vector_get (ws->ssq, f + 1);
       ssq_effects += ssq;
       if (!cmd->intercept)
-	{
-	  df++;
-	  ssq += intercept_ssq;
-	}
+        {
+          df++;
+          ssq += intercept_ssq;
+        }
       double F = ssq / df / mse;
 
       struct string str = DS_EMPTY_INITIALIZER;
@@ -752,10 +752,10 @@ dump_matrix (const gsl_matrix * m)
   for (i = 0; i < m->size1; ++i)
     {
       for (j = 0; j < m->size2; ++j)
-	{
-	  double x = gsl_matrix_get (m, i, j);
-	  printf ("%.3f ", x);
-	}
+        {
+          double x = gsl_matrix_get (m, i, j);
+          printf ("%.3f ", x);
+        }
       printf ("\n");
     }
   printf ("\n");

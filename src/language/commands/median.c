@@ -86,7 +86,7 @@ show_test_statistics (const struct n_sample_test *nst, const struct results *res
 
 static struct val_node *
 find_value (const struct hmap *map, const union value *val,
-	    const struct variable *var)
+            const struct variable *var)
 {
   struct val_node *foo = NULL;
   size_t hash = value_hash (val, var_get_width (var), 0);
@@ -99,24 +99,24 @@ find_value (const struct hmap *map, const union value *val,
 
 void
 median_execute (const struct dataset *ds,
-		struct casereader *input,
-		enum mv_class exclude,
-		const struct npar_test *test,
-		bool exact UNUSED,
-		double timer UNUSED)
+                struct casereader *input,
+                enum mv_class exclude,
+                const struct npar_test *test,
+                bool exact UNUSED,
+                double timer UNUSED)
 {
   const struct dictionary *dict = dataset_dict (ds);
   const struct variable *wvar = dict_get_weight (dict);
   bool warn = true;
   int v;
   const struct median_test *mt = UP_CAST (test, const struct median_test,
-					  parent.parent);
+                                          parent.parent);
 
   const struct n_sample_test *nst = UP_CAST (test, const struct n_sample_test,
-					  parent);
+                                          parent);
 
   const bool n_sample_test = (value_compare_3way (&nst->val2, &nst->val1,
-				       var_get_width (nst->indep_var)) > 0);
+                                       var_get_width (nst->indep_var)) > 0);
 
   struct results *results = XCALLOC (nst->n_vars,  struct results);
   int n_vals = 0;
@@ -133,145 +133,145 @@ median_execute (const struct dataset *ds,
 
 
       if (n_sample_test == false)
-	{
-	  struct val_node *vn = XZALLOC (struct val_node);
-	  value_clone (&vn->val,  &nst->val1, var_get_width (nst->indep_var));
-	  hmap_insert (&map, &vn->node, value_hash (&nst->val1,
-					    var_get_width (nst->indep_var), 0));
+        {
+          struct val_node *vn = XZALLOC (struct val_node);
+          value_clone (&vn->val,  &nst->val1, var_get_width (nst->indep_var));
+          hmap_insert (&map, &vn->node, value_hash (&nst->val1,
+                                            var_get_width (nst->indep_var), 0));
 
-	  vn = xzalloc (sizeof *vn);
-	  value_clone (&vn->val,  &nst->val2, var_get_width (nst->indep_var));
-	  hmap_insert (&map, &vn->node, value_hash (&nst->val2,
-					    var_get_width (nst->indep_var), 0));
-	}
+          vn = xzalloc (sizeof *vn);
+          value_clone (&vn->val,  &nst->val2, var_get_width (nst->indep_var));
+          hmap_insert (&map, &vn->node, value_hash (&nst->val2,
+                                            var_get_width (nst->indep_var), 0));
+        }
 
       if (median == SYSMIS)
-	{
-	  struct percentile *ptl;
-	  struct order_stats *os;
+        {
+          struct percentile *ptl;
+          struct order_stats *os;
 
-	  struct casereader *rr;
-	  struct subcase sc;
-	  struct casewriter *writer;
-	  subcase_init_var (&sc, var, SC_ASCEND);
-	  rr = casereader_clone (r);
-	  writer = sort_create_writer (&sc, casereader_get_proto (rr));
+          struct casereader *rr;
+          struct subcase sc;
+          struct casewriter *writer;
+          subcase_init_var (&sc, var, SC_ASCEND);
+          rr = casereader_clone (r);
+          writer = sort_create_writer (&sc, casereader_get_proto (rr));
 
-	  for (; (c = casereader_read (rr)) != NULL;)
-	    {
-	      if (var_is_value_missing (var, case_data (c, var)) & exclude)
-		{
-		  case_unref (c);
-		  continue;
-		}
+          for (; (c = casereader_read (rr)) != NULL;)
+            {
+              if (var_is_value_missing (var, case_data (c, var)) & exclude)
+                {
+                  case_unref (c);
+                  continue;
+                }
 
-	      cc += dict_get_case_weight (dict, c, &warn);
-	      casewriter_write (writer, c);
-	    }
-	  subcase_uninit (&sc);
-	  casereader_destroy (rr);
+              cc += dict_get_case_weight (dict, c, &warn);
+              casewriter_write (writer, c);
+            }
+          subcase_uninit (&sc);
+          casereader_destroy (rr);
 
-	  rr = casewriter_make_reader (writer);
+          rr = casewriter_make_reader (writer);
 
-	  ptl = percentile_create (0.5, cc);
-	  os = &ptl->parent;
+          ptl = percentile_create (0.5, cc);
+          os = &ptl->parent;
 
-	  order_stats_accumulate (&os, 1,
-				  rr,
-				  wvar,
-				  var,
-				  exclude);
+          order_stats_accumulate (&os, 1,
+                                  rr,
+                                  wvar,
+                                  var,
+                                  exclude);
 
-	  median = percentile_calculate (ptl, PC_HAVERAGE);
-	  statistic_destroy (&ptl->parent.parent);
-	}
+          median = percentile_calculate (ptl, PC_HAVERAGE);
+          statistic_destroy (&ptl->parent.parent);
+        }
 
       results[v].median = median;
 
 
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
-	{
-	  struct val_node *vn ;
-	  const double weight = dict_get_case_weight (dict, c, &warn);
-	  const union value *val = case_data (c, var);
-	  const union value *indep_val = case_data (c, nst->indep_var);
+        {
+          struct val_node *vn ;
+          const double weight = dict_get_case_weight (dict, c, &warn);
+          const union value *val = case_data (c, var);
+          const union value *indep_val = case_data (c, nst->indep_var);
 
-	  if (var_is_value_missing (var, case_data (c, var)) & exclude)
-	    {
-	      continue;
-	    }
+          if (var_is_value_missing (var, case_data (c, var)) & exclude)
+            {
+              continue;
+            }
 
-	  if (n_sample_test)
-	    {
-	      int width = var_get_width (nst->indep_var);
-	      /* Ignore out of range values */
-	      if (
-		  value_compare_3way (indep_val, &nst->val1, width) < 0
-		||
-		  value_compare_3way (indep_val, &nst->val2, width) > 0
-		)
-		{
-		  continue;
-		}
-	    }
+          if (n_sample_test)
+            {
+              int width = var_get_width (nst->indep_var);
+              /* Ignore out of range values */
+              if (
+                  value_compare_3way (indep_val, &nst->val1, width) < 0
+                ||
+                  value_compare_3way (indep_val, &nst->val2, width) > 0
+                )
+                {
+                  continue;
+                }
+            }
 
-	  vn = find_value (&map, indep_val, nst->indep_var);
-	  if (vn == NULL)
-	    {
-	      if (n_sample_test == true)
-		{
-		  int width = var_get_width (nst->indep_var);
-		  vn = xzalloc (sizeof *vn);
-		  value_clone (&vn->val,  indep_val, width);
+          vn = find_value (&map, indep_val, nst->indep_var);
+          if (vn == NULL)
+            {
+              if (n_sample_test == true)
+                {
+                  int width = var_get_width (nst->indep_var);
+                  vn = xzalloc (sizeof *vn);
+                  value_clone (&vn->val,  indep_val, width);
 
-		  hmap_insert (&map, &vn->node, value_hash (indep_val, width, 0));
-		}
-	      else
-		{
-		  continue;
-		}
-	    }
+                  hmap_insert (&map, &vn->node, value_hash (indep_val, width, 0));
+                }
+              else
+                {
+                  continue;
+                }
+            }
 
-	  if (val->f <= median)
-	    vn->le += weight;
-	  else
-	    vn->gt += weight;
+          if (val->f <= median)
+            vn->le += weight;
+          else
+            vn->gt += weight;
 
-	  count += weight;
-	}
+          count += weight;
+        }
       casereader_destroy (r);
 
       {
-	int x = 0;
-	struct val_node *vn = NULL;
-	double r_0 = 0;
-	double r_1 = 0;
-	HMAP_FOR_EACH (vn, struct val_node, node, &map)
-	  {
-	    r_0 += vn->le;
-	    r_1 += vn->gt;
-	  }
+        int x = 0;
+        struct val_node *vn = NULL;
+        double r_0 = 0;
+        double r_1 = 0;
+        HMAP_FOR_EACH (vn, struct val_node, node, &map)
+          {
+            r_0 += vn->le;
+            r_1 += vn->gt;
+          }
 
-	results[v].n = count;
-	results[v].sorted_array = XCALLOC (hmap_count (&map), struct val_node *);
-	results[v].var = var;
+        results[v].n = count;
+        results[v].sorted_array = XCALLOC (hmap_count (&map), struct val_node *);
+        results[v].var = var;
 
-	HMAP_FOR_EACH (vn, struct val_node, node, &map)
-	  {
-	    double e_0j = r_0 * (vn->le + vn->gt) / count;
-	    double e_1j = r_1 * (vn->le + vn->gt) / count;
+        HMAP_FOR_EACH (vn, struct val_node, node, &map)
+          {
+            double e_0j = r_0 * (vn->le + vn->gt) / count;
+            double e_1j = r_1 * (vn->le + vn->gt) / count;
 
-	    results[v].chisq += pow2 (vn->le - e_0j) / e_0j;
-	    results[v].chisq += pow2 (vn->gt - e_1j) / e_1j;
+            results[v].chisq += pow2 (vn->le - e_0j) / e_0j;
+            results[v].chisq += pow2 (vn->gt - e_1j) / e_1j;
 
-	    results[v].sorted_array[x++] = vn;
-	  }
+            results[v].sorted_array[x++] = vn;
+          }
 
-	n_vals = x;
-	hmap_destroy (&map);
+        n_vals = x;
+        hmap_destroy (&map);
 
-	sort (results[v].sorted_array, x, sizeof (*results[v].sorted_array),
-	      val_node_cmp_3way, nst->indep_var);
+        sort (results[v].sorted_array, x, sizeof (*results[v].sorted_array),
+              val_node_cmp_3way, nst->indep_var);
 
       }
     }
@@ -287,11 +287,11 @@ median_execute (const struct dataset *ds,
       const struct results *rs = results + v;
 
       for (i = 0; i < n_vals; ++i)
-	{
-	  struct val_node *vn = rs->sorted_array[i];
-	  value_destroy (&vn->val, var_get_width (nst->indep_var));
-	  free (vn);
-	}
+        {
+          struct val_node *vn = rs->sorted_array[i];
+          value_destroy (&vn->val, var_get_width (nst->indep_var));
+          free (vn);
+        }
       free (rs->sorted_array);
     }
   free (results);
@@ -326,13 +326,13 @@ show_frequencies (const struct n_sample_test *nst, const struct results *results
         dep->root, pivot_value_new_variable (rs->var));
 
       for (int indep_idx = 0; indep_idx < n_vals; indep_idx++)
-	{
-	  const struct val_node *vn = rs->sorted_array[indep_idx];
+        {
+          const struct val_node *vn = rs->sorted_array[indep_idx];
           pivot_table_put3 (table, indep_idx, 0, dep_idx,
                             pivot_value_new_number (vn->gt));
           pivot_table_put3 (table, indep_idx, 1, dep_idx,
                             pivot_value_new_number (vn->le));
-	}
+        }
     }
 
   pivot_table_submit (table);
@@ -340,9 +340,9 @@ show_frequencies (const struct n_sample_test *nst, const struct results *results
 
 static void
 show_test_statistics (const struct n_sample_test *nst,
-		      const struct results *results,
-		      int n_vals,
-		      const struct dictionary *dict)
+                      const struct results *results,
+                      int n_vals,
+                      const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
   pivot_table_set_weight_var (table, dict_get_weight (dict));

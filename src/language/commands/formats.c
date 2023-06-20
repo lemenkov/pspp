@@ -72,17 +72,17 @@ cmd_formats__ (struct lexer *lexer, struct dataset *ds,
       lex_match (lexer, T_SLASH);
 
       if (lex_token (lexer) == T_ENDCMD)
-	break;
+        break;
 
       if (!parse_variables (lexer, dataset_dict (ds), &v, &cv, PV_SAME_WIDTH))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
       width = var_get_width (v[0]);
 
       if (!lex_match (lexer, T_LPAREN))
-	{
+        {
           lex_error_expecting (lexer, "`('");
-	  goto fail;
-	}
+          goto fail;
+        }
       if (!parse_format_specifier (lexer, &f))
         goto fail;
       char *error = fmt_check_output__ (f);
@@ -96,18 +96,18 @@ cmd_formats__ (struct lexer *lexer, struct dataset *ds,
         }
 
       if (!lex_match (lexer, T_RPAREN))
-	{
+        {
           lex_error_expecting (lexer, "`)'");
-	  goto fail;
-	}
+          goto fail;
+        }
 
       for (i = 0; i < cv; i++)
-	{
-	  if (print_format)
+        {
+          if (print_format)
             var_set_print_format (v[i], f);
-	  if (write_format)
+          if (write_format)
             var_set_write_format (v[i], f);
-	}
+        }
       free (v);
       v = NULL;
     }

@@ -168,7 +168,7 @@ syntax_gen_number (struct string *output,
       if (ok && v_out.f == number)
         {
           syntax_gen_string (output, ss_cstr (s));
-	  free (s);
+          free (s);
           return;
         }
       free (s);
@@ -283,12 +283,12 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
           break;
 
         case 'f':
-	case 'g':
+        case 'g':
           {
-	    char conv[32];
+            char conv[32];
             double d = va_arg (args, double);
             int x = 0;
-	    conv[x++] = '%';
+            conv[x++] = '%';
             conv[x] = '\0';
             if (precision != -1)
               {
@@ -296,8 +296,8 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
                 strcat (conv, qualifier);
                 x += strlen (qualifier) + 1;
               }
-	    conv[x++] = directive;
-	    conv[x++] = '\0';
+            conv[x++] = directive;
+            conv[x++] = '\0';
 
             ds_put_c_format (output, conv, d);
             break;

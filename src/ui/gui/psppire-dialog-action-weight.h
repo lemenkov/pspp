@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT (psppire_dialog_action_weight_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_WEIGHT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_WEIGHT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, PsppireDialogActionWeight))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, PsppireDialogActionWeight))
 
 #define PSPPIRE_DIALOG_ACTION_WEIGHT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, \
                                  PsppireDialogActionWeightClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_WEIGHT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_WEIGHT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT))
 
 
 #define PSPPIRE_DIALOG_ACTION_WEIGHT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, \
-				   PsppireDialogActionWeightClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT, \
+                                   PsppireDialogActionWeightClass))
 
 typedef struct _PsppireDialogActionWeight       PsppireDialogActionWeight;
 typedef struct _PsppireDialogActionWeightClass  PsppireDialogActionWeightClass;

@@ -19,9 +19,9 @@
 
 enum prompt_style
   {
-    PROMPT_FIRST,		/* First line of command. */
+    PROMPT_FIRST,                /* First line of command. */
     PROMPT_LATER,               /* Second or later line of command. */
-    PROMPT_DATA,		/* Between BEGIN DATA and END DATA. */
+    PROMPT_DATA,                /* Between BEGIN DATA and END DATA. */
     PROMPT_COMMENT,             /* COMMENT or * command. */
     PROMPT_DOCUMENT,            /* DOCUMENT command. */
     PROMPT_DO_REPEAT,           /* DO REPEAT command. */

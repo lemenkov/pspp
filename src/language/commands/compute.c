@@ -68,11 +68,11 @@ static void lvalue_destroy (struct lvalue *, struct dictionary *);
 struct compute_trns
   {
     /* Test expression (IF only). */
-    struct expression *test;	 /* Test expression. */
+    struct expression *test;         /* Test expression. */
 
     /* Variable lvalue, if variable != NULL. */
     struct variable *variable;   /* Destination variable, if any. */
-    int width;			 /* Lvalue string width; 0=numeric. */
+    int width;                         /* Lvalue string width; 0=numeric. */
 
     /* Vector lvalue, if vector != NULL. */
     const struct vector *vector; /* Destination vector, if any. */
@@ -81,12 +81,12 @@ struct compute_trns
     struct msg_location *lvalue_location;
 
     /* Rvalue. */
-    struct expression *rvalue;	 /* Rvalue expression. */
+    struct expression *rvalue;         /* Rvalue expression. */
   };
 
 static struct expression *parse_rvalue (struct lexer *lexer,
-					const struct lvalue *,
-					struct dataset *);
+                                        const struct lvalue *,
+                                        struct dataset *);
 
 static struct compute_trns *compute_trns_create (void);
 static bool compute_trns_free (void *compute_);
@@ -322,7 +322,7 @@ get_trns_class (const struct lvalue *lvalue)
    LVALUE, or a null pointer on failure. */
 static struct expression *
 parse_rvalue (struct lexer *lexer,
-	      const struct lvalue *lvalue, struct dataset *ds)
+              const struct lvalue *lvalue, struct dataset *ds)
 {
   if (lvalue->is_new_variable)
     return expr_parse_new_variable (lexer, ds, var_get_name (lvalue->variable),
@@ -376,16 +376,16 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
       /* Vector. */
       lvalue->vector = dict_lookup_vector (dict, lex_tokcstr (lexer));
       if (lvalue->vector == NULL)
-	{
-	  lex_error (lexer, _("There is no vector named %s."),
+        {
+          lex_error (lexer, _("There is no vector named %s."),
                      lex_tokcstr (lexer));
           goto lossage;
-	}
+        }
 
       /* Vector element. */
       lex_get (lexer);
       if (!lex_force_match (lexer, T_LPAREN))
-	goto lossage;
+        goto lossage;
       lvalue->element = expr_parse (lexer, ds, VAL_NUMERIC);
       if (lvalue->element == NULL)
         goto lossage;
@@ -399,7 +399,7 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
       lvalue->variable = dict_lookup_var (dict, var_name);
       if (lvalue->variable == NULL)
         {
-	  lvalue->variable = dict_create_var_assert (dict, var_name, 0);
+          lvalue->variable = dict_create_var_assert (dict, var_name, 0);
           lvalue->is_new_variable = true;
         }
       lex_get (lexer);
@@ -434,8 +434,8 @@ lvalue_is_vector (const struct lvalue *lvalue)
    target variable if necessary and setting fields in COMPUTE. */
 static void
 lvalue_finalize (struct lvalue *lvalue,
-		 struct compute_trns *compute,
-		 struct dictionary *dict)
+                 struct compute_trns *compute,
+                 struct dictionary *dict)
 {
   compute->lvalue_location = lvalue->location;
   lvalue->location = NULL;

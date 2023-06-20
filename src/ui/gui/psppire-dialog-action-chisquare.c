@@ -53,12 +53,12 @@ generate_syntax (const PsppireDialogAction *act)
       ds_put_cstr (&dss, "(");
 
       ds_put_cstr (&dss,
-		       gtk_entry_get_text (GTK_ENTRY (scd->value_lower)));
+                       gtk_entry_get_text (GTK_ENTRY (scd->value_lower)));
 
       ds_put_cstr (&dss, ", ");
 
       ds_put_cstr (&dss,
-		       gtk_entry_get_text (GTK_ENTRY (scd->value_upper)));
+                       gtk_entry_get_text (GTK_ENTRY (scd->value_upper)));
 
       ds_put_cstr (&dss, ")");
     }
@@ -74,16 +74,16 @@ generate_syntax (const PsppireDialogAction *act)
 
 
       for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(ls),
-					       &iter);
- 	   ok;
-	   ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ls), &iter))
-	{
-	  gdouble v;
+                                               &iter);
+            ok;
+           ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ls), &iter))
+        {
+          gdouble v;
 
-	  gtk_tree_model_get (GTK_TREE_MODEL (ls), &iter, 0, &v, -1);
+          gtk_tree_model_get (GTK_TREE_MODEL (ls), &iter, 0, &v, -1);
 
-	  ds_put_c_format (&dss, " %.*g", DBL_DIG + 1, v);
-	}
+          ds_put_c_format (&dss, " %.*g", DBL_DIG + 1, v);
+        }
     }
 
   ds_put_cstr (&dss, ".\n");
@@ -160,20 +160,20 @@ psppire_dialog_action_chisquare_activate (PsppireDialogAction *a, GVariant *para
   psppire_dialog_action_set_refresh (pda, refresh);
 
   g_signal_connect (act->range_button, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    range_table);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    range_table);
 
 
   g_signal_connect (act->values_button, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    values_acr);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    values_acr);
 
   g_signal_connect (act->values_button, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),
-		    expected_value_entry);
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    expected_value_entry);
 
   psppire_acr_set_entry (PSPPIRE_ACR (values_acr),
-			 GTK_ENTRY (expected_value_entry));
+                         GTK_ENTRY (expected_value_entry));
 
   psppire_acr_set_model(PSPPIRE_ACR (values_acr), act->expected_list);
 

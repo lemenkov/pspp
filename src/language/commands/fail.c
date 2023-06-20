@@ -29,7 +29,7 @@
 
 static enum trns_result
 trns_fail (void *x UNUSED, struct ccase **c UNUSED,
-	   casenumber n UNUSED)
+           casenumber n UNUSED)
 {
   msg (SE, "DEBUG XFORM FAIL transformation executed");
   return TRNS_ERROR;

@@ -97,9 +97,9 @@ psppire_data_editor_refresh_model (PsppireDataEditor *de)
 
 static void
 psppire_data_editor_set_property (GObject         *object,
-				  guint            prop_id,
-				  const GValue    *value,
-				  GParamSpec      *pspec)
+                                  guint            prop_id,
+                                  const GValue    *value,
+                                  GParamSpec      *pspec)
 {
   PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (object);
 
@@ -126,8 +126,8 @@ psppire_data_editor_set_property (GObject         *object,
       psppire_data_editor_refresh_model (de);
 
       g_signal_connect_swapped (de->data_sheet, "selection-changed",
-				G_CALLBACK (refresh_entry),
-				de);
+                                G_CALLBACK (refresh_entry),
+                                de);
 
       g_signal_connect_swapped (de->data_store, "case-changed",
                                 G_CALLBACK (refresh_entry), de);
@@ -144,13 +144,13 @@ psppire_data_editor_set_property (GObject         *object,
 
     case PROP_VALUE_LABELS:
       {
-	gboolean l = g_value_get_boolean (value);
-	de->use_value_labels = l;
-	g_object_set (de->data_sheet, "forward-conversion",
-		      l ?
-		      psppire_data_store_value_to_string_with_labels :
-		      psppire_data_store_value_to_string,
-		      NULL);
+        gboolean l = g_value_get_boolean (value);
+        de->use_value_labels = l;
+        g_object_set (de->data_sheet, "forward-conversion",
+                      l ?
+                      psppire_data_store_value_to_string_with_labels :
+                      psppire_data_store_value_to_string,
+                      NULL);
       }
       break;
 
@@ -162,9 +162,9 @@ psppire_data_editor_set_property (GObject         *object,
 
 static void
 psppire_data_editor_get_property (GObject         *object,
-				  guint            prop_id,
-				  GValue          *value,
-				  GParamSpec      *pspec)
+                                  guint            prop_id,
+                                  GValue          *value,
+                                  GParamSpec      *pspec)
 {
   PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (object);
 
@@ -190,7 +190,7 @@ psppire_data_editor_get_property (GObject         *object,
 
 static void
 psppire_data_editor_switch_page (GtkNotebook     *notebook,
-				 GtkWidget *w,
+                                 GtkWidget *w,
                                  guint            page_num)
 {
   GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, w, page_num);
@@ -243,9 +243,9 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
 
   data_store_spec =
     g_param_spec_pointer ("data-store",
-			  "Data Store",
-			  "A pointer to the data store associated with this editor",
-			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
+                          "Data Store",
+                          "A pointer to the data store associated with this editor",
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_DATA_STORE,
@@ -253,9 +253,9 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
 
   dict_spec =
     g_param_spec_pointer ("dictionary",
-			  "Dictionary",
-			  "A pointer to the dictionary associated with this editor",
-			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
+                          "Dictionary",
+                          "A pointer to the dictionary associated with this editor",
+                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_DICTIONARY,
@@ -263,10 +263,10 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
 
   value_labels_spec =
     g_param_spec_boolean ("value-labels",
-			 "Value Labels",
-			 "Whether or not the data sheet should display labels instead of values",
-			  FALSE,
-			 G_PARAM_WRITABLE | G_PARAM_READABLE);
+                         "Value Labels",
+                         "Whether or not the data sheet should display labels instead of values",
+                          FALSE,
+                         G_PARAM_WRITABLE | G_PARAM_READABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_VALUE_LABELS,
@@ -275,10 +275,10 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
 
   split_window_spec =
     g_param_spec_boolean ("split",
-			  "Split Window",
-			  "True iff the data sheet is split",
-			  FALSE,
-			  G_PARAM_READABLE | G_PARAM_WRITABLE);
+                          "Split Window",
+                          "True iff the data sheet is split",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_WRITABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_SPLIT_WINDOW,
@@ -321,17 +321,17 @@ refresh_entry (PsppireDataEditor *de)
       union value val;
       const struct variable *var = psppire_dict_get_variable (de->dict, col);
       if (var == NULL)
-	return;
+        return;
 
       psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (de->datum_entry), var);
 
       int width = var_get_width (var);
       if (! psppire_data_store_get_value (PSPPIRE_DATA_STORE (de->data_store),
-					  row, var, &val))
-	return;
+                                          row, var, &val))
+        return;
 
       psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
-				     &val, width);
+                                     &val, width);
       value_destroy (&val, width);
     }
 }
@@ -345,15 +345,15 @@ on_datum_entry_activate (GtkEntry *entry, PsppireDataEditor *de)
       union value val;
       const struct variable *var = psppire_dict_get_variable (de->dict, col);
       if (var == NULL)
-	return;
+        return;
 
       int width = var_get_width (var);
       value_init (&val, width);
       if (psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
-					 &val, width))
-	{
-	  psppire_data_store_set_value (de->data_store, row, var, &val);
-	}
+                                         &val, width))
+        {
+          psppire_data_store_set_value (de->data_store, row, var, &val);
+        }
       value_destroy (&val, width);
 
       gtk_widget_grab_focus (de->data_sheet);
@@ -377,30 +377,30 @@ on_data_selection_change (PsppireDataEditor *de, SswRange *sel)
       const struct variable *var = psppire_dict_get_variable (de->dict, sel->start_x);
 
       if (var)
-	ref_cell_text = g_strdup_printf (_("%d : %s"),
-					 sel->start_y + 1, var_get_name (var));
+        ref_cell_text = g_strdup_printf (_("%d : %s"),
+                                         sel->start_y + 1, var_get_name (var));
     }
   else
     {
       struct string s;
 
       /* The glib string library does not understand the ' printf modifier
-	 on all platforms, but the "struct string" library does (because
-	 Gnulib fixes that problem), so use the latter.  */
+         on all platforms, but the "struct string" library does (because
+         Gnulib fixes that problem), so use the latter.  */
       ds_init_empty (&s);
       ds_put_format (&s, ngettext ("%'d case", "%'d cases", n_cases),
-		     n_cases);
+                     n_cases);
       ds_put_byte (&s, ' ');
       ds_put_unichar (&s, 0xd7); /* U+00D7 MULTIPLICATION SIGN */
       ds_put_byte (&s, ' ');
       ds_put_format (&s, ngettext ("%'d variable", "%'d variables",
-				   n_vars),
-		     n_vars);
+                                   n_vars),
+                     n_vars);
       ref_cell_text = ds_steal_cstr (&s);
     }
 
   gtk_label_set_label (GTK_LABEL (de->cell_ref_label),
-		       ref_cell_text ? ref_cell_text : "");
+                       ref_cell_text ? ref_cell_text : "");
 
   g_free (ref_cell_text);
 }
@@ -429,7 +429,7 @@ psppire_data_editor_var_delete_variables (PsppireDataEditor *de)
     }
 
   psppire_dict_delete_variables (de->dict, range->start_y,
-				 (range->end_y - range->start_y + 1));
+                                 (range->end_y - range->start_y + 1));
 
   gtk_widget_queue_draw (GTK_WIDGET (de->var_sheet));
 }
@@ -471,7 +471,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->datum_entry = psppire_value_entry_new ();
   g_signal_connect (de->datum_entry, "edit-done",
-		    G_CALLBACK (on_datum_entry_activate), de);
+                    G_CALLBACK (on_datum_entry_activate), de);
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (hbox), de->cell_ref_label, FALSE, FALSE, 0);
@@ -489,10 +489,10 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
 
   g_signal_connect_swapped (de->data_sheet, "selection-changed",
-		    G_CALLBACK (on_data_selection_change), de);
+                    G_CALLBACK (on_data_selection_change), de);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->vbox,
-			    gtk_label_new_with_mnemonic (_("Data View")));
+                            gtk_label_new_with_mnemonic (_("Data View")));
 
   gtk_widget_show_all (de->vbox);
 
@@ -502,7 +502,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_button_set_label (GTK_BUTTON (var_button), _("Variable"));
 
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->var_sheet,
-			    gtk_label_new_with_mnemonic (_("Variable View")));
+                            gtk_label_new_with_mnemonic (_("Variable View")));
 
   gtk_widget_show_all (de->var_sheet);
 
@@ -515,8 +515,8 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_object_set (de, "can-focus", FALSE, NULL);
 
   if (psppire_conf_get_string (psppire_conf_new (),
-			   "Data Editor", "font",
-				&fontname))
+                           "Data Editor", "font",
+                                &fontname))
     {
       de->font = pango_font_description_from_string (fontname);
       g_free (fontname);
@@ -528,7 +528,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
 GtkWidget*
 psppire_data_editor_new (PsppireDict *dict,
-			 PsppireDataStore *data_store)
+                         PsppireDataStore *data_store)
 {
   return  g_object_new (PSPPIRE_DATA_EDITOR_TYPE,
                         "dictionary",  dict,
@@ -574,8 +574,8 @@ set_font_recursively (GtkWidget *w, gpointer data)
   g_free (css);
 
   gtk_style_context_add_provider (style,
-				  GTK_STYLE_PROVIDER (cssp),
-				  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+                                  GTK_STYLE_PROVIDER (cssp),
+                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
   g_object_unref (cssp);
 
 
@@ -596,8 +596,8 @@ psppire_data_editor_set_font (PsppireDataEditor *de, PangoFontDescription *font_
   font_name = pango_font_description_to_string (de->font);
 
   psppire_conf_set_string (psppire_conf_new (),
-			   "Data Editor", "font",
-			   font_name);
+                           "Data Editor", "font",
+                           font_name);
   g_free (font_name);
 }
 
@@ -619,13 +619,13 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
   switch (page)
     {
       case PSPPIRE_DATA_EDITOR_DATA_VIEW:
-	ssw_sheet_scroll_to (SSW_SHEET (de->data_sheet), dict_index, -1);
-	ssw_sheet_set_active_cell (SSW_SHEET (de->data_sheet), dict_index, -1, NULL);
-	break;
+        ssw_sheet_scroll_to (SSW_SHEET (de->data_sheet), dict_index, -1);
+        ssw_sheet_set_active_cell (SSW_SHEET (de->data_sheet), dict_index, -1, NULL);
+        break;
       case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-	ssw_sheet_scroll_to (SSW_SHEET (de->var_sheet), -1, dict_index);
-	ssw_sheet_set_active_cell (SSW_SHEET (de->var_sheet), -1, dict_index, NULL);
-	break;
+        ssw_sheet_scroll_to (SSW_SHEET (de->var_sheet), -1, dict_index);
+        ssw_sheet_set_active_cell (SSW_SHEET (de->var_sheet), -1, dict_index, NULL);
+        break;
     }
 }
 
@@ -633,7 +633,7 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
  */
 static void
 store_set_datum (GtkTreeModel *model, gint col, gint row,
-			 const GValue *value)
+                         const GValue *value)
 {
   PsppireDataStore *store = PSPPIRE_DATA_STORE (model);
   GVariant *v = g_value_get_variant (value);
@@ -650,7 +650,7 @@ psppire_data_editor_paste (PsppireDataEditor *de)
   SswSheet *sheet = SSW_SHEET (de->data_sheet);
   GtkClipboard *clip =
     gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (sheet)),
-				   GDK_SELECTION_CLIPBOARD);
+                                   GDK_SELECTION_CLIPBOARD);
 
   ssw_sheet_paste (sheet, clip, store_set_datum);
 }

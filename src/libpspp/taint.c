@@ -100,23 +100,23 @@ taint_destroy (struct taint *taint)
     {
       bool was_tainted = taint_is_tainted (taint);
       if (--taint->ref_cnt == 0)
-	{
-	  size_t i, j;
+        {
+          size_t i, j;
 
-	  for (i = 0; i < taint->predecessors.n; i++)
-	    for (j = 0; j < taint->successors.n; j++)
-	      taint_propagate (taint->predecessors.taints[i],
-			       taint->successors.taints[j]);
+          for (i = 0; i < taint->predecessors.n; i++)
+            for (j = 0; j < taint->successors.n; j++)
+              taint_propagate (taint->predecessors.taints[i],
+                               taint->successors.taints[j]);
 
-	  for (i = 0; i < taint->predecessors.n; i++)
-	    taint_list_remove (&taint->predecessors.taints[i]->successors, taint);
-	  for (i = 0; i < taint->successors.n; i++)
-	    taint_list_remove (&taint->successors.taints[i]->predecessors, taint);
+          for (i = 0; i < taint->predecessors.n; i++)
+            taint_list_remove (&taint->predecessors.taints[i]->successors, taint);
+          for (i = 0; i < taint->successors.n; i++)
+            taint_list_remove (&taint->successors.taints[i]->predecessors, taint);
 
-	  taint_list_destroy (&taint->successors);
-	  taint_list_destroy (&taint->predecessors);
-	  free (taint);
-	}
+          taint_list_destroy (&taint->successors);
+          taint_list_destroy (&taint->predecessors);
+          free (taint);
+        }
       return !was_tainted;
     }
 

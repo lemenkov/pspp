@@ -207,33 +207,33 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "VARIABLES"))
         {
-	  if (method_seen)
-	    {
-	      lex_next_error (lexer, -1, -1,
+          if (method_seen)
+            {
+              lex_next_error (lexer, -1, -1,
                               _("VARIABLES may not appear after %s"), "METHOD");
-	      goto error;
-	    }
-	  if (dependent_seen)
-	    {
-	      lex_next_error (lexer, -1, -1,
+              goto error;
+            }
+          if (dependent_seen)
+            {
+              lex_next_error (lexer, -1, -1,
                               _("VARIABLES may not appear after %s"), "DEPENDENT");
-	      goto error;
-	    }
-	  variables_seen = true;
-	  lex_match (lexer, T_EQUALS);
-
-	  if (!parse_variables_const (lexer, dict,
-				      &regression.vars, &regression.n_vars,
-				      PV_NO_DUPLICATE | PV_NUMERIC))
-	    goto error;
-	}
-      else if (lex_match_id (lexer, "DEPENDENT"))
-        {
-	  dependent_seen = true;
+              goto error;
+            }
+          variables_seen = true;
           lex_match (lexer, T_EQUALS);
 
-	  free (regression.dep_vars);
-	  regression.n_dep_vars = 0;
+          if (!parse_variables_const (lexer, dict,
+                                      &regression.vars, &regression.n_vars,
+                                      PV_NO_DUPLICATE | PV_NUMERIC))
+            goto error;
+        }
+      else if (lex_match_id (lexer, "DEPENDENT"))
+        {
+          dependent_seen = true;
+          lex_match (lexer, T_EQUALS);
+
+          free (regression.dep_vars);
+          regression.n_dep_vars = 0;
 
           if (!parse_variables_const (lexer, dict,
                                       &regression.dep_vars,
@@ -247,23 +247,23 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         regression.origin = false;
       else if (lex_match_id (lexer, "METHOD"))
         {
-	  method_seen = true;
+          method_seen = true;
           lex_match (lexer, T_EQUALS);
 
           if (!lex_force_match_id (lexer, "ENTER"))
             goto error;
 
-	  if (!variables_seen)
-	    {
-	      if (!parse_variables_const (lexer, dict,
-					  &regression.vars, &regression.n_vars,
-					  PV_NO_DUPLICATE | PV_NUMERIC))
-		goto error;
-	    }
+          if (!variables_seen)
+            {
+              if (!parse_variables_const (lexer, dict,
+                                          &regression.vars, &regression.n_vars,
+                                          PV_NO_DUPLICATE | PV_NUMERIC))
+                goto error;
+            }
         }
       else if (lex_match_id (lexer, "STATISTICS"))
         {
-	  unsigned long statistics = 0;
+          unsigned long statistics = 0;
           lex_match (lexer, T_EQUALS);
 
           while (lex_token (lexer) != T_ENDCMD
@@ -285,18 +285,18 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                 statistics |= STATS_TOL;
               else if (lex_match_id (lexer, "CI"))
                 {
-		  statistics |= STATS_CI;
+                  statistics |= STATS_CI;
 
-		  if (lex_match (lexer, T_LPAREN))
+                  if (lex_match (lexer, T_LPAREN))
                     {
                       if (!lex_force_num (lexer))
                         goto error;
-		      regression.ci = lex_number (lexer) / 100.0;
-		      lex_get (lexer);
+                      regression.ci = lex_number (lexer) / 100.0;
+                      lex_get (lexer);
 
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto error;
+                    }
                 }
               else
                 {
@@ -306,8 +306,8 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                 }
             }
 
-	  if (statistics)
-	    regression.stats = statistics;
+          if (statistics)
+            regression.stats = statistics;
         }
       else if (lex_match_id (lexer, "SAVE"))
         {
@@ -579,16 +579,16 @@ struct model_container
 */
 static void reg_stats_r (const struct linreg *,     const struct variable *);
 static void reg_stats_coeff (const struct regression *, const struct linreg *,
-			     const struct model_container *, const gsl_matrix *,
-			     const struct variable *);
+                             const struct model_container *, const gsl_matrix *,
+                             const struct variable *);
 static void reg_stats_anova (const struct linreg *, const struct variable *);
 static void reg_stats_bcov (const struct linreg *,  const struct variable *);
 
 
 static struct linreg **
 run_regression_get_models (const struct regression *cmd,
-			   struct casereader *input,
-			   bool output)
+                           struct casereader *input,
+                           bool output)
 {
   struct model_container *model_container = XCALLOC (cmd->n_vars, struct model_container);
 
@@ -656,28 +656,28 @@ run_regression_get_models (const struct regression *cmd,
       linreg_set_depvar_mean (models[k], means[n_indep]);
       if (n_data > 0)
         {
-	  linreg_fit (cov_matrix, models[k]);
+          linreg_fit (cov_matrix, models[k]);
 
           if (output
               && !taint_has_tainted_successor (casereader_get_taint (input)))
             {
-	      /*
-		Find the least-squares estimates and other statistics.
-	      */
-	      if (cmd->stats & STATS_R)
-		reg_stats_r (models[k], dep_var);
+              /*
+                Find the least-squares estimates and other statistics.
+              */
+              if (cmd->stats & STATS_R)
+                reg_stats_r (models[k], dep_var);
 
-	      if (cmd->stats & STATS_ANOVA)
-		reg_stats_anova (models[k], dep_var);
+              if (cmd->stats & STATS_ANOVA)
+                reg_stats_anova (models[k], dep_var);
 
-	      if (cmd->stats & STATS_COEFF)
-		reg_stats_coeff (cmd, models[k],
-				 model_container,
-				 cov_matrix, dep_var);
+              if (cmd->stats & STATS_COEFF)
+                reg_stats_coeff (cmd, models[k],
+                                 model_container,
+                                 cov_matrix, dep_var);
 
-	      if (cmd->stats & STATS_BCOV)
-		reg_stats_bcov  (models[k], dep_var);
-	    }
+              if (cmd->stats & STATS_BCOV)
+                reg_stats_bcov  (models[k], dep_var);
+            }
         }
       else
         msg (SE, _("No valid data found. This command was skipped."));
@@ -740,8 +740,8 @@ run_regression (const struct regression *cmd,
                   double res = linreg_residual (models[k], obs,  vals, n_indep);
                   *case_num_rw_idx (outc, k * ws->extras + ws->res_idx) = res;
                 }
-	      free (vals);
-	      free (vars);
+              free (vals);
+              free (vars);
             }
           casewriter_write (ws->writer, outc);
         }
@@ -790,8 +790,8 @@ reg_stats_r (const struct linreg * c, const struct variable *var)
 */
 static void
 reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
-		 const struct model_container *mc, const gsl_matrix *cov,
-		 const struct variable *var)
+                 const struct model_container *mc, const gsl_matrix *cov,
+                 const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Coefficients (%s)"), var_to_string (var)),
@@ -818,8 +818,8 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
 
   if (cmd->stats & STATS_TOL)
     pivot_category_create_group (statistics->root,
-				 N_("Collinearity Statistics"),
-				 N_("Tolerance"), N_("VIF"));
+                                 N_("Collinearity Statistics"),
+                                 N_("Tolerance"), N_("VIF"));
 
 
   struct pivot_dimension *variables = pivot_dimension_create (
@@ -851,16 +851,16 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
                           pivot_value_new_number (base_entries[i]));
 
       if (cmd->stats & STATS_CI)
-	{
-	  double interval_entries[] = {
-	    linreg_intercept (c) - tval * std_err,
-	    linreg_intercept (c) + tval * std_err,
-	  };
+        {
+          double interval_entries[] = {
+            linreg_intercept (c) - tval * std_err,
+            linreg_intercept (c) + tval * std_err,
+          };
 
-	  for (size_t i = 0; i < sizeof interval_entries / sizeof *interval_entries; i++)
-	    pivot_table_put2 (table, col++, var_idx,
-			      pivot_value_new_number (interval_entries[i]));
-	}
+          for (size_t i = 0; i < sizeof interval_entries / sizeof *interval_entries; i++)
+            pivot_table_put2 (table, col++, var_idx,
+                              pivot_value_new_number (interval_entries[i]));
+        }
     }
 
   for (size_t j = 0; j < linreg_n_coeffs (c); j++)
@@ -886,27 +886,27 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
                           pivot_value_new_number (base_entries[i]));
 
       if (cmd->stats & STATS_CI)
-	{
-	  double interval_entries[] = {
-	    linreg_coeff (c, j)  - tval * std_err,
-	    linreg_coeff (c, j)  + tval * std_err,
-	  };
+        {
+          double interval_entries[] = {
+            linreg_coeff (c, j)  - tval * std_err,
+            linreg_coeff (c, j)  + tval * std_err,
+          };
 
 
-	  for (size_t i = 0; i < sizeof interval_entries / sizeof *interval_entries; i++)
-	    pivot_table_put2 (table, col++, var_idx,
-			      pivot_value_new_number (interval_entries[i]));
-	}
+          for (size_t i = 0; i < sizeof interval_entries / sizeof *interval_entries; i++)
+            pivot_table_put2 (table, col++, var_idx,
+                              pivot_value_new_number (interval_entries[i]));
+        }
 
       if (cmd->stats & STATS_TOL)
-	{
-	  {
-	    struct linreg *m = mc[j].models[0];
-	    double rsq = linreg_ssreg (m) / linreg_sst (m);
-	    pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 - rsq));
-	    pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 / (1.0 - rsq)));
-	  }
-	}
+        {
+          {
+            struct linreg *m = mc[j].models[0];
+            double rsq = linreg_ssreg (m) / linreg_sst (m);
+            pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 - rsq));
+            pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 / (1.0 - rsq)));
+          }
+        }
     }
 
   pivot_table_submit (table);

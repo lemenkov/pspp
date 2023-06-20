@@ -26,26 +26,26 @@
 
 
   +----------------------------------------------------------+
-  |				    			     |
-  |	Source Widget  	       	       	    Dest Widget	     |
-  |   +----------------+       	       	 +----------------+  |
-  |   |	Variable0      |	    	 | Variable2   	  |  |
-  |   |	Variable1      |       	       	 |     	       	  |  |
-  |   | Variable3      |	    	 |	       	  |  |
-  |   |		       |    Selector	 |	       	  |  |
-  |   |	       	       |       	       	 |     	       	  |  |
-  |   |		       |    +------+   	 |     	       	  |  |
-  |   |		       |    | |\   |	 |		  |  |
-  |   |		       |    | | \  |	 |		  |  |
-  |   |		       |    | |	/  |	 |		  |  |
-  |   |		       |    | |/   |	 |		  |  |
-  |   |		       |    +------+	 |		  |  |
-  |   |		       |		 |		  |  |
-  |   |		       |		 |		  |  |
-  |   |		       |		 |		  |  |
-  |   |	       	       |       	       	 |     	       	  |  |
-  |   +----------------+		 +----------------+  |
-  |							     |
+  |                                                                 |
+  |        Source Widget                                            Dest Widget             |
+  |   +----------------+                               +----------------+  |
+  |   |        Variable0      |                     | Variable2             |  |
+  |   |        Variable1      |                               |                              |  |
+  |   | Variable3      |                     |                         |  |
+  |   |                       |    Selector         |                         |  |
+  |   |                              |                               |                              |  |
+  |   |                       |    +------+            |                              |  |
+  |   |                       |    | |\   |         |                  |  |
+  |   |                       |    | | \  |         |                  |  |
+  |   |                       |    | |        /  |         |                  |  |
+  |   |                       |    | |/   |         |                  |  |
+  |   |                       |    +------+         |                  |  |
+  |   |                       |                 |                  |  |
+  |   |                       |                 |                  |  |
+  |   |                       |                 |                  |  |
+  |   |                              |                               |                              |  |
+  |   +----------------+                 +----------------+  |
+  |                                                             |
   +----------------------------------------------------------+
 
   The Source Widget is always a GtkTreeView.  The Dest Widget may be a
@@ -150,9 +150,9 @@ psppire_selector_dispose (GObject *obj)
       GList *newlist = g_list_remove_link (list, sel->source_litem);
       g_list_free (sel->source_litem);
       if (newlist == NULL)
-	g_hash_table_remove (class->source_hash, sel->source);
+        g_hash_table_remove (class->source_hash, sel->source);
       else
-	g_hash_table_replace (class->source_hash, sel->source, newlist);
+        g_hash_table_replace (class->source_hash, sel->source, newlist);
 
       sel->source_litem = NULL;
     }
@@ -185,9 +185,9 @@ static void on_realize (GtkWidget *selector);
 
 static void
 psppire_selector_set_property (GObject         *object,
-			       guint            prop_id,
-			       const GValue    *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               const GValue    *value,
+                               GParamSpec      *pspec)
 {
   PsppireSelector *selector = PSPPIRE_SELECTOR (object);
 
@@ -218,9 +218,9 @@ psppire_selector_set_property (GObject         *object,
 
 static void
 psppire_selector_get_property (GObject         *object,
-			       guint            prop_id,
-			       GValue          *value,
-			       GParamSpec      *pspec)
+                               guint            prop_id,
+                               GValue          *value,
+                               GParamSpec      *pspec)
 {
   PsppireSelector *selector = PSPPIRE_SELECTOR (object);
 
@@ -249,34 +249,34 @@ psppire_selector_class_init (PsppireSelectorClass *class)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
   GParamSpec *orientation_spec =
     g_param_spec_enum ("orientation",
-		       "Orientation",
-		       "Where the selector is relative to its subjects",
-		       PSPPIRE_TYPE_SELECTOR_ORIENTATION,
-		       PSPPIRE_SELECT_SOURCE_BEFORE_DEST /* default value */,
-		       G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
+                       "Orientation",
+                       "Where the selector is relative to its subjects",
+                       PSPPIRE_TYPE_SELECTOR_ORIENTATION,
+                       PSPPIRE_SELECT_SOURCE_BEFORE_DEST /* default value */,
+                       G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
 
 
  /* Meaningfull only if more than one selector shares this selectors source */
   GParamSpec *primary_spec =
     g_param_spec_boolean ("primary",
-			  "Primary",
-			  "Whether this selector should be the primary selector for the source",
-			  FALSE,
-			  G_PARAM_READWRITE);
+                          "Primary",
+                          "Whether this selector should be the primary selector for the source",
+                          FALSE,
+                          G_PARAM_READWRITE);
 
   GParamSpec *source_widget_spec =
     g_param_spec_object ("source-widget",
-			 "Source Widget",
-			 "The widget to be used as the source for this selector",
-			 GTK_TYPE_WIDGET,
-			 G_PARAM_READWRITE);
+                         "Source Widget",
+                         "The widget to be used as the source for this selector",
+                         GTK_TYPE_WIDGET,
+                         G_PARAM_READWRITE);
 
   GParamSpec *dest_widget_spec =
     g_param_spec_object ("dest-widget",
-			 "Destination Widget",
-			 "The widget to be used as the destination for this selector",
-			 GTK_TYPE_WIDGET,
-			 G_PARAM_READWRITE);
+                         "Destination Widget",
+                         "The widget to be used as the destination for this selector",
+                         GTK_TYPE_WIDGET,
+                         G_PARAM_READWRITE);
 
 
   button_class->clicked = on_click;
@@ -306,23 +306,23 @@ psppire_selector_class_init (PsppireSelectorClass *class)
 
   signals [SELECTED] =
     g_signal_new ("selected",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE,
+                  0);
 
   signals [DE_SELECTED] =
     g_signal_new ("de-selected",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE,
+                  0);
 
   object_class->dispose = psppire_selector_dispose;
 
@@ -334,9 +334,9 @@ psppire_selector_class_init (PsppireSelectorClass *class)
 /* Callback for when the source treeview is activated (double clicked) */
 static void
 on_row_activate (GtkTreeView       *tree_view,
-		 GtkTreePath       *path,
-		 GtkTreeViewColumn *column,
-		 gpointer           data)
+                 GtkTreePath       *path,
+                 GtkTreeViewColumn *column,
+                 gpointer           data)
 {
   on_click (GTK_BUTTON (data));
 }
@@ -352,13 +352,13 @@ on_source_select (GtkTreeSelection *treeselection, gpointer data)
   if (selector->allow_selection)
     {
       gtk_widget_set_sensitive (GTK_WIDGET (selector),
-				selector->allow_selection (selector->source, selector->dest));
+                                selector->allow_selection (selector->source, selector->dest));
     }
   else if (GTK_IS_ENTRY (selector->dest))
     {
       gtk_widget_set_sensitive (GTK_WIDGET (selector),
-				gtk_tree_selection_count_selected_rows
-				(treeselection) <= 1);
+                                gtk_tree_selection_count_selected_rows
+                                (treeselection) <= 1);
     }
 }
 
@@ -381,10 +381,10 @@ on_realize (GtkWidget *w)
   if (g_list_first (list)->data == selector)
     {
       if (selector->row_activate_id)
-	g_signal_handler_disconnect (selector->source, selector->row_activate_id);
+        g_signal_handler_disconnect (selector->source, selector->row_activate_id);
 
       selector->row_activate_id =
-	g_signal_connect (selector->source, "row-activated", G_CALLBACK (on_row_activate), selector);
+        g_signal_connect (selector->source, "row-activated", G_CALLBACK (on_row_activate), selector);
     }
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (selector->source));
@@ -443,44 +443,44 @@ set_direction (PsppireSelector *selector, enum psppire_selector_dir d)
   if (d == PSPPIRE_SELECTOR_SOURCE_TO_DEST)
     {
       switch (selector->orientation)
-	{
-	case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
-	  break;
-	default:
-	  g_assert_not_reached ();
-	  break;
-	};
+        {
+        case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
+          break;
+        default:
+          g_assert_not_reached ();
+          break;
+        };
     }
   else
     {
       switch (selector->orientation)
-	{
-	case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
-	  break;
-	case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
-	  g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
-	  break;
-	default:
-	  g_assert_not_reached ();
-	  break;
-	};
+        {
+        case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
+          break;
+        case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
+          g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
+          break;
+        default:
+          g_assert_not_reached ();
+          break;
+        };
     }
 }
 
@@ -655,12 +655,12 @@ select_selection (PsppireSelector *selector)
       gtk_tree_model_get_iter (model, &iter, path);
 
       gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (model),
-							&child_iter, &iter);
+                                                        &child_iter, &iter);
       selector->select_items (child_iter,
-			      selector->dest,
-			      childmodel,
-			      selector->select_user_data
-			);
+                              selector->dest,
+                              childmodel,
+                              selector->select_user_data
+                        );
     }
 
   g_list_foreach (selected_rows, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
@@ -709,10 +709,10 @@ is_item_in_dest (GtkTreeModel *model, GtkTreeIter *iter, PsppireSelector *select
   if (GTK_IS_TREE_MODEL_FILTER (model))
     {
       source_model = gtk_tree_model_filter_get_model
-	(GTK_TREE_MODEL_FILTER (model));
+        (GTK_TREE_MODEL_FILTER (model));
 
       gtk_tree_model_filter_convert_iter_to_child_iter
-	(GTK_TREE_MODEL_FILTER (model),  &source_iter, iter);
+        (GTK_TREE_MODEL_FILTER (model),  &source_iter, iter);
     }
   else
     {
@@ -723,7 +723,7 @@ is_item_in_dest (GtkTreeModel *model, GtkTreeIter *iter, PsppireSelector *select
   gtk_tree_model_get_value (source_model, &source_iter, DICT_TVM_COL_VAR, &value);
 
   result = psppire_select_dest_widget_contains_var (PSPPIRE_SELECT_DEST_WIDGET (selector->dest),
-						    &value);
+                                                    &value);
 
   g_value_unset (&value);
 
@@ -737,7 +737,7 @@ is_item_in_dest (GtkTreeModel *model, GtkTreeIter *iter, PsppireSelector *select
    are visible */
 static gboolean
 is_source_item_visible (GtkTreeModel *childmodel,
-			GtkTreeIter *iter, gpointer data)
+                        GtkTreeIter *iter, gpointer data)
 {
   PsppireSelector *selector = data;
   PsppireSelectorClass *class = g_type_class_peek (PSPPIRE_SELECTOR_TYPE);
@@ -751,7 +751,7 @@ is_source_item_visible (GtkTreeModel *childmodel,
       PsppireSelector *selector = list->data;
 
       if (selector->filter && selector->filter (childmodel, iter, selector))
-	return FALSE;
+        return FALSE;
 
       list = list->next;
     }
@@ -771,8 +771,8 @@ set_tree_view_source (PsppireSelector *selector)
   if (! (list = g_hash_table_lookup (class->source_hash, selector->source)))
     {
       /* Base case:  This widget is currently not the source of
-	 any selector.  Create a hash entry and make this selector
-	 the first selector in the list */
+         any selector.  Create a hash entry and make this selector
+         the first selector in the list */
 
       list = g_list_append (list, selector);
       g_hash_table_insert (class->source_hash, selector->source, list);
@@ -782,22 +782,22 @@ set_tree_view_source (PsppireSelector *selector)
     }
   else
     {  /* Append this selector to the list and push the <source,list>
-	  pair onto the hash table */
+          pair onto the hash table */
 
       if (NULL == g_list_find (list, selector))
-	{
-	  if (selector->primary_requested)
-	    {
-	      list = g_list_prepend (list, selector);
-	      selector->source_litem = list;
-	    }
-	  else
-	    {
-	      list = g_list_append (list, selector);
-	      selector->source_litem = g_list_last (list);
-	    }
-	  g_hash_table_replace (class->source_hash, selector->source, list);
-	}
+        {
+          if (selector->primary_requested)
+            {
+              list = g_list_prepend (list, selector);
+              selector->source_litem = list;
+            }
+          else
+            {
+              list = g_list_append (list, selector);
+              selector->source_litem = g_list_last (list);
+            }
+          g_hash_table_replace (class->source_hash, selector->source, list);
+        }
     }
 }
 
@@ -833,12 +833,12 @@ update_model (
                                               NULL);
 
       g_signal_connect_swapped (new_model,
-				"row-deleted",
-				G_CALLBACK (on_row_deleted), selector);
+                                "row-deleted",
+                                G_CALLBACK (on_row_deleted), selector);
 
       g_signal_connect_swapped (new_model,
-				"row-inserted",
-				G_CALLBACK (on_row_inserted), selector);
+                                "row-inserted",
+                                G_CALLBACK (on_row_inserted), selector);
 
       g_object_unref (new_model);
     }
@@ -851,9 +851,9 @@ update_model (
  */
 static void
 on_dest_data_change (GtkTreeModel *tree_model,
-		     GtkTreePath  *path,
-		     GtkTreeIter  *iter,
-		     gpointer      user_data)
+                     GtkTreePath  *path,
+                     GtkTreeIter  *iter,
+                     gpointer      user_data)
 {
   PsppireSelector *selector = user_data;
 
@@ -865,8 +865,8 @@ on_dest_data_change (GtkTreeModel *tree_model,
 
 static void
 on_dest_data_delete (GtkTreeModel *tree_model,
-		     GtkTreePath  *path,
-		     gpointer      user_data)
+                     GtkTreePath  *path,
+                     gpointer      user_data)
 {
   PsppireSelector *selector = user_data;
 
@@ -891,10 +891,10 @@ on_dest_model_changed (PsppireSelector *selector)
     return;
 
   g_signal_connect (model, "row-changed", G_CALLBACK (on_dest_data_change),
-		    selector);
+                    selector);
 
   g_signal_connect (model, "row-deleted", G_CALLBACK (on_dest_data_delete),
-		    selector);
+                    selector);
 
   g_signal_connect (selector, "destroy", G_CALLBACK (remove_selector_handlers), model);
 
@@ -906,7 +906,7 @@ on_dest_model_changed (PsppireSelector *selector)
 /* Set the destination widget to DEST */
 static void
 set_tree_view_dest (PsppireSelector *selector,
-		    GtkTreeView *dest)
+                    GtkTreeView *dest)
 {
   GtkTreeSelection* selection = gtk_tree_view_get_selection (dest);
 
@@ -914,16 +914,16 @@ set_tree_view_dest (PsppireSelector *selector,
   gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
 
   g_signal_connect (selection, "changed", G_CALLBACK (on_dest_treeview_select),
-		    selector);
+                    selector);
 
   on_dest_model_changed (selector);
   g_signal_connect_swapped (dest, "notify::model",
-			    G_CALLBACK (on_dest_model_changed), selector);
+                            G_CALLBACK (on_dest_model_changed), selector);
 }
 
 static void
 set_layer_dest (PsppireSelector *selector,
-		    PsppireMeansLayer *dest)
+                    PsppireMeansLayer *dest)
 {
   GtkTreeSelection* selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (dest->var_view));
 
@@ -931,7 +931,7 @@ set_layer_dest (PsppireSelector *selector,
 
 
   g_signal_connect (selection, "changed", G_CALLBACK (on_dest_treeview_select),
-		    selector);
+                    selector);
 }
 
 
@@ -952,19 +952,19 @@ on_entry_dest_select (GtkWidget *widget, GdkEventFocus *event, gpointer data)
 /* Set DEST to be the destination GtkEntry widget */
 static void
 set_entry_dest (PsppireSelector *selector,
-		GtkEntry *dest)
+                GtkEntry *dest)
 {
   g_signal_connect_swapped (dest, "activate", G_CALLBACK (refilter),
-		    selector);
+                    selector);
 
   g_signal_connect_swapped (dest, "changed", G_CALLBACK (refilter),
-		    selector);
+                    selector);
 
   g_signal_connect (dest, "focus-in-event", G_CALLBACK (on_entry_dest_select),
-		    selector);
+                    selector);
 
   g_signal_connect_swapped (dest, "focus-out-event", G_CALLBACK (refilter),
-		    selector);
+                    selector);
 
 
 }
@@ -975,7 +975,7 @@ set_default_filter (PsppireSelector *selector)
   if (selector->filter == NULL)
     {
       if  (GTK_IS_TREE_VIEW (selector->dest))
-	selector->filter = is_item_in_dest;
+        selector->filter = is_item_in_dest;
     }
 }
 
@@ -1031,11 +1031,11 @@ psppire_selector_update_subjects (PsppireSelector *selector)
       GType type = G_OBJECT_TYPE (selector->dest);
 
       SelectItemsFunc *func  =
-	g_hash_table_lookup (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs, (gpointer) type);
+        g_hash_table_lookup (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs, (gpointer) type);
 
       if (func)
-	psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
-					  func, NULL);
+        psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
+                                          func, NULL);
     }
 }
 
@@ -1056,7 +1056,7 @@ psppire_selector_set_default_selection_func (GType type, SelectItemsFunc *func)
 /* Set FILTER_FUNC for this selector */
 void
 psppire_selector_set_filter_func (PsppireSelector *selector,
-				  FilterItemsFunc *filter_func)
+                                  FilterItemsFunc *filter_func)
 {
   selector->filter = filter_func ;
 }
@@ -1065,8 +1065,8 @@ psppire_selector_set_filter_func (PsppireSelector *selector,
 /* Set SELECT_FUNC for this selector */
 void
 psppire_selector_set_select_func (PsppireSelector *selector,
-			       SelectItemsFunc *select_func,
-			       gpointer user_data)
+                               SelectItemsFunc *select_func,
+                               gpointer user_data)
 {
   selector->select_user_data = user_data;
   selector->select_items = select_func;
@@ -1088,13 +1088,13 @@ psppire_selector_orientation_get_type (void)
   if (etype == 0)
     {
       static const GEnumValue values[] =
-	{
-	  { PSPPIRE_SELECT_SOURCE_BEFORE_DEST, "PSPPIRE_SELECT_SOURCE_BEFORE_DEST", "source before destination" },
-	  { PSPPIRE_SELECT_SOURCE_AFTER_DEST, "PSPPIRE_SELECT_SOURCE_AFTER_DEST", "source after destination" },
-	  { PSPPIRE_SELECT_SOURCE_ABOVE_DEST, "PSPPIRE_SELECT_SOURCE_ABOVE_DEST", "source above destination" },
-	  { PSPPIRE_SELECT_SOURCE_BELOW_DEST, "PSPPIRE_SELECT_SOURCE_BELOW_DEST", "source below destination" },
-	  { 0, NULL, NULL }
-	};
+        {
+          { PSPPIRE_SELECT_SOURCE_BEFORE_DEST, "PSPPIRE_SELECT_SOURCE_BEFORE_DEST", "source before destination" },
+          { PSPPIRE_SELECT_SOURCE_AFTER_DEST, "PSPPIRE_SELECT_SOURCE_AFTER_DEST", "source after destination" },
+          { PSPPIRE_SELECT_SOURCE_ABOVE_DEST, "PSPPIRE_SELECT_SOURCE_ABOVE_DEST", "source above destination" },
+          { PSPPIRE_SELECT_SOURCE_BELOW_DEST, "PSPPIRE_SELECT_SOURCE_BELOW_DEST", "source below destination" },
+          { 0, NULL, NULL }
+        };
       etype = g_enum_register_static (g_intern_static_string ("PsppireSelectorOrientation"), values);
     }
   return etype;

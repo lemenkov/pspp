@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE (psppire_dialog_action_examine_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_EXAMINE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_EXAMINE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, PsppireDialogActionExamine))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, PsppireDialogActionExamine))
 
 #define PSPPIRE_DIALOG_ACTION_EXAMINE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, \
                                  PsppireDialogActionExamineClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_EXAMINE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_EXAMINE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE))
 
 
 #define PSPPIRE_DIALOG_ACTION_EXAMINE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, \
-				   PsppireDialogActionExamineClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE, \
+                                   PsppireDialogActionExamineClass))
 
 typedef struct _PsppireDialogActionExamine       PsppireDialogActionExamine;
 typedef struct _PsppireDialogActionExamineClass  PsppireDialogActionExamineClass;

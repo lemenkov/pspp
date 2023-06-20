@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED (psppire_dialog_action_k_related_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_K_RELATED(obj)	\
+#define PSPPIRE_DIALOG_ACTION_K_RELATED(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, PsppireDialogActionKRelated))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, PsppireDialogActionKRelated))
 
 #define PSPPIRE_DIALOG_ACTION_K_RELATED_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, \
                                  PsppireDialogActionKRelatedClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_K_RELATED(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED))
 
 #define PSPPIRE_IS_DIALOG_ACTION_K_RELATED_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED))
 
 
 #define PSPPIRE_DIALOG_ACTION_K_RELATED_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, \
-				   PsppireDialogActionKRelatedClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, \
+                                   PsppireDialogActionKRelatedClass))
 
 typedef struct _PsppireDialogActionKRelated       PsppireDialogActionKRelated;
 typedef struct _PsppireDialogActionKRelatedClass  PsppireDialogActionKRelatedClass;

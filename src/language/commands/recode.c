@@ -49,12 +49,12 @@
 /* Type of source value for RECODE. */
 enum map_in_type
   {
-    MAP_SINGLE,			/* Specific value. */
-    MAP_RANGE,			/* Range of values. */
+    MAP_SINGLE,                        /* Specific value. */
+    MAP_RANGE,                        /* Range of values. */
     MAP_SYSMIS,                 /* System missing value. */
     MAP_MISSING,                /* Any missing value. */
-    MAP_ELSE,			/* Any value. */
-    MAP_CONVERT			/* "123" => 123. */
+    MAP_ELSE,                        /* Any value. */
+    MAP_CONVERT                        /* "123" => 123. */
   };
 
 /* Describes input values to be mapped. */
@@ -91,10 +91,10 @@ struct recode_trns
     enum val_type dst_type;     /* dst_vars[*] type. */
 
     /* Variables. */
-    const struct variable **src_vars;	/* Source variables. */
-    const struct variable **dst_vars;	/* Destination variables. */
+    const struct variable **src_vars;        /* Source variables. */
+    const struct variable **dst_vars;        /* Destination variables. */
     const struct dictionary *dst_dict;  /* Dictionary of dst_vars */
-    char **dst_names;		/* Name of dest variables, if they're new. */
+    char **dst_names;                /* Name of dest variables, if they're new. */
     size_t n_vars;             /* Number of variables. */
 
     /* Mappings. */
@@ -212,7 +212,7 @@ cmd_recode (struct lexer *lexer, struct dataset *ds)
    successful, false on parse error. */
 static bool
 parse_src_vars (struct lexer *lexer,
-		struct recode_trns *trns, const struct dictionary *dict)
+                struct recode_trns *trns, const struct dictionary *dict)
 {
   if (!parse_variables_const (lexer, dict, &trns->src_vars, &trns->n_vars,
                         PV_SAME_TYPE))
@@ -364,18 +364,18 @@ parse_map_in (struct lexer *lexer, struct map_in *in, struct pool *pool,
       else if (!lex_force_string (lexer))
         return false;
       else
-	{
-	  set_map_in_str (in, pool, lex_tokss (lexer), max_src_width,
+        {
+          set_map_in_str (in, pool, lex_tokss (lexer), max_src_width,
                           dict_encoding);
-	  lex_get (lexer);
-	  if (lex_match_id (lexer, "THRU"))
-	    {
-	      lex_next_error (lexer, -1, -1,
+          lex_get (lexer);
+          if (lex_match_id (lexer, "THRU"))
+            {
+              lex_next_error (lexer, -1, -1,
                               _("%s is not allowed with string variables."),
                               "THRU");
-	      return false;
-	    }
-	}
+              return false;
+            }
+        }
     }
 
   return true;
@@ -468,7 +468,7 @@ set_map_out_str (struct map_out *out, struct pool *pool,
    TRNS->dst_names. */
 static bool
 parse_dst_vars (struct lexer *lexer, struct recode_trns *trns,
-		const struct dictionary *dict, int src_start, int src_end,
+                const struct dictionary *dict, int src_start, int src_end,
                 int mappings_start, int mappings_end)
 {
   int dst_start, dst_end;
@@ -477,7 +477,7 @@ parse_dst_vars (struct lexer *lexer, struct recode_trns *trns,
       dst_start = lex_ofs (lexer);
       size_t n_names;
       if (!parse_mixed_vars_pool (lexer, dict, trns->pool,
-				  &trns->dst_names, &n_names,
+                                  &trns->dst_names, &n_names,
                                   PV_NONE))
         return false;
       dst_end = lex_ofs (lexer) - 1;
@@ -573,19 +573,19 @@ enlarge_dst_widths (struct lexer *lexer, struct recode_trns *trns,
         trns->max_dst_width = var_get_width (v);
 
       if (var_get_width (v) < min_dst_width)
-	{
-	  min_dst_width = var_get_width (v);
-	  narrow_var = v;
-	}
+        {
+          min_dst_width = var_get_width (v);
+          narrow_var = v;
+        }
     }
 
   for (size_t i = 0; i < trns->n_maps; i++)
     {
       struct map_out *out = &trns->mappings[i].out;
       if (!out->copy_input)
-	{
-	  if (out->width > min_dst_width)
-	    {
+        {
+          if (out->width > min_dst_width)
+            {
               msg (SE, _("At least one target variable is too narrow for "
                          "the output values."));
               lex_ofs_msg (lexer, SN, out->ofs, out->ofs,
@@ -595,12 +595,12 @@ enlarge_dst_widths (struct lexer *lexer, struct recode_trns *trns,
                            _("Target variable %s only has width %d."),
                            var_get_name (narrow_var),
                            var_get_width (narrow_var));
-	      return false;
-	    }
+              return false;
+            }
 
-	  value_resize_pool (trns->pool, &out->value,
-			     out->width, trns->max_dst_width);
-	}
+          value_resize_pool (trns->pool, &out->value,
+                             out->width, trns->max_dst_width);
+        }
     }
 
   return true;
@@ -701,9 +701,9 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
             out->value.f = uv.f;
             break;
           }
-	case MAP_MISSING:
-	  match = var_is_str_missing (src_var, value) != 0;
-	  break;
+        case MAP_MISSING:
+          match = var_is_str_missing (src_var, value) != 0;
+          break;
         default:
           NOT_REACHED ();
         }

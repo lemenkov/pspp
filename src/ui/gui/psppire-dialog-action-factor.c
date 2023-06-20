@@ -132,10 +132,10 @@ static void
 load_rotation_parameters (PsppireDialogActionFactor *fd, const struct rotation_parameters *p)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->display_rotated_solution),
-				p->rotated_solution);
+                                p->rotated_solution);
 
   gtk_spin_button_set_value (GTK_SPIN_BUTTON (fd->rotate_iterations),
-			     p->iterations);
+                             p->iterations);
 
   switch (p->method)
     {
@@ -323,9 +323,9 @@ psppire_dialog_action_factor_activate (PsppireDialogAction *a, GVariant *param)
     eigenvalue_extraction = psppire_scanf_new (_("_Eigenvalues over %4.2f times the mean eigenvalue"), &act->mineigen);
 
     g_object_set (eigenvalue_extraction,
-		  "use-underline", TRUE,
-		  "mnemonic-widget", act->mineigen_toggle,
-		  NULL);
+                  "use-underline", TRUE,
+                  "mnemonic-widget", act->mineigen_toggle,
+                  NULL);
 
     act->nfactors_toggle = get_widget_assert (xml, "nfactors-radiobutton");
     act->n_factors = get_widget_assert (xml, "spinbutton-nfactors");
@@ -356,7 +356,7 @@ psppire_dialog_action_factor_activate (PsppireDialogAction *a, GVariant *param)
   }
 
   g_signal_connect_swapped (extraction_button, "clicked",
-			    G_CALLBACK (run_extractions_subdialog), act);
+                            G_CALLBACK (run_extractions_subdialog), act);
   g_signal_connect_swapped (rotation_button, "clicked", G_CALLBACK (run_rotations_subdialog), act);
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);

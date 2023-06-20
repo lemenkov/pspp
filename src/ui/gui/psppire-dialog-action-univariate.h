@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE (psppire_dialog_action_univariate_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_UNIVARIATE(obj)	\
+#define PSPPIRE_DIALOG_ACTION_UNIVARIATE(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, PsppireDialogActionUnivariate))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, PsppireDialogActionUnivariate))
 
 #define PSPPIRE_DIALOG_ACTION_UNIVARIATE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, \
                                  PsppireDialogActionUnivariateClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_UNIVARIATE(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE))
 
 #define PSPPIRE_IS_DIALOG_ACTION_UNIVARIATE_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE))
 
 
 #define PSPPIRE_DIALOG_ACTION_UNIVARIATE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, \
-				   PsppireDialogActionUnivariateClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, \
+                                   PsppireDialogActionUnivariateClass))
 
 typedef struct _PsppireDialogActionUnivariate       PsppireDialogActionUnivariate;
 typedef struct _PsppireDialogActionUnivariateClass  PsppireDialogActionUnivariateClass;

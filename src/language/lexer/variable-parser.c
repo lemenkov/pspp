@@ -48,9 +48,9 @@
 
 static struct variable *var_set_get_var (const struct var_set *, size_t);
 static struct variable *var_set_lookup_var (const struct var_set *,
-					    const char *);
+                                            const char *);
 static bool var_set_lookup_var_idx (const struct var_set *, const char *,
-				    size_t *);
+                                    size_t *);
 static bool var_set_get_names_must_be_ids (const struct var_set *);
 
 static bool
@@ -156,8 +156,8 @@ parse_variables (struct lexer *lexer, const struct dictionary *d,
    allocations are taken from the given POOL. */
 bool
 parse_variables_pool (struct lexer *lexer, struct pool *pool,
-		const struct dictionary *dict,
-		struct variable ***vars, size_t *n_vars, int opts)
+                const struct dictionary *dict,
+                struct variable ***vars, size_t *n_vars, int opts)
 {
   int retval;
 
@@ -558,8 +558,8 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
       if (!name1)
         goto exit;
       if (lex_match (lexer, T_TO))
-	{
-	  unsigned long int num1, num2;
+        {
+          unsigned long int num1, num2;
           int n_digits1, n_digits2;
           int root_len1, root_len2;
           unsigned long int number;
@@ -577,23 +577,23 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           root_len2 = extract_numeric_suffix (lexer, end_ofs,
                                               name2, &num2, &n_digits2);
           if (root_len2 == 0)
-	    goto exit;
+            goto exit;
 
-	  if (root_len1 != root_len2 || memcasecmp (name1, name2, root_len1))
-	    {
-	      lex_ofs_error (lexer, start_ofs, end_ofs,
+          if (root_len1 != root_len2 || memcasecmp (name1, name2, root_len1))
+            {
+              lex_ofs_error (lexer, start_ofs, end_ofs,
                              _("Prefixes don't match in use of TO convention."));
-	      goto exit;
-	    }
-	  if (num1 > num2)
-	    {
-	      lex_ofs_error (lexer, start_ofs, end_ofs,
+              goto exit;
+            }
+          if (num1 > num2)
+            {
+              lex_ofs_error (lexer, start_ofs, end_ofs,
                              _("Bad bounds in use of TO convention."));
-	      goto exit;
-	    }
+              goto exit;
+            }
 
-	  for (number = num1; number <= num2; number++)
-	    {
+          for (number = num1; number <= num2; number++)
+            {
               char *name = xasprintf ("%.*s%0*lu",
                                       root_len1, name1,
                                       n_digits1, number);
@@ -604,26 +604,26 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
                   free (name);
                   goto exit;
                 }
-	    }
+            }
 
           free (name1);
           name1 = NULL;
           free (name2);
           name2 = NULL;
-	}
+        }
       else
-	{
+        {
           if (!add_var_name (lexer, start_ofs, start_ofs,
                              name1, &names, &n_vars, &allocated_vars,
                              &set, pv_opts))
             goto exit;
           name1 = NULL;
-	}
+        }
 
       lex_match (lexer, T_COMMA);
 
       if (pv_opts & PV_SINGLE)
-	break;
+        break;
     }
   while (lex_token (lexer) == T_ID);
   ok = true;
@@ -639,7 +639,7 @@ exit:
     {
       int i;
       for (i = 0; i < n_vars; i++)
-	free (names[i]);
+        free (names[i]);
       free (names);
       *namesp = NULL;
       *n_varsp = 0;
@@ -690,7 +690,7 @@ parse_DATA_LIST_vars_pool (struct lexer *lexer, const struct dictionary *dict,
    parse_DATA_LIST_vars(). */
 bool
 parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
-		  char ***names, size_t *nnames, int pv_opts)
+                  char ***names, size_t *nnames, int pv_opts)
 {
   size_t i;
 
@@ -705,20 +705,20 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
   while (is_dict_name_token (lexer, dict) || lex_token (lexer) == T_ALL)
     {
       if (lex_token (lexer) == T_ALL || dict_lookup_var (dict, lex_tokcstr (lexer)) != NULL)
-	{
-	  struct variable **v;
-	  size_t nv;
+        {
+          struct variable **v;
+          size_t nv;
 
-	  if (!parse_variables (lexer, dict, &v, &nv, pv_opts))
-	    goto fail;
-	  *names = xnrealloc (*names, *nnames + nv, sizeof **names);
-	  for (i = 0; i < nv; i++)
-	    (*names)[*nnames + i] = xstrdup (var_get_name (v[i]));
-	  free (v);
-	  *nnames += nv;
-	}
+          if (!parse_variables (lexer, dict, &v, &nv, pv_opts))
+            goto fail;
+          *names = xnrealloc (*names, *nnames + nv, sizeof **names);
+          for (i = 0; i < nv; i++)
+            (*names)[*nnames + i] = xstrdup (var_get_name (v[i]));
+          free (v);
+          *nnames += nv;
+        }
       else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND | pv_opts))
-	goto fail;
+        goto fail;
     }
   if (*nnames == 0)
     goto fail;

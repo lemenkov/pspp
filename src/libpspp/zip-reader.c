@@ -567,7 +567,7 @@ find_eocd (FILE *fp, off_t *off)
       found = probe_magic (fp, magic, start, stop, off);
       /* FIXME: For extra confidence lookup the directory start record here*/
       if (start == 0)
-	break;
+        break;
       stop = start + sizeof (magic);
       start >>= 1;
     }
@@ -603,21 +603,21 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
   do
     {
       if (1 != fread (&byte, 1, 1, fp))
-	break;
+        break;
 
       if (byte == seq[state])
-	state++;
+        state++;
       else
-	state = 0;
+        state = 0;
 
       if (state == 4)
-	{
-	  *off = ftello (fp) - 4;
-	  return true;
-	}
+        {
+          *off = ftello (fp) - 4;
+          return true;
+        }
       start++;
       if (start >= stop)
-	break;
+        break;
     }
   while (!feof (fp));
 
@@ -728,21 +728,21 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
       int pad = 0;
 
       if (inf->state == 0)
-	{
-	  inf->ucomp[1] = inf->cmf_flg ;
-      	  inf->ucomp[0] = inf->cmf_flg >> 8 ;
+        {
+          inf->ucomp[1] = inf->cmf_flg ;
+                inf->ucomp[0] = inf->cmf_flg >> 8 ;
 
-	  pad = 2;
-	  inf->state++;
-	}
+          pad = 2;
+          inf->state++;
+        }
 
       bytes_to_read = zm->comp_size - inf->ucomp_bytes_read;
 
       if (bytes_to_read == 0)
-	return 0;
+        return 0;
 
       if (bytes_to_read > UCOMPSIZE)
-	bytes_to_read = UCOMPSIZE;
+        bytes_to_read = UCOMPSIZE;
 
       bytes_read = fread (inf->ucomp + pad, 1, bytes_to_read - pad, zm->fp);
       if (!bytes_read && !zm->error)

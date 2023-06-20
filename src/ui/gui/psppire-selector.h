@@ -41,9 +41,9 @@ typedef struct _PsppireSelectorClass  PsppireSelectorClass;
 
 /* Function for appending selected items to the destination widget */
 typedef void SelectItemsFunc (GtkTreeIter iter,
-			      GtkWidget *dest,
-			      GtkTreeModel *source_model,
-			      gpointer data);
+                              GtkWidget *dest,
+                              GtkTreeModel *source_model,
+                              gpointer data);
 
 /* Function to determine if items may be selected */
 typedef gboolean AllowSelectionFunc (GtkWidget *src, GtkWidget *dest);
@@ -55,8 +55,8 @@ typedef gboolean AllowSelectionFunc (GtkWidget *src, GtkWidget *dest);
    Returns TRUE if the item is currently selected, FALSE otherwise.
  */
 typedef gboolean FilterItemsFunc (GtkTreeModel *model,
-				  GtkTreeIter *iter,
-				  PsppireSelector *selector);
+                                  GtkTreeIter *iter,
+                                  PsppireSelector *selector);
 
 enum psppire_selector_dir
   {
@@ -119,12 +119,12 @@ GtkWidget* psppire_selector_new             (void);
 
 /* Set FILTER_FUNC for this selector */
 void psppire_selector_set_filter_func (PsppireSelector *selector,
-				       FilterItemsFunc *filter_func);
+                                       FilterItemsFunc *filter_func);
 
 /* Set SELECT_FUNC for this selector */
 void psppire_selector_set_select_func (PsppireSelector *selector,
-				       SelectItemsFunc *select_func,
-				       gpointer user_data);
+                                       SelectItemsFunc *select_func,
+                                       gpointer user_data);
 
 /* Force the selector to update its dest and source widgets */
 void psppire_selector_update_subjects (PsppireSelector *selector);

@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_COUNT (psppire_dialog_action_count_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_COUNT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_COUNT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_COUNT, PsppireDialogActionCount))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_COUNT, PsppireDialogActionCount))
 
 #define PSPPIRE_DIALOG_ACTION_COUNT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_COUNT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_COUNT, \
                                  PsppireDialogActionCountClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_COUNT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_COUNT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_COUNT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_COUNT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_COUNT))
 
 
 #define PSPPIRE_DIALOG_ACTION_COUNT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_COUNT, \
-				   PsppireDialogActionCountClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_COUNT, \
+                                   PsppireDialogActionCountClass))
 
 typedef struct _PsppireDialogActionCount       PsppireDialogActionCount;
 typedef struct _PsppireDialogActionCountClass  PsppireDialogActionCountClass;

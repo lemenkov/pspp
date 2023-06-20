@@ -29,7 +29,7 @@
  */
 static void
 draw_case (cairo_t *cr, const struct xrchart_geometry *geom, double centreline,
-	   const struct outlier *outlier)
+           const struct outlier *outlier)
 {
   double y = geom->axis[SCALE_ORDINATE].data_min + (outlier->value - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale;
   xrchart_draw_marker (cr, centreline, y,
@@ -141,7 +141,7 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
 
   /* Draw  tick  mark on x axis */
   draw_tick (cr, geom, SCALE_ABSCISSA, false,
-	     box_centre - geom->axis[SCALE_ABSCISSA].data_min, "%s", name);
+             box_centre - geom->axis[SCALE_ABSCISSA].data_min, "%s", name);
 }
 
 void

@@ -166,7 +166,7 @@ check_datasheet_casereader (struct mc *mc, struct casereader *reader,
                 }
             }
 
-	  case_unref (c);
+          case_unref (c);
         }
 
       c = casereader_read (reader);

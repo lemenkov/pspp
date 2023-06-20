@@ -28,12 +28,12 @@ struct ccase ;
 struct categoricals;
 
 struct covariance * covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
-					     const struct variable *wv, enum mv_class excl, bool centered);
+                                             const struct variable *wv, enum mv_class excl, bool centered);
 
 struct covariance *
 covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
-			 struct categoricals *cats,
-			 const struct variable *wv, enum mv_class excl, bool centered);
+                         struct categoricals *cats,
+                         const struct variable *wv, enum mv_class excl, bool centered);
 
 void covariance_accumulate (struct covariance *, const struct ccase *);
 void covariance_accumulate_pass1 (struct covariance *, const struct ccase *);

@@ -65,9 +65,9 @@ tt_options_dialog_create (GtkWindow *parent)
     psppire_scanf_new (_("Con_fidence Interval: %2d %%"), &tto->conf_percent);
 
   g_object_set (tto->confidence,
-		"use-underline", TRUE,
-		"mnemonic-widget", psppire_scanf_get_child (PSPPIRE_SCANF (tto->confidence), 0),
-		NULL);
+                "use-underline", TRUE,
+                "mnemonic-widget", psppire_scanf_get_child (PSPPIRE_SCANF (tto->confidence), 0),
+                NULL);
 
   tto->dialog = get_widget_assert (tto->xml, "options-dialog");
 
@@ -120,9 +120,9 @@ tt_options_dialog_run (struct tt_options_dialog *tto)
 
       tto->confidence_interval = gtk_spin_button_get_value (tto->conf_percent);
       if (gtk_toggle_button_get_active (tto->analysis))
-	tto->excl = EXCL_ANALYSIS;
+        tto->excl = EXCL_ANALYSIS;
       else
-	tto->excl = EXCL_LISTWISE;
+        tto->excl = EXCL_LISTWISE;
     }
 }
 
@@ -140,7 +140,7 @@ tt_options_dialog_append_syntax (const struct tt_options_dialog *tto, GString *s
     ds_put_cstr (&dss, "LISTWISE");
 
   ds_put_c_format (&dss, "\n\t/CRITERIA=CI(%g)",
-		   tto->confidence_interval/100.0);
+                   tto->confidence_interval/100.0);
 
   g_string_append (str, ds_cstr (&dss));
 

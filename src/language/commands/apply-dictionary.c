@@ -63,18 +63,18 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
       struct variable *t = dict_lookup_var (dataset_dict (ds),
                                             var_get_name (s));
       if (t == NULL)
-	continue;
+        continue;
 
       n_matched++;
       if (var_get_type (s) != var_get_type (t))
-	{
-	  msg (SW, _("Variable %s is %s in target file, but %s in "
-		     "source file."),
-	       var_get_name (s),
-	       var_is_alpha (t) ? _("string") : _("numeric"),
-	       var_is_alpha (s) ? _("string") : _("numeric"));
-	  continue;
-	}
+        {
+          msg (SW, _("Variable %s is %s in target file, but %s in "
+                     "source file."),
+               var_get_name (s),
+               var_is_alpha (t) ? _("string") : _("numeric"),
+               var_is_alpha (s) ? _("string") : _("numeric"));
+          continue;
+        }
 
       if (var_has_label (s))
         var_set_label (t, var_get_label (s));
@@ -94,10 +94,10 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
         }
 
       if (var_is_numeric (s))
-	{
+        {
           var_set_print_format (t, var_get_print_format (s));
           var_set_write_format (t, var_get_write_format (s));
-	}
+        }
 
       if (var_has_attributes (s))
         var_set_attributes (t, var_get_attributes (s));
@@ -105,7 +105,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
 
   if (!n_matched)
     msg (SW, _("No matching variables found between the source "
-	       "and target files."));
+               "and target files."));
 
   /* Data file attributes. */
   if (dict_has_attributes (dict))

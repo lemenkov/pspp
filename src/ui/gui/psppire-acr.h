@@ -22,17 +22,17 @@
   This widget is a GtkBox which looks roughly like:
 
   +-----------------------------+
-  |+------------+  +----------+	|
-  ||   Add      |  |	      |	|
-  |+------------+  |	      |	|
-  |                |	      |	|
-  |+------------+  |	      |	|
-  ||   Edit     |  |	      |	|
-  |+------------+  |	      |	|
-  |      	   |	      |	|
-  |+------------+  |	      |	|
-  ||  Remove    |  |	      |	|
-  |+------------+  +----------+	|
+  |+------------+  +----------+        |
+  ||   Add      |  |              |        |
+  |+------------+  |              |        |
+  |                |              |        |
+  |+------------+  |              |        |
+  ||   Edit     |  |              |        |
+  |+------------+  |              |        |
+  |                 |              |        |
+  |+------------+  |              |        |
+  ||  Remove    |  |              |        |
+  |+------------+  +----------+        |
   +-----------------------------+
 
   It interacts with an external widget, such as a GtkEntry.
@@ -100,7 +100,7 @@ GtkWidget*  psppire_acr_new             (void);
 
 void        psppire_acr_set_model       (PsppireAcr *, GtkListStore *);
 void        psppire_acr_set_get_value_func (PsppireAcr *, GetValueFunc,
-					    gpointer);
+                                            gpointer);
 
 void        psppire_acr_set_enable_func (PsppireAcr *, EnabledFunc, gpointer);
 

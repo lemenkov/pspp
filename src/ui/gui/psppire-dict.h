@@ -39,7 +39,7 @@ G_BEGIN_DECLS
 
 
 /* --- typedefs & structures --- */
-typedef struct _PsppireDict	   PsppireDict;
+typedef struct _PsppireDict           PsppireDict;
 typedef struct _PsppireDictClass PsppireDictClass;
 
 enum {DICT_TVM_COL_NAME=0,
@@ -109,7 +109,7 @@ gboolean psppire_dict_check_name (const PsppireDict *, const gchar *name);
 bool psppire_dict_generate_name (const PsppireDict *, char *name, size_t size);
 
 gboolean psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
-			      const gchar *text);
+                              const gchar *text);
 
 void psppire_dict_replace_dictionary (PsppireDict *, struct dictionary *);
 

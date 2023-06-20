@@ -26,10 +26,10 @@ struct dataset;
 struct npar_test;
 
 void mcnemar_execute (const struct dataset *ds,
-		   struct casereader *input,
-		   enum mv_class exclude,
-		   const struct npar_test *test,
-		   bool exact,
-		   double timer);
+                   struct casereader *input,
+                   enum mv_class exclude,
+                   const struct npar_test *test,
+                   bool exact,
+                   double timer);
 
 #endif

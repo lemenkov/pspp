@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT (psppire_dialog_action_scatterplot_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_SCATTERPLOT(obj)	\
+#define PSPPIRE_DIALOG_ACTION_SCATTERPLOT(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, PsppireDialogActionScatterplot))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, PsppireDialogActionScatterplot))
 
 #define PSPPIRE_DIALOG_ACTION_SCATTERPLOT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, \
                                  PsppireDialogActionScatterplotClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_SCATTERPLOT(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT))
 
 #define PSPPIRE_IS_DIALOG_ACTION_SCATTERPLOT_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT))
 
 
 #define PSPPIRE_DIALOG_ACTION_SCATTERPLOT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, \
-				   PsppireDialogActionScatterplotClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, \
+                                   PsppireDialogActionScatterplotClass))
 
 typedef struct _PsppireDialogActionScatterplot       PsppireDialogActionScatterplot;
 typedef struct _PsppireDialogActionScatterplotClass  PsppireDialogActionScatterplotClass;

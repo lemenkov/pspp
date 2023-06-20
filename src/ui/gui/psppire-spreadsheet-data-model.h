@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL (psppire_spreadsheet_data_model_get_type ())
 
-#define PSPPIRE_SPREADSHEET_DATA_MODEL(obj)	\
+#define PSPPIRE_SPREADSHEET_DATA_MODEL(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-		    PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, PsppireSpreadsheetDataModel))
+                    PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, PsppireSpreadsheetDataModel))
 
 #define PSPPIRE_SPREADSHEET_DATA_MODEL_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, \
+                                 PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, \
                                  PsppireSpreadsheetDataModelClass))
 
 
 #define PSPPIRE_IS_SPREADSHEET_DATA_MODEL(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL))
 
 #define PSPPIRE_IS_SPREADSHEET_DATA_MODEL_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL))
 
 
 #define PSPPIRE_SPREADSHEET_DATA_MODEL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, \
-				   PsppireSpreadsheetDataModelClass))
+                                   PSPPIRE_TYPE_SPREADSHEET_DATA_MODEL, \
+                                   PsppireSpreadsheetDataModelClass))
 
 typedef struct _PsppireSpreadsheetDataModel       PsppireSpreadsheetDataModel;
 typedef struct _PsppireSpreadsheetDataModelClass  PsppireSpreadsheetDataModelClass;

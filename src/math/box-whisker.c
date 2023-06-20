@@ -75,10 +75,10 @@ acc (struct statistic *s, const struct ccase *cx,
   else /* Not an outlier */
     {
       if (bw->whiskers[0] == SYSMIS)
-	bw->whiskers[0] = y;
+        bw->whiskers[0] = y;
 
       if (y > bw->whiskers[1])
-	bw->whiskers[1] = y;
+        bw->whiskers[1] = y;
 
       return;
     }
@@ -142,7 +142,7 @@ box_whisker_outliers (const struct box_whisker *bw)
 */
 struct box_whisker *
 box_whisker_create (const struct tukey_hinges *th,
-		    size_t id_idx, const struct variable *id_var)
+                    size_t id_idx, const struct variable *id_var)
 {
   double hinges[3];
   tukey_hinges_calculate (th, hinges);

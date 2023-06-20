@@ -61,7 +61,7 @@ get_object_assert (GtkBuilder *builder, const gchar *name, GType type)
   else if (! g_type_is_a (G_OBJECT_TYPE (o), type))
    {
      g_critical ("Object `%s' was expected to have type %s, but in fact has type %s",
-	name, g_type_name (type), G_OBJECT_TYPE_NAME (o));
+        name, g_type_name (type), G_OBJECT_TYPE_NAME (o));
    }
 
   return o;

@@ -83,14 +83,14 @@ struct qc
 
     double epsilon;               /* The convergence criterion */
 
-    int ngroups;			/* Number of group. (Given by the user) */
-    int maxiter;			/* Maximum iterations (Given by the user) */
+    int ngroups;                        /* Number of group. (Given by the user) */
+    int maxiter;                        /* Maximum iterations (Given by the user) */
     bool print_cluster_membership; /* true => print membership */
     bool print_initial_clusters;   /* true => print initial cluster */
     bool initial;             /* false => simplified initial cluster selection */
     bool update;               /* false => do not iterate  */
 
-    const struct variable *wv;	/* Weighting variable. */
+    const struct variable *wv;        /* Weighting variable. */
 
     enum missing_type missing_type;
     enum mv_class exclude;
@@ -114,41 +114,41 @@ struct qc
    kmeans_recalculate_centers in first invocation. */
 struct Kmeans
   {
-    gsl_matrix *centers;		/* Centers for groups. */
+    gsl_matrix *centers;                /* Centers for groups. */
     gsl_matrix *updated_centers;
     casenumber n;
 
     gsl_vector_long *num_elements_groups;
 
-    gsl_matrix *initial_centers;	/* Initial random centers. */
+    gsl_matrix *initial_centers;        /* Initial random centers. */
     double convergence_criteria;
-    gsl_permutation *group_order;	/* Group order for reporting. */
+    gsl_permutation *group_order;        /* Group order for reporting. */
   };
 
 static struct Kmeans *kmeans_create (const struct qc *);
 
 static void kmeans_get_nearest_group (const struct Kmeans *,
-				      struct ccase *, const struct qc *,
-				      int *, double *, int *, double *);
+                                      struct ccase *, const struct qc *,
+                                      int *, double *, int *, double *);
 
 static void kmeans_order_groups (struct Kmeans *, const struct qc *);
 
 static void kmeans_cluster (struct Kmeans *, struct casereader *,
-			    const struct qc *);
+                            const struct qc *);
 
 static void quick_cluster_show_centers (struct Kmeans *, bool initial,
-					const struct qc *);
+                                        const struct qc *);
 
 static void quick_cluster_show_membership (struct Kmeans *,
-					   const struct casereader *,
-					   struct qc *);
+                                           const struct casereader *,
+                                           struct qc *);
 
 static void quick_cluster_show_number_cases (struct Kmeans *,
-					     const struct qc *);
+                                             const struct qc *);
 
 static void quick_cluster_show_results (struct Kmeans *,
-					const struct casereader *,
-					struct qc *);
+                                        const struct casereader *,
+                                        struct qc *);
 
 int cmd_quick_cluster (struct lexer *, struct dataset *);
 
@@ -194,7 +194,7 @@ diff_matrix (const gsl_matrix *m1, const gsl_matrix *m2)
       for (size_t j = 0; j < m1->size2; ++j)
         diff += pow2 (gsl_matrix_get (m1,i,j) - gsl_matrix_get (m2,i,j));
       if (diff > max_diff)
-	max_diff = diff;
+        max_diff = diff;
     }
 
   return max_diff;
@@ -227,7 +227,7 @@ matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 /* Return the distance of C from the group whose index is WHICH */
 static double
 dist_from_case (const struct Kmeans *kmeans, const struct ccase *c,
-		const struct qc *qc, int which)
+                const struct qc *qc, int which)
 {
   double dist = 0;
   for (size_t j = 0; j < qc->n_vars; j++)
@@ -248,7 +248,7 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
   for (size_t i = 0; i < qc->ngroups; i++)
     {
       if (i == which)
-	continue;
+        continue;
 
       double dist = 0;
       for (size_t j = 0; j < qc->n_vars; j++)
@@ -265,8 +265,8 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
 /* Calculate the initial cluster centers. */
 static void
 kmeans_initial_centers (struct Kmeans *kmeans,
-			const struct casereader *reader,
-			const struct qc *qc)
+                        const struct casereader *reader,
+                        const struct qc *qc)
 {
   int nc = 0;
 
@@ -276,59 +276,59 @@ kmeans_initial_centers (struct Kmeans *kmeans,
     {
       bool missing = false;
       for (size_t j = 0; j < qc->n_vars; ++j)
-	{
-	  const union value *val = case_data (c, qc->vars[j]);
-	  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
-	    {
-	      missing = true;
-	      break;
-	    }
+        {
+          const union value *val = case_data (c, qc->vars[j]);
+          if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
+            {
+              missing = true;
+              break;
+            }
 
-	  if (nc < qc->ngroups)
-	    gsl_matrix_set (kmeans->centers, nc, j, val->f);
-	}
+          if (nc < qc->ngroups)
+            gsl_matrix_set (kmeans->centers, nc, j, val->f);
+        }
       if (missing)
-	continue;
+        continue;
 
       if (nc++ < qc->ngroups)
-	continue;
+        continue;
 
       if (qc->initial)
-	{
-	  int mn, mm;
-	  double m = matrix_mindist (kmeans->centers, &mn, &mm);
+        {
+          int mn, mm;
+          double m = matrix_mindist (kmeans->centers, &mn, &mm);
 
-	  int mq, mp;
-	  double delta;
-	  kmeans_get_nearest_group (kmeans, c, qc, &mq, &delta, &mp, NULL);
-	  if (delta > m)
-	    /* If the distance between C and the nearest group, is greater than the distance
-	       between the two  groups which are clostest to each
-	       other, then one group must be replaced.  */
-	    {
-	      /* Out of mn and mm, which is the clostest of the two groups to C ? */
-	      int which = (dist_from_case (kmeans, c, qc, mn)
-			   > dist_from_case (kmeans, c, qc, mm)) ? mm : mn;
+          int mq, mp;
+          double delta;
+          kmeans_get_nearest_group (kmeans, c, qc, &mq, &delta, &mp, NULL);
+          if (delta > m)
+            /* If the distance between C and the nearest group, is greater than the distance
+               between the two  groups which are clostest to each
+               other, then one group must be replaced.  */
+            {
+              /* Out of mn and mm, which is the clostest of the two groups to C ? */
+              int which = (dist_from_case (kmeans, c, qc, mn)
+                           > dist_from_case (kmeans, c, qc, mm)) ? mm : mn;
 
-	      for (size_t j = 0; j < qc->n_vars; ++j)
-		{
-		  const union value *val = case_data (c, qc->vars[j]);
-		  gsl_matrix_set (kmeans->centers, which, j, val->f);
-		}
-	    }
-	  else if (dist_from_case (kmeans, c, qc, mp) > min_dist_from (kmeans, qc, mq))
-	    /* If the distance between C and the second nearest group
-	       (MP) is greater than the smallest distance between the
-	       nearest group (MQ) and any other group, then replace
-	       MQ with C.  */
-	    {
-	      for (size_t j = 0; j < qc->n_vars; ++j)
-		{
-		  const union value *val = case_data (c, qc->vars[j]);
-		  gsl_matrix_set (kmeans->centers, mq, j, val->f);
-		}
-	    }
-	}
+              for (size_t j = 0; j < qc->n_vars; ++j)
+                {
+                  const union value *val = case_data (c, qc->vars[j]);
+                  gsl_matrix_set (kmeans->centers, which, j, val->f);
+                }
+            }
+          else if (dist_from_case (kmeans, c, qc, mp) > min_dist_from (kmeans, qc, mq))
+            /* If the distance between C and the second nearest group
+               (MP) is greater than the smallest distance between the
+               nearest group (MQ) and any other group, then replace
+               MQ with C.  */
+            {
+              for (size_t j = 0; j < qc->n_vars; ++j)
+                {
+                  const union value *val = case_data (c, qc->vars[j]);
+                  gsl_matrix_set (kmeans->centers, mq, j, val->f);
+                }
+            }
+        }
     }
 
   casereader_destroy (cs);
@@ -344,8 +344,8 @@ kmeans_initial_centers (struct Kmeans *kmeans,
 /* Return the index of the group which is nearest to the case C */
 static void
 kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c,
-			  const struct qc *qc, int *g_q, double *delta_q,
-			  int *g_p, double *delta_p)
+                          const struct qc *qc, int *g_q, double *delta_q,
+                          int *g_p, double *delta_p)
 {
   int result0 = -1;
   int result1 = -1;
@@ -355,27 +355,27 @@ kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c,
     {
       double dist = 0;
       for (size_t j = 0; j < qc->n_vars; j++)
-	{
-	  const union value *val = case_data (c, qc->vars[j]);
-	  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
-	    continue;
+        {
+          const union value *val = case_data (c, qc->vars[j]);
+          if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
+            continue;
 
-	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
-	}
+          dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
+        }
 
       if (dist < mindist0)
-	{
-	  mindist1 = mindist0;
-	  result1 = result0;
+        {
+          mindist1 = mindist0;
+          result1 = result0;
 
-	  mindist0 = dist;
-	  result0 = i;
-	}
+          mindist0 = dist;
+          result0 = i;
+        }
       else if (dist < mindist1)
-	{
-	  mindist1 = dist;
-	  result1 = i;
-	}
+        {
+          mindist1 = dist;
+          result1 = i;
+        }
     }
 
   if (delta_q)
@@ -404,7 +404,7 @@ kmeans_order_groups (struct Kmeans *kmeans, const struct qc *qc)
    Does iterations, checks convergency. */
 static void
 kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
-		const struct qc *qc)
+                const struct qc *qc)
 {
   kmeans_initial_centers (kmeans, reader, qc);
 
@@ -415,50 +415,50 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 
       kmeans->n = 0;
       if (qc->update)
-	{
-	  struct casereader *r = casereader_clone (reader);
-	  struct ccase *c;
-	  for (; (c = casereader_read (r)) != NULL; case_unref (c))
-	    {
-	      bool missing = false;
-	      for (size_t j = 0; j < qc->n_vars; j++)
-		{
-		  const union value *val = case_data (c, qc->vars[j]);
-		  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
-		    missing = true;
-		}
-	      if (missing)
-		continue;
+        {
+          struct casereader *r = casereader_clone (reader);
+          struct ccase *c;
+          for (; (c = casereader_read (r)) != NULL; case_unref (c))
+            {
+              bool missing = false;
+              for (size_t j = 0; j < qc->n_vars; j++)
+                {
+                  const union value *val = case_data (c, qc->vars[j]);
+                  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
+                    missing = true;
+                }
+              if (missing)
+                continue;
 
-	      double mindist = INFINITY;
-	      int group = -1;
-	      for (size_t g = 0; g < qc->ngroups; ++g)
-		{
-		  double d = dist_from_case (kmeans, c, qc, g);
+              double mindist = INFINITY;
+              int group = -1;
+              for (size_t g = 0; g < qc->ngroups; ++g)
+                {
+                  double d = dist_from_case (kmeans, c, qc, g);
 
-		  if (d < mindist)
-		    {
-		      mindist = d;
-		      group = g;
-		    }
-		}
+                  if (d < mindist)
+                    {
+                      mindist = d;
+                      group = g;
+                    }
+                }
 
-	      long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
-	      *n += qc->wv ? case_num (c, qc->wv) : 1.0;
-	      kmeans->n++;
+              long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
+              *n += qc->wv ? case_num (c, qc->wv) : 1.0;
+              kmeans->n++;
 
-	      for (size_t j = 0; j < qc->n_vars; ++j)
-		{
-		  const union value *val = case_data (c, qc->vars[j]);
-		  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
-		    continue;
-		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
-		  *x += val->f * (qc->wv ? case_num (c, qc->wv) : 1.0);
-		}
-	    }
+              for (size_t j = 0; j < qc->n_vars; ++j)
+                {
+                  const union value *val = case_data (c, qc->vars[j]);
+                  if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
+                    continue;
+                  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
+                  *x += val->f * (qc->wv ? case_num (c, qc->wv) : 1.0);
+                }
+            }
 
-	  casereader_destroy (r);
-	}
+          casereader_destroy (r);
+        }
 
       /* Divide the cluster sums by the number of items in each cluster */
       for (size_t g = 0; g < qc->ngroups; ++g)
@@ -511,7 +511,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
         break;
 
       if (!qc->update)
-	break;
+        break;
     }
 }
 
@@ -524,8 +524,8 @@ quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc
 {
   struct pivot_table *table
     = pivot_table_create (initial
-			  ? N_("Initial Cluster Centers")
-			  : N_("Final Cluster Centers"));
+                          ? N_("Initial Cluster Centers")
+                          : N_("Final Cluster Centers"));
 
   struct pivot_dimension *clusters
     = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cluster"));
@@ -596,8 +596,8 @@ save_trans_destroy (void *aux)
    membership and the distance of the case from the cluster centre.  */
 static void
 quick_cluster_show_membership (struct Kmeans *kmeans,
-			       const struct casereader *reader,
-			       struct qc *qc)
+                               const struct casereader *reader,
+                               struct qc *qc)
 {
   struct pivot_table *table = NULL;
   struct pivot_dimension *cases = NULL;
@@ -606,10 +606,10 @@ quick_cluster_show_membership (struct Kmeans *kmeans,
       table = pivot_table_create (N_("Cluster Membership"));
 
       pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cluster"),
-			      N_("Cluster"));
+                              N_("Cluster"));
 
       cases
-	= pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Case Number"));
+        = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Case Number"));
 
       cases->root->show_label = true;
     }
@@ -621,22 +621,22 @@ quick_cluster_show_membership (struct Kmeans *kmeans,
   if (qc->save_membership || qc->save_distance)
     {
       /* Prepare data which may potentially be used in a
-	 transformation appending new variables to the active
-	 dataset.  */
+         transformation appending new variables to the active
+         dataset.  */
       int idx = 0;
       int membership_case_idx = -1;
       if (qc->save_membership)
-	{
-	  proto = caseproto_add_width (proto, 0);
-	  membership_case_idx = idx++;
-	}
+        {
+          proto = caseproto_add_width (proto, 0);
+          membership_case_idx = idx++;
+        }
 
       int distance_case_idx = -1;
       if (qc->save_distance)
-	{
-	  proto = caseproto_add_width (proto, 0);
-	  distance_case_idx = idx++;
-	}
+        {
+          proto = caseproto_add_width (proto, 0);
+          distance_case_idx = idx++;
+        }
 
       qc->save_trans_data = xmalloc (sizeof *qc->save_trans_data);
       *qc->save_trans_data = (struct save_trans_data) {
@@ -670,13 +670,13 @@ quick_cluster_show_membership (struct Kmeans *kmeans,
         }
 
       if (qc->print_cluster_membership)
-	{
-	  /* Print the cluster membership to the table.  */
-	  int case_idx = pivot_category_create_leaf (cases->root,
-						 pivot_value_new_integer (i + 1));
-	  pivot_table_put2 (table, 0, case_idx,
-			    pivot_value_new_integer (cluster + 1));
-	}
+        {
+          /* Print the cluster membership to the table.  */
+          int case_idx = pivot_category_create_leaf (cases->root,
+                                                 pivot_value_new_integer (i + 1));
+          pivot_table_put2 (table, 0, case_idx,
+                            pivot_value_new_integer (cluster + 1));
+        }
     }
 
   caseproto_unref (proto);
@@ -708,14 +708,14 @@ quick_cluster_show_number_cases (struct Kmeans *kmeans, const struct qc *qc)
   for (int i = 0; i < qc->ngroups; i++)
     {
       int cluster_idx
-	= pivot_category_create_leaf (group, pivot_value_new_integer (i + 1));
+        = pivot_category_create_leaf (group, pivot_value_new_integer (i + 1));
       int count = kmeans->num_elements_groups->data [kmeans->group_order->data[i]];
       pivot_table_put2 (table, 0, cluster_idx, pivot_value_new_integer (count));
       total += count;
     }
 
   int cluster_idx = pivot_category_create_leaf (clusters->root,
-						pivot_value_new_text (N_("Valid")));
+                                                pivot_value_new_text (N_("Valid")));
   pivot_table_put2 (table, 0, cluster_idx, pivot_value_new_integer (total));
   pivot_table_submit (table);
 }
@@ -723,7 +723,7 @@ quick_cluster_show_number_cases (struct Kmeans *kmeans, const struct qc *qc)
 /* Reports. */
 static void
 quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader,
-			    struct qc *qc)
+                            struct qc *qc)
 {
   kmeans_order_groups (kmeans, qc); /* what does this do? */
 
@@ -741,7 +741,7 @@ static bool
 quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 {
   if (!parse_variables_const (lexer, qc->dict, &qc->vars, &qc->n_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
+                              PV_NO_DUPLICATE | PV_NUMERIC))
     return false;
 
   while (lex_token (lexer) != T_ENDCMD)
@@ -749,159 +749,159 @@ quick_cluster_parse (struct lexer *lexer, struct qc *qc)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "MISSING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "LISTWISE")
-		  || lex_match_id (lexer, "DEFAULT"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "LISTWISE")
+                  || lex_match_id (lexer, "DEFAULT"))
                 qc->missing_type = MISS_LISTWISE;
-	      else if (lex_match_id (lexer, "PAIRWISE"))
+              else if (lex_match_id (lexer, "PAIRWISE"))
                 qc->missing_type = MISS_PAIRWISE;
-	      else if (lex_match_id (lexer, "INCLUDE"))
+              else if (lex_match_id (lexer, "INCLUDE"))
                 qc->exclude = MV_SYSTEM;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 qc->exclude = MV_ANY;
-	      else
-		{
-		  lex_error_expecting (lexer, "LISTWISE", "DEFAULT",
+              else
+                {
+                  lex_error_expecting (lexer, "LISTWISE", "DEFAULT",
                                        "PAIRWISE", "INCLUDE", "EXCLUDE");
-		  return false;
-		}
-	    }
-	}
+                  return false;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "PRINT"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "CLUSTER"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "CLUSTER"))
                 qc->print_cluster_membership = true;
-	      else if (lex_match_id (lexer, "INITIAL"))
-	        qc->print_initial_clusters = true;
-	      else
-		{
-		  lex_error_expecting (lexer, "CLUSTER", "INITIAL");
-		  return false;
-		}
-	    }
-	}
+              else if (lex_match_id (lexer, "INITIAL"))
+                qc->print_initial_clusters = true;
+              else
+                {
+                  lex_error_expecting (lexer, "CLUSTER", "INITIAL");
+                  return false;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "SAVE"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "CLUSTER"))
-		{
-		  qc->save_membership = true;
-		  if (lex_match (lexer, T_LPAREN))
-		    {
-		      if (!lex_force_id (lexer))
-			return false;
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "CLUSTER"))
+                {
+                  qc->save_membership = true;
+                  if (lex_match (lexer, T_LPAREN))
+                    {
+                      if (!lex_force_id (lexer))
+                        return false;
 
-		      free (qc->var_membership);
-		      qc->var_membership = xstrdup (lex_tokcstr (lexer));
-		      if (NULL != dict_lookup_var (qc->dict, qc->var_membership))
-			{
-			  lex_error (lexer,
-				     _("A variable called `%s' already exists."),
-				     qc->var_membership);
-			  free (qc->var_membership);
-			  qc->var_membership = NULL;
-			  return false;
-			}
+                      free (qc->var_membership);
+                      qc->var_membership = xstrdup (lex_tokcstr (lexer));
+                      if (NULL != dict_lookup_var (qc->dict, qc->var_membership))
+                        {
+                          lex_error (lexer,
+                                     _("A variable called `%s' already exists."),
+                                     qc->var_membership);
+                          free (qc->var_membership);
+                          qc->var_membership = NULL;
+                          return false;
+                        }
 
-		      lex_get (lexer);
+                      lex_get (lexer);
 
-		      if (!lex_force_match (lexer, T_RPAREN))
-			return false;
-		    }
-		}
-	      else if (lex_match_id (lexer, "DISTANCE"))
-		{
-		  qc->save_distance = true;
-		  if (lex_match (lexer, T_LPAREN))
-		    {
-		      if (!lex_force_id (lexer))
-			return false;
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        return false;
+                    }
+                }
+              else if (lex_match_id (lexer, "DISTANCE"))
+                {
+                  qc->save_distance = true;
+                  if (lex_match (lexer, T_LPAREN))
+                    {
+                      if (!lex_force_id (lexer))
+                        return false;
 
-		      free (qc->var_distance);
-		      qc->var_distance = xstrdup (lex_tokcstr (lexer));
-		      if (NULL != dict_lookup_var (qc->dict, qc->var_distance))
-			{
-			  lex_error (lexer,
-				     _("A variable called `%s' already exists."),
-				     qc->var_distance);
-			  free (qc->var_distance);
-			  qc->var_distance = NULL;
-			  return false;
-			}
+                      free (qc->var_distance);
+                      qc->var_distance = xstrdup (lex_tokcstr (lexer));
+                      if (NULL != dict_lookup_var (qc->dict, qc->var_distance))
+                        {
+                          lex_error (lexer,
+                                     _("A variable called `%s' already exists."),
+                                     qc->var_distance);
+                          free (qc->var_distance);
+                          qc->var_distance = NULL;
+                          return false;
+                        }
 
-		      lex_get (lexer);
+                      lex_get (lexer);
 
-		      if (!lex_force_match (lexer, T_RPAREN))
-			return false;
-		    }
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "CLUSTER", "DISTANCE");
-		  return false;
-		}
-	    }
-	}
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        return false;
+                    }
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "CLUSTER", "DISTANCE");
+                  return false;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "CRITERIA"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "CLUSTERS"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
-		      || !lex_force_int_range (lexer, "CLUSTERS", 1, INT_MAX))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_ENDCMD
+                 && lex_token (lexer) != T_SLASH)
+            {
+              if (lex_match_id (lexer, "CLUSTERS"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int_range (lexer, "CLUSTERS", 1, INT_MAX))
                     return false;
                   qc->ngroups = lex_integer (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     return false;
-		}
-	      else if (lex_match_id (lexer, "CONVERGE"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
-		      || !lex_force_num_range_open (lexer, "CONVERGE",
+                }
+              else if (lex_match_id (lexer, "CONVERGE"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_num_range_open (lexer, "CONVERGE",
                                                     0, DBL_MAX))
                     return false;
                   qc->epsilon = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     return false;
-		}
-	      else if (lex_match_id (lexer, "MXITER"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
-		      || !lex_force_int_range (lexer, "MXITER", 1, INT_MAX))
+                }
+              else if (lex_match_id (lexer, "MXITER"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int_range (lexer, "MXITER", 1, INT_MAX))
                     return false;
                   qc->maxiter = lex_integer (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     return false;
-		}
-	      else if (lex_match_id (lexer, "NOINITIAL"))
+                }
+              else if (lex_match_id (lexer, "NOINITIAL"))
                 qc->initial = false;
-	      else if (lex_match_id (lexer, "NOUPDATE"))
+              else if (lex_match_id (lexer, "NOUPDATE"))
                 qc->update = false;
-	      else
-		{
-		  lex_error_expecting (lexer, "CLUSTERS", "CONVERGE", "MXITER",
+              else
+                {
+                  lex_error_expecting (lexer, "CLUSTERS", "CONVERGE", "MXITER",
                                        "NOINITIAL", "NOUPDATE");
-		  return false;
-		}
-	    }
-	}
+                  return false;
+                }
+            }
+        }
       else
         {
           lex_error_expecting (lexer, "MISSING", "PRINT", "SAVE", "CRITERIA");
@@ -957,48 +957,48 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
       std->appending_reader = casewriter_make_reader (std->writer);
 
       if (qc.save_membership)
-	{
-	  /* Invent a variable name if necessary.  */
-	  int idx = 0;
-	  struct string name;
-	  ds_init_empty (&name);
-	  while (qc.var_membership == NULL)
-	    {
-	      ds_clear (&name);
-	      ds_put_format (&name, "QCL_%d", idx++);
+        {
+          /* Invent a variable name if necessary.  */
+          int idx = 0;
+          struct string name;
+          ds_init_empty (&name);
+          while (qc.var_membership == NULL)
+            {
+              ds_clear (&name);
+              ds_put_format (&name, "QCL_%d", idx++);
 
-	      if (!dict_lookup_var (qc.dict, ds_cstr (&name)))
-		{
-		  qc.var_membership = strdup (ds_cstr (&name));
-		  break;
-		}
-	    }
-	  ds_destroy (&name);
+              if (!dict_lookup_var (qc.dict, ds_cstr (&name)))
+                {
+                  qc.var_membership = strdup (ds_cstr (&name));
+                  break;
+                }
+            }
+          ds_destroy (&name);
 
-	  std->membership = dict_create_var_assert (qc.dict, qc.var_membership, 0);
-	}
+          std->membership = dict_create_var_assert (qc.dict, qc.var_membership, 0);
+        }
 
       if (qc.save_distance)
-	{
-	  /* Invent a variable name if necessary.  */
-	  int idx = 0;
-	  struct string name;
-	  ds_init_empty (&name);
-	  while (qc.var_distance == NULL)
-	    {
-	      ds_clear (&name);
-	      ds_put_format (&name, "QCL_%d", idx++);
+        {
+          /* Invent a variable name if necessary.  */
+          int idx = 0;
+          struct string name;
+          ds_init_empty (&name);
+          while (qc.var_distance == NULL)
+            {
+              ds_clear (&name);
+              ds_put_format (&name, "QCL_%d", idx++);
 
-	      if (!dict_lookup_var (qc.dict, ds_cstr (&name)))
-		{
-		  qc.var_distance = strdup (ds_cstr (&name));
-		  break;
-		}
-	    }
-	  ds_destroy (&name);
+              if (!dict_lookup_var (qc.dict, ds_cstr (&name)))
+                {
+                  qc.var_distance = strdup (ds_cstr (&name));
+                  break;
+                }
+            }
+          ds_destroy (&name);
 
-	  std->distance = dict_create_var_assert (qc.dict, qc.var_distance, 0);
-	}
+          std->distance = dict_create_var_assert (qc.dict, qc.var_distance, 0);
+        }
 
       static const struct trns_class trns_class = {
         .name = "QUICK CLUSTER",

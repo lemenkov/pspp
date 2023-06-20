@@ -139,7 +139,7 @@ main (int argc, char **argv)
       int result = cmd_parse (lexer, session_active_dataset (the_session));
 
       if (result == CMD_EOF || result == CMD_FINISH)
-	break;
+        break;
       else if (cmd_result_is_failure (result) && lex_token (lexer) != T_STOP)
         {
           switch (lex_get_error_mode (lexer))

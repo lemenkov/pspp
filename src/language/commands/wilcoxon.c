@@ -53,12 +53,12 @@ append_difference (const struct ccase *c, casenumber n UNUSED, void *aux)
 }
 
 static void show_ranks_box (const struct wilcoxon_state *,
-			    const struct two_sample_test *,
-			    const struct dictionary *);
+                            const struct two_sample_test *,
+                            const struct dictionary *);
 
 static void show_tests_box (const struct wilcoxon_state *,
-			    const struct two_sample_test *,
-			    bool exact, double timer);
+                            const struct two_sample_test *,
+                            bool exact, double timer);
 
 
 
@@ -74,11 +74,11 @@ distinct_callback (double v UNUSED, casenumber n, double w UNUSED, void *aux)
 
 void
 wilcoxon_execute (const struct dataset *ds,
-		  struct casereader *input,
-		  enum mv_class exclude,
-		  const struct npar_test *test,
-		  bool exact,
-		  double timer)
+                  struct casereader *input,
+                  enum mv_class exclude,
+                  const struct npar_test *test,
+                  bool exact,
+                  double timer)
 {
   int i;
   bool warn = true;
@@ -112,41 +112,41 @@ wilcoxon_execute (const struct dataset *ds,
       ws[i].weight = dict_create_var (ws[i].dict, "weight", 0);
 
       r = casereader_create_filter_missing (r, *vp, 2,
-					    exclude,
-					    NULL, NULL);
+                                            exclude,
+                                            NULL, NULL);
 
       subcase_init_var (&ordering, ws[i].absdiff, SC_ASCEND);
       writer = sort_create_writer (&ordering, proto);
       subcase_uninit (&ordering);
 
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
-	{
-	  struct ccase *output = case_create (proto);
-	  double d = append_difference (c, 0, vp);
+        {
+          struct ccase *output = case_create (proto);
+          double d = append_difference (c, 0, vp);
 
-	  if (d > 0)
+          if (d > 0)
             *case_num_rw (output, ws[i].sign) = 1.0;
-	  else if (d < 0)
+          else if (d < 0)
             *case_num_rw (output, ws[i].sign) = -1.0;
-	  else
-	    {
-	      double w = 1.0;
-	      if (weight)
-		w = case_num (c, weight);
+          else
+            {
+              double w = 1.0;
+              if (weight)
+                w = case_num (c, weight);
 
-	      /* Central point values should be dropped */
-	      ws[i].n_zeros += w;
+              /* Central point values should be dropped */
+              ws[i].n_zeros += w;
               case_unref (output);
               continue;
-	    }
+            }
 
-	  *case_num_rw (output, ws[i].absdiff) = fabs (d);
+          *case_num_rw (output, ws[i].absdiff) = fabs (d);
 
-	  if (weight)
-	   *case_num_rw (output, ws[i].weight) = case_num (c, weight);
+          if (weight)
+           *case_num_rw (output, ws[i].weight) = case_num (c, weight);
 
-	  casewriter_write (writer, output);
-	}
+          casewriter_write (writer, output);
+        }
       casereader_destroy (r);
       ws[i].reader = casewriter_make_reader (writer);
     }
@@ -159,29 +159,29 @@ wilcoxon_execute (const struct dataset *ds,
       enum rank_error err = 0;
 
       rr = casereader_create_append_rank (ws[i].reader, ws[i].absdiff,
-					  weight ? ws[i].weight : NULL, &err,
-					  distinct_callback, &ws[i]
-					);
+                                          weight ? ws[i].weight : NULL, &err,
+                                          distinct_callback, &ws[i]
+                                        );
 
       for (; (c = casereader_read (rr)) != NULL; case_unref (c))
-	{
-	  double sign = case_num (c, ws[i].sign);
-	  double rank = case_num_idx (c, weight ? 3 : 2);
-	  double w = weight ? case_num (c, ws[i].weight) : 1.0;
+        {
+          double sign = case_num (c, ws[i].sign);
+          double rank = case_num_idx (c, weight ? 3 : 2);
+          double w = weight ? case_num (c, ws[i].weight) : 1.0;
 
-	  if (sign > 0)
-	    {
-	      ws[i].positives.sum += rank * w;
-	      ws[i].positives.n += w;
-	    }
-	  else if (sign < 0)
-	    {
-	      ws[i].negatives.sum += rank * w;
-	      ws[i].negatives.n += w;
-	    }
-	  else
-	    NOT_REACHED ();
-	}
+          if (sign > 0)
+            {
+              ws[i].positives.sum += rank * w;
+              ws[i].positives.n += w;
+            }
+          else if (sign < 0)
+            {
+              ws[i].negatives.sum += rank * w;
+              ws[i].negatives.n += w;
+            }
+          else
+            NOT_REACHED ();
+        }
 
       casereader_destroy (rr);
     }
@@ -223,8 +223,8 @@ add_pair_leaf (struct pivot_dimension *dimension, variable_pair *pair)
 
 static void
 show_ranks_box (const struct wilcoxon_state *ws,
-		const struct two_sample_test *t2s,
-		const struct dictionary *dict)
+                const struct two_sample_test *t2s,
+                const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create (N_("Ranks"));
   pivot_table_set_weight_var (table, dict_get_weight (dict));
@@ -260,10 +260,10 @@ show_ranks_box (const struct wilcoxon_state *ws,
 
 static void
 show_tests_box (const struct wilcoxon_state *ws,
-		const struct two_sample_test *t2s,
-		bool exact,
-		double timer UNUSED
-		)
+                const struct two_sample_test *t2s,
+                bool exact,
+                double timer UNUSED
+                )
 {
   struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
@@ -301,14 +301,14 @@ show_tests_box (const struct wilcoxon_state *ws,
 
       int footnote_idx = -1;
       if (exact)
-	{
-	  double p = LevelOfSignificanceWXMPSR (ws[i].positives.sum, n);
-	  if (p < 0)
-	    {
+        {
+          double p = LevelOfSignificanceWXMPSR (ws[i].positives.sum, n);
+          if (p < 0)
+            {
               footnote_idx = n_entries;
               entries[n_entries++] = SYSMIS;
-	    }
-	  else
+            }
+          else
             {
               entries[n_entries++] = p;
               entries[n_entries++] = p / 2.0;

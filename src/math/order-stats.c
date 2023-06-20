@@ -37,7 +37,7 @@ order_stats_dump_k1 (const struct order_stats *os)
 {
   struct k *k = &os->k[0];
   printf ("K1: tc %g; c %g cc %g ccp %g\n",
-	  k->tc, k->c, k->cc, k->cc_p1);
+          k->tc, k->c, k->cc, k->cc_p1);
 
 }
 
@@ -46,7 +46,7 @@ order_stats_dump_k2 (const struct order_stats *os)
 {
   struct k *k = &os->k[1];
   printf ("K2: tc %g; c %g cc %g ccp %g\n",
-	  k->tc, k->c, k->cc, k->cc_p1);
+          k->tc, k->c, k->cc, k->cc_p1);
 }
 
 
@@ -61,7 +61,7 @@ order_stats_dump (const struct order_stats *os)
 
 static void
 update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
-		 struct order_stats **os, size_t n_os)
+                 struct order_stats **os, size_t n_os)
 {
   for (size_t j = 0; j < n_os; ++j)
     {
@@ -69,7 +69,7 @@ update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
       struct statistic  *stat = &tos->parent;
 
       for (struct k *k = tos->k; k < &tos->k[tos->n_k]; ++k)
-	{
+        {
           /* Update 'k' lower values. */
           if (cc_i <= k->tc)
             {
@@ -85,10 +85,10 @@ update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
               k->c_p1 = c_i;
               k->y_p1 = y_i;
             }
-	}
+        }
 
       if (tos->accumulate)
-	tos->accumulate (stat, cx, c_i, cc_i, y_i);
+        tos->accumulate (stat, cx, c_i, cc_i, y_i);
     }
 }
 
@@ -167,10 +167,10 @@ order_stats_accumulate_idx (struct order_stats **os, size_t n_os,
    passing it to this function. */
 void
 order_stats_accumulate (struct order_stats **os, size_t n_os,
-			struct casereader *reader,
-			const struct variable *weight_var,
-			const struct variable *data_var,
-			enum mv_class exclude)
+                        struct casereader *reader,
+                        const struct variable *weight_var,
+                        const struct variable *data_var,
+                        enum mv_class exclude)
 {
   reader = casereader_create_filter_missing (reader, &data_var, 1,
                                              exclude, NULL, NULL);

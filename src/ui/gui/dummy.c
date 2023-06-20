@@ -71,7 +71,7 @@ psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store, gi
 
 gboolean
 psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
-				    const gchar *in, GValue *out)
+                                    const gchar *in, GValue *out)
 {
   assert (0);
   return FALSE;

@@ -57,10 +57,10 @@ struct file_handle
     enum fh_referent referent;  /* What the file handle refers to. */
 
     /* FH_REF_FILE only. */
-    char *file_name;		/* File name as provided by user. */
-    char *file_name_encoding;	/* The character encoding of file_name,
-				   This is NOT the encoding of the file contents! */
-    enum fh_mode mode;  	/* File mode. */
+    char *file_name;                /* File name as provided by user. */
+    char *file_name_encoding;        /* The character encoding of file_name,
+                                   This is NOT the encoding of the file contents! */
+    enum fh_mode mode;          /* File mode. */
     enum fh_line_ends line_ends; /* Line ends for text files. */
 
     /* FH_REF_FILE and FH_REF_INLINE only. */
@@ -536,10 +536,10 @@ fh_lock (struct file_handle *h, enum fh_referent mask UNUSED,
   HMAP_FOR_EACH_WITH_HASH (lock, struct fh_lock, node, hash, &locks)
     {
       if (0 == compare_fh_locks (lock, key))
-	{
-	  found_lock = true;
-	  break;
-	}
+        {
+          found_lock = true;
+          break;
+        }
     }
 
   if (found_lock)
@@ -575,10 +575,10 @@ fh_lock (struct file_handle *h, enum fh_referent mask UNUSED,
   HMAP_FOR_EACH_WITH_HASH (lock, struct fh_lock, node, hash, &locks)
     {
       if (0 == compare_fh_locks (lock, key))
-	{
-	  found_lock = true;
-	  break;
-	}
+        {
+          found_lock = true;
+          break;
+        }
     }
 
   assert (found_lock);
@@ -605,7 +605,7 @@ fh_unlock (struct fh_lock *lock)
       assert (lock->open_cnt > 0);
       if (--lock->open_cnt == 0)
         {
-	  hmap_delete (&locks, &lock->node);
+          hmap_delete (&locks, &lock->node);
           free_key (lock);
           free (lock);
           return false;
@@ -650,10 +650,10 @@ fh_is_locked (const struct file_handle *handle, enum fh_access access)
   HMAP_FOR_EACH_WITH_HASH (k, struct fh_lock, node, hash, &locks)
     {
       if (0 == compare_fh_locks (k, &key))
-	{
-	  is_locked = true;
-	  break;
-	}
+        {
+          is_locked = true;
+          break;
+        }
     }
 
   free_key (&key);
@@ -785,11 +785,11 @@ fh_get_identity (const struct file_handle *fh)
     ok = GetFileInformationByHandle (h, &fi);
     if (ok)
       {
-	identity->device = fi.dwVolumeSerialNumber;
-	identity->inode = fi.nFileIndexHigh;
-	identity->inode <<= (sizeof fi.nFileIndexLow) * CHAR_BIT;
-	identity->inode |= fi.nFileIndexLow;
-	identity->name = 0;
+        identity->device = fi.dwVolumeSerialNumber;
+        identity->inode = fi.nFileIndexHigh;
+        identity->inode <<= (sizeof fi.nFileIndexLow) * CHAR_BIT;
+        identity->inode |= fi.nFileIndexLow;
+        identity->name = 0;
       }
     CloseHandle (h);
   }
@@ -804,9 +804,9 @@ fh_get_identity (const struct file_handle *fh)
       char *cname = NULL;
       do
       {
-	bufsize = pathlen;
-	cname = xrealloc (cname, bufsize);
-	pathlen = GetFullPathName (file_name, bufsize, cname, NULL);
+        bufsize = pathlen;
+        cname = xrealloc (cname, bufsize);
+        pathlen = GetFullPathName (file_name, bufsize, cname, NULL);
       }
       while (pathlen > bufsize);
       identity->name = xstrdup (cname);

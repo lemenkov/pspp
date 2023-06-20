@@ -70,7 +70,7 @@ psppire_dialog_action_histogram_activate (PsppireDialogAction *a, GVariant *para
   pda->source = get_widget_assert (xml, "dict-view");
 
   g_object_set (pda->source,
-		"predicate", var_is_numeric, NULL);
+                "predicate", var_is_numeric, NULL);
 
   act->variable = get_widget_assert (xml, "entry1");
   act->curve = get_widget_assert (xml, "curve");
@@ -78,7 +78,7 @@ psppire_dialog_action_histogram_activate (PsppireDialogAction *a, GVariant *para
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+                                        dialog_state_valid);
 
   return xml;
 }

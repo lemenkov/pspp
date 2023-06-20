@@ -48,17 +48,17 @@ cmd_variable_labels (struct lexer *lexer, struct dataset *ds)
         return CMD_FAILURE;
 
       if (!lex_force_string (lexer))
-	{
-	  free (v);
-	  return CMD_FAILURE;
-	}
+        {
+          free (v);
+          return CMD_FAILURE;
+        }
 
       for (i = 0; i < nv; i++)
         var_set_label (v[i], lex_tokcstr (lexer));
 
       lex_get (lexer);
       while (lex_token (lexer) == T_SLASH)
-	lex_get (lexer);
+        lex_get (lexer);
       free (v);
     }
   while (lex_token (lexer) != T_ENDCMD);

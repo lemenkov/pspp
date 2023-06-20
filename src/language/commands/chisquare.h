@@ -39,11 +39,11 @@ struct dataset;
 
 
 void chisquare_execute (const struct dataset *ds,
-			struct casereader *input,
+                        struct casereader *input,
                         enum mv_class exclude,
-			const struct npar_test *test,
-			bool,
-			double);
+                        const struct npar_test *test,
+                        bool,
+                        double);
 
 
 

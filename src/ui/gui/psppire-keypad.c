@@ -70,24 +70,24 @@ psppire_keypad_class_init (PsppireKeypadClass *klass)
   gobject_class->finalize = psppire_keypad_finalize;
 
   keypad_signals[INSERT_SYNTAX] = g_signal_new ("insert-syntax",
-					 G_TYPE_FROM_CLASS (klass),
-	                                 G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-	                                 G_STRUCT_OFFSET (PsppireKeypadClass,
-							  keypad),
+                                         G_TYPE_FROM_CLASS (klass),
+                                         G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+                                         G_STRUCT_OFFSET (PsppireKeypadClass,
+                                                          keypad),
                                          NULL,
                                          NULL,
-					 g_cclosure_marshal_VOID__STRING,
+                                         g_cclosure_marshal_VOID__STRING,
                                          G_TYPE_NONE, 1,
-					 G_TYPE_STRING);
+                                         G_TYPE_STRING);
 
   keypad_signals[ERASE] = g_signal_new ("erase",
-					 G_TYPE_FROM_CLASS (klass),
-	                                 G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-	                                 G_STRUCT_OFFSET (PsppireKeypadClass,
-							  keypad),
+                                         G_TYPE_FROM_CLASS (klass),
+                                         G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+                                         G_STRUCT_OFFSET (PsppireKeypadClass,
+                                                          keypad),
                                          NULL,
                                          NULL,
-					 g_cclosure_marshal_VOID__VOID,
+                                         g_cclosure_marshal_VOID__VOID,
                                          G_TYPE_NONE, 0);
 }
 
@@ -131,22 +131,22 @@ static const gint rows = 5;
    botton-right corner at X2,Y2 */
 static void
 add_button (PsppireKeypad *kp, GtkWidget **button,
-	    gint x1, gint x2,
-	    gint y1, gint y2)
+            gint x1, gint x2,
+            gint y1, gint y2)
 {
   g_object_set (G_OBJECT (*button), "focus-on-click", FALSE, NULL);
 
   gtk_grid_attach (GTK_GRID(kp->table), *button, x1, y1, x2 - x1, y2 - y1);
 
   gtk_widget_set_size_request (*button,
-			       30 * rows / (float) cols,
-			       30 * cols / (float) rows);
+                               30 * rows / (float) cols,
+                               30 * cols / (float) rows);
 
   g_hash_table_insert (kp->frag_table, *button,
-		       (void *) keypad_insert_text[(button - &kp->digit[0])]);
+                       (void *) keypad_insert_text[(button - &kp->digit[0])]);
 
   g_signal_connect (*button, "clicked",
-		    G_CALLBACK (button_click), kp);
+                    G_CALLBACK (button_click), kp);
 
   gtk_widget_show (*button);
 }
@@ -185,8 +185,8 @@ enter_leave_notify (GtkWidget   *widget,
 
 static gboolean
 key_release_callback (GtkWidget   *widget,
-		      GdkEventKey *event,
-		      gpointer     user_data)
+                      GdkEventKey *event,
+                      gpointer     user_data)
 {
   if (! gtk_widget_has_focus (widget))
     return FALSE;
@@ -289,13 +289,13 @@ psppire_keypad_init (PsppireKeypad *kp)
   kp->dispose_has_run = FALSE;
 
   g_signal_connect (kp, "enter-notify-event", G_CALLBACK (enter_leave_notify),
-		    NULL);
+                    NULL);
 
   g_signal_connect (kp, "leave-notify-event", G_CALLBACK (enter_leave_notify),
-		    NULL);
+                    NULL);
 
   g_signal_connect (kp, "key-release-event", G_CALLBACK (key_release_callback),
-		    NULL);
+                    NULL);
 
   kp->frag_table = g_hash_table_new (g_direct_hash, g_direct_equal);
 
@@ -310,23 +310,23 @@ psppire_keypad_init (PsppireKeypad *kp)
       kp->digit[i] = gtk_button_new_with_label (buf);
 
       if (i == 0)
-	add_button (kp, &kp->digit[i],
-		    digit_hoffset + 0, digit_hoffset + 2,
-		    digit_voffset + 3, digit_voffset + 4);
+        add_button (kp, &kp->digit[i],
+                    digit_hoffset + 0, digit_hoffset + 2,
+                    digit_voffset + 3, digit_voffset + 4);
       else
-	add_button (kp, &kp->digit[i],
-		    digit_hoffset + j % 3, digit_hoffset + j % 3 + 1,
-		    digit_voffset + 2 - (j / 3),
-		    digit_voffset + 2 - (j / 3) + 1);
+        add_button (kp, &kp->digit[i],
+                    digit_hoffset + j % 3, digit_hoffset + j % 3 + 1,
+                    digit_voffset + 2 - (j / 3),
+                    digit_voffset + 2 - (j / 3) + 1);
     }
 
   /* ... all the other buttons */
 
   kp->dot = button_new_from_unicode (0xB7);     /* MIDDLE DOT */
   add_button (kp, &kp->dot, digit_hoffset + 2,
-	      digit_hoffset + 3,
-	      digit_voffset + 3,
-	      digit_voffset + 4);
+              digit_hoffset + 3,
+              digit_voffset + 3,
+              digit_voffset + 4);
 
   kp->plus  = gtk_button_new_with_label ("+");
   gtk_widget_set_tooltip_text (kp->plus, _("add"));
@@ -415,9 +415,9 @@ psppire_keypad_init (PsppireKeypad *kp)
   gtk_widget_show (kp->table);
 
   gtk_widget_add_events (GTK_WIDGET (kp),
-	GDK_KEY_RELEASE_MASK  |
-	GDK_LEAVE_NOTIFY_MASK |
-	GDK_ENTER_NOTIFY_MASK |
+        GDK_KEY_RELEASE_MASK  |
+        GDK_LEAVE_NOTIFY_MASK |
+        GDK_ENTER_NOTIFY_MASK |
         GDK_FOCUS_CHANGE_MASK);
 }
 

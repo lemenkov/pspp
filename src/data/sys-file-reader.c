@@ -102,8 +102,8 @@ struct sfm_header_record
 
     /* These correspond to the members of struct any_file_info or a dictionary
        but in the system file's encoding rather than ASCII. */
-    char creation_date[10];	/* "dd mmm yy". */
-    char creation_time[9];	/* "hh:mm:ss". */
+    char creation_date[10];        /* "dd mmm yy". */
+    char creation_time[9];        /* "hh:mm:ss". */
     char eye_catcher[61];       /* Eye-catcher string, then product name. */
     char file_label[65];        /* File label. */
   };
@@ -208,7 +208,7 @@ struct sfm_reader
 
     /* Decompression. */
     enum any_compression compression;
-    double bias;		/* Compression bias, usually 100.0. */
+    double bias;                /* Compression bias, usually 100.0. */
     uint8_t opcodes[8];         /* Current block of opcodes. */
     size_t opcode_idx;          /* Next opcode to interpret, 8 if none left. */
     bool corruption_warning;    /* Warned about possible corruption? */
@@ -1866,7 +1866,7 @@ decode_mrsets (struct sfm_reader *r, struct dictionary *dict)
             sys_warn (r, -1, _("MRSET %s has only one variable."),
                       mrset->name);
           mrset_destroy (mrset);
-	  stringi_set_destroy (&var_names);
+          stringi_set_destroy (&var_names);
           continue;
         }
 
@@ -1955,8 +1955,8 @@ parse_display_parameters (struct sfm_reader *r,
                              : ALIGN_CENTRE));
 
       /* Older versions (SPSS 9.0) sometimes set the display
-	 width to zero.  This causes confusion in the GUI, so
-	 only set the width if it is nonzero. */
+         width to zero.  This causes confusion in the GUI, so
+         only set the width if it is nonzero. */
       if (width > 0)
         var_set_display_width (v, width);
     }
@@ -2013,14 +2013,14 @@ parse_long_var_name_map (struct sfm_reader *r,
       size_t i;
 
       for (i = 0; i < dict_get_n_vars (dict); i++)
-	{
-	  struct variable *var = dict_get_var (dict, i);
+        {
+          struct variable *var = dict_get_var (dict, i);
           char *new_name;
 
           new_name = utf8_to_lower (var_get_name (var));
           rename_var_and_save_short_names (r, -1, dict, var, new_name);
           free (new_name);
-	}
+        }
 
       return;
     }
@@ -2541,7 +2541,7 @@ parse_long_string_value_labels (struct sfm_reader *r,
       /* Parse values. */
       value_init_pool (r->pool, &value, width);
       for (i = 0; i < n_labels; i++)
-	{
+        {
           size_t value_length, label_length;
           bool skip = var == NULL;
 
@@ -2664,7 +2664,7 @@ parse_long_string_missing_values (struct sfm_reader *r,
       /* Parse values. */
       mv_init_pool (r->pool, &mv, var ? var_get_width (var) : 8);
       for (i = 0; i < n_missing_values; i++)
-	{
+        {
           /* Tolerate files written by old, buggy versions of PSPP where we
              believed that the value_length was repeated before each missing
              value. */
@@ -3179,7 +3179,7 @@ text_get_token (struct text_record *text, struct substring delimiters,
   if (!ss_tokenize (text->buffer, delimiters, &text->pos, &token))
     {
       if (delimiter != NULL)
-	*delimiter = ss_data (text->buffer)[text->pos-1];
+        *delimiter = ss_data (text->buffer)[text->pos-1];
       return NULL;
     }
 

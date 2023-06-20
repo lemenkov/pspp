@@ -440,7 +440,7 @@ output_driver_get_engine (const struct output_driver *driver)
   ll_for_each (e, struct output_engine, ll, &engine_stack)
     {
       if (llx_find (llx_head (&e->drivers), llx_null (&e->drivers), driver))
-	return e;
+        return e;
     }
 
   return NULL;

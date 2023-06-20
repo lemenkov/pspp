@@ -118,7 +118,7 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_EQUALS);
       if (!parse_variables_const (lexer, old_dict, &vars, &flip->n_vars,
                                   PV_NO_DUPLICATE))
-	goto error;
+        goto error;
       lex_match (lexer, T_SLASH);
     }
   else
@@ -139,12 +139,12 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
   if (flip->new_names_var)
     {
       for (i = 0; i < flip->n_vars; i++)
-	if (vars[i] == flip->new_names_var)
-	  {
+        if (vars[i] == flip->new_names_var)
+          {
             remove_element (vars, flip->n_vars, sizeof *vars, i);
-	    flip->n_vars--;
-	    break;
-	  }
+            flip->n_vars--;
+            break;
+          }
     }
   if (flip->n_vars <= 0)
     goto error;
@@ -324,11 +324,11 @@ flip_file (struct flip_pgm *flip)
       else
         input_buf = xmalloc (bytes);
       if (input_buf != NULL)
-	break;
+        break;
 
       case_capacity /= 2;
       if (case_capacity < 2)
-	case_capacity = 2;
+        case_capacity = 2;
     }
   pool_register (flip->pool, free, input_buf);
 
@@ -367,13 +367,13 @@ flip_file (struct flip_pgm *flip)
         }
 
       for (i = 0; i < flip->n_vars; i++)
-	{
-	  unsigned long j;
+        {
+          unsigned long j;
 
-	  for (j = 0; j < read_cases; j++)
-	    output_buf[j] = input_buf[i + j * flip->n_vars];
+          for (j = 0; j < read_cases; j++)
+            output_buf[j] = input_buf[i + j * flip->n_vars];
 
-	  if (fseeko (output_file,
+          if (fseeko (output_file,
                       sizeof *input_buf * (case_idx
                                            + (off_t) i * flip->n_cases),
                       SEEK_SET) != 0)
@@ -383,14 +383,14 @@ flip_file (struct flip_pgm *flip)
               return false;
             }
 
-	  if (fwrite (output_buf, sizeof *output_buf, read_cases, output_file)
-	      != read_cases)
+          if (fwrite (output_buf, sizeof *output_buf, read_cases, output_file)
+              != read_cases)
             {
               msg (SE, _("Error writing %s source file: %s."), "FLIP",
                    strerror (errno));
               return false;
             }
-	}
+        }
 
       case_idx += read_cases;
     }

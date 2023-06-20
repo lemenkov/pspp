@@ -39,7 +39,7 @@ generate_syntax (const PsppireDialogAction *act)
   GString *str = g_string_new ("T-TEST ");
 
   g_string_append_printf (str, "/TESTVAL=%s",
-			  gtk_entry_get_text (GTK_ENTRY (d->test_value_entry)));
+                          gtk_entry_get_text (GTK_ENTRY (d->test_value_entry)));
 
   g_string_append (str, "\n\t/VARIABLES=");
 
@@ -110,7 +110,7 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a, GVariant *param)
   pda->source = get_widget_assert (xml, "one-sample-t-test-treeview2");
 
   g_object_set (pda->source,
-		"predicate", var_is_numeric, NULL);
+                "predicate", var_is_numeric, NULL);
 
   act->vars_treeview = get_widget_assert (xml, "one-sample-t-test-treeview1");
   act->test_value_entry = get_widget_assert (xml, "test-value-entry");
@@ -121,7 +121,7 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a, GVariant *param)
   psppire_dialog_action_set_refresh (pda, refresh);
 
   g_signal_connect_swapped (options_button, "clicked",
-			    G_CALLBACK (tt_options_dialog_run), act->opt);
+                            G_CALLBACK (tt_options_dialog_run), act->opt);
   return xml;
 }
 

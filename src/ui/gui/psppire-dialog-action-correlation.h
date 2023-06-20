@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION (psppire_dialog_action_correlation_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_CORRELATION(obj)	\
+#define PSPPIRE_DIALOG_ACTION_CORRELATION(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, PsppireDialogActionCorrelation))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, PsppireDialogActionCorrelation))
 
 #define PSPPIRE_DIALOG_ACTION_CORRELATION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, \
                                  PsppireDialogActionCorrelationClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_CORRELATION(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION))
 
 #define PSPPIRE_IS_DIALOG_ACTION_CORRELATION_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION))
 
 
 #define PSPPIRE_DIALOG_ACTION_CORRELATION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, \
-				   PsppireDialogActionCorrelationClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, \
+                                   PsppireDialogActionCorrelationClass))
 
 typedef struct _PsppireDialogActionCorrelation       PsppireDialogActionCorrelation;
 typedef struct _PsppireDialogActionCorrelationClass  PsppireDialogActionCorrelationClass;

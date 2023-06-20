@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_RUNS (psppire_dialog_action_runs_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_RUNS(obj)	\
+#define PSPPIRE_DIALOG_ACTION_RUNS(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_RUNS, PsppireDialogActionRuns))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_RUNS, PsppireDialogActionRuns))
 
 #define PSPPIRE_DIALOG_ACTION_RUNS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_RUNS, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_RUNS, \
                                  PsppireDialogActionRunsClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_RUNS(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RUNS))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_RUNS))
 
 #define PSPPIRE_IS_DIALOG_ACTION_RUNS_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_RUNS))
 
 
 #define PSPPIRE_DIALOG_ACTION_RUNS_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_RUNS, \
-				   PsppireDialogActionRunsClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_RUNS, \
+                                   PsppireDialogActionRunsClass))
 
 typedef struct _PsppireDialogActionRuns       PsppireDialogActionRuns;
 typedef struct _PsppireDialogActionRunsClass  PsppireDialogActionRunsClass;

@@ -71,17 +71,17 @@
 #include <assert.h>
 #include <math.h>
 
-#define R_D__0	(log_p ? -INFINITY : 0.)		/* 0 */
-#define R_D__1	(log_p ? 0. : 1.)			/* 1 */
-#define R_DT_0	(lower_tail ? R_D__0 : R_D__1)		/* 0 */
-#define R_DT_1	(lower_tail ? R_D__1 : R_D__0)		/* 1 */
+#define R_D__0        (log_p ? -INFINITY : 0.)                /* 0 */
+#define R_D__1        (log_p ? 0. : 1.)                        /* 1 */
+#define R_DT_0        (lower_tail ? R_D__0 : R_D__1)                /* 0 */
+#define R_DT_1        (lower_tail ? R_D__1 : R_D__0)                /* 1 */
 
-#define R_D_val(x)	(log_p	? log(x) : (x))		/*  x  in pF(x,..) */
-#define R_D_Clog(p)	(log_p	? log1p(-(p)) : (0.5 - (p) + 0.5)) /* [log](1-p) */
-#define R_DT_val(x)	(lower_tail ? R_D_val(x)  : R_D_Clog(x))
+#define R_D_val(x)        (log_p        ? log(x) : (x))                /*  x  in pF(x,..) */
+#define R_D_Clog(p)        (log_p        ? log1p(-(p)) : (0.5 - (p) + 0.5)) /* [log](1-p) */
+#define R_DT_val(x)        (lower_tail ? R_D_val(x)  : R_D_Clog(x))
 
 
-#define ME_PRECISION	8
+#define ME_PRECISION        8
 
 
 static inline double
@@ -103,34 +103,34 @@ wprob (double w, double rr, double cc)
 
 /*  wprob() :
 
-	This function calculates probability integral of Hartley's
-	form of the range.
+        This function calculates probability integral of Hartley's
+        form of the range.
 
-	w     = value of range
-	rr    = no. of rows or groups
-	cc    = no. of columns or treatments
-	ir    = error flag = 1 if pr_w probability > 1
-	pr_w = returned probability integral from (0, w)
+        w     = value of range
+        rr    = no. of rows or groups
+        cc    = no. of columns or treatments
+        ir    = error flag = 1 if pr_w probability > 1
+        pr_w = returned probability integral from (0, w)
 
-	program will not terminate if ir is raised.
+        program will not terminate if ir is raised.
 
-	bb = upper limit of legendre integration
-	iMax = maximum acceptable value of integral
-	nleg = order of legendre quadrature
-	ihalf = int ((nleg + 1) / 2)
-	wlar = value of range above which wincr1 intervals are used to
-	       calculate second part of integral,
-	       else wincr2 intervals are used.
-	C1, C2, C3 = values which are used as cutoffs for terminating
-	or modifying a calculation.
+        bb = upper limit of legendre integration
+        iMax = maximum acceptable value of integral
+        nleg = order of legendre quadrature
+        ihalf = int ((nleg + 1) / 2)
+        wlar = value of range above which wincr1 intervals are used to
+               calculate second part of integral,
+               else wincr2 intervals are used.
+        C1, C2, C3 = values which are used as cutoffs for terminating
+        or modifying a calculation.
 
-	M_1_SQRT_2PI = 1 / sqrt(2 * pi);  from abramowitz & stegun, p. 3.
-	M_SQRT2 = sqrt(2)
-	xleg = legendre 12-point nodes
-	aleg = legendre 12-point coefficients
+        M_1_SQRT_2PI = 1 / sqrt(2 * pi);  from abramowitz & stegun, p. 3.
+        M_SQRT2 = sqrt(2)
+        xleg = legendre 12-point nodes
+        aleg = legendre 12-point coefficients
  */
-#define nleg	12
-#define ihalf	6
+#define nleg        12
+#define ihalf        6
 
   /* looks like this is suboptimal for double precision.
      (see how C1-C3 are used) <MM>
@@ -176,7 +176,7 @@ wprob (double w, double rr, double cc)
   /* find (f(w/2) - 1) ^ cc */
   /* (first term in integral of hartley's form). */
 
-  pr_w = 2 * pnorm (qsqz, 0., 1., 1, 0) - 1.;	/* erf(qsqz / M_SQRT2) */
+  pr_w = 2 * pnorm (qsqz, 0., 1., 1, 0) - 1.;        /* erf(qsqz / M_SQRT2) */
   /* if pr_w ^ cc < 2e-22 then set pr_w = 0 */
   if (pr_w >= exp (C2 / cc))
     pr_w = pow (pr_w, cc);
@@ -217,41 +217,41 @@ wprob (double w, double rr, double cc)
       b = 0.5 * (bub - blb);
 
       for (jj = 1; jj <= nleg; jj++)
-	{
-	  if (ihalf < jj)
-	    {
-	      j = (nleg - jj) + 1;
-	      xx = xleg[j - 1];
-	    }
-	  else
-	    {
-	      j = jj;
-	      xx = -xleg[j - 1];
-	    }
-	  c = b * xx;
-	  ac = a + c;
+        {
+          if (ihalf < jj)
+            {
+              j = (nleg - jj) + 1;
+              xx = xleg[j - 1];
+            }
+          else
+            {
+              j = jj;
+              xx = -xleg[j - 1];
+            }
+          c = b * xx;
+          ac = a + c;
 
-	  /* if exp(-qexpo/2) < 9e-14, */
-	  /* then doesn't contribute to integral */
+          /* if exp(-qexpo/2) < 9e-14, */
+          /* then doesn't contribute to integral */
 
-	  qexpo = ac * ac;
-	  if (qexpo > C3)
-	    break;
+          qexpo = ac * ac;
+          if (qexpo > C3)
+            break;
 
-	  pplus = 2 * pnorm (ac, 0., 1., 1, 0);
-	  pminus = 2 * pnorm (ac, w, 1., 1, 0);
+          pplus = 2 * pnorm (ac, 0., 1., 1, 0);
+          pminus = 2 * pnorm (ac, w, 1., 1, 0);
 
-	  /* if rinsum ^ (cc-1) < 9e-14, */
-	  /* then doesn't contribute to integral */
+          /* if rinsum ^ (cc-1) < 9e-14, */
+          /* then doesn't contribute to integral */
 
-	  rinsum = (pplus * 0.5) - (pminus * 0.5);
-	  if (rinsum >= exp (C1 / cc1))
-	    {
-	      rinsum =
-		(aleg[j - 1] * exp (-(0.5 * qexpo))) * pow (rinsum, cc1);
-	      elsum += rinsum;
-	    }
-	}
+          rinsum = (pplus * 0.5) - (pminus * 0.5);
+          if (rinsum >= exp (C1 / cc1))
+            {
+              rinsum =
+                (aleg[j - 1] * exp (-(0.5 * qexpo))) * pow (rinsum, cc1);
+              elsum += rinsum;
+            }
+        }
       elsum *= (((2.0 * b) * cc) * M_1_SQRT_2PI);
       einsum += elsum;
       blb = bub;
@@ -264,77 +264,77 @@ wprob (double w, double rr, double cc)
     return 0.;
 
   pr_w = pow (pr_w, rr);
-  if (pr_w >= 1.)		/* 1 was iMax was eps */
+  if (pr_w >= 1.)                /* 1 was iMax was eps */
     return 1.;
   return pr_w;
-}				/* wprob() */
+}                                /* wprob() */
 
 double
 ptukey (double q, double rr, double cc, double df, int lower_tail, int log_p)
 {
 /*  function ptukey() [was qprob() ]:
 
-	q = value of studentized range
-	rr = no. of rows or groups
-	cc = no. of columns or treatments
-	df = degrees of freedom of error term
-	ir[0] = error flag = 1 if wprob probability > 1
-	ir[1] = error flag = 1 if qprob probability > 1
+        q = value of studentized range
+        rr = no. of rows or groups
+        cc = no. of columns or treatments
+        df = degrees of freedom of error term
+        ir[0] = error flag = 1 if wprob probability > 1
+        ir[1] = error flag = 1 if qprob probability > 1
 
-	qprob = returned probability integral over [0, q]
+        qprob = returned probability integral over [0, q]
 
-	The program will not terminate if ir[0] or ir[1] are raised.
+        The program will not terminate if ir[0] or ir[1] are raised.
 
-	All references in wprob to Abramowitz and Stegun
-	are from the following reference:
+        All references in wprob to Abramowitz and Stegun
+        are from the following reference:
 
-	Abramowitz, Milton and Stegun, Irene A.
-	Handbook of Mathematical Functions.
-	New York:  Dover publications, Inc. (1970).
+        Abramowitz, Milton and Stegun, Irene A.
+        Handbook of Mathematical Functions.
+        New York:  Dover publications, Inc. (1970).
 
-	All constants taken from this text are
-	given to 25 significant digits.
+        All constants taken from this text are
+        given to 25 significant digits.
 
-	nlegq = order of legendre quadrature
-	ihalfq = int ((nlegq + 1) / 2)
-	eps = max. allowable value of integral
-	eps1 & eps2 = values below which there is
-		      no contribution to integral.
+        nlegq = order of legendre quadrature
+        ihalfq = int ((nlegq + 1) / 2)
+        eps = max. allowable value of integral
+        eps1 & eps2 = values below which there is
+                      no contribution to integral.
 
-	d.f. <= dhaf:	integral is divided into ulen1 length intervals.  else
-	d.f. <= dquar:	integral is divided into ulen2 length intervals.  else
-	d.f. <= deigh:	integral is divided into ulen3 length intervals.  else
-	d.f. <= dlarg:	integral is divided into ulen4 length intervals.
+        d.f. <= dhaf:        integral is divided into ulen1 length intervals.  else
+        d.f. <= dquar:        integral is divided into ulen2 length intervals.  else
+        d.f. <= deigh:        integral is divided into ulen3 length intervals.  else
+        d.f. <= dlarg:        integral is divided into ulen4 length intervals.
 
-	d.f. > dlarg:	the range is used to calculate integral.
+        d.f. > dlarg:        the range is used to calculate integral.
 
-	M_LN2 = log(2)
+        M_LN2 = log(2)
 
-	xlegq = legendre 16-point nodes
-	alegq = legendre 16-point coefficients
+        xlegq = legendre 16-point nodes
+        alegq = legendre 16-point coefficients
 
-	The coefficients and nodes for the legendre quadrature used in
-	qprob and wprob were calculated using the algorithms found in:
+        The coefficients and nodes for the legendre quadrature used in
+        qprob and wprob were calculated using the algorithms found in:
 
-	Stroud, A. H. and Secrest, D.
-	Gaussian Quadrature Formulas.
-	Englewood Cliffs,
-	New Jersey:  Prentice-Hall, Inc, 1966.
+        Stroud, A. H. and Secrest, D.
+        Gaussian Quadrature Formulas.
+        Englewood Cliffs,
+        New Jersey:  Prentice-Hall, Inc, 1966.
 
-	All values matched the tables (provided in same reference)
-	to 30 significant digits.
+        All values matched the tables (provided in same reference)
+        to 30 significant digits.
 
-	f(x) = .5 + erf(x / sqrt(2)) / 2      for x > 0
+        f(x) = .5 + erf(x / sqrt(2)) / 2      for x > 0
 
-	f(x) = erfc(-x / sqrt(2)) / 2	      for x < 0
+        f(x) = erfc(-x / sqrt(2)) / 2              for x < 0
 
-	where f(x) is standard normal c. d. f.
+        where f(x) is standard normal c. d. f.
 
-	if degrees of freedom large, approximate integral
-	with range distribution.
+        if degrees of freedom large, approximate integral
+        with range distribution.
  */
-#define nlegq	16
-#define ihalfq	8
+#define nlegq        16
+#define ihalfq        8
 
 /*  const double eps = 1.0; not used if = 1 */
   static const double eps1 = -30.0;
@@ -422,49 +422,49 @@ ptukey (double q, double rr, double cc, double df, int lower_tail, int log_p)
       twa1 = (2 * i - 1) * ulen;
 
       for (jj = 1; jj <= nlegq; jj++)
-	{
-	  if (ihalfq < jj)
-	    {
-	      j = jj - ihalfq - 1;
-	      t1 = (f2lf + (f21 * log (twa1 + (xlegq[j] * ulen))))
-		- (((xlegq[j] * ulen) + twa1) * ff4);
-	    }
-	  else
-	    {
-	      j = jj - 1;
-	      t1 = (f2lf + (f21 * log (twa1 - (xlegq[j] * ulen))))
-		+ (((xlegq[j] * ulen) - twa1) * ff4);
+        {
+          if (ihalfq < jj)
+            {
+              j = jj - ihalfq - 1;
+              t1 = (f2lf + (f21 * log (twa1 + (xlegq[j] * ulen))))
+                - (((xlegq[j] * ulen) + twa1) * ff4);
+            }
+          else
+            {
+              j = jj - 1;
+              t1 = (f2lf + (f21 * log (twa1 - (xlegq[j] * ulen))))
+                + (((xlegq[j] * ulen) - twa1) * ff4);
 
-	    }
+            }
 
-	  /* if exp(t1) < 9e-14, then doesn't contribute to integral */
-	  if (t1 >= eps1)
-	    {
-	      if (ihalfq < jj)
-		{
-		  qsqz = q * sqrt (((xlegq[j] * ulen) + twa1) * 0.5);
-		}
-	      else
-		{
-		  qsqz = q * sqrt (((-(xlegq[j] * ulen)) + twa1) * 0.5);
-		}
+          /* if exp(t1) < 9e-14, then doesn't contribute to integral */
+          if (t1 >= eps1)
+            {
+              if (ihalfq < jj)
+                {
+                  qsqz = q * sqrt (((xlegq[j] * ulen) + twa1) * 0.5);
+                }
+              else
+                {
+                  qsqz = q * sqrt (((-(xlegq[j] * ulen)) + twa1) * 0.5);
+                }
 
-	      /* call wprob to find integral of range portion */
+              /* call wprob to find integral of range portion */
 
-	      wprb = wprob (qsqz, rr, cc);
-	      rotsum = (wprb * alegq[j]) * exp (t1);
-	      otsum += rotsum;
-	    }
-	  /* end legendre integral for interval i */
-	  /* L200: */
-	}
+              wprb = wprob (qsqz, rr, cc);
+              rotsum = (wprb * alegq[j]) * exp (t1);
+              otsum += rotsum;
+            }
+          /* end legendre integral for interval i */
+          /* L200: */
+        }
 
       /* if integral for interval i < 1e-14, then stop.
        * However, in order to avoid small area under left tail,
        * at least  1 / ulen  intervals are calculated.
        */
       if (i * ulen >= 1.0 && otsum <= eps2)
-	break;
+        break;
 
       /* end of interval i */
       /* L330: */

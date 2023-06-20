@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_CTABLES (psppire_dialog_action_ctables_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_CTABLES(obj)	\
+#define PSPPIRE_DIALOG_ACTION_CTABLES(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, PsppireDialogActionCtables))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, PsppireDialogActionCtables))
 
 #define PSPPIRE_DIALOG_ACTION_CTABLES_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, \
                                  PsppireDialogActionCtablesClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_CTABLES(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CTABLES))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_CTABLES))
 
 #define PSPPIRE_IS_DIALOG_ACTION_CTABLES_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_CTABLES))
 
 
 #define PSPPIRE_DIALOG_ACTION_CTABLES_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, \
-				   PsppireDialogActionCtablesClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_CTABLES, \
+                                   PsppireDialogActionCtablesClass))
 
 typedef struct _PsppireDialogActionCtables       PsppireDialogActionCtables;
 typedef struct _PsppireDialogActionCtablesClass  PsppireDialogActionCtablesClass;

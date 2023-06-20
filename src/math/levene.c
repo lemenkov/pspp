@@ -109,7 +109,7 @@ find_group (const struct levene *nl, const union value *target)
   HMAP_FOR_EACH_WITH_HASH (l, struct lev, node, nl->hash (nl, target), &nl->hmap)
     {
       if (nl->cmp (nl, &l->group, target))
-	break;
+        break;
     }
   return l;
 }
@@ -173,7 +173,7 @@ levene_pass_two (struct levene *nl, double value, double weight, const union val
 
       HMAP_FOR_EACH_SAFE (l, next, struct lev, node, &nl->hmap)
       {
-	l->t_bar /= l->n;
+        l->t_bar /= l->n;
       }
     }
   assert (nl->pass == 2);
@@ -200,7 +200,7 @@ levene_pass_three (struct levene *nl, double value, double weight, const union v
 
       HMAP_FOR_EACH_SAFE (l, next, struct lev, node, &nl->hmap)
       {
-	l->z_mean /= l->n;
+        l->z_mean /= l->n;
       }
 
       nl->z_grand_mean /= nl->grand_n;

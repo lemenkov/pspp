@@ -28,27 +28,27 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES (psppire_dialog_action_frequencies_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_FREQUENCIES(obj)	\
+#define PSPPIRE_DIALOG_ACTION_FREQUENCIES(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
                                                   PsppireDialogActionFrequencies))
 
 #define PSPPIRE_DIALOG_ACTION_FREQUENCIES_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
                                  PsppireDialogActionFrequenciesClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_FREQUENCIES(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES))
 
 #define PSPPIRE_IS_DIALOG_ACTION_FREQUENCIES_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES))
 
 
 #define PSPPIRE_DIALOG_ACTION_FREQUENCIES_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
-				   PsppireDialogActionFrequenciesClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES, \
+                                   PsppireDialogActionFrequenciesClass))
 
 typedef struct _PsppireDialogActionFrequencies       PsppireDialogActionFrequencies;
 typedef struct _PsppireDialogActionFrequenciesClass  PsppireDialogActionFrequenciesClass;

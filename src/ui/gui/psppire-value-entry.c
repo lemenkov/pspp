@@ -179,8 +179,8 @@ on_realize (GtkWidget *w)
 */
 static  GObject*
 my_constructor (GType                  type,
-		guint                  n_construct_properties,
-		GObjectConstructParam *construct_properties)
+                guint                  n_construct_properties,
+                GObjectConstructParam *construct_properties)
 {
   GObject *o =
     G_OBJECT_CLASS (psppire_value_entry_parent_class)->constructor
@@ -263,13 +263,13 @@ psppire_value_entry_class_init (PsppireValueEntryClass *class)
 
   signals [EDIT_DONE] =
     g_signal_new ("edit-done",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
+                  G_TYPE_FROM_CLASS (class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE,
+                  0);
 }
 
 static void

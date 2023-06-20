@@ -109,13 +109,13 @@ reliability_destroy (struct reliability *rel)
   if (rel->sc)
     for (j = 0; j < rel->n_sc; ++j)
       {
-	int x;
-	free (rel->sc[j].items);
+        int x;
+        free (rel->sc[j].items);
         moments1_destroy (rel->sc[j].total);
         if (rel->sc[j].m)
           for (x = 0; x < rel->sc[j].n_items; ++x)
             free (rel->sc[j].m[x]);
-	free (rel->sc[j].m);
+        free (rel->sc[j].m);
       }
 
   free (rel->sc);
@@ -143,7 +143,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 
   int vars_start = lex_ofs (lexer);
   if (!parse_variables_const (lexer, dict, &r.vars, &r.n_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
+                              PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
   int vars_end = lex_ofs (lexer) - 1;
 
@@ -167,87 +167,87 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "SCALE"))
-	{
-	  struct const_var_set *vs;
-	  if (!lex_force_match (lexer, T_LPAREN))
-	    goto error;
+        {
+          struct const_var_set *vs;
+          if (!lex_force_match (lexer, T_LPAREN))
+            goto error;
 
-	  if (!lex_force_string (lexer))
-	    goto error;
+          if (!lex_force_string (lexer))
+            goto error;
           free (r.scale_name);
           r.scale_name = xstrdup (lex_tokcstr (lexer));
-	  lex_get (lexer);
+          lex_get (lexer);
 
-	  if (!lex_force_match (lexer, T_RPAREN))
-	    goto error;
+          if (!lex_force_match (lexer, T_RPAREN))
+            goto error;
 
           lex_match (lexer, T_EQUALS);
 
-	  vs = const_var_set_create_from_array (r.vars, r.n_vars);
+          vs = const_var_set_create_from_array (r.vars, r.n_vars);
 
-	  free (r.sc->items);
-	  if (!parse_const_var_set_vars (lexer, vs, &r.sc->items, &r.sc->n_items, 0))
-	    {
-	      const_var_set_destroy (vs);
-	      goto error;
-	    }
+          free (r.sc->items);
+          if (!parse_const_var_set_vars (lexer, vs, &r.sc->items, &r.sc->n_items, 0))
+            {
+              const_var_set_destroy (vs);
+              goto error;
+            }
 
-	  const_var_set_destroy (vs);
-	}
+          const_var_set_destroy (vs);
+        }
       else if (lex_match_id (lexer, "MODEL"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "ALPHA"))
+          if (lex_match_id (lexer, "ALPHA"))
             r.model = MODEL_ALPHA;
-	  else if (lex_match_id (lexer, "SPLIT"))
-	    {
-	      r.model = MODEL_SPLIT;
-	      r.split_point = -1;
+          else if (lex_match_id (lexer, "SPLIT"))
+            {
+              r.model = MODEL_SPLIT;
+              r.split_point = -1;
 
-	      if (lex_match (lexer, T_LPAREN))
+              if (lex_match (lexer, T_LPAREN))
                 {
                   if (!lex_force_num (lexer))
                     goto error;
                   split_ofs = lex_ofs (lexer);
-		  r.split_point = lex_number (lexer);
-		  lex_get (lexer);
-		  if (!lex_force_match (lexer, T_RPAREN))
-		    goto error;
-		}
-	    }
-	  else
+                  r.split_point = lex_number (lexer);
+                  lex_get (lexer);
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
+            }
+          else
             {
               lex_error_expecting (lexer, "ALPHA", "SPLIT");
               goto error;
             }
-	}
+        }
       else if (lex_match_id (lexer, "SUMMARY"))
         {
           lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "TOTAL") || lex_match (lexer, T_ALL))
+          if (lex_match_id (lexer, "TOTAL") || lex_match (lexer, T_ALL))
             r.summary_total = true;
-	  else
+          else
             {
               lex_error_expecting (lexer, "TOTAL", "ALL");
               goto error;
             }
-	}
+        }
       else if (lex_match_id (lexer, "MISSING"))
         {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
-	      if (lex_match_id (lexer, "INCLUDE"))
+              if (lex_match_id (lexer, "INCLUDE"))
                 r.exclude = MV_SYSTEM;
               else if (lex_match_id (lexer, "EXCLUDE"))
                 r.exclude = MV_ANY;
               else
-		{
+                {
                   lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "STATISTICS"))
         {
           int statistics_start = lex_ofs (lexer) - 1;
@@ -261,11 +261,11 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
                          "No statistics will be produced."));
         }
       else
-	{
-	  lex_error_expecting (lexer, "SCALE", "MODEL", "SUMMARY", "MISSING",
+        {
+          lex_error_expecting (lexer, "SCALE", "MODEL", "SUMMARY", "MISSING",
                                "STATISTICS");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   if (r.model == MODEL_SPLIT)
@@ -300,10 +300,10 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
           i++;
         }
       while (i < s->n_items)
-	{
-	  r.sc[2].items[i - r.sc[1].n_items] = s->items[i];
-	  i++;
-	}
+        {
+          r.sc[2].items[i - r.sc[1].n_items] = s->items[i];
+          i++;
+        }
     }
 
   if (r.summary_total)
@@ -316,17 +316,17 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
       r.sc = xrealloc (r.sc, sizeof (struct cronbach) * r.n_sc);
 
       for (size_t i = 0; i < r.sc[0].n_items; ++i)
-	{
-	  struct cronbach *s = &r.sc[i + base_sc];
+        {
+          struct cronbach *s = &r.sc[i + base_sc];
 
-	  s->n_items = r.sc[0].n_items - 1;
-	  s->items = xcalloc (s->n_items, sizeof (struct variable *));
+          s->n_items = r.sc[0].n_items - 1;
+          s->items = xcalloc (s->n_items, sizeof (struct variable *));
 
-	  size_t v_dest = 0;
-	  for (size_t v_src = 0; v_src < r.sc[0].n_items; ++v_src)
+          size_t v_dest = 0;
+          for (size_t v_src = 0; v_src < r.sc[0].n_items; ++v_src)
             if (v_src != i)
               s->items[v_dest++] = r.sc[0].items[v_src];
-	}
+        }
     }
 
   if (!run_reliability (ds, &r))
@@ -343,7 +343,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 
 static void
 do_reliability (struct casereader *group, struct dataset *ds,
-		const struct reliability *rel);
+                const struct reliability *rel);
 
 
 static void reliability_summary_total (const struct reliability *rel);
@@ -362,7 +362,7 @@ run_reliability (struct dataset *ds, const struct reliability *reliability)
       s->total = moments1_create (MOMENT_VARIANCE);
 
       for (size_t i = 0; i < s->n_items; ++i)
-	s->m[i] = moments1_create (MOMENT_VARIANCE);
+        s->m[i] = moments1_create (MOMENT_VARIANCE);
     }
 
   struct dictionary *dict = dataset_dict (ds);
@@ -375,7 +375,7 @@ run_reliability (struct dataset *ds, const struct reliability *reliability)
       reliability_statistics (reliability);
 
       if (reliability->summary_total)
-	reliability_summary_total (reliability);
+        reliability_summary_total (reliability);
     }
 
   bool ok = casegrouper_destroy (grouper);
@@ -398,7 +398,7 @@ append_sum (const struct ccase *c, casenumber n UNUSED, void *aux)
 
 static void
 case_processing_summary (casenumber n_valid, casenumber n_missing,
-			 const struct dictionary *);
+                         const struct dictionary *);
 
 static double
 alpha (int k, double sum_of_variances, double variance_of_sums)
@@ -408,7 +408,7 @@ alpha (int k, double sum_of_variances, double variance_of_sums)
 
 static void
 do_reliability (struct casereader *input, struct dataset *ds,
-		const struct reliability *rel)
+                const struct reliability *rel)
 {
   for (size_t si = 0; si < rel->n_sc; ++si)
     {
@@ -421,11 +421,11 @@ do_reliability (struct casereader *input, struct dataset *ds,
 
   casenumber n_missing;
   input = casereader_create_filter_missing (input,
-					    rel->vars,
-					    rel->n_vars,
-					    rel->exclude,
-					    &n_missing,
-					    NULL);
+                                            rel->vars,
+                                            rel->n_vars,
+                                            rel->exclude,
+                                            &n_missing,
+                                            NULL);
 
   for (size_t si = 0; si < rel->n_sc; ++si)
     {
@@ -442,13 +442,13 @@ do_reliability (struct casereader *input, struct dataset *ds,
       n_valid++;
 
       for (size_t si = 0; si < rel->n_sc; ++si)
-	{
-	  struct cronbach *s = &rel->sc[si];
+        {
+          struct cronbach *s = &rel->sc[si];
 
-	  for (size_t i = 0; i < s->n_items; ++i)
-	    moments1_add (s->m[i], case_num (c, s->items[i]), weight);
-	  moments1_add (s->total, case_num_idx (c, s->totals_idx), weight);
-	}
+          for (size_t i = 0; i < s->n_items; ++i)
+            moments1_add (s->m[i], case_num (c, s->items[i]), weight);
+          moments1_add (s->total, case_num_idx (c, s->totals_idx), weight);
+        }
     }
   casereader_destroy (input);
 
@@ -458,15 +458,15 @@ do_reliability (struct casereader *input, struct dataset *ds,
 
       s->sum_of_variances = 0;
       for (size_t i = 0; i < s->n_items; ++i)
-	{
-	  double weight, mean, variance;
-	  moments1_calculate (s->m[i], &weight, &mean, &variance, NULL, NULL);
+        {
+          double weight, mean, variance;
+          moments1_calculate (s->m[i], &weight, &mean, &variance, NULL, NULL);
 
-	  s->sum_of_variances += variance;
-	}
+          s->sum_of_variances += variance;
+        }
 
       moments1_calculate (s->total, NULL, NULL, &s->variance_of_sums,
-			  NULL, NULL);
+                          NULL, NULL);
 
       s->alpha = alpha (s->n_items, s->sum_of_variances, s->variance_of_sums);
     }
@@ -481,7 +481,7 @@ do_reliability (struct casereader *input, struct dataset *ds,
 
 static void
 case_processing_summary (casenumber n_valid, casenumber n_missing,
-			 const struct dictionary *dict)
+                         const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Case Processing Summary"));

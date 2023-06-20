@@ -81,7 +81,7 @@ struct any_read_info
     enum float_format float_format;
     enum any_compression compression;
     casenumber n_cases;         /* -1 if unknown. */
-    char *product;		/* Product name. */
+    char *product;                /* Product name. */
     char *product_ext;          /* Extra product info. */
 
     /* Writer's version number in X.Y.Z format.

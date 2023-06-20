@@ -52,22 +52,22 @@
 /* Describes what to do when an output field is encountered. */
 enum field_type
   {
-    PRT_LITERAL,		/* Literal string. */
-    PRT_VAR			/* Variable. */
+    PRT_LITERAL,                /* Literal string. */
+    PRT_VAR                        /* Variable. */
   };
 
 /* Describes how to output one field. */
 struct prt_out_spec
   {
     /* All fields. */
-    enum field_type type;	/* What type of field this is. */
+    enum field_type type;        /* What type of field this is. */
     int record;                 /* 1-based record number. */
-    int first_column;		/* 0-based first column. */
+    int first_column;                /* 0-based first column. */
     int start_ofs, end_ofs;
 
     /* PRT_VAR only. */
-    const struct variable *var;	/* Associated variable. */
-    struct fmt_spec format;	/* Output spec. */
+    const struct variable *var;        /* Associated variable. */
+    struct fmt_spec format;        /* Output spec. */
     bool add_space;             /* Add trailing space? */
     bool sysmis_as_spaces;      /* Output SYSMIS as spaces? */
 
@@ -83,7 +83,7 @@ struct print_trns
     bool eject;                 /* Eject page before printing? */
     bool include_prefix;        /* Prefix lines with space? */
     const char *encoding;       /* Encoding to use for output. */
-    struct dfm_writer *writer;	/* Output file, NULL=listing file. */
+    struct dfm_writer *writer;        /* Output file, NULL=listing file. */
     struct prt_out_spec *specs;
     size_t n_specs;
     size_t n_records;           /* Number of records to write. */
@@ -152,45 +152,45 @@ cmd_print__ (struct lexer *lexer, struct dataset *ds,
   while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
       if (lex_match_id (lexer, "OUTFILE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  fh = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (fh == NULL)
-	    goto error;
-	}
+          fh = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (fh == NULL)
+            goto error;
+        }
       else if (lex_match_id (lexer, "ENCODING"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_string (lexer))
-	    goto error;
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_force_string (lexer))
+            goto error;
 
           free (encoding);
           encoding = ss_xstrdup (lex_tokss (lexer));
 
-	  lex_get (lexer);
-	}
+          lex_get (lexer);
+        }
       else if (lex_match_id (lexer, "RECORDS"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  lex_match (lexer, T_LPAREN);
-	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
-	    goto error;
-	  trns->n_records = lex_integer (lexer);
+        {
+          lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_LPAREN);
+          if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
+            goto error;
+          trns->n_records = lex_integer (lexer);
           records_ofs = lex_ofs (lexer);
-	  lex_get (lexer);
-	  lex_match (lexer, T_RPAREN);
-	}
+          lex_get (lexer);
+          lex_match (lexer, T_RPAREN);
+        }
       else if (lex_match_id (lexer, "TABLE"))
-	print_table = true;
+        print_table = true;
       else if (lex_match_id (lexer, "NOTABLE"))
-	print_table = false;
+        print_table = false;
       else
-	{
+        {
           lex_error_expecting (lexer, "OUTFILE", "ENCODING", "RECORDS",
                                "TABLE", "NOTABLE");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   /* When PRINT or PRINT EJECT writes to an external file, we
@@ -253,7 +253,7 @@ static bool parse_string_argument (struct lexer *, struct print_trns *,
                                    size_t *allocated_specs,
                                    int record, int *column);
 static bool parse_variable_argument (struct lexer *, const struct dictionary *,
-				     struct print_trns *,
+                                     struct print_trns *,
                                      size_t *allocated_specs,
                                      struct pool *tmp_pool,
                                      int *record, int *column,
@@ -289,7 +289,7 @@ parse_specs (struct lexer *lexer, struct pool *tmp_pool,
                                             tmp_pool, &record, &column,
                                             which_formats));
       if (!ok)
-	return 0;
+        return 0;
 
       lex_match (lexer, T_COMMA);
     }
@@ -362,7 +362,7 @@ parse_string_argument (struct lexer *lexer, struct print_trns *trns,
    Returns success. */
 static bool
 parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
-			 struct print_trns *trns, size_t *allocated_specs,
+                         struct print_trns *trns, size_t *allocated_specs,
                          struct pool *tmp_pool, int *record, int *column,
                          enum which_formats which_formats)
 {
@@ -650,9 +650,9 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
             {
               size_t length = spec->string.length;
               char *data = ss_data (ds_tail (&line, length));
-	      char *s = recode_string (trns->encoding, UTF8, data, length);
-	      memcpy (data, s, length);
-	      free (s);
+              char *s = recode_string (trns->encoding, UTF8, data, length);
+              memcpy (data, s, length);
+              free (s);
             }
         }
     }

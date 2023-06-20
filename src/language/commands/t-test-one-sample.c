@@ -173,13 +173,13 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
       for (size_t i = 0; i < os.n_stats; i++)
         {
           const struct per_var_stats *per_var_stats = &os.stats[i];
-	  const struct variable *var = per_var_stats->var;
-	  const union value *val = case_data (c, var);
-	  if (var_is_value_missing (var, val) & tt->exclude)
-	    continue;
+          const struct variable *var = per_var_stats->var;
+          const union value *val = case_data (c, var);
+          if (var_is_value_missing (var, val) & tt->exclude)
+            continue;
 
-	  moments_pass_one (per_var_stats->mom, val->f, w);
-	}
+          moments_pass_one (per_var_stats->mom, val->f, w);
+        }
     }
   casereader_destroy (r);
 
@@ -190,14 +190,14 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
       for (size_t i = 0; i < os.n_stats; i++)
         {
           struct per_var_stats *per_var_stats = &os.stats[i];
-	  const struct variable *var = per_var_stats->var;
-	  const union value *val = case_data (c, var);
-	  if (var_is_value_missing (var, val) & tt->exclude)
-	    continue;
+          const struct variable *var = per_var_stats->var;
+          const union value *val = case_data (c, var);
+          if (var_is_value_missing (var, val) & tt->exclude)
+            continue;
 
-	  moments_pass_two (per_var_stats->mom, val->f, w);
-	  per_var_stats->sum_diff += w * (val->f - os.testval);
-	}
+          moments_pass_two (per_var_stats->mom, val->f, w);
+          per_var_stats->sum_diff += w * (val->f - os.testval);
+        }
     }
   casereader_destroy (r);
 

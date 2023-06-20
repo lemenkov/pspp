@@ -33,23 +33,23 @@
 
 static void
 abscissa_label (const struct barchart *bc, cairo_t *cr,
-		struct xrchart_geometry *geom,
-		const union value *prev,
-		double x_pos,
-		double width,
-		int n_last_cat)
+                struct xrchart_geometry *geom,
+                const union value *prev,
+                double x_pos,
+                double width,
+                int n_last_cat)
 {
   struct category *foo = NULL;
   size_t hash = value_hash (prev, bc->widths[0], 0);
   HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bc->primaries)
     {
       if (value_equal (&foo->val, prev, bc->widths[0]))
-	break;
+        break;
     }
 
   draw_tick (cr, geom, SCALE_ABSCISSA, false,
-	     x_pos - (width * n_last_cat) / 2.0,
-	     "%s",  ds_cstr (&foo->label));
+             x_pos - (width * n_last_cat) / 2.0,
+             "%s",  ds_cstr (&foo->label));
 }
 
 
@@ -83,41 +83,41 @@ xrchart_draw_barchart (const struct chart *chart, cairo_t *cr,
       const int height = blob_size * (hmap_count (&bc->secondaries) * 2);
 
       cairo_rectangle (cr,
-		       geom->axis[SCALE_ABSCISSA].data_max + 10,
-		       geom->axis[SCALE_ORDINATE].data_max - height,
-		       100, height);
+                       geom->axis[SCALE_ABSCISSA].data_max + 10,
+                       geom->axis[SCALE_ORDINATE].data_max - height,
+                       100, height);
 
       cairo_stroke (cr);
 
       int ypos = blob_size * 1.5;
       for (i = 0 ; i < hmap_count (&bc->secondaries) ; ++i)
-	{
-	  const struct category *foo = bc->ss[i];
+        {
+          const struct category *foo = bc->ss[i];
 
-	  cairo_move_to (cr,
-			 geom->axis[SCALE_ABSCISSA].data_max + (1.5 * blob_size) + 20,
-			 geom->axis[SCALE_ORDINATE].data_max - ypos);
+          cairo_move_to (cr,
+                         geom->axis[SCALE_ABSCISSA].data_max + (1.5 * blob_size) + 20,
+                         geom->axis[SCALE_ORDINATE].data_max - ypos);
 
-	  xrchart_label (cr, 'l', 'b', geom->font_size, ds_cstr (&foo->label));
+          xrchart_label (cr, 'l', 'b', geom->font_size, ds_cstr (&foo->label));
 
-	  cairo_rectangle (cr,
-			   geom->axis[SCALE_ABSCISSA].data_max + 20,
-			   geom->axis[SCALE_ORDINATE].data_max - ypos,
-			   blob_size, blob_size);
+          cairo_rectangle (cr,
+                           geom->axis[SCALE_ABSCISSA].data_max + 20,
+                           geom->axis[SCALE_ORDINATE].data_max - ypos,
+                           blob_size, blob_size);
 
-	  cairo_save (cr);
-	  cairo_set_source_rgb (cr,
-				data_colour[foo->idx].red / 255.0,
-				data_colour[foo->idx].green / 255.0,
-				data_colour[foo->idx].blue / 255.0);
-	  cairo_fill_preserve (cr);
+          cairo_save (cr);
+          cairo_set_source_rgb (cr,
+                                data_colour[foo->idx].red / 255.0,
+                                data_colour[foo->idx].green / 255.0,
+                                data_colour[foo->idx].blue / 255.0);
+          cairo_fill_preserve (cr);
 
-	  cairo_restore (cr);
+          cairo_restore (cr);
 
-	  cairo_stroke (cr);
+          cairo_stroke (cr);
 
-	  ypos += blob_size * 2;
-	}
+          ypos += blob_size * 2;
+        }
     }
 
   int n_last_cat = 0;
@@ -125,42 +125,42 @@ xrchart_draw_barchart (const struct chart *chart, cairo_t *cr,
     {
       double height = geom->axis[SCALE_ORDINATE].scale * bc->cats[i]->count;
       if (bc->percent)
-	height *= 100.0  /  bc->total_count ;
+        height *= 100.0  /  bc->total_count ;
 
       if (prev && !value_equal (prev, &bc->cats[i]->values[0], bc->widths[0]))
-	{
-	  abscissa_label (bc, cr, geom, prev, x_pos, width, n_last_cat);
+        {
+          abscissa_label (bc, cr, geom, prev, x_pos, width, n_last_cat);
 
-	  x_pos += width;
-	  n_last_cat = 0;
-	}
+          x_pos += width;
+          n_last_cat = 0;
+        }
 
       cairo_rectangle (cr,
-		       geom->axis[SCALE_ABSCISSA].data_min + x_pos,
-		       geom->axis[SCALE_ORDINATE].data_min,
-		       width, height);
+                       geom->axis[SCALE_ABSCISSA].data_min + x_pos,
+                       geom->axis[SCALE_ORDINATE].data_min,
+                       width, height);
       cairo_save (cr);
 
 
       int cidx = 0;
       if (bc->ss)
-	{
-	  struct category *foo;
-	  size_t hash = value_hash (&bc->cats[i]->values[1], bc->widths[1], 0);
-	  HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bc->secondaries)
-	    {
-	      if (value_equal (&foo->val, &bc->cats[i]->values[1], bc->widths[1]))
-		{
-		  cidx = foo->idx;
-		  break;
-		}
-	    }
-	}
+        {
+          struct category *foo;
+          size_t hash = value_hash (&bc->cats[i]->values[1], bc->widths[1], 0);
+          HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bc->secondaries)
+            {
+              if (value_equal (&foo->val, &bc->cats[i]->values[1], bc->widths[1]))
+                {
+                  cidx = foo->idx;
+                  break;
+                }
+            }
+        }
 
       cairo_set_source_rgb (cr,
-			    data_colour[cidx].red / 255.0,
-			    data_colour[cidx].green / 255.0,
-			    data_colour[cidx].blue / 255.0);
+                            data_colour[cidx].red / 255.0,
+                            data_colour[cidx].green / 255.0,
+                            data_colour[cidx].blue / 255.0);
       cairo_fill_preserve (cr);
 
       cairo_restore (cr);

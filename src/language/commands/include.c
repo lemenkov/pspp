@@ -81,60 +81,60 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 
           free (encoding);
           encoding = xstrdup (lex_tokcstr (lexer));
-	  lex_get (lexer);
+          lex_get (lexer);
         }
       else if (variant == INSERT && lex_match_id (lexer, "SYNTAX"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "INTERACTIVE"))
-	    syntax_mode = SEG_MODE_INTERACTIVE;
-	  else if (lex_match_id (lexer, "BATCH"))
-	    syntax_mode = SEG_MODE_BATCH;
-	  else if (lex_match_id (lexer, "AUTO"))
-	    syntax_mode = SEG_MODE_AUTO;
-	  else
-	    {
-	      lex_error_expecting (lexer, "BATCH", "INTERACTIVE", "AUTO");
-	      goto exit;
-	    }
-	}
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "INTERACTIVE"))
+            syntax_mode = SEG_MODE_INTERACTIVE;
+          else if (lex_match_id (lexer, "BATCH"))
+            syntax_mode = SEG_MODE_BATCH;
+          else if (lex_match_id (lexer, "AUTO"))
+            syntax_mode = SEG_MODE_AUTO;
+          else
+            {
+              lex_error_expecting (lexer, "BATCH", "INTERACTIVE", "AUTO");
+              goto exit;
+            }
+        }
       else if (variant == INSERT && lex_match_id (lexer, "CD"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "YES"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "YES"))
             cd = true;
-	  else if (lex_match_id (lexer, "NO"))
+          else if (lex_match_id (lexer, "NO"))
             cd = false;
-	  else
-	    {
-	      lex_error_expecting (lexer, "YES", "NO");
-	      goto exit;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "YES", "NO");
+              goto exit;
+            }
+        }
       else if (variant == INSERT && lex_match_id (lexer, "ERROR"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "CONTINUE"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "CONTINUE"))
             error_mode = LEX_ERROR_CONTINUE;
-	  else if (lex_match_id (lexer, "STOP"))
+          else if (lex_match_id (lexer, "STOP"))
             error_mode = LEX_ERROR_STOP;
           else if (settings_get_testing_mode ()
                    && lex_match_id (lexer, "IGNORE"))
             error_mode = LEX_ERROR_IGNORE;
-	  else
-	    {
-	      lex_error_expecting (lexer, "CONTINUE", "STOP");
-	      goto exit;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "CONTINUE", "STOP");
+              goto exit;
+            }
+        }
       else
-	{
+        {
           if (variant == INSERT)
             lex_error_expecting (lexer, "ENCODING", "SYNTAX", "CD", "ERROR");
           else
             lex_error_expecting (lexer, "ENCODING");
-	  goto exit;
-	}
+          goto exit;
+        }
     }
   status = lex_end_of_command (lexer);
 

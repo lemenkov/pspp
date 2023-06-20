@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_BARCHART (psppire_dialog_action_barchart_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_BARCHART(obj)	\
+#define PSPPIRE_DIALOG_ACTION_BARCHART(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, PsppireDialogActionBarchart))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, PsppireDialogActionBarchart))
 
 #define PSPPIRE_DIALOG_ACTION_BARCHART_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, \
                                  PsppireDialogActionBarchartClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_BARCHART(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_BARCHART))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_BARCHART))
 
 #define PSPPIRE_IS_DIALOG_ACTION_BARCHART_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_BARCHART))
 
 
 #define PSPPIRE_DIALOG_ACTION_BARCHART_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, \
-				   PsppireDialogActionBarchartClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, \
+                                   PsppireDialogActionBarchartClass))
 
 typedef struct _PsppireDialogActionBarchart       PsppireDialogActionBarchart;
 typedef struct _PsppireDialogActionBarchartClass  PsppireDialogActionBarchartClass;

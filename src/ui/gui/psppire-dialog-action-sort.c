@@ -45,7 +45,7 @@ generate_syntax (const PsppireDialogAction *act)
   else
     {
       const char up_down =
-	(gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->ascending))
+        (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->ascending))
          ? 'A' : 'D');
       g_string_append_printf (string, "(%c)", up_down);
       g_string_append (string, ".");
@@ -101,7 +101,7 @@ psppire_dialog_action_sort_activate (PsppireDialogAction *a, GVariant *param)
   psppire_dialog_action_set_refresh (pda, reset);
 
   psppire_dialog_action_set_valid_predicate (pda,
-				      dialog_state_valid);
+                                      dialog_state_valid);
   return xml;
 }
 

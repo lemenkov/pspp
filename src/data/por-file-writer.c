@@ -58,10 +58,10 @@ struct pfm_writer
   {
     struct file_handle *fh;     /* File handle. */
     struct fh_lock *lock;       /* Lock on file handle. */
-    FILE *file;			/* File stream. */
+    FILE *file;                        /* File stream. */
     struct replace_file *rf;    /* Ticket for replacing output file. */
 
-    int lc;			/* Number of characters on this line so far. */
+    int lc;                        /* Number of characters on this line so far. */
 
     size_t n_vars;              /* Number of variables. */
     struct pfm_var *vars;       /* Variables. */
@@ -409,7 +409,7 @@ write_value_labels (struct pfm_writer *w, const struct dictionary *dict)
       int j;
 
       if (n_labels == 0)
-	continue;
+        continue;
 
       buf_write (w, "D", 1);
       write_int (w, 1);

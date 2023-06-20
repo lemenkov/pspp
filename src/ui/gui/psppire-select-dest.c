@@ -29,20 +29,20 @@ psppire_select_dest_widget_get_type (void)
       const GTypeInfo dest_widget_info =
       {
         sizeof (PsppireSelectDestWidgetIface), /* class_size */
-	NULL,           /* base_init */
-	NULL,		/* base_finalize */
-	NULL,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-	0,
-	0,              /* n_preallocs */
-	NULL,
-	NULL            /* value_table */
+        NULL,           /* base_init */
+        NULL,                /* base_finalize */
+        NULL,
+        NULL,                /* class_finalize */
+        NULL,                /* class_data */
+        0,
+        0,              /* n_preallocs */
+        NULL,
+        NULL            /* value_table */
       };
 
       dest_widget_type =
-	g_type_register_static (G_TYPE_INTERFACE, "PsppireSelectDestWidget",
-				&dest_widget_info, 0);
+        g_type_register_static (G_TYPE_INTERFACE, "PsppireSelectDestWidget",
+                                &dest_widget_info, 0);
 
       g_type_interface_add_prerequisite (dest_widget_type, GTK_TYPE_WIDGET);
     }

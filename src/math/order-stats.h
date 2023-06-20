@@ -95,10 +95,10 @@ void order_stats_accumulate_idx (struct order_stats **os, size_t n_os,
                                  int weight_idx,
                                  int data_idx);
 void order_stats_accumulate (struct order_stats **os, size_t n_os,
-			     struct casereader *,
-			     const struct variable *weight_var,
-			     const struct variable *data_var,
-			     enum mv_class exclude);
+                             struct casereader *,
+                             const struct variable *weight_var,
+                             const struct variable *data_var,
+                             enum mv_class exclude);
 
 /* Debugging support. */
 void order_stats_dump (const struct order_stats *);

@@ -50,31 +50,31 @@
 struct rank;
 
 typedef double (*rank_function_t) (const struct rank*, double c, double cc, double cc_1,
-				   int i, double w);
+                                   int i, double w);
 
 static double rank_proportion (const struct rank *, double c, double cc, double cc_1,
-			       int i, double w);
+                               int i, double w);
 
 static double rank_normal (const struct rank *, double c, double cc, double cc_1,
-			   int i, double w);
+                           int i, double w);
 
 static double rank_percent (const struct rank *, double c, double cc, double cc_1,
-			    int i, double w);
+                            int i, double w);
 
 static double rank_rfraction (const struct rank *, double c, double cc, double cc_1,
-			      int i, double w);
+                              int i, double w);
 
 static double rank_rank (const struct rank *, double c, double cc, double cc_1,
-			 int i, double w);
+                         int i, double w);
 
 static double rank_n (const struct rank *, double c, double cc, double cc_1,
-		      int i, double w);
+                      int i, double w);
 
 static double rank_savage (const struct rank *, double c, double cc, double cc_1,
-			   int i, double w);
+                           int i, double w);
 
 static double rank_ntiles (const struct rank *, double c, double cc, double cc_1,
-			   int i, double w);
+                           int i, double w);
 
 
 enum rank_func
@@ -278,13 +278,13 @@ parse_into (struct lexer *lexer, struct rank *cmd,
     {
       if (!lex_force_match (lexer, T_LPAREN)
           || !lex_force_int_range (lexer, "NTILES", 1, INT_MAX))
-	return false;
+        return false;
 
       cmd->k_ntiles = lex_integer (lexer);
       lex_get (lexer);
 
       if (!lex_force_match (lexer, T_RPAREN))
-	return false;
+        return false;
 
       rfunc = NTILES;
     }
@@ -308,13 +308,13 @@ parse_into (struct lexer *lexer, struct rank *cmd,
       int vars_start = lex_ofs (lexer);
       size_t var_count = 0;
       while (lex_token (lexer) == T_ID)
-	{
-	  const char *name = lex_tokcstr (lexer);
+        {
+          const char *name = lex_tokcstr (lexer);
 
-	  if (var_count >= subcase_get_n_fields (&cmd->sc))
+          if (var_count >= subcase_get_n_fields (&cmd->sc))
             lex_ofs_error (lexer, vars_start, lex_ofs (lexer),
                            _("Too many variables in %s clause."), "INTO");
-	  else if (dict_lookup_var (cmd->dict, name) != NULL)
+          else if (dict_lookup_var (cmd->dict, name) != NULL)
             lex_error (lexer, _("Variable %s already exists."), name);
           else if (stringi_set_contains (new_names, name))
             lex_error (lexer, _("Duplicate variable name %s."), name);
@@ -337,56 +337,56 @@ parse_into (struct lexer *lexer, struct rank *cmd,
 /* Hardly a rank function. */
 static double
 rank_n (const struct rank *cmd UNUSED, double c UNUSED, double cc UNUSED, double cc_1 UNUSED,
-	int i UNUSED, double w)
+        int i UNUSED, double w)
 {
   return w;
 }
 
 static double
 rank_rank (const struct rank *cmd, double c, double cc, double cc_1,
-	   int i, double w UNUSED)
+           int i, double w UNUSED)
 {
   double rank;
 
   if (c >= 1.0)
     {
       switch (cmd->ties)
-	{
-	case TIES_LOW:
-	  rank = cc_1 + 1;
-	  break;
-	case TIES_HIGH:
-	  rank = cc;
-	  break;
-	case TIES_MEAN:
-	  rank = cc_1 + (c + 1.0)/ 2.0;
-	  break;
-	case TIES_CONDENSE:
-	  rank = i;
-	  break;
-	default:
-	  NOT_REACHED ();
-	}
+        {
+        case TIES_LOW:
+          rank = cc_1 + 1;
+          break;
+        case TIES_HIGH:
+          rank = cc;
+          break;
+        case TIES_MEAN:
+          rank = cc_1 + (c + 1.0)/ 2.0;
+          break;
+        case TIES_CONDENSE:
+          rank = i;
+          break;
+        default:
+          NOT_REACHED ();
+        }
     }
   else
     {
       switch (cmd->ties)
-	{
-	case TIES_LOW:
-	  rank = cc_1;
-	  break;
-	case TIES_HIGH:
-	  rank = cc;
-	  break;
-	case TIES_MEAN:
-	  rank = cc_1 + c / 2.0;
-	  break;
-	case TIES_CONDENSE:
-	  rank = i;
-	  break;
-	default:
-	  NOT_REACHED ();
-	}
+        {
+        case TIES_LOW:
+          rank = cc_1;
+          break;
+        case TIES_HIGH:
+          rank = cc;
+          break;
+        case TIES_MEAN:
+          rank = cc_1 + c / 2.0;
+          break;
+        case TIES_CONDENSE:
+          rank = i;
+          break;
+        default:
+          NOT_REACHED ();
+        }
     }
 
   return rank;
@@ -395,7 +395,7 @@ rank_rank (const struct rank *cmd, double c, double cc, double cc_1,
 
 static double
 rank_rfraction (const struct rank *cmd, double c, double cc, double cc_1,
-		int i, double w)
+                int i, double w)
 {
   return rank_rank (cmd, c, cc, cc_1, i, w) / w;
 }
@@ -403,7 +403,7 @@ rank_rfraction (const struct rank *cmd, double c, double cc, double cc_1,
 
 static double
 rank_percent (const struct rank *cmd, double c, double cc, double cc_1,
-	      int i, double w)
+              int i, double w)
 {
   return rank_rank (cmd, c, cc, cc_1, i, w) * 100.0 / w;
 }
@@ -411,7 +411,7 @@ rank_percent (const struct rank *cmd, double c, double cc, double cc_1,
 
 static double
 rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
-		 int i, double w)
+                 int i, double w)
 {
   const double r =  rank_rank (cmd, c, cc, cc_1, i, w);
 
@@ -441,7 +441,7 @@ rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
 
 static double
 rank_normal (const struct rank *cmd, double c, double cc, double cc_1,
-	     int i, double w)
+             int i, double w)
 {
   double f = rank_proportion (cmd, c, cc, cc_1, i, w);
 
@@ -450,7 +450,7 @@ rank_normal (const struct rank *cmd, double c, double cc, double cc_1,
 
 static double
 rank_ntiles (const struct rank *cmd, double c, double cc, double cc_1,
-	     int i, double w)
+             int i, double w)
 {
   double r = rank_rank (cmd, c, cc, cc_1, i, w);
 
@@ -473,7 +473,7 @@ ee (int j, double w_star)
 
 static double
 rank_savage (const struct rank *cmd UNUSED, double c, double cc, double cc_1,
-	     int i UNUSED, double w)
+             int i UNUSED, double w)
 {
   double int_part;
   const int i_1 = floor (cc_1);
@@ -499,7 +499,7 @@ rank_savage (const struct rank *cmd UNUSED, double c, double cc, double cc_1,
     {
       double sigma = 0.0;
       for (int j = i_1 + 2; j <= i_2; ++j)
-	sigma += ee (j, w_star);
+        sigma += ee (j, w_star);
       return ((expr1 + expr2 + sigma) / c) -1;
     }
 
@@ -527,7 +527,7 @@ static void
 rank_sorted_file (struct casereader *input,
                   struct casewriter *output,
                   int weight_idx,
-		  const struct rank *cmd)
+                  const struct rank *cmd)
 {
   int tie_group = 1;
   double cc = 0.0;
@@ -598,11 +598,11 @@ create_var_label (struct rank *cmd, const struct variable *src_var,
     {
       struct string group_var_str = DS_EMPTY_INITIALIZER;
       for (size_t g = 0; g < cmd->n_group_vars; ++g)
-	{
-	  if (g > 0)
+        {
+          if (g > 0)
             ds_put_cstr (&group_var_str, " ");
-	  ds_put_cstr (&group_var_str, var_get_name (cmd->group_vars[g]));
-	}
+          ds_put_cstr (&group_var_str, var_get_name (cmd->group_vars[g]));
+        }
 
       const char *label = pool_asprintf (
         cmd->pool, _("%s of %s by %s"), function_name[f],
@@ -645,73 +645,73 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   while (lex_token (lexer) != T_ENDCMD)
     {
       if (!lex_force_match (lexer, T_SLASH))
-	goto error;
+        goto error;
       if (lex_match_id (lexer, "TIES"))
-	{
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
-	  if (lex_match_id (lexer, "MEAN"))
+        {
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
+          if (lex_match_id (lexer, "MEAN"))
             rank.ties = TIES_MEAN;
-	  else if (lex_match_id (lexer, "LOW"))
+          else if (lex_match_id (lexer, "LOW"))
             rank.ties = TIES_LOW;
-	  else if (lex_match_id (lexer, "HIGH"))
+          else if (lex_match_id (lexer, "HIGH"))
             rank.ties = TIES_HIGH;
-	  else if (lex_match_id (lexer, "CONDENSE"))
+          else if (lex_match_id (lexer, "CONDENSE"))
             rank.ties = TIES_CONDENSE;
-	  else
-	    {
-	      lex_error_expecting (lexer, "MEAN", "LOW", "HIGH", "CONDENSE");
-	      goto error;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "MEAN", "LOW", "HIGH", "CONDENSE");
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "FRACTION"))
-	{
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
-	  if (lex_match_id (lexer, "BLOM"))
+        {
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
+          if (lex_match_id (lexer, "BLOM"))
             rank.fraction = FRAC_BLOM;
-	  else if (lex_match_id (lexer, "TUKEY"))
+          else if (lex_match_id (lexer, "TUKEY"))
             rank.fraction = FRAC_TUKEY;
-	  else if (lex_match_id (lexer, "VW"))
+          else if (lex_match_id (lexer, "VW"))
             rank.fraction = FRAC_VW;
-	  else if (lex_match_id (lexer, "RANKIT"))
+          else if (lex_match_id (lexer, "RANKIT"))
             rank.fraction = FRAC_RANKIT;
-	  else
-	    {
-	      lex_error_expecting (lexer, "BLOM", "TUKEY", "VW", "RANKIT");
-	      goto error;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "BLOM", "TUKEY", "VW", "RANKIT");
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "PRINT"))
-	{
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
-	  if (lex_match_id (lexer, "YES"))
+        {
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
+          if (lex_match_id (lexer, "YES"))
             rank.print = true;
-	  else if (lex_match_id (lexer, "NO"))
+          else if (lex_match_id (lexer, "NO"))
             rank.print = false;
-	  else
-	    {
-	      lex_error_expecting (lexer, "YES", "NO");
-	      goto error;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "YES", "NO");
+              goto error;
+            }
+        }
       else if (lex_match_id (lexer, "MISSING"))
-	{
-	  if (!lex_force_match (lexer, T_EQUALS))
-	    goto error;
-	  if (lex_match_id (lexer, "INCLUDE"))
+        {
+          if (!lex_force_match (lexer, T_EQUALS))
+            goto error;
+          if (lex_match_id (lexer, "INCLUDE"))
             rank.exclude = MV_SYSTEM;
-	  else if (lex_match_id (lexer, "EXCLUDE"))
+          else if (lex_match_id (lexer, "EXCLUDE"))
             rank.exclude = MV_ANY;
-	  else
-	    {
-	      lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
-	      goto error;
-	    }
-	}
+          else
+            {
+              lex_error_expecting (lexer, "INCLUDE", "EXCLUDE");
+              goto error;
+            }
+        }
       else if (!parse_into (lexer, &rank, &new_names))
-	goto error;
+        goto error;
     }
 
 
@@ -767,9 +767,9 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
       variables->root->show_label = true;
 
       for (size_t i = 0; i <  rank.n_rs; ++i)
-	{
-	  for (size_t v = 0; v < rank.n_vars;  v ++)
-	    {
+        {
+          for (size_t v = 0; v < rank.n_vars;  v ++)
+            {
               int row_idx = pivot_category_create_leaf (
                 variables->root, pivot_value_new_variable (rank.vars[v]));
 
@@ -798,8 +798,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
                                       pivot_value_new_user_text (entry, -1));
                 }
               ds_destroy (&group_vars);
-	    }
-	}
+            }
+        }
 
       pivot_table_submit (table);
     }

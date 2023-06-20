@@ -28,26 +28,26 @@ G_BEGIN_DECLS
 
 #define PSPPIRE_TYPE_DIALOG_ACTION_FACTOR (psppire_dialog_action_factor_get_type ())
 
-#define PSPPIRE_DIALOG_ACTION_FACTOR(obj)	\
+#define PSPPIRE_DIALOG_ACTION_FACTOR(obj)        \
                      (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-						  PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, PsppireDialogActionFactor))
+                                                  PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, PsppireDialogActionFactor))
 
 #define PSPPIRE_DIALOG_ACTION_FACTOR_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_CAST ((klass), \
-				 PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, \
+                                 PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, \
                                  PsppireDialogActionFactorClass))
 
 
 #define PSPPIRE_IS_DIALOG_ACTION_FACTOR(obj) \
-	             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FACTOR))
+                     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_TYPE_DIALOG_ACTION_FACTOR))
 
 #define PSPPIRE_IS_DIALOG_ACTION_FACTOR_CLASS(klass) \
                      (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_TYPE_DIALOG_ACTION_FACTOR))
 
 
 #define PSPPIRE_DIALOG_ACTION_FACTOR_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-				   PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, \
-				   PsppireDialogActionFactorClass))
+                                   PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, \
+                                   PsppireDialogActionFactorClass))
 
 typedef struct _PsppireDialogActionFactor       PsppireDialogActionFactor;
 typedef struct _PsppireDialogActionFactorClass  PsppireDialogActionFactorClass;

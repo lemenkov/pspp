@@ -105,14 +105,14 @@ enum rotation_type
   };
 
 typedef void (*rotation_coefficients) (double *x, double *y,
-				    double a, double b, double c, double d,
-				    const gsl_matrix *loadings);
+                                    double a, double b, double c, double d,
+                                    const gsl_matrix *loadings);
 
 
 static void
 varimax_coefficients (double *x, double *y,
-		      double a, double b, double c, double d,
-		      const gsl_matrix *loadings)
+                      double a, double b, double c, double d,
+                      const gsl_matrix *loadings)
 {
   *x = d - 2 * a * b / loadings->size1;
   *y = c - (a * a - b * b) / loadings->size1;
@@ -120,8 +120,8 @@ varimax_coefficients (double *x, double *y,
 
 static void
 equamax_coefficients (double *x, double *y,
-		      double a, double b, double c, double d,
-		      const gsl_matrix *loadings)
+                      double a, double b, double c, double d,
+                      const gsl_matrix *loadings)
 {
   *x = d - loadings->size2 * a * b / loadings->size1;
   *y = c - loadings->size2 * (a * a - b * b) / (2 * loadings->size1);
@@ -129,8 +129,8 @@ equamax_coefficients (double *x, double *y,
 
 static void
 quartimax_coefficients (double *x, double *y,
-		      double a UNUSED, double b UNUSED, double c, double d,
-		      const gsl_matrix *loadings UNUSED)
+                      double a UNUSED, double b UNUSED, double c, double d,
+                      const gsl_matrix *loadings UNUSED)
 {
   *x = d;
   *y = c;
@@ -154,8 +154,8 @@ diag_rcp_sqrt (const gsl_matrix *C)
   assert (C->size1 == C->size2);
 
   gsl_linalg_matmult_mod (C,  GSL_LINALG_MOD_TRANSPOSE,
-			  C,  GSL_LINALG_MOD_NONE,
-			  d);
+                          C,  GSL_LINALG_MOD_NONE,
+                          d);
 
   for (int j = 0; j < d->size2; ++j)
     {
@@ -351,7 +351,7 @@ dump_matrix (const gsl_matrix *m)
   for (int i = 0; i < m->size1; ++i)
     {
       for (int j = 0; j < m->size2; ++j)
-	printf ("%02f ", gsl_matrix_get (m, i, j));
+        printf ("%02f ", gsl_matrix_get (m, i, j));
       printf ("\n");
     }
 }
@@ -362,7 +362,7 @@ dump_matrix_permute (const gsl_matrix *m, const gsl_permutation *p)
   for (int i = 0; i < m->size1; ++i)
     {
       for (int j = 0; j < m->size2; ++j)
-	printf ("%02f ", gsl_matrix_get (m, gsl_permutation_get (p, i), j));
+        printf ("%02f ", gsl_matrix_get (m, gsl_permutation_get (p, i), j));
       printf ("\n");
     }
 }
@@ -401,7 +401,7 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
       idata->n_extractions = i;
 
       if (evali < factor->min_eigen)
-	goto finish;
+        goto finish;
     }
 
  finish:
@@ -546,7 +546,7 @@ factor_matrix_workspace_free (struct factor_matrix_workspace *ws)
 */
 static void
 perm_shift_apply (gsl_permutation *target, const gsl_permutation *p,
-		  size_t offset)
+                  size_t offset)
 {
   assert (target->size == p->size);
   assert (offset <= target->size);
@@ -590,18 +590,18 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 
       int i;
       for (i = 0; i < n; ++i)
-	{
-	  gsl_vector_view row = gsl_matrix_row (mat, p->data[n - 1 - i]);
-	  size_t maxindex = gsl_vector_max_index (&row.vector);
+        {
+          gsl_vector_view row = gsl_matrix_row (mat, p->data[n - 1 - i]);
+          size_t maxindex = gsl_vector_max_index (&row.vector);
 
-	  if (maxindex > column_n)
-	    break;
+          if (maxindex > column_n)
+            break;
 
-	  /* All subsequent elements of this row, are of no interest.
-	     So set them all to a highly negative value */
-	  for (int j = column_n + 1; j < row.vector.size; ++j)
-	    gsl_vector_set (&row.vector, j, -DBL_MAX);
-	}
+          /* All subsequent elements of this row, are of no interest.
+             So set them all to a highly negative value */
+          for (int j = column_n + 1; j < row.vector.size; ++j)
+            gsl_vector_set (&row.vector, j, -DBL_MAX);
+        }
 
       perm_shift_apply (perm, p, row_n);
       row_n += i;
@@ -653,14 +653,14 @@ initial_sv (const gsl_matrix *fm)
       double l2s = 0;
 
       for (int k = j + 1; k < fm->size2; ++k)
-	{
-	  double lambda = gsl_matrix_get (fm, k, j);
-	  double lambda_sq = lambda * lambda;
-	  double lambda_4 = lambda_sq * lambda_sq;
+        {
+          double lambda = gsl_matrix_get (fm, k, j);
+          double lambda_sq = lambda * lambda;
+          double lambda_4 = lambda_sq * lambda_sq;
 
-	  l4s += lambda_4;
-	  l2s += lambda_sq;
-	}
+          l4s += lambda_4;
+          l2s += lambda_sq;
+        }
       sv += (fm->size1 * l4s - (l2s * l2s)) / (fm->size1 * fm->size1);
     }
   return sv;
@@ -668,11 +668,11 @@ initial_sv (const gsl_matrix *fm)
 
 static void
 rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
-	const gsl_vector *communalities,
-	gsl_matrix *result,
-	gsl_vector *rotated_loadings,
-	gsl_matrix *pattern_matrix,
-	gsl_matrix *factor_correlation_matrix)
+        const gsl_vector *communalities,
+        gsl_matrix *result,
+        gsl_vector *rotated_loadings,
+        gsl_matrix *pattern_matrix,
+        gsl_matrix *factor_correlation_matrix)
 {
   /* First get a normalised version of UNROT */
   gsl_matrix *normalised = gsl_matrix_calloc (unrot->size1, unrot->size2);
@@ -705,64 +705,64 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
     {
       double sv = 0.0;
       for (int j = 0; j < normalised->size2; ++j)
-	{
-	  /* These variables relate to the convergence criterium */
-	  double l4s = 0;
-	  double l2s = 0;
+        {
+          /* These variables relate to the convergence criterium */
+          double l4s = 0;
+          double l2s = 0;
 
-	  for (int k = j + 1; k < normalised->size2; ++k)
-	    {
-	      double a = 0.0;
-	      double b = 0.0;
-	      double c = 0.0;
-	      double d = 0.0;
-	      for (int p = 0; p < normalised->size1; ++p)
-		{
-		  double jv = gsl_matrix_get (normalised, p, j);
-		  double kv = gsl_matrix_get (normalised, p, k);
+          for (int k = j + 1; k < normalised->size2; ++k)
+            {
+              double a = 0.0;
+              double b = 0.0;
+              double c = 0.0;
+              double d = 0.0;
+              for (int p = 0; p < normalised->size1; ++p)
+                {
+                  double jv = gsl_matrix_get (normalised, p, j);
+                  double kv = gsl_matrix_get (normalised, p, k);
 
-		  double u = jv * jv - kv * kv;
-		  double v = 2 * jv * kv;
-		  a += u;
-		  b += v;
-		  c +=  u * u - v * v;
-		  d += 2 * u * v;
-		}
+                  double u = jv * jv - kv * kv;
+                  double v = 2 * jv * kv;
+                  a += u;
+                  b += v;
+                  c +=  u * u - v * v;
+                  d += 2 * u * v;
+                }
 
-	      double x, y;
-	      rotation_coeff [cf->rotation] (&x, &y, a, b, c, d, normalised);
-	      double phi = atan2 (x,  y) / 4.0;
+              double x, y;
+              rotation_coeff [cf->rotation] (&x, &y, a, b, c, d, normalised);
+              double phi = atan2 (x,  y) / 4.0;
 
-	      /* Don't bother rotating if the angle is small */
-	      if (fabs (sin (phi)) <= pow (10.0, -15.0))
-		  continue;
+              /* Don't bother rotating if the angle is small */
+              if (fabs (sin (phi)) <= pow (10.0, -15.0))
+                  continue;
 
-	      for (int p = 0; p < normalised->size1; ++p)
-		{
-		  double *lambda0 = gsl_matrix_ptr (normalised, p, j);
-		  double *lambda1 = gsl_matrix_ptr (normalised, p, k);
-		  drot_go (phi, lambda0, lambda1);
-		}
+              for (int p = 0; p < normalised->size1; ++p)
+                {
+                  double *lambda0 = gsl_matrix_ptr (normalised, p, j);
+                  double *lambda1 = gsl_matrix_ptr (normalised, p, k);
+                  drot_go (phi, lambda0, lambda1);
+                }
 
-	      /* Calculate the convergence criterium */
+              /* Calculate the convergence criterium */
               double lambda = gsl_matrix_get (normalised, k, j);
               double lambda_sq = lambda * lambda;
               double lambda_4 = lambda_sq * lambda_sq;
 
               l4s += lambda_4;
               l2s += lambda_sq;
-	    }
-	  sv += (normalised->size1 * l4s - (l2s * l2s)) / (normalised->size1 * normalised->size1);
-	}
+            }
+          sv += (normalised->size1 * l4s - (l2s * l2s)) / (normalised->size1 * normalised->size1);
+        }
 
       if (fabs (sv - prev_sv) <= cf->rconverge)
-	break;
+        break;
 
       prev_sv = sv;
     }
 
   gsl_blas_dgemm (CblasNoTrans,  CblasNoTrans, 1.0,
-		  h_sqrt, normalised,  0.0,   result);
+                  h_sqrt, normalised,  0.0,   result);
 
   gsl_matrix_free (h_sqrt);
   gsl_matrix_free (normalised);
@@ -782,64 +782,64 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
 
       /* The following variables follow the notation by SPSS Statistical
-	 Algorithms page 342. */
+         Algorithms page 342. */
       gsl_matrix *L = gsl_matrix_calloc (unrot->size2, unrot->size2);
       gsl_matrix *P = clone_matrix (result);
 
       /* Vector of length p containing (indexed by i)
-	 \Sum^m_j {\lambda^2_{ij}} */
+         \Sum^m_j {\lambda^2_{ij}} */
       gsl_vector *rssq = gsl_vector_calloc (unrot->size1);
 
       for (int i = 0; i < P->size1; ++i)
-	{
-	  double sum = 0;
-	  for (int j = 0; j < P->size2; ++j)
+        {
+          double sum = 0;
+          for (int j = 0; j < P->size2; ++j)
             sum += gsl_matrix_get (result, i, j) * gsl_matrix_get (result, i, j);
-	  gsl_vector_set (rssq, i, sqrt (sum));
-	}
+          gsl_vector_set (rssq, i, sqrt (sum));
+        }
 
       for (int i = 0; i < P->size1; ++i)
-	{
-	  for (int j = 0; j < P->size2; ++j)
-	    {
-	      double l = gsl_matrix_get (result, i, j);
-	      double r = gsl_vector_get (rssq, i);
-	      gsl_matrix_set (P, i, j, pow (fabs (l / r), cf->promax_power + 1) * r / l);
-	    }
-	}
+        {
+          for (int j = 0; j < P->size2; ++j)
+            {
+              double l = gsl_matrix_get (result, i, j);
+              double r = gsl_vector_get (rssq, i);
+              gsl_matrix_set (P, i, j, pow (fabs (l / r), cf->promax_power + 1) * r / l);
+            }
+        }
 
       gsl_vector_free (rssq);
 
       gsl_linalg_matmult_mod (result,
-			      GSL_LINALG_MOD_TRANSPOSE,
-			      result,
-			      GSL_LINALG_MOD_NONE,
-			      mm1);
+                              GSL_LINALG_MOD_TRANSPOSE,
+                              result,
+                              GSL_LINALG_MOD_NONE,
+                              mm1);
 
       int signum;
       gsl_linalg_LU_decomp (mm1, perm, &signum);
       gsl_linalg_LU_invert (mm1, perm, mm2);
 
       gsl_linalg_matmult_mod (mm2,   GSL_LINALG_MOD_NONE,
-			      result,  GSL_LINALG_MOD_TRANSPOSE,
-			      mp1);
+                              result,  GSL_LINALG_MOD_TRANSPOSE,
+                              mp1);
 
       gsl_linalg_matmult_mod (mp1, GSL_LINALG_MOD_NONE,
-			      P,   GSL_LINALG_MOD_NONE,
-			      L);
+                              P,   GSL_LINALG_MOD_NONE,
+                              L);
 
       gsl_matrix *D = diag_rcp_sqrt (L);
       gsl_matrix *Q = gsl_matrix_calloc (unrot->size2, unrot->size2);
 
       gsl_linalg_matmult_mod (L, GSL_LINALG_MOD_NONE,
-			      D, GSL_LINALG_MOD_NONE,
-			      Q);
+                              D, GSL_LINALG_MOD_NONE,
+                              Q);
 
       gsl_matrix *QQinv = gsl_matrix_calloc (unrot->size2, unrot->size2);
 
       gsl_linalg_matmult_mod (Q, GSL_LINALG_MOD_TRANSPOSE,
-			      Q,  GSL_LINALG_MOD_NONE,
-			      QQinv);
+                              Q,  GSL_LINALG_MOD_NONE,
+                              QQinv);
 
       gsl_linalg_cholesky_decomp (QQinv);
       gsl_linalg_cholesky_invert (QQinv);
@@ -853,25 +853,25 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
 
       gsl_linalg_matmult_mod (result, GSL_LINALG_MOD_NONE,
-			      Q,      GSL_LINALG_MOD_NONE,
-			      pm1);
+                              Q,      GSL_LINALG_MOD_NONE,
+                              pm1);
 
       gsl_linalg_matmult_mod (pm1,      GSL_LINALG_MOD_NONE,
-			      Cinv,         GSL_LINALG_MOD_NONE,
-			      pattern_matrix);
+                              Cinv,         GSL_LINALG_MOD_NONE,
+                              pattern_matrix);
 
 
       gsl_linalg_matmult_mod (C,      GSL_LINALG_MOD_NONE,
-			      QQinv,  GSL_LINALG_MOD_NONE,
-			      mm1);
+                              QQinv,  GSL_LINALG_MOD_NONE,
+                              mm1);
 
       gsl_linalg_matmult_mod (mm1,      GSL_LINALG_MOD_NONE,
-			      C,  GSL_LINALG_MOD_TRANSPOSE,
-			      factor_correlation_matrix);
+                              C,  GSL_LINALG_MOD_TRANSPOSE,
+                              factor_correlation_matrix);
 
       gsl_linalg_matmult_mod (pattern_matrix,      GSL_LINALG_MOD_NONE,
-			      factor_correlation_matrix,  GSL_LINALG_MOD_NONE,
-			      pm1);
+                              factor_correlation_matrix,  GSL_LINALG_MOD_NONE,
+                              pm1);
 
       gsl_matrix_memcpy (result, pm1);
 
@@ -900,20 +900,20 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
       double ssq = 0.0;
       double sum = 0.0;
       for (int j = 0; j < result->size1; ++j)
-	{
-	  double s = gsl_matrix_get (result, j, i);
-	  ssq += s * s;
-	  sum += s;
-	}
+        {
+          double s = gsl_matrix_get (result, j, i);
+          ssq += s * s;
+          sum += s;
+        }
 
       gsl_vector_set (rotated_loadings, i, ssq);
 
       if (sum < 0)
-	for (int j = 0; j < result->size1; ++j)
-	  {
-	    double *lambda = gsl_matrix_ptr (result, j, i);
-	    *lambda = - *lambda;
-	  }
+        for (int j = 0; j < result->size1; ++j)
+          {
+            double *lambda = gsl_matrix_ptr (result, j, i);
+            *lambda = - *lambda;
+          }
     }
 }
 
@@ -924,7 +924,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
  */
 static void
 iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matrix *factors,
-		       struct factor_matrix_workspace *ws)
+                       struct factor_matrix_workspace *ws)
 {
   assert (r->size1 == r->size2);
   assert (r->size1 == communalities->size);
@@ -1015,40 +1015,40 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 
       vars_start = lex_ofs (lexer);
       if (!parse_variables_const (lexer, dict, &factor.vars, &factor.n_vars,
-				  PV_NO_DUPLICATE | PV_NUMERIC))
-	goto error;
+                                  PV_NO_DUPLICATE | PV_NUMERIC))
+        goto error;
       vars_end = lex_ofs (lexer) - 1;
     }
   else if (lex_match_id (lexer, "MATRIX"))
     {
       lex_match (lexer, T_EQUALS);
       if (!lex_force_match_phrase (lexer, "IN("))
-	goto error;
+        goto error;
       if (!lex_match_id (lexer, "CORR") && !lex_match_id (lexer, "COV"))
-	{
-	  lex_error (lexer, _("Matrix input for %s must be either COV or CORR"),
+        {
+          lex_error (lexer, _("Matrix input for %s must be either COV or CORR"),
                      "FACTOR");
-	  goto error;
-	}
+          goto error;
+        }
       if (!lex_force_match (lexer, T_EQUALS))
-	goto error;
+        goto error;
       vars_start = lex_ofs (lexer);
       if (lex_match (lexer, T_ASTERISK))
-	{
-	  dict = dataset_dict (ds);
-	  matrix_reader = casereader_clone (dataset_source (ds));
-	}
+        {
+          dict = dataset_dict (ds);
+          matrix_reader = casereader_clone (dataset_source (ds));
+        }
       else
-	{
-	  struct file_handle *fh = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (fh == NULL)
-	    goto error;
-
-	  matrix_reader = any_reader_open_and_decode (fh, NULL, &dict, NULL);
-
-	  if (!(matrix_reader && dict))
+        {
+          struct file_handle *fh = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (fh == NULL)
             goto error;
-	}
+
+          matrix_reader = any_reader_open_and_decode (fh, NULL, &dict, NULL);
+
+          if (!(matrix_reader && dict))
+            goto error;
+        }
       vars_end = lex_ofs (lexer) - 1;
 
       if (!lex_force_match (lexer, T_RPAREN))
@@ -1098,119 +1098,119 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
             }
         }
       else if (lex_match_id (lexer, "PLOT"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "EIGEN"))
-		{
-		  factor.plot |= PLOT_SCREE;
-		}
+            {
+              if (lex_match_id (lexer, "EIGEN"))
+                {
+                  factor.plot |= PLOT_SCREE;
+                }
 #if FACTOR_FULLY_IMPLEMENTED
-	      else if (lex_match_id (lexer, "ROTATION"))
-		{
-		}
+              else if (lex_match_id (lexer, "ROTATION"))
+                {
+                }
 #endif
-	      else
-		{
-		  lex_error_expecting (lexer, "EIGEN"
+              else
+                {
+                  lex_error_expecting (lexer, "EIGEN"
 #if FACTOR_FULLY_IMPLEMENTED
                                        , "ROTATION"
 #endif
                                        );
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "METHOD"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "COVARIANCE"))
+            {
+              if (lex_match_id (lexer, "COVARIANCE"))
                 factor.method = METHOD_COV;
-	      else if (lex_match_id (lexer, "CORRELATION"))
+              else if (lex_match_id (lexer, "CORRELATION"))
                 factor.method = METHOD_CORR;
-	      else
-		{
-		  lex_error_expecting (lexer, "COVARIANCE", "CORRELATION");
-		  goto error;
-		}
-	    }
-	}
+              else
+                {
+                  lex_error_expecting (lexer, "COVARIANCE", "CORRELATION");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "ROTATION"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      /* VARIMAX and DEFAULT are defaults */
-	      if (lex_match_id (lexer, "VARIMAX") || lex_match_id (lexer, "DEFAULT"))
+            {
+              /* VARIMAX and DEFAULT are defaults */
+              if (lex_match_id (lexer, "VARIMAX") || lex_match_id (lexer, "DEFAULT"))
                 factor.rotation = ROT_VARIMAX;
-	      else if (lex_match_id (lexer, "EQUAMAX"))
+              else if (lex_match_id (lexer, "EQUAMAX"))
                 factor.rotation = ROT_EQUAMAX;
-	      else if (lex_match_id (lexer, "QUARTIMAX"))
+              else if (lex_match_id (lexer, "QUARTIMAX"))
                 factor.rotation = ROT_QUARTIMAX;
-	      else if (lex_match_id (lexer, "PROMAX"))
-		{
-		  factor.promax_power = 5;
-		  if (lex_match (lexer, T_LPAREN))
+              else if (lex_match_id (lexer, "PROMAX"))
+                {
+                  factor.promax_power = 5;
+                  if (lex_match (lexer, T_LPAREN))
                     {
                       if (!lex_force_int (lexer))
                         goto error;
-		      factor.promax_power = lex_integer (lexer);
-		      lex_get (lexer);
-		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
-		    }
-		  factor.rotation = ROT_PROMAX;
-		}
-	      else if (lex_match_id (lexer, "NOROTATE"))
+                      factor.promax_power = lex_integer (lexer);
+                      lex_get (lexer);
+                      if (!lex_force_match (lexer, T_RPAREN))
+                        goto error;
+                    }
+                  factor.rotation = ROT_PROMAX;
+                }
+              else if (lex_match_id (lexer, "NOROTATE"))
                 factor.rotation = ROT_NONE;
-	      else
-		{
-		  lex_error_expecting (lexer, "DEFAULT", "VARIMAX", "EQUAMAX",
+              else
+                {
+                  lex_error_expecting (lexer, "DEFAULT", "VARIMAX", "EQUAMAX",
                                        "QUARTIMAX", "PROMAX", "NOROTATE");
-		  goto error;
-		}
-	    }
+                  goto error;
+                }
+            }
           factor.rotation_iterations = n_iterations;
-	}
+        }
       else if (lex_match_id (lexer, "CRITERIA"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "FACTORS"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+            {
+              if (lex_match_id (lexer, "FACTORS"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_int (lexer))
                     goto error;
                   factor.n_factors = lex_integer (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "MINEIGEN"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "MINEIGEN"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   factor.min_eigen = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "ECONVERGE"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "ECONVERGE"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   factor.econverge = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "RCONVERGE"))
+                }
+              else if (lex_match_id (lexer, "RCONVERGE"))
                 {
                   if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
@@ -1219,169 +1219,169 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "ITERATE"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+                }
+              else if (lex_match_id (lexer, "ITERATE"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
                     goto error;
                   n_iterations = lex_integer (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  factor.n_factors = 0;
-		  factor.min_eigen = 1;
-		  n_iterations = 25;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "FACTORS", "MINEIGEN",
+                }
+              else if (lex_match_id (lexer, "DEFAULT"))
+                {
+                  factor.n_factors = 0;
+                  factor.min_eigen = 1;
+                  n_iterations = 25;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "FACTORS", "MINEIGEN",
                                        "ECONVERGE", "RCONVERGE", "ITERATE",
                                        "DEFAULT");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "EXTRACTION"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "PAF"))
+            {
+              if (lex_match_id (lexer, "PAF"))
                 factor.extraction = EXTRACTION_PAF;
-	      else if (lex_match_id (lexer, "PC"))
+              else if (lex_match_id (lexer, "PC"))
                 factor.extraction = EXTRACTION_PC;
-	      else if (lex_match_id (lexer, "PA1"))
+              else if (lex_match_id (lexer, "PA1"))
                 factor.extraction = EXTRACTION_PC;
-	      else if (lex_match_id (lexer, "DEFAULT"))
+              else if (lex_match_id (lexer, "DEFAULT"))
                 factor.extraction = EXTRACTION_PC;
-	      else
-		{
-		  lex_error_expecting (lexer, "PAF", "PC", "PA1", "DEFAULT");
-		  goto error;
-		}
-	    }
+              else
+                {
+                  lex_error_expecting (lexer, "PAF", "PC", "PA1", "DEFAULT");
+                  goto error;
+                }
+            }
           factor.extraction_iterations = n_iterations;
-	}
+        }
       else if (lex_match_id (lexer, "FORMAT"))
-	{
+        {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
-	    {
-	      if (lex_match_id (lexer, "SORT"))
+            {
+              if (lex_match_id (lexer, "SORT"))
                 factor.sort = true;
-	      else if (lex_match_id (lexer, "BLANK"))
-		{
-		  if (!lex_force_match (lexer, T_LPAREN)
+              else if (lex_match_id (lexer, "BLANK"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
                       || !lex_force_num (lexer))
                     goto error;
                   factor.blank = lex_number (lexer);
                   lex_get (lexer);
                   if (!lex_force_match (lexer, T_RPAREN))
                     goto error;
-		}
-	      else if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  factor.blank = 0;
-		  factor.sort = false;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "SORT", "BLANK", "DEFAULT");
-		  goto error;
-		}
-	    }
-	}
+                }
+              else if (lex_match_id (lexer, "DEFAULT"))
+                {
+                  factor.blank = 0;
+                  factor.sort = false;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "SORT", "BLANK", "DEFAULT");
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "PRINT"))
-	{
-	  factor.print = 0;
+        {
+          factor.print = 0;
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
               if (lex_match_id (lexer, "UNIVARIATE"))
                 factor.print |= PRINT_UNIVARIATE;
-	      else if (lex_match_id (lexer, "DET"))
+              else if (lex_match_id (lexer, "DET"))
                 factor.print |= PRINT_DETERMINANT;
 #if FACTOR_FULLY_IMPLEMENTED
-	      else if (lex_match_id (lexer, "INV"))
-		{
-		}
+              else if (lex_match_id (lexer, "INV"))
+                {
+                }
 #endif
-	      else if (lex_match_id (lexer, "AIC"))
+              else if (lex_match_id (lexer, "AIC"))
                 factor.print |= PRINT_AIC;
-	      else if (lex_match_id (lexer, "SIG"))
+              else if (lex_match_id (lexer, "SIG"))
                 factor.print |= PRINT_SIG;
-	      else if (lex_match_id (lexer, "CORRELATION"))
+              else if (lex_match_id (lexer, "CORRELATION"))
                 factor.print |= PRINT_CORRELATION;
-	      else if (lex_match_id (lexer, "COVARIANCE"))
+              else if (lex_match_id (lexer, "COVARIANCE"))
                 factor.print |= PRINT_COVARIANCE;
-	      else if (lex_match_id (lexer, "ROTATION"))
+              else if (lex_match_id (lexer, "ROTATION"))
                 factor.print |= PRINT_ROTATION;
-	      else if (lex_match_id (lexer, "EXTRACTION"))
+              else if (lex_match_id (lexer, "EXTRACTION"))
                 factor.print |= PRINT_EXTRACTION;
-	      else if (lex_match_id (lexer, "INITIAL"))
+              else if (lex_match_id (lexer, "INITIAL"))
                 factor.print |= PRINT_INITIAL;
-	      else if (lex_match_id (lexer, "KMO"))
+              else if (lex_match_id (lexer, "KMO"))
                 factor.print |= PRINT_KMO;
 #if FACTOR_FULLY_IMPLEMENTED
-	      else if (lex_match_id (lexer, "REPR"))
-		{
-		}
-	      else if (lex_match_id (lexer, "FSCORE"))
-		{
-		}
+              else if (lex_match_id (lexer, "REPR"))
+                {
+                }
+              else if (lex_match_id (lexer, "FSCORE"))
+                {
+                }
 #endif
               else if (lex_match (lexer, T_ALL))
                 factor.print = -1;
-	      else if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  factor.print |= PRINT_INITIAL;
-		  factor.print |= PRINT_EXTRACTION;
-		  factor.print |= PRINT_ROTATION;
-		}
-	      else
-		{
-		  lex_error_expecting (lexer, "UNIVARIATE", "DET", "AIC", "SIG",
+              else if (lex_match_id (lexer, "DEFAULT"))
+                {
+                  factor.print |= PRINT_INITIAL;
+                  factor.print |= PRINT_EXTRACTION;
+                  factor.print |= PRINT_ROTATION;
+                }
+              else
+                {
+                  lex_error_expecting (lexer, "UNIVARIATE", "DET", "AIC", "SIG",
                                        "CORRELATION", "COVARIANCE", "ROTATION",
                                        "EXTRACTION", "INITIAL", "KMO", "ALL",
                                        "DEFAULT");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else if (lex_match_id (lexer, "MISSING"))
         {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
-	      if (lex_match_id (lexer, "INCLUDE"))
+              if (lex_match_id (lexer, "INCLUDE"))
                 factor.exclude = MV_SYSTEM;
-	      else if (lex_match_id (lexer, "EXCLUDE"))
+              else if (lex_match_id (lexer, "EXCLUDE"))
                 factor.exclude = MV_ANY;
-	      else if (lex_match_id (lexer, "LISTWISE"))
+              else if (lex_match_id (lexer, "LISTWISE"))
                 factor.missing_type = MISS_LISTWISE;
-	      else if (lex_match_id (lexer, "PAIRWISE"))
+              else if (lex_match_id (lexer, "PAIRWISE"))
                 factor.missing_type = MISS_PAIRWISE;
-	      else if (lex_match_id (lexer, "MEANSUB"))
+              else if (lex_match_id (lexer, "MEANSUB"))
                 factor.missing_type = MISS_MEANSUB;
-	      else
-		{
+              else
+                {
                   lex_error_expecting (lexer, "INCLUDE", "EXCLUDE", "LISTWISE",
                                        "PAIRRWISE", "MEANSUB");
-		  goto error;
-		}
-	    }
-	}
+                  goto error;
+                }
+            }
+        }
       else
-	{
-	  lex_error_expecting (lexer, "ANALYSIS", "PLOT", "METHOD", "ROTATION",
+        {
+          lex_error_expecting (lexer, "ANALYSIS", "PLOT", "METHOD", "ROTATION",
                                "CRITERIA", "EXTRACTION", "FORMAT", "PRINT",
                                "MISSING");
-	  goto error;
-	}
+          goto error;
+        }
     }
 
   if (factor.rotation == ROT_NONE)
@@ -1397,8 +1397,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       struct idata *id = idata_alloc (factor.n_vars);
 
       while (matrix_reader_next (&id->mm, mr, NULL))
-	{
-	  do_factor_by_matrix (&factor, id);
+        {
+          do_factor_by_matrix (&factor, id);
 
           gsl_matrix_free (id->ai_cov);
           id->ai_cov = NULL;
@@ -1406,7 +1406,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
           id->ai_cor = NULL;
 
           matrix_material_uninit (&id->mm);
-	}
+        }
 
       idata_free (id);
     }
@@ -1439,9 +1439,9 @@ run_factor (struct dataset *ds, const struct cmd_factor *factor)
   while (casegrouper_get_next_group (grouper, &group))
     {
       if (factor->missing_type == MISS_LISTWISE)
-	group  = casereader_create_filter_missing (group, factor->vars, factor->n_vars,
-						   factor->exclude,
-						   NULL,  NULL);
+        group  = casereader_create_filter_missing (group, factor->vars, factor->n_vars,
+                                                   factor->exclude,
+                                                   NULL,  NULL);
       do_factor (factor, group);
     }
 
@@ -1501,7 +1501,7 @@ show_scree (const struct cmd_factor *f, const struct idata *idata)
 
 static void
 show_communalities (const struct cmd_factor * factor,
-		    const gsl_vector *initial, const gsl_vector *extracted)
+                    const gsl_vector *initial, const gsl_vector *extracted)
 {
   if (!(factor->print & (PRINT_INITIAL | PRINT_EXTRACTION)))
     return;
@@ -1575,13 +1575,13 @@ show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, 
         variables->root, pivot_value_new_variable (factor->vars[matrix_row]));
 
       for (size_t j = 0; j < n_factors; ++j)
-	{
-	  double x = gsl_matrix_get (fm, matrix_row, j);
-	  if (fabs (x) < factor->blank)
-	    continue;
+        {
+          double x = gsl_matrix_get (fm, matrix_row, j);
+          if (fabs (x) < factor->blank)
+            continue;
 
           pivot_table_put2 (table, j, var_idx, pivot_value_new_number (x));
-	}
+        }
     }
 
   gsl_permutation_free (perm);
@@ -1601,10 +1601,10 @@ put_variance (struct pivot_table *table, int row, int phase_idx,
 
 static void
 show_explained_variance (const struct cmd_factor * factor,
-			 const struct idata *idata,
-			 const gsl_vector *initial_eigenvalues,
-			 const gsl_vector *extracted_eigenvalues,
-			 const gsl_vector *rotated_loadings)
+                         const struct idata *idata,
+                         const gsl_vector *initial_eigenvalues,
+                         const gsl_vector *extracted_eigenvalues,
+                         const gsl_vector *rotated_loadings)
 {
   if (!(factor->print & (PRINT_INITIAL | PRINT_EXTRACTION | PRINT_ROTATION)))
     return;
@@ -1616,7 +1616,7 @@ show_explained_variance (const struct cmd_factor * factor,
                           N_("Total"), PIVOT_RC_OTHER,
                           /* xgettext:no-c-format */
                           N_("% of Variance"), PIVOT_RC_PERCENT,
-			  /* xgettext:no-c-format */
+                          /* xgettext:no-c-format */
                           N_("Cumulative %"), PIVOT_RC_PERCENT);
 
   struct pivot_dimension *phase = pivot_dimension_create (
@@ -1839,7 +1839,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   struct idata *idata = idata_alloc (factor->n_vars);
 
   idata->cvm = covariance_1pass_create (factor->n_vars, factor->vars,
-					factor->wv, factor->exclude, true);
+                                        factor->wv, factor->exclude, true);
 
   for (; (c = casereader_read (r)); case_unref (c))
     {
@@ -1938,8 +1938,8 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
         table, PIVOT_AXIS_ROW, N_("Variables"));
 
       for (size_t i = 0; i < factor->n_vars; ++i)
-	{
-	  const struct variable *v = factor->vars[i];
+        {
+          const struct variable *v = factor->vars[i];
 
           int row = pivot_category_create_leaf (
             variables->root, pivot_value_new_variable (v));
@@ -1952,7 +1952,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
           for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
             pivot_table_put2 (table, j, row,
                               pivot_value_new_number (entries[j]));
-	}
+        }
 
       pivot_table_submit (table);
     }
@@ -1972,11 +1972,11 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
         N_("Sig."), PIVOT_RC_SIGNIFICANCE);
 
       /* The literature doesn't say what to do for the value of W when
-	 missing values are involved.  The best thing I can think of
-	 is to take the mean average. */
+         missing values are involved.  The best thing I can think of
+         is to take the mean average. */
       double w = 0;
       for (int i = 0; i < idata->mm.n->size1; ++i)
-	w += gsl_matrix_get (idata->mm.n, i, i);
+        w += gsl_matrix_get (idata->mm.n, i, i);
       w /= idata->mm.n->size1;
 
       double xsq = ((w - 1 - (2 * factor->n_vars + 5) / 6.0)
@@ -2022,8 +2022,8 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   if (idata->n_extractions > factor->n_vars)
     {
       msg (MW,
-	   _("The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."),
-	   "FACTOR");
+           _("The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."),
+           "FACTOR");
       return;
     }
 
@@ -2041,51 +2041,51 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 
     if (factor->extraction == EXTRACTION_PAF)
       {
-	gsl_vector *diff = gsl_vector_alloc (idata->msr->size);
-	struct smr_workspace *ws = ws_create (idata->analysis_matrix);
+        gsl_vector *diff = gsl_vector_alloc (idata->msr->size);
+        struct smr_workspace *ws = ws_create (idata->analysis_matrix);
 
-	for (size_t i = 0; i < factor->n_vars; ++i)
-	  {
-	    double r2 = squared_multiple_correlation (idata->analysis_matrix, i, ws);
+        for (size_t i = 0; i < factor->n_vars; ++i)
+          {
+            double r2 = squared_multiple_correlation (idata->analysis_matrix, i, ws);
 
-	    gsl_vector_set (idata->msr, i, r2);
-	  }
-	ws_destroy (ws);
+            gsl_vector_set (idata->msr, i, r2);
+          }
+        ws_destroy (ws);
 
-	gsl_vector_memcpy (initial_communalities, idata->msr);
+        gsl_vector_memcpy (initial_communalities, idata->msr);
 
-	for (size_t i = 0; i < factor->extraction_iterations; ++i)
-	  {
-	    double min, max;
-	    gsl_vector_memcpy (diff, idata->msr);
+        for (size_t i = 0; i < factor->extraction_iterations; ++i)
+          {
+            double min, max;
+            gsl_vector_memcpy (diff, idata->msr);
 
-	    iterate_factor_matrix (idata->analysis_matrix, idata->msr, factor_matrix, fmw);
+            iterate_factor_matrix (idata->analysis_matrix, idata->msr, factor_matrix, fmw);
 
-	    gsl_vector_sub (diff, idata->msr);
+            gsl_vector_sub (diff, idata->msr);
 
-	    gsl_vector_minmax (diff, &min, &max);
+            gsl_vector_minmax (diff, &min, &max);
 
-	    if (fabs (min) < factor->econverge && fabs (max) < factor->econverge)
-	      break;
-	  }
-	gsl_vector_free (diff);
+            if (fabs (min) < factor->econverge && fabs (max) < factor->econverge)
+              break;
+          }
+        gsl_vector_free (diff);
 
 
 
-	gsl_vector_memcpy (extracted_communalities, idata->msr);
-	extracted_eigenvalues = fmw->eval;
+        gsl_vector_memcpy (extracted_communalities, idata->msr);
+        extracted_eigenvalues = fmw->eval;
       }
     else if (factor->extraction == EXTRACTION_PC)
       {
-	for (size_t i = 0; i < factor->n_vars; ++i)
-	  gsl_vector_set (initial_communalities, i, communality (idata, i, factor->n_vars));
+        for (size_t i = 0; i < factor->n_vars; ++i)
+          gsl_vector_set (initial_communalities, i, communality (idata, i, factor->n_vars));
 
-	gsl_vector_memcpy (extracted_communalities, initial_communalities);
+        gsl_vector_memcpy (extracted_communalities, initial_communalities);
 
-	iterate_factor_matrix (idata->analysis_matrix, extracted_communalities, factor_matrix, fmw);
+        iterate_factor_matrix (idata->analysis_matrix, extracted_communalities, factor_matrix, fmw);
 
 
-	extracted_eigenvalues = idata->eval;
+        extracted_eigenvalues = idata->eval;
       }
 
 
@@ -2094,16 +2094,16 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 
     if (factor->rotation != ROT_NONE)
       {
-	rotated_factors = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
-	rotated_loadings = gsl_vector_calloc (factor_matrix->size2);
-	if (factor->rotation == ROT_PROMAX)
-	  {
-	    pattern_matrix = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
-	    fcm = gsl_matrix_calloc (factor_matrix->size2, factor_matrix->size2);
-	  }
+        rotated_factors = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
+        rotated_loadings = gsl_vector_calloc (factor_matrix->size2);
+        if (factor->rotation == ROT_PROMAX)
+          {
+            pattern_matrix = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
+            fcm = gsl_matrix_calloc (factor_matrix->size2, factor_matrix->size2);
+          }
 
 
-	rotate (factor, factor_matrix, extracted_communalities, rotated_factors, rotated_loadings, pattern_matrix, fcm);
+        rotate (factor, factor_matrix, extracted_communalities, rotated_factors, rotated_loadings, pattern_matrix, fcm);
       }
 
     show_explained_variance (factor, idata, idata->eval, extracted_eigenvalues, rotated_loadings);
@@ -2113,34 +2113,34 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     show_scree (factor, idata);
 
     show_factor_matrix (factor, idata,
-			(factor->extraction == EXTRACTION_PC
+                        (factor->extraction == EXTRACTION_PC
                          ? N_("Component Matrix") : N_("Factor Matrix")),
-			factor_matrix);
+                        factor_matrix);
 
     if (factor->rotation == ROT_PROMAX)
       {
-	show_factor_matrix (factor, idata, N_("Pattern Matrix"),
+        show_factor_matrix (factor, idata, N_("Pattern Matrix"),
                             pattern_matrix);
-	gsl_matrix_free (pattern_matrix);
+        gsl_matrix_free (pattern_matrix);
       }
 
     if (factor->rotation != ROT_NONE)
       {
-	show_factor_matrix (factor, idata,
-			    (factor->rotation == ROT_PROMAX
+        show_factor_matrix (factor, idata,
+                            (factor->rotation == ROT_PROMAX
                              ? N_("Structure Matrix")
                              : factor->extraction == EXTRACTION_PC
                              ? N_("Rotated Component Matrix")
-			     : N_("Rotated Factor Matrix")),
-			    rotated_factors);
+                             : N_("Rotated Factor Matrix")),
+                            rotated_factors);
 
-	gsl_matrix_free (rotated_factors);
+        gsl_matrix_free (rotated_factors);
       }
 
     if (factor->rotation == ROT_PROMAX)
       {
-	show_factor_correlation (factor, fcm);
-	gsl_matrix_free (fcm);
+        show_factor_correlation (factor, fcm);
+        gsl_matrix_free (fcm);
       }
 
     gsl_matrix_free (factor_matrix);

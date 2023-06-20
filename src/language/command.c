@@ -110,9 +110,9 @@ struct command
   {
     enum states states;         /* States in which command is allowed. */
     enum flags flags;           /* Other command requirements. */
-    const char *name;		/* Command name. */
-    const char *label;		/* Translated command label. */
-    int (*function) (struct lexer *, struct dataset *);	/* Function to call. */
+    const char *name;                /* Command name. */
+    const char *label;                /* Translated command label. */
+    int (*function) (struct lexer *, struct dataset *);        /* Function to call. */
   };
 
 /* Define the command array. */
@@ -142,7 +142,7 @@ static enum cmd_result do_parse_command (struct lexer *, struct dataset *, enum 
    Returns the command's success or failure result. */
 enum cmd_result
 cmd_parse_in_state (struct lexer *lexer, struct dataset *ds,
-		    enum cmd_state state)
+                    enum cmd_state state)
 {
   struct session *session = dataset_session (ds);
   int result;
@@ -163,9 +163,9 @@ cmd_parse (struct lexer *lexer, struct dataset *ds)
 {
   const struct dictionary *dict = dataset_dict (ds);
   return cmd_parse_in_state (lexer, ds,
-			     dataset_has_source (ds) &&
-			     dict_get_n_vars (dict) > 0 ?
-			     CMD_STATE_DATA : CMD_STATE_INITIAL);
+                             dataset_has_source (ds) &&
+                             dict_get_n_vars (dict) > 0 ?
+                             CMD_STATE_DATA : CMD_STATE_INITIAL);
 }
 
 
@@ -173,7 +173,7 @@ cmd_parse (struct lexer *lexer, struct dataset *ds)
    dot. */
 static enum cmd_result
 do_parse_command (struct lexer *lexer,
-		  struct dataset *ds, enum cmd_state state)
+                  struct dataset *ds, enum cmd_state state)
 {
   const struct command *command = NULL;
   size_t nesting_level = SIZE_MAX;

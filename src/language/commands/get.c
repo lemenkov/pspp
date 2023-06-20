@@ -82,17 +82,17 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "FILE") || lex_is_string (lexer))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
           fh_unref (fh);
-	  fh = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (fh == NULL)
+          fh = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (fh == NULL)
             goto error;
-	}
+        }
       else if (command == GET_CMD && lex_match_id (lexer, "ENCODING"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
           if (!lex_force_string (lexer))
             goto error;
@@ -103,16 +103,16 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
           lex_get (lexer);
         }
       else if (command == IMPORT_CMD && lex_match_id (lexer, "TYPE"))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
-	  if (!lex_match_id (lexer, "COMM")
+          if (!lex_match_id (lexer, "COMM")
               && !lex_match_id (lexer, "TAPE"))
-	    {
-	      lex_error_expecting (lexer, "COMM", "TAPE");
+            {
+              lex_error_expecting (lexer, "COMM", "TAPE");
               goto error;
-	    }
-	}
+            }
+        }
       else
         break;
     }

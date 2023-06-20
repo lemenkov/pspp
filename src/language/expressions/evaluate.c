@@ -54,7 +54,7 @@ expr_evaluate (struct expression *e, const struct ccase *c, int case_idx,
     {
       assert (op < e->ops + e->n_ops);
       switch (op++->operation)
-	{
+        {
         case OP_number:
         case OP_boolean:
           *ns++ = op++->number;
@@ -77,9 +77,9 @@ expr_evaluate (struct expression *e, const struct ccase *c, int case_idx,
 
 #include "evaluate.inc"
 
-	default:
-	  NOT_REACHED ();
-	}
+        default:
+          NOT_REACHED ();
+        }
     }
 }
 
@@ -180,11 +180,11 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
               goto done;
             }
 
-	  if  (ds == NULL)
-	    {
-	      ds = dataset_create (NULL, "");
-	      d = dataset_dict (ds);
-	    }
+          if  (ds == NULL)
+            {
+              ds = dataset_create (NULL, "");
+              d = dataset_dict (ds);
+            }
 
           v = dict_create_var (d, name, width);
           if (v == NULL)

@@ -120,17 +120,17 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds)
       lex_match (lexer, T_SLASH);
 
       if (lex_match_id (lexer, "FILE") || lex_is_string (lexer))
-	{
-	  lex_match (lexer, T_EQUALS);
+        {
+          lex_match (lexer, T_EQUALS);
 
           fh_unref (h);
-	  h = fh_parse (lexer, FH_REF_FILE, NULL);
-	  if (h == NULL)
+          h = fh_parse (lexer, FH_REF_FILE, NULL);
+          if (h == NULL)
             goto error;
-	}
+        }
       else if (lex_match_id (lexer, "ENCODING"))
         {
-	  lex_match (lexer, T_EQUALS);
+          lex_match (lexer, T_EQUALS);
 
           if (!lex_force_string (lexer))
             goto error;
@@ -288,7 +288,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
   else if (lex_match_id (lexer, "FILE"))
     {
       if (!lex_force_match_id (lexer, "LABEL"))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
 
       const char *label = dict_get_label (dataset_dict (ds));
 
@@ -307,10 +307,10 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
       bool sorted = lex_match_id (lexer, "SORTED");
 
       if (lex_match_id (lexer, "VECTORS"))
-	{
-	  display_vectors (dataset_dict(ds), sorted);
-	  return CMD_SUCCESS;
-	}
+        {
+          display_vectors (dataset_dict(ds), sorted);
+          return CMD_SUCCESS;
+        }
       else if (lex_match_id (lexer, "SCRATCH"))
         {
           dict_get_vars (dataset_dict (ds), &vl, &n, DC_ORDINARY);

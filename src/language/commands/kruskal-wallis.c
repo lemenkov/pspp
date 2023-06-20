@@ -110,7 +110,7 @@ find_rank_entry (const struct hmap *map, const union value *group, size_t width)
   HMAP_FOR_EACH_WITH_HASH (re, struct rank_entry, node, hash, map)
     {
       if (0 == value_compare_3way (group, &re->group, width))
-	return re;
+        return re;
     }
 
   return re;
@@ -137,11 +137,11 @@ static void show_sig_box (const struct n_sample_test *, const struct kw *);
 
 void
 kruskal_wallis_execute (const struct dataset *ds,
-			struct casereader *input,
-			enum mv_class exclude,
-			const struct npar_test *test,
-			bool exact UNUSED,
-			double timer UNUSED)
+                        struct casereader *input,
+                        enum mv_class exclude,
+                        const struct npar_test *test,
+                        bool exact UNUSED,
+                        double timer UNUSED)
 {
   int i;
   struct ccase *c;
@@ -157,15 +157,15 @@ kruskal_wallis_execute (const struct dataset *ds,
 
   /* If the independent variable is missing, then we ignore the case */
   input = casereader_create_filter_missing (input,
-					    &nst->indep_var, 1,
-					    exclude,
-					    NULL, NULL);
+                                            &nst->indep_var, 1,
+                                            exclude,
+                                            NULL, NULL);
 
   input = casereader_create_filter_weight (input, dict, &warn, NULL);
 
   /* Remove all those cases which are outside the range (val1, val2) */
   input = casereader_create_filter_func (input, include_func, NULL,
-	CONST_CAST (struct n_sample_test *, nst), NULL);
+        CONST_CAST (struct n_sample_test *, nst), NULL);
 
   proto = casereader_get_proto (input);
   rank_idx = caseproto_get_n_widths (proto);
@@ -183,57 +183,57 @@ kruskal_wallis_execute (const struct dataset *ds,
 
       /* Ignore missings in the test variable */
       r = casereader_create_filter_missing (r, &nst->vars[i], 1,
-					    exclude,
-					    NULL, NULL);
+                                            exclude,
+                                            NULL, NULL);
 
       rr = casereader_create_append_rank (r,
-					  nst->vars[i],
-					  dict_get_weight (dict),
-					  &rerr,
-					  distinct_callback, &tiebreaker);
+                                          nst->vars[i],
+                                          dict_get_weight (dict),
+                                          &rerr,
+                                          distinct_callback, &tiebreaker);
 
       hmap_init (&kw[i].map);
       for (; (c = casereader_read (rr)); case_unref (c))
-	{
-	  const union value *group = case_data (c, nst->indep_var);
-	  const size_t group_var_width = var_get_width (nst->indep_var);
-	  struct rank_entry *rank = find_rank_entry (&kw[i].map, group, group_var_width);
+        {
+          const union value *group = case_data (c, nst->indep_var);
+          const size_t group_var_width = var_get_width (nst->indep_var);
+          struct rank_entry *rank = find_rank_entry (&kw[i].map, group, group_var_width);
 
-	  if (NULL == rank)
-	    {
-	      rank = xzalloc (sizeof *rank);
-	      value_clone (&rank->group, group, group_var_width);
+          if (NULL == rank)
+            {
+              rank = xzalloc (sizeof *rank);
+              value_clone (&rank->group, group, group_var_width);
 
-	      hmap_insert (&kw[i].map, &rank->node,
-			   value_hash (&rank->group, group_var_width, 0));
-	    }
+              hmap_insert (&kw[i].map, &rank->node,
+                           value_hash (&rank->group, group_var_width, 0));
+            }
 
-	  rank->sum_of_ranks += case_num_idx (c, rank_idx);
-	  rank->n += dict_get_case_weight (dict, c, &warn);
+          rank->sum_of_ranks += case_num_idx (c, rank_idx);
+          rank->n += dict_get_case_weight (dict, c, &warn);
 
-	  /* If this assertion fires, then either the data wasn't sorted or some other
-	     problem occurred */
-	  assert (rerr == 0);
-	}
+          /* If this assertion fires, then either the data wasn't sorted or some other
+             problem occurred */
+          assert (rerr == 0);
+        }
 
       casereader_destroy (rr);
 
       /* Calculate the value of h */
       {
-	struct rank_entry *mre;
-	double n = 0.0;
+        struct rank_entry *mre;
+        double n = 0.0;
 
-	HMAP_FOR_EACH (mre, struct rank_entry, node, &kw[i].map)
-	  {
-	    kw[i].h += pow2 (mre->sum_of_ranks) / mre->n;
-	    n += mre->n;
+        HMAP_FOR_EACH (mre, struct rank_entry, node, &kw[i].map)
+          {
+            kw[i].h += pow2 (mre->sum_of_ranks) / mre->n;
+            n += mre->n;
 
-	    total_n_groups ++;
-	  }
-	kw[i].h *= 12 / (n * (n + 1));
-	kw[i].h -= 3 * (n + 1) ;
+            total_n_groups ++;
+          }
+        kw[i].h *= 12 / (n * (n + 1));
+        kw[i].h -= 3 * (n + 1) ;
 
-	kw[i].h /= 1 - tiebreaker/ (pow3 (n) - n);
+        kw[i].h /= 1 - tiebreaker/ (pow3 (n) - n);
       }
     }
 
@@ -247,10 +247,10 @@ kruskal_wallis_execute (const struct dataset *ds,
     {
       struct rank_entry *mre, *next;
       HMAP_FOR_EACH_SAFE (mre, next, struct rank_entry, node, &kw[i].map)
-	{
-	  hmap_delete (&kw[i].map, &mre->node);
-	  free (mre);
-	}
+        {
+          hmap_delete (&kw[i].map, &mre->node);
+          free (mre);
+        }
       hmap_destroy (&kw[i].map);
     }
 
@@ -285,8 +285,8 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw)
       const struct rank_entry *re;
       BT_FOR_EACH (re, struct rank_entry, btn, &bt)
         {
-	  struct string str = DS_EMPTY_INITIALIZER;
-	  var_append_value_name (nst->indep_var, &re->group, &str);
+          struct string str = DS_EMPTY_INITIALIZER;
+          var_append_value_name (nst->indep_var, &re->group, &str);
           int row = pivot_category_create_leaf (
             group, pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
@@ -295,8 +295,8 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw)
             pivot_table_put2 (table, j, row,
                               pivot_value_new_number (entries[j]));
 
-	  tot += re->n;
-	}
+          tot += re->n;
+        }
 
       int row = pivot_category_create_leaves (group, N_("Total"));
       pivot_table_put2 (table, 0, row, pivot_value_new_number (tot));

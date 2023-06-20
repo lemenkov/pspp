@@ -27,9 +27,9 @@ G_BEGIN_DECLS
 
 
 
-#define PSPPIRE_TYPE_DELIMITED_TEXT	       (psppire_delimited_text_get_type ())
+#define PSPPIRE_TYPE_DELIMITED_TEXT               (psppire_delimited_text_get_type ())
 
-#define PSPPIRE_DELIMITED_TEXT(obj)	\
+#define PSPPIRE_DELIMITED_TEXT(obj)        \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj),                                   \
                                PSPPIRE_TYPE_DELIMITED_TEXT, PsppireDelimitedText))
 

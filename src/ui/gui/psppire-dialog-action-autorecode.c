@@ -211,15 +211,15 @@ on_entry_change (PsppireDialogActionAutorecode *rd)
 
       g_hash_table_iter_init (&iter, rd->varmap);
       while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  struct nlp *nlp = value;
+        {
+          struct nlp *nlp = value;
 
-	  if (0 == strcmp (nlp->name, text))
-	    {
-	      valid = FALSE;
-	      break;
-	    }
-	}
+          if (0 == strcmp (nlp->name, text))
+            {
+              valid = FALSE;
+              break;
+            }
+        }
     }
 
   gtk_widget_set_sensitive  (rd->change_button, valid);
@@ -260,9 +260,9 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
       nlp = g_hash_table_lookup (rd->varmap, var);
 
       if (nlp)
-	gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), nlp->name ? nlp->name : "");
+        gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), nlp->name ? nlp->name : "");
       else
-	gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
+        gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
     }
   else
     {
@@ -279,10 +279,10 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
 
 static void
 render_new_var_name (GtkTreeViewColumn *tree_column,
-		     GtkCellRenderer *cell,
-		     GtkTreeModel *tree_model,
-		     GtkTreeIter *iter,
-		     gpointer data)
+                     GtkCellRenderer *cell,
+                     GtkTreeModel *tree_model,
+                     GtkTreeIter *iter,
+                     gpointer data)
 {
   struct nlp *nlp = NULL;
 
@@ -293,8 +293,8 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
   struct variable *var = NULL;
 
   gtk_tree_model_get (tree_model, iter,
-		      0, &var,
-		      -1);
+                      0, &var,
+                      -1);
 
   nlp = g_hash_table_lookup (rd->varmap, var);
 
@@ -330,13 +330,13 @@ psppire_dialog_action_autorecode_activate (PsppireDialogAction *a, GVariant *par
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
 
     GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes (_("New"),
-								       renderer,
-								       "text", NULL,
-								       NULL);
+                                                                       renderer,
+                                                                       "text", NULL,
+                                                                       NULL);
 
     gtk_tree_view_column_set_cell_data_func (col, renderer,
-					     render_new_var_name,
-					     act, NULL);
+                                             render_new_var_name,
+                                             act, NULL);
 
     gtk_tree_view_append_column (GTK_TREE_VIEW (act->var_view), col);
 
@@ -354,13 +354,13 @@ psppire_dialog_action_autorecode_activate (PsppireDialogAction *a, GVariant *par
 
 
     g_signal_connect (sel, "changed",
-		      G_CALLBACK (on_selection_change), act);
+                      G_CALLBACK (on_selection_change), act);
 
     g_signal_connect (act->change_button, "clicked",
-		      G_CALLBACK (on_change_clicked),  act);
+                      G_CALLBACK (on_change_clicked),  act);
 
     g_signal_connect_swapped (act->new_name_entry, "changed",
-			      G_CALLBACK (on_entry_change),  act);
+                              G_CALLBACK (on_entry_change),  act);
 
   }
 

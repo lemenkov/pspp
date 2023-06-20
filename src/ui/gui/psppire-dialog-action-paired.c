@@ -51,7 +51,7 @@ dialog_state_valid (gpointer data)
 
   /* Get the last row */
   gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (pd->list_store), &dest_iter,
-				 NULL, n_rows - 1);
+                                 NULL, n_rows - 1);
 
   /* Get the last (2nd) column */
   gtk_tree_model_get (GTK_TREE_MODEL (pd->list_store), &dest_iter, 1, &v, -1);
@@ -77,9 +77,9 @@ refresh (PsppireDialogAction *rd_)
 
 static void
 select_as_pair_member (GtkTreeIter source_iter,
-		       GtkWidget *dest,
-		       GtkTreeModel *source_model,
-		       gpointer data)
+                       GtkWidget *dest,
+                       GtkTreeModel *source_model,
+                       gpointer data)
 {
   struct variable *v;
   struct variable *v1;
@@ -89,7 +89,7 @@ select_as_pair_member (GtkTreeIter source_iter,
 
 
   gtk_tree_model_get (source_model, &source_iter,
-		      DICT_TVM_COL_VAR, &v, -1);
+                      DICT_TVM_COL_VAR, &v, -1);
 
   n_rows = gtk_tree_model_iter_n_children  (GTK_TREE_MODEL (tt_d->list_store), NULL);
 
@@ -97,7 +97,7 @@ select_as_pair_member (GtkTreeIter source_iter,
     {
 
       gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (tt_d->list_store),
-				     &dest_iter, NULL, n_rows - 1);
+                                     &dest_iter, NULL, n_rows - 1);
 
       gtk_tree_model_get (GTK_TREE_MODEL (tt_d->list_store), &dest_iter, 1, &v1, -1);
     }
@@ -109,15 +109,15 @@ select_as_pair_member (GtkTreeIter source_iter,
       gtk_list_store_append (tt_d->list_store, &dest_iter);
 
       gtk_list_store_set (tt_d->list_store, &dest_iter,
-			  0, v,
-			  1, NULL,
-			  -1);
+                          0, v,
+                          1, NULL,
+                          -1);
     }
   else
     {
       gtk_list_store_set (tt_d->list_store, &dest_iter,
-			  1, v,
-			  -1);
+                          1, v,
+                          -1);
     }
 }
 
@@ -180,12 +180,12 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a, GVariant *param)
   psppire_dialog_action_set_refresh (pda, refresh);
 
   g_object_set (pda->source,
-		"predicate", var_is_numeric,
-		NULL);
+                "predicate", var_is_numeric,
+                NULL);
 
   psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
-				    select_as_pair_member,
-				    act);
+                                    select_as_pair_member,
+                                    act);
   return xml;
 }
 

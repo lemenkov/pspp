@@ -64,21 +64,21 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
       /* Sort direction. */
       enum subcase_direction direction;
       if (lex_match (lexer, T_LPAREN))
-	{
-	  if (lex_match_id (lexer, "D") || lex_match_id (lexer, "DOWN"))
-	    direction = SC_DESCEND;
-	  else if (lex_match_id (lexer, "A") || lex_match_id (lexer, "UP"))
+        {
+          if (lex_match_id (lexer, "D") || lex_match_id (lexer, "DOWN"))
+            direction = SC_DESCEND;
+          else if (lex_match_id (lexer, "A") || lex_match_id (lexer, "UP"))
             direction = SC_ASCEND;
           else
-	    {
+            {
               lex_error_expecting (lexer, "A", "D");
               goto error;
-	    }
-	  if (!lex_force_match (lexer, T_RPAREN))
+            }
+          if (!lex_force_match (lexer, T_RPAREN))
             goto error;
           if (saw_direction != NULL)
             *saw_direction = true;
-	}
+        }
       else
         direction = SC_ASCEND;
 

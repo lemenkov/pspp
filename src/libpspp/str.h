@@ -276,8 +276,8 @@ char *relocate_format (const char *, ...)
   PRINTF_FORMAT (1, 2) MALLOC_LIKE;
 
 void u8_buf_copy_rpad (uint8_t *dst, size_t dst_size,
-		       const uint8_t *src, size_t src_size,
-		       char pad);
+                       const uint8_t *src, size_t src_size,
+                       char pad);
 
 static inline struct substring
 ss_empty (void)

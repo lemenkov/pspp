@@ -45,13 +45,13 @@ run_stats_dialog (PsppireDialogActionExamine *ed)
   gint response;
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->descriptives_button),
-				ed->stats & STAT_DESCRIPTIVES);
+                                ed->stats & STAT_DESCRIPTIVES);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->extremes_button),
-				ed->stats & STAT_EXTREMES);
+                                ed->stats & STAT_EXTREMES);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->percentiles_button),
-				ed->stats & STAT_PERCENTILES);
+                                ed->stats & STAT_PERCENTILES);
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (ed->stats_dialog));
 
@@ -59,13 +59,13 @@ run_stats_dialog (PsppireDialogActionExamine *ed)
     {
       ed->stats = 0;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->descriptives_button)))
-	ed->stats |= STAT_DESCRIPTIVES;
+        ed->stats |= STAT_DESCRIPTIVES;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->extremes_button)))
-	ed->stats |= STAT_EXTREMES;
+        ed->stats |= STAT_EXTREMES;
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->percentiles_button)))
-	ed->stats |= STAT_PERCENTILES;
+        ed->stats |= STAT_PERCENTILES;
     }
 }
 
@@ -95,11 +95,11 @@ run_opts_dialog (PsppireDialogActionExamine *ed)
   if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->listwise)))
-	ed->opts = OPT_LISTWISE;
+        ed->opts = OPT_LISTWISE;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->pairwise)))
-	ed->opts = OPT_PAIRWISE;
+        ed->opts = OPT_PAIRWISE;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->report)))
-	ed->opts = OPT_REPORT;
+        ed->opts = OPT_REPORT;
   }
 }
 
@@ -179,36 +179,36 @@ run_plots_dialog (PsppireDialogActionExamine *ed)
   if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->boxplot_factors_button)))
-	ed->boxplots = BOXPLOT_FACTORS;
+        ed->boxplots = BOXPLOT_FACTORS;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->boxplot_dependents_button)))
-	ed->boxplots = BOXPLOT_DEPENDENTS;
+        ed->boxplots = BOXPLOT_DEPENDENTS;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->boxplot_none_button)))
-	ed->boxplots = BOXPLOT_NONE;
+        ed->boxplots = BOXPLOT_NONE;
 
       ed->histogram = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->histogram_button));
       ed->npplots   = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->npplots_button));
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->spread_none_button)))
-	ed->spreadlevel = SPREAD_NONE;
+        ed->spreadlevel = SPREAD_NONE;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->spread_power_button)))
-	ed->spreadlevel = SPREAD_POWER;
+        ed->spreadlevel = SPREAD_POWER;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->spread_trans_button)))
-	ed->spreadlevel = SPREAD_TRANS;
+        ed->spreadlevel = SPREAD_TRANS;
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->spread_untrans_button)))
-	ed->spreadlevel = SPREAD_UNTRANS;
+        ed->spreadlevel = SPREAD_UNTRANS;
 
       if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "natlog"))
-	ed->spreadpower = SPREADPOWER_NATLOG;
+        ed->spreadpower = SPREADPOWER_NATLOG;
       else if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "cube"))
-	ed->spreadpower = SPREADPOWER_CUBE;
+        ed->spreadpower = SPREADPOWER_CUBE;
       else if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "square"))
-	ed->spreadpower = SPREADPOWER_SQUARE;
+        ed->spreadpower = SPREADPOWER_SQUARE;
       else if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "squareroot"))
-	ed->spreadpower = SPREADPOWER_SQUAREROOT;
+        ed->spreadpower = SPREADPOWER_SQUAREROOT;
       else if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "recroot"))
-	ed->spreadpower = SPREADPOWER_RECROOT;
+        ed->spreadpower = SPREADPOWER_RECROOT;
       else if (0 == strcmp (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ed->spread_power_combo)), "reciprocal"))
-	ed->spreadpower = SPREADPOWER_RECIPROCAL;
+        ed->spreadpower = SPREADPOWER_RECIPROCAL;
     }
 }
 
@@ -248,18 +248,18 @@ generate_syntax (const PsppireDialogAction *act)
   if (show_stats)
     {
       if (ed->stats & (STAT_DESCRIPTIVES | STAT_EXTREMES))
-	{
-	  g_string_append (str, "\n\t/STATISTICS =");
+        {
+          g_string_append (str, "\n\t/STATISTICS =");
 
-	  if (ed->stats & STAT_DESCRIPTIVES)
-	    g_string_append (str, " DESCRIPTIVES");
+          if (ed->stats & STAT_DESCRIPTIVES)
+            g_string_append (str, " DESCRIPTIVES");
 
-	  if (ed->stats & STAT_EXTREMES)
-	    g_string_append (str, " EXTREME");
-	}
+          if (ed->stats & STAT_EXTREMES)
+            g_string_append (str, " EXTREME");
+        }
 
       if (ed->stats & STAT_PERCENTILES)
-	g_string_append (str, "\n\t/PERCENTILES");
+        g_string_append (str, "\n\t/PERCENTILES");
     }
 
   if (show_plots &&
@@ -271,51 +271,51 @@ generate_syntax (const PsppireDialogAction *act)
       g_string_append (str, "\n\t/PLOT =");
 
       if (ed->boxplots != BOXPLOT_NONE)
-	g_string_append (str, " BOXPLOT");
+        g_string_append (str, " BOXPLOT");
       if (ed->histogram)
-	g_string_append (str, " HISTOGRAM");
+        g_string_append (str, " HISTOGRAM");
       if (ed->npplots)
-	g_string_append (str, " NPPLOT");
+        g_string_append (str, " NPPLOT");
       if (ed->spreadlevel != SPREAD_NONE)
-	{
-	  g_string_append (str, " SPREADLEVEL");
-	  if (ed->spreadlevel != SPREAD_POWER)
-	    {
-	      const gchar *power = NULL;
-	      if (ed->spreadlevel == SPREAD_TRANS)
-		switch (ed->spreadpower)
-		  {
-		  case SPREADPOWER_NATLOG:
-		    power = "0";
-		    break;
-		  case SPREADPOWER_CUBE:
-		    power = "3";
-		    break;
-		  case SPREADPOWER_SQUARE:
-		    power = "2";
-		    break;
-		  case SPREADPOWER_SQUAREROOT:
-		    power = "0.5";
-		    break;
-		  case SPREADPOWER_RECROOT:
-		    power = "-0.5";
-		    break;
-		  case SPREADPOWER_RECIPROCAL:
-		    power = "-1";
-		    break;
-		  default:
-		    g_assert_not_reached ();
-		    break;
-		  }
-	      else
-		power = "1";
-	      g_string_append_printf(str, " (%s)",power);
-	    }
-	}
+        {
+          g_string_append (str, " SPREADLEVEL");
+          if (ed->spreadlevel != SPREAD_POWER)
+            {
+              const gchar *power = NULL;
+              if (ed->spreadlevel == SPREAD_TRANS)
+                switch (ed->spreadpower)
+                  {
+                  case SPREADPOWER_NATLOG:
+                    power = "0";
+                    break;
+                  case SPREADPOWER_CUBE:
+                    power = "3";
+                    break;
+                  case SPREADPOWER_SQUARE:
+                    power = "2";
+                    break;
+                  case SPREADPOWER_SQUAREROOT:
+                    power = "0.5";
+                    break;
+                  case SPREADPOWER_RECROOT:
+                    power = "-0.5";
+                    break;
+                  case SPREADPOWER_RECIPROCAL:
+                    power = "-1";
+                    break;
+                  default:
+                    g_assert_not_reached ();
+                    break;
+                  }
+              else
+                power = "1";
+              g_string_append_printf(str, " (%s)",power);
+            }
+        }
       if (ed->boxplots == BOXPLOT_FACTORS)
-	g_string_append (str, "\n\t/COMPARE = GROUPS");
+        g_string_append (str, "\n\t/COMPARE = GROUPS");
       if (ed->boxplots == BOXPLOT_DEPENDENTS)
-	g_string_append (str, "\n\t/COMPARE = VARIABLES");
+        g_string_append (str, "\n\t/COMPARE = VARIABLES");
     }
 
   g_string_append (str, "\n\t/MISSING=");
@@ -385,12 +385,12 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a, GVariant *param)
   GtkWidget *plots_button = get_widget_assert (xml, "plots-button");
 
   g_signal_connect_swapped (stats_button, "clicked",
-			    G_CALLBACK (run_stats_dialog), act);
+                            G_CALLBACK (run_stats_dialog), act);
 
   g_signal_connect_swapped (opts_button, "clicked",
-			    G_CALLBACK (run_opts_dialog), act);
+                            G_CALLBACK (run_opts_dialog), act);
   g_signal_connect_swapped (plots_button, "clicked",
-			    G_CALLBACK (run_plots_dialog), act);
+                            G_CALLBACK (run_plots_dialog), act);
 
   GtkWidget *dep_sel = get_widget_assert (xml, "psppire-selector1");
   GtkWidget *dep_sel2 = get_widget_assert (xml, "psppire-selector2");

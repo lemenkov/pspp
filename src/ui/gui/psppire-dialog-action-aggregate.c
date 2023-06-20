@@ -87,9 +87,9 @@ append_destination_filename (const PsppireDialogActionAggregate *agg, GString *g
       g_string_append (gs, "* ");
 
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->replace_radiobutton)))
-	g_string_append (gs, "MODE=REPLACE");
+        g_string_append (gs, "MODE=REPLACE");
       else
-	g_string_append (gs, "MODE=ADDVARIABLES");
+        g_string_append (gs, "MODE=ADDVARIABLES");
     }
 }
 
@@ -182,10 +182,10 @@ enum
 
 static void
 render_summary   (GtkTreeViewColumn *tree_column,
-		  GtkCellRenderer *cell,
-		  GtkTreeModel *tree_model,
-		  GtkTreeIter *iter,
-		  gpointer data)
+                  GtkCellRenderer *cell,
+                  GtkTreeModel *tree_model,
+                  GtkTreeIter *iter,
+                  gpointer data)
 {
  PsppireDialogActionAggregate *agg = data;
 
@@ -205,11 +205,11 @@ choose_filename (PsppireDialogActionAggregate *fd)
   GtkFileFilter *filter;
 
   GtkWidget *dialog = gtk_file_chooser_dialog_new (_("Aggregate destination file"),
-						   GTK_WINDOW (PSPPIRE_DIALOG_ACTION (fd)->toplevel),
-						   GTK_FILE_CHOOSER_ACTION_SAVE,
-						   _("Cancel"), GTK_RESPONSE_CANCEL,
-						   _("Save"), GTK_RESPONSE_ACCEPT,
-						   NULL);
+                                                   GTK_WINDOW (PSPPIRE_DIALOG_ACTION (fd)->toplevel),
+                                                   GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                   _("Cancel"), GTK_RESPONSE_CANCEL,
+                                                   _("Save"), GTK_RESPONSE_ACCEPT,
+                                                   NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
 
@@ -260,14 +260,14 @@ populate_combo_model (GtkComboBox *cb)
     {
       const gchar *s = af->description;
       if (s == NULL)
-	continue;
+        continue;
 
       gtk_list_store_append (list, &iter);
       gtk_list_store_set (list, &iter,
                           COMBO_MODEL_COL_DESC, gettext (s),
-			  COMBO_MODEL_COL_SYNTAX, af->name,
-			  COMBO_MODEL_COL_SRC_VARS, af->src_vars,
-			  COMBO_MODEL_COL_ARITY, af->n_args,
+                          COMBO_MODEL_COL_SYNTAX, af->name,
+                          COMBO_MODEL_COL_SRC_VARS, af->src_vars,
+                          COMBO_MODEL_COL_ARITY, af->n_args,
                           -1);
     }
 
@@ -317,16 +317,16 @@ get_summary_spec (gint col, GValue *val, gpointer data)
       break;
     case SUMMARY_COL_ARG1:
       {
-	const gchar *text = gtk_entry_get_text (GTK_ENTRY (agg->summary_arg1_entry));
-	g_value_init (val, G_TYPE_DOUBLE);
-	g_value_set_double (val, g_strtod (text, 0));
+        const gchar *text = gtk_entry_get_text (GTK_ENTRY (agg->summary_arg1_entry));
+        g_value_init (val, G_TYPE_DOUBLE);
+        g_value_set_double (val, g_strtod (text, 0));
       }
       break;
     case SUMMARY_COL_ARG2:
       {
-	const gchar *text = gtk_entry_get_text (GTK_ENTRY (agg->summary_arg2_entry));
-	g_value_init (val, G_TYPE_DOUBLE);
-	g_value_set_double (val, g_strtod (text, 0));
+        const gchar *text = gtk_entry_get_text (GTK_ENTRY (agg->summary_arg2_entry));
+        g_value_init (val, G_TYPE_DOUBLE);
+        g_value_set_double (val, g_strtod (text, 0));
       }
       break;
     default:
@@ -359,27 +359,27 @@ summary_complete (const PsppireDialogActionAggregate *agg)
 
 
   gtk_tree_model_get  (model,
-		       &iter,
-		       COMBO_MODEL_COL_ARITY,   &n_args,
-		       COMBO_MODEL_COL_SRC_VARS, &src_vars,
-		       -1);
+                       &iter,
+                       COMBO_MODEL_COL_ARITY,   &n_args,
+                       COMBO_MODEL_COL_SRC_VARS, &src_vars,
+                       -1);
 
   if (src_vars == AGR_SV_YES)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_sv_entry))))
-	return FALSE;
+        return FALSE;
     }
 
   if (n_args >= 2)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_arg2_entry))))
-	return FALSE;
+        return FALSE;
     }
 
   if (n_args >= 1)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_arg1_entry))))
-	return FALSE;
+        return FALSE;
     }
 
 
@@ -418,12 +418,12 @@ on_acr_change (const PsppireDialogActionAggregate *agg, GtkTreeView *tv)
   if (gtk_tree_selection_get_selected (sel, &model, &iter))
     {
       gtk_tree_model_get (model, &iter,
-			  SUMMARY_COL_VARNAME, &varname,
-			  SUMMARY_COL_VARLABEL, &label,
-			  SUMMARY_COL_FUNCIDX, &f_idx,
-			  SUMMARY_COL_SRCVAR, &srcvar,
-			  SUMMARY_COL_ARG1, &arg1,
-			  SUMMARY_COL_ARG2, &arg2, -1);
+                          SUMMARY_COL_VARNAME, &varname,
+                          SUMMARY_COL_VARLABEL, &label,
+                          SUMMARY_COL_FUNCIDX, &f_idx,
+                          SUMMARY_COL_SRCVAR, &srcvar,
+                          SUMMARY_COL_ARG1, &arg1,
+                          SUMMARY_COL_ARG2, &arg2, -1);
 
       gtk_entry_set_text (GTK_ENTRY (agg->summary_var_name_entry), varname);
       gtk_entry_set_text (GTK_ENTRY (agg->summary_var_label_entry), label);
@@ -457,10 +457,10 @@ update_arguments (PsppireDialogActionAggregate *agg)
       int n_args;
       enum agr_src_vars src_vars;
       gtk_tree_model_get  (model,
-			   &iter,
-			   COMBO_MODEL_COL_ARITY,   &n_args,
-			   COMBO_MODEL_COL_SRC_VARS, &src_vars,
-			   -1);
+                           &iter,
+                           COMBO_MODEL_COL_ARITY,   &n_args,
+                           COMBO_MODEL_COL_SRC_VARS, &src_vars,
+                           -1);
 
       gtk_widget_set_sensitive (agg->summary_sv, src_vars != AGR_SV_NO);
       gtk_widget_set_sensitive (agg->summary_arg2, n_args >= 2);
@@ -525,18 +525,18 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *para
     GtkCellRenderer *cell_renderer ;
 
     GtkListStore *list = gtk_list_store_new (6,
-					     G_TYPE_STRING,
-					     G_TYPE_STRING,
-					     G_TYPE_INT,
-					     G_TYPE_STRING,
-					     G_TYPE_DOUBLE,
-					     G_TYPE_DOUBLE);
+                                             G_TYPE_STRING,
+                                             G_TYPE_STRING,
+                                             G_TYPE_INT,
+                                             G_TYPE_STRING,
+                                             G_TYPE_DOUBLE,
+                                             G_TYPE_DOUBLE);
 
     psppire_acr_set_model (PSPPIRE_ACR (act->summary_acr), list);
     g_object_unref (list);
 
     psppire_acr_set_get_value_func (PSPPIRE_ACR (act->summary_acr),
-				    get_summary_spec, act);
+                                    get_summary_spec, act);
 
     column = gtk_tree_view_get_column (PSPPIRE_ACR (act->summary_acr)->tv, 0);
 
@@ -545,13 +545,13 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *para
     cell_renderer = l->data;
 
     gtk_tree_view_column_set_cell_data_func (column,
-					     cell_renderer,
-					     render_summary,
-					     act,
-					     NULL);
+                                             cell_renderer,
+                                             render_summary,
+                                             act,
+                                             NULL);
 
     g_signal_connect_swapped (PSPPIRE_ACR (act->summary_acr)->tv,
-			      "cursor-changed", G_CALLBACK (on_acr_change), act);
+                              "cursor-changed", G_CALLBACK (on_acr_change), act);
   }
 
   g_signal_connect_swapped (act->summary_var_name_entry, "changed", G_CALLBACK (update_acr),  act);
@@ -562,7 +562,7 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *para
 
 
   g_signal_connect_swapped (act->function_combo, "changed",
-			    G_CALLBACK (update_arguments),  act);
+                            G_CALLBACK (update_arguments),  act);
 
   populate_combo_model (GTK_COMBO_BOX (act->function_combo));
 
@@ -571,10 +571,10 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *para
 
 
   g_signal_connect (act->filename_radiobutton, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle), act->filename_box);
+                    G_CALLBACK (set_sensitivity_from_toggle), act->filename_box);
 
   g_signal_connect_swapped (act->filename_button, "clicked",
-			    G_CALLBACK (choose_filename), act);
+                            G_CALLBACK (choose_filename), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
@@ -617,21 +617,21 @@ append_summary_spec (const PsppireDialogActionAggregate *agg, GtkTreeIter *iter,
   gchar *srcvar = NULL;
 
   gtk_tree_model_get (acr_model, iter,
-		      SUMMARY_COL_VARNAME, &varname,
-		      SUMMARY_COL_VARLABEL, &label,
-		      SUMMARY_COL_FUNCIDX, &f_idx,
-		      SUMMARY_COL_SRCVAR, &srcvar,
-		      SUMMARY_COL_ARG1, &arg1,
-		      SUMMARY_COL_ARG2, &arg2,
-		      -1);
+                      SUMMARY_COL_VARNAME, &varname,
+                      SUMMARY_COL_VARLABEL, &label,
+                      SUMMARY_COL_FUNCIDX, &f_idx,
+                      SUMMARY_COL_SRCVAR, &srcvar,
+                      SUMMARY_COL_ARG1, &arg1,
+                      SUMMARY_COL_ARG2, &arg2,
+                      -1);
 
   gtk_tree_model_iter_nth_child (combo_model, &combo_iter, NULL, f_idx);
 
   gtk_tree_model_get (combo_model, &combo_iter,
-		      COMBO_MODEL_COL_SYNTAX, &funcname,
-		      COMBO_MODEL_COL_ARITY, &arity,
-		      COMBO_MODEL_COL_SRC_VARS, &has_src_vars,
-		      -1);
+                      COMBO_MODEL_COL_SYNTAX, &funcname,
+                      COMBO_MODEL_COL_ARITY, &arity,
+                      COMBO_MODEL_COL_SRC_VARS, &has_src_vars,
+                      -1);
 
   g_string_append (string, varname);
 
@@ -655,10 +655,10 @@ append_summary_spec (const PsppireDialogActionAggregate *agg, GtkTreeIter *iter,
       ds_put_cstr (&dss, srcvar);
 
       if (arity > 0)
-	ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg1);
+        ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg1);
 
       if (arity > 1)
-	ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg2);
+        ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg2);
 
       ds_put_cstr (&dss, ")");
 

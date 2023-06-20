@@ -66,7 +66,7 @@ journal_close (void)
     {
       if (fwriteerror (journal.file))
         msg_error (errno, _("error writing output file `%s'"),
-		   journal.file_name);
+                   journal.file_name);
 
       }
   journal.file = NULL;
@@ -170,8 +170,8 @@ journal_enable (void)
       if (journal.file == NULL)
         {
           msg_error (errno, _("error opening output file `%s'"),
-		     journal_get_file_name ());
-	  journal_close ();
+                     journal_get_file_name ());
+          journal_close ();
         }
     }
 }

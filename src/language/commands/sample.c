@@ -38,16 +38,16 @@
 /* The two different types of samples. */
 enum
   {
-    TYPE_A_FROM_B,		/* 5 FROM 10 */
-    TYPE_FRACTION		/* 0.5 */
+    TYPE_A_FROM_B,                /* 5 FROM 10 */
+    TYPE_FRACTION                /* 0.5 */
   };
 
 /* SAMPLE transformation. */
 struct sample_trns
   {
-    int type;			/* One of TYPE_*. */
-    int n, N;			/* TYPE_A_FROM_B: n from N. */
-    int m, t;			/* TYPE_A_FROM_B: # picked so far; # so far. */
+    int type;                        /* One of TYPE_*. */
+    int n, N;                        /* TYPE_A_FROM_B: n from N. */
+    int m, t;                        /* TYPE_A_FROM_B: # picked so far; # so far. */
     unsigned frac;              /* TYPE_FRACTION: a fraction of UINT_MAX. */
   };
 
@@ -82,9 +82,9 @@ cmd_sample (struct lexer *lexer, struct dataset *ds)
       a = lex_integer (lexer);
       lex_get (lexer);
       if (!lex_force_match_id (lexer, "FROM"))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
       if (!lex_force_int_range (lexer, "FROM", a + 1, INT_MAX))
-	return CMD_FAILURE;
+        return CMD_FAILURE;
       b = lex_integer (lexer);
       frac = 0;
     }
