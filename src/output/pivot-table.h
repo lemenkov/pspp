@@ -645,6 +645,9 @@ size_t *pivot_table_enumerate_axis (const struct pivot_table *,
 void pivot_table_assign_label_depth (struct pivot_table *);
 
 void pivot_table_dump (const struct pivot_table *, int indentation);
+void pivot_category_dump (const struct pivot_category *c,
+                          const struct pivot_table *pt, int indentation);
+
 
 /* pivot_value. */
 

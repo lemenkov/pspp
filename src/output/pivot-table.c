@@ -1965,7 +1965,7 @@ pivot_table_dump_string (const char *string, const char *name, int indentation)
     }
 }
 
-static void
+void
 pivot_category_dump (const struct pivot_category *c,
                      const struct pivot_table *pt, int indentation)
 {
