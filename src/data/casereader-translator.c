@@ -500,7 +500,7 @@ uniquify (const struct ccase *c, void *aux)
     dir = 1;
   if (dir < 0)
     dir = -1;
-      
+
   case_unref (next_case);
   if (dir != 0)
     {

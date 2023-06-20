@@ -1437,7 +1437,7 @@ counts:
 @code{U@i{area}PCT.SUM} (``Unweighted @i{Area} Sum %'', PCT40.1)
 
 @item
-@code{UPTILE} @i{n} (``Unweighted Percentile @i{n}'') 
+@code{UPTILE} @i{n} (``Unweighted Percentile @i{n}'')
 
 @item
 @code{USEMEAN} (``Unweighted Std Error of Mean'')

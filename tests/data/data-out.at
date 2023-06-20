@@ -50,7 +50,7 @@ for format in 'F COMMA DOT DOLLAR PCT E CCA CCB CCC CCD CCE N Z'.split():
         if format != 'E':
             min_w = d + 1
             if format in ('DOLLAR', 'PCT'):
-                min_w += 1 
+                min_w += 1
             if min_w == 1 and format.startswith('CC'):
                 min_w = 2
         else:

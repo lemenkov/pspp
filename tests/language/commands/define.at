@@ -1931,7 +1931,7 @@ define.sps:30.1-30.12: error: DEBUG EXPAND: Macro function !SUBSTR takes two or
 three arguments (not 0).
    30 | !narg_substr.
       | ^~~~~~~~~~~~
- 
+
 !SUBSTR( )
 
 define.sps:14: In the expansion of `!narg_tail',

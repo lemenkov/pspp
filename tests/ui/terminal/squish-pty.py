@@ -23,4 +23,4 @@ passes it as stdin and stdout to the specified COMMAND.
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
-    
+

@@ -96,7 +96,7 @@ on_sheet_combo_changed (GtkComboBox *cb, PsppireImportAssistant *ia)
 
   GObject *hmodel = NULL;
   g_object_get (ia->preview_sheet, "hmodel", &hmodel, NULL);
-  
+
   g_object_set (hmodel,
                 "post-button-create-func", set_column_header_label,
                 NULL);

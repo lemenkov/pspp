@@ -63,14 +63,14 @@ whose data was analyzed to produce the matrices.  @cmd{MATRIX DATA}
 assigns continuous variables format F10.4.
 @end enumerate
 
-Case weights are ignored in matrix files. 
+Case weights are ignored in matrix files.
 
 @subheading Row Types
 @anchor{Matrix File Row Types}
 
 Matrix files support a fixed set of types of matrix and vector data.
 The @code{ROWTYPE_} variable in each case of a matrix file indicates
-its row type.  
+its row type.
 
 The supported matrix row types are listed below.  Each type is listed
 with the keyword that identifies it in @code{ROWTYPE_}.  All supported
@@ -1832,7 +1832,7 @@ eval2
  -1.0000000000
  -1.0000000000
 @end example
-  
+
 @item @t{CALL SVD(@var{M}, @var{U}, @var{S}, @var{V})}
 @anchor{CALL SVD}
 
@@ -1876,7 +1876,7 @@ Replaces the main diagonal of @math{@var{n}@times{}@var{p}} matrix
 @math{@var{k} = 1}, so that @var{V} is a scalar, replaces all of the
 diagonal elements of @var{M} by @var{V}.  If @math{@var{k} <
 \min(@var{n},@var{p})}, only the upper @var{k} diagonal elements are
-replaced; if @math{@var{k} > \min(@var{n},@var{p})}, then the 
+replaced; if @math{@var{k} > \min(@var{n},@var{p})}, then the
 extra elements of @var{V} are ignored.
 
 Use the @code{MDIAG} function (@pxref{MDIAG}) to construct a new

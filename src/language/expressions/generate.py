@@ -967,7 +967,7 @@ def usage():
 usage: generate.py -o OUTPUT_TYPE [-i INPUT] [-h] > OUTPUT
   -i INPUT    input file containing definitions (default: operations.def)
   -o OUTPUT   output file type, one of: evaluate.h, evaluate.inc,
-              operations.h, optimize.inc, parse.inc    
+              operations.h, optimize.inc, parse.inc
   -h          display this help message
 """ % argv0)
     sys.exit(0)

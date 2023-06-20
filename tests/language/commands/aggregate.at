@@ -139,20 +139,20 @@ m4_if([$1], [external], [GET FILE='aggregate.sys'.],
       [$1], [dataset], [DATASET ACTIVATE aggregate.])
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv aggregate.sps], [0], 
+  AT_CHECK([pspp -O format=csv aggregate.sps], [0],
     [m4_if([$3], [itemwise], [dnl
 "aggregate.sps:29.28-29.31: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    29 |         /NFOUT23 = fout(n, 3, 2)
       |                            ^~~~"
- 
+
 "aggregate.sps:30.30-30.33: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    30 |         /NFOUT23I = fout.(n, 3, 2)
       |                              ^~~~"
- 
+
 "aggregate.sps:31.28-31.35: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    31 |         /SFOUT23 = fout(s, '3', '2')
       |                            ^~~~~~~~"
- 
+
 "aggregate.sps:32.30-32.37: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    32 |         /SFOUT23I = fout.(s, '3', '2')
       |                              ^~~~~~~~"
@@ -168,15 +168,15 @@ G,N,NI,NU,NUI,NFGT2,NFGT2I,SFGT2,SFGT2I,NFIN23,NFIN23I,SFIN23,SFIN23I,NFLT2,NFLT
 "aggregate.sps:29.28-29.31: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    29 |         /NFOUT23 = fout(n, 3, 2)
       |                            ^~~~"
- 
+
 "aggregate.sps:30.30-30.33: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    30 |         /NFOUT23I = fout.(n, 3, 2)
       |                              ^~~~"
- 
+
 "aggregate.sps:31.28-31.35: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    31 |         /SFOUT23 = fout(s, '3', '2')
       |                            ^~~~~~~~"
- 
+
 "aggregate.sps:32.30-32.37: warning: AGGREGATE: The value arguments passed to the FOUT function are out of order.  They will be treated as if they had been specified in the correct order.
    32 |         /SFOUT23I = fout.(s, '3', '2')
       |                              ^~~~~~~~"

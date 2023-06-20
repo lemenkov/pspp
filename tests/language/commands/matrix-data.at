@@ -727,7 +727,7 @@ corr 2        2.00  .72  .54
 
 AT_CHECK([pspp -O format=csv matrix-data.sps], [1], [dnl
 matrix-data.txt:5: error: Matrix CORR had 1 rows but 4 rows were expected.
- 
+
 matrix-data.txt:6: error: Matrix CORR had 2 rows but 4 rows were expected.
 
 Table: Split Values
