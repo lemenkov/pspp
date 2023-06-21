@@ -70,6 +70,7 @@ struct _PsppireDialogAction
   GObject parent;
 
   /*< private >*/
+  gboolean dispose_has_run;
   GVariantType *parameter_type;
   GtkWidget *source;
   GtkWidget *dialog;

@@ -255,6 +255,18 @@ psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
 }
 
 static void
+psppire_dialog_action_dispose (GObject *obj)
+{
+  PsppireDialogAction *act = PSPPIRE_DIALOG_ACTION (obj);
+
+  if (act->dispose_has_run)
+    return;
+  act->dispose_has_run = TRUE;
+
+  G_OBJECT_CLASS (psppire_dialog_action_parent_class)->dispose (obj);
+}
+
+static void
 psppire_dialog_action_class_init (PsppireDialogActionClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
@@ -267,6 +279,8 @@ psppire_dialog_action_class_init (PsppireDialogActionClass *class)
                          "The top level widget to which this dialog action belongs",
                          GTK_TYPE_WINDOW,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+
+  G_OBJECT_CLASS (object_class)->dispose = psppire_dialog_action_dispose;
 
   object_class->set_property = psppire_dialog_action_set_property;
   object_class->get_property = psppire_dialog_action_get_property;
@@ -288,6 +302,7 @@ psppire_dialog_action_class_init (PsppireDialogActionClass *class)
 static void
 psppire_dialog_action_init (PsppireDialogAction *act)
 {
+  act->dispose_has_run = FALSE;
   act->toplevel = NULL;
   act->dict = NULL;
   act->activated = FALSE;

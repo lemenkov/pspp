@@ -965,6 +965,8 @@ connect_dialog_action (GType type, PsppireDataWindow *de)
                                NULL);
 
   g_action_map_add_action (G_ACTION_MAP (de), act);
+
+  g_object_unref (act);
 }
 
 static void
