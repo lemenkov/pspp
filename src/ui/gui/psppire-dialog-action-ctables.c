@@ -49,7 +49,6 @@ static void psppire_dialog_action_ctables_class_init
 G_DEFINE_TYPE (PsppireDialogActionCtables, psppire_dialog_action_ctables,
                PSPPIRE_TYPE_DIALOG_ACTION);
 
-
 /* Create the basis of a table.  This table contasins just two dimensions
    and nothing else. */
 static struct pivot_table *make_table (void)
@@ -106,12 +105,11 @@ add_child_category (struct pivot_category *parent, const char *child_name,
   for (struct llx *llx = llx_head (children); llx != llx_null (children);
        llx = llx_next (llx))
     {
-      struct pivot_value *foo = llx_data (llx);
+      struct pivot_value *value = llx_data (llx);
       struct pivot_category *pc = pivot_category_create_group (parent, child_name);
-      pivot_category_create_leaf (pc, foo);
+      pivot_category_create_leaf (pc, pivot_value_clone (value));
     }
 }
-
 
 /*
   Supplement TABLE with a category to hold cells which could contain summary
@@ -164,8 +162,7 @@ augment_template_table (struct pivot_table *table,
         {
           if (axis0->root->subs[s]->name->type == PIVOT_VALUE_TEXT)
             {
-              struct pivot_value *subtext
-                = pivot_value_clone (axis0->root->subs[s]->name);
+              struct pivot_value *subtext = axis0->root->subs[s]->name;
               llx_push_tail (&summary_categories, subtext, &llx_malloc_mgr);
             }
         }
@@ -209,6 +206,7 @@ augment_template_table (struct pivot_table *table,
               enum measure meas = var_get_measure (v);
               if (meas != MEASURE_NOMINAL && meas != MEASURE_ORDINAL)
                 {
+                  pivot_value_destroy (pv_var);
                   return FALSE;
                 }
             }
@@ -248,8 +246,9 @@ refresh (PsppireDialogAction *pda)
   output_item_unref (act->graphic);
   act->graphic = NULL;
 
+  if (act->table)
+    pivot_table_unref (act->table);
   act->table = make_table ();
-  act->table = pivot_table_ref (act->table);
 
   gtk_widget_queue_draw (act->canvas);
   act->dragged_variable = NULL;
@@ -353,10 +352,8 @@ drag_drop_pad (GtkWidget      *widget,
     return TRUE;
 
   act->table = pivot_table_ref (act->table);
-
   output_item_unref (act->graphic);
   act->graphic = table_item_create (pivot_table_unshare (act->table));
-
   gtk_widget_queue_draw (act->canvas);
 
   return TRUE;
@@ -567,11 +564,38 @@ generate_syntax (const PsppireDialogAction *pda)
   return g_string_free_and_steal (string);
 }
 
+
+static void
+psppire_dialog_action_ctables_dispose (GObject *obj)
+{
+  PsppireDialogActionCtables *act = PSPPIRE_DIALOG_ACTION_CTABLES (obj);
+
+  if (act->dispose_has_run)
+    return;
+  act->dispose_has_run = TRUE;
+
+  G_OBJECT_CLASS (psppire_dialog_action_ctables_parent_class)->dispose (obj);
+}
+
+static void
+psppire_dialog_action_ctables_finalize (GObject *obj)
+{
+  PsppireDialogActionCtables *act = PSPPIRE_DIALOG_ACTION_CTABLES (obj);
+
+  output_item_unref (act->graphic);
+  pivot_table_unref (act->table);
+
+  G_OBJECT_CLASS (psppire_dialog_action_ctables_parent_class)->finalize (obj);
+}
+
 static void
 psppire_dialog_action_ctables_class_init (PsppireDialogActionCtablesClass *class)
 {
   PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate
     = psppire_dialog_action_ctables_activate;
+
+  G_OBJECT_CLASS (class)->dispose = psppire_dialog_action_ctables_dispose;
+  G_OBJECT_CLASS (class)->finalize = psppire_dialog_action_ctables_finalize;;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
