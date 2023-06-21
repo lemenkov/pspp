@@ -374,7 +374,7 @@ delete_variables_callback (GObject *obj, gint dict_index, unsigned int n, gpoint
 }
 
 /*
-   A callback which occurs after variables have been deleted.
+   A callback which occurs after variables have been moved.
  */
 static void
 move_variable_callback (GObject *obj, gint new_dict_index, int old_dict_index, gpointer data)
