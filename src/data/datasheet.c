@@ -418,11 +418,12 @@ datasheet_move_columns (struct datasheet *ds,
                         size_t old_start, size_t new_start,
                         size_t n)
 {
-  assert (old_start + n <= ds->n_columns);
   assert (new_start + n <= ds->n_columns);
-
-  move_range (ds->columns, ds->n_columns, sizeof *ds->columns,
-              old_start, new_start, n);
+  if  (old_start + n <= ds->n_columns)
+    {
+      move_range (ds->columns, ds->n_columns, sizeof *ds->columns,
+                  old_start, new_start, n);
+    }
 
   caseproto_unref (ds->proto);
   ds->proto = NULL;
