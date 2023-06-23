@@ -19,33 +19,33 @@
   This module provides a widget, PsppireSelector derived from
   GtkButton.
 
-  It contains a GtkImage (to indicate the arrow), and is used for selecting objects from a
-  GtkTreeView and putting them into a destination widget (often
+  It contains a GtkImage (to indicate the arrow), and is used for selecting
+  objects from a GtkTreeView and putting them into a destination widget (often
   another GtkTreeView).  Typically this is used in psppire for
   selecting variables, thus:
 
 
   +----------------------------------------------------------+
-  |                                                                 |
-  |        Source Widget                                            Dest Widget             |
-  |   +----------------+                               +----------------+  |
-  |   |        Variable0      |                     | Variable2             |  |
-  |   |        Variable1      |                               |                              |  |
-  |   | Variable3      |                     |                         |  |
-  |   |                       |    Selector         |                         |  |
-  |   |                              |                               |                              |  |
-  |   |                       |    +------+            |                              |  |
-  |   |                       |    | |\   |         |                  |  |
-  |   |                       |    | | \  |         |                  |  |
-  |   |                       |    | |        /  |         |                  |  |
-  |   |                       |    | |/   |         |                  |  |
-  |   |                       |    +------+         |                  |  |
-  |   |                       |                 |                  |  |
-  |   |                       |                 |                  |  |
-  |   |                       |                 |                  |  |
-  |   |                              |                               |                              |  |
+  |                                                          |
+  |   Source Widget                      Dest Widget         |
   |   +----------------+                 +----------------+  |
-  |                                                             |
+  |   | Variable0      |                 | Variable2      |  |
+  |   | Variable1      |                 |                |  |
+  |   | Variable3      |                 |                |  |
+  |   | Selector       |                 |                |  |
+  |   |                |                 |                |  |
+  |   |                |    +------+     |                |  |
+  |   |                |    | |\   |     |                |  |
+  |   |                |    | | \  |     |                |  |
+  |   |                |    | | /  |     |                |  |
+  |   |                |    | |/   |     |                |  |
+  |   |                |    +------+     |                |  |
+  |   |                |                 |                |  |
+  |   |                |                 |                |  |
+  |   |                |                 |                |  |
+  |   |                |                 |                |  |
+  |   +----------------+                 +----------------+  |
+  |                                                          |
   +----------------------------------------------------------+
 
   The Source Widget is always a GtkTreeView.  The Dest Widget may be a
@@ -384,7 +384,8 @@ on_realize (GtkWidget *w)
         g_signal_handler_disconnect (selector->source, selector->row_activate_id);
 
       selector->row_activate_id =
-        g_signal_connect (selector->source, "row-activated", G_CALLBACK (on_row_activate), selector);
+        g_signal_connect (selector->source, "row-activated",
+                          G_CALLBACK (on_row_activate), selector);
     }
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (selector->source));
@@ -406,7 +407,8 @@ psppire_selector_init (PsppireSelector *selector)
   selector->allow_selection = NULL;
   selector->filter = NULL;
 
-  selector->arrow = gtk_image_new_from_icon_name ("pan-start-symbolic", GTK_ICON_SIZE_BUTTON);
+  selector->arrow = gtk_image_new_from_icon_name ("pan-start-symbolic",
+                                                  GTK_ICON_SIZE_BUTTON);
 
   gtk_container_add (GTK_CONTAINER (selector), selector->arrow);
 
@@ -632,7 +634,8 @@ select_selection (PsppireSelector *selector)
 
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (selector->source));
 
-  GtkTreeModel *childmodel = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
+  GtkTreeModel *childmodel =
+    gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
 
   g_return_if_fail (selector->select_items);
 
@@ -1031,7 +1034,8 @@ psppire_selector_update_subjects (PsppireSelector *selector)
       GType type = G_OBJECT_TYPE (selector->dest);
 
       SelectItemsFunc *func  =
-        g_hash_table_lookup (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs, (gpointer) type);
+        g_hash_table_lookup (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs,
+                             (gpointer) type);
 
       if (func)
         psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
@@ -1045,7 +1049,8 @@ psppire_selector_set_default_selection_func (GType type, SelectItemsFunc *func)
 {
   GObjectClass *class = g_type_class_ref (PSPPIRE_SELECTOR_TYPE);
 
-  g_hash_table_insert (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs, (gpointer) type, func);
+  g_hash_table_insert (PSPPIRE_SELECTOR_CLASS (class)->default_selection_funcs,
+                       (gpointer) type, func);
 
   g_type_class_unref (class);
 }
@@ -1072,8 +1077,6 @@ psppire_selector_set_select_func (PsppireSelector *selector,
   selector->select_items = select_func;
 }
 
-
-
 void
 psppire_selector_set_allow (PsppireSelector *selector, AllowSelectionFunc *allow)
 {
@@ -1089,13 +1092,19 @@ psppire_selector_orientation_get_type (void)
     {
       static const GEnumValue values[] =
         {
-          { PSPPIRE_SELECT_SOURCE_BEFORE_DEST, "PSPPIRE_SELECT_SOURCE_BEFORE_DEST", "source before destination" },
-          { PSPPIRE_SELECT_SOURCE_AFTER_DEST, "PSPPIRE_SELECT_SOURCE_AFTER_DEST", "source after destination" },
-          { PSPPIRE_SELECT_SOURCE_ABOVE_DEST, "PSPPIRE_SELECT_SOURCE_ABOVE_DEST", "source above destination" },
-          { PSPPIRE_SELECT_SOURCE_BELOW_DEST, "PSPPIRE_SELECT_SOURCE_BELOW_DEST", "source below destination" },
+          { PSPPIRE_SELECT_SOURCE_BEFORE_DEST, "PSPPIRE_SELECT_SOURCE_BEFORE_DEST",
+            "source before destination" },
+          { PSPPIRE_SELECT_SOURCE_AFTER_DEST, "PSPPIRE_SELECT_SOURCE_AFTER_DEST",
+            "source after destination" },
+          { PSPPIRE_SELECT_SOURCE_ABOVE_DEST, "PSPPIRE_SELECT_SOURCE_ABOVE_DEST",
+            "source above destination" },
+          { PSPPIRE_SELECT_SOURCE_BELOW_DEST, "PSPPIRE_SELECT_SOURCE_BELOW_DEST",
+            "source below destination" },
           { 0, NULL, NULL }
         };
-      etype = g_enum_register_static (g_intern_static_string ("PsppireSelectorOrientation"), values);
+      etype =
+        g_enum_register_static (g_intern_static_string ("PsppireSelectorOrientation"),
+                                values);
     }
   return etype;
 }

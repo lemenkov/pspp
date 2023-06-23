@@ -82,8 +82,7 @@ void
 insert_source_row_into_entry (GtkTreeIter iter,
                               GtkWidget *dest,
                               GtkTreeModel *model,
-                              gpointer data
-                        )
+                              gpointer data)
 {
   GtkTreePath *path;
   GtkTreeModel *dict;
@@ -231,4 +230,3 @@ is_currently_in_varview (GtkTreeModel *model, GtkTreeIter *iter, PsppireSelector
 
   return ret ;
 }
-
