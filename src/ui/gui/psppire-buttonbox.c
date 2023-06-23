@@ -135,16 +135,14 @@ psppire_button_box_class_init (PsppireButtonBoxClass *class)
                         PSPPIRE_TYPE_BUTTON_MASK,
                         PSPPIRE_BUTTON_OK_MASK
                         | PSPPIRE_BUTTON_CANCEL_MASK
-                        | PSPPIRE_BUTTON_CLOSE_MASK
                         | PSPPIRE_BUTTON_RESET_MASK
                         | PSPPIRE_BUTTON_HELP_MASK
-                        | PSPPIRE_BUTTON_PASTE_MASK
-                        | PSPPIRE_BUTTON_FIND_MASK,
+                        | PSPPIRE_BUTTON_PASTE_MASK,
                         G_PARAM_READWRITE);
+
   g_object_class_install_property (object_class,
                                    PROP_BUTTONS,
                                    button_flags);
-
   default_flags =
     g_param_spec_flags ("default",
                         "Default",
