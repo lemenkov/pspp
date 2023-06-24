@@ -542,7 +542,9 @@ html_put_table_cell (struct html_driver *html, const struct pivot_table *pt,
     {
       put_style (&style, "font-family", "\"");
       escape_string (html->file, fs->typeface, " ", "\n");
-      putc ('"', html->file);
+
+      /* Always include a generic font family name as a fallback. */
+      fputs ("\", sans-serif", html->file);
     }
   if (fs->bold)
     put_style (&style, "font-weight", "bold");
