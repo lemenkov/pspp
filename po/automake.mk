@@ -21,6 +21,7 @@ MSGMERGE=msgmerge
 MSGFMT=msgfmt
 
 POFILES = \
+	po/ar.po \
 	po/ca.po \
 	po/de.po \
 	po/el.po \
@@ -35,6 +36,7 @@ POFILES = \
 	po/pt_BR.po \
 	po/ru.po \
 	po/sl.po \
+	po/ta.po \
 	po/tr.po \
 	po/uk.po \
 	po/zh_CN.po

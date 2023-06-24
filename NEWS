@@ -7,6 +7,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes since 2.0.0-pre1:
 
+ * Localisations for the ar (Arabic) and ta (Tamil) locales have been added.
+
  * Improved the search options in the syntax editor.
 
 Changes from 1.6.2 to 2.0.0-pre1:
