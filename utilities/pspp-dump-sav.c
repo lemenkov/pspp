@@ -1094,23 +1094,29 @@ read_long_string_value_labels (struct sfm_reader *r, size_t size, size_t count)
       /* Read values. */
       for (i = 0; i < n_values; i++)
         {
-          char *value;
+          char *value = NULL;
           int value_length;
 
-          char *label;
+          char *label = NULL;
           int label_length;
 
           posn = ftello (r->file);
 
           /* Read value. */
           value_length = read_int (r);
-          value = xmalloc (value_length + 1);
-          read_string (r, value, value_length + 1);
+          if (value_length > 0)
+            {
+              value = xmalloc (value_length + 1);
+              read_string (r, value, value_length + 1);
+            }
 
           /* Read label. */
           label_length = read_int (r);
-          label = xmalloc (label_length + 1);
-          read_string (r, label, label_length + 1);
+          if (label_length > 0)
+            {
+              label = xmalloc (label_length + 1);
+              read_string (r, label, label_length + 1);
+            }
 
           printf ("\t\t%08llx: \"%s\" (%d bytes) => \"%s\" (%d bytes)\n",
                   posn, value, value_length, label, label_length);
