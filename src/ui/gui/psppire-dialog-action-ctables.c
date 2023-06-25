@@ -361,7 +361,7 @@ drag_drop_pad (GtkWidget      *widget,
 
 static gchar f1[]="ctables-dialog";
 
-static const GtkTargetEntry te[1] = {
+static const GtkTargetEntry targets[1] = {
     {f1, GTK_TARGET_SAME_APP, 2},
   };
 
@@ -445,18 +445,10 @@ psppire_dialog_action_ctables_activate (PsppireDialogAction *pda, GVariant *para
 
   g_signal_connect (act->canvas, "draw", G_CALLBACK (canvas_draw), pda);
 
-  gtk_drag_dest_set (act->rows_pad, GTK_DEST_DEFAULT_ALL, NULL, 0,
+  gtk_drag_dest_set (act->rows_pad, GTK_DEST_DEFAULT_ALL, targets, 1,
                      GDK_ACTION_LINK);
-  gtk_drag_dest_set (act->cols_pad, GTK_DEST_DEFAULT_ALL, NULL, 0,
+  gtk_drag_dest_set (act->cols_pad, GTK_DEST_DEFAULT_ALL, targets, 1,
                      GDK_ACTION_LINK);
-
-  GtkTargetList *tl = gtk_target_list_new (te, 2);
-
-  gtk_drag_dest_add_text_targets (act->rows_pad);
-  gtk_drag_dest_add_text_targets (act->cols_pad);
-
-  gtk_drag_dest_set_target_list (act->rows_pad, tl);
-  gtk_drag_dest_set_target_list (act->cols_pad, tl);
 
   g_signal_connect (act->rows_pad, "drag-drop", G_CALLBACK (drag_drop_pad), pda);
   g_signal_connect (act->cols_pad, "drag-drop", G_CALLBACK (drag_drop_pad), pda);
@@ -464,8 +456,7 @@ psppire_dialog_action_ctables_activate (PsppireDialogAction *pda, GVariant *para
   pda->dialog = get_widget_assert   (xml, "tables-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
 
-  gtk_drag_source_set (pda->source, GDK_BUTTON1_MASK, NULL, 0, GDK_ACTION_LINK);
-  gtk_drag_source_set_target_list (pda->source, tl);
+  gtk_drag_source_set (pda->source, GDK_BUTTON1_MASK, targets, 1, GDK_ACTION_LINK);
 
   g_signal_connect (pda->source, "drag-begin", G_CALLBACK (drag_begin), pda);
   g_signal_connect (pda->source, "drag-end", G_CALLBACK (drag_end), pda);
