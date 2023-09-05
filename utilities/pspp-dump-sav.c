@@ -1291,7 +1291,7 @@ read_simple_compressed_data (struct sfm_reader *r, int max_cases)
             }
           opcode = opcodes[opcode_idx];
           printf ("%08llx: variable %d: opcode %d: ",
-                  opcode_ofs + opcode_idx, i, opcode);
+                  opcode_ofs + opcode_idx, i + 1, opcode);
 
           switch (opcode)
             {
