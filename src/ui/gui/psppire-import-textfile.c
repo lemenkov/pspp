@@ -230,7 +230,7 @@ render_text_preview_line (GtkTreeViewColumn *tree_column,
 static void
 reset_first_line_page (PsppireImportAssistant *ia)
 {
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb), TRUE);
 
   GtkTreeSelection *selection =
     gtk_tree_view_get_selection (GTK_TREE_VIEW (ia->first_line_tree_view));

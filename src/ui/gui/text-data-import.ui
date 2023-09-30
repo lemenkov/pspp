@@ -35,18 +35,6 @@
       </packing>
     </child>
     <child>
-      <object class="GtkScrolledWindow" id="first-line-scroller">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-      </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child>
       <object class="GtkCheckButton" id="variable-names">
         <property name="label" translatable="yes">Line above selected line contains variable names</property>
         <property name="visible">True</property>
@@ -57,6 +45,18 @@
       </object>
       <packing>
         <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow" id="first-line-scroller">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+      </object>
+      <packing>
+        <property name="expand">True</property>
         <property name="fill">True</property>
         <property name="position">2</property>
       </packing>
