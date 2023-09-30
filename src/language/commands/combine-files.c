@@ -317,13 +317,17 @@ combine_files (enum comb_command_type command,
                 {
                   r = xmalloc (sizeof *r);
                   *r = (struct comb_resizer) {
-                    .output_proto = caseproto_ref (dict_get_proto (proc.dict)),
+                    .output_proto = caseproto_ref (dict_get_proto (cf->dict)),
                     .indexes = xnmalloc (dict_get_n_vars (cf->dict),
                                          sizeof *r->indexes),
                   };
                   cf->resizer = r;
                 }
-              r->indexes[r->n_indexes++] = var_get_dict_index (dv);
+
+              size_t dict_index = var_get_dict_index (dv);
+              r->output_proto = caseproto_set_width (r->output_proto,
+                                                     dict_index, mw);
+              r->indexes[r->n_indexes++] = dict_index;
             }
         }
     }

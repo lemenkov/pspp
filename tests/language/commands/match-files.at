@@ -217,11 +217,11 @@ AT_CLEANUP
 
 AT_SETUP([MATCH FILES with different string widths])
 AT_DATA([match-files.sps], [dnl
-DATA LIST LIST NOTABLE/name (A6) x.
+DATA LIST LIST NOTABLE/x (F8.2) name (A6).
 BEGIN DATA.
-al,7
-brad,8
-carl,9
+7,al
+8,brad
+9,carl
 END DATA.
 SAVE OUTFILE='x.sav'.
 
@@ -231,8 +231,8 @@ al,1
 carl,2
 dan,3
 END DATA.
-MATCH FILES/FILE='x.sav'/FILE=*/BY name.
-LIST.
+MATCH FILES/FILE=*/FILE='x.sav'/BY name.
+LIST/name x y.
 ])
 AT_CHECK([pspp -O format=csv match-files.sps], [0], [dnl
 Table: Data List
