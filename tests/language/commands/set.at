@@ -443,3 +443,74 @@ Table: Settings
 FORMAT,F8.2
 ])
 AT_CLEANUP
+
+AT_SETUP([PRESERVE and SHOW of TLOOK])
+cp $srcdir/output/look.stt lines.stt
+sed 's/solid/none/g
+s/thick/none/g' lines.stt > no-lines.stt
+AT_DATA([set.pspp], [dnl
+DATA LIST LIST NOTABLE/x.
+BEGIN DATA.
+1
+2
+3
+END DATA.
+
+SHOW TLOOK.
+SET TLOOK='lines.stt'.
+SHOW TLOOK.
+DESCRIPTIVES/x.
+
+PRESERVE.
+SET TLOOK='no-lines.stt'.
+SHOW TLOOK.
+DESCRIPTIVES/x.
+RESTORE.
+
+SHOW TLOOK.
+DESCRIPTIVES/x.
+])
+AT_CHECK([pspp -O box=unicode set.pspp], [0], [dnl
+  Settings
+╭─────┬────╮
+│TLOOK│NONE│
+╰─────┴────╯
+
+Settings
+╭─────┬─────────╮
+│TLOOK│lines.stt│
+╰─────┴─────────╯
+
+Descriptive Statistics
+╭────────────────────┬─┬────┬───────┬───────┬───────╮
+│                    │N│Mean│Std Dev│Minimum│Maximum│
+├────────────────────┼─┼────┼───────┼───────┼───────┤
+│x                   │3│2.00│   1.00│   1.00│   3.00│
+│Valid N (listwise)  │3│    │       │       │       │
+│Missing N (listwise)│0│    │       │       │       │
+╰────────────────────┴─┴────┴───────┴───────┴───────╯
+
+Settings
+TLOOK no-lines.stt
+
+Descriptive Statistics
+                     N Mean Std Dev Minimum Maximum
+x                    3 2.00    1.00    1.00    3.00
+Valid N (listwise)   3
+Missing N (listwise) 0
+
+Settings
+╭─────┬─────────╮
+│TLOOK│lines.stt│
+╰─────┴─────────╯
+
+Descriptive Statistics
+╭────────────────────┬─┬────┬───────┬───────┬───────╮
+│                    │N│Mean│Std Dev│Minimum│Maximum│
+├────────────────────┼─┼────┼───────┼───────┼───────┤
+│x                   │3│2.00│   1.00│   1.00│   3.00│
+│Valid N (listwise)  │3│    │       │       │       │
+│Missing N (listwise)│0│    │       │       │       │
+╰────────────────────┴─┴────┴───────┴───────┴───────╯
+])
+AT_CLEANUP

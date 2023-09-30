@@ -519,7 +519,7 @@ spv_read_table_item (struct zip_reader *zip,
     {
       struct pivot_table_look *look;
       error = (table->table_properties
-               ? spv_table_look_decode (table->table_properties, &look)
+               ? spv_table_look_decode (table->table_properties, NULL, &look)
                : xstrdup ("Legacy table lacks tableProperties"));
       if (!error)
         {

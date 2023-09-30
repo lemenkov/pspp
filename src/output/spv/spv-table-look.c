@@ -125,12 +125,14 @@ pivot_border_from_name (const char *name)
 
 char * WARN_UNUSED_RESULT
 spv_table_look_decode (const struct spvsx_table_properties *in,
+                       const char *file_name,
                        struct pivot_table_look **outp)
 {
   struct pivot_table_look *out = pivot_table_look_new_builtin_default ();
   char *error = NULL;
 
   out->name = xstrdup_if_nonnull (in->name);
+  out->file_name = xstrdup_if_nonnull (file_name);
 
   const struct spvsx_general_properties *g = in->general_properties;
   out->omit_empty = g->hide_empty_rows != 0;
@@ -529,7 +531,7 @@ spv_table_look_read (const char *filename, struct pivot_table_look **outp)
       char *error = spvxml_context_finish (&ctx, &tp->node_);
 
       if (!error)
-        error = spv_table_look_decode (tp, outp);
+        error = spv_table_look_decode (tp, filename, outp);
 
       spvsx_free_table_properties (tp);
       xmlFreeDoc (doc);

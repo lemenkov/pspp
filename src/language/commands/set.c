@@ -1105,6 +1105,13 @@ parse_TLOOK (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_TLOOK (const struct dataset *ds UNUSED)
+{
+  const struct pivot_table_look *look = pivot_table_look_get_default ();
+  return xstrdup (look->file_name ? look->file_name : "NONE");
+}
+
 static bool
 parse_UNDEFINED (struct lexer *lexer)
 {
@@ -1346,7 +1353,7 @@ static const struct setting settings[] = {
   { "TEMPDIR", NULL, show_TEMPDIR },
   { "TNUMBERS", parse_TNUMBERS, show_TNUMBERS },
   { "TVARS", parse_TVARS, show_TVARS },
-  { "TLOOK", parse_TLOOK, NULL },
+  { "TLOOK", parse_TLOOK, show_TLOOK },
   { "UNDEFINED", parse_UNDEFINED, show_UNDEFINED },
   { "VERSION", NULL, show_VERSION },
   { "WEIGHT", NULL, show_WEIGHT },
@@ -1499,7 +1506,13 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
 
 #define MAX_SAVED_SETTINGS 5
 
-static struct settings *saved_settings[MAX_SAVED_SETTINGS];
+struct preserved_settings
+  {
+    struct settings *settings;
+    struct pivot_table_look *look;
+  };
+
+static struct preserved_settings saved_settings[MAX_SAVED_SETTINGS];
 static int n_saved_settings;
 
 int
@@ -1507,7 +1520,9 @@ cmd_preserve (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   if (n_saved_settings < MAX_SAVED_SETTINGS)
     {
-      saved_settings[n_saved_settings++] = settings_get ();
+      struct preserved_settings *ps = &saved_settings[n_saved_settings++];
+      ps->settings = settings_get ();
+      ps->look = pivot_table_look_ref (pivot_table_look_get_default ());
       return CMD_SUCCESS;
     }
   else
@@ -1526,9 +1541,11 @@ cmd_restore (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   if (n_saved_settings > 0)
     {
-      struct settings *s = saved_settings[--n_saved_settings];
-      settings_set (s);
-      settings_destroy (s);
+      struct preserved_settings *ps = &saved_settings[--n_saved_settings];
+      settings_set (ps->settings);
+      settings_destroy (ps->settings);
+      pivot_table_look_set_default (ps->look);
+      pivot_table_look_unref (ps->look);
       return CMD_SUCCESS;
     }
   else

@@ -428,6 +428,7 @@ struct pivot_table_look
     int ref_cnt;
 
     char *name;                 /* May be null. */
+    char *file_name;            /* May be null. */
 
     /* General properties.
 

@@ -311,6 +311,7 @@ pivot_table_look_unshare (struct pivot_table_look *old)
   struct pivot_table_look *new = xmemdup (old, sizeof *old);
   new->ref_cnt = 1;
   new->name = xstrdup_if_nonempty (old->name);
+  new->file_name = xstrdup_if_nonempty (old->name);
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     table_area_style_copy (NULL, &new->areas[i], &old->areas[i]);
   new->continuation = xstrdup_if_nonempty (old->continuation);
@@ -327,6 +328,7 @@ pivot_table_look_unref (struct pivot_table_look *look)
       if (!--look->ref_cnt)
         {
           free (look->name);
+          free (look->file_name);
           for (size_t i = 0; i < PIVOT_N_AREAS; i++)
             table_area_style_uninit (&look->areas[i]);
           free (look->continuation);
