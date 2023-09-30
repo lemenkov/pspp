@@ -232,7 +232,7 @@ multiple_comparison_sig (double std_err,
   int k = pvw->n_groups;
   double df = ph->dff (pvw, dd_i->mom, dd_j->mom);
   double ts = ph->tsf (k, dd_i->mom, dd_j->mom, std_err);
-  if (df == SYSMIS)
+  if (df == SYSMIS || !isfinite (ts) || !isfinite (df))
     return SYSMIS;
   return  ph->p1f (ts, k - 1, df);
 }
@@ -1360,16 +1360,17 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
               std_err /= weight_i * weight_j;
               std_err = sqrt (std_err);
 
-              double sig = 2 * multiple_comparison_sig (std_err, pvw,
-                                                        dd_i, dd_j, ph);
+              double sig = multiple_comparison_sig (std_err, pvw,
+                                                    dd_i, dd_j, ph);
+              double sig2 = sig == SYSMIS ? SYSMIS : 2 * sig;
               double half_range = mc_half_range (cmd, pvw, std_err,
                                                  dd_i, dd_j, ph);
               double entries[] = {
                 mean_i - mean_j,
                 std_err,
-                sig,
-                (mean_i - mean_j) - half_range,
-                (mean_i - mean_j) + half_range,
+                sig2,
+                half_range == SYSMIS ? SYSMIS : (mean_i - mean_j) - half_range,
+                half_range == SYSMIS ? SYSMIS : (mean_i - mean_j) + half_range,
               };
               for (size_t k = 0; k < sizeof entries / sizeof *entries; k++)
                 pivot_table_put4 (table, k, j, i, test_idx,
