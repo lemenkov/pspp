@@ -44,6 +44,8 @@ const char *output_driver_get_name (const struct output_driver *);
 
 char *output_driver_substitute_heading_vars (const char *, int page_number);
 
+struct output_driver *output_driver_find (const struct output_driver_class *);
+
 /* One kind of output driver.
 
    Output driver implementations must not call msg() to report errors.  This

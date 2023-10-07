@@ -61,7 +61,8 @@ struct _PsppireConf
 
   GKeyFile *keyfile;
   gchar *filename;
-  guint idle;
+  gchar *contents;
+  gboolean dirty;
 };
 
 
@@ -73,58 +74,42 @@ struct _PsppireConfClass
 
 GType psppire_conf_get_type (void) G_GNUC_CONST;
 
-PsppireConf * psppire_conf_new (void);
+void psppire_conf_save (void);
 
-gboolean psppire_conf_get_int (PsppireConf *,
-                               const gchar *, const gchar *, int *);
+gboolean psppire_conf_get_int (const gchar *, const gchar *, int *);
 
-gboolean psppire_conf_get_string (PsppireConf *,
-                               const gchar *, const gchar *, gchar **);
+gboolean psppire_conf_get_string (const gchar *, const gchar *, gchar **);
 
-gboolean psppire_conf_get_boolean (PsppireConf *,
-                                   const gchar *, const gchar *, gboolean *);
+gboolean psppire_conf_get_boolean (const gchar *, const gchar *, gboolean *);
 
 
-gboolean psppire_conf_get_variant (PsppireConf *,
-                                   const gchar *, const gchar *, GVariant **);
+gboolean psppire_conf_get_variant (const gchar *, const gchar *, GVariant **);
 
 
-gboolean psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
-                                const gchar *name,
-                                GType t,
-                                int *v);
+gboolean psppire_conf_get_enum (const gchar *base, const gchar *name,
+                                GType t, int *v);
 
-void psppire_conf_set_int (PsppireConf *conf,
-                           const gchar *base, const gchar *name,
+void psppire_conf_set_int (const gchar *base, const gchar *name,
                            gint value);
 
-void psppire_conf_set_boolean (PsppireConf *conf,
-                               const gchar *base, const gchar *name,
+void psppire_conf_set_boolean (const gchar *base, const gchar *name,
                                gboolean value);
 
-void psppire_conf_set_string (PsppireConf *conf,
-                               const gchar *base, const gchar *name,
+void psppire_conf_set_string (const gchar *base, const gchar *name,
                               const gchar *value);
 
 
-void psppire_conf_set_variant (PsppireConf *conf,
-                               const gchar *base, const gchar *name,
+void psppire_conf_set_variant (const gchar *base, const gchar *name,
                                GVariant *value);
 
 
-void psppire_conf_set_enum (PsppireConf *conf,
-                            const gchar *base, const gchar *name,
+void psppire_conf_set_enum (const gchar *base, const gchar *name,
                             GType enum_type,
                             int value);
 
-void psppire_conf_set_window_geometry (PsppireConf *conf,
-                                       const gchar *base,
-                                       GtkWindow *window);
+void psppire_conf_get_window_geometry (const gchar *base, GtkWindow *window);
 
-void psppire_conf_save_window_geometry (PsppireConf *,
-                                        const gchar *,
-                                        GtkWindow *);
-
+void psppire_conf_set_window_geometry (const gchar *, GtkWindow *);
 
 G_END_DECLS
 

@@ -466,6 +466,7 @@ TESTSUITE_AT = \
 	tests/output/ascii.at \
 	tests/output/charts.at \
 	tests/output/html.at \
+	tests/output/journal.at \
 	tests/output/output.at \
 	tests/output/paper-size.at \
 	tests/output/pivot-table.at \

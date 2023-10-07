@@ -43,6 +43,7 @@
 #include "gl/xmalloca.h"
 
 #include "gettext.h"
+#include "xvasprintf.h"
 #define _(msgid) gettext (msgid)
 
 
@@ -271,6 +272,12 @@ default_output_path (void)
   return path;
 }
 
+const char *
+default_log_path (void)
+{
+  return default_output_path ();
+}
+
 #else
 
 /* ... whereas the rest of the world just likes it to be
@@ -281,6 +288,33 @@ default_output_path (void)
   static char current_dir[]  = "";
 
   return current_dir;
+}
+
+const char *
+default_log_path (void)
+{
+  static char *log_path = NULL;
+
+  if (!log_path)
+    {
+      char *tmp = NULL;
+      const char *state_home = getenv ("XDG_STATE_HOME");
+      if (!state_home)
+        {
+          const char *home = getenv ("HOME");
+          state_home = tmp = xasprintf ("%s/.local/state", home ? home : "");
+        }
+
+      log_path = xasprintf ("%s/pspp/", state_home);
+
+      struct stat s;
+      if (!stat (state_home, &s) && stat (log_path, &s) && errno == ENOENT)
+        mkdir (log_path, 0700);
+
+      free (tmp);
+    }
+
+  return log_path;
 }
 
 #endif

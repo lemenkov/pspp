@@ -59,9 +59,7 @@ get_window_id (GtkWidget *wb)
 static void
 realize (GtkWidget *wb)
 {
-  PsppireConf *conf = psppire_conf_new ();
-
-  psppire_conf_set_window_geometry (conf, get_window_id (wb), GTK_WINDOW (wb));
+  psppire_conf_get_window_geometry (get_window_id (wb), GTK_WINDOW (wb));
 
   if (GTK_WIDGET_CLASS (psppire_window_base_parent_class)->realize)
     GTK_WIDGET_CLASS (psppire_window_base_parent_class)->realize (wb) ;
@@ -76,9 +74,8 @@ configure_event (GtkWidget *wb, GdkEventConfigure *event)
 {
   if (gtk_widget_get_mapped (wb))
     {
-      PsppireConf *conf = psppire_conf_new ();
-
-      psppire_conf_save_window_geometry (conf, get_window_id (wb), GTK_WINDOW (wb));
+      psppire_conf_set_window_geometry (get_window_id (wb), GTK_WINDOW (wb));
+      psppire_conf_save ();
     }
 
   if (GTK_WIDGET_CLASS (psppire_window_base_parent_class)->configure_event)

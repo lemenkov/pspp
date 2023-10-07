@@ -35,46 +35,42 @@ static void psppire_conf_dispose        (GObject   *object);
 
 static GObjectClass *parent_class = NULL;
 
-static void
-conf_read (PsppireConf *conf)
-{
-  g_key_file_load_from_file (conf->keyfile,
-                             conf->filename,
-                             G_KEY_FILE_KEEP_COMMENTS,
-                             NULL);
-}
+static PsppireConf *psppire_conf_get (void);
 
-static gboolean
-flush_conf (PsppireConf *conf)
+void
+psppire_conf_save (void)
 {
+  PsppireConf *conf = psppire_conf_get ();
+  if (!conf->dirty)
+    return;
+  conf->dirty = FALSE;
+
   gsize length = 0;
 
-  gchar *kf = g_key_file_to_data  (conf->keyfile, &length, NULL);
-  GError *err = NULL;
+  gchar *new_contents = g_key_file_to_data  (conf->keyfile, &length, NULL);
 
-  if (! g_file_set_contents (conf->filename, kf, length, &err))
+  GError *err = NULL;
+  if (g_strcmp0 (new_contents, conf->contents)
+      && ! g_file_set_contents (conf->filename, new_contents, length, &err))
     {
       g_warning ("Cannot open %s for writing: %s", conf->filename, err->message);
       g_error_free (err);
     }
 
-  g_free (kf);
-  conf->idle = 0;
-  return FALSE;
+  g_free (conf->contents);
+  conf->contents = new_contents;
 }
 
 static void
-conf_write (PsppireConf *conf)
+conf_dirty (PsppireConf *conf)
 {
-  if (conf->idle == 0)
-    conf->idle = g_idle_add_full (G_PRIORITY_LOW,
-                                  (GSourceFunc) flush_conf, conf, NULL);
+  conf->dirty = TRUE;
 }
-
 
 static void
 psppire_conf_dispose  (GObject *object)
 {
+  G_OBJECT_CLASS (parent_class)->dispose (object);
 }
 
 static void
@@ -138,26 +134,31 @@ psppire_conf_init (PsppireConf *conf)
   conf->filename = g_strdup_printf ("%s/%s", dirname, "psppirerc");
 
   conf->keyfile = g_key_file_new ();
+  g_key_file_load_from_file (conf->keyfile,
+                             conf->filename,
+                             G_KEY_FILE_KEEP_COMMENTS,
+                             NULL);
 
-  conf->idle = 0;
+  conf->dirty = FALSE;
 }
 
-
-PsppireConf *
-psppire_conf_new (void)
+/* Gets the singleton PsppireConf object.  The caller should not unref the
+   object.  The caller should call psppire_conf_save() if it makes changes. */
+static PsppireConf *
+psppire_conf_get (void)
 {
-  return g_object_new (psppire_conf_get_type (), NULL);
+  return (the_instance
+          ? the_instance
+          : g_object_new (psppire_conf_get_type (), NULL));
 }
-
-
 
 gboolean
-psppire_conf_get_int (PsppireConf *conf, const gchar *base,
-                      const gchar *name, gint *value)
+psppire_conf_get_int (const gchar *base, const gchar *name, gint *value)
 {
+  PsppireConf *conf = psppire_conf_get ();
+
   gboolean ok;
   GError *err = NULL;
-  conf_read (conf);
   *value = g_key_file_get_integer (conf->keyfile,
                                    base,
                                    name, &err);
@@ -170,13 +171,13 @@ psppire_conf_get_int (PsppireConf *conf, const gchar *base,
 }
 
 gboolean
-psppire_conf_get_boolean (PsppireConf *conf, const gchar *base,
-                          const gchar *name, gboolean *value)
+psppire_conf_get_boolean (const gchar *base, const gchar *name, gboolean *value)
 {
+  PsppireConf *conf = psppire_conf_get ();
+
   gboolean ok;
   gboolean b;
   GError *err = NULL;
-  conf_read (conf);
   b = g_key_file_get_boolean (conf->keyfile,
                               base,
                               name, &err);
@@ -194,13 +195,12 @@ psppire_conf_get_boolean (PsppireConf *conf, const gchar *base,
 
 
 gboolean
-psppire_conf_get_string (PsppireConf *conf, const gchar *base,
-                         const gchar *name, gchar **value)
+psppire_conf_get_string (const gchar *base, const gchar *name, gchar **value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   gboolean ok;
   gchar *b;
   GError *err = NULL;
-  conf_read (conf);
   b = g_key_file_get_string (conf->keyfile,
                              base,
                              name, &err);
@@ -219,13 +219,12 @@ psppire_conf_get_string (PsppireConf *conf, const gchar *base,
 
 
 gboolean
-psppire_conf_get_variant (PsppireConf *conf, const gchar *base,
-                          const gchar *name, GVariant **v)
+psppire_conf_get_variant (const gchar *base, const gchar *name, GVariant **v)
 {
+  PsppireConf *conf = psppire_conf_get ();
   gboolean ok;
   gchar *b;
   GError *err = NULL;
-  conf_read (conf);
   b = g_key_file_get_string (conf->keyfile,
                              base,
                              name, &err);
@@ -244,15 +243,12 @@ psppire_conf_get_variant (PsppireConf *conf, const gchar *base,
 }
 
 gboolean
-psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
-                       const gchar *name,
-                       GType t,
-                       int *v)
+psppire_conf_get_enum (const gchar *base, const gchar *name, GType t, int *v)
 {
+  PsppireConf *conf = psppire_conf_get ();
   gboolean ok;
   gchar *b;
   GError *err = NULL;
-  conf_read (conf);
   b = g_key_file_get_string (conf->keyfile,
                              base,
                              name, &err);
@@ -274,50 +270,49 @@ psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
 }
 
 void
-psppire_conf_set_int (PsppireConf *conf,
-                      const gchar *base, const gchar *name,
+psppire_conf_set_int (const gchar *base, const gchar *name,
                       gint value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   g_key_file_set_integer (conf->keyfile, base, name, value);
-  conf_write (conf);
+  conf_dirty (conf);
 }
 
 void
-psppire_conf_set_boolean (PsppireConf *conf,
-                          const gchar *base, const gchar *name,
+psppire_conf_set_boolean (const gchar *base, const gchar *name,
                           gboolean value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   g_key_file_set_boolean (conf->keyfile, base, name, value);
-  conf_write (conf);
+  conf_dirty (conf);
 }
 
 
 void
-psppire_conf_set_string (PsppireConf *conf,
-                         const gchar *base, const gchar *name,
+psppire_conf_set_string (const gchar *base, const gchar *name,
                          const gchar *value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   g_key_file_set_string (conf->keyfile, base, name, value);
-  conf_write (conf);
+  conf_dirty (conf);
 }
 
 void
-psppire_conf_set_variant (PsppireConf *conf,
-                               const gchar *base, const gchar *name,
-                               GVariant *value)
+psppire_conf_set_variant (const gchar *base, const gchar *name, GVariant *value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   gchar *v = g_variant_print (value, FALSE);
   g_key_file_set_string (conf->keyfile, base, name, v);
-  conf_write (conf);
+  conf_dirty (conf);
   g_free (v);
 }
 
 void
-psppire_conf_set_enum (PsppireConf *conf,
-                       const gchar *base, const gchar *name,
+psppire_conf_set_enum (const gchar *base, const gchar *name,
                        GType enum_type,
                        int value)
 {
+  PsppireConf *conf = psppire_conf_get ();
   GEnumClass *ec = g_type_class_ref (enum_type);
   GEnumValue *ev = g_enum_get_value (ec, value);
 
@@ -326,39 +321,37 @@ psppire_conf_set_enum (PsppireConf *conf,
 
   g_type_class_unref (ec);
 
-  conf_write (conf);
+  conf_dirty (conf);
 }
 
 
 
 /*
-  A convenience function to set the geometry of a
+  A convenience function to get the geometry of a
   window from from a saved config
 */
 void
-psppire_conf_set_window_geometry (PsppireConf *conf,
-                                  const gchar *base,
-                                  GtkWindow *window)
+psppire_conf_get_window_geometry (const gchar *base, GtkWindow *window)
 {
   gint height, width;
   gint x, y;
   gboolean maximize;
 
-  if (psppire_conf_get_int (conf, base, "height", &height)
+  if (psppire_conf_get_int (base, "height", &height)
       &&
-      psppire_conf_get_int (conf, base, "width", &width))
+      psppire_conf_get_int (base, "width", &width))
     {
       gtk_window_set_default_size (window, width, height);
     }
 
-  if (psppire_conf_get_int (conf, base, "x", &x)
+  if (psppire_conf_get_int (base, "x", &x)
        &&
-       psppire_conf_get_int (conf, base, "y", &y))
+       psppire_conf_get_int (base, "y", &y))
     {
       gtk_window_move (window, x, y);
     }
 
-  if (psppire_conf_get_boolean (conf, base, "maximize", &maximize))
+  if (psppire_conf_get_boolean (base, "maximize", &maximize))
     {
       if (maximize)
         gtk_window_maximize (window);
@@ -374,9 +367,7 @@ psppire_conf_set_window_geometry (PsppireConf *conf,
    "configure-event" and "window-state-event" signal handlers
  */
 void
-psppire_conf_save_window_geometry (PsppireConf *conf,
-                                   const gchar *base,
-                                   GtkWindow *gtk_window)
+psppire_conf_set_window_geometry (const gchar *base, GtkWindow *gtk_window)
 {
   gboolean maximized;
   GdkWindow *w;
@@ -386,7 +377,7 @@ psppire_conf_save_window_geometry (PsppireConf *conf,
     return;
 
   maximized = (gdk_window_get_state (w) & GDK_WINDOW_STATE_MAXIMIZED) != 0;
-  psppire_conf_set_boolean (conf, base, "maximize", maximized);
+  psppire_conf_set_boolean (base, "maximize", maximized);
 
   if (!maximized)
     {
@@ -397,9 +388,9 @@ psppire_conf_save_window_geometry (PsppireConf *conf,
 
       gdk_window_get_position (w, &x, &y);
 
-      psppire_conf_set_int (conf, base, "height", height);
-      psppire_conf_set_int (conf, base, "width", width);
-      psppire_conf_set_int (conf, base, "x", x);
-      psppire_conf_set_int (conf, base, "y", y);
+      psppire_conf_set_int (base, "height", height);
+      psppire_conf_set_int (base, "width", width);
+      psppire_conf_set_int (base, "x", x);
+      psppire_conf_set_int (base, "y", y);
     }
 }

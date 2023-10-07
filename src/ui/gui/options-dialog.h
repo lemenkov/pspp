@@ -30,8 +30,19 @@ typedef enum
 GType pspp_options_var_order_get_type (void) G_GNUC_CONST;
 #define PSPP_TYPE_OPTIONS_VAR_ORDER (pspp_options_var_order_get_type ())
 
+typedef enum
+  {
+    PSPP_OPTIONS_JOURNAL_LOCATION_DISABLED,
+    PSPP_OPTIONS_JOURNAL_LOCATION_DEFAULT,
+    PSPP_OPTIONS_JOURNAL_LOCATION_CUSTOM,
+  } PsppOptionsJournalLocation;
+
+GType pspp_options_journal_location_get_type (void) G_GNUC_CONST;
+#define PSPP_TYPE_OPTIONS_JOURNAL_LOCATION (pspp_options_journal_location_get_type ())
 
 /* Pops up the Options dialog box */
 void options_dialog (PsppireDataWindow *);
+
+void options_init (void);
 
 #endif

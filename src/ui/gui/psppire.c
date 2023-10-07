@@ -43,6 +43,7 @@
 
 #include "ui/gui/dict-display.h"
 #include "ui/gui/executor.h"
+#include "ui/gui/options-dialog.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-dict.h"
@@ -113,7 +114,7 @@ initialize (const struct init_source *is)
         }
       break;
     case 9:
-      journal_init ();
+      options_init ();
       break;
     case 10:
       textdomain (PACKAGE);

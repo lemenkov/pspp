@@ -911,22 +911,22 @@ Options}).
 @cindex width
 @cindex tnumbers
 
+These subcommands affect journaling, also called logging.  When
+journaling is enabled, @pspp{} writes the commands that it executes,
+plus any errors or other diagostics that it outputs, to a text file,
+called the @dfn{journal} file.
 
-Logging subcommands affect logging of commands executed to external
-files.  These subcommands are
+@pspp{} enables journaling by default when it runs interactively in a
+terminal or in the PSPPIRE GUI.  In the GUI, use @clicksequence{Edit
+@click{} Options@dots{}} to view or override the default location or
+to disable journaling.  From syntax, use @code{SHOW JOURNAL} to see
+the journal's location and whether it is enabled.
 
 @table @asis
 @item JOURNAL
 @itemx LOG
-These subcommands, which are synonyms, control the journal.  The
-default is @subcmd{ON}, which causes commands entered interactively to be
-written to the journal file.  Commands included from syntax files that
-are included interactively and error messages printed by @pspp{} are also
-written to the journal file, prefixed by @samp{>}.  @subcmd{OFF} disables use
-of the journal.
-
-The journal is named @file{pspp.jnl} by default.  A different name may
-be specified.
+Specify @subcmd{ON} to enable the journal and @subcmd{OFF} to disable
+it.  Specify a file name to set the name of the journal file.
 @end table
 
 System file subcommands affect the default format of system files

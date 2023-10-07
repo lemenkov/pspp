@@ -26,11 +26,11 @@
 
 #include <stdbool.h>
 
-void journal_init (void);
 void journal_enable (void);
 void journal_disable (void);
 bool journal_is_enabled (void);
 void journal_set_file_name (const char *);
 const char *journal_get_file_name (void);
+const char *journal_get_default_file_name (void);
 
 #endif /* output/journal.h */

@@ -431,6 +431,21 @@ output_driver_get_name (const struct output_driver *driver)
 {
   return driver->name;
 }
+
+struct output_driver *
+output_driver_find (const struct output_driver_class *class)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  struct llx *llx;
+  llx_for_each (llx, &e->drivers)
+    {
+      struct output_driver *d = llx_data (llx);
+      if (d->class == class)
+        return d;
+    }
+  return NULL;
+}
 
 static struct output_engine *
 output_driver_get_engine (const struct output_driver *driver)

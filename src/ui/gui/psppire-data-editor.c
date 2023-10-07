@@ -514,9 +514,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   g_object_set (de, "can-focus", FALSE, NULL);
 
-  if (psppire_conf_get_string (psppire_conf_new (),
-                           "Data Editor", "font",
-                                &fontname))
+  if (psppire_conf_get_string ("Data Editor", "font", &fontname))
     {
       de->font = pango_font_description_from_string (fontname);
       g_free (fontname);
@@ -595,9 +593,9 @@ psppire_data_editor_set_font (PsppireDataEditor *de, PangoFontDescription *font_
   de->font = pango_font_description_copy (font_desc);
   font_name = pango_font_description_to_string (de->font);
 
-  psppire_conf_set_string (psppire_conf_new (),
-                           "Data Editor", "font",
-                           font_name);
+  psppire_conf_set_string ("Data Editor", "font", font_name);
+  psppire_conf_save ();
+
   g_free (font_name);
 }
 

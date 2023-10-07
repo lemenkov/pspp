@@ -152,7 +152,7 @@ default_sort (GtkTreeModel *model,
      gpointer user_data)
 {
   int what = -1;
-  psppire_conf_get_enum (psppire_conf_new (), "VariableLists", "sort-order",
+  psppire_conf_get_enum ("VariableLists", "sort-order",
                          PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
 
   switch (what)
@@ -320,8 +320,7 @@ use_labels (PsppireDictView *dv)
   if (gtk_check_menu_item_get_inconsistent (GTK_CHECK_MENU_ITEM
                                             (dv->override_button)))
     {
-      psppire_conf_get_boolean (psppire_conf_new (),
-                                "VariableLists", "display-labels", &disp_labels);
+      psppire_conf_get_boolean ("VariableLists", "display-labels", &disp_labels);
     }
   else
     {
@@ -551,8 +550,7 @@ toggle_label_preference (GtkCheckMenuItem *checkbox, gpointer data)
   PsppireDictView *dv = PSPPIRE_DICT_VIEW (data);
 
   gboolean global_setting = TRUE;
-  psppire_conf_get_boolean (psppire_conf_new (),
-                            "VariableLists", "display-labels", &global_setting);
+  psppire_conf_get_boolean ("VariableLists", "display-labels", &global_setting);
 
   if (gtk_check_menu_item_get_inconsistent (checkbox))
     gtk_check_menu_item_set_active (checkbox, !global_setting);

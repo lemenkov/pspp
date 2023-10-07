@@ -11,6 +11,9 @@ Changes since 2.0.0-pre1:
 
  * Improved the search options in the syntax editor.
 
+ * Journaling is now enabled by default in interactive use.  In PSPPIRE,
+   journaling can be configured using Edit|Options.
+
 Changes from 1.6.2 to 2.0.0-pre1:
 
  * The CTABLES command is now implemented.

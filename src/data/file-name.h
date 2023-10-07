@@ -33,6 +33,7 @@ FILE *fn_open (const struct file_handle *fn, const char *mode);
 int fn_close (const struct file_handle *fn, FILE *file);
 
 const char * default_output_path (void);
+const char * default_log_path (void);
 
 #if defined _WIN32 || defined __WIN32__
 #define WIN32_LEAN_AND_MEAN  /* avoid including junk */

@@ -29,6 +29,7 @@
 #include "data/dataset.h"
 #include "data/dictionary.h"
 #include "data/format.h"
+#include "data/identifier.h"
 #include "data/settings.h"
 #include "data/value.h"
 #include "data/variable.h"
@@ -602,24 +603,28 @@ show_INCLUDE (const struct dataset *ds UNUSED)
 static bool
 parse_JOURNAL (struct lexer *lexer)
 {
-  int b = parse_bool (lexer);
-  if (b == true)
-    journal_enable ();
-  else if (b == false)
-    journal_disable ();
-  else if (lex_is_string (lexer) || lex_token (lexer) == T_ID)
+  do
     {
-      char *filename = utf8_to_filename (lex_tokcstr (lexer));
-      journal_set_file_name (filename);
-      free (filename);
+      int b = parse_bool (lexer);
+      if (b == true)
+        journal_enable ();
+      else if (b == false)
+        journal_disable ();
+      else if (lex_is_string (lexer) || lex_token (lexer) == T_ID)
+        {
+          char *filename = utf8_to_filename (lex_tokcstr (lexer));
+          journal_set_file_name (filename);
+          free (filename);
 
-      lex_get (lexer);
+          lex_get (lexer);
+        }
+      else
+        {
+          lex_error (lexer, _("Syntax error expecting ON or OFF or a file name."));
+          return false;
+        }
     }
-  else
-    {
-      lex_error (lexer, _("Syntax error expecting ON or OFF or a file name."));
-      return false;
-    }
+  while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD);
   return true;
 }
 
@@ -1292,6 +1297,8 @@ show_system (const struct dataset *ds UNUSED)
   char *allocated;
   add_row (table, N_("Locale Directory"), relocate2 (locale_dir, &allocated));
   free (allocated);
+
+  add_row (table, N_("Journal File"), journal_get_file_name ());
 
   add_row (table, N_("Compiler Version"),
 #ifdef __VERSION__

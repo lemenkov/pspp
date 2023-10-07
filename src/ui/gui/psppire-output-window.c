@@ -132,25 +132,23 @@ psppire_output_submit (struct output_driver *this,
       gtk_widget_show_all (GTK_WIDGET (pod->window));
     }
 
-  PsppireConf *conf = psppire_conf_new ();
   {
     gboolean status = true;
-    psppire_conf_get_boolean (conf, "OutputWindowAction", "alert",
-                              &status);
+    psppire_conf_get_boolean ("OutputWindowAction", "alert", &status);
     gtk_window_set_urgency_hint (GTK_WINDOW (pod->window), status);
   }
 
   {
     gboolean status ;
-    if (psppire_conf_get_boolean (conf, "OutputWindowAction", "maximize",
-                                  &status) && status)
+    if (psppire_conf_get_boolean ("OutputWindowAction", "maximize", &status)
+        && status)
       gtk_window_maximize (GTK_WINDOW (pod->window));
   }
 
   {
     gboolean status ;
-    if (psppire_conf_get_boolean (conf, "OutputWindowAction", "raise",
-                                  &status) && status)
+    if (psppire_conf_get_boolean ("OutputWindowAction", "raise", &status)
+        && status)
       gtk_window_present (GTK_WINDOW (pod->window));
   }
 }

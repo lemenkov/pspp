@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include "data/file-name.h"
 #include "libpspp/cast.h"
@@ -40,17 +43,14 @@ struct journal_driver
   {
     struct output_driver driver;
     FILE *file;
-
-    /* Name of journal file. */
     char *file_name;
-    bool destroyed;
-  };
+    bool newly_opened;
+};
 
 static const struct output_driver_class journal_class;
 
-/* Journal driver, if journaling is enabled. */
-static struct journal_driver journal;
-
+/* This persists even if the driver is destroyed and recreated. */
+static char *journal_file_name;
 
 static struct journal_driver *
 journal_driver_cast (struct output_driver *driver)
@@ -60,35 +60,50 @@ journal_driver_cast (struct output_driver *driver)
 }
 
 static void
-journal_close (void)
-{
-  if (journal.file != NULL)
-    {
-      if (fwriteerror (journal.file))
-        msg_error (errno, _("error writing output file `%s'"),
-                   journal.file_name);
-
-      }
-  journal.file = NULL;
-}
-
-static void
 journal_destroy (struct output_driver *driver)
 {
   struct journal_driver *j = journal_driver_cast (driver);
 
-  if (!j->destroyed)
-    journal_close ();
-
-  j->destroyed = true;
+  if (fwriteerror (j->file))
+    msg_error(errno, _("error writing output file `%s'"), j->file_name);
+  free (j->file_name);
+  free (j);
 }
 
 static void
-journal_output (struct journal_driver *j, char *s)
+journal_output (struct journal_driver *j, char *s, const char *prefix)
 {
   if (j->file)
     {
-      fprintf (j->file, "%s\n", s);
+      if (j->newly_opened)
+        {
+          j->newly_opened = false;
+
+          /* Unless this file is empty, start off with a blank line. */
+          struct stat s;
+          if (!fstat (fileno (j->file), &s) && s.st_size != 0)
+            putc ('\n', j->file);
+
+          /* Write the date and time. */
+          char buf[64];
+          time_t t = time (NULL);
+          struct tm *tm = localtime (&t);
+          strftime (buf, sizeof buf, "%Y-%m-%d %H:%M:%S", tm);
+          fprintf (j->file, "* New session at %s.\n", buf);
+        }
+
+      const char *p = s;
+      do
+        {
+          size_t len = strcspn (p, "\n");
+          fputs (prefix, j->file);
+          fwrite (p, len, 1, j->file);
+          putc ('\n', j->file);
+          p += len;
+          if (*p == '\n')
+            p++;
+        }
+      while (*p);
 
       /* Flush the journal in case the syntax we're about to write
          causes a crash.  Having the syntax already written to disk
@@ -107,12 +122,12 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
   switch (item->type)
     {
     case OUTPUT_ITEM_MESSAGE:
-      journal_output (j, msg_to_string (item->message));
+      journal_output (j, msg_to_string (item->message), "> ");
       break;
 
     case OUTPUT_ITEM_TEXT:
       if (item->text.subtype == TEXT_ITEM_SYNTAX)
-        journal_output (j, text_item_get_plain_text (item));
+        journal_output (j, text_item_get_plain_text (item), "");
       break;
 
     case OUTPUT_ITEM_GROUP:
@@ -134,46 +149,50 @@ static const struct output_driver_class journal_class =
     .destroy = journal_destroy,
     .submit = journal_submit,
   };
-
 
-/* Enables journaling. */
-void
-journal_init (void)
+static struct journal_driver *
+get_journal_driver (void)
 {
-  journal = (struct journal_driver) {
-    .driver = {
-      .class = &journal_class,
-      .name = xstrdup ("journal"),
-      .device_type = SETTINGS_DEVICE_UNFILTERED,
-    }
-  };
-
-  output_driver_register (&journal.driver);
-  journal_enable ();
+  struct output_driver *d = output_driver_find (&journal_class);
+  return d ? journal_driver_cast (d) : NULL;
 }
 
 /* Disables journaling. */
 void
 journal_disable (void)
 {
-  journal_close ();
+  struct journal_driver *j = get_journal_driver ();
+  if (j)
+    output_driver_destroy (&j->driver);
 }
-
 
 /* Enable journaling. */
 void
 journal_enable (void)
 {
-  if (journal.file == NULL)
+  if (get_journal_driver ())
+    return;
+
+  const char *file_name = journal_get_file_name ();
+  FILE *file = fopen (file_name, "a");
+  if (file == NULL)
     {
-      journal.file = fopen (journal_get_file_name (), "a");
-      if (journal.file == NULL)
-        {
-          msg_error (errno, _("error opening output file `%s'"),
-                     journal_get_file_name ());
-          journal_close ();
-        }
+      msg_error (errno, _("error opening output file `%s'"), file_name);
+      return;
     }
+
+  struct journal_driver *j = xmalloc (sizeof *j);
+  *j = (struct journal_driver) {
+    .driver = {
+      .class = &journal_class,
+      .name = xstrdup ("journal"),
+      .device_type = SETTINGS_DEVICE_UNFILTERED,
+    },
+    .file = file,
+    .file_name = xstrdup (file_name),
+    .newly_opened = true,
+  };
+  output_driver_register (&j->driver);
 }
 
 
@@ -181,16 +200,25 @@ journal_enable (void)
 bool
 journal_is_enabled (void)
 {
-  return journal.file != NULL ;
+  return get_journal_driver () != NULL;
 }
 
 /* Sets the name of the journal file to FILE_NAME. */
 void
 journal_set_file_name (const char *file_name)
 {
-  journal_close ();
-  free (journal.file_name);
-  journal.file_name = xstrdup (file_name);
+  if (!strcmp (file_name, journal_get_file_name ()))
+    return;
+
+  bool enabled = journal_is_enabled ();
+  if (enabled)
+    journal_disable ();
+
+  free (journal_file_name);
+  journal_file_name = xstrdup (file_name);
+
+  if (enabled)
+    journal_enable ();
 }
 
 /* Returns the name of the journal file.  The caller must not modify or free
@@ -198,10 +226,20 @@ journal_set_file_name (const char *file_name)
 const char *
 journal_get_file_name (void)
 {
-  if (journal.file_name == NULL)
-    {
-      const char *output_path = default_output_path ();
-      journal.file_name = xasprintf ("%s%s", output_path, "pspp.jnl");
-    }
-  return journal.file_name;
+  if (!journal_file_name)
+    journal_file_name = xstrdup (journal_get_default_file_name ());
+  return journal_file_name;
+}
+
+/* Returns the name of the default journal file.  The caller must not modify or
+   free the returned string. */
+const char *
+journal_get_default_file_name (void)
+{
+  static char *default_file_name;
+
+  if (!default_file_name)
+    default_file_name = xasprintf ("%s%s", default_log_path (), "pspp.jnl");
+
+  return default_file_name;
 }

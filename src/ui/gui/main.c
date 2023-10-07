@@ -19,6 +19,7 @@
 
 #include "pre-initialisation.h"
 
+#include "ui/gui/options-dialog.h"
 #include "ui/gui/psppire.h"
 
 #include <gtk/gtk.h>
@@ -195,10 +196,8 @@ static const char *tips[] =
 static void
 user_tip (GApplication *app)
 {
-  PsppireConf *conf = psppire_conf_new ();
-
   gboolean show_tip = TRUE;
-  psppire_conf_get_boolean (conf, "startup", "show-user-tips", &show_tip);
+  psppire_conf_get_boolean ("startup", "show-user-tips", &show_tip);
 
   if (!show_tip)
     return;
@@ -278,11 +277,8 @@ user_tip (GApplication *app)
     }
 
   show_tip = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check));
-  psppire_conf_set_boolean (conf,
-                            "startup", "show-user-tips",
-                            show_tip);
-
-  g_object_unref (conf);
+  psppire_conf_set_boolean ("startup", "show-user-tips", show_tip);
+  psppire_conf_save ();
 
   gtk_widget_destroy (d);
 }
@@ -561,5 +557,6 @@ main (int argc, char *argv[])
   }
 
   g_object_set (G_OBJECT (app), "register-session", TRUE, NULL);
+
   return g_application_run (G_APPLICATION (app), argc, argv);
 }
