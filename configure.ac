@@ -137,8 +137,8 @@ if test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.44], [],
     [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.44 or later (or use --without-gui)])])
 
-  PKG_CHECK_MODULES([SPREAD_SHEET_WIDGET], [spread-sheet-widget >= 0.7], [],
-    [PSPP_REQUIRED_PREREQ([spread-sheet-widget 0.7 (or use --without-gui)])])
+  PKG_CHECK_MODULES([SPREAD_SHEET_WIDGET], [spread-sheet-widget >= 0.10], [],
+    [PSPP_REQUIRED_PREREQ([spread-sheet-widget 0.10 (or use --without-gui)])])
   PKG_CHECK_VAR([SPREAD_SHEET_WIDGET_LIBDIR], [spread-sheet-widget], [libdir])
 
   AC_ARG_VAR([GLIB_GENMARSHAL])
