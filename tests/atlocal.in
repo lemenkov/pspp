@@ -89,3 +89,6 @@ export LSAN_OPTIONS
 
 # Avoid complaints if the system doesn't have a configured paper size.
 export PAPERSIZE=a4
+
+# Make PSPP ignore whether stdin is a tty.
+export PSPP_INTERACTIVE=0

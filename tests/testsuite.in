@@ -63,20 +63,3 @@ if test X"$RUNNER" != X; then
     PATH=$wrapper_dir:$PATH
 fi
 ])
-
-m4_divert_text([PREPARE_TESTS], [dnl
-dnl ptys are pretty system-dependent and it's hard to test them
-dnl everywhere.  For example, on Mac OS the SHOW N and FINISH command
-dnl text doesn't appear in the output.  So we'll just skip them
-dnl other than on the OS we know best.
-AS_CASE([$host],
-  [*-linux*],
-  [dnl Make sure that squish-pty works.
-   SQUISH_PTY="$PYTHON3 $abs_top_srcdir/tests/ui/terminal/squish-pty.py"
-   if $SQUISH_PTY true </dev/null >/dev/null 2>/dev/null; then
-       :
-   else
-       SQUISH_PTY=no
-   fi],
-  [SQUISH_PTY=no])
-])

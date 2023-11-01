@@ -315,7 +315,6 @@ EXTRA_DIST += \
 	tests/language/commands/readnames.ods \
 	tests/language/commands/nhtsa.sav \
 	tests/language/commands/llz.zsav \
-	tests/ui/terminal/squish-pty.py \
 	tests/utilities/regress.spv
 
 CLEANFILES += *.save pspp.* foo*

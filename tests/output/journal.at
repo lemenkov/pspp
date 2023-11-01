@@ -38,9 +38,8 @@ AT_CHECK([test ! -e pspp/pspp.jnl])
 AT_CLEANUP
 
 AT_SETUP([journal enabled by default interactively])
-AT_SKIP_IF([test "$SQUISH_PTY" = no])
 AT_CHECK([echo 'data list notable /x y 1-2.
-finish.' | XDG_STATE_HOME=$PWD $SQUISH_PTY pspp], [0], [ignore])
+finish.' | XDG_STATE_HOME=$PWD PSPP_INTERACTIVE=1 pspp], [0], [ignore])
 AT_CHECK([sed 's/New session at .*/New session./' pspp/pspp.jnl], [0], [dnl
 * New session.
 data list notable /x y 1-2.

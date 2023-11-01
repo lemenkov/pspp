@@ -255,7 +255,18 @@ add_syntax_reader (struct lexer *lexer, const char *file_name,
 {
   struct lex_reader *reader;
 
-  reader = (!strcmp (file_name, "-") && isatty (STDIN_FILENO)
+  bool interactive;
+  if (!strcmp (file_name, "-"))
+    {
+      /* This allows the testsuite to simulate interactive behavior by setting
+         PSPP_INTERACTIVE=1 in the environment. */
+      const char *env = getenv ("PSPP_INTERACTIVE");
+      interactive = env ? strcmp (env, "0") : isatty (STDIN_FILENO);
+    }
+  else
+    interactive = false;
+
+  reader = (interactive
             ? terminal_reader_create ()
             : lex_reader_for_file (file_name, encoding, syntax_mode,
                                    LEX_ERROR_CONTINUE));
