@@ -5,6 +5,14 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Changes from 1.6.2-pre2 to 2.0.0-pre3:
+
+ * Testsuite fix.
+
+ * User string fix.
+
+ * Arabic translation update.
+
 Changes from 1.6.2 to 2.0.0-pre2:
 
  * The CTABLES command is now implemented.
