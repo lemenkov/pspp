@@ -77,8 +77,7 @@ AT_SETUP([interactive output appears immediately])
 dnl This uses concatenation with + so that just printing the
 dnl command itself doesn't make "text string" appear in the
 dnl output.
-AT_CHECK([(echo 'ECHO "text"+" "+"string".'; sleep 10) | PSPP_INTERACTIVE=1 pspp & sleep 1; kill $!], [0], [stdout])
-cat stdout
+AT_CHECK([(echo 'ECHO "text"+" "+"string".'; sleep 10) | XDG_STATE_HOME=$PWD PSPP_INTERACTIVE=1 pspp & sleep 1; kill $!], [0], [stdout])
 AT_CHECK([grep 'text string' stdout], [0], [text string
 ])
 AT_CLEANUP
