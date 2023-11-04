@@ -40,19 +40,8 @@ CHECK_I18N_RECODE([from UTF-8 to ISO-8859-1], [UTF-8], [ISO-8859-1],
                   [\302\242], [\242])
 
 # 0xc0 == 0300 is invalid in UTF-8
-AT_SETUP([convert invalid UTF-8 to ISO-8859-1])
-AT_KEYWORDS([i18n])
-dnl This test fails on Mac OS 14 Sonoma due to changes in the native
-dnl MacOS iconv library. Skip the test on MacOS.
-AT_CHECK([case $host in #(
-  *-linux*) ;; #(
-  *) exit 77
-esac])
-dnl Skip the test if this host doesn't know the source and target encodings.
-AT_CHECK([i18n-test supports_encodings 'UTF-8' 'ISO-8859-1'])
-AT_CHECK_UNQUOTED([i18n-test recode 'UTF-8' 'ISO-8859-1' 'xy\300z'], [0], [`printf 'xy?z'`])
-AT_CLEANUP])
-
+CHECK_I18N_RECODE([invalid UTF-8 to ISO-8859-1], [UTF-8], [ISO-8859-1],
+                  [xy\300z], [xy?z])
 # 0xc2 == 0302 is the first byte of a 2-byte UTF-8 sequence
 CHECK_I18N_RECODE([truncated UTF-8 to ISO-8559-1], [UTF-8], [ISO-8859-1],
                   [xy\302], [xy?])
