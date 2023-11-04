@@ -49,12 +49,14 @@ g_memdup2 (gconstpointer mem,
 }
 #endif
 
-#if !GLIB_CHECK_VERSION(2, 76, 0)
+/* g_string_free_and_steal() was introduced in glib 2.76 but it is a persistent
+   problem.  I don't understand why.  It's easiest to just unconditionally
+   replace it. */
+#define g_string_free_and_steal rpl_g_string_free_and_steal
 static inline gchar *
-g_string_free_and_steal (GString *string)
+rpl_g_string_free_and_steal (GString *string)
 {
-  return g_string_free (string, FALSE);
+  return (g_string_free) (string, FALSE);
 }
-#endif
 
 #endif /* PSPP_GLIB_H */
