@@ -36,13 +36,19 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
- commit ff24917703530849f3b109905d437337cdeeab14
+ commit 46939413bcaceadc997374673db9577151c48d2c (origin/stable-202307)
  Author: Bruno Haible <bruno@clisp.org>
- Date:   Fri Jun 3 17:46:27 2022 +0200
+ Date:   Tue Oct 3 00:28:31 2023 +0200
 
-     setlocale: Update after Turkey changed its name.
+     localename, gettext: Avoid crash on macOS 14.
 
-     * lib/setlocale.c: Update comments.
+     Reported by Shupeng Xue <dspxue@gmail.com> at
+     <https://lists.gnu.org/archive/html/bug-gettext/2023-10/msg00001.html>.
+
+     Cf <https://github.com/aria2/aria2/issues/2083#issuecomment-1694662007>.
+
+     * m4/intlmacosx.m4 (gt_INTL_MACOSX): Link with the CoreServices
+     framework in addition to the CoreFoundation framework.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:

@@ -29,6 +29,7 @@
 
 #include "gl/xalloc.h"
 #include "gl/c-xvasprintf.h"
+#include "gl/intprops.h"
 
 struct spreadsheet *
 spreadsheet_ref (struct spreadsheet *s)
