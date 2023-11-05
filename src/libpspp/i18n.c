@@ -214,7 +214,6 @@ try_recode (struct converter *cvtr, char fallbackchar,
             return out - 1 - out_;
 
           case EILSEQ:
-          case EOPNOTSUPP:
             if (outbytes == 0)
               return -E2BIG;
             if (!fallbackchar)
