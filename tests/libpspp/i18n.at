@@ -50,7 +50,8 @@ AT_CHECK([case $host in #(
 esac])
 dnl Skip the test if this host doesn't know the source and target encodings.
 AT_CHECK([i18n-test supports_encodings 'UTF-8' 'ISO-8859-1'])
-AT_CHECK_UNQUOTED([i18n-test recode 'UTF-8' 'ISO-8859-1' 'xy\300z'], [0], [`printf 'xy?z'`])
+AT_CHECK_UNQUOTED([i18n-test recode 'UTF-8' 'ISO-8859-1' 'xy\300z'], [0], [`printf 'xy?z'`
+])
 AT_CLEANUP])
 
 # 0xc2 == 0302 is the first byte of a 2-byte UTF-8 sequence
