@@ -5,15 +5,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes from 1.6.2-pre2 to 2.0.0-pre3:
-
- * Testsuite fix.
-
- * User string fix.
-
- * Arabic translation update.
-
-Changes from 1.6.2 to 2.0.0-pre2:
+Changes from 1.6.2-pre2 to 2.0.0:
 
  * The CTABLES command is now implemented.
 
@@ -46,7 +38,8 @@ Changes from 1.6.2 to 2.0.0-pre2:
 
  * Improved the search options in the syntax editor.
 
- * Localisations for the ar (Arabic) and ta (Tamil) locales have been added.
+ * Localisations for the ar (Arabic) and ta (Tamil) locales have been
+   added.  Other translations have been updated.
 
  * Journaling is now enabled by default when PSPP or PSPPIRE is
    started interactively.  In PSPPIRE, use Edit|Options to override
