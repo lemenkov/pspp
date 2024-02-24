@@ -2492,6 +2492,179 @@ Female
 ])
 AT_CLEANUP
 
+dnl When an axis is not nested, the (single) variable on that axis is moved
+dnl to a different axis, and the variable is marked as DISPLAY=NONE, then
+dnl PSPP crashed previously.  This checks against regression for that crash.
+AT_SETUP([CTABLES CLABELS with VLABELS DISPLAY=NONE])
+AT_CHECK([ln -s $top_srcdir/tests/language/commands/nhtsa.sav . || cp $top_srcdir/tests/language/commands/nhtsa.sav .])
+AT_DATA([ctables.sps],
+[[GET 'nhtsa.sav'.
+CTABLES /VLABELS VARIABLES=ALL DISPLAY=NONE /TABLE AgeGroup BY qns3a.
+CTABLES /VLABELS VARIABLES=ALL DISPLAY=NONE /TABLE AgeGroup BY qns3a /CLABELS ROWLABELS=OPPOSITE.
+CTABLES /VLABELS VARIABLES=ALL DISPLAY=NONE /TABLE AgeGroup BY qns3a /CLABELS COLLABELS=OPPOSITE.
+CTABLES /VLABELS VARIABLES=ALL DISPLAY=NONE /TABLE AgeGroup BY qns3a /CLABELS ROWLABELS=LAYER.
+CTABLES /VLABELS VARIABLES=ALL DISPLAY=NONE /TABLE AgeGroup BY qns3a /CLABELS COLLABELS=LAYER.
+]])
+AT_CHECK([pspp ctables.sps --table-look="$builddir"/all-layers.stt -O box=unicode -O width=120], [0], [dnl
+        Custom Tables
+╭─────────────┬─────┬──────╮
+│             │ Male│Female│
+│             ├─────┼──────┤
+│             │Count│ Count│
+├─────────────┼─────┼──────┤
+│15 or younger│    0│     0│
+│16 to 25     │  594│   505│
+│26 to 35     │  476│   491│
+│36 to 45     │  489│   548│
+│46 to 55     │  526│   649│
+│56 to 65     │  516│   731│
+│66 or older  │  531│   943│
+╰─────────────┴─────┴──────╯
+
+                                                      Custom Tables
+╭────────┬──────────────────────────────────────────────────────┬──────────────────────────────────────────────────────╮
+│        │                         Male                         │                        Female                        │
+│        ├─────────┬───────┬──────┬──────┬──────┬───────┬───────┼─────────┬───────┬──────┬──────┬──────┬───────┬───────┤
+│        │  15 or  │ 16 to │ 26 to│ 36 to│ 46 to│ 56 to │ 66 or │  15 or  │ 16 to │ 26 to│ 36 to│ 46 to│ 56 to │ 66 or │
+│        │ younger │   25  │  35  │  45  │  55  │   65  │ older │ younger │   25  │  35  │  45  │  55  │   65  │ older │
+│        ├─────────┼───────┼──────┼──────┼──────┼───────┼───────┼─────────┼───────┼──────┼──────┼──────┼───────┼───────┤
+│        │  Count  │ Count │ Count│ Count│ Count│ Count │ Count │  Count  │ Count │ Count│ Count│ Count│ Count │ Count │
+├────────┼─────────┼───────┼──────┼──────┼──────┼───────┼───────┼─────────┼───────┼──────┼──────┼──────┼───────┼───────┤
+│agegroup│        0│    594│   476│   489│   526│    516│    531│        0│    505│   491│   548│   649│    731│    943│
+╰────────┴─────────┴───────┴──────┴──────┴──────┴───────┴───────┴─────────┴───────┴──────┴──────┴──────┴───────┴───────╯
+
+        Custom Tables
+╭────────────────────┬─────╮
+│                    │QNS3A│
+│                    ├─────┤
+│                    │Count│
+├────────────────────┼─────┤
+│15 or younger Male  │    0│
+│              Female│    0│
+├────────────────────┼─────┤
+│16 to 25      Male  │  594│
+│              Female│  505│
+├────────────────────┼─────┤
+│26 to 35      Male  │  476│
+│              Female│  491│
+├────────────────────┼─────┤
+│36 to 45      Male  │  489│
+│              Female│  548│
+├────────────────────┼─────┤
+│46 to 55      Male  │  526│
+│              Female│  649│
+├────────────────────┼─────┤
+│56 to 65      Male  │  516│
+│              Female│  731│
+├────────────────────┼─────┤
+│66 or older   Male  │  531│
+│              Female│  943│
+╰────────────────────┴─────╯
+
+     Custom Tables
+15 or younger
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│    0│     0│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+16 to 25
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  594│   505│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+26 to 35
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  476│   491│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+36 to 45
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  489│   548│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+46 to 55
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  526│   649│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+56 to 65
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  516│   731│
+╰────────┴─────┴──────╯
+
+     Custom Tables
+66 or older
+╭────────┬─────┬──────╮
+│        │ Male│Female│
+│        ├─────┼──────┤
+│        │Count│ Count│
+├────────┼─────┼──────┤
+│agegroup│  531│   943│
+╰────────┴─────┴──────╯
+
+    Custom Tables
+Male
+╭─────────────┬─────╮
+│             │QNS3A│
+│             ├─────┤
+│             │Count│
+├─────────────┼─────┤
+│15 or younger│    0│
+│16 to 25     │  594│
+│26 to 35     │  476│
+│36 to 45     │  489│
+│46 to 55     │  526│
+│56 to 65     │  516│
+│66 or older  │  531│
+╰─────────────┴─────╯
+
+    Custom Tables
+Female
+╭─────────────┬─────╮
+│             │QNS3A│
+│             ├─────┤
+│             │Count│
+├─────────────┼─────┤
+│15 or younger│    0│
+│16 to 25     │  505│
+│26 to 35     │  491│
+│36 to 45     │  548│
+│46 to 55     │  649│
+│56 to 65     │  731│
+│66 or older  │  943│
+╰─────────────┴─────╯
+])
+AT_CLEANUP
+
 AT_SETUP([CTABLES missing values])
 AT_DATA([ctables.sps],
 [[DATA LIST LIST NOTABLE/x y.

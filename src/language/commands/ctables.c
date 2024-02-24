@@ -4699,7 +4699,15 @@ ctables_table_output (struct ctables *ct, struct ctables_table *t)
           for (size_t k = 0; k < nest->n; k++)
             {
               enum ctables_vlabel vlabel = ct->vlabels[var_get_dict_index (nest->vars[k])];
-              if (vlabel == CTVL_NONE && nest->scale_idx == k)
+              if (vlabel == CTVL_NONE
+                  && (nest->scale_idx == k
+                      || (
+                        /* There's a single nesting level on this axis and the
+                           labels are moved to a different axis.  We need to
+                           have something to stick into the dimension.  It's
+                           hard to see what that should be, so just force a
+                           variable name to be shown. */
+                        nest->n == 1 && t->label_axis[a] != a)))
                 vlabel = CTVL_NAME;
               if (vlabel != CTVL_NONE)
                 {
