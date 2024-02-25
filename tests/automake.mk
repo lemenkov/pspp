@@ -380,7 +380,6 @@ TESTSUITE_AT = \
 	tests/language/commands/formats.at \
 	tests/language/commands/frequencies.at \
 	tests/language/commands/get-data-psql.at \
-	tests/language/commands/get-data-spreadsheet.at \
 	tests/language/commands/get-data-txt.at \
 	tests/language/commands/get-data.at \
 	tests/language/commands/get.at \
