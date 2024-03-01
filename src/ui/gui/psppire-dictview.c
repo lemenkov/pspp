@@ -115,7 +115,7 @@ sort_by_name (GtkTreeModel *model,
   gtk_tree_model_get (model, a, DICT_TVM_COL_VAR,  &var_a, -1);
   gtk_tree_model_get (model, b, DICT_TVM_COL_VAR,  &var_b, -1);
 
-  gint rval =  g_strcmp0 (var_get_name (var_a), var_get_name (var_b));
+  gint rval =  utf8_strverscasecmp (var_get_name (var_a), var_get_name (var_b));
 
   var_unref (var_a);
   var_unref (var_b);
@@ -136,7 +136,13 @@ sort_by_label (GtkTreeModel *model,
   gtk_tree_model_get (model, a, DICT_TVM_COL_VAR,  &var_a, -1);
   gtk_tree_model_get (model, b, DICT_TVM_COL_VAR,  &var_b, -1);
 
-  gint rval = g_strcmp0 (var_get_label (var_a), var_get_label (var_b));
+  const char *name_a = var_get_name (var_a);
+  const char *name_b = var_get_name (var_b);
+  const char *label_a = var_get_label (var_a);
+  const char *label_b = var_get_label (var_b);
+
+  gint rval = utf8_strverscasecmp (label_a ? label_a : name_a,
+                                   label_b ? label_b : name_b);
 
   var_unref (var_a);
   var_unref (var_b);
