@@ -46,6 +46,7 @@ Name
 }
 
 test_sort 'x100 c b x99 a y400 y5' '' NAME 'a b c x99 x100 y5 y400'
+test_sort 'a c e B D F' '' NAME 'a B c D e F'
 test_sort 'c(a10) a(a5) b' '' TYPE 'b a c'
 test_sort 'a (datetime) b (f) c (a5) d (a2) e (a1)' '' FORMAT 'e d c b a'
 test_sort 'a b c' \
