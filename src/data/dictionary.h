@@ -114,12 +114,6 @@ void dict_set_case_limit (struct dictionary *, casenumber);
 /* Size of cases for this dictionary. */
 const struct caseproto *dict_get_proto (const struct dictionary *);
 
-/* Making this dictionary's cases smaller (if some variables were
-   deleted). */
-size_t dict_count_values (const struct dictionary *,
-                          unsigned int exclude_classes);
-void dict_compact_values (struct dictionary *);
-
 /* SPLIT FILE variables.
 
    SPLIT_NONE is used if and only if there are no split file variables. */

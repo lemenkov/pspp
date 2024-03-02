@@ -1369,25 +1369,6 @@ dict_get_proto (const struct dictionary *d_)
   return d->proto;
 }
 
-/* Returns the number of values occupied by the variables in
-   dictionary D.  All variables are considered if EXCLUDE_CLASSES
-   is 0, or it may contain one or more of DC_ORDINARY, DC_SYSTEM,
-   or DC_SCRATCH to exclude the corresponding type of variable. */
-size_t
-dict_count_values (const struct dictionary *d, unsigned int exclude_classes)
-{
-  assert (!(exclude_classes & ~DC_ALL));
-
-  size_t n = 0;
-  for (size_t i = 0; i < d->n_vars; i++)
-    {
-      enum dict_class class = var_get_dict_class (d->vars[i].var);
-      if (!(exclude_classes & class))
-        n++;
-    }
-  return n;
-}
-
 /* Returns the file label for D, or a null pointer if D is
    unlabeled (see cmd_file_label()). */
 const char *
