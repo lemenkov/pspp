@@ -64,7 +64,8 @@ struct arc_item
 struct arc_spec
   {
     int width;                  /* Variable width. */
-    int src_idx;                /* Case index of source variable. */
+    const struct variable *src_var; /* Source variable. */
+    size_t src_idx;                 /* Source variable index. */
     char *src_name;             /* Name of source variable. */
     struct fmt_spec format;     /* Print format in source variable. */
     size_t dst_idx;             /* Target variable. */
@@ -232,19 +233,28 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         }
     }
 
-  /* Allocate all the specs and the rec_items that they point to.
+    /* It's difficult to know what the semantics of AUTORECODE with TEMPORARY
+       (or with scratch variables) should be, because the data read to figure
+       out the recoding table might be completely different from the data being
+       recoded.  Imagine, for example, a temporary transformation like "COMPUTE
+       VAR=VAR+1000." or "COMPUTE VAR=0." */
+    if (proc_make_temporary_transformations_permanent(ds))
+      lex_ofs_msg (lexer, SW, 0, 0,
+                   _("AUTORECODE ignores TEMPORARY.  "
+                     "Temporary transformations will be made permanent."));
 
-     If GROUP is specified, there is only a single global rec_items, with the
-     maximum width 'width', and all of the specs point to it; otherwise each
-     spec has its own rec_items. */
-  arc->specs = xmalloc (n_dsts * sizeof *arc->specs);
-  arc->n_specs = n_dsts;
-  for (size_t i = 0; i < n_dsts; i++)
-    {
+    /* Allocate all the specs and the rec_items that they point to.
+
+       If GROUP is specified, there is only a single global rec_items, with the
+       maximum width 'width', and all of the specs point to it; otherwise each
+       spec has its own rec_items. */
+    arc->specs = xmalloc(n_dsts * sizeof *arc->specs);
+    arc->n_specs = n_dsts;
+    for (size_t i = 0; i < n_dsts; i++) {
       struct arc_spec *spec = &arc->specs[i];
 
       spec->width = var_get_width (src_vars[i]);
-      spec->src_idx = var_get_dict_index (src_vars[i]);
+      spec->src_var = src_vars[i];
       spec->src_name = xstrdup (var_get_name (src_vars[i]));
       spec->format = var_get_print_format (src_vars[i]);
 
@@ -290,7 +300,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
     for (size_t i = 0; i < arc->n_specs; i++)
       {
         struct arc_spec *spec = &arc->specs[i];
-        const union value *value = case_data_idx (c, spec->src_idx);
+        const union value *value = case_data (c, spec->src_var);
         if (spec->width == 0 && value->f == SYSMIS)
           {
             /* AUTORECODE never changes the system-missing value.
@@ -326,13 +336,15 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   ok = proc_commit (ds) && ok;
 
   /* Re-fetch dictionary because it might have changed (if TEMPORARY was in
-     use). */
+     use or scratch variables were used). */
   dict = dataset_dict (ds);
 
   /* Create transformation. */
   for (size_t i = 0; i < arc->n_specs; i++)
     {
       struct arc_spec *spec = &arc->specs[i];
+
+      spec->src_idx = var_get_dict_index (spec->src_var);
 
       /* Create destination variable. */
       struct variable *dst = dict_create_var_assert (dict, dst_names[i], 0);

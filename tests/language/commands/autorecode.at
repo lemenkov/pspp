@@ -457,6 +457,10 @@ Variable,Record,Columns,Format
 X,1,1-5,A5
 Y,1,7-7,F1.0
 
+"autorecode.sps:16.1-16.10: warning: AUTORECODE: AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent.
+   16 | autorecode x y into A B/descend/print.
+      | ^~~~~~~~~~"
+
 Table: Recoding X into A.
 Old Value,New Value,Value Label
 lajks,1,lajks
@@ -470,18 +474,75 @@ Old Value,New Value,Value Label
 
 Table: Data List
 X,Y,A,B
-lasdj,1,.,.
-asdfk,0,2,.
 asdfj,2,3,2
-asdfj,1,3,.
 asdfk,2,2,2
 asdfj,9,3,1
 lajks,9,1,1
-asdfk,0,2,.
-asdfk,1,2,.
 ])
 AT_CLEANUP
 
+dnl AUTORECODE had a use-after-free error when scratch variables
+dnl caused the variables being recoded to change indexes.
+dnl See bug report at:
+dnl https://lists.gnu.org/archive/html/bug-gnu-pspp/2024-02/msg00011.html
+AT_SETUP([AUTORECODE with scratch variables])
+AT_DATA([autorecode.sps],
+  [data list /X0 1-5(a) Y0 7.
+begin data.
+lasdj 1
+asdfk 0
+asdfj 2
+asdfj 1
+asdfk 2
+asdfj 9
+lajks 9
+asdfk 0
+asdfk 1
+end data.
+compute #foo = 0.
+compute #bar = 1.
+compute #baz = 2.
+compute #quux = 3.
+string X(a5).
+numeric Y(f1.0).
+compute x = x0.
+compute y = y0.
+autorecode x y into A B/descend/print.
+list x y a b.
+])
+AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
+Table: Reading 1 record from INLINE.
+Variable,Record,Columns,Format
+X0,1,1-5,A5
+Y0,1,7-7,F1.0
+
+Table: Recoding X into A.
+Old Value,New Value,Value Label
+lasdj,1,lasdj
+lajks,2,lajks
+asdfk,3,asdfk
+asdfj,4,asdfj
+
+Table: Recoding Y into B.
+Old Value,New Value,Value Label
+9,1,9
+2,2,2
+1,3,1
+0,4,0
+
+Table: Data List
+X,Y,A,B
+lasdj,1,1,3
+asdfk,0,3,4
+asdfj,2,4,2
+asdfj,1,4,3
+asdfk,2,3,2
+asdfj,9,4,1
+lajks,9,2,1
+asdfk,0,3,4
+asdfk,1,3,3
+])
+AT_CLEANUP
 
 dnl For compatibility, make sure that /INTO (with leading slash) is accepted
 dnl (bug #48762)
