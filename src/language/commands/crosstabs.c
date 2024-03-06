@@ -1712,7 +1712,6 @@ display_crosstabulation (struct crosstabs_proc *proc,
     indexes[i + 3] = xt->const_indexes[i];
 
   /* Put in the actual cells. */
-  double *mp = xt->mat;
   for (size_t r = 0; r < n_rows; r++)
     {
       if (!xt->row_tot[r] && proc->mode != INTEGER)
@@ -1726,6 +1725,7 @@ display_crosstabulation (struct crosstabs_proc *proc,
 
           indexes[COL_VAR + 1] = c;
 
+          double *mp = xt->mat + r * n_cols + c;
           double expected_value = xt->row_tot[r] * xt->col_tot[c] / xt->total;
           double residual = *mp - expected_value;
           double sresidual = residual / sqrt (expected_value);
@@ -1750,8 +1750,6 @@ display_crosstabulation (struct crosstabs_proc *proc,
               pivot_table_put (table, indexes, table->n_dimensions,
                                pivot_value_new_number (entries[cell]));
             }
-
-          mp++;
         }
     }
 
