@@ -29,6 +29,7 @@
       <li>Portability; Runs on many different computers and many different operating systems</li>
     </ul>
     <p>PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data.</p>
+    <p>The Flatpak for PSPP includes graphical and command-line interfaces.  To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>.</p>
   </description>
   <launchable type="desktop-id">org.gnu.pspp.desktop</launchable>
   <categories>
