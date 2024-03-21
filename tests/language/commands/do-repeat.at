@@ -252,3 +252,28 @@ do-repeat.sps:16: error: DO REPEAT: Each dummy variable must have the same numbe
 error: DO REPEAT: At end of input: Syntax error expecting END REPEAT.
 ])
 AT_CLEANUP
+
+AT_SETUP([DO REPEAT -- duplicate substitutions])
+AT_DATA([do-repeat.sps], [dnl
+DATA LIST LIST NOTABLE / numer1 numer2 denom1.
+BEGIN DATA
+30 25 100
+20 15 100
+10 40 100
+20 10 100
+END DATA.
+
+* Check that duplicates are OK for both existing (denom1)
+  and nonexistent (perc1) variables.
+DO REPEAT n=numer1 numer2
+     /d = denom1 denom1
+     /p = perc1 perc1.
+   COMPUTE p = n / d * 100.
+END REPEAT PRINT.
+])
+AT_CHECK([pspp do-repeat.sps], [0], [dnl
+   COMPUTE perc1 = numer1 / denom1 * 100.
+
+   COMPUTE perc1 = numer2 / denom1 * 100.
+])
+AT_CLEANUP

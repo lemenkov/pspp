@@ -525,7 +525,7 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
 
   bool ok = false;
 
-  assert ((pv_opts & ~(PV_APPEND | PV_SINGLE
+  assert ((pv_opts & ~(PV_APPEND | PV_SINGLE | PV_DUPLICATE
                        | PV_NO_SCRATCH | PV_NO_DUPLICATE)) == 0);
   stringi_set_init (&set);
 

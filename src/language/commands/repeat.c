@@ -326,7 +326,8 @@ static bool
 parse_ids (struct lexer *lexer, const struct dictionary *dict,
            struct dummy_var *dv)
 {
-  return parse_mixed_vars (lexer, dict, &dv->values, &dv->n_values, PV_NONE);
+  return parse_mixed_vars (lexer, dict, &dv->values, &dv->n_values,
+                           PV_DUPLICATE);
 }
 
 /* Adds REPLACEMENT to MACRO's list of replacements, which has
