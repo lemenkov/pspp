@@ -232,7 +232,7 @@ user_tip (GApplication *app)
 
   g_object_set (ca, "margin", 5, NULL);
 
-  GtkWidget *check = gtk_check_button_new_with_mnemonic ("_Show tips at startup");
+  GtkWidget *check = gtk_check_button_new_with_mnemonic (_("_Show tips at startup"));
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), show_tip);
 
   srand (time(0));
