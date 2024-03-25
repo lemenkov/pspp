@@ -5,10 +5,10 @@
 # Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>, 2010-2016, 2017, 2020, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-2.0.0-pre3\n"
+"Project-Id-Version: pspp-2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2023-11-02 14:21-0700\n"
-"PO-Revision-Date: 2024-03-20 20:18+0200\n"
+"POT-Creation-Date: 2024-03-21 16:29-0700\n"
+"PO-Revision-Date: 2024-03-22 23:36+0200\n"
 "Last-Translator: Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "Language: lt\n"
@@ -21,26 +21,26 @@ msgstr ""
 "X-Poedit-Language: Lithuanian\n"
 "X-Poedit-Country: LITHUANIA\n"
 
-#: gl/clean-temp.c:235
+#: gl/clean-temp.c:234
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "nepavyko rasti laikinojo katalogo, bandoma nustatyti $TMPDIR"
 
-#: gl/clean-temp.c:250
+#: gl/clean-temp.c:249
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "nepavyko sukurti laikinojo katalogo pagal „%s“ šabloną"
 
-#: gl/clean-temp.c:371
+#: gl/clean-temp.c:370
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "nepavyko pašalinti laikinojo katalogo %s"
 
-#: gl/clean-temp-simple.c:297
+#: gl/clean-temp-simple.c:296
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "nepavyko pašalinti laikinosios rinkmenos %s"
 
-#: gl/error.c:195
+#: gl/error.c:194
 msgid "Unknown system error"
 msgstr "Nežinomas sistemos klaida"
 
@@ -246,7 +246,7 @@ msgstr "Bendrasis GNU programinės įrangos žinynas: <%s>\n"
 msgid "memory exhausted"
 msgstr "atmintis išeikvota"
 
-#: gl/xbinary-io.c:37
+#: gl/xbinary-io.c:36
 msgid "failed to set file descriptor text/binary mode"
 msgstr "nepavyko nustatyti rinkmenos deskriptoriaus tekstinės/dvejetainės veiksenos"
 
@@ -527,7 +527,7 @@ msgid "scratch"
 msgstr "tuščia"
 
 #. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
-#: src/data/dictionary.c:1482
+#: src/data/dictionary.c:1463
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Dokumento eilutė sutrumpinta iki %d bitų(-o)."
@@ -2244,10 +2244,8 @@ msgid "Dataset Display"
 msgstr "Duomenų rinkiniai"
 
 #: src/language/command.def:70
-#, fuzzy
-#| msgid "Value Labels"
 msgid "Add Value Labels"
-msgstr "Reikšmių etiketės"
+msgstr "Pridėti reikšmių etiketes"
 
 #: src/language/command.def:71
 msgid "Add Document"
@@ -2607,52 +2605,44 @@ msgid "End Loop"
 msgstr ""
 
 #: src/language/lexer/lexer.c:566
-#, fuzzy, c-format
-#| msgid "Syntax error %s at %s."
+#, c-format
 msgid "Syntax error expecting %s."
-msgstr "Sintaksės klaida %s ties %s."
+msgstr "Sintaksės klaida: tikėtasi „%s“."
 
 #: src/language/lexer/lexer.c:570
-#, fuzzy, c-format
-#| msgid "Syntax error %s at %s."
+#, c-format
 msgid "Syntax error expecting %s or %s."
-msgstr "Sintaksės klaida %s ties %s."
+msgstr "Sintaksės klaida: tikėtasi %s arba %s."
 
 #: src/language/lexer/lexer.c:575
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, or %s."
-msgstr "tikėtasi %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:580
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, %s, or %s."
-msgstr "tikėtasi %s, %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:585
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, or %s."
-msgstr "tikėtasi %s, %s, %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s, %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:590
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, or %s."
-msgstr "tikėtasi %s, %s, %s, %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s, %s, %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:596
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, or %s."
-msgstr "tikėtasi %s, %s, %s, %s, %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s, %s, %s, %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:603
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s, %s, %s, or %s"
+#, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, %s, or %s."
-msgstr "tikėtasi %s, %s, %s, %s, %s, %s, %s arba %s"
+msgstr "Sintaksės klaida: tikėtasi %s, %s, %s, %s, %s, %s, %s arba %s."
 
 #: src/language/lexer/lexer.c:618
 #, fuzzy, c-format
@@ -2671,36 +2661,28 @@ msgid "Required subcommand %s was not specified."
 msgstr "Pokomandis %s nenurodytas."
 
 #: src/language/lexer/lexer.c:662
-#, fuzzy, c-format
-#| msgid "%s may only be specified once within subcommand %s"
+#, c-format
 msgid "%s may only be specified once within subcommand %s."
 msgstr "%s gali būti nurodomas tik vieną kartą pokomandyje %s."
 
 #: src/language/lexer/lexer.c:671
-#, fuzzy, c-format
-#| msgid "Required %s specification missing from %s subcommand"
+#, c-format
 msgid "Required %s specification missing from %s subcommand."
 msgstr "Trūksta reikiamos %s specifikacijos iš pokomandžio %s."
 
-#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:210
+#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
-#, fuzzy
-#| msgid "Syntax error at end of command"
 msgid "Syntax error expecting end of command."
-msgstr "Sintaksės klaida komandos pabaigoje"
+msgstr "Sintaksės klaida: tikėtasi komandos pabaigos."
 
 #: src/language/lexer/lexer.c:896
-#, fuzzy
-#| msgid "expecting string"
 msgid "Syntax error expecting string."
-msgstr "tikėtasi teksto eilutės"
+msgstr "Sintaksės klaida: tikėtasi teksto eilutės."
 
 #: src/language/lexer/lexer.c:925 src/language/lexer/lexer.c:957
 #: src/language/lexer/lexer.c:1043
-#, fuzzy
-#| msgid "expecting integer"
 msgid "Syntax error expecting integer."
-msgstr "tikėtasi sveikojo skaičiaus"
+msgstr "Sintaksės klaida: tikėtasi sveikojo skaičiaus."
 
 #: src/language/lexer/lexer.c:955 src/language/lexer/lexer.c:1040
 #, fuzzy, c-format
@@ -2715,10 +2697,9 @@ msgid "Syntax error expecting %ld for %s."
 msgstr "Sintaksės klaida %s ties %s."
 
 #: src/language/lexer/lexer.c:964
-#, fuzzy, c-format
-#| msgid "Syntax error in date field."
+#, c-format
 msgid "Syntax error expecting %ld."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida: tikėtasi %ld."
 
 #: src/language/lexer/lexer.c:969
 #, fuzzy, c-format
@@ -2727,10 +2708,9 @@ msgid "Syntax error expecting %ld or %ld for %s."
 msgstr "tikėtasi %s arba %s po %s"
 
 #: src/language/lexer/lexer.c:972
-#, fuzzy, c-format
-#| msgid "Syntax error in date field."
+#, c-format
 msgid "Syntax error expecting %ld or %ld."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida: tikėtasi %ld arba %ld."
 
 #: src/language/lexer/lexer.c:984
 #, c-format
@@ -2749,10 +2729,8 @@ msgid "Syntax error expecting non-negative integer for %s."
 msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
 
 #: src/language/lexer/lexer.c:1001
-#, fuzzy
-#| msgid "Syntax error expecting OFF or BY.  Turning off case filtering."
 msgid "Syntax error expecting non-negative integer."
-msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
+msgstr "Sintaksės klaida: tikėtasi neneigiamo sveikojo skaičiaus."
 
 #: src/language/lexer/lexer.c:1007
 #, fuzzy, c-format
@@ -2761,10 +2739,8 @@ msgid "Syntax error expecting positive integer for %s."
 msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
 
 #: src/language/lexer/lexer.c:1011
-#, fuzzy
-#| msgid "Syntax error in date field."
 msgid "Syntax error expecting positive integer."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida: tikėtasi teigiamo sveikojo skaičiaus."
 
 #: src/language/lexer/lexer.c:1017
 #, fuzzy, c-format
@@ -2793,10 +2769,8 @@ msgstr ""
 #: src/language/lexer/lexer.c:1229 src/language/lexer/lexer.c:1255
 #: src/language/lexer/lexer.c:1309 src/language/lexer/lexer.c:1335
 #: src/language/lexer/lexer.c:1390
-#, fuzzy
-#| msgid "expecting number"
 msgid "Syntax error expecting number."
-msgstr "tikėtasi skaičiaus"
+msgstr "Sintaksės klaida: tikėtasi skaičiaus."
 
 #: src/language/lexer/lexer.c:1079 src/language/lexer/lexer.c:1146
 #: src/language/lexer/lexer.c:1172 src/language/lexer/lexer.c:1227
@@ -2814,10 +2788,9 @@ msgid "Syntax error expecting number %g for %s."
 msgstr "tikėtasi skaičiaus arba teksto eilutės"
 
 #: src/language/lexer/lexer.c:1089
-#, fuzzy, c-format
-#| msgid "expecting number"
+#, c-format
 msgid "Syntax error expecting number %g."
-msgstr "tikėtasi skaičiaus"
+msgstr "Sintaksės klaida: tikėtasi skaičiaus %g."
 
 #: src/language/lexer/lexer.c:1100
 #, c-format
@@ -2901,10 +2874,8 @@ msgid "Syntax error expecting positive number for %s."
 msgstr ""
 
 #: src/language/lexer/lexer.c:1281 src/language/lexer/lexer.c:1360
-#, fuzzy
-#| msgid "Syntax error in date field."
 msgid "Syntax error expecting positive number."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida: tikėtasi teigiamo skaičiaus."
 
 #: src/language/lexer/lexer.c:1286 src/language/lexer/lexer.c:1366
 #, c-format
@@ -2938,20 +2909,17 @@ msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
 #: src/language/lexer/lexer.c:1349
 #, c-format
 msgid "Syntax error expecting number in (%g,%g)."
-msgstr ""
+msgstr "Sintaksės klaida: tikėtasi skaičiaus iš (%g,%g)."
 
 #: src/language/lexer/lexer.c:1404 src/language/commands/define.c:176
 #: src/language/commands/define.c:182
-#, fuzzy
-#| msgid "expecting identifier"
 msgid "Syntax error expecting identifier."
-msgstr "tikėtasi identifikatoriaus"
+msgstr "Sintaksės klaida: tikėtasi identifikatoriaus"
 
 #: src/language/lexer/lexer.c:1805
-#, fuzzy, c-format
-#| msgid "Syntax error at `%s'"
+#, c-format
 msgid "Syntax error expecting `%s'."
-msgstr "Sintaksės klaida ties %s."
+msgstr "Sintaksės klaida: tikėtasi „%s“."
 
 #: src/language/lexer/lexer.c:2161
 #, c-format
@@ -2959,10 +2927,8 @@ msgid "In syntax expanded from `%s'"
 msgstr ""
 
 #: src/language/lexer/lexer.c:2164
-#, fuzzy
-#| msgid "Syntax error at end of input"
 msgid "At end of input"
-msgstr "Sintaksės klaida įvedimo pabaigoje"
+msgstr "Įvedimo pabaigoje"
 
 #: src/language/lexer/lexer.c:2171
 msgid "Syntax error."
@@ -3115,10 +3081,8 @@ msgid "Expected `=' following !LET."
 msgstr ""
 
 #: src/language/lexer/macro.c:1757
-#, fuzzy
-#| msgid "Missing N"
 msgid "Missing !DOEND."
-msgstr "Praleistų N"
+msgstr "Trūksta !DOEND."
 
 #: src/language/lexer/macro.c:1776
 #, fuzzy
@@ -3162,10 +3126,8 @@ msgid "Maximum nesting level %d exceeded.  (Use SET MNEST to change the limit.)"
 msgstr ""
 
 #: src/language/lexer/format-parser.c:87
-#, fuzzy
-#| msgid "expecting valid format specifier"
 msgid "Syntax error expecting valid format specifier."
-msgstr "tikėtasi tinkamo formato nurodymo"
+msgstr "Sintaksės klaida: tikėtasi tinkamo formato nurodymo."
 
 #: src/language/lexer/format-parser.c:118
 #: src/language/lexer/format-parser.c:145 src/language/commands/data-list.c:498
@@ -3181,46 +3143,37 @@ msgid "Format specifier `%s' lacks required width."
 msgstr ""
 
 #: src/language/lexer/format-parser.c:140
-#, fuzzy
-#| msgid "expecting format type"
 msgid "Syntax error expecting format type."
-msgstr "tikėtasi formato tipo"
+msgstr "Sintaksės klaida: tikėtasi formato tipo."
 
 #: src/language/lexer/scan.c:95
-#, fuzzy, c-format
-#| msgid "String of hex digits has %d characters, which is not a multiple of 2"
+#, c-format
 msgid "String of hex digits has %zu characters, which is not a multiple of 2."
-msgstr "Šešioliktainių skaitmenų eilutė turi %d rašmenis, bet šis skaičius nesidalina iš 2"
+msgstr "Šešioliktainių skaitmenų eilutė turi %zu rašmenis, bet šis skaičius nesidalina iš 2"
 
 #: src/language/lexer/scan.c:107 src/language/lexer/scan.c:129
-#, fuzzy, c-format
-#| msgid "`%c' is not a valid hex digit"
+#, c-format
 msgid "`%c' is not a valid hex digit."
-msgstr "„%c“ nėra tinkamas šešioliktainis skaitmuo"
+msgstr "„%c“ nėra tinkamas šešioliktainis skaitmuo."
 
 #: src/language/lexer/scan.c:120
-#, fuzzy, c-format
-#| msgid "Unicode string contains %d bytes, which is not in the valid range of 1 to 8 bytes"
+#, c-format
 msgid "Unicode string contains %zu bytes, which is not in the valid range of 1 to 8 bytes."
-msgstr "Unikodo eilutė turi %d bitus, bet tai nepatenka į tinkamą intervalą nuo 1 iki 8 bitų"
+msgstr "Unikodo eilutė turi %zu baitus, bet tai nepatenka į tinkamą intervalą nuo 1 iki 8 baitų"
 
 #: src/language/lexer/scan.c:134
-#, fuzzy, c-format
-#| msgid "U+%04X is not a valid Unicode code point"
+#, c-format
 msgid "U+%04llX is not a valid Unicode code point."
-msgstr "U+%04X nėra tinkamas unikodo kodo taškas"
+msgstr "U+%04llX nėra tinkamas unikodo kodo taškas."
 
 #: src/language/lexer/scan.c:309
-#, fuzzy, c-format
-#| msgid "Bad character %s in input"
+#, c-format
 msgid "Bad character %s in input."
-msgstr "Įvestyje yra neleistinas rašmuo %s"
+msgstr "Įvestyje yra neleistinas rašmuo %s."
 
 #: src/language/lexer/scan.c:386
-#, fuzzy
-#| msgid "Unterminated string constant"
 msgid "Unterminated string constant."
-msgstr "Nebaigta eilutės konstanta"
+msgstr "Nebaigta teksto eilutės konstanta."
 
 #: src/language/lexer/scan.c:391
 #, fuzzy, c-format
@@ -3256,10 +3209,8 @@ msgstr "%s rinkmenoje: %s yra teksto eilutės kintamasis, kurio plotis %d."
 #: src/language/lexer/variable-parser.c:783
 #: src/language/lexer/variable-parser.c:803 src/language/commands/graph.c:810
 #: src/language/commands/matrix.c:6066 utilities/pspp-convert.c:84
-#, fuzzy
-#| msgid "expecting variable name"
 msgid "Syntax error expecting variable name."
-msgstr "tikimasi kintamojo vardo"
+msgstr "Sintaksės klaida: tikėtasi kintamojo vardo."
 
 #: src/language/lexer/variable-parser.c:96
 #: src/language/lexer/variable-parser.c:849
@@ -3310,10 +3261,9 @@ msgid "With the syntax <a> TO <b>, variables <a> and <b> must be both regular va
 msgstr ""
 
 #: src/language/lexer/variable-parser.c:384
-#, fuzzy, c-format
-#| msgid "%s is a duplicate variable name."
+#, c-format
 msgid "%s is a regular variable."
-msgstr "Kintamojo vardas „%s“ kartojasi."
+msgstr "%s yra įprastas kintamasis."
 
 #: src/language/lexer/variable-parser.c:390
 #, fuzzy, c-format
@@ -3322,10 +3272,9 @@ msgid "%s is a scratch variable."
 msgstr "Kintamojo vardas „%s“ kartojasi."
 
 #: src/language/lexer/variable-parser.c:396
-#, fuzzy, c-format
-#| msgid "%s is a duplicate variable name."
+#, c-format
 msgid "%s is a system variable."
-msgstr "Kintamojo vardas „%s“ kartojasi."
+msgstr "%s yra sistemos kintamasis."
 
 #: src/language/lexer/variable-parser.c:475
 #, c-format
@@ -3346,10 +3295,9 @@ msgid "Bad bounds in use of TO convention."
 msgstr ""
 
 #: src/language/lexer/variable-parser.c:882
-#, fuzzy, c-format
-#| msgid "%s is not a variable name."
+#, c-format
 msgid "%s is not a numeric variable."
-msgstr "%s nėra kintamojo vardas."
+msgstr "%s nėra skaitinis kintamasis."
 
 #: src/language/commands/aggregate.c:246
 msgid "When the input data is presorted, specifying sorting directions with (A) or (D) has no effect.  Output data will be sorted the same way as the input data."
@@ -3368,10 +3316,8 @@ msgid "The input data must be presorted because the OUTFILE subcommand is not sp
 msgstr ""
 
 #: src/language/commands/aggregate.c:387
-#, fuzzy
-#| msgid "expecting aggregation function"
 msgid "Syntax error expecting aggregation function."
-msgstr "tikimasi duomenų agregavimo funkcijos"
+msgstr "Sintaksės klaida: tikėtasi duomenų agregavimo funkcijos."
 
 #: src/language/commands/aggregate.c:401
 #, c-format
@@ -3393,14 +3339,12 @@ msgid "The argument is numeric."
 msgstr "Argumentas privalo būti skaitinis."
 
 #: src/language/commands/aggregate.c:513
-#, fuzzy
-#| msgid "Output variables are _strings"
 msgid "The variables have string type."
-msgstr "Išvedami kintamieji yra _teksto eilutės. "
+msgstr "Kintamieji yra teksto eilutės tipo."
 
 #: src/language/commands/aggregate.c:518
 msgid "The argument is a string."
-msgstr ""
+msgstr "Argumentas yra teksto eilutė."
 
 #: src/language/commands/aggregate.c:520
 msgid "The variables are numeric."
@@ -3412,10 +3356,8 @@ msgid "Number of source variables (%zu) does not match number of target variable
 msgstr "Šaltinio kintamųjų skaičius (%zu) neatitinka paskirties kintamųjų skaičiaus (%zu)."
 
 #: src/language/commands/aggregate.c:553
-#, fuzzy
-#| msgid "Recode values into the same Variables"
 msgid "These are the source variables."
-msgstr "Perkoduoti reikšmes į tuos pačius kintamuosius"
+msgstr "Tai šaltinio kintamieji."
 
 #: src/language/commands/aggregate.c:555
 msgid "These are the target variables."
@@ -3427,10 +3369,9 @@ msgid "The value arguments passed to the %s function are out of order.  They wil
 msgstr ""
 
 #: src/language/commands/aggregate.c:587
-#, fuzzy, c-format
-#| msgid "Duplicate variable name %s."
+#, c-format
 msgid "Duplicate target variable name %s."
-msgstr "Kintamojo vardas %s kartojasi."
+msgstr "Paskirties kintamojo vardas %s kartojasi."
 
 #: src/language/commands/aggregate.c:591
 #, c-format
@@ -3555,36 +3496,42 @@ msgstr ""
 msgid "No matching variables found between the source and target files."
 msgstr "Tarp šaltinio ir paskirties rinkmenų nerasta atitinkančių kintamųjų."
 
-#: src/language/commands/autorecode.c:156
+#: src/language/commands/autorecode.c:157
 #, c-format
 msgid "Source variable count (%zu) does not match target variable count (%zu)."
 msgstr "Šaltinio kintamųjų kiekis (%zu) neatitinka paskirties kintamojo kiekio (%zu)."
 
-#: src/language/commands/autorecode.c:168
+#: src/language/commands/autorecode.c:169
 #, c-format
 msgid "Target variable %s duplicates existing variable %s."
 msgstr "Paskirties kintamasis %s dubliuoja esamą kintamąjį %s."
 
-#: src/language/commands/autorecode.c:225
+#: src/language/commands/autorecode.c:226
 #, c-format
 msgid "With GROUP, variables may not mix string variables (such as %s) and numeric variables (such as %s)."
 msgstr ""
 
-#: src/language/commands/autorecode.c:368
+#: src/language/commands/autorecode.c:243
+#, fuzzy
+#| msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
+msgid "AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent."
+msgstr "REGRESSION su SAVE nepaiso TEMPORARY.  Laikinos transformacijos bus atliekamos kaip ilgalaikės."
+
+#: src/language/commands/autorecode.c:380
 msgid "Recoding grouped variables."
 msgstr "Perkoduojami sugrupuoti kintamieji."
 
-#: src/language/commands/autorecode.c:370
+#: src/language/commands/autorecode.c:382
 #, c-format
 msgid "Recoding %s into %s (%s)."
 msgstr "%s perkoduojamas į %s (%s)."
 
-#: src/language/commands/autorecode.c:374
+#: src/language/commands/autorecode.c:386
 #, c-format
 msgid "Recoding %s into %s."
 msgstr "%s perkoduojamas į %s."
 
-#: src/language/commands/autorecode.c:380
+#: src/language/commands/autorecode.c:392
 #: src/language/commands/data-parser.c:726
 #: src/language/commands/data-parser.c:772 src/language/commands/mrsets.c:571
 #: src/language/commands/print.c:450 src/language/commands/sys-file-info.c:430
@@ -3594,15 +3541,15 @@ msgstr "%s perkoduojamas į %s."
 msgid "Attributes"
 msgstr "Atributai"
 
-#: src/language/commands/autorecode.c:381 src/ui/gui/recode.ui:207
+#: src/language/commands/autorecode.c:393 src/ui/gui/recode.ui:207
 msgid "New Value"
 msgstr "Nauja reikšmė"
 
-#: src/language/commands/autorecode.c:381
+#: src/language/commands/autorecode.c:393
 msgid "Value Label"
 msgstr "Reikšmės etiketė"
 
-#: src/language/commands/autorecode.c:384
+#: src/language/commands/autorecode.c:396
 msgid "Old Value"
 msgstr "Sena reikšmė"
 
@@ -3794,7 +3741,7 @@ msgstr "Reikšmė"
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
 #: src/language/commands/sys-file-info.c:472
-#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:668
+#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:674
 #: src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Kintamasis"
@@ -3890,21 +3837,19 @@ msgid "In file %s, %s is a string."
 msgstr "%s rinkmenoje: %s yra teksto eilutė."
 
 #: src/language/commands/combine-files.c:699
-#, fuzzy, c-format
-#| msgid "Combining files with incompatible encodings. String data may not be represented correctly."
+#, c-format
 msgid "Combining files with different encodings.  String data (such as in variable `%s') may not be represented correctly."
-msgstr "Derinamos rinkmenos su nesuderinamomis koduotėmis. Tekstinių eilučių duomenys gali būti pateikti netinkamai."
+msgstr "Bandote jungti rinkmenas su nesuderinamomis koduotėmis. Tekstinių eilučių duomenys (pvz., kintamasis „%s“) gali būti pateikti netinkamai."
 
 #: src/language/commands/combine-files.c:710
 #, c-format
 msgid "File %s uses encoding %s.  The output will use this encoding."
-msgstr ""
+msgstr "Rinkmena %s naudoja %s koduotę.  Išvedime naudosima ši koduotė."
 
 #: src/language/commands/combine-files.c:715
-#, fuzzy, c-format
-#| msgid "Usable encodings for %s."
+#, c-format
 msgid "File %s uses encoding %s."
-msgstr "Su %s tinkamos koduotės."
+msgstr "Rinkmena %s naudoja %s koduotę."
 
 #: src/language/commands/combine-files.c:745
 #, c-format
@@ -4042,10 +3987,8 @@ msgid "Missing mode %s not allowed in general mode.  Assuming %s."
 msgstr "Trūkstama veiksena „%s“ nėra leidžiama bendrojoje veiksenoje. Tariama, kad yra %s."
 
 #: src/language/commands/crosstabs.c:590
-#, fuzzy
-#| msgid "expecting a file name or handle name"
 msgid "Syntax error expecting subcommand name or variable name."
-msgstr "tikėtasi rinkmenos ar identifikacinio vardo"
+msgstr "Sintaksės klaida. Tikėtasi pokomandžio vardo arba kintamojo vardo."
 
 #: src/language/commands/crosstabs.c:622
 msgid "Too many cross-tabulation variables or dimensions."
@@ -4127,7 +4070,7 @@ msgstr "Dvitiesinė priklausomybė"
 
 #: src/language/commands/crosstabs.c:1432
 #: src/language/commands/crosstabs.c:1477
-#: src/language/commands/crosstabs.c:1999
+#: src/language/commands/crosstabs.c:1997
 msgid "N of Valid Cases"
 msgstr "N galiojančių atvejų"
 
@@ -4280,12 +4223,12 @@ msgstr "Pavadinimų x intervalų"
 msgid "Eta"
 msgstr "Eta"
 
-#: src/language/commands/crosstabs.c:1971
+#: src/language/commands/crosstabs.c:1969
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Galimybių santykis: %s"
 
-#: src/language/commands/crosstabs.c:1980
+#: src/language/commands/crosstabs.c:1978
 #, c-format
 msgid "For cohort %s = "
 msgstr "Kohortai %s = "
@@ -4295,16 +4238,12 @@ msgid "Support for LCL, UCL, and SE summary functions is not yet implemented."
 msgstr ""
 
 #: src/language/commands/ctables.c:298
-#, fuzzy
-#| msgid "Syntax error expecting OFF or BY.  Turning off case filtering."
 msgid "Syntax error expecting summary function name."
-msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
+msgstr "Sintaksės klaida. Tikėtasi santraukos funkcijos vardo."
 
 #: src/language/commands/ctables.c:330
-#, fuzzy
-#| msgid "Adjusted R Square"
 msgid "Adjusted Count"
-msgstr "Koreguotas R kvadratas"
+msgstr "Koreguotas kiekis"
 
 #: src/language/commands/ctables.c:330
 #, fuzzy
@@ -4375,10 +4314,8 @@ msgid "Unweighted Column %"
 msgstr "Nesverta"
 
 #: src/language/commands/ctables.c:348
-#, fuzzy
-#| msgid "Valid N"
 msgid "Table Valid N %"
-msgstr "Galiojančių N"
+msgstr "Galiojančių N lentelėje %"
 
 #: src/language/commands/ctables.c:348
 #, fuzzy
@@ -4387,10 +4324,8 @@ msgid "Unweighted Table Valid N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:349
-#, fuzzy
-#| msgid "Layer %d of %d"
 msgid "Layer Valid N %"
-msgstr "%d sluoksnis iš %d"
+msgstr "Galiojančių N sluoksnyje %"
 
 #: src/language/commands/ctables.c:349
 #, fuzzy
@@ -4399,10 +4334,8 @@ msgid "Unweighted Layer Valid N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:350
-#, fuzzy
-#| msgid "Layer %d of %d"
 msgid "Layer Row Valid N %"
-msgstr "%d sluoksnis iš %d"
+msgstr "Galiojančių N sluoksnio eilutėje %"
 
 #: src/language/commands/ctables.c:350
 msgid "Unweighted Layer Row Valid N %"
@@ -4410,7 +4343,7 @@ msgstr ""
 
 #: src/language/commands/ctables.c:351
 msgid "Layer Column Valid N %"
-msgstr ""
+msgstr "Galiojančių N sluoksnio stulpelyje %"
 
 #: src/language/commands/ctables.c:351
 msgid "Unweighted Layer Column Valid N %"
@@ -4418,17 +4351,15 @@ msgstr ""
 
 #: src/language/commands/ctables.c:352
 msgid "Subtable Valid N %"
-msgstr ""
+msgstr "Galiojančių N lentelės dalyje %"
 
 #: src/language/commands/ctables.c:352
 msgid "Unweighted Subtable Valid N %"
 msgstr ""
 
 #: src/language/commands/ctables.c:353
-#, fuzzy
-#| msgid "Valid N"
 msgid "Row Valid N %"
-msgstr "Galiojančių N"
+msgstr "Galiojančių N eilutėje %"
 
 #: src/language/commands/ctables.c:353
 #, fuzzy
@@ -4437,10 +4368,8 @@ msgid "Unweighted Row Valid N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:354
-#, fuzzy
-#| msgid "Column %"
 msgid "Column Valid N %"
-msgstr "% stulpelyje"
+msgstr "Galiojančių N stulpelyje %"
 
 #: src/language/commands/ctables.c:354
 #, fuzzy
@@ -4449,10 +4378,8 @@ msgid "Unweighted Column Valid N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:361
-#, fuzzy
-#| msgid "Total %"
 msgid "Table Total N %"
-msgstr "% iš visų"
+msgstr "Iš viso N lentelėje %"
 
 #: src/language/commands/ctables.c:361
 #, fuzzy
@@ -4461,10 +4388,8 @@ msgid "Unweighted Table Total N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:362
-#, fuzzy
-#| msgid "Total %"
 msgid "Layer Total N %"
-msgstr "% iš visų"
+msgstr "Iš viso N sluoksnyje %"
 
 #: src/language/commands/ctables.c:362
 #, fuzzy
@@ -4473,10 +4398,8 @@ msgid "Unweighted Layer Total N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:363
-#, fuzzy
-#| msgid "Layer %d of %d"
 msgid "Layer Row Total N %"
-msgstr "%d sluoksnis iš %d"
+msgstr "Iš viso N sluoksnio eilutėje %"
 
 #: src/language/commands/ctables.c:363
 msgid "Unweighted Layer Row Total N %"
@@ -4484,7 +4407,7 @@ msgstr ""
 
 #: src/language/commands/ctables.c:364
 msgid "Layer Column Total N %"
-msgstr ""
+msgstr "Iš viso N sluoksnio stulpelyje %"
 
 #: src/language/commands/ctables.c:364
 msgid "Unweighted Layer Column Total N %"
@@ -4492,17 +4415,15 @@ msgstr ""
 
 #: src/language/commands/ctables.c:365
 msgid "Subtable Total N %"
-msgstr ""
+msgstr "Iš viso N lentelės dalyje %"
 
 #: src/language/commands/ctables.c:365
 msgid "Unweighted Subtable Total N %"
 msgstr ""
 
 #: src/language/commands/ctables.c:366
-#, fuzzy
-#| msgid "Total %"
 msgid "Row Total N %"
-msgstr "% iš visų"
+msgstr "Iš viso N eilutėje %"
 
 #: src/language/commands/ctables.c:366
 #, fuzzy
@@ -4511,10 +4432,8 @@ msgid "Unweighted Row Total N %"
 msgstr "Nesveriami atvejai"
 
 #: src/language/commands/ctables.c:367
-#, fuzzy
-#| msgid "Column %"
 msgid "Column Total N %"
-msgstr "% stulpelyje"
+msgstr "Iš viso N stulpelyje %"
 
 #: src/language/commands/ctables.c:367
 #, fuzzy
@@ -4923,132 +4842,127 @@ msgstr "Stulpeliai"
 msgid "Layers"
 msgstr "Sluoksniai"
 
-#: src/language/commands/ctables.c:4970
+#: src/language/commands/ctables.c:4978
 msgid "Category labels may not be moved to another axis when sorting by a summary function."
 msgstr ""
 
-#: src/language/commands/ctables.c:4973 src/language/commands/ctables.c:4990
-#: src/language/commands/ctables.c:5011 src/language/commands/ctables.c:5023
-#: src/language/commands/ctables.c:5034
+#: src/language/commands/ctables.c:4981 src/language/commands/ctables.c:4998
+#: src/language/commands/ctables.c:5019 src/language/commands/ctables.c:5031
+#: src/language/commands/ctables.c:5042
 msgid "This syntax moves category labels to another axis."
-msgstr ""
+msgstr "Ši sintaksė perkelia etiketes į kitą ašį."
 
-#: src/language/commands/ctables.c:4975
+#: src/language/commands/ctables.c:4983
 msgid "This syntax requests sorting by a summary function."
 msgstr ""
 
-#: src/language/commands/ctables.c:4986
+#: src/language/commands/ctables.c:4994
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must be categorical, but %s is scale."
 msgstr ""
 
-#: src/language/commands/ctables.c:5004
+#: src/language/commands/ctables.c:5012
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same width, but %s has width %d and %s has width %d."
 msgstr ""
 
-#: src/language/commands/ctables.c:5017
+#: src/language/commands/ctables.c:5025
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same value labels, but %s and %s have different value labels."
 msgstr ""
 
-#: src/language/commands/ctables.c:5028
+#: src/language/commands/ctables.c:5036
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same category specifications, but %s and %s have different category specifications."
 msgstr ""
 
-#: src/language/commands/ctables.c:5762
+#: src/language/commands/ctables.c:5770
 #, c-format
 msgid "New definition of &%s will override the previous definition."
 msgstr ""
 
-#: src/language/commands/ctables.c:5765
+#: src/language/commands/ctables.c:5773
 msgid "This is the previous definition."
 msgstr ""
 
-#: src/language/commands/ctables.c:5855
-#, fuzzy, c-format
-#| msgid "Unknown format type `%s'."
+#: src/language/commands/ctables.c:5863
+#, c-format
 msgid "Unknown computed category &%s."
-msgstr "Nežinomas formato tipas „%s“."
+msgstr "Nežinoma apskaičiuota kategorija &%s."
 
-#: src/language/commands/ctables.c:6144
+#: src/language/commands/ctables.c:6152
 msgid "MINCOLWIDTH must not be greater than MAXCOLWIDTH."
 msgstr ""
 
-#: src/language/commands/ctables.c:6266
+#: src/language/commands/ctables.c:6274
 msgid "TABLE must appear before this subcommand."
 msgstr "TABLE turi būti prieš šį pokomandį."
 
-#: src/language/commands/ctables.c:6347
+#: src/language/commands/ctables.c:6355
 msgid "At least one variable must be specified."
 msgstr "Turi būti nurodytas bent vienas kintamasis."
 
-#: src/language/commands/ctables.c:6361
+#: src/language/commands/ctables.c:6369
 msgid "Scale variables may appear only on one axis."
 msgstr ""
 
-#: src/language/commands/ctables.c:6364
+#: src/language/commands/ctables.c:6372
 msgid "This scale variable appears on the rows axis."
 msgstr ""
 
-#: src/language/commands/ctables.c:6367
+#: src/language/commands/ctables.c:6375
 msgid "This scale variable appears on the columns axis."
 msgstr ""
 
-#: src/language/commands/ctables.c:6370
+#: src/language/commands/ctables.c:6378
 msgid "This scale variable appears on the layer axis."
 msgstr ""
 
-#: src/language/commands/ctables.c:6386
+#: src/language/commands/ctables.c:6394
 msgid "Summaries may appear only on one axis."
 msgstr ""
 
-#: src/language/commands/ctables.c:6392
+#: src/language/commands/ctables.c:6400
 msgid "This variable on the rows axis has a summary."
 msgstr ""
 
-#: src/language/commands/ctables.c:6394
+#: src/language/commands/ctables.c:6402
 msgid "This variable on the columns axis has a summary."
 msgstr ""
 
-#: src/language/commands/ctables.c:6395
+#: src/language/commands/ctables.c:6403
 msgid "This variable on the layers axis has a summary."
 msgstr ""
 
-#: src/language/commands/ctables.c:6398
+#: src/language/commands/ctables.c:6406
 msgid "This is a scale variable, so it always has a summary even if the syntax does not explicitly specify one."
 msgstr ""
 
-#: src/language/commands/ctables.c:6499
+#: src/language/commands/ctables.c:6507
 msgid "ROWLABELS and COLLABELS may not both be specified."
 msgstr "ROWLABELS ir COLLABELS negalima nurodyti vienu metu."
 
-#: src/language/commands/ctables.c:6504
-#, fuzzy
-#| msgid "`%s': bad font specification"
+#: src/language/commands/ctables.c:6512
 msgid "This is the first specification."
-msgstr "„%s“: netinkama šrifto specifikacija"
+msgstr "Tai pirmoji specifikacija."
 
-#: src/language/commands/ctables.c:6506
-#, fuzzy
-#| msgid "`%s': bad font specification"
+#: src/language/commands/ctables.c:6514
 msgid "This is the second specification."
-msgstr "„%s“: netinkama šrifto specifikacija"
+msgstr "Tai antroji specifikacija."
 
-#: src/language/commands/ctables.c:6624
+#: src/language/commands/ctables.c:6632
 #, fuzzy
 #| msgid "%s is not yet implemented."
 msgid "Support for SIGTEST not yet implemented."
 msgstr "%s dar nėra realizuota."
 
-#: src/language/commands/ctables.c:6771
+#: src/language/commands/ctables.c:6779
 #, fuzzy
 #| msgid "%s is not yet implemented."
 msgid "Support for COMPARETEST not yet implemented."
 msgstr "%s dar nėra realizuota."
 
-#: src/language/commands/ctables.c:6788
+#: src/language/commands/ctables.c:6796
 #, fuzzy
 #| msgid "This command cannot appear outside %s...%s."
 msgid "This subcommand must appear before TABLE."
@@ -5279,7 +5193,7 @@ msgstr ""
 
 #: src/language/commands/define.c:215
 msgid "Here is a previous keyword parameter."
-msgstr ""
+msgstr "Čia yra ankstesnio raktažodžio parametras."
 
 #: src/language/commands/define.c:228
 msgid "Keyword macro parameter must be named in definition without \"!\" prefix."
@@ -5300,10 +5214,9 @@ msgid "%s may not be used when there are pending transformations (use %s to exec
 msgstr ""
 
 #: src/language/commands/delete-variables.c:47
-#, fuzzy, c-format
-#| msgid "%s may not appear after %s."
+#, c-format
 msgid "%s may not be used after %s."
-msgstr "%s gali nebūti po %s."
+msgstr "%s gali nebūti naudojama po %s."
 
 #: src/language/commands/delete-variables.c:59
 #, c-format
@@ -5913,8 +5826,6 @@ msgid "%s: Data file dictionary has no variables."
 msgstr "%s: Duomenų rinkinys neturi kintamųjų."
 
 #: src/language/commands/glm.c:161
-#, fuzzy
-#| msgid "Multivariate analysis is not yet implemented"
 msgid "Multivariate analysis is not yet implemented."
 msgstr "Daugiamatė analizė dar nėra realizuota."
 
@@ -6048,21 +5959,21 @@ msgstr ""
 
 #: src/language/commands/host.c:230
 msgid "Command or shell not found"
-msgstr ""
+msgstr "Komanda arba apvalkalas nerastas"
 
 #: src/language/commands/host.c:232
 msgid "Could not invoke command or shell"
-msgstr ""
+msgstr "Nepavyksta iškviesti komandos arba aplinkos"
 
 #: src/language/commands/host.c:235
 #, c-format
 msgid "Command \"%s\" exited with status %d (%s)."
-msgstr ""
+msgstr "Komanda „%s“ baigta būsenoje %d (%s)."
 
 #: src/language/commands/host.c:238
 #, c-format
 msgid "Command \"%s\" exited with status %d."
-msgstr ""
+msgstr "Komanda „%s“ baigta būsenoje %d."
 
 #: src/language/commands/host.c:248
 #, c-format
@@ -6466,23 +6377,18 @@ msgstr[2] ""
 msgstr[3] ""
 
 #: src/language/commands/matrix.c:1008
-#, fuzzy, c-format
-#| msgid "\"%s\" command requires at least %d argument"
-#| msgid_plural "\"%s\" command requires at least %d arguments"
+#, c-format
 msgid "Matrix function %s requires at least one argument."
-msgstr "„%s“ komandai reikia bent %d argumento"
+msgstr "Matricos funkcijai %s reikia bent vieno argumento."
 
 #: src/language/commands/matrix.c:1076 src/language/commands/matrix.c:8728
-#, fuzzy, c-format
-#| msgid "Unknown system variable %s."
+#, c-format
 msgid "Unknown variable %s."
-msgstr "Nežinomas sisteminis kintamasis %s."
+msgstr "Nežinomas kintamasis „%s“."
 
 #: src/language/commands/matrix.c:1093
-#, fuzzy
-#| msgid "Syntax error in date field."
 msgid "Syntax error expecting matrix expression."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida: tikėtasi matricos išraiškos."
 
 #: src/language/commands/matrix.c:1448
 msgid "Input to CHOL function is not positive-definite."
@@ -6579,7 +6485,7 @@ msgstr ""
 #: src/language/commands/matrix.c:3440
 #, c-format
 msgid "This operand is a %zu×%zu matrix."
-msgstr ""
+msgstr "Šis operandas yra %zu×%zu matrica."
 
 #: src/language/commands/matrix.c:3463
 #, c-format
@@ -6675,10 +6581,9 @@ msgstr ""
 
 #: src/language/commands/matrix.c:3886 src/language/commands/matrix.c:3893
 #: src/language/commands/matrix.c:3941
-#, fuzzy, c-format
-#| msgid "Missing argument %zu to %s."
+#, c-format
 msgid "Argument %zu is %g."
-msgstr "Argumento %zu reikalauja %s."
+msgstr "Argumentas %zu yra %g."
 
 #: src/language/commands/matrix.c:3889 src/language/commands/matrix.c:3945
 #, c-format
@@ -6753,20 +6658,19 @@ msgid "Expression for %s is outside the supported integer range."
 msgstr ""
 
 #: src/language/commands/matrix.c:4775 src/language/commands/matrix.c:4857
-#, fuzzy, c-format
-#| msgid "Unknown system variable %s."
+#, c-format
 msgid "Undefined variable %s."
-msgstr "Nežinomas sisteminis kintamasis %s."
+msgstr "Neapibrėžtas kintamasis %s."
 
 #: src/language/commands/matrix.c:4862
 #, c-format
 msgid "Cannot index %zu×%zu matrix %s."
-msgstr ""
+msgstr "Negalima indeksuoti %zu×%zu matricos %s."
 
 #: src/language/commands/matrix.c:4871
 #, c-format
 msgid "Can't use vector indexing on %zu×%zu matrix %s."
-msgstr ""
+msgstr "Negalima naudoti vektoriaus indekso su %zu×%zu matrica %s."
 
 #: src/language/commands/matrix.c:4905 src/language/commands/matrix.c:4917
 #, c-format
@@ -6776,7 +6680,7 @@ msgstr ""
 #: src/language/commands/matrix.c:4909
 #, c-format
 msgid "The source is an %zu×%zu matrix."
-msgstr ""
+msgstr "Šaltinis yra %zu×%zu matrica."
 
 #: src/language/commands/matrix.c:4920
 #, c-format
@@ -6841,7 +6745,7 @@ msgstr[3] ""
 #: src/language/commands/matrix.c:4995
 #, c-format
 msgid "The source matrix is %zu×%zu."
-msgstr ""
+msgstr "Šaltinio matrica yra %zu×%zu."
 
 #: src/language/commands/matrix.c:5968
 msgid "BREAK not inside LOOP."
@@ -6875,10 +6779,9 @@ msgid "This is the location of the first SAVE to %s."
 msgstr ""
 
 #: src/language/commands/matrix.c:6207
-#, fuzzy, c-format
-#| msgid "Duplicate variable name %s."
+#, c-format
 msgid "Duplicate variable name %s in SAVE statement."
-msgstr "Kintamojo vardas %s kartojasi."
+msgstr "SAVE sakinyje kartojasi kintamojo vardas „%s“."
 
 #: src/language/commands/matrix.c:6220
 #, c-format
@@ -6912,7 +6815,7 @@ msgstr ""
 
 #: src/language/commands/matrix.c:6561 src/language/commands/matrix.c:7143
 msgid "This syntax specifies the field width."
-msgstr ""
+msgstr "Sintaksė nurodo lauko plotį."
 
 #: src/language/commands/matrix.c:6613 src/language/commands/matrix.c:7186
 #, c-format
@@ -6938,7 +6841,7 @@ msgstr ""
 
 #: src/language/commands/matrix.c:6700 src/language/commands/matrix.c:7265
 msgid "This command specifies two different field widths."
-msgstr ""
+msgstr "Ši komanda nurodo du skirtingus laukų pločius."
 
 #: src/language/commands/matrix.c:6704 src/language/commands/matrix.c:7269
 #: src/language/commands/matrix.c:7306
@@ -6959,10 +6862,9 @@ msgstr ""
 #: src/language/commands/matrix.c:6716 src/language/commands/matrix.c:6719
 #: src/language/commands/matrix.c:7281 src/language/commands/matrix.c:7284
 #: src/language/commands/matrix.c:7319
-#, fuzzy, c-format
-#| msgid "%s must be specified with %s."
+#, c-format
 msgid "This syntax specifies field width %d."
-msgstr "%s turi būti nurodytas su %s."
+msgstr "Sintaksė nurodo lauko plotį %d."
 
 #: src/language/commands/matrix.c:6743
 #, c-format
@@ -6971,13 +6873,11 @@ msgstr ""
 
 #: src/language/commands/matrix.c:6765
 msgid "Matrix data may not contain missing value."
-msgstr ""
+msgstr "Matricos duomenys negali turėti praleistų reikšmių"
 
 #: src/language/commands/matrix.c:6800
-#, fuzzy
-#| msgid "Unexpected end of file reading %s file."
 msgid "Unexpected end of file reading matrix data."
-msgstr "Netikėta skaitomos %s rinkmenos pabaiga."
+msgstr "Netikėta %s rinkmenos pabaiga skaitant matricos duomenis."
 
 #: src/language/commands/matrix.c:6871
 #, fuzzy, c-format
@@ -7002,7 +6902,7 @@ msgstr ""
 #: src/language/commands/matrix.c:6972
 #, c-format
 msgid "SIZE specifies dimensions %zu×%zu."
-msgstr ""
+msgstr "SIZE nurodo matmenis %zu×%zu."
 
 #: src/language/commands/matrix.c:6975
 #, c-format
@@ -7015,10 +6915,9 @@ msgid "Cannot read non-square %zu×%zu matrix using READ with MODE=SYMMETRIC."
 msgstr ""
 
 #: src/language/commands/matrix.c:7300
-#, fuzzy, c-format
-#| msgid "%s must be specified before %s."
+#, c-format
 msgid "This syntax specifies format %s."
-msgstr "%s turi būti nurodytas pirmiau nei %s."
+msgstr "Sintaksė nurodo %s formatą."
 
 #: src/language/commands/matrix.c:7330
 #, c-format
@@ -7041,10 +6940,9 @@ msgid "Syntax error expecting OMIT or a number for SYSMIS."
 msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
 
 #: src/language/commands/matrix.c:7581
-#, fuzzy, c-format
-#| msgid "Variable %s is not dichotomous"
+#, c-format
 msgid "Variable %s is not numeric."
-msgstr "Kintamasis %s nėra dvireikšmis"
+msgstr "Kintamasis %s nėra skaitinis."
 
 #: src/language/commands/matrix.c:7636
 #, fuzzy, c-format
@@ -7061,7 +6959,7 @@ msgstr "Paskirties kintamasis %s dubliuoja esamą kintamąjį %s."
 #: src/language/commands/matrix.c:7691
 #, c-format
 msgid "The %s command cannot read an empty active file."
-msgstr ""
+msgstr "Komanda „%s“ negali skaityti tuščios aktyvios rinkmenos."
 
 #: src/language/commands/matrix.c:7741
 #, c-format
@@ -7106,10 +7004,9 @@ msgid "This is the OUTFILE on a later MSAVE command."
 msgstr ""
 
 #: src/language/commands/matrix.c:7869
-#, fuzzy, c-format
-#| msgid "Dummy variable name `%s' is given twice."
+#, c-format
 msgid "Variable name %s is reserved."
-msgstr "Fiktyvusis kintamasis vardas „%s“ pateiktas du kartus."
+msgstr "Kintamojo vardas „%s“ yra rezervuotas."
 
 #: src/language/commands/matrix.c:7978
 msgid "FNAMES requires FACTOR."
@@ -7125,16 +7022,14 @@ msgid "%s expression must evaluate to vector, not a %zu×%zu matrix."
 msgstr ""
 
 #: src/language/commands/matrix.c:8083
-#, fuzzy, c-format
-#| msgid "Duplicate long variable name `%s'."
+#, c-format
 msgid "Duplicate or invalid FACTOR variable name %s."
-msgstr "Ilgas kintamojo vardas „%s“ kartojasi."
+msgstr "Besikartojantis ar netinkamas FACTOR kintamojo vardas „%s“."
 
 #: src/language/commands/matrix.c:8094
-#, fuzzy, c-format
-#| msgid "Duplicate long variable name `%s'."
+#, c-format
 msgid "Duplicate or invalid variable name %s."
-msgstr "Ilgas kintamojo vardas „%s“ kartojasi."
+msgstr "Besikartojantis ar netinkamas kintamojo vardas „%s“."
 
 #: src/language/commands/matrix.c:8126
 #, c-format
@@ -7218,7 +7113,7 @@ msgstr "Matmenys"
 
 #: src/language/commands/matrix.c:8687
 msgid "Argument of EIGEN must be symmetric."
-msgstr ""
+msgstr "EIGEN argumentas turi būti simetriškas."
 
 #: src/language/commands/matrix.c:8758
 #, c-format
@@ -7236,16 +7131,13 @@ msgid "Premature END MATRIX within %s."
 msgstr ""
 
 #: src/language/commands/matrix.c:9115
-#, fuzzy
-#| msgid "Unknown command `%s'."
 msgid "Unknown matrix command."
-msgstr "Nežinoma komanda „%s“."
+msgstr "Nežinoma matricos komanda."
 
 #: src/language/commands/matrix.c:9117
-#, fuzzy, c-format
-#| msgid "%s is not yet implemented."
+#, c-format
 msgid "Matrix command %s is not yet implemented."
-msgstr "%s dar nėra realizuota."
+msgstr "Matricos komanda „%s“ dar nėra įgyvendinta."
 
 #: src/language/commands/matrix.c:9159
 #, fuzzy
@@ -7351,24 +7243,20 @@ msgid "Missing values are too long to assign to variable %s with width %d."
 msgstr "Pateiktos trūkstamos reikšmės yra per ilgos, tad negalima jų priskirti prie kintamojo, kurio plotis %d."
 
 #: src/language/commands/mrsets.c:132
-#, fuzzy
-#| msgid "At least one variable must be specified."
 msgid "At least two variables are required."
-msgstr "Turi būti nurodytas bent vienas kintamasis."
+msgstr "Turi būti nurodyti bent du kintamieji."
 
 #: src/language/commands/mrsets.c:167
 msgid "Numeric VALUE must be an integer."
 msgstr "Skaitinė reikšmė (VALUE) turi būti sveikasis skaičius."
 
 #: src/language/commands/mrsets.c:197
-#, fuzzy
-#| msgid "Syntax error expecting OFF or BY.  Turning off case filtering."
 msgid "Syntax error expecting integer or string."
-msgstr "Sintaksės klaida. Tikėtasi OFF arba BY. Atvejų atranka išjungiama."
+msgstr "Sintaksės klaida: tikėtasi sveikojo skaičiaus arba teksto eilutės."
 
 #: src/language/commands/mrsets.c:250
 msgid "VARIABLES and VALUE must have the same type."
-msgstr ""
+msgstr "VARIABLES (kintamieji) ir VALUE (reikšmė) turi būti to paties tipo."
 
 #: src/language/commands/mrsets.c:253
 msgid "These are string variables."
@@ -7415,7 +7303,7 @@ msgstr ""
 #: src/language/commands/mrsets.c:311 src/language/commands/mrsets.c:313
 #, c-format
 msgid "Here is the %s setting."
-msgstr ""
+msgstr "Čia yra %s nuostata."
 
 #: src/language/commands/mrsets.c:350
 #, c-format
@@ -7653,21 +7541,19 @@ msgid "Unknown cell class %s."
 msgstr "Nežinoma langelio klasė „%s“."
 
 #: src/language/commands/permissions.c:115
-#, fuzzy, c-format
-#| msgid "Cannot change mode of %s: %s"
+#, c-format
 msgid "Cannot read permissions for %s: %s"
-msgstr "Nepavyksta pakeisti %s veiksenos: %s"
+msgstr "Nepavyksta nuskaityti %s leidimų: %s"
 
 #: src/language/commands/permissions.c:129
-#, fuzzy, c-format
-#| msgid "Cannot change mode of %s: %s"
+#, c-format
 msgid "Cannot change permissions for %s: %s"
-msgstr "Nepavyksta pakeisti %s veiksenos: %s"
+msgstr "Nepavyksta pakeisti %s leidimų: %s"
 
 #: src/language/commands/placement-parser.c:96
 #, c-format
 msgid "Number of variables specified (%zu) differs from number of variable formats (%zu)."
-msgstr ""
+msgstr "Nurodytas kintamųjų skaičius (%zu) skiriasi nuo kintamųjų formatų skaičiaus (%zu)."
 
 #: src/language/commands/placement-parser.c:106
 msgid "SPSS-like or Fortran-like format specification expected after variable names."
@@ -7805,22 +7691,16 @@ msgid "CONVERT requires string input values."
 msgstr "CONVERT komandai reikia tekstinių reikšmių įvestyje."
 
 #: src/language/commands/recode.c:299
-#, fuzzy
-#| msgid "Inconsistent target variable types.  Target variables must be all numeric or all string."
 msgid "Output values must be all numeric or all string."
-msgstr "Nesuderinami paskirties kintamųjų tipai. Paskirties kintamieji turi būti arba visi skaitiniai, arba visi teksto eilutės tipo."
+msgstr "Paskirties kintamieji turi būti arba visi skaitiniai, arba visi teksto eilutės tipo."
 
 #: src/language/commands/recode.c:313
-#, fuzzy
-#| msgid "The filter variable must be numeric."
 msgid "This output value is numeric."
-msgstr "Kintamasis filtravimui privalo būti skaitinis."
+msgstr "Išvedimo kintamasis yra skaitinis."
 
 #: src/language/commands/recode.c:315
-#, fuzzy
-#| msgid "Output variables are _strings"
 msgid "This output value is string."
-msgstr "Išvedami kintamieji yra _teksto eilutės. "
+msgstr "Išvedimo kintamasis yra teksto eilutė."
 
 #: src/language/commands/recode.c:374
 #, c-format
@@ -8129,10 +8009,8 @@ msgid "Syntax error expecting substitution values."
 msgstr "tikėtasi išvedimo reikšmės"
 
 #: src/language/commands/repeat.c:148
-#, fuzzy
-#| msgid "Syntax error at end of command"
 msgid "Syntax error expecting `/' or end of command."
-msgstr "Sintaksės klaida komandos pabaigoje"
+msgstr "Sintaksės klaida: tikėtasi „/“ arba komandos pabaigos."
 
 #: src/language/commands/repeat.c:159
 msgid "Each dummy variable must have the same number of substitutions."
@@ -8150,23 +8028,23 @@ msgstr[3] "Fiktyvusis kintamasis vardas „%s“ pateiktas du kartus."
 
 #: src/language/commands/repeat.c:274
 msgid "Syntax error expecting END REPEAT."
-msgstr ""
+msgstr "Sintaksės klaida: tikėtasi END REPEAT."
 
 #: src/language/commands/repeat.c:285
 #, c-format
 msgid "Expansion %zu of %zu"
 msgstr ""
 
-#: src/language/commands/repeat.c:358
+#: src/language/commands/repeat.c:359
 msgid "Ranges may only have integer bounds."
 msgstr "Sričių ribos gali būti tik sveikieji skaičiai."
 
-#: src/language/commands/repeat.c:373
+#: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "Netinkama sritis %ld TO %ld."
 
-#: src/language/commands/repeat.c:421
+#: src/language/commands/repeat.c:422
 #, c-format
 msgid "No matching %s."
 msgstr "Nėra, kas atitiktų %s."
@@ -8329,10 +8207,9 @@ msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 msgstr "ZL (64 bitų IBM Z šešioliktainis ilgasis, mažėjantys baitai)"
 
 #: src/language/commands/set.c:502
-#, fuzzy, c-format
-#| msgid "expecting %s or year"
+#, c-format
 msgid "Syntax error expecting %s or year."
-msgstr "tikėtasi %s arba metų"
+msgstr "Sintaksės klaida: tikėtasi %s arba metų"
 
 #: src/language/commands/set.c:549
 #, c-format
@@ -8745,7 +8622,7 @@ msgstr "Būtina nurodyti kurią nors vienintelę iš šių pokomandžių: TESTVA
 
 #: src/language/commands/temporary.c:44
 msgid "This command may only appear once between procedures and procedure-like commands."
-msgstr ""
+msgstr "Ši komanda gali atsirasti tik tarp procedūrų ir į procedūras panašių komandų."
 
 #: src/language/commands/title.c:104
 #, c-format
@@ -8757,24 +8634,22 @@ msgid "Old and new variable counts do not match."
 msgstr "Senų ir naujų kintamųjų skaičius neatitinka."
 
 #: src/language/commands/trim.c:107
-#, fuzzy, c-format
-#| msgid "There is already a variable named %s."
+#, c-format
 msgid "There is %zu old variable."
 msgid_plural "There are %zu old variables."
-msgstr[0] "Kintamasis tokiu vardu %s jau yra."
-msgstr[1] "Kintamasis tokiu vardu %s jau yra."
-msgstr[2] "Kintamasis tokiu vardu %s jau yra."
-msgstr[3] "Kintamasis tokiu vardu %s jau yra."
+msgstr[0] "Yra %zu senas kintamojo vardas."
+msgstr[1] "Yra %zu seni kintamųjų vardai."
+msgstr[2] "Yra %zu senų kintamųjų vardai."
+msgstr[3] "Yra %zu senas kintamųjų vardas."
 
 #: src/language/commands/trim.c:111
-#, fuzzy, c-format
-#| msgid "There is already a variable named %s."
+#, c-format
 msgid "There is %zu new variable name."
 msgid_plural "There are %zu new variable names."
-msgstr[0] "Kintamasis tokiu vardu %s jau yra."
-msgstr[1] "Kintamasis tokiu vardu %s jau yra."
-msgstr[2] "Kintamasis tokiu vardu %s jau yra."
-msgstr[3] "Kintamasis tokiu vardu %s jau yra."
+msgstr[0] "Yra %zu naujas kintamojo vardas."
+msgstr[1] "Yra %zu nauji kintamųjų vardai."
+msgstr[2] "Yra %zu naujų kintamųjų vardų."
+msgstr[3] "Yra %zu naujas kintamųjų vardas."
 
 #: src/language/commands/trim.c:124
 #, c-format
@@ -8813,10 +8688,8 @@ msgid "Only one format may be specified."
 msgstr "Gali būti nurodytas tik vienas formatas."
 
 #: src/language/commands/vector.c:159
-#, fuzzy
-#| msgid "expecting vector length"
 msgid "Syntax error expecting vector length or format."
-msgstr "tikimasi vektoriaus ilgio"
+msgstr "Sintaksės klaida: tikėtasi vektoriaus ilgio arba formato."
 
 #: src/language/commands/vector.c:169
 msgid "Vector length is required."
@@ -8857,21 +8730,17 @@ msgid "Too many pairs to calculate exact significance"
 msgstr "Pernelyg daug porų tikslaus reikšmingumo skaičiavimui"
 
 #: src/language/tests/moments-test.c:50
-#, fuzzy
-#| msgid "expecting weight value"
 msgid "Syntax error expecting weight value."
-msgstr "tikėtasi svorio reikšmės"
+msgstr "Sintaksės klaida: tikėtasi svorio reikšmės"
 
 #: src/language/expressions/evaluate.c:179
-#, fuzzy
-#| msgid "expecting number or string"
 msgid "Syntax error expecting number or string."
-msgstr "tikėtasi skaičiaus arba teksto eilutės"
+msgstr "Sintaksės klaida: tikėtasi skaičiaus arba teksto eilutės."
 
 #: src/language/expressions/helpers.c:44
 #, c-format
 msgid "Invalid arguments to %s function."
-msgstr ""
+msgstr "Argumentas netinka %s funkcijai."
 
 #: src/language/expressions/helpers.c:117
 #, c-format
@@ -8889,10 +8758,8 @@ msgid "Index outside valid range 1 to %zu, inclusive, for vector %s.  The value 
 msgstr ""
 
 #: src/language/expressions/helpers.c:524
-#, fuzzy
-#| msgid "Too-large number set to system-missing."
 msgid "The index is system-missing."
-msgstr "Per didelis skaičius nustatytas kaip „sisteminė praleista“ reikšmė."
+msgstr "Indeksas yra „sisteminė praleista“ reikšmė."
 
 #: src/language/expressions/helpers.c:527
 #, c-format
@@ -8900,10 +8767,9 @@ msgid "The index has value %g."
 msgstr "Rodyklė turi reikšmę %g."
 
 #: src/language/expressions/parse.c:117
-#, fuzzy, c-format
-#| msgid "Type mismatch: expression has %s type, but a string value is required here."
+#, c-format
 msgid "Type mismatch: expression has %s type, but a boolean value is required here."
-msgstr "Neatitinka tipai: išraiška yra %s tipo, bet reikia teksto eilutės kintamojo."
+msgstr "Neatitinka tipai: išraiška yra %s tipo, bet reikia loginės reikšmės."
 
 #: src/language/expressions/parse.c:148
 #, c-format
@@ -8928,10 +8794,9 @@ msgid "Both operands of %s must have the same type."
 msgstr "Abu %s operandai turi būti to paties tipo."
 
 #: src/language/expressions/parse.c:641
-#, fuzzy, c-format
-#| msgid "The filter variable must be numeric."
+#, c-format
 msgid "Both operands of %s must be numeric."
-msgstr "Kintamasis filtravimui privalo būti skaitinis."
+msgstr "Abu %s operandai turi būti skaitiniai."
 
 #: src/language/expressions/parse.c:646 src/language/expressions/parse.c:649
 #, c-format
@@ -8963,42 +8828,37 @@ msgid "Unknown identifier %s."
 msgstr "Nežinomas identifikatorius %s."
 
 #: src/language/expressions/parse.c:996
-#, fuzzy
-#| msgid "Syntax error in date field."
 msgid "Syntax error parsing expression."
-msgstr "Sintaksės klaida datos lauke."
+msgstr "Sintaksės klaida nagrinėjant išraišką."
 
 #: src/language/expressions/parse.c:1047
 msgid "A vector index must be numeric."
 msgstr "Vektoriaus indeksas privalo būti skaitinis."
 
 #: src/language/expressions/parse.c:1050
-#, fuzzy, c-format
-#| msgid "There is no vector named %s."
+#, c-format
 msgid "This vector index has type '%s'."
-msgstr "Tokio vektoriaus vardu %s nėra"
+msgstr "Vektoriaus tipas yra %s tipo."
 
 #: src/language/expressions/parse.c:1202
-#, fuzzy, c-format
-#| msgid "%s must have an even number of arguments in list."
+#, c-format
 msgid "%s must have an odd number of arguments."
-msgstr "%s privalo turėti lyginį argumentų skaičių."
+msgstr "%s privalo turėti nelyginį argumentų skaičių."
 
 #: src/language/expressions/parse.c:1212
-#, fuzzy, c-format
-#| msgid "%s function does not accept a minimum valid argument count."
+#, c-format
 msgid "%s function cannot accept suffix .%d to specify the minimum number of valid arguments."
-msgstr "%s funkcija nepriima mažiausio galimo argumentų kiekio."
+msgstr "%s funkcija negali priimti .%d priesagos mažiausio tinkamo argumentų kiekio nurodymui."
 
 #: src/language/expressions/parse.c:1223
 #, c-format
 msgid "For %s with %d arguments, at most %d (not %d) may be required to be valid."
-msgstr ""
+msgstr "%s su %d argumentais, daugiausia tiktų %d (ne %d)."
 
 #: src/language/expressions/parse.c:1272
 #, c-format
 msgid "Type mismatch invoking %s as "
-msgstr ""
+msgstr "Neatitinka tipas kviečiant %s kaip "
 
 #: src/language/expressions/parse.c:1277
 msgid "Function invocation "
@@ -9011,7 +8871,7 @@ msgstr " neatitinka jokios žinomos funkcijos. Pasiūlymai:"
 #: src/language/expressions/parse.c:1311
 #, c-format
 msgid "This argument has type '%s' but '%s' is required."
-msgstr ""
+msgstr "Šis argumentas yra „%s“ tipo, bet reikia „%s“"
 
 #: src/language/expressions/parse.c:1330
 #, c-format
@@ -10050,31 +9910,31 @@ msgstr "Kint"
 msgid "Var%04d"
 msgstr "Kint%04d"
 
-#: src/ui/gui/psppire-dictview.c:630
+#: src/ui/gui/psppire-dictview.c:636
 msgid "Variable Details"
 msgstr "Informacija apie kintamąjį"
 
-#: src/ui/gui/psppire-dictview.c:705
+#: src/ui/gui/psppire-dictview.c:711
 msgid "Prefer variable labels"
 msgstr "Jei įmanoma, naudoti kintamųjų etiketes"
 
-#: src/ui/gui/psppire-dictview.c:719
+#: src/ui/gui/psppire-dictview.c:725
 msgid "Default sort order"
 msgstr "Numatytoji rikiavimo tvarka"
 
-#: src/ui/gui/psppire-dictview.c:725
+#: src/ui/gui/psppire-dictview.c:731
 msgid "Unsorted (dictionary order)"
 msgstr "Nesurikiuota (tvarka kaip žodyne)"
 
-#: src/ui/gui/psppire-dictview.c:730
+#: src/ui/gui/psppire-dictview.c:736
 msgid "Sort by name"
 msgstr "Rikiuoti pagal vardą"
 
-#: src/ui/gui/psppire-dictview.c:735
+#: src/ui/gui/psppire-dictview.c:741
 msgid "Sort by label"
 msgstr "Rikiuoti pagal etiketę"
 
-#: src/ui/gui/psppire-dictview.c:743
+#: src/ui/gui/psppire-dictview.c:749
 msgid "Variable Information"
 msgstr "Informacija apie kintamąjį"
 
@@ -10403,6 +10263,10 @@ msgstr "_Kitas patarimas"
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "_Užverti"
+
+#: src/ui/gui/main.c:235
+msgid "_Show tips at startup"
+msgstr "_Paleisdus rodyti patarimus"
 
 #: src/ui/gui/main.c:411
 msgid "Psppire: Fatal Error"
@@ -13114,15 +12978,19 @@ msgstr "Daugiaplatformė; veikia įvairiausiuose kompiuteriuose ir įvairiose op
 msgid "PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data."
 msgstr "PSPP ypač skirta statistikams, socialinių mokslų specialistams ir studentams, kuriems reikalinga greita ir patogi imties duomenų analizė."
 
-#: doc/org.gnu.pspp.metainfo.xml.in:42
+#: doc/org.gnu.pspp.metainfo.xml.in:32
+msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+msgstr "PSPP programa Flatpak pakete turi grafinę ir komandinės eilutės sąsajas. Norėdami naudoti komandinės eilutės sąsają, įvykdykite: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+
+#: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
 msgstr "GNU PSPP kintamųjų rodinys"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:51
+#: doc/org.gnu.pspp.metainfo.xml.in:52
 msgid "statistics"
 msgstr "statistika"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:55
+#: doc/org.gnu.pspp.metainfo.xml.in:56
 msgid "Free Software Foundation"
 msgstr "Laisvosios programinės įrangos fondas"
 
