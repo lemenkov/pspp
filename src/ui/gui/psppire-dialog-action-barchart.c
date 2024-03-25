@@ -32,6 +32,8 @@
 
 #include "language/commands/chart-category.h"
 
+#include <gettext.h>
+
 static void
 psppire_dialog_action_barchart_class_init (PsppireDialogActionBarchartClass *class);
 
@@ -99,7 +101,7 @@ populate_combo_model (GtkComboBox *cb)
 
       gtk_list_store_append (list, &iter);
       gtk_list_store_set (list, &iter,
-                          0, af->description,
+                          0, gettext (af->description),
                           1, af->name,
                           -1);
     }
