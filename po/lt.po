@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pspp-2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2024-03-21 16:29-0700\n"
-"PO-Revision-Date: 2024-03-22 23:36+0200\n"
+"PO-Revision-Date: 2024-03-29 12:41+0200\n"
 "Last-Translator: Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "Language: lt\n"
@@ -4243,203 +4243,171 @@ msgstr "Sintaksės klaida. Tikėtasi santraukos funkcijos vardo."
 
 #: src/language/commands/ctables.c:330
 msgid "Adjusted Count"
-msgstr "Koreguotas kiekis"
+msgstr "Patikslintas kiekis"
 
 #: src/language/commands/ctables.c:330
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Count"
-msgstr "Nesverta"
+msgstr "Kiekis nesveriant"
 
 #: src/language/commands/ctables.c:335
 msgid "Table %"
-msgstr "Lentelė %"
+msgstr "Lentelėje, %"
 
 #: src/language/commands/ctables.c:335
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Table %"
-msgstr "Nesveriami atvejai"
+msgstr "Lentelėje nesveriant, %"
 
 #: src/language/commands/ctables.c:336
 msgid "Layer %"
-msgstr "Sluoksnis %"
+msgstr "Sluoksnyje, %"
 
 #: src/language/commands/ctables.c:336
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer %"
-msgstr "Nesveriami atvejai"
+msgstr "Sluoksnyje nesveriant, %"
 
 #: src/language/commands/ctables.c:337
 msgid "Layer Row %"
-msgstr "Sluoksnio eilutė %"
+msgstr "Sluoksnio eilutėje, %"
 
 #: src/language/commands/ctables.c:337
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Row %"
-msgstr "Nesveriami atvejai"
+msgstr "Sluoksnio eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:338
 msgid "Layer Column %"
-msgstr "Sluoksnio stulpelis %"
+msgstr "Sluoksnio stulpelyje, %"
 
 #: src/language/commands/ctables.c:338
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Column %"
-msgstr "Nesveriami atvejai"
+msgstr "Sluoksnio stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:339
 msgid "Subtable %"
-msgstr "Lentelės dalis %"
+msgstr "Lentelės dalyje, %"
 
 #: src/language/commands/ctables.c:339
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Subtable %"
-msgstr "Nesveriami atvejai"
+msgstr "Lentelės dalyje nesveriant, %"
 
 #: src/language/commands/ctables.c:340
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Row %"
-msgstr "Nesverta"
+msgstr "Eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:341
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Column %"
-msgstr "Nesverta"
+msgstr "Stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:348
 msgid "Table Valid N %"
-msgstr "Galiojančių N lentelėje %"
+msgstr "Galiojančių N lentelėje, %"
 
 #: src/language/commands/ctables.c:348
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Table Valid N %"
-msgstr "Nesveriami atvejai"
+msgstr "Galiojančių N lentelėje nesveriant, %"
 
 #: src/language/commands/ctables.c:349
 msgid "Layer Valid N %"
-msgstr "Galiojančių N sluoksnyje %"
+msgstr "Galiojančių N sluoksnyje, %"
 
 #: src/language/commands/ctables.c:349
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Valid N %"
-msgstr "Nesveriami atvejai"
+msgstr "Galiojančių N sluoksnyje nesveriant, %"
 
 #: src/language/commands/ctables.c:350
 msgid "Layer Row Valid N %"
-msgstr "Galiojančių N sluoksnio eilutėje %"
+msgstr "Galiojančių N sluoksnio eilutėje, %"
 
 #: src/language/commands/ctables.c:350
 msgid "Unweighted Layer Row Valid N %"
-msgstr ""
+msgstr "Galiojančių N sluoksnio eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:351
 msgid "Layer Column Valid N %"
-msgstr "Galiojančių N sluoksnio stulpelyje %"
+msgstr "Galiojančių N sluoksnio stulpelyje, %"
 
 #: src/language/commands/ctables.c:351
 msgid "Unweighted Layer Column Valid N %"
-msgstr ""
+msgstr "Galiojančių N sluoksnio stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:352
 msgid "Subtable Valid N %"
-msgstr "Galiojančių N lentelės dalyje %"
+msgstr "Galiojančių N lentelės dalyje, %"
 
 #: src/language/commands/ctables.c:352
 msgid "Unweighted Subtable Valid N %"
-msgstr ""
+msgstr "Galiojančių N lentelės dalyje nesveriant, %"
 
 #: src/language/commands/ctables.c:353
 msgid "Row Valid N %"
-msgstr "Galiojančių N eilutėje %"
+msgstr "Galiojančių N eilutėje, %"
 
 #: src/language/commands/ctables.c:353
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Row Valid N %"
-msgstr "Nesveriami atvejai"
+msgstr "Galiojančių N eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:354
 msgid "Column Valid N %"
-msgstr "Galiojančių N stulpelyje %"
+msgstr "Galiojančių N stulpelyje, %"
 
 #: src/language/commands/ctables.c:354
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Column Valid N %"
-msgstr "Nesveriami atvejai"
+msgstr "Galiojančių N stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:361
 msgid "Table Total N %"
-msgstr "Iš viso N lentelėje %"
+msgstr "Iš viso N lentelėje, %"
 
 #: src/language/commands/ctables.c:361
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Table Total N %"
-msgstr "Nesveriami atvejai"
+msgstr "Iš viso N lentelėje nesveriant, %"
 
 #: src/language/commands/ctables.c:362
 msgid "Layer Total N %"
-msgstr "Iš viso N sluoksnyje %"
+msgstr "Iš viso N sluoksnyje, %"
 
 #: src/language/commands/ctables.c:362
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Total N %"
-msgstr "Nesveriami atvejai"
+msgstr "Iš viso N sluoksnyje nesveriant, %"
 
 #: src/language/commands/ctables.c:363
 msgid "Layer Row Total N %"
-msgstr "Iš viso N sluoksnio eilutėje %"
+msgstr "Iš viso N sluoksnio eilutėje, %"
 
 #: src/language/commands/ctables.c:363
 msgid "Unweighted Layer Row Total N %"
-msgstr ""
+msgstr "Iš viso N sluoksnio eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:364
 msgid "Layer Column Total N %"
-msgstr "Iš viso N sluoksnio stulpelyje %"
+msgstr "Iš viso N sluoksnio stulpelyje, %"
 
 #: src/language/commands/ctables.c:364
 msgid "Unweighted Layer Column Total N %"
-msgstr ""
+msgstr "Iš viso N sluoksnio stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:365
 msgid "Subtable Total N %"
-msgstr "Iš viso N lentelės dalyje %"
+msgstr "Iš viso N lentelės dalyje, %"
 
 #: src/language/commands/ctables.c:365
 msgid "Unweighted Subtable Total N %"
-msgstr ""
+msgstr "Iš viso N lentelės dalyje nesveriant, %"
 
 #: src/language/commands/ctables.c:366
 msgid "Row Total N %"
-msgstr "Iš viso N eilutėje %"
+msgstr "Iš viso N eilutėje, %"
 
 #: src/language/commands/ctables.c:366
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Row Total N %"
-msgstr "Nesveriami atvejai"
+msgstr "Iš viso N eilutėje nesveriant, %"
 
 #: src/language/commands/ctables.c:367
 msgid "Column Total N %"
-msgstr "Iš viso N stulpelyje %"
+msgstr "Iš viso N stulpelyje, %"
 
 #: src/language/commands/ctables.c:367
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Column Total N %"
-msgstr "Nesveriami atvejai"
+msgstr "Iš viso N stulpelyje nesveriant, %"
 
 #: src/language/commands/ctables.c:371 src/language/commands/descriptives.c:117
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:109
@@ -4452,16 +4420,12 @@ msgid "Maximum"
 msgstr "Didžiausia"
 
 #: src/language/commands/ctables.c:372
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Mean"
-msgstr "Nesverta"
+msgstr "Vidurkis nesveriant"
 
 #: src/language/commands/ctables.c:373
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Median"
-msgstr "Nesverta"
+msgstr "Mediana nesveriant"
 
 #: src/language/commands/ctables.c:374 src/language/commands/descriptives.c:116
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:108
@@ -4474,10 +4438,8 @@ msgid "Minimum"
 msgstr "Mažiausia"
 
 #: src/language/commands/ctables.c:375
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Missing"
-msgstr "Nesveriami atvejai"
+msgstr "Praleistų nesveriant"
 
 #: src/language/commands/ctables.c:376 src/language/commands/frequencies.c:100
 #: src/ui/gui/psppire-dialog-action-frequencies.c:49
@@ -4485,10 +4447,8 @@ msgid "Mode"
 msgstr "Moda"
 
 #: src/language/commands/ctables.c:376
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Mode"
-msgstr "Nesverta"
+msgstr "Moda nesveriant"
 
 #: src/language/commands/ctables.c:378 src/language/commands/descriptives.c:115
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:107
@@ -4503,20 +4463,16 @@ msgid "Std Error of Mean"
 msgstr "St. vidurkio paklaida"
 
 #: src/language/commands/ctables.c:379
-#, fuzzy
-#| msgid "Std. Error Mean"
 msgid "Unweighted Std Error of Mean"
-msgstr "st. vidurkio paklaida"
+msgstr "st. vidurkio paklaida nesveriant"
 
 #: src/language/commands/ctables.c:380
 msgid "Std Deviation"
 msgstr "St. nuokrypis"
 
 #: src/language/commands/ctables.c:380
-#, fuzzy
-#| msgid "Std. Deviation"
 msgid "Unweighted Std Deviation"
-msgstr "St. nuokrypis"
+msgstr "St. nuokrypis nesveriant"
 
 #: src/language/commands/ctables.c:381 src/language/commands/descriptives.c:118
 #: src/language/commands/frequencies.c:110 src/language/commands/graph.c:211
@@ -4527,42 +4483,32 @@ msgid "Sum"
 msgstr "Suma"
 
 #: src/language/commands/ctables.c:381
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Sum"
-msgstr "Nesverta"
+msgstr "Suma nesveriant"
 
 #: src/language/commands/ctables.c:382
 msgid "Total N"
 msgstr "Iš viso N"
 
 #: src/language/commands/ctables.c:383
-#, fuzzy
-#| msgid "Adjusted Residual"
 msgid "Adjusted Total N"
-msgstr "Patikslinta liekana"
+msgstr "Iš viso patikslintas N"
 
 #: src/language/commands/ctables.c:384
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Total N"
-msgstr "Nesverta"
+msgstr "Iš viso N nesveriant"
 
 #: src/language/commands/ctables.c:385
 msgid "Valid N"
 msgstr "Galiojančių N"
 
 #: src/language/commands/ctables.c:386
-#, fuzzy
-#| msgid "Adjusted Residual"
 msgid "Adjusted Valid N"
-msgstr "Patikslinta liekana"
+msgstr "Galiojančių patikslintas N"
 
 #: src/language/commands/ctables.c:387
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Valid N"
-msgstr "Nesverta"
+msgstr "Galiojančių N nesveriant"
 
 #: src/language/commands/ctables.c:388 src/language/commands/descriptives.c:110
 #: src/language/commands/examine.c:736 src/language/commands/frequencies.c:102
@@ -4573,88 +4519,74 @@ msgid "Variance"
 msgstr "Dispersija"
 
 #: src/language/commands/ctables.c:388
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Variance"
-msgstr "Nesveriami atvejai"
+msgstr "Dispersija nesveriant"
 
 #: src/language/commands/ctables.c:392
 msgid "Table Sum %"
-msgstr "Lentelės suma %"
+msgstr "Lentelės suma, %"
 
 #: src/language/commands/ctables.c:392
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Table Sum %"
-msgstr "Nesveriami atvejai"
+msgstr "Lentelės suma nesveriant, %"
 
 #: src/language/commands/ctables.c:393
 msgid "Layer Sum %"
-msgstr "Sluoksnio suma %"
+msgstr "Sluoksnio suma, %"
 
 #: src/language/commands/ctables.c:393
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Sum %"
-msgstr "Nesveriami atvejai"
+msgstr "Sluoksnio suma nesveriant, %"
 
 #: src/language/commands/ctables.c:394
 msgid "Layer Row Sum %"
-msgstr "Sluoksnio eilutės suma %"
+msgstr "Sluoksnio eilutės suma, %"
 
 #: src/language/commands/ctables.c:394
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Layer Row Sum %"
-msgstr "Nesveriami atvejai"
+msgstr "Sluoksnio eilutės suma nesveriant, %"
 
 #: src/language/commands/ctables.c:395
 msgid "Layer Column Sum %"
-msgstr "Sluoksnio stulpelio suma %"
+msgstr "Sluoksnio stulpelio suma, %"
 
 #: src/language/commands/ctables.c:395
 msgid "Unweighted Layer Column Sum %"
-msgstr ""
+msgstr "Sluoksnio stulpelio suma nesveriant, %"
 
 #: src/language/commands/ctables.c:396
 msgid "Subtable Sum %"
-msgstr "Lentelės dalies suma %"
+msgstr "Lentelės dalies suma, %"
 
 #: src/language/commands/ctables.c:396
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Subtable Sum %"
-msgstr "Nesveriami atvejai"
+msgstr "Lentelės dalies suma nesveriant, %"
 
 #: src/language/commands/ctables.c:397
 msgid "Row Sum %"
-msgstr "Eilutės suma %"
+msgstr "Eilutės suma, %"
 
 #: src/language/commands/ctables.c:397
-#, fuzzy
-#| msgid "Unweighted"
 msgid "Unweighted Row Sum %"
-msgstr "Nesverta"
+msgstr "Eilutės suma nesveriant, %"
 
 #: src/language/commands/ctables.c:398
 msgid "Column Sum %"
-msgstr "Stulpelio suma %"
+msgstr "Stulpelio suma, %"
 
 #: src/language/commands/ctables.c:398
-#, fuzzy
-#| msgid "Unweighted Cases"
 msgid "Unweighted Column Sum %"
-msgstr "Nesveriami atvejai"
+msgstr "Stulpelio suma nesveriant, %"
 
 #: src/language/commands/ctables.c:429
 #, c-format
 msgid "Percentile %.2f"
-msgstr "Procentilis %.2f"
+msgstr "Procentilis, %.2f"
 
 #: src/language/commands/ctables.c:430
 #, c-format
 msgid "Unweighted Percentile %.2f"
-msgstr ""
+msgstr "Procentilis nesveriant, %.2f"
 
 #: src/language/commands/ctables.c:894
 #, fuzzy
@@ -7822,7 +7754,7 @@ msgstr "R kvadratas"
 
 #: src/language/commands/regression.c:770
 msgid "Adjusted R Square"
-msgstr "Koreguotas R kvadratas"
+msgstr "Patikslintas R kvadratas"
 
 #: src/language/commands/regression.c:771
 msgid "Std. Error of the Estimate"
@@ -10266,7 +10198,7 @@ msgstr "_Užverti"
 
 #: src/ui/gui/main.c:235
 msgid "_Show tips at startup"
-msgstr "_Paleisdus rodyti patarimus"
+msgstr "_Paleidus rodyti patarimus"
 
 #: src/ui/gui/main.c:411
 msgid "Psppire: Fatal Error"
