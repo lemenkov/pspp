@@ -6,7 +6,7 @@
 # John Darrington <john@darrington.wattle.id.au>, 2007.
 # Jean-Alain Meunier <ja.meunier@gmail.com>, 2012.
 # Stéphane Aulery <lkppo@free.fr>, 2016, 2017, 2019, 2020.
-# Eric Thivant <eric.thivant@wanadoo.fr>, 2016, 2022.
+# Eric Thivant <eric.thivant@wanadoo.fr>, 2016, 2022, 2023.
 #
 msgid ""
 msgstr ""
@@ -26,7 +26,7 @@ msgstr ""
 
 #: gl/clean-temp.c:234
 msgid "cannot find a temporary directory, try setting $TMPDIR"
-msgstr "Impossible de trouver un répertoire temporaire, essayez de définir $TMPDIR"
+msgstr "impossible de trouver un répertoire temporaire, essayez de définir $TMPDIR"
 
 #: gl/clean-temp.c:249
 #, c-format
@@ -80,7 +80,7 @@ msgstr "%s:  option invalide-- '%c'\n"
 #: gl/getopt.c:636 gl/getopt.c:682
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr ""
+msgstr "%s: option nécessite un arguement --'%c'\n"
 
 #: gl/version-etc.c:73
 #, c-format
@@ -162,6 +162,8 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, and %s.\n"
 msgstr ""
+"Écrit par %s, %s, %s,\n"
+"%s, %s, et %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
@@ -172,6 +174,8 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, and %s.\n"
 msgstr ""
+"Écrit par %s, %s, %s,\n"
+"%s, %s, %s, et %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
@@ -183,6 +187,9 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "and %s.\n"
 msgstr ""
+"Écrit par %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"et %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
@@ -194,6 +201,9 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "%s, and %s.\n"
 msgstr ""
+"Écrit par %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s, et %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
@@ -205,6 +215,9 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "%s, %s, and others.\n"
 msgstr ""
+"Écrit par %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s, %s et autres.\n"
 
 #. TRANSLATORS: The placeholder indicates the bug-reporting address
 #. for this package.  Please add _another line_ saying
@@ -252,11 +265,11 @@ msgstr "Expression régulière invalide"
 
 #: gl/regcomp.c:131
 msgid "Invalid collation character"
-msgstr ""
+msgstr "caractère collecté invalide"
 
 #: gl/regcomp.c:134
 msgid "Invalid character class name"
-msgstr ""
+msgstr "Nom de classe invalide"
 
 #: gl/regcomp.c:137
 msgid "Trailing backslash"
@@ -284,7 +297,7 @@ msgstr "Syntaxe numérique invalide."
 
 #: gl/regcomp.c:155
 msgid "Invalid range end"
-msgstr ""
+msgstr "fin de chaîne invalide"
 
 #: gl/regcomp.c:158
 msgid "Memory exhausted"
@@ -292,15 +305,15 @@ msgstr "Mémoire épuisée"
 
 #: gl/regcomp.c:161
 msgid "Invalid preceding regular expression"
-msgstr ""
+msgstr "expression régulière précédente invalide"
 
 #: gl/regcomp.c:164
 msgid "Premature end of regular expression"
-msgstr ""
+msgstr "fin prématuré de l'expression régulière"
 
 #: gl/regcomp.c:167
 msgid "Regular expression too big"
-msgstr ""
+msgstr "expression régulière trop longue"
 
 #: gl/regcomp.c:170
 #, fuzzy
@@ -348,12 +361,12 @@ msgstr ""
 #: src/data/calendar.c:133 src/language/expressions/helpers.c:53
 #, c-format
 msgid "Month %d is not in the acceptable range of 0 to 13."
-msgstr ""
+msgstr "La valeur pour le mois %d doit être comprise entre 0 et 13."
 
 #: src/data/calendar.c:136 src/language/expressions/helpers.c:56
 #, c-format
 msgid "Day %d is not in the acceptable range of 0 to 31."
-msgstr ""
+msgstr "La valeur du jour %d doit être comprise entre 0 et 31."
 
 #: src/data/casereader-filter.c:221
 #, fuzzy
@@ -580,29 +593,29 @@ msgstr "Le format %s peut ne pas être utilisé pour la saisie des données."
 #: src/data/format.c:370
 #, c-format
 msgid "Input format %s specifies width %d, but %s requires an even width."
-msgstr ""
+msgstr "Le format d’entrée %s spécifie la largeur %d, mais %s nécessite une largeur uniforme."
 
 #: src/data/format.c:373
 #, c-format
 msgid "Output format %s specifies width %d, but %s requires an even width."
-msgstr ""
+msgstr "Le format de sortie %s spécifie la largeur %d, mais %s nécessite une largeur uniforme."
 
 #: src/data/format.c:382
 #, c-format
 msgid "Input format %s specifies width %d, but %s requires a width between %d and %d."
-msgstr ""
+msgstr "Le format d’entrée %s spécifie la largeur %d, mais %s nécessite une largeur comprise entre %d et %d."
 
 #: src/data/format.c:385
 #, c-format
 msgid "Output format %s specifies width %d, but %s requires a width between %d and %d."
-msgstr ""
+msgstr "Le format de sortie %s spécifie la largeur %d, mais %s nécessite une largeur comprise entre %d et %d."
 
 #: src/data/format.c:393
 #, c-format
 msgid "Input format %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "Input format %s specifies %d decimal places, but %s does not allow any decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format d’entrée %s spécifie %d décimale, mais %s n’autorise aucune décimale."
+msgstr[1] "Le format d’entrée %s spécifie %d décimales, mais %s n’autorise aucune décimale."
 
 #: src/data/format.c:401
 #, c-format
