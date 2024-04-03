@@ -1,16 +1,16 @@
 # Dutch translation for pspp.
 # Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
 # This file is distributed under the same licence as the PSPP package.
-# filename: pspp-2.0.0-pre3.nl.po
+# filename: pspp-2.0.1.nl.po
 # Harry Thijssen <pspp4windows@gmail.com>, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017.
-# Jaap Verhage <pspp.vertaler@gmail.com>, 2017-2023.
+# Jaap Verhage <pspp.vertaler@gmail.com>, 2017-2024.
 # Weet je een betere vertaling dan de huidige of een vertaling voor een nog niet vertaalde ingang, mail die dan naar Jaap alsjeblieft.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-2.0.0-pre3\n"
+"Project-Id-Version: pspp-2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2023-11-02 14:21-0700\n"
-"PO-Revision-Date: 2023-11-05 20:39+0100\n"
+"POT-Creation-Date: 2024-03-21 16:29-0700\n"
+"PO-Revision-Date: 2024-04-03 16:33+0200\n"
 "Last-Translator: Jaap Verhage <pspp.vertaler@gmail.com>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -19,29 +19,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.4.1\n"
+"X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Bookmarks: 1370,515,1014,-1,-1,-1,-1,-1,-1,-1\n"
 
-#: gl/clean-temp.c:235
+#: gl/clean-temp.c:234
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "kan geen tijdelijke directory vinden, probeer $TMPDIR in te stellen"
 
-#: gl/clean-temp.c:250
+#: gl/clean-temp.c:249
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "kan geen tijdelijke directory aanmaken met gebruik van sjabloon \"%s\""
 
-#: gl/clean-temp.c:371
+#: gl/clean-temp.c:370
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "kan tijdelijke directory %s niet verwijderen"
 
-#: gl/clean-temp-simple.c:297
+#: gl/clean-temp-simple.c:296
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "kan tijdelijk bestand %s niet verwijderen"
 
-#: gl/error.c:195
+#: gl/error.c:194
 msgid "Unknown system error"
 msgstr "Onbekende systeemfout"
 
@@ -247,7 +247,7 @@ msgstr "Algemene hulp voor het gebruik van GNU-software: <%s>\n"
 msgid "memory exhausted"
 msgstr "onvoldoende geheugen"
 
-#: gl/xbinary-io.c:37
+#: gl/xbinary-io.c:36
 msgid "failed to set file descriptor text/binary mode"
 msgstr "maken van bestandsbeschrijvingstekst/instellen binaire mode mislukt"
 
@@ -528,7 +528,7 @@ msgid "scratch"
 msgstr "klad"
 
 #. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
-#: src/data/dictionary.c:1482
+#: src/data/dictionary.c:1463
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Documentregel wordt afgekapt tot %d bytes."
@@ -2625,7 +2625,7 @@ msgstr "%s mag binnen subopdracht %s slechts éénmaal worden gespecificeerd."
 msgid "Required %s specification missing from %s subcommand."
 msgstr "Vereiste %s-specificatie ontbreekt op %s-subopdracht."
 
-#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:210
+#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
 msgid "Syntax error expecting end of command."
 msgstr "Syntaxfout: verwacht werd einde van opdracht."
@@ -3420,36 +3420,40 @@ msgstr "Variabele %s is %s in doelbestand, maar %s in bronbestand."
 msgid "No matching variables found between the source and target files."
 msgstr "Geen overeenkomende variabelen gevonden tussen bron- en doelbestanden."
 
-#: src/language/commands/autorecode.c:156
+#: src/language/commands/autorecode.c:157
 #, c-format
 msgid "Source variable count (%zu) does not match target variable count (%zu)."
 msgstr "Telling van bronvariabelen (%zu) komt niet overeen met telling van doelvariabelen (%zu)."
 
-#: src/language/commands/autorecode.c:168
+#: src/language/commands/autorecode.c:169
 #, c-format
 msgid "Target variable %s duplicates existing variable %s."
 msgstr "Doelvariabele %s dupliceert bestaande variabele %s."
 
-#: src/language/commands/autorecode.c:225
+#: src/language/commands/autorecode.c:226
 #, c-format
 msgid "With GROUP, variables may not mix string variables (such as %s) and numeric variables (such as %s)."
 msgstr "Binnen GROUP mogen alfanumerieke (zoals %s) en numerieke variabelen (zoals %s) niet worden gemengd."
 
-#: src/language/commands/autorecode.c:368
+#: src/language/commands/autorecode.c:243
+msgid "AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent."
+msgstr "AUTORECODE negeert TEMPORARY.  Tijdelijke transformaties zullen blijvend worden gemaakt."
+
+#: src/language/commands/autorecode.c:380
 msgid "Recoding grouped variables."
 msgstr "Gegroepeerde variabelen worden gehercodeerd."
 
-#: src/language/commands/autorecode.c:370
+#: src/language/commands/autorecode.c:382
 #, c-format
 msgid "Recoding %s into %s (%s)."
 msgstr "%s wordt gehercodeerd naar %s (%s)."
 
-#: src/language/commands/autorecode.c:374
+#: src/language/commands/autorecode.c:386
 #, c-format
 msgid "Recoding %s into %s."
 msgstr "%s wordt gehercodeerd naar %s."
 
-#: src/language/commands/autorecode.c:380
+#: src/language/commands/autorecode.c:392
 #: src/language/commands/data-parser.c:726
 #: src/language/commands/data-parser.c:772 src/language/commands/mrsets.c:571
 #: src/language/commands/print.c:450 src/language/commands/sys-file-info.c:430
@@ -3459,15 +3463,15 @@ msgstr "%s wordt gehercodeerd naar %s."
 msgid "Attributes"
 msgstr "Eigenschappen"
 
-#: src/language/commands/autorecode.c:381 src/ui/gui/recode.ui:207
+#: src/language/commands/autorecode.c:393 src/ui/gui/recode.ui:207
 msgid "New Value"
 msgstr "Nieuwe waarde"
 
-#: src/language/commands/autorecode.c:381
+#: src/language/commands/autorecode.c:393
 msgid "Value Label"
 msgstr "Waardelabel"
 
-#: src/language/commands/autorecode.c:384
+#: src/language/commands/autorecode.c:396
 msgid "Old Value"
 msgstr "Oude waarde"
 
@@ -3659,7 +3663,7 @@ msgstr "Waarde"
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
 #: src/language/commands/sys-file-info.c:472
-#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:668
+#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:674
 #: src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Variabele"
@@ -3987,7 +3991,7 @@ msgstr "Associatie van lineair met lineair"
 
 #: src/language/commands/crosstabs.c:1432
 #: src/language/commands/crosstabs.c:1477
-#: src/language/commands/crosstabs.c:1999
+#: src/language/commands/crosstabs.c:1997
 msgid "N of Valid Cases"
 msgstr "N van geldige observaties"
 
@@ -4142,12 +4146,12 @@ msgstr "Nominaal met interval"
 msgid "Eta"
 msgstr "Eta"
 
-#: src/language/commands/crosstabs.c:1971
+#: src/language/commands/crosstabs.c:1969
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "'Odds ratio' voor %s"
 
-#: src/language/commands/crosstabs.c:1980
+#: src/language/commands/crosstabs.c:1978
 #, c-format
 msgid "For cohort %s = "
 msgstr "Voor cohort %s = "
@@ -4670,123 +4674,123 @@ msgstr "Kolommen"
 msgid "Layers"
 msgstr "Lagen"
 
-#: src/language/commands/ctables.c:4970
+#: src/language/commands/ctables.c:4978
 msgid "Category labels may not be moved to another axis when sorting by a summary function."
 msgstr "Categorie-labels mogen bij het sorteren volgens een samenvattende functie niet naar een andere as worden verplaatst."
 
-#: src/language/commands/ctables.c:4973 src/language/commands/ctables.c:4990
-#: src/language/commands/ctables.c:5011 src/language/commands/ctables.c:5023
-#: src/language/commands/ctables.c:5034
+#: src/language/commands/ctables.c:4981 src/language/commands/ctables.c:4998
+#: src/language/commands/ctables.c:5019 src/language/commands/ctables.c:5031
+#: src/language/commands/ctables.c:5042
 msgid "This syntax moves category labels to another axis."
 msgstr "Deze syntax verplaatst categorie-labels naar een andere as."
 
-#: src/language/commands/ctables.c:4975
+#: src/language/commands/ctables.c:4983
 msgid "This syntax requests sorting by a summary function."
 msgstr "Deze syntax verzoekt om sortering volgens een samenvattende functie."
 
-#: src/language/commands/ctables.c:4986
+#: src/language/commands/ctables.c:4994
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must be categorical, but %s is scale."
 msgstr "Om categorie-labels te kunnen verplaatsen naar een andere as, moeten de betreffende variabelen categorisch zijn, maar %s is een schaalvariabele."
 
-#: src/language/commands/ctables.c:5004
+#: src/language/commands/ctables.c:5012
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same width, but %s has width %d and %s has width %d."
 msgstr "Om categorie-labels te kunnen verplaatsen naar een andere as, moeten de betreffende variabelen alle van dezelfde breedte zijn, maar %s heeft breedte %d en %s heeft breedte %d."
 
-#: src/language/commands/ctables.c:5017
+#: src/language/commands/ctables.c:5025
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same value labels, but %s and %s have different value labels."
 msgstr "Om categorie-labels te kunnen verplaatsen naar een andere as, moeten de betreffende variabelen dezelfde waardelabels hebben, maar %s en %s hebben verschillende waardelabels."
 
-#: src/language/commands/ctables.c:5028
+#: src/language/commands/ctables.c:5036
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same category specifications, but %s and %s have different category specifications."
 msgstr "Om categorie-labels te kunnen verplaatsen naar een andere as, moeten de betreffende variabelen alle dezelfde categoriespecificaties hebben, maar %s en %s hebben verschillende categoriespecificaties."
 
-#: src/language/commands/ctables.c:5762
+#: src/language/commands/ctables.c:5770
 #, c-format
 msgid "New definition of &%s will override the previous definition."
 msgstr "De nieuwe definitie van &%s zal de vorige definitie vervangen."
 
-#: src/language/commands/ctables.c:5765
+#: src/language/commands/ctables.c:5773
 msgid "This is the previous definition."
 msgstr "Dit is de vorige definitie."
 
-#: src/language/commands/ctables.c:5855
+#: src/language/commands/ctables.c:5863
 #, c-format
 msgid "Unknown computed category &%s."
 msgstr "Onbekende berekende categorie &%s."
 
-#: src/language/commands/ctables.c:6144
+#: src/language/commands/ctables.c:6152
 msgid "MINCOLWIDTH must not be greater than MAXCOLWIDTH."
 msgstr "MINCOLWIDTH mag niet groter zijn dan MAXCOLWIDTH."
 
-#: src/language/commands/ctables.c:6266
+#: src/language/commands/ctables.c:6274
 msgid "TABLE must appear before this subcommand."
 msgstr "Vóór deze subopdracht moet TABLE staan."
 
-#: src/language/commands/ctables.c:6347
+#: src/language/commands/ctables.c:6355
 msgid "At least one variable must be specified."
 msgstr "Tenminste één variabele moet worden opgegeven."
 
-#: src/language/commands/ctables.c:6361
+#: src/language/commands/ctables.c:6369
 msgid "Scale variables may appear only on one axis."
 msgstr "Schaalvariabelen mogen op slechts één as verschijnen."
 
-#: src/language/commands/ctables.c:6364
+#: src/language/commands/ctables.c:6372
 msgid "This scale variable appears on the rows axis."
 msgstr "Deze schaalvariabele staat op de rij-as."
 
-#: src/language/commands/ctables.c:6367
+#: src/language/commands/ctables.c:6375
 msgid "This scale variable appears on the columns axis."
 msgstr "Deze schaalvariabele staat op de kolom-as."
 
-#: src/language/commands/ctables.c:6370
+#: src/language/commands/ctables.c:6378
 msgid "This scale variable appears on the layer axis."
 msgstr "Deze variabele staat op de laag-as."
 
-#: src/language/commands/ctables.c:6386
+#: src/language/commands/ctables.c:6394
 msgid "Summaries may appear only on one axis."
 msgstr "Samenvattingen mogen op slechts één as staan."
 
-#: src/language/commands/ctables.c:6392
+#: src/language/commands/ctables.c:6400
 msgid "This variable on the rows axis has a summary."
 msgstr "Deze variabele op de rij-as heeft een samenvatting."
 
-#: src/language/commands/ctables.c:6394
+#: src/language/commands/ctables.c:6402
 msgid "This variable on the columns axis has a summary."
 msgstr "Deze variabele op de kolom-as heeft een samenvatting."
 
-#: src/language/commands/ctables.c:6395
+#: src/language/commands/ctables.c:6403
 msgid "This variable on the layers axis has a summary."
 msgstr "Deze variabele op de laag-as heeft een samenvatting."
 
-#: src/language/commands/ctables.c:6398
+#: src/language/commands/ctables.c:6406
 msgid "This is a scale variable, so it always has a summary even if the syntax does not explicitly specify one."
 msgstr "Dit is een schaal-variabele; die heeft altijd een samenvatting, ook als de syntax die niet expliciet specificeert."
 
-#: src/language/commands/ctables.c:6499
+#: src/language/commands/ctables.c:6507
 msgid "ROWLABELS and COLLABELS may not both be specified."
 msgstr "ROWLABELS en COLLABELS mogen niet beide worden opgegeven."
 
-#: src/language/commands/ctables.c:6504
+#: src/language/commands/ctables.c:6512
 msgid "This is the first specification."
 msgstr "Dit is de eerste specificatie."
 
-#: src/language/commands/ctables.c:6506
+#: src/language/commands/ctables.c:6514
 msgid "This is the second specification."
 msgstr "Dit is de tweede specificatie."
 
-#: src/language/commands/ctables.c:6624
+#: src/language/commands/ctables.c:6632
 msgid "Support for SIGTEST not yet implemented."
 msgstr "Ondersteuning voor SIGTEST is nog niet geïmplementeerd."
 
-#: src/language/commands/ctables.c:6771
+#: src/language/commands/ctables.c:6779
 msgid "Support for COMPARETEST not yet implemented."
 msgstr "Ondersteuning voor COMPARETEST is nog niet geïmplementeerd."
 
-#: src/language/commands/ctables.c:6788
+#: src/language/commands/ctables.c:6796
 msgid "This subcommand must appear before TABLE."
 msgstr "Deze subopdracht moet staan vóór TABLE."
 
@@ -7769,16 +7773,16 @@ msgstr "Syntaxfout: verwacht werd END REPEAT."
 msgid "Expansion %zu of %zu"
 msgstr "Expansie %zu van %zu"
 
-#: src/language/commands/repeat.c:358
+#: src/language/commands/repeat.c:359
 msgid "Ranges may only have integer bounds."
 msgstr "Bereiken mogen alleen grenzen van gehele getallen hebben."
 
-#: src/language/commands/repeat.c:373
+#: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "%ld TO %ld is een ongeldig bereik."
 
-#: src/language/commands/repeat.c:421
+#: src/language/commands/repeat.c:422
 #, c-format
 msgid "No matching %s."
 msgstr "Geen overeenkomende %s."
@@ -9637,31 +9641,31 @@ msgstr "Var"
 msgid "Var%04d"
 msgstr "Var%04d"
 
-#: src/ui/gui/psppire-dictview.c:630
+#: src/ui/gui/psppire-dictview.c:636
 msgid "Variable Details"
 msgstr "Variabele-details"
 
-#: src/ui/gui/psppire-dictview.c:705
+#: src/ui/gui/psppire-dictview.c:711
 msgid "Prefer variable labels"
 msgstr "Voorkeur voor variabelelabels"
 
-#: src/ui/gui/psppire-dictview.c:719
+#: src/ui/gui/psppire-dictview.c:725
 msgid "Default sort order"
 msgstr "Standaard-sorteervolgorde"
 
-#: src/ui/gui/psppire-dictview.c:725
+#: src/ui/gui/psppire-dictview.c:731
 msgid "Unsorted (dictionary order)"
 msgstr "Ongesorteerd (woordenboekvolgorde)"
 
-#: src/ui/gui/psppire-dictview.c:730
+#: src/ui/gui/psppire-dictview.c:736
 msgid "Sort by name"
 msgstr "Sorteer op naam"
 
-#: src/ui/gui/psppire-dictview.c:735
+#: src/ui/gui/psppire-dictview.c:741
 msgid "Sort by label"
 msgstr "Sorteer op label"
 
-#: src/ui/gui/psppire-dictview.c:743
+#: src/ui/gui/psppire-dictview.c:749
 msgid "Variable Information"
 msgstr "Variabele-informatie"
 
@@ -9990,6 +9994,10 @@ msgstr "_Volgende tip"
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "_Sluiten"
+
+#: src/ui/gui/main.c:235
+msgid "_Show tips at startup"
+msgstr "_Toon tips bij opstarten"
 
 #: src/ui/gui/main.c:411
 msgid "Psppire: Fatal Error"
@@ -12688,15 +12696,19 @@ msgstr "Overzetbaar; werkt op veel verschillende computers en onder veel verschi
 msgid "PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data."
 msgstr "PSPP is vooral bedoeld voor statistici, sociaal wetenschappers en studenten die behoefte hebben aan snelle, toegankelijke analyse van steekproefgegevens."
 
-#: doc/org.gnu.pspp.metainfo.xml.in:42
+#: doc/org.gnu.pspp.metainfo.xml.in:32
+msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+msgstr "Het “Flatpak” voor PSPP bevat de grafische en de opdrachtregel-interface. Geef de volgende opdracht om te werken met de opdrachtregelinterface: <code>flatpak run -- command=pspp org.gnu.pspp</code>."
+
+#: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
 msgstr "GNU PSPP variabelenweergave"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:51
+#: doc/org.gnu.pspp.metainfo.xml.in:52
 msgid "statistics"
 msgstr "statistische maten"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:55
+#: doc/org.gnu.pspp.metainfo.xml.in:56
 msgid "Free Software Foundation"
 msgstr "Free Software Foundation"
 
