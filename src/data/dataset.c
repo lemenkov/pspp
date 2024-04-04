@@ -787,6 +787,7 @@ proc_cancel_temporary_transformations (struct dataset *ds)
       dict_unref (ds->dict);
       ds->dict = ds->permanent_dict;
       ds->permanent_dict = NULL;
+      ds->temporary = false;
 
       dataset_transformations_changed__ (ds, ds->permanent_trns_chain.n != 0);
       return true;
@@ -802,9 +803,9 @@ proc_cancel_all_transformations (struct dataset *ds)
 {
   bool ok;
   assert (ds->proc_state == PROC_COMMITTED);
+  proc_cancel_temporary_transformations (ds);
   ok = trns_chain_clear (&ds->permanent_trns_chain);
   ok = trns_chain_clear (&ds->temporary_trns_chain) && ok;
-  ds->temporary = false;
   for (size_t i = 0; i < ds->n_stack; i++)
     ok = trns_chain_uninit (&ds->stack[i]) && ok;
   ds->n_stack = 0;
