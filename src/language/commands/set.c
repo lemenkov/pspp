@@ -1491,14 +1491,14 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
                 }
               }
           lex_error (lexer, _("Syntax error expecting the name of a setting."));
-          return CMD_FAILURE;
+          goto error;
 
         found: ;
         }
       else
         {
           lex_error (lexer, _("Syntax error expecting the name of a setting."));
-          return CMD_FAILURE;
+          goto error;
         }
 
       lex_match (lexer, T_SLASH);
@@ -1509,6 +1509,10 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
     pivot_table_submit (pt);
 
   return CMD_SUCCESS;
+
+error:
+  pivot_table_unref (pt);
+  return CMD_FAILURE;
 }
 
 #define MAX_SAVED_SETTINGS 5
