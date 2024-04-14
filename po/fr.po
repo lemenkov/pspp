@@ -6,14 +6,14 @@
 # John Darrington <john@darrington.wattle.id.au>, 2007.
 # Jean-Alain Meunier <ja.meunier@gmail.com>, 2012.
 # Stéphane Aulery <lkppo@free.fr>, 2016, 2017, 2019, 2020.
-# Eric Thivant <eric.thivant@wanadoo.fr>, 2016, 2022, 2023.
+# Eric Thivant <eric.thivant@wanadoo.fr>, 2016, 2022-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: pspp 2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2024-03-21 16:29-0700\n"
-"PO-Revision-Date: 2024-03-27 17:19+0100\n"
+"PO-Revision-Date: 2024-04-13 20:29+0200\n"
 "Last-Translator: Eric Thivant <eric.thivant@wanadoo.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr_FR\n"
@@ -31,7 +31,7 @@ msgstr "impossible de trouver un répertoire temporaire, essayez de définir $TM
 #: gl/clean-temp.c:249
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
-msgstr "Impossible de créer un répertoire temporaire à l’aide du modèle « %s »"
+msgstr "impossible de créer un répertoire temporaire à l’aide du modèle \" %s \""
 
 #: gl/clean-temp.c:370
 #, c-format
@@ -41,7 +41,7 @@ msgstr "impossible de créer un fichier temporaire pour %s"
 #: gl/clean-temp-simple.c:296
 #, c-format
 msgid "cannot remove temporary file %s"
-msgstr "Impossible de supprimer le répertoire temporaire  %s"
+msgstr "impossible de supprimer le répertoire temporaire  %s"
 
 #: gl/error.c:194
 msgid "Unknown system error"
@@ -249,7 +249,7 @@ msgstr "mémoire épuisée"
 
 #: gl/xbinary-io.c:36
 msgid "failed to set file descriptor text/binary mode"
-msgstr "Impossible de définir le descripteur de fichier en mode texte/binaire"
+msgstr "impossible de définir le descripteur de fichier en mode texte/binaire"
 
 #: gl/regcomp.c:122
 msgid "Success"
@@ -265,7 +265,7 @@ msgstr "Expression régulière invalide"
 
 #: gl/regcomp.c:131
 msgid "Invalid collation character"
-msgstr "caractère collecté invalide"
+msgstr "Caractère collecté invalide"
 
 #: gl/regcomp.c:134
 msgid "Invalid character class name"
@@ -297,7 +297,7 @@ msgstr "Syntaxe numérique invalide."
 
 #: gl/regcomp.c:155
 msgid "Invalid range end"
-msgstr "fin de chaîne invalide"
+msgstr "Fin de chaîne invalide"
 
 #: gl/regcomp.c:158
 msgid "Memory exhausted"
@@ -305,15 +305,15 @@ msgstr "Mémoire épuisée"
 
 #: gl/regcomp.c:161
 msgid "Invalid preceding regular expression"
-msgstr "expression régulière précédente invalide"
+msgstr "Expression régulière précédente invalide"
 
 #: gl/regcomp.c:164
 msgid "Premature end of regular expression"
-msgstr "fin prématuré de l'expression régulière"
+msgstr "Fn prématuré de l'expression régulière"
 
 #: gl/regcomp.c:167
 msgid "Regular expression too big"
-msgstr "expression régulière trop longue"
+msgstr "Expression régulière trop longue"
 
 #: gl/regcomp.c:170
 #, fuzzy
@@ -621,66 +621,66 @@ msgstr[1] "Le format d’entrée %s spécifie %d décimales, mais %s n’autoris
 #, c-format
 msgid "Output format %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "Output format %s specifies %d decimal places, but %s does not allow any decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format de sortie %s spécifie %d décimale, mais %s n’autorise aucune décimale."
+msgstr[1] "Le format de sortie %s spécifie %d décimales, mais %s n’autorise aucune décimale."
 
 #: src/data/format.c:412
 #, c-format
 msgid "Input format %s specifies %d decimal place, but width %d allows at most %d decimals."
 msgid_plural "Input format %s specifies %d decimal places, but width %d allows at most %d decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format d’entrée %s spécifie %d décimale, mais la largeur de %d permet au maximum %d décimales."
+msgstr[1] "Le format d’entrée %s spécifie %d décimales, mais la largeur de %d permet au maximum %d décimales."
 
 #: src/data/format.c:419
 #, c-format
 msgid "Output format %s specifies %d decimal place, but width %d allows at most %d decimals."
 msgid_plural "Output format %s specifies %d decimal places, but width %d allows at most %d decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format de sortie %s spécifie %d décimale, mais la largeur de %d permet au maximum %d décimales."
+msgstr[1] "Le format de sortie %s spécifie %d décimales, mais la largeur de %d permet au maximum %d décimales."
 
 #: src/data/format.c:428
 #, c-format
 msgid "Input format %s specifies %d decimal place, but width %d does not allow for any decimals."
 msgid_plural "Input format %s specifies %d decimal places, but width %d does not allow for any decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format d’entrée %s spécifie %d décimale, mais la largeur de %d n’autorise aucune décimale."
+msgstr[1] "Format d’entrée %s spécifie %d décimales, mais la largeur de %d n’autorise aucune décimale."
 
 #: src/data/format.c:435
 #, c-format
 msgid "Output format %s specifies %d decimal place, but width %d does not allow for any decimals."
 msgid_plural "Output format %s specifies %d decimal places, but width %d does not allow for any decimals."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Le format de sortie %s spécifie %d décimale, mais la largeur de %d n’autorise aucune décimale."
+msgstr[1] "Le format de sortie %s spécifie %d décimales, mais la largeur de %d n’autorise aucune décimale."
 
 #: src/data/format.c:507
 #, c-format
 msgid "String variable %s is not compatible with numeric format %s."
-msgstr ""
+msgstr "La variable chaîne avec la largeur %s n’est pas compatible avec le format numérique  %s."
 
 #: src/data/format.c:510
 #, c-format
 msgid "String variables are not compatible with numeric format %s."
-msgstr ""
+msgstr "Les variables de chaînes ne sont pas compatibles avec le format numérique %s."
 
 #: src/data/format.c:516
 #, c-format
 msgid "Numeric variable %s is not compatible with string format %s."
-msgstr ""
+msgstr "La variable numérique %s n'est pas compatible avec le format de chaîne  %s."
 
 #: src/data/format.c:519
 #, c-format
 msgid "Numeric variables are not compatible with string format %s."
-msgstr ""
+msgstr "Les variables numériques ne sont pas compatibles avec le format de chaîne %s."
 
 #: src/data/format.c:559
 #, c-format
 msgid "String variable %s with width %d is not compatible with format %s.  Use format %s instead."
-msgstr ""
+msgstr "La variable chaîne  %s avec une largeur %d n’est pas compatible avec le format %s. il faut utiliserle format %s à la place."
 
 #: src/data/format.c:564
 #, c-format
 msgid "String variable with width %d is not compatible with format %s.  Use format %s instead."
-msgstr ""
+msgstr "La variable chaîne avec la largeur %d n’est pas compatible avec le format %s. il faut utiliser le format %s à la place."
 
 #: src/data/format.c:1159 src/language/command.def:101
 #: src/ui/gui/var-type-dialog.ui:48
@@ -745,32 +745,32 @@ msgstr "Le fichier gnumeric « %s » est codé en %s au lieu de l’habituel e
 #: src/data/identifier2.c:73
 #, c-format
 msgid "Identifier `%s' is not valid in encoding `%s' used for this dictionary."
-msgstr ""
+msgstr "L'identifiant `%s' n’est pas une syntaxe valide pour utiliser `%s' dans ce dictionnaire."
 
 #: src/data/identifier2.c:88
 #, c-format
 msgid "`%s' is not valid here because this identifier must start with `$'."
-msgstr ""
+msgstr "`%s'  n'est pas valide ici car l'identifiant doit commencer avec  `$'."
 
 #: src/data/identifier2.c:92
 #, c-format
 msgid "`%s' is not valid here because this identifier must start with `#'."
-msgstr ""
+msgstr "`%s' is not valid here because this identifier must start with `#'."
 
 #: src/data/identifier2.c:96
 #, c-format
 msgid "`%s' is not valid here because this identifier must start with `$' or `#'."
-msgstr ""
+msgstr "`%s' n'est pas valide ici car cet identifiant doit commencer par `$' ou `#'."
 
 #: src/data/identifier2.c:107
 #, c-format
 msgid "`%s' and other identifiers starting with `$' are not valid here."
-msgstr ""
+msgstr "`%s' et les autres identifiants débutant avec `$'  ne sont pas valides  ici."
 
 #: src/data/identifier2.c:111
 #, c-format
 msgid "`%s' and other identifiers starting with `#' are not valid here."
-msgstr ""
+msgstr "`%s' et les autres identifiants débutant avec `#'  ne sont pas valides  ici."
 
 #: src/data/identifier2.c:117
 #, fuzzy, c-format
@@ -866,7 +866,7 @@ msgstr "Impossible d&#39;ouvrir%s en tant que fichier OpenDocument:%s"
 #: src/data/ods-reader.c:1073
 #, c-format
 msgid "%s is not an OpenDocument file."
-msgstr ""
+msgstr "%s n'est pas un fichier OpenDocument."
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -1100,9 +1100,8 @@ msgid "Error closing portable file `%s': %s."
 msgstr "Erreur de fermeture du fichier portable « %s » : %s."
 
 #: src/data/por-file-reader.c:218
-#, fuzzy
 msgid "Unexpected end of file"
-msgstr "Fin inattendue du fichier."
+msgstr "Fin inattendue de fichier"
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -1479,7 +1478,7 @@ msgid "Unexpected label source value following `E' at offset %zu in MRSETS recor
 msgstr "Étiquette inattendue de la valeur source suivante « E » au segment %zu dans l’enregistrement MRSETS."
 
 #: src/data/sys-file-reader.c:1742
-#, fuzzy, c-format
+#, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Lettres « C », « D » ou « E » manquantes au segment %zu dans l’enregistrement MRSETS."
 
@@ -2037,9 +2036,8 @@ msgid "Error removing `%s': %s."
 msgstr "Erreur d’effacement de « %s » : %s."
 
 #: src/language/command.def:18
-#, fuzzy
 msgid "Close File Handle"
-msgstr "L'identifiant de fichier %s est déjà défini. Utiliser CLOSE FILE HANDLE avant de redéfinir un identifiant de fichier."
+msgstr "Utiliser CLOSE FILE HANDLE avant de redéfinir un identifiant de fichier"
 
 #: src/language/command.def:19
 msgid "Cache"
@@ -2055,11 +2053,11 @@ msgstr "Définir"
 
 #: src/language/command.def:22
 msgid "Display Macros"
-msgstr ""
+msgstr "Afficher les Macros"
 
 #: src/language/command.def:23
 msgid "Do Repeat"
-msgstr ""
+msgstr "Répéter"
 
 #: src/language/command.def:24
 msgid "End Repeat"
@@ -2079,7 +2077,7 @@ msgstr "Quitter"
 
 #: src/language/command.def:28
 msgid "File Handle"
-msgstr "Handle de fichier"
+msgstr "Manipuler les fichiers"
 
 #: src/language/command.def:30
 msgid "Finish"
@@ -2140,7 +2138,7 @@ msgstr "Nouveau fichier"
 
 #: src/language/command.def:39
 msgid "Output Modify"
-msgstr ""
+msgstr "Modifier sortie"
 
 #: src/language/command.def:40
 msgid "Permissions"
@@ -2171,9 +2169,8 @@ msgid "Subtitle"
 msgstr "Sous-titre"
 
 #: src/language/command.def:48
-#, fuzzy
 msgid "Sysfile Info"
-msgstr "Utilisation de l’encodage par défaut %s pour lire ce fichier système SPSS/PC+. Pour obtenir de meilleurs résultats, spécifiez un codage explicitement. Utilisez SYSFILE INFO avec ENCODING=\"DETECT\" pour analyser les encodages possibles."
+msgstr "Utilisez SYSFILE INFO avec ENCODING=\"DETECT\" pour analyser les encodages possibles."
 
 #: src/language/command.def:49 src/output/output-item.c:737
 msgid "Title"
@@ -2200,18 +2197,16 @@ msgid "Import"
 msgstr "Importer"
 
 #: src/language/command.def:58
-#, fuzzy
 msgid "Input Program"
-msgstr "Le programme en entrée doit contenir %s ou %s."
+msgstr "Le programme en entrée doit contenir %s ou %s"
 
 #: src/language/command.def:59
 msgid "Match Files"
 msgstr "Correspondre les fichiers"
 
 #: src/language/command.def:60
-#, fuzzy
 msgid "Matrix Data"
-msgstr "Les données matricielles peuvent ne pas contenir de valeur manquante."
+msgstr "Les données matricielles peuvent ne pas contenir de valeur manquante"
 
 #: src/language/command.def:61
 msgid "Update"
@@ -2219,31 +2214,31 @@ msgstr "Mettre à jour"
 
 #: src/language/command.def:62
 msgid "Dataset Activate"
-msgstr ""
+msgstr "Activer le jeu de données"
 
 #: src/language/command.def:63
 msgid "Dataset Declare"
-msgstr ""
+msgstr "Déclarer le jeu de données"
 
 #: src/language/command.def:64
 msgid "Dataset Close"
-msgstr ""
+msgstr "Fermer le jeu de données"
 
 #: src/language/command.def:65
 msgid "Dataset Copy"
-msgstr ""
+msgstr "Copier le jeu de données"
 
 #: src/language/command.def:66
 msgid "Dataset Name"
-msgstr ""
+msgstr "Nommer le jeu de données"
 
 #: src/language/command.def:67
 msgid "Dataset Display"
-msgstr ""
+msgstr "Afficher le jeu de données"
 
 #: src/language/command.def:70
 msgid "Add Value Labels"
-msgstr ""
+msgstr "Ajouter les étiquettes de valeur"
 
 #: src/language/command.def:71
 msgid "Add Document"
@@ -2255,7 +2250,7 @@ msgstr ""
 
 #: src/language/command.def:73
 msgid "Datafile Attribute"
-msgstr ""
+msgstr "Attribut du fichier de données"
 
 #: src/language/command.def:74 src/ui/gui/examine.ui:317
 #: src/ui/gui/factor.ui:444 src/ui/gui/histogram.ui:146 src/ui/gui/roc.ui:329
@@ -2264,7 +2259,7 @@ msgstr "Afficher"
 
 #: src/language/command.def:75
 msgid "Display Variable Sets"
-msgstr ""
+msgstr "Afficher les jeux des variables"
 
 #: src/language/command.def:76 src/language/commands/sys-file-info.c:529
 msgid "Document"
@@ -2272,7 +2267,7 @@ msgstr "Document"
 
 #: src/language/command.def:77
 msgid "Drop Documents"
-msgstr ""
+msgstr "Découper les documents"
 
 #: src/language/command.def:78
 msgid "Formats"
@@ -2295,7 +2290,7 @@ msgstr "Ensembles de réponses multiple"
 
 #: src/language/command.def:82
 msgid "Print Formats"
-msgstr ""
+msgstr "Imprimer les formats"
 
 #: src/language/command.def:83 src/ui/gui/split-file.ui:25
 msgid "Split File"
@@ -2309,11 +2304,11 @@ msgstr "Étiquettes de valeur"
 
 #: src/language/command.def:85
 msgid "Variable Alignment"
-msgstr ""
+msgstr "Alignement des variables"
 
 #: src/language/command.def:86
 msgid "Variable Attribute"
-msgstr ""
+msgstr "Attributs des variables"
 
 #: src/language/command.def:87
 #, fuzzy
@@ -2322,11 +2317,11 @@ msgstr "Étiquettes de variable"
 
 #: src/language/command.def:88
 msgid "Variable Level"
-msgstr ""
+msgstr "Niveau des variables"
 
 #: src/language/command.def:89
 msgid "Variable Role"
-msgstr ""
+msgstr "Role des variables"
 
 #: src/language/command.def:90
 msgid "Variable Width"
@@ -2342,21 +2337,19 @@ msgstr "Poids"
 
 #: src/language/command.def:93
 msgid "Write Formats"
-msgstr ""
+msgstr "Ecriture des formats"
 
 #: src/language/command.def:96
 msgid "Break"
 msgstr "Pause"
 
 #: src/language/command.def:97
-#, fuzzy
 msgid "Compute"
-msgstr "_Calculer…"
+msgstr "_Calculer"
 
 #: src/language/command.def:98
-#, fuzzy
 msgid "Do If"
-msgstr "Attendu '=' ou !IN dans la boucle !DO."
+msgstr "Faire Si"
 
 #: src/language/command.def:99
 msgid "If"
@@ -2368,12 +2361,11 @@ msgstr "Boucle"
 
 #: src/language/command.def:102
 msgid "Print Eject"
-msgstr ""
+msgstr "Impression"
 
 #: src/language/command.def:103
-#, fuzzy
 msgid "Print Space"
-msgstr "L'expression dans PRINT SPACE a été évalué  à la valeur système manquante."
+msgstr "Imprimer les espaces L'expression dans PRINT SPACE a été évalué  à la valeur système manquante."
 
 #: src/language/command.def:104
 msgid "Print"
@@ -2390,11 +2382,11 @@ msgstr "Écrire"
 
 #: src/language/command.def:108
 msgid "XExport"
-msgstr ""
+msgstr "XExporter"
 
 #: src/language/command.def:109
 msgid "XSave"
-msgstr ""
+msgstr "XSauver"
 
 #: src/language/command.def:112
 #, fuzzy
@@ -2407,11 +2399,11 @@ msgstr "Aggregate"
 
 #: src/language/command.def:116
 msgid "Autorecode"
-msgstr ""
+msgstr "Autorecoder"
 
 #: src/language/command.def:117
 msgid "Begin Data"
-msgstr ""
+msgstr "Debut des données"
 
 #: src/language/command.def:118 src/language/commands/crosstabs.c:73
 #: src/language/commands/crosstabs.c:939 src/language/commands/ctables.c:330
@@ -2428,7 +2420,7 @@ msgstr "Tableaux Croisés"
 
 #: src/language/command.def:120
 msgid "Ctables"
-msgstr ""
+msgstr "Ctableaux"
 
 #: src/language/command.def:121 src/language/commands/correlations.c:120
 msgid "Correlations"
@@ -2477,7 +2469,7 @@ msgstr "Fréquences"
 
 #: src/language/command.def:131
 msgid "GLM"
-msgstr ""
+msgstr "GLM"
 
 #: src/language/command.def:132
 msgid "Graph"
@@ -2509,7 +2501,7 @@ msgstr ""
 
 #: src/language/command.def:139
 msgid "Quick Cluster"
-msgstr ""
+msgstr "Rapide Cluster"
 
 #: src/language/command.def:140
 msgid "Rank"
@@ -2522,12 +2514,11 @@ msgstr "Régression"
 
 #: src/language/command.def:142
 msgid "Reliability"
-msgstr "Fiabilité "
+msgstr "Fiabilité"
 
 #: src/language/command.def:143
-#, fuzzy
 msgid "Rename Variables"
-msgstr "Impossible de renommer %sen tant que %s car il existe déjà une variable nommée %s. Pour renommer des variables avec des noms redondants, utiliser une simple sous-commande RENAME telle que ’/RENAME (A=B)(B=C)(C=A)’ ou sous une forme équivalente ’/RENAME (A B C=B C A)’."
+msgstr "Impossible de renommer %sen tant que %s car il existe déjà une variable nommée %s. Pour renommer des variables avec des noms redondants, utiliser une simple sous-commande RENAME telle que ’/RENAME (A=B)(B=C)(C=A)’ ou sous une forme équivalente ’/RENAME (A B C=B C A)’"
 
 #: src/language/command.def:144
 #, fuzzy
@@ -2549,11 +2540,11 @@ msgstr "Enregistrer"
 
 #: src/language/command.def:147
 msgid "Save Data Collection"
-msgstr ""
+msgstr "Enregistrer la collection de données"
 
 #: src/language/command.def:148
 msgid "Save Translate"
-msgstr ""
+msgstr "Enregistrer la traduction"
 
 #: src/language/command.def:149 src/ui/gui/sort.ui:25
 msgid "Sort Cases"
@@ -2561,7 +2552,7 @@ msgstr "Tri des observations"
 
 #: src/language/command.def:150
 msgid "Sort Variables"
-msgstr ""
+msgstr "Tris des variables"
 
 #: src/language/command.def:151
 #, fuzzy
@@ -2578,16 +2569,15 @@ msgstr "Utiliser"
 
 #: src/language/command.def:156
 msgid "End Case"
-msgstr ""
+msgstr "Fin du cas"
 
 #: src/language/command.def:157
 msgid "End File"
 msgstr "Fin de fichier (END FILE)"
 
 #: src/language/command.def:158
-#, fuzzy
 msgid "Reread"
-msgstr "REREAD : les nombres des colonnes doivent être positifs. La colonne est fixée à 1."
+msgstr "Relecture : les nombres des colonnes doivent être positifs. La colonne est fixée à 1."
 
 #: src/language/command.def:161
 msgid "Else If"
@@ -2598,165 +2588,164 @@ msgid "Else"
 msgstr "Sinon"
 
 #: src/language/command.def:163
-#, fuzzy
 msgid "End If"
-msgstr "A la _fin"
+msgstr "Fin Si"
 
 #: src/language/command.def:164
 msgid "End Loop"
-msgstr ""
+msgstr "Fin de la boucle"
 
 #: src/language/lexer/lexer.c:566
 #, c-format
 msgid "Syntax error expecting %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s."
 
 #: src/language/lexer/lexer.c:570
 #, c-format
 msgid "Syntax error expecting %s or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s ou %s."
 
 #: src/language/lexer/lexer.c:575
 #, c-format
 msgid "Syntax error expecting %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:580
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:585
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:590
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, %s, %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:596
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, %s, %s, %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:603
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, %s, or %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %s, %s, %s, %s, %s, %s, %s, ou %s."
 
 #: src/language/lexer/lexer.c:618
 #, c-format
 msgid "Syntax error expecting one of the following: %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend une des variables suivantes : %s."
 
 #: src/language/lexer/lexer.c:639 src/language/lexer/lexer.c:641
 #, fuzzy, c-format
 msgid "Subcommand %s may only be specified once."
-msgstr "La sous-commande %s ne peut être spécifiée qu’une fois."
+msgstr "La sous-commande %s peut seulement être spécifiée qu’une fois."
 
 #: src/language/lexer/lexer.c:654
 #, fuzzy, c-format
 msgid "Required subcommand %s was not specified."
-msgstr "La sous-commande demandée %s n’est pas spécifiée."
+msgstr "La sous-commande %s demandée n’est pas spécifiée."
 
 #: src/language/lexer/lexer.c:662
 #, fuzzy, c-format
 msgid "%s may only be specified once within subcommand %s."
-msgstr "%s ne devrait être spécifié qu’une fois dans la sous-commande %s"
+msgstr "%s ne devrait être spécifié qu’une fois dans la sous-commande %s."
 
 #: src/language/lexer/lexer.c:671
 #, fuzzy, c-format
 msgid "Required %s specification missing from %s subcommand."
-msgstr "La spécification %s demandée manque dans la sous-commande %s"
+msgstr "La spécification %s demandée manque dans la sous-commande %s."
 
 #: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
 msgid "Syntax error expecting end of command."
-msgstr ""
+msgstr "Erreur de syntaxe attend la fin de la commande."
 
 #: src/language/lexer/lexer.c:896
 msgid "Syntax error expecting string."
-msgstr ""
+msgstr "Erreur de syntaxe attend une chaîne de caractères."
 
 #: src/language/lexer/lexer.c:925 src/language/lexer/lexer.c:957
 #: src/language/lexer/lexer.c:1043
 msgid "Syntax error expecting integer."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier."
 
 #: src/language/lexer/lexer.c:955 src/language/lexer/lexer.c:1040
 #, c-format
 msgid "Syntax error expecting integer for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier pour %s."
 
 #: src/language/lexer/lexer.c:962
 #, c-format
 msgid "Syntax error expecting %ld for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %ld pour %s."
 
 #: src/language/lexer/lexer.c:964
 #, c-format
 msgid "Syntax error expecting %ld."
-msgstr ""
+msgstr "Erreur de syntaxe attend %ld."
 
 #: src/language/lexer/lexer.c:969
 #, c-format
 msgid "Syntax error expecting %ld or %ld for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend %ld ou %ld pour %s."
 
 #: src/language/lexer/lexer.c:972
 #, c-format
 msgid "Syntax error expecting %ld or %ld."
-msgstr ""
+msgstr "Erreur de syntaxe attend %ld ou %ld."
 
 #: src/language/lexer/lexer.c:984
 #, c-format
 msgid "Syntax error expecting integer between %ld and %ld for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier entre %ld et %ld pour %s."
 
 #: src/language/lexer/lexer.c:988
 #, c-format
 msgid "Syntax error expecting integer between %ld and %ld."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier entre %ld et %ld."
 
 #: src/language/lexer/lexer.c:997
 #, c-format
 msgid "Syntax error expecting non-negative integer for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier non négatif pour %s."
 
 #: src/language/lexer/lexer.c:1001
 msgid "Syntax error expecting non-negative integer."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier non négatif."
 
 #: src/language/lexer/lexer.c:1007
 #, c-format
 msgid "Syntax error expecting positive integer for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier positif pour %s."
 
 #: src/language/lexer/lexer.c:1011
 msgid "Syntax error expecting positive integer."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier positif."
 
 #: src/language/lexer/lexer.c:1017
 #, c-format
 msgid "Syntax error expecting integer %ld or greater for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier %ld ou plus grand pour %s."
 
 #: src/language/lexer/lexer.c:1021
 #, c-format
 msgid "Syntax error expecting integer %ld or greater."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier %ld ou plus grand."
 
 #: src/language/lexer/lexer.c:1029
 #, c-format
 msgid "Syntax error expecting integer less than or equal to %ld for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier plus petit que ou égal à %ld pour %s."
 
 #: src/language/lexer/lexer.c:1033
 #, c-format
 msgid "Syntax error expecting integer less than or equal to %ld."
-msgstr ""
+msgstr "Erreur de syntaxe attend un entier plus petit que ou égal à %ld."
 
 #: src/language/lexer/lexer.c:1057 src/language/lexer/lexer.c:1081
 #: src/language/lexer/lexer.c:1148 src/language/lexer/lexer.c:1174
@@ -2764,7 +2753,7 @@ msgstr ""
 #: src/language/lexer/lexer.c:1309 src/language/lexer/lexer.c:1335
 #: src/language/lexer/lexer.c:1390
 msgid "Syntax error expecting number."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre."
 
 #: src/language/lexer/lexer.c:1079 src/language/lexer/lexer.c:1146
 #: src/language/lexer/lexer.c:1172 src/language/lexer/lexer.c:1227
@@ -2772,150 +2761,149 @@ msgstr ""
 #: src/language/lexer/lexer.c:1333 src/language/lexer/lexer.c:1387
 #, c-format
 msgid "Syntax error expecting number for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre pour %s."
 
 #: src/language/lexer/lexer.c:1086
 #, c-format
 msgid "Syntax error expecting number %g for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g pour %s."
 
 #: src/language/lexer/lexer.c:1089
 #, c-format
 msgid "Syntax error expecting number %g."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g."
 
 #: src/language/lexer/lexer.c:1100
 #, c-format
 msgid "Syntax error expecting number between %g and %g for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre entre %g et %g pour %s."
 
 #: src/language/lexer/lexer.c:1104
 #, c-format
 msgid "Syntax error expecting number between %g and %g."
-msgstr ""
+msgstr "Erreur de syntaxe attend le nombre entre %g et %g."
 
 #: src/language/lexer/lexer.c:1113 src/language/lexer/lexer.c:1196
 #, c-format
 msgid "Syntax error expecting non-negative number for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre non négatif pour %s."
 
 #: src/language/lexer/lexer.c:1117 src/language/lexer/lexer.c:1200
 msgid "Syntax error expecting non-negative number."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre non-négatif."
 
 #: src/language/lexer/lexer.c:1123 src/language/lexer/lexer.c:1206
 #, c-format
 msgid "Syntax error expecting number %g or greater for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g ou plus grand pour %s."
 
 #: src/language/lexer/lexer.c:1127 src/language/lexer/lexer.c:1210
 #, c-format
 msgid "Syntax error expecting number %g or greater."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g ou plus grand."
 
 #: src/language/lexer/lexer.c:1135
 #, c-format
 msgid "Syntax error expecting number less than or equal to %g for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plsu petit que ou égal à %g pour %s."
 
 #: src/language/lexer/lexer.c:1139
 #, c-format
 msgid "Syntax error expecting number less than or equal to %g."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plus petit ou égal à %g."
 
 #: src/language/lexer/lexer.c:1184
 #, c-format
 msgid "Syntax error expecting number in [%g,%g) for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la place [%g, %g) pour %s."
 
 #: src/language/lexer/lexer.c:1188
 #, c-format
 msgid "Syntax error expecting number in [%g,%g)."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la fourchette [%g, %g)."
 
 #: src/language/lexer/lexer.c:1218 src/language/lexer/lexer.c:1377
 #, c-format
 msgid "Syntax error expecting number less than %g for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plus petit que %g pour %s."
 
 #: src/language/lexer/lexer.c:1221 src/language/lexer/lexer.c:1381
 #, c-format
 msgid "Syntax error expecting number less than %g."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plus petit que %g."
 
 #: src/language/lexer/lexer.c:1265
 #, c-format
 msgid "Syntax error expecting number in (%g,%g] for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la fourchette [%g, %g) pour %s."
 
 #: src/language/lexer/lexer.c:1269
 #, c-format
 msgid "Syntax error expecting number in (%g,%g]."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la plage [%g, %g)."
 
 #: src/language/lexer/lexer.c:1277 src/language/lexer/lexer.c:1357
 #, c-format
 msgid "Syntax error expecting positive number for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre positif pour %s."
 
 #: src/language/lexer/lexer.c:1281 src/language/lexer/lexer.c:1360
 msgid "Syntax error expecting positive number."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre positif."
 
 #: src/language/lexer/lexer.c:1286 src/language/lexer/lexer.c:1366
 #, c-format
 msgid "Syntax error expecting number greater than %g for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plus grand que %g pour %s."
 
 #: src/language/lexer/lexer.c:1290 src/language/lexer/lexer.c:1370
 #, c-format
 msgid "Syntax error expecting number greater than %g."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre plus grand que %g."
 
 #: src/language/lexer/lexer.c:1298
 #, c-format
 msgid "Syntax error expecting number %g or less for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g ou plus petit pour %s."
 
 #: src/language/lexer/lexer.c:1301
 #, c-format
 msgid "Syntax error expecting number %g or less."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre %g ou plus petit."
 
 #: src/language/lexer/lexer.c:1345
 #, c-format
 msgid "Syntax error expecting number in (%g,%g) for %s."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la fourchette (%g, %g) pour %s."
 
 #: src/language/lexer/lexer.c:1349
 #, c-format
 msgid "Syntax error expecting number in (%g,%g)."
-msgstr ""
+msgstr "Erreur de syntaxe attend un nombre dans la fourchette (%g,%g)."
 
 #: src/language/lexer/lexer.c:1404 src/language/commands/define.c:176
 #: src/language/commands/define.c:182
 msgid "Syntax error expecting identifier."
-msgstr ""
+msgstr "Erreur de syntaxe attend un identifiant."
 
 #: src/language/lexer/lexer.c:1805
 #, c-format
 msgid "Syntax error expecting `%s'."
-msgstr ""
+msgstr "Erreur de syntaxe attend `%s'."
 
 #: src/language/lexer/lexer.c:2161
 #, c-format
 msgid "In syntax expanded from `%s'"
-msgstr ""
+msgstr "Dans la syntaxe, a été élargi à partir de `%s'"
 
 #: src/language/lexer/lexer.c:2164
 #, fuzzy
 msgid "At end of input"
-msgstr "Erreur de syntaxe à la fin d’une entrée"
+msgstr "A la fin d’une entrée"
 
 #: src/language/lexer/lexer.c:2171
-#, fuzzy
 msgid "Syntax error."
-msgstr "Erreur de syntaxe"
+msgstr "Erreur de syntaxe."
 
 #: src/language/lexer/lexer.c:2400
 #, fuzzy
@@ -2945,7 +2933,7 @@ msgstr "Pour le taux d'expansion (ou coefficient) de « %s », (théorie des g
 #: src/language/lexer/macro.c:100
 #, c-format
 msgid "inside the expansion of `%s',"
-msgstr "à l’intérieur du taux d’expansion de  « %s »,"
+msgstr "à l’intérieur du taux d’expansion de `%s',"
 
 #: src/language/lexer/macro.c:611
 #, c-format
@@ -3129,9 +3117,9 @@ msgid "String of hex digits has %zu characters, which is not a multiple of 2."
 msgstr ""
 
 #: src/language/lexer/scan.c:107 src/language/lexer/scan.c:129
-#, fuzzy, c-format
+#, c-format
 msgid "`%c' is not a valid hex digit."
-msgstr "`%c' n'est pas un caractère hexadécimal valide"
+msgstr "`%c' n'est pas un caractère hexadécimal valide."
 
 #: src/language/lexer/scan.c:120
 #, c-format
@@ -3144,19 +3132,18 @@ msgid "U+%04llX is not a valid Unicode code point."
 msgstr ""
 
 #: src/language/lexer/scan.c:309
-#, fuzzy, c-format
+#, c-format
 msgid "Bad character %s in input."
-msgstr "Caractères erroné %s en entrée"
+msgstr "Caractères erroné %s en entrée."
 
 #: src/language/lexer/scan.c:386
-#, fuzzy
 msgid "Unterminated string constant."
-msgstr "Constante de chaîne incomplète"
+msgstr "Constante de chaîne incomplète."
 
 #: src/language/lexer/scan.c:391
-#, fuzzy, c-format
+#, c-format
 msgid "Missing exponent following `%.*s'."
-msgstr "Exposant manquant suivant '%s'"
+msgstr "Exposant manquant suivant `%.*s'."
 
 #: src/language/lexer/value-parser.c:78
 #, c-format
@@ -3187,7 +3174,7 @@ msgstr ""
 #: src/language/lexer/variable-parser.c:803 src/language/commands/graph.c:810
 #: src/language/commands/matrix.c:6066 utilities/pspp-convert.c:84
 msgid "Syntax error expecting variable name."
-msgstr ""
+msgstr "Erreur de syntaxe attend le nom d'une variable"
 
 #: src/language/lexer/variable-parser.c:96
 #: src/language/lexer/variable-parser.c:849
@@ -3240,17 +3227,17 @@ msgstr ""
 #: src/language/lexer/variable-parser.c:384
 #, c-format
 msgid "%s is a regular variable."
-msgstr ""
+msgstr "%s est une variable régulière"
 
 #: src/language/lexer/variable-parser.c:390
 #, c-format
 msgid "%s is a scratch variable."
-msgstr ""
+msgstr "%s est une variable effacée"
 
 #: src/language/lexer/variable-parser.c:396
 #, c-format
 msgid "%s is a system variable."
-msgstr ""
+msgstr "%s est une variable du système"
 
 #: src/language/lexer/variable-parser.c:475
 #, fuzzy, c-format
@@ -3314,19 +3301,19 @@ msgstr "Les arguments de %s doivent être du même type que les variables source
 
 #: src/language/commands/aggregate.c:511
 msgid "The argument is numeric."
-msgstr ""
+msgstr "L'argument est numérique."
 
 #: src/language/commands/aggregate.c:513
 msgid "The variables have string type."
-msgstr ""
+msgstr "Les variables sont de type chaine de caractères"
 
 #: src/language/commands/aggregate.c:518
 msgid "The argument is a string."
-msgstr ""
+msgstr "L'argument est une chaîne de caractères"
 
 #: src/language/commands/aggregate.c:520
 msgid "The variables are numeric."
-msgstr ""
+msgstr "Les variables sont numériques."
 
 #: src/language/commands/aggregate.c:549
 #, c-format
@@ -3811,7 +3798,7 @@ msgstr "BY est nécessaire lorsque %s est spécifié."
 #: src/language/commands/combine-files.c:665
 #, c-format
 msgid "Variable %s has different types in different files."
-msgstr ""
+msgstr "La variable %s a différents types dans différents fichiers"
 
 #: src/language/commands/combine-files.c:676
 #, c-format
@@ -3819,9 +3806,9 @@ msgid "In file %s, %s is numeric."
 msgstr "En fichier %s, %s est numérique."
 
 #: src/language/commands/combine-files.c:680
-#, fuzzy, c-format
+#, c-format
 msgid "In file %s, %s is a string."
-msgstr "Dans le fichier %s, %s est une variable chaîne de largeur %d."
+msgstr "Dans le fichier %s, %s est une variable chaîne."
 
 #: src/language/commands/combine-files.c:699
 #, c-format
@@ -4079,9 +4066,8 @@ msgstr "Valeurs"
 
 #: src/language/commands/crosstabs.c:1458
 #: src/language/commands/crosstabs.c:1543
-#, fuzzy
 msgid "Asymp. Std. Error"
-msgstr "Erreur standard asymp."
+msgstr "Erreur standard asymptomatique"
 
 #: src/language/commands/crosstabs.c:1459
 #: src/language/commands/crosstabs.c:1544
@@ -4418,11 +4404,11 @@ msgstr "Maximum"
 
 #: src/language/commands/ctables.c:372
 msgid "Unweighted Mean"
-msgstr ""
+msgstr "Moyenne non pondérée"
 
 #: src/language/commands/ctables.c:373
 msgid "Unweighted Median"
-msgstr ""
+msgstr "Médaien non pondérée"
 
 #: src/language/commands/ctables.c:374 src/language/commands/descriptives.c:116
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:108
@@ -4436,7 +4422,7 @@ msgstr "Minimum"
 
 #: src/language/commands/ctables.c:375
 msgid "Unweighted Missing"
-msgstr ""
+msgstr "Pondération manquante"
 
 #: src/language/commands/ctables.c:376 src/language/commands/frequencies.c:100
 #: src/ui/gui/psppire-dialog-action-frequencies.c:49
@@ -4445,7 +4431,7 @@ msgstr "Mode"
 
 #: src/language/commands/ctables.c:376
 msgid "Unweighted Mode"
-msgstr ""
+msgstr "Mode non pondérée"
 
 #: src/language/commands/ctables.c:378 src/language/commands/descriptives.c:115
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:107
@@ -4457,11 +4443,11 @@ msgstr "Intervalle"
 
 #: src/language/commands/ctables.c:379
 msgid "Std Error of Mean"
-msgstr ""
+msgstr "Erreur Standard pour la moyenne"
 
 #: src/language/commands/ctables.c:379
 msgid "Unweighted Std Error of Mean"
-msgstr ""
+msgstr "Erreur standard non pondérée pour la moyenne"
 
 #: src/language/commands/ctables.c:380
 msgid "Std Deviation"
@@ -4469,7 +4455,7 @@ msgstr "Écart type"
 
 #: src/language/commands/ctables.c:380
 msgid "Unweighted Std Deviation"
-msgstr ""
+msgstr "Deviation standard non pondérée"
 
 #: src/language/commands/ctables.c:381 src/language/commands/descriptives.c:118
 #: src/language/commands/frequencies.c:110 src/language/commands/graph.c:211
@@ -4481,20 +4467,20 @@ msgstr "Somme"
 
 #: src/language/commands/ctables.c:381
 msgid "Unweighted Sum"
-msgstr ""
+msgstr "Somme non pondérée"
 
 #: src/language/commands/ctables.c:382
 #, fuzzy
 msgid "Total N"
-msgstr "Nb total d’éléments"
+msgstr "N éléments"
 
 #: src/language/commands/ctables.c:383
 msgid "Adjusted Total N"
-msgstr ""
+msgstr "Total ajusté N"
 
 #: src/language/commands/ctables.c:384
 msgid "Unweighted Total N"
-msgstr ""
+msgstr "Total non pondéré N"
 
 #: src/language/commands/ctables.c:385
 msgid "Valid N"
@@ -4502,11 +4488,11 @@ msgstr "N valide"
 
 #: src/language/commands/ctables.c:386
 msgid "Adjusted Valid N"
-msgstr ""
+msgstr "Valeur valide N ajusté"
 
 #: src/language/commands/ctables.c:387
 msgid "Unweighted Valid N"
-msgstr ""
+msgstr "Valeur valide N non pondérée"
 
 #: src/language/commands/ctables.c:388 src/language/commands/descriptives.c:110
 #: src/language/commands/examine.c:736 src/language/commands/frequencies.c:102
@@ -4518,35 +4504,35 @@ msgstr "Variance"
 
 #: src/language/commands/ctables.c:388
 msgid "Unweighted Variance"
-msgstr ""
+msgstr "Variance non pondérée"
 
 #: src/language/commands/ctables.c:392
 msgid "Table Sum %"
-msgstr ""
+msgstr "Somme du tableau %"
 
 #: src/language/commands/ctables.c:392
 msgid "Unweighted Table Sum %"
-msgstr ""
+msgstr "Somme du tableau non pondérée %"
 
 #: src/language/commands/ctables.c:393
 msgid "Layer Sum %"
-msgstr ""
+msgstr "Somme du calque %"
 
 #: src/language/commands/ctables.c:393
 msgid "Unweighted Layer Sum %"
-msgstr ""
+msgstr "Somme du calque non pondérée %"
 
 #: src/language/commands/ctables.c:394
 msgid "Layer Row Sum %"
-msgstr ""
+msgstr "Somme des lignes du calque %"
 
 #: src/language/commands/ctables.c:394
 msgid "Unweighted Layer Row Sum %"
-msgstr ""
+msgstr "Somme des lignes du calque non pondéré %"
 
 #: src/language/commands/ctables.c:395
 msgid "Layer Column Sum %"
-msgstr ""
+msgstr "Somme des colonnes du calque %"
 
 #: src/language/commands/ctables.c:395
 msgid "Unweighted Layer Column Sum %"
@@ -5735,9 +5721,8 @@ msgid "%s: Data file dictionary has no variables."
 msgstr "%s : le dicoionnaire de données n’a pas de variables."
 
 #: src/language/commands/glm.c:161
-#, fuzzy
 msgid "Multivariate analysis is not yet implemented."
-msgstr "L’analyse multivariée n’est pas encore mise en œuvre"
+msgstr "L’analyse multivariée n’est pas encore mise en œuvre."
 
 #: src/language/commands/glm.c:647
 #, fuzzy
@@ -12278,7 +12263,7 @@ msgstr ""
 
 #: src/ui/gui/spreadsheet-import.ui:78
 msgid "Importing file: "
-msgstr "Importer un fichier:"
+msgstr "Importer un fichier : "
 
 #: src/ui/gui/spreadsheet-import.ui:118
 msgid "Use the first selected row as _variable names"
@@ -12929,7 +12914,7 @@ msgstr "PSPP a été conçu pour les statisticiens, les étudiants et les spéci
 
 #: doc/org.gnu.pspp.metainfo.xml.in:32
 msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
-msgstr ""
+msgstr "Le package PSPP inclut des interfaces graphiques et en ligne de commande. Pour utiliser l'interface en ligne de commande, il faut lancer : <code>flatpak run --command=pspp org.gnu.pspp</code>."
 
 #: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
