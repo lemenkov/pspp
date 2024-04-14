@@ -108,7 +108,7 @@ u8_line_find_pos (const struct u8_line *line, int target_x, struct u8_pos *c)
   x = 0;
   c->x0 = 0;
   c->ofs0 = 0;
-  for (ofs = 0; ofs <= length; ofs += mblen)
+  for (ofs = 0; ofs < length; ofs += mblen)
     {
       int w;
       c->x0 = x;
