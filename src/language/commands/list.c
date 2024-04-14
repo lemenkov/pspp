@@ -65,7 +65,7 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
   struct subcase sc;
   subcase_init_empty (&sc);
   for (size_t i = 0; i < lcmd->n_vars; i++)
-    subcase_add_var (&sc, lcmd->vars[i], SC_ASCEND);
+    subcase_add_var_always (&sc, lcmd->vars[i], SC_ASCEND);
 
   struct casegrouper *grouper;
   struct casereader *group;

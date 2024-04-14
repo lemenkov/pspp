@@ -362,3 +362,21 @@ AT_CHECK([pspp -O format=csv list.sps], [1], [dnl
       |      ^~"
 ])
 AT_CLEANUP
+
+dnl Checks for regression against a crash
+AT_SETUP([LIST duplicate variables])
+AT_DATA([list.sps], [dnl
+DATA LIST LIST NOTABLE /v r1 Se oRe o.
+BEGIN DATA.
+2
+END DATA.
+LIST o o.
+])
+AT_CHECK([pspp -O format=csv list.sps], [0], [dnl
+"list.sps:3: warning: Missing value(s) for all variables from r1 onward.  These will be filled with the system-missing value or blanks, as appropriate."
+
+Table: Data List
+o,o
+.  ,.  @&t@
+])
+AT_CLEANUP
