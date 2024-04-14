@@ -78,20 +78,20 @@ u8_mb_to_display (int *wp, const uint8_t *s, size_t n)
   return ofs;
 }
 
-/* Position of a character within a u8_line. */
+/* Position of one or more characters within a u8_line. */
 struct u8_pos
   {
     /* 0-based display columns.
 
-       For a single-width character, x1 == x0 + 1.
-       For a double-width character, x1 == x0 + 2. */
+       For one single-width character, x1 == x0 + 1.
+       For one double-width character, x1 == x0 + 2. */
     int x0;
     int x1;
 
     /* Byte offsets.
 
-       For an ordinary ASCII character, ofs1 == ofs0 + 1.
-       For Unicode code point 0x80 or higher, 2 <= ofs1 - ofs0 <= 4. */
+       For one ordinary ASCII character, ofs1 == ofs0 + 1.
+       For one Unicode code point 0x80 or higher, 2 <= ofs1 - ofs0 <= 4. */
     size_t ofs0;
     size_t ofs1;
   };
@@ -130,6 +130,30 @@ u8_line_find_pos (const struct u8_line *line, int target_x, struct u8_pos *c)
   return false;
 }
 
+static struct u8_pos
+u8_line_find_span (const struct u8_line *line, int x0, int x1)
+{
+  struct u8_pos p0, p1;
+  u8_line_find_pos (line, x0, &p0);
+  u8_line_find_pos (line, x1, &p1);
+  if (p1.x0 >= x1)
+    return (struct u8_pos)
+      {
+        .x0 = p0.x0,
+        .ofs0 = p0.ofs0,
+        .x1 = p1.x0,
+        .ofs1 = p1.ofs0,
+      };
+  else
+    return (struct u8_pos)
+      {
+        .x0 = p0.x0,
+        .ofs0 = p0.ofs0,
+        .x1 = p1.x1,
+        .ofs1 = p1.ofs1,
+      };
+}
+
 /* Prepares LINE to write N bytes of characters that comprise X1-X0 column
    widths starting at 0-based column X0.  Returns the first byte of the N for
    the caller to fill in. */
@@ -146,53 +170,41 @@ u8_line_reserve (struct u8_line *line, int x0, int x1, int n)
     }
   else if (x0 == x1)
     return NULL;
-  else
+  else if (x1 >= line->width)
     {
-      /* An unusual case: overwriting characters in the middle of a line.  We
-         don't keep any kind of mapping from bytes to display positions, so we
-         have to iterate over the whole line starting from the beginning. */
-      struct u8_pos p0, p1;
-      char *s;
-
-      /* Find the positions of the first and last character.  We must find both
-         characters' positions before changing the line, because that would
-         prevent finding the other character's position. */
+      struct u8_pos p0;
       u8_line_find_pos (line, x0, &p0);
-      if (x1 < line->width)
-        u8_line_find_pos (line, x1, &p1);
 
       /* If a double-width character occupies both x0 - 1 and x0, then replace
          its first character width by '?'. */
-      s = ds_data (&line->s);
+      char *s = ds_data (&line->s);
       while (p0.x0 < x0)
         {
           s[p0.ofs0++] = '?';
           p0.x0++;
         }
 
-      if (x1 >= line->width)
-        {
-          ds_truncate (&line->s, p0.ofs0);
-          line->width = x1;
-          return ds_put_uninit (&line->s, n);
-        }
+      ds_truncate (&line->s, p0.ofs0);
+      line->width = x1;
+      return ds_put_uninit (&line->s, n);
+    }
+  else
+    {
+      struct u8_pos span = u8_line_find_span (line, x0, x1);
 
-      /* If a double-width character occupies both x1 - 1 and x1, then replace
-         its second character width by '?'. */
-      if (p1.x0 < x1)
+      char *s = ds_data (&line->s);
+      while (span.x0 < x0)
         {
-          do
-            {
-              s[--p1.ofs1] = '?';
-              p1.x0++;
-            }
-          while (p1.x0 < x1);
-          assert (p1.ofs1 >= p0.ofs0);
-          return ds_splice_uninit (&line->s, p0.ofs0, p1.ofs1 - p0.ofs0, n);
+          s[span.ofs0++] = '?';
+          span.x0++;
         }
-
-      assert (p1.ofs0 >= p0.ofs0);
-      return ds_splice_uninit (&line->s, p0.ofs0, p1.ofs0 - p0.ofs0, n);
+      while (span.x1 > x1)
+        {
+          s[--span.ofs1] = '?';
+          span.x1--;
+        }
+      assert (span.ofs1 >= span.ofs0);
+      return ds_splice_uninit (&line->s, span.ofs0, span.ofs1 - span.ofs0, n);
     }
 }
 
