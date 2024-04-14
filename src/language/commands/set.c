@@ -1028,7 +1028,7 @@ show_SPLIT (const struct dataset *ds)
 static char *
 show_SUBTITLE (const struct dataset *ds UNUSED)
 {
-  return xstrdup (output_get_subtitle ());
+  return xstrdup_if_nonnull (output_get_subtitle ());
 }
 
 static char *
@@ -1040,7 +1040,7 @@ show_TEMPDIR (const struct dataset *ds UNUSED)
 static char *
 show_TITLE (const struct dataset *ds UNUSED)
 {
-  return xstrdup (output_get_title ());
+  return xstrdup_if_nonnull (output_get_title ());
 }
 
 static bool
