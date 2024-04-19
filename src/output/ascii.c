@@ -827,6 +827,11 @@ text_draw (struct ascii_driver *a, enum table_halign halign, bool numeric,
           width -= w;
         }
     }
+  if (width >= SIZE_MAX / 2)
+    {
+      /* Width underflow. */
+      return;
+    }
   if (n == 0)
     return;
 
