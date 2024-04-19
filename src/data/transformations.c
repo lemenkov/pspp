@@ -61,7 +61,7 @@ trns_chain_prepend (struct trns_chain *chain, const struct transformation *t)
     chain->xforms = x2nrealloc (chain->xforms, &chain->allocated,
                                 sizeof *chain->xforms);
 
-  insert_element (chain->xforms, 1, sizeof *chain->xforms, 0);
+  insert_element (chain->xforms, chain->n, sizeof *chain->xforms, 0);
   chain->xforms[0] = *t;
   chain->n++;
 }
