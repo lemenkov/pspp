@@ -549,6 +549,9 @@ type_coercion__ (struct expression *e, struct expr_node *node, size_t arg_idx,
         }
       break;
 
+    case OP_num_vec_elem:
+      break;
+
     default:
       NOT_REACHED ();
     }

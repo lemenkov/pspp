@@ -479,6 +479,7 @@ DEBUG EVALUATE /foobar(x).
 DEBUG EVALUATE /CONCAT.1('a' b).
 DEBUG EVALUATE /NCDF.CHISQ(1, 2, 3).
 DEBUG EVALUATE (a=1)(b=2) VECTOR/v('abc').
+DEBUG EVALUATE /VALUE(55).
 ])
 
 for opt in OPT NOOPT; do
@@ -537,6 +538,15 @@ evaluate.sps:9.36-9.40: note: DEBUG EVALUATE: This vector index has type
       |                                    ^~~~~
 
 v('abc') => error
+
+evaluate.sps:10.17-10.25: error: DEBUG EVALUATE: Function invocation
+VALUE(number) does not match any known function.  Candidates are:
+VALUE(num_variable)
+VALUE(number).
+   10 | DEBUG EVALUATE /VALUE(55).
+      |                 ^~~~~~~~~
+
+VALUE(55) => error
 ])
 done
 AT_CLEANUP
