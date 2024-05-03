@@ -6044,3 +6044,22 @@ AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
 ╰──────┴────────┴──────────────┴─────┴─────┴─────────┴────────────┴────────────╯
 ])
 AT_CLEANUP
+
+AT_SETUP([CTABLES crash with all-missing data])
+AT_DATA([ctables.sps], [dnl
+DATA LIST LIST NOTABLE/a.
+BEGIN DATA.
+.
+END DATA.
+
+* The final one below previously crashed.
+CTABLES/TAB A.
+CTABLES/TAB BY A.
+CTABLES/TAB BY BY A.
+])
+AT_CHECK([pspp ctables.sps -O box=unicode -O width=80], [0], [dnl
+Custom Tables
+
+Custom Tables
+])
+AT_CLEANUP

@@ -41,7 +41,7 @@ pivot_output_next_layer (const struct pivot_table *pt, size_t *indexes,
   const struct pivot_axis *layer_axis = &pt->axes[PIVOT_AXIS_LAYER];
   if (print && pt->look->print_all_layers)
     return pivot_axis_iterator_next (indexes, layer_axis);
-  else if (!indexes)
+  else if (!indexes && layer_axis->extent)
     {
       size_t size = layer_axis->n_dimensions * sizeof *pt->current_layer;
       return size ? xmemdup (pt->current_layer, size) : xmalloc (1);
