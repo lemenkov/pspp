@@ -2969,6 +2969,12 @@ DO IF 0.
 ELSE IF {}.
 END IF.
 END MATRIX.
+
+MATRIX.
+DO IF 0.
+ELSE.
+ELSE.
+END MATRIX.
 ])
 AT_CHECK([pspp matrix.sps], [1], [dnl
 1
@@ -2986,6 +2992,10 @@ matrix.sps:24.9-24.10: error: MATRIX: Expression for ELSE IF must evaluate to
 scalar, not a 0×0 matrix.
    24 | ELSE IF {}.
       |         ^~
+
+matrix.sps:31.1-31.4: error: DO IF: Unknown matrix command.
+   31 | ELSE.
+      | ^~~~
 ])
 AT_CLEANUP
 

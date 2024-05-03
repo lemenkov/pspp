@@ -5753,6 +5753,7 @@ static bool
 matrix_do_if_clause_parse (struct matrix_state *s,
                            struct matrix_do_if *ifc,
                            bool parse_condition,
+                           bool stop_at_else,
                            size_t *allocated_clauses)
 {
   if (ifc->n_clauses >= *allocated_clauses)
@@ -5768,7 +5769,8 @@ matrix_do_if_clause_parse (struct matrix_state *s,
         return false;
     }
 
-  return matrix_commands_parse (s, &c->commands, "DO IF", "ELSE", "END IF");
+  return matrix_commands_parse (s, &c->commands, "DO IF", "END IF",
+                                stop_at_else ? "ELSE" : NULL);
 }
 
 static struct matrix_command *
@@ -5783,13 +5785,15 @@ matrix_do_if_parse (struct matrix_state *s)
   size_t allocated_clauses = 0;
   do
     {
-      if (!matrix_do_if_clause_parse (s, &cmd->do_if, true, &allocated_clauses))
+      if (!matrix_do_if_clause_parse (s, &cmd->do_if, true, true,
+                                      &allocated_clauses))
         goto error;
     }
   while (lex_match_phrase (s->lexer, "ELSE IF"));
 
   if (lex_match_id (s->lexer, "ELSE")
-      && !matrix_do_if_clause_parse (s, &cmd->do_if, false, &allocated_clauses))
+      && !matrix_do_if_clause_parse (s, &cmd->do_if, false, false,
+                                     &allocated_clauses))
     goto error;
 
   if (!lex_match_phrase (s->lexer, "END IF"))
