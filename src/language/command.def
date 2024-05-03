@@ -31,7 +31,6 @@ DEF_CMD (S_ANY, 0, "FINISH", N_("Finish"), cmd_finish)
 DEF_CMD (S_ANY, 0, "HOST", N_("Host"), cmd_host)
 DEF_CMD (S_ANY, 0, "INCLUDE", N_("Include"), cmd_include)
 DEF_CMD (S_ANY, 0, "INSERT", N_("Insert"), cmd_insert)
-DEF_CMD (S_ANY, 0, "MCONVERT", N_("Matri Convert"), cmd_mconvert)
 DEF_CMD (S_ANY, 0, "N OF CASES", N_("N of Cases"), cmd_n_of_cases)
 DEF_CMD (S_ANY, F_ABBREV, "N", N_("N"), cmd_n_of_cases)
 DEF_CMD (S_ANY, 0, "NEW FILE", N_("New File"), cmd_new_file)
@@ -65,6 +64,7 @@ DEF_CMD (S_INITIAL | S_DATA, 0, "DATASET COPY", N_("Dataset Copy"), cmd_dataset_
 DEF_CMD (S_INITIAL | S_DATA, 0, "DATASET NAME", N_("Dataset Name"), cmd_dataset_name)
 DEF_CMD (S_INITIAL | S_DATA, 0, "DATASET DISPLAY", N_("Dataset Display"), cmd_dataset_display)
 DEF_CMD (S_INITIAL | S_DATA, 0, "MATRIX", N_("Matrix"), cmd_matrix)
+DEF_CMD (S_INITIAL | S_DATA, 0, "MCONVERT", N_("Matrix Convert"), cmd_mconvert)
 
 /* Utilities that may appear after active file definition or within INPUT PROGRAM. */
 DEF_CMD (S_DATA | S_INPUT_PROGRAM | S_NESTED_ANY, 0, "ADD VALUE LABELS", N_("Add Value Labels"), cmd_add_value_labels)
