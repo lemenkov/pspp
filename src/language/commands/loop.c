@@ -187,45 +187,60 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
   if (!lex_force_id (lexer))
     return false;
 
-  loop->index_var = dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer));
-  if (!loop->index_var)
-    loop->index_var = dict_create_var_assert (dataset_dict (ds),
-                                              lex_tokcstr (lexer), 0);
+  struct variable *index_var = dict_lookup_var (dataset_dict (ds),
+                                                lex_tokcstr (lexer));
+  if (!index_var)
+    index_var = dict_create_var_assert (dataset_dict (ds), lex_tokcstr (lexer),
+                                        0);
   lex_get (lexer);
 
   if (!lex_force_match (lexer, T_EQUALS))
     return false;
 
-  loop->first_expr = expr_parse (lexer, ds, VAL_NUMERIC);
-  if (loop->first_expr == NULL)
-    return false;
+  struct expression *first_expr = NULL;
+  struct expression *last_expr = NULL;
+  struct expression *by_expr = NULL;
+
+  first_expr = expr_parse (lexer, ds, VAL_NUMERIC);
+  if (first_expr == NULL)
+    goto error;
 
   for (;;)
     {
       struct expression **e;
       if (lex_match (lexer, T_TO))
-        e = &loop->last_expr;
+        e = &last_expr;
       else if (lex_match (lexer, T_BY))
-        e = &loop->by_expr;
+        e = &by_expr;
       else
         break;
 
       if (*e != NULL)
         {
-          lex_sbc_only_once (lexer, e == &loop->last_expr ? "TO" : "BY");
-          return false;
+          lex_sbc_only_once (lexer, e == &last_expr ? "TO" : "BY");
+          goto error;
         }
       *e = expr_parse (lexer, ds, VAL_NUMERIC);
       if (*e == NULL)
-        return false;
+        goto error;
     }
-  if (loop->last_expr == NULL)
+  if (last_expr == NULL)
     {
       lex_sbc_missing (lexer, "TO");
-      return false;
+      goto error;
     }
 
+  loop->index_var = index_var;
+  loop->first_expr = first_expr;
+  loop->last_expr = last_expr;
+  loop->by_expr = by_expr;
   return true;
+
+error:
+  expr_free (first_expr);
+  expr_free (last_expr);
+  expr_free (by_expr);
+  return false;
 }
 
 /* Sets up LOOP for the first pass. */
