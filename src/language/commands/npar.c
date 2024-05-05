@@ -308,8 +308,8 @@ npar_execute (struct casereader *input,
 
   if (specs->descriptives && specs->n_vars > 0)
     {
-      summary_descriptives = xnmalloc (sizeof (*summary_descriptives),
-                                       specs->n_vars);
+      summary_descriptives = xnmalloc (specs->n_vars,
+                                       sizeof (*summary_descriptives));
 
       npar_summary_calc_descriptives (summary_descriptives,
                                       casereader_clone (input),
