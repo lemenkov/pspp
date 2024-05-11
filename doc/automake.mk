@@ -238,12 +238,12 @@ endif
 
 $(FIGURE_SPVS): $(pspp)
 .sps.spv:
-	$(AM_V_GEN) LANG=C of=`pwd`/$@.tmp; (cd "$(top_srcdir)/examples" \
+	$(AM_V_GEN) LC_ALL=C of=`pwd`/$@.tmp; (cd "$(top_srcdir)/examples" \
          && "$(abs_top_builddir)/$(pspp)" ../doc/pspp-figures/$(<F) -o $$of -O format=spv)
 	$(AM_V_at)mv $@.tmp $@
 
 # In some cases, the tutorial only wants some parts of the output.
-convert = $(AM_V_GEN) LANG=C LSAN_OPTIONS="suppressions=$(abs_top_srcdir)/tests/lsan.supp:print_suppressions=0:$$LSAN_OPTIONS" $(pspp_output) convert $< $@
+convert = $(AM_V_GEN) LC_ALL=C LSAN_OPTIONS="suppressions=$(abs_top_srcdir)/tests/lsan.supp:print_suppressions=0:$$LSAN_OPTIONS" $(pspp_output) convert $< $@
 doc/pspp-figures/tutorial2a.spv: doc/pspp-figures/tutorial2.spv $(pspp_output)
 	$(convert) --command='Descriptives'
 doc/pspp-figures/tutorial2b.spv: doc/pspp-figures/tutorial2.spv $(pspp_output)
