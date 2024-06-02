@@ -32,7 +32,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
-#include "libpspp/string-set.h"
+#include "libpspp/stringi-set.h"
 
 #include "gl/intprops.h"
 #include "gl/xalloc.h"
@@ -172,7 +172,7 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
 
           /* Check that none of the variables exist and that their names are
              not excessively long. */
-          struct string_set new_names = STRING_SET_INITIALIZER (new_names);
+          struct stringi_set new_names = STRINGI_SET_INITIALIZER (new_names);
           for (size_t i = 0; i < n_vectors; i++)
             for (size_t j = 0; j < n_vars; j++)
               {
@@ -192,21 +192,22 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                                    _("%s is an existing variable name."),
                                    name);
                     free (name);
-                    string_set_destroy (&new_names);
+                    stringi_set_destroy (&new_names);
                     goto error;
                   }
-                if (!string_set_insert_nocopy (&new_names, name))
+
+                if (!stringi_set_insert_nocopy (&new_names, name))
                   {
                     /* name was already freed. */
                     lex_ofs_error (
                       lexer, vectors_start, end_ofs,
                       _("Two different vectors add variable %s%zu."),
                       vectors[i], j + 1);
-                    string_set_destroy (&new_names);
+                    stringi_set_destroy (&new_names);
                     goto error;
                   }
               }
-          string_set_destroy (&new_names);
+          stringi_set_destroy (&new_names);
 
           /* Finally create the variables and vectors. */
           struct variable **vars = pool_nmalloc (pool, n_vars, sizeof *vars);

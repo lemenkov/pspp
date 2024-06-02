@@ -181,3 +181,20 @@ AT_CHECK([pspp --testing-mode -O format=csv insert.sps], [1], [dnl
       |        ^~~~~~~~~~"
 ])
 AT_CLEANUP
+
+
+AT_SETUP([VECTOR - names differing only in case])
+
+AT_DATA([vector.sps], [dnl
+data list /fxx 1-11
+vec E2 e(22)
+display vectors.
+])
+
+AT_CHECK([pspp -o pspp.csv vector.sps], [1], [dnl
+vector.sps:2.5-2.12: error: VECTOR: Two different vectors add variable e21.
+    2 | vec E2 e(22)
+      |     ^~~~~~~~
+vector.sps:3: note: DISPLAY: No vectors defined.
+])
+AT_CLEANUP
