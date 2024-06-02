@@ -714,50 +714,63 @@ clipboard_clear_cb (GtkClipboard *clipboard,
 {
 }
 
-#define CBTARGETS                                           \
-CT ( ctn1, "STRING",        0, SELECT_FMT_TEXT )            \
-CT ( ctn2, "TEXT",          0, SELECT_FMT_TEXT )            \
-CT ( ctn3, "COMPOUND_TEXT", 0, SELECT_FMT_TEXT )            \
-CT ( ctn4, "text/plain",    0, SELECT_FMT_TEXT )            \
-CT ( ctn5, "UTF8_STRING",   0, SELECT_FMT_UTF8 )            \
-CT ( ctn6, "text/plain;charset=utf-8", 0, SELECT_FMT_UTF8 ) \
-CT ( ctn7, "text/html",     0, SELECT_FMT_HTML )            \
-CT ( ctn8, "image/svg+xml", 0, SELECT_FMT_SVG )
+static gchar cbstringtargetname[]   = "STRING";
+static gchar cbtexttargetname[]     = "TEXT";
+static gchar cbctexttargetname[]    = "COMPOUND_TEXT";
+static gchar cbtextmimetargetname[] = "text/plain";
+static gchar cbutf8targetname[]     = "UTF8_STRING";
+static gchar cbutf8mimetargetname[] = "text/plain;charset=utf-8";
+static const GtkTargetEntry cbtexttargets[] = {
+  {cbstringtargetname,   0, SELECT_FMT_TEXT},
+  {cbtexttargetname,     0, SELECT_FMT_TEXT},
+  {cbctexttargetname,    0, SELECT_FMT_TEXT},
+  {cbtextmimetargetname, 0, SELECT_FMT_TEXT},
+  {cbutf8targetname,     0, SELECT_FMT_UTF8},
+  {cbutf8mimetargetname, 0, SELECT_FMT_UTF8}
+};
 
-#define CT(ID, TARGET, FLAGS, INFO) static gchar ID[] = TARGET;
-CBTARGETS
-#undef CT
-static gchar ctnlast[] = "application/vnd.oasis.opendocument.text";
+static gchar cbhtmltargetname[] = "text/html";
+static const GtkTargetEntry cbhtmltargets[] = {
+  {cbhtmltargetname, 0, SELECT_FMT_HTML}
+};
 
-static const GtkTargetEntry targets[] = {
-#define CT(ID, TARGET, FLAGS, INFO) { ID, FLAGS, INFO },
-  CBTARGETS
-#undef CT
-  { ctnlast, 0, SELECT_FMT_ODT }
+static gchar cbsvgmimetargetname[] = "image/svg+xml";
+static const GtkTargetEntry cbsvgtargets[] = {
+  {cbsvgmimetargetname, 0, SELECT_FMT_SVG}
+};
+
+static gchar cbodttargetname[] = "application/vnd.oasis.opendocument.text";
+static const GtkTargetEntry cbodttargets[] = {
+  {cbodttargetname, 0, SELECT_FMT_ODT}
 };
 
 static GtkTargetList *
 build_target_list (const struct output_item *item)
 {
-  GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
+  GtkTargetList *tl = gtk_target_list_new (NULL, 0);
   g_return_val_if_fail (tl, NULL);
   switch (item->type)
     {
     case OUTPUT_ITEM_CHART:
     case OUTPUT_ITEM_IMAGE:
+      gtk_target_list_add_table(tl, cbsvgtargets, G_N_ELEMENTS(cbsvgtargets));
       gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
-      gtk_target_list_add_image_targets (tl, SELECT_FMT_SVG, TRUE);
       break;
     case OUTPUT_ITEM_TABLE:
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_ODT);
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_HTML);
+      /* Some applications at least on MacOS paste differently based on the
+         the position of the targets in the target list.
+         gtk_target_list_add_table prepends to the list. At least on MacOS
+         this results in html having higher priority over text when
+         html is added later ending up before text in the list. */
+      gtk_target_list_add_table(tl, cbodttargets, G_N_ELEMENTS(cbodttargets));
+      gtk_target_list_add_table(tl, cbtexttargets, G_N_ELEMENTS(cbtexttargets));
+      gtk_target_list_add_table(tl, cbhtmltargets, G_N_ELEMENTS(cbhtmltargets));
       break;
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_TEXT:
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_UTF8);
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_TEXT);
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_HTML);
-      gtk_target_list_add_text_targets (tl, SELECT_FMT_ODT);
+      gtk_target_list_add_table(tl, cbhtmltargets, G_N_ELEMENTS(cbhtmltargets));
+      gtk_target_list_add_table(tl, cbtexttargets, G_N_ELEMENTS(cbtexttargets));
+      gtk_target_list_add_table(tl, cbodttargets, G_N_ELEMENTS(cbodttargets));
       break;
     case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_PAGE_BREAK:
