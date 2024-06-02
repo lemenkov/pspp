@@ -48,7 +48,7 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
       lex_next_error (lexer, -1, -1,
                       _("This command not allowed when the %s option is set."),
                       "SAFER");
-      return 0;
+      return CMD_FAILURE;
     }
 
   char  *fn = NULL;

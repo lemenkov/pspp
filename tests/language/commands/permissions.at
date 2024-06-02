@@ -41,6 +41,27 @@ AT_CHECK([sed 's/^\(..........\).*/\1/' stdout], [0], [-rw-r--r--
 AT_CLEANUP
 
 
+dnl The PERMISSIONS command should be unavailable when --safer is given
+AT_SETUP([PERMISSIONS - safer mode])
+AT_DATA([a-file], [Hello
+])
+
+chmod 444 a-file
+AT_CHECK([ls -l a-file], [0], [stdout])
+AT_CHECK([sed 's/^\(..........\).*/\1/' stdout], [0], [-r--r--r--
+])
+
+AT_DATA([permissions.sps], [PERMISSIONS /FILE='a-file' PERMISSIONS=WRITEABLE.
+])
+AT_CHECK([pspp -O format=csv permissions.sps --safer], [1], [dnl
+"permissions.sps:1.1-1.11: error: PERMISSIONS: This command not allowed when the SAFER option is set.
+    1 | PERMISSIONS /FILE='a-file' PERMISSIONS=WRITEABLE.
+      | ^~~~~~~~~~~"
+])
+AT_CHECK([ls -l a-file], [0], [stdout])
+AT_CHECK([sed 's/^\(..........\).*/\1/' stdout], [0], [-r--r--r--
+])
+AT_CLEANUP
 
 AT_SETUP([PERMISSIONS - bad syntax])
 AT_DATA([pe.sps], [[PERMI|SIONS /FILE='foobar' PERMISSIONS=WRITEABLE.
