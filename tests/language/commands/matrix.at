@@ -5127,3 +5127,20 @@ matrix.sps:7.11: error: RELEASE: Syntax error expecting end of command.
       |           ^
 ])
 AT_CLEANUP
+
+
+dnl Check that attempting to allocate huge matrices fails gracefully
+AT_SETUP([MATRIX - very large matrices])
+AT_DATA([matrix.sps], [dnl
+MATRIX.
+PRINT 2:230000000000.
+END MATRIX.
+])
+
+AT_CHECK([pspp matrix.sps], [1], [dnl
+matrix.sps:2.7-2.20: error: MATRIX: Matrix cannot be allocated.  Too large?
+    2 | PRINT 2:230000000000.
+      |       ^~~~~~~~~~~~~~
+])
+
+AT_CLEANUP

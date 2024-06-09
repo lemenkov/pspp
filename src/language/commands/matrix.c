@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021, 2024 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -3501,6 +3501,13 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
                 : end <= start && by < 0 ? (start - end - by) / -by
                 : 0);
   gsl_matrix *m = gsl_matrix_alloc (1, n);
+  if (m == NULL)
+    {
+      msg_at (SE, matrix_expr_location (e),
+              _("Matrix cannot be allocated.  Too large?"));
+      return NULL;
+    }
+
   for (long int i = 0; i < n; i++)
     gsl_matrix_set (m, 0, i, start + i * by);
   return m;
