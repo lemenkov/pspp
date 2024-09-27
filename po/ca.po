@@ -4,13 +4,15 @@
 #
 # Palmira Payá Sanchez, 2009.
 # Javier Gómez Serrano, 2009.
-# Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>, 2010-2022, 2024.
+# Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>>, 2010-2024.
+# Francesc J. Miguel Quesada <Miguel.Quesada@uab.cat>, 2024.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-2.0.0-pre3\n"
+"Project-Id-Version: pspp-2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2023-11-02 14:21-0700\n"
-"PO-Revision-Date: 2024-01-09 20:06+0100\n"
+"POT-Creation-Date: 2024-03-21 16:29-0700\n"
+"PO-Revision-Date: 2024-09-01 20:57+0200\n"
 "Last-Translator: Francesc J. Miguel Quesada <Miguel.Quesada@uab.cat>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "Language: ca\n"
@@ -18,29 +20,29 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Geany / PoHelper 1.38\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Gtranslator 42.0\n"
 
-#: gl/clean-temp.c:235
+#: gl/clean-temp.c:234
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "no es pot trobar un directori temporal, provar d'ajustar $TMPDIR"
 
-#: gl/clean-temp.c:250
+#: gl/clean-temp.c:249
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "no es pot crear un directori temporal utilitzant la plantilla \"%s\""
 
-#: gl/clean-temp.c:371
+#: gl/clean-temp.c:370
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "no es pot eliminar el directori temporal %s."
 
-#: gl/clean-temp-simple.c:297
+#: gl/clean-temp-simple.c:296
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "no es pot eliminar l'arxiu temporal %s."
 
-#: gl/error.c:195
+#: gl/error.c:194
 msgid "Unknown system error"
 msgstr "Error desconegut de sistema"
 
@@ -244,7 +246,7 @@ msgstr "Suport general sobre l'ús de software GNU: <%s>\n"
 msgid "memory exhausted"
 msgstr "memòria exhaurida"
 
-#: gl/xbinary-io.c:37
+#: gl/xbinary-io.c:36
 msgid "failed to set file descriptor text/binary mode"
 msgstr "error en establir el descriptor de l'arxiu en mode text/binari"
 
@@ -525,7 +527,7 @@ msgid "scratch"
 msgstr "zero"
 
 #. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
-#: src/data/dictionary.c:1482
+#: src/data/dictionary.c:1463
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Línia de document tallada a  %d bytes."
@@ -2621,7 +2623,7 @@ msgstr "%s només es pot especificar un cop dins de la subordre %s."
 msgid "Required %s specification missing from %s subcommand."
 msgstr "Manca la especificació %s requerida per la subordre %s."
 
-#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:210
+#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
 msgid "Syntax error expecting end of command."
 msgstr "Error de sintaxi tot esperant el final de la ordre."
@@ -3417,36 +3419,40 @@ msgstr "La variable %s és %s en l'arxiu de destinació, però %s en l'arxiu d'o
 msgid "No matching variables found between the source and target files."
 msgstr "No s'han trobat coincidències de variables entre els arxius d'origen i de destinació."
 
-#: src/language/commands/autorecode.c:156
+#: src/language/commands/autorecode.c:157
 #, c-format
 msgid "Source variable count (%zu) does not match target variable count (%zu)."
 msgstr "El recompte de la variable d'origen (%zu) no coincideix amb el recompte de la variable de destí (%zu)."
 
-#: src/language/commands/autorecode.c:168
+#: src/language/commands/autorecode.c:169
 #, c-format
 msgid "Target variable %s duplicates existing variable %s."
 msgstr "Variable de destí %s duplica una variable existent %s."
 
-#: src/language/commands/autorecode.c:225
+#: src/language/commands/autorecode.c:226
 #, c-format
 msgid "With GROUP, variables may not mix string variables (such as %s) and numeric variables (such as %s)."
 msgstr "Amb GROUP, les variables no poden barrejar variables de text (com %s) amb variables numèriques (com %s)."
 
-#: src/language/commands/autorecode.c:368
+#: src/language/commands/autorecode.c:243
+msgid "AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent."
+msgstr "AUTORECODE ignora TEMPORARY.  Les transformacions temporals seran permanents."
+
+#: src/language/commands/autorecode.c:380
 msgid "Recoding grouped variables."
 msgstr "Recodificant les variables agrupades."
 
-#: src/language/commands/autorecode.c:370
+#: src/language/commands/autorecode.c:382
 #, c-format
 msgid "Recoding %s into %s (%s)."
 msgstr "Recodificant %s per %s (%s)."
 
-#: src/language/commands/autorecode.c:374
+#: src/language/commands/autorecode.c:386
 #, c-format
 msgid "Recoding %s into %s."
 msgstr "Recodificant %s per %s."
 
-#: src/language/commands/autorecode.c:380
+#: src/language/commands/autorecode.c:392
 #: src/language/commands/data-parser.c:726
 #: src/language/commands/data-parser.c:772 src/language/commands/mrsets.c:571
 #: src/language/commands/print.c:450 src/language/commands/sys-file-info.c:430
@@ -3456,15 +3462,15 @@ msgstr "Recodificant %s per %s."
 msgid "Attributes"
 msgstr "Atributs"
 
-#: src/language/commands/autorecode.c:381 src/ui/gui/recode.ui:207
+#: src/language/commands/autorecode.c:393 src/ui/gui/recode.ui:207
 msgid "New Value"
 msgstr "Nou Valor"
 
-#: src/language/commands/autorecode.c:381
+#: src/language/commands/autorecode.c:393
 msgid "Value Label"
 msgstr "Etiqueta de Valor"
 
-#: src/language/commands/autorecode.c:384
+#: src/language/commands/autorecode.c:396
 msgid "Old Value"
 msgstr "Valor antic"
 
@@ -3656,7 +3662,7 @@ msgstr "Valor"
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
 #: src/language/commands/sys-file-info.c:472
-#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:668
+#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:674
 #: src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Variable"
@@ -3984,7 +3990,7 @@ msgstr "Associació linear per linear"
 
 #: src/language/commands/crosstabs.c:1432
 #: src/language/commands/crosstabs.c:1477
-#: src/language/commands/crosstabs.c:1999
+#: src/language/commands/crosstabs.c:1997
 msgid "N of Valid Cases"
 msgstr "N de casos vàlids"
 
@@ -4137,12 +4143,12 @@ msgstr "Nominal segons Interval"
 msgid "Eta"
 msgstr "Eta"
 
-#: src/language/commands/crosstabs.c:1971
+#: src/language/commands/crosstabs.c:1969
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Raó de diferencies per a %s"
 
-#: src/language/commands/crosstabs.c:1980
+#: src/language/commands/crosstabs.c:1978
 #, c-format
 msgid "For cohort %s = "
 msgstr "Per a cohort %s ="
@@ -4665,123 +4671,123 @@ msgstr "Columnes"
 msgid "Layers"
 msgstr "Capes"
 
-#: src/language/commands/ctables.c:4970
+#: src/language/commands/ctables.c:4978
 msgid "Category labels may not be moved to another axis when sorting by a summary function."
 msgstr "Les etiquetes de categoria no es poden moure a una altre eix si estan ordenades per una funció de resum."
 
-#: src/language/commands/ctables.c:4973 src/language/commands/ctables.c:4990
-#: src/language/commands/ctables.c:5011 src/language/commands/ctables.c:5023
-#: src/language/commands/ctables.c:5034
+#: src/language/commands/ctables.c:4981 src/language/commands/ctables.c:4998
+#: src/language/commands/ctables.c:5019 src/language/commands/ctables.c:5031
+#: src/language/commands/ctables.c:5042
 msgid "This syntax moves category labels to another axis."
 msgstr "Aquesta sintaxi mou etiquetes de categoria cap a una altre eix."
 
-#: src/language/commands/ctables.c:4975
+#: src/language/commands/ctables.c:4983
 msgid "This syntax requests sorting by a summary function."
 msgstr "Aquesta sintaxi demana ordenar per una funció de resum."
 
-#: src/language/commands/ctables.c:4986
+#: src/language/commands/ctables.c:4994
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must be categorical, but %s is scale."
 msgstr "Per moure etiquetes de categoria d'un eix cap a una altre, les variables amb les etiquetes que es mouen han de ser categòriques, però %s és d'escala."
 
-#: src/language/commands/ctables.c:5004
+#: src/language/commands/ctables.c:5012
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same width, but %s has width %d and %s has width %d."
 msgstr "Per moure etiquetes de categoria d'un eix cap a una altre, les variables amb les etiquetes que es mouen han de tenir la mateixa amplada, però %s té amplada %d i %s té amplada %d."
 
-#: src/language/commands/ctables.c:5017
+#: src/language/commands/ctables.c:5025
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same value labels, but %s and %s have different value labels."
 msgstr "Per moure etiquetes de categoria d'un eix cap a una altre, les variables amb les etiquetes que es mouen han de tenir totes les mateixes etiquetes de valor, però %s i %s tenen diferents etiquetes de valor."
 
-#: src/language/commands/ctables.c:5028
+#: src/language/commands/ctables.c:5036
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same category specifications, but %s and %s have different category specifications."
 msgstr "Per moure etiquetes de categoria d'un eix cap a una altre, les variables amb les etiquetes que es mouen han de tenir totes les mateixes especificacions de categoria, però %s i %s tenen diferents especificacions de categoria."
 
-#: src/language/commands/ctables.c:5762
+#: src/language/commands/ctables.c:5770
 #, c-format
 msgid "New definition of &%s will override the previous definition."
 msgstr "La nova definició de &%s sobreescriurà la definició prèvia."
 
-#: src/language/commands/ctables.c:5765
+#: src/language/commands/ctables.c:5773
 msgid "This is the previous definition."
 msgstr "Aquesta és la definició prèvia."
 
-#: src/language/commands/ctables.c:5855
+#: src/language/commands/ctables.c:5863
 #, c-format
 msgid "Unknown computed category &%s."
 msgstr "Categoria calculada desconeguda &%s."
 
-#: src/language/commands/ctables.c:6144
+#: src/language/commands/ctables.c:6152
 msgid "MINCOLWIDTH must not be greater than MAXCOLWIDTH."
 msgstr "MINCOLWIDTH no ha de ser més gran que MAXCOLWIDTH."
 
-#: src/language/commands/ctables.c:6266
+#: src/language/commands/ctables.c:6274
 msgid "TABLE must appear before this subcommand."
 msgstr "TABLE ha d'aparèixer abans d'aquesta subordre."
 
-#: src/language/commands/ctables.c:6347
+#: src/language/commands/ctables.c:6355
 msgid "At least one variable must be specified."
 msgstr "Al menys una variable ha de ser especificada."
 
-#: src/language/commands/ctables.c:6361
+#: src/language/commands/ctables.c:6369
 msgid "Scale variables may appear only on one axis."
 msgstr "Variables d'escala han d'aparèixer només en un eix."
 
-#: src/language/commands/ctables.c:6364
+#: src/language/commands/ctables.c:6372
 msgid "This scale variable appears on the rows axis."
 msgstr "Aquesta variable d'escala apareix a l'eix de files."
 
-#: src/language/commands/ctables.c:6367
+#: src/language/commands/ctables.c:6375
 msgid "This scale variable appears on the columns axis."
 msgstr "Aquesta variable d'escala apareix a l'eix de columnes."
 
-#: src/language/commands/ctables.c:6370
+#: src/language/commands/ctables.c:6378
 msgid "This scale variable appears on the layer axis."
 msgstr "Aquesta variable d'escala apareix a l'eix de files de capa."
 
-#: src/language/commands/ctables.c:6386
+#: src/language/commands/ctables.c:6394
 msgid "Summaries may appear only on one axis."
 msgstr "Els resums han d'aparèixer només en un eix."
 
-#: src/language/commands/ctables.c:6392
+#: src/language/commands/ctables.c:6400
 msgid "This variable on the rows axis has a summary."
 msgstr "Aquesta variable a l'eix de files té un resum."
 
-#: src/language/commands/ctables.c:6394
+#: src/language/commands/ctables.c:6402
 msgid "This variable on the columns axis has a summary."
 msgstr "Aquesta variable a l'eix de columnes té un resum."
 
-#: src/language/commands/ctables.c:6395
+#: src/language/commands/ctables.c:6403
 msgid "This variable on the layers axis has a summary."
 msgstr "Aquesta variable a l'eix de capes té un resum."
 
-#: src/language/commands/ctables.c:6398
+#: src/language/commands/ctables.c:6406
 msgid "This is a scale variable, so it always has a summary even if the syntax does not explicitly specify one."
 msgstr "Aquesta és una variable d'escala, per tant sempre tindrà un resum fins i tot si la sintaxi no n'especifica un explícitament."
 
-#: src/language/commands/ctables.c:6499
+#: src/language/commands/ctables.c:6507
 msgid "ROWLABELS and COLLABELS may not both be specified."
 msgstr "ROWLABELS i COLLABELS no poden ser especificades alhora."
 
-#: src/language/commands/ctables.c:6504
+#: src/language/commands/ctables.c:6512
 msgid "This is the first specification."
 msgstr "Aquesta és la primera especificació."
 
-#: src/language/commands/ctables.c:6506
+#: src/language/commands/ctables.c:6514
 msgid "This is the second specification."
 msgstr "Aquesta és la segona especificació."
 
-#: src/language/commands/ctables.c:6624
+#: src/language/commands/ctables.c:6632
 msgid "Support for SIGTEST not yet implemented."
 msgstr "Encara no s'ha implementat suport per a SIGTEST."
 
-#: src/language/commands/ctables.c:6771
+#: src/language/commands/ctables.c:6779
 msgid "Support for COMPARETEST not yet implemented."
 msgstr "Encara no s'ha implementat suport per a COMPARETEST."
 
-#: src/language/commands/ctables.c:6788
+#: src/language/commands/ctables.c:6796
 msgid "This subcommand must appear before TABLE."
 msgstr "Aquesta subordre ha d'aparèixer abans de TABLE."
 
@@ -7762,16 +7768,16 @@ msgstr "Error de sintaxi tot esperant END REPEAT."
 msgid "Expansion %zu of %zu"
 msgstr "Expansió %zu de %zu"
 
-#: src/language/commands/repeat.c:358
+#: src/language/commands/repeat.c:359
 msgid "Ranges may only have integer bounds."
 msgstr "Els intervals només poden tenir límits enters."
 
-#: src/language/commands/repeat.c:373
+#: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "%ld TO %ld és un interval invalid."
 
-#: src/language/commands/repeat.c:421
+#: src/language/commands/repeat.c:422
 #, c-format
 msgid "No matching %s."
 msgstr "%s no coincideix."
@@ -9627,31 +9633,31 @@ msgstr "Var"
 msgid "Var%04d"
 msgstr "Var%04d"
 
-#: src/ui/gui/psppire-dictview.c:630
+#: src/ui/gui/psppire-dictview.c:636
 msgid "Variable Details"
 msgstr "Detalls de variable"
 
-#: src/ui/gui/psppire-dictview.c:705
+#: src/ui/gui/psppire-dictview.c:711
 msgid "Prefer variable labels"
 msgstr "Prefereixo les etiquetes de variable"
 
-#: src/ui/gui/psppire-dictview.c:719
+#: src/ui/gui/psppire-dictview.c:725
 msgid "Default sort order"
 msgstr "Ordenació per defecte"
 
-#: src/ui/gui/psppire-dictview.c:725
+#: src/ui/gui/psppire-dictview.c:731
 msgid "Unsorted (dictionary order)"
 msgstr "No ordenat (segons diccionari)"
 
-#: src/ui/gui/psppire-dictview.c:730
+#: src/ui/gui/psppire-dictview.c:736
 msgid "Sort by name"
 msgstr "Ordenat per nom"
 
-#: src/ui/gui/psppire-dictview.c:735
+#: src/ui/gui/psppire-dictview.c:741
 msgid "Sort by label"
 msgstr "Ordenat per etiqueta"
 
-#: src/ui/gui/psppire-dictview.c:743
+#: src/ui/gui/psppire-dictview.c:749
 msgid "Variable Information"
 msgstr "Informació de variable"
 
@@ -9980,6 +9986,10 @@ msgstr "Següent Consell"
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "Tancar"
+
+#: src/ui/gui/main.c:235
+msgid "_Show tips at startup"
+msgstr "Mo_strar consells a l'ininci"
 
 #: src/ui/gui/main.c:411
 msgid "Psppire: Fatal Error"
@@ -12677,15 +12687,19 @@ msgstr "Portabilitat; Funciona en moltes diferent computadors i molt diversos si
 msgid "PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data."
 msgstr "PSPP està particularment adreçat a estadístics, científics socials i estudiants que requereixin d'anàlisi convenient de dades de mostreig."
 
-#: doc/org.gnu.pspp.metainfo.xml.in:42
+#: doc/org.gnu.pspp.metainfo.xml.in:32
+msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+msgstr "El Flatpak per a PSPP inclou interficies grafica y línia-d'ordres. Per a utilitzar la interficie línia-d'ordres, executar: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+
+#: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
 msgstr "GNU PSPP Vista de Variables"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:51
+#: doc/org.gnu.pspp.metainfo.xml.in:52
 msgid "statistics"
 msgstr "Estadístics"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:55
+#: doc/org.gnu.pspp.metainfo.xml.in:56
 msgid "Free Software Foundation"
 msgstr "Free Software Foundation"
 

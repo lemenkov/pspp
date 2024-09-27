@@ -5,10 +5,10 @@
 # Meskó Balázs <mesko.balazs@fsf.hu>, 2016, 2017, 2019, 2022, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 2.0.0-pre3\n"
+"Project-Id-Version: pspp 2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2023-11-02 14:21-0700\n"
-"PO-Revision-Date: 2024-02-18 18:16+0100\n"
+"POT-Creation-Date: 2024-03-21 16:29-0700\n"
+"PO-Revision-Date: 2024-07-10 11:36+0200\n"
 "Last-Translator: Meskó Balázs <mesko.balazs@fsf.hu>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
@@ -17,28 +17,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.4\n"
+"X-Generator: Poedit 3.4.4\n"
 
-#: gl/clean-temp.c:235
+#: gl/clean-temp.c:234
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "nem található átmeneti könyvtár, próbálja beállítani a $TMPDIR értékét"
 
-#: gl/clean-temp.c:250
+#: gl/clean-temp.c:249
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "nem sikerült átmeneti könyvtárat létrehozni a(z) „%s” sablon használatával"
 
-#: gl/clean-temp.c:371
+#: gl/clean-temp.c:370
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "nem sikerült eltávolítani a(z) %s átmeneti könyvtárat"
 
-#: gl/clean-temp-simple.c:297
+#: gl/clean-temp-simple.c:296
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "nem sikerült eltávolítani a(z) %s átmeneti fájlt"
 
-#: gl/error.c:195
+#: gl/error.c:194
 msgid "Unknown system error"
 msgstr "Ismeretlen rendszerhiba"
 
@@ -242,7 +242,7 @@ msgstr "Általános súgó a GNU szoftverek használatához: <%s>\n"
 msgid "memory exhausted"
 msgstr "a memória elfogyott"
 
-#: gl/xbinary-io.c:37
+#: gl/xbinary-io.c:36
 msgid "failed to set file descriptor text/binary mode"
 msgstr "nem sikerült a fájlleírót szöveges/bináris módra állítani"
 
@@ -523,7 +523,7 @@ msgid "scratch"
 msgstr "segéd"
 
 #. TRANSLATORS: "bytes" is correct, not characters due to UTF encoding
-#: src/data/dictionary.c:1482
+#: src/data/dictionary.c:1463
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Dokumentum sor csonkolása %d bájtra."
@@ -2625,7 +2625,7 @@ msgstr "A(z) %s csak egyszer adható meg a(z) %s alparancson belül."
 msgid "Required %s specification missing from %s subcommand."
 msgstr "A szükséges %s megadás hiányzik a(z) %s alparancsból."
 
-#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:210
+#: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
 msgid "Syntax error expecting end of command."
 msgstr "Szintaktikai hiba a parancs végén."
@@ -3421,36 +3421,40 @@ msgstr "A(z) %s változó %s a célfájlban, de %s a forrásfájlban."
 msgid "No matching variables found between the source and target files."
 msgstr "Nem találhatóak illeszkedő változók a forrás és a célfájlban."
 
-#: src/language/commands/autorecode.c:156
+#: src/language/commands/autorecode.c:157
 #, c-format
 msgid "Source variable count (%zu) does not match target variable count (%zu)."
 msgstr "A forrásváltozók száma (%zu) nem egyezik a célváltozók számával (%zu)."
 
-#: src/language/commands/autorecode.c:168
+#: src/language/commands/autorecode.c:169
 #, c-format
 msgid "Target variable %s duplicates existing variable %s."
 msgstr "A(z) %s célváltozó megismétli a létező %s változót."
 
-#: src/language/commands/autorecode.c:225
+#: src/language/commands/autorecode.c:226
 #, c-format
 msgid "With GROUP, variables may not mix string variables (such as %s) and numeric variables (such as %s)."
 msgstr "A CSOPORT esetén a változók nem keverheti a karakterlánc (például: %s) és a numerikus változókat (például: %s)"
 
-#: src/language/commands/autorecode.c:368
+#: src/language/commands/autorecode.c:243
+msgid "AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent."
+msgstr "Az AUTORECODE figyelmen kívül hagyja a TEMPORARY-t. Az átmeneti átalakítások véglegesek lesznek."
+
+#: src/language/commands/autorecode.c:380
 msgid "Recoding grouped variables."
 msgstr "Csoportosított változók átkódolása."
 
-#: src/language/commands/autorecode.c:370
+#: src/language/commands/autorecode.c:382
 #, c-format
 msgid "Recoding %s into %s (%s)."
 msgstr "A(z) %s átkódolása erre: %s (%s)."
 
-#: src/language/commands/autorecode.c:374
+#: src/language/commands/autorecode.c:386
 #, c-format
 msgid "Recoding %s into %s."
 msgstr "A(z) %s átkódolása erre: %s."
 
-#: src/language/commands/autorecode.c:380
+#: src/language/commands/autorecode.c:392
 #: src/language/commands/data-parser.c:726
 #: src/language/commands/data-parser.c:772 src/language/commands/mrsets.c:571
 #: src/language/commands/print.c:450 src/language/commands/sys-file-info.c:430
@@ -3460,15 +3464,15 @@ msgstr "A(z) %s átkódolása erre: %s."
 msgid "Attributes"
 msgstr "Attribútumok"
 
-#: src/language/commands/autorecode.c:381 src/ui/gui/recode.ui:207
+#: src/language/commands/autorecode.c:393 src/ui/gui/recode.ui:207
 msgid "New Value"
 msgstr "Új érték"
 
-#: src/language/commands/autorecode.c:381
+#: src/language/commands/autorecode.c:393
 msgid "Value Label"
 msgstr "Értékcímke"
 
-#: src/language/commands/autorecode.c:384
+#: src/language/commands/autorecode.c:396
 msgid "Old Value"
 msgstr "Régi érték"
 
@@ -3660,7 +3664,7 @@ msgstr "Érték"
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
 #: src/language/commands/sys-file-info.c:472
-#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:668
+#: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-dictview.c:674
 #: src/ui/gui/psppire-data-editor.c:502
 msgid "Variable"
 msgstr "Változó"
@@ -3988,7 +3992,7 @@ msgstr "Lineáris-lineáris kapcsolat"
 
 #: src/language/commands/crosstabs.c:1432
 #: src/language/commands/crosstabs.c:1477
-#: src/language/commands/crosstabs.c:1999
+#: src/language/commands/crosstabs.c:1997
 msgid "N of Valid Cases"
 msgstr "N / érvényes esetek"
 
@@ -4141,12 +4145,12 @@ msgstr "Nominális – intervallum"
 msgid "Eta"
 msgstr "Éta"
 
-#: src/language/commands/crosstabs.c:1971
+#: src/language/commands/crosstabs.c:1969
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Esélyhányad ehhez: %s"
 
-#: src/language/commands/crosstabs.c:1980
+#: src/language/commands/crosstabs.c:1978
 #, c-format
 msgid "For cohort %s = "
 msgstr "A(z) %s csoportnál = "
@@ -4669,123 +4673,123 @@ msgstr "Oszlopok"
 msgid "Layers"
 msgstr "Rétegek"
 
-#: src/language/commands/ctables.c:4970
+#: src/language/commands/ctables.c:4978
 msgid "Category labels may not be moved to another axis when sorting by a summary function."
 msgstr "A kategóriákat nem lehet másik tengelyre helyezni, ha összegzőfüggvény alapján rendez."
 
-#: src/language/commands/ctables.c:4973 src/language/commands/ctables.c:4990
-#: src/language/commands/ctables.c:5011 src/language/commands/ctables.c:5023
-#: src/language/commands/ctables.c:5034
+#: src/language/commands/ctables.c:4981 src/language/commands/ctables.c:4998
+#: src/language/commands/ctables.c:5019 src/language/commands/ctables.c:5031
+#: src/language/commands/ctables.c:5042
 msgid "This syntax moves category labels to another axis."
 msgstr "Ez a szintaktika a kategóriacímkéket egy másik tengelyre helyezi át."
 
-#: src/language/commands/ctables.c:4975
+#: src/language/commands/ctables.c:4983
 msgid "This syntax requests sorting by a summary function."
 msgstr "Ez a szintaktika egy összegző függvény szerinti rendezést kér."
 
-#: src/language/commands/ctables.c:4986
+#: src/language/commands/ctables.c:4994
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must be categorical, but %s is scale."
 msgstr "A kategóriacímkék egy másik tengelyre történő helyezéséhez az áthelyezendő változóknak kategóriaváltozóknak kell lenniük, de a(z) %s skálaváltozó."
 
-#: src/language/commands/ctables.c:5004
+#: src/language/commands/ctables.c:5012
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same width, but %s has width %d and %s has width %d."
 msgstr "A kategóriacímkék egy másik tengelyre történő helyezéséhez az áthelyezendő változóknak egyforma szélességűnek kell lenniük, de a(z) %s %d széles, a(z) %s pedig %d széles."
 
-#: src/language/commands/ctables.c:5017
+#: src/language/commands/ctables.c:5025
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same value labels, but %s and %s have different value labels."
 msgstr "A kategóriacímkék egy másik tengelyre történő helyezéséhez az áthelyezendő változóknak egyforma értékcímkékkel kell rendelkezniük, de a(z) %s és a(z) %s eltérő értékcímkékkel rendelkezik."
 
-#: src/language/commands/ctables.c:5028
+#: src/language/commands/ctables.c:5036
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must all have the same category specifications, but %s and %s have different category specifications."
 msgstr "A kategóriacímkék egy másik tengelyre történő helyezéséhez az áthelyezendő változóknak egyforma kategóriamegadással kell rendelkezniük, de a(z) %s és a(z) %s eltérő kategóriamegadással rendelkezik."
 
-#: src/language/commands/ctables.c:5762
+#: src/language/commands/ctables.c:5770
 #, c-format
 msgid "New definition of &%s will override the previous definition."
 msgstr "A(z) &%s új megadása felülírja az előző definíciót."
 
-#: src/language/commands/ctables.c:5765
+#: src/language/commands/ctables.c:5773
 msgid "This is the previous definition."
 msgstr "Ez az előző definíció."
 
-#: src/language/commands/ctables.c:5855
+#: src/language/commands/ctables.c:5863
 #, c-format
 msgid "Unknown computed category &%s."
 msgstr "Ismeretlen &%s számított kategória."
 
-#: src/language/commands/ctables.c:6144
+#: src/language/commands/ctables.c:6152
 msgid "MINCOLWIDTH must not be greater than MAXCOLWIDTH."
 msgstr "A MINCOLWIDTH nem lehet nagyobb, mint a MAXCOLWIDTH."
 
-#: src/language/commands/ctables.c:6266
+#: src/language/commands/ctables.c:6274
 msgid "TABLE must appear before this subcommand."
 msgstr "A TABLE-nek ezen alparancs előtt kell megjelennie."
 
-#: src/language/commands/ctables.c:6347
+#: src/language/commands/ctables.c:6355
 msgid "At least one variable must be specified."
 msgstr "Legalább egy változót meg kell adni."
 
-#: src/language/commands/ctables.c:6361
+#: src/language/commands/ctables.c:6369
 msgid "Scale variables may appear only on one axis."
 msgstr "A skálaváltozók csak egy tengelyen jelenhetnek meg."
 
-#: src/language/commands/ctables.c:6364
+#: src/language/commands/ctables.c:6372
 msgid "This scale variable appears on the rows axis."
 msgstr "Ez a skálaváltozó csak a sorok tengelyén jelenhet meg."
 
-#: src/language/commands/ctables.c:6367
+#: src/language/commands/ctables.c:6375
 msgid "This scale variable appears on the columns axis."
 msgstr "Ez a skálaváltozó csak az oszlopok tengelyén jelenhet meg."
 
-#: src/language/commands/ctables.c:6370
+#: src/language/commands/ctables.c:6378
 msgid "This scale variable appears on the layer axis."
 msgstr "Ez a skálaváltozó csak a réteg tengelyén jelenhet meg."
 
-#: src/language/commands/ctables.c:6386
+#: src/language/commands/ctables.c:6394
 msgid "Summaries may appear only on one axis."
 msgstr "Az összegzések csak egy tengelyen jelenhetnek meg."
 
-#: src/language/commands/ctables.c:6392
+#: src/language/commands/ctables.c:6400
 msgid "This variable on the rows axis has a summary."
 msgstr "Ez a sorok tengelyén lévő változó rendelkezik összegzéssel."
 
-#: src/language/commands/ctables.c:6394
+#: src/language/commands/ctables.c:6402
 msgid "This variable on the columns axis has a summary."
 msgstr "Ez az oszlopok tengelyén lévő változó rendelkezik összegzéssel."
 
-#: src/language/commands/ctables.c:6395
+#: src/language/commands/ctables.c:6403
 msgid "This variable on the layers axis has a summary."
 msgstr "Ez a rétegek tengelyén lévő változó rendelkezik összegzéssel."
 
-#: src/language/commands/ctables.c:6398
+#: src/language/commands/ctables.c:6406
 msgid "This is a scale variable, so it always has a summary even if the syntax does not explicitly specify one."
 msgstr "Ez egy skálaváltozó, így mindig rendelkezik összegzéssel, még akkor is, ha a szintaktikája nem ad meg explicit módon egyet."
 
-#: src/language/commands/ctables.c:6499
+#: src/language/commands/ctables.c:6507
 msgid "ROWLABELS and COLLABELS may not both be specified."
 msgstr "A ROWLABELS és a COLLABELS nem adható meg együtt."
 
-#: src/language/commands/ctables.c:6504
+#: src/language/commands/ctables.c:6512
 msgid "This is the first specification."
 msgstr "Ez az első megadás."
 
-#: src/language/commands/ctables.c:6506
+#: src/language/commands/ctables.c:6514
 msgid "This is the second specification."
 msgstr "Ez a második megadás."
 
-#: src/language/commands/ctables.c:6624
+#: src/language/commands/ctables.c:6632
 msgid "Support for SIGTEST not yet implemented."
 msgstr "A SIGTEST támogatása még nincs megvalósítva."
 
-#: src/language/commands/ctables.c:6771
+#: src/language/commands/ctables.c:6779
 msgid "Support for COMPARETEST not yet implemented."
 msgstr "A COMPARETEST támogatása még nincs megvalósítva."
 
-#: src/language/commands/ctables.c:6788
+#: src/language/commands/ctables.c:6796
 msgid "This subcommand must appear before TABLE."
 msgstr "Ennek az alparancsnak a TABLE előtt kell megjelennie."
 
@@ -7771,16 +7775,16 @@ msgstr "Szintaktikai hiba: END REPEAT várva."
 msgid "Expansion %zu of %zu"
 msgstr "%zu. / %zu kibontás"
 
-#: src/language/commands/repeat.c:358
+#: src/language/commands/repeat.c:359
 msgid "Ranges may only have integer bounds."
 msgstr "A tartományoknak csak egész korlátja lehet."
 
-#: src/language/commands/repeat.c:373
+#: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "A(z) %ld TO %ld egy érvénytelen tartomány."
 
-#: src/language/commands/repeat.c:421
+#: src/language/commands/repeat.c:422
 #, c-format
 msgid "No matching %s."
 msgstr "Nincs illeszkedő %s."
@@ -9636,31 +9640,31 @@ msgstr "Valtozo"
 msgid "Var%04d"
 msgstr "Valtozo%04d"
 
-#: src/ui/gui/psppire-dictview.c:630
+#: src/ui/gui/psppire-dictview.c:636
 msgid "Variable Details"
 msgstr "Változó részletei"
 
-#: src/ui/gui/psppire-dictview.c:705
+#: src/ui/gui/psppire-dictview.c:711
 msgid "Prefer variable labels"
 msgstr "Változócímkék előnyben részesítése"
 
-#: src/ui/gui/psppire-dictview.c:719
+#: src/ui/gui/psppire-dictview.c:725
 msgid "Default sort order"
 msgstr "Alapértelmezett rendezési sorrend"
 
-#: src/ui/gui/psppire-dictview.c:725
+#: src/ui/gui/psppire-dictview.c:731
 msgid "Unsorted (dictionary order)"
 msgstr "Nem rendezett (szótári rendezés)"
 
-#: src/ui/gui/psppire-dictview.c:730
+#: src/ui/gui/psppire-dictview.c:736
 msgid "Sort by name"
 msgstr "Rendezés név szerint"
 
-#: src/ui/gui/psppire-dictview.c:735
+#: src/ui/gui/psppire-dictview.c:741
 msgid "Sort by label"
 msgstr "Rendezés címke szerint"
 
-#: src/ui/gui/psppire-dictview.c:743
+#: src/ui/gui/psppire-dictview.c:749
 msgid "Variable Information"
 msgstr "Változóinformációk"
 
@@ -9999,6 +10003,10 @@ msgstr "_Következő tipp"
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "_Bezárás"
+
+#: src/ui/gui/main.c:235
+msgid "_Show tips at startup"
+msgstr "_Tippek megjelenítése indításkor"
 
 #: src/ui/gui/main.c:411
 msgid "Psppire: Fatal Error"
@@ -12696,15 +12704,19 @@ msgstr "Hordozhatóság; számos különböző számítógépen, és sok külön
 msgid "PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data."
 msgstr "A PSPP különösen a statisztikusokat, társadalomtudósokat és diákokat célozza, akiknek gyors és kényelmes mintaadat-elemzésre van szükségük."
 
-#: doc/org.gnu.pspp.metainfo.xml.in:42
+#: doc/org.gnu.pspp.metainfo.xml.in:32
+msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+msgstr "A PSPP Flatpak csomagja grafikus és parancssoros felületeket tartalmaz. A parancssoros felület használatához futtassa a következőt: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+
+#: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
 msgstr "GNU PSPP változónézet"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:51
+#: doc/org.gnu.pspp.metainfo.xml.in:52
 msgid "statistics"
 msgstr "statisztika"
 
-#: doc/org.gnu.pspp.metainfo.xml.in:55
+#: doc/org.gnu.pspp.metainfo.xml.in:56
 msgid "Free Software Foundation"
 msgstr "Free Software Foundation"
 
