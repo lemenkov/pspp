@@ -64,7 +64,7 @@ ALL_TRANSLATABLE_FILES = \
 
 $(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	@$(MKDIR_P) po
-	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
+	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ --keyword=C_:1c,2 --keyword=NC_ -o $@,tmp
 	$(AM_V_at)test -z "$(UI_FILES)" || $(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j doc/org.gnu.pspp.metainfo.xml.in -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j doc/org.gnu.pspp.desktop.in -o $@,tmp

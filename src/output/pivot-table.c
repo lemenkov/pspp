@@ -2860,8 +2860,20 @@ pivot_value_new_user_text (const char *text, size_t length)
 struct pivot_value *
 pivot_value_new_text (const char *text)
 {
-  char *c = xstrdup (text);
-  char *local = xstrdup (gettext (c));
+  return pivot_value_new_text_translate (text, gettext (text));
+}
+
+/* Creates and returns new pivot_value whose original contents is
+   ORIG_TEXT and translated contents is TRANS_TEXT.
+   This function is for text strings that are part of the PSPP user
+   interface, such as names of procedures, statistics, annotations, error
+   messages, etc.  For strings that come from the user, use
+   pivot_value_new_user_text(). */
+struct pivot_value *
+pivot_value_new_text_translate (const char* orig_text, const char *trans_text)
+{
+  char *c = xstrdup (orig_text);
+  char *local = xstrdup (trans_text);
 
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {

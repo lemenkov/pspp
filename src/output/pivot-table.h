@@ -817,6 +817,7 @@ struct pivot_value *pivot_value_new_variable__ (const char *name,
 
 /* Values from text strings. */
 struct pivot_value *pivot_value_new_text (const char *);
+struct pivot_value *pivot_value_new_text_translate (const char *, const char *);
 struct pivot_value *pivot_value_new_text_format (const char *, ...)
 #if defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__>= 4) || __GNUC__ > 4)
   __attribute__((format(gnu_printf, 1, 2)));

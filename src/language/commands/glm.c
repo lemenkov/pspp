@@ -48,6 +48,8 @@
 #include "gettext.h"
 #define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
+#define NC_(msgctxt,msgid) msgid
+#define C_(msgctxt,msgid) pgettext (msgctxt, msgid)
 
 struct glm_spec
   {
@@ -718,8 +720,9 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
   }
 
   {
-    int row = pivot_category_create_leaf (source->root,
-                                          pivot_value_new_text (N_("Error")));
+    int row = pivot_category_create_leaf (
+      source->root,
+      pivot_value_new_text_translate ("Error", C_("statistics", "Error")));
     const double df = n_total - df_corr;
     const double ssq = gsl_vector_get (ws->ssq, 0);
     const double mse = ssq / df;
