@@ -111,7 +111,7 @@ tarballs="$tarballs libepoxy-1.5.5.tar.xz"
 tarballs="$tarballs gtk+-3.24.27.tar.xz"
 tarballs="$tarballs gsl-2.6.tar.gz"
 tarballs="$tarballs gtksourceview-3.24.9.tar.xz"
-tarballs="$tarballs spread-sheet-widget-0.8.tar.gz"
+tarballs="$tarballs spread-sheet-widget-0.10.tar.gz"
 tarballs="$tarballs hicolor-icon-theme-0.17.tar.xz"
 tarballs="$tarballs adwaita-icon-theme-3.38.0.tar.xz"
 
@@ -149,9 +149,9 @@ for t in $tarballs ; do
         gettext-0.21.tar.xz)
             url="https://ftp.gnu.org/gnu/gettext/gettext-0.21.tar.xz";
             hash=d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192;;
-        spread-sheet-widget-0.8.tar.gz)
-            url="https://alpha.gnu.org/gnu/ssw/spread-sheet-widget-0.8.tar.gz"
-            hash=8589d8298fcf3b5850d0968b04801a4f40faf0555544f6cc9d954b0162e9954b;;
+        spread-sheet-widget-0.10.tar.gz)
+            url="https://alpha.gnu.org/gnu/ssw/spread-sheet-widget-0.10.tar.gz";
+            hash=80692ec350271995e147dc759929cdd79d3b645e6b5efaa6b57f4d2d05e847e5;;
         gtksourceview-3.24.9.tar.xz)
             url="https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.9.tar.xz"
             hash=699d76a453e6a3d3331906346e3dbfa25f2cbc9ec090e46635e9c6bb595e07c2;;
