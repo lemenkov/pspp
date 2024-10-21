@@ -3500,7 +3500,7 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
   long int n = (end >= start && by > 0 ? (end - start + by) / by
                 : end <= start && by < 0 ? (start - end - by) / -by
                 : 0);
-  gsl_matrix *m = gsl_matrix_alloc (1, n);
+  gsl_matrix *m = n <= (long) INT32_MAX ? gsl_matrix_alloc (1, n) : NULL;
   if (m == NULL)
     {
       msg_at (SE, matrix_expr_location (e),
