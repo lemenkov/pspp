@@ -179,7 +179,7 @@ on_local_options (GApplication * application,
 static const char *tips[] =
   {
 #ifdef NON_FREE_OS
-   N_("PSPP runs best on free platforms such as GNU and GNU/Linux.  " NON_FREE_OS " is a non-free system.  As such, certain features might work sub-optimally.  For best results use a free system instead."),
+   N_("PSPP runs best on free platforms such as GNU and GNU/Linux.  This computer is running a non-free operating system, so some features might work sub-optimally.  For best results, use a free system instead."),
 #endif
    N_("Right click on variable lists to change between viewing the variables' names and their labels."),
    N_("Click \"Paste\" instead of \"OK\" when running procedures.  This allows you to edit your commands before running them and you have better control over your work."),
