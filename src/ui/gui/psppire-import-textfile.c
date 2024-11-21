@@ -697,7 +697,7 @@ textfile_create_reader (PsppireImportAssistant *ia)
     {
       struct fmt_spec fs = fmt_guesser_guess (fg[i]);
 
-      fmt_fix (&fs, FMT_FOR_INPUT);
+      fmt_fix (&fs, FMT_FOR_OUTPUT);
 
       struct variable *var = dict_get_var (ia->dict, i);
 
