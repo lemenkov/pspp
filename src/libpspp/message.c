@@ -399,7 +399,7 @@ msg_to_string (const struct msg *m)
   ds_put_cstr (&s, m->text);
 
   const struct msg_location *loc = m->location;
-  if (m->category != MSG_C_GENERAL
+  if (m->category != MSG_C_GENERAL && !msg_location_is_empty(loc)
       && loc->src && loc->start.line && loc->start.column
       && msg_handler.lex_source_get_line)
     {
