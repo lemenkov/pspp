@@ -109,8 +109,8 @@ Then you can build with the following commands:
     make -f Smake
     cd ../build
     ../pspp/configure --prefix=/Users/USER/mypspp/install \
-                  LDFLAGS=-L/opt/local/lib \
-		  CPPFLAGS=-I/opt/local/include
+      LDFLAGS=-L/opt/local/lib \
+      CPPFLAGS=-I/opt/local/include
     make
     make install
     ../install/bin/psppire (If everything worked, you should see psppire...)
