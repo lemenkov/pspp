@@ -83,17 +83,17 @@ or for a more thorough test:
 Building from git on Mac OS
 ---------------------------
 
-You can build on MacOS in the macports environment. After installing all
+You can build on MacOS in the brew environment. After installing all
 required packages to resolve library dependencies and autotools e.t.c, you
 run make -f Smake as described above.
 
-The macports system provides the libraries and header files in a separate
+The brew system provides the libraries and header files in a separate
 location from the MacOS system libraries. The typical locations are
 
-Libraries: /opt/local/lib
-Headers:   /opt/local/include
+Libraries: /usr/local/lib
+Headers:   /usr/local/include
 
-pspp under macports will be linked against the macports libraries. The configure
+pspp under brew will be linked against the brew libraries. The configure
 script has to be informed about the library and header locations. Assume the following
 directory structure for an out of tree build:
 
@@ -109,8 +109,21 @@ Then you can build with the following commands:
     make -f Smake
     cd ../build
     ../pspp/configure --prefix=/Users/USER/mypspp/install \
-      LDFLAGS=-L/opt/local/lib \
-      CPPFLAGS=-I/opt/local/include
+      LDFLAGS=-L/usr/local/lib \
+      CPPFLAGS=-I/usr/local/include \
+      CFLAGS='-g -O0'
     make
     make install
     ../install/bin/psppire (If everything worked, you should see psppire...)
+
+You need to run "make install" because psppire searches for some setup files which
+must be present with respect to the "prefix" setting. For debugging with a
+debugger it is better to launch the executable in the build directory.
+
+    cd <build>
+    lldb ./src/ui/gui/.libs/psppire
+
+Inside lldb you need to set the environment variable DYLD_LIBRARY_PATH such that
+psppire finds the debug symobls for code that is in libraries.
+
+    env DYLD_LIBRARY_PATH=<builddir>/src/ui/gui/.libs
