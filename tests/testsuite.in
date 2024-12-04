@@ -26,6 +26,11 @@ m4_ifndef([AT_SKIP_IF],
 && exit 77 || exit 0], [0], [ignore], [ignore])])])
 
 m4_divert_text([PREPARE_TESTS], [dnl
+if test -z "$RUNNER" && test -z "$AUTOTEST_PATH"; then
+    echo >&2 "Use \"make check\" to run the testsuite."
+    exit 1
+fi
+
 if test X"$RUNNER" != X; then
     wrapper_dir=`pwd`/wrappers
     rm -f "$wrapper_dir"/*

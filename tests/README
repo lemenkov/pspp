@@ -1,0 +1,2 @@
+This directory contains PSPP self-tests.  To run them, run "make
+check" in the top-level directory.

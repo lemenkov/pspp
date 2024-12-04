@@ -278,6 +278,7 @@ tests_output_tex_strings_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
 
 
 EXTRA_DIST += \
+	tests/README \
 	tests/coverage.sh \
 	tests/data/repeating-2.ods \
 	tests/data/simple.ods \
