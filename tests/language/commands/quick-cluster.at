@@ -350,14 +350,14 @@ AT_CHECK([pspp -O format=csv quick-cluster.sps], [0], [dnl
 Table: Initial Cluster Centers
 ,Cluster,,
 ,1,2,3
-x,-11,-12,11
-y,-12,11,11
+x,-10.80,-11.65,11.10
+y,-11.76,10.81,10.91
 
 Table: Final Cluster Centers
 ,Cluster,,
 ,1,2,3
-x,-10,-10,10
-y,-10,10,10
+x,-10.22,-10.14,10.28
+y,-10.01,10.22,9.89
 
 Table: Number of Cases in each Cluster
 ,,Count

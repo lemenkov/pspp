@@ -549,9 +549,7 @@ quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc
     for (size_t j = 0; j < qc->n_vars; j++)
       {
         double x = gsl_matrix_get (matrix, kmeans->group_order->data[i], j);
-        union value v = { .f = x };
-        pivot_table_put2 (table, i, j,
-                          pivot_value_new_var_value (qc->vars[j], &v));
+        pivot_table_put2 (table, i, j, pivot_value_new_number (x));
       }
 
   pivot_table_submit (table);
