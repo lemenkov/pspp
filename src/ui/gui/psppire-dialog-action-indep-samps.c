@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2016  Free Software Foundation
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2016, 2025  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -275,13 +275,12 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
           act->grp_val[0].s[0] = '\0';
           act->grp_val[1].s[0] = '\0';
         }
-    }
 
-  struct variable *old_grp_var = act->grp_var;
-  if (v)
-    act->grp_var = var_ref (v);
-  if (old_grp_var)
-    var_unref (old_grp_var);
+      struct variable *old_grp_var = act->grp_var;
+      act->grp_var = var_ref (v);
+      if (old_grp_var)
+        var_unref (old_grp_var);
+    }
   act->grp_var_width = v ? var_get_width (v) : -1;
 }
 
@@ -433,4 +432,3 @@ psppire_dialog_action_indep_samps_init (PsppireDialogActionIndepSamps *act)
   act->grp_var_width = -1;
   act->group_defn = GROUPS_UNDEF;
 }
-

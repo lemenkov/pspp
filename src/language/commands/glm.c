@@ -45,6 +45,7 @@
 #include "math/moments.h"
 #include "output/pivot-table.h"
 
+#include <locale.h>
 #include "gettext.h"
 #define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
