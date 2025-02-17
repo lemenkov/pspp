@@ -3998,8 +3998,8 @@ matrix.sps:22.17: error: MATRIX: x is not a variable name.
    22 | GET x/VARIABLES=x.
       |                 ^
 
-matrix.sps:23.17-23.22: error: MATRIX: c TO a is not valid syntax since c
-precedes a in the dictionary.
+matrix.sps:23.17-23.22: error: MATRIX: c TO a is not valid syntax since c is
+after a in the dictionary.
    23 | GET x/VARIABLES=c TO a.
       |                 ^~~~~~
 

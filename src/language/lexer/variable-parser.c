@@ -355,7 +355,7 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
                   const char *last_name = var_get_name (last_var);
                   lex_ofs_error (lexer, start_ofs, end_ofs,
                                  _("%s TO %s is not valid syntax since %s "
-                                   "precedes %s in the dictionary."),
+                                   "is after %s in the dictionary."),
                                  first_name, last_name, first_name, last_name);
                   goto fail;
                 }
@@ -867,7 +867,7 @@ var_syntax_evaluate (struct lexer *lexer,
         {
           lex_ofs_error (lexer, first_ofs, last_ofs,
                          _("%s TO %s is not valid syntax since %s "
-                           "precedes %s in the dictionary."),
+                           "is after %s in the dictionary."),
                          vs[i].first, vs[i].last,
                          vs[i].first, vs[i].last);
           goto error;
