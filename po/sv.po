@@ -9,15 +9,15 @@ msgstr ""
 "Project-Id-Version: pspp 2.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2024-03-21 16:29-0700\n"
-"PO-Revision-Date: 2025-02-09 15:08+0100\n"
+"PO-Revision-Date: 2025-02-23 19:39+0100\n"
 "Last-Translator: Arve Eriksson <031299870@telia.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-Generator: Poedit 3.4.2\n"
 
 #: gl/clean-temp.c:234
@@ -361,9 +361,8 @@ msgid "Day %d is not in the acceptable range of 0 to 31."
 msgstr "Dag %d är inte i det godkända intervallet 0 till 31."
 
 #: src/data/casereader-filter.c:221
-#, fuzzy
 msgid "At least one case in the data read had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
-msgstr "Minst ett fall i inläst data hade ett viktningsvärde som var user-missing, system-missing, noll, eller negativt.  Dessa fall ignorerades."
+msgstr "Minst ett fall i inläst data hade ett viktningsvärde som var user-missing, system-missing, noll, eller negativt. Dessa fall ignorerades."
 
 #. TRANSLATORS: this fragment will be interpolated into messages in fh_lock()
 #. that identify types of files.
@@ -444,9 +443,8 @@ msgid "Delimiter expected between fields in date."
 msgstr "Avgränsare förväntas mellan fält i datum."
 
 #: src/data/data-in.c:910
-#, fuzzy
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
-msgstr "Okänt månadsformat.  Månader kan anges som arabiska eller romerska siffror, eller med åtminstone tre bokstäver av deras engelska namn."
+msgstr "Okänt månadsformat. Månader kan anges som arabiska eller romerska siffror, eller med minst tre bokstäver av deras engelska namn."
 
 #: src/data/data-in.c:937
 #, c-format
@@ -487,9 +485,8 @@ msgid "Minute (%ld) must be between 0 and 59."
 msgstr "Minut (%ld) måste vara mellan 0 och 59."
 
 #: src/data/data-in.c:1079
-#, fuzzy
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
-msgstr "Okänt dagnamn.  Åtminstone de första två bokstäverna av ett Engelskt dagnamn måste anges."
+msgstr "Okänt dagnamn. Åtminstone de första två bokstäverna av ett Engelskt dagnamn måste anges."
 
 #: src/data/data-in.c:1214
 #, c-format
@@ -521,7 +518,6 @@ msgid "system"
 msgstr "system"
 
 #: src/data/dict-class.c:56
-#, fuzzy
 msgid "scratch"
 msgstr "scratch"
 
@@ -660,7 +656,7 @@ msgstr "Numeriska variabler är inte kompatibla med strängformatet %s."
 #: src/data/format.c:559
 #, c-format
 msgid "String variable %s with width %d is not compatible with format %s.  Use format %s instead."
-msgstr "Strängvariabeln %s med bredden %d är inte kompatibel med formatet %s.  Använd formatet %s istället."
+msgstr "Strängvariabeln %s med bredden %d är inte kompatibel med formatet %s. Använd formatet %s istället."
 
 #: src/data/format.c:564
 #, c-format
@@ -936,9 +932,9 @@ msgid "Record 0 has unexpected length %u."
 msgstr "Post 0 har oväntad längd %u."
 
 #: src/data/pc+-file-reader.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "Record 0 specifies unexpected system missing value %g (%a)."
-msgstr "Post 0 anger oväntat värde %g som saknas i systemet (%a)."
+msgstr "Post 0 anger oväntat värde %g som är system-missing (%a)."
 
 #: src/data/pc+-file-reader.c:565
 #, c-format
@@ -1483,9 +1479,9 @@ msgid "MRSET %s has only one variable."
 msgstr "MRSET %s har endast en variabel."
 
 #: src/data/sys-file-reader.c:1910
-#, fuzzy, c-format
+#, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
-msgstr "Utökning 11 har felaktigt antal %u (för %zu variabler)."
+msgstr "Extension 11 har felaktigt antal %u (för %zu variabler)."
 
 #: src/data/sys-file-reader.c:1943
 #, c-format
@@ -1535,7 +1531,7 @@ msgstr "Värdeetikettens variabelindex %d hänvisar till fortsättning av lång 
 #: src/data/sys-file-reader.c:2192
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
-msgstr "Variabler associerade med värdeetikett är inte alla av identisk typ.  Variabel %s är %s, men variabel %s är %s."
+msgstr "Variabler associerade med värdeetikett är inte alla av identisk typ. Variabel %s är %s, men variabel %s är %s."
 
 #: src/data/sys-file-reader.c:2196 src/data/sys-file-reader.c:2198
 #: src/language/commands/apply-dictionary.c:74
@@ -1577,7 +1573,7 @@ msgstr "Viktningsvariabelindex %d inte i giltigt intervall 1...%zu.  Behandlar f
 #: src/data/sys-file-reader.c:2291
 #, c-format
 msgid "Weight variable index %d refers to long string continuation.  Treating file as unweighted."
-msgstr "Viktningsvariabelindex %d hänvisar till fortsättning av lång sträng.  Behandlar filen som oviktad."
+msgstr "Viktningsvariabelindex %d hänvisar till fortsättning av lång sträng. Behandlar filen som oviktad."
 
 #: src/data/sys-file-reader.c:2299
 #, c-format
@@ -1707,12 +1703,12 @@ msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Fel ZLIB-datahuvudoffset %#llx (%#llx förväntades)."
 
 #: src/data/sys-file-reader.c:3543
-#, fuzzy, c-format
+#, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Omöjligt ZLIB trailer-offset 0x%llx."
 
 #: src/data/sys-file-reader.c:3550
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Ogiltig ZLIB trailer-längd %lld."
 
@@ -1722,7 +1718,7 @@ msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Slut av ZLIB trailer (0x%llx) är inte filstorleken (0x%llx)."
 
 #: src/data/sys-file-reader.c:3624
-#, fuzzy, c-format
+#, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "ZLIB trailer-påverkan (%lld) skiljer sig från filhuvudets påverkan (%.2f)."
 
@@ -1886,9 +1882,8 @@ msgid "None"
 msgstr "Ingen"
 
 #: src/data/variable.c:79
-#, fuzzy
 msgid "Partition"
-msgstr "Partition"
+msgstr "Indelning"
 
 #: src/data/variable.c:80 src/ui/gui/reliability.ui:33
 msgid "Split"
@@ -2070,7 +2065,6 @@ msgid "Matrix"
 msgstr "Matris"
 
 #: src/language/command.def:35
-#, fuzzy
 msgid "Matri Convert"
 msgstr "Matriskonvertering"
 
@@ -2107,7 +2101,6 @@ msgid "New File"
 msgstr "Ny fil"
 
 #: src/language/command.def:39
-#, fuzzy
 msgid "Output Modify"
 msgstr "Ändra utdata"
 
@@ -2128,7 +2121,6 @@ msgid "Restore"
 msgstr "Återställ"
 
 #: src/language/command.def:45
-#, fuzzy
 msgid "Set"
 msgstr "Sätt"
 
@@ -2169,7 +2161,6 @@ msgid "Import"
 msgstr "Importera"
 
 #: src/language/command.def:58
-#, fuzzy
 msgid "Input Program"
 msgstr "Indataprogram"
 
@@ -2332,9 +2323,8 @@ msgid "Loop"
 msgstr "Slinga"
 
 #: src/language/command.def:102
-#, fuzzy
 msgid "Print Eject"
-msgstr "Skriv skjut ut"
+msgstr "Nästa sida"
 
 #: src/language/command.def:103
 msgid "Print Space"
@@ -2428,9 +2418,8 @@ msgid "Filter"
 msgstr "Filter"
 
 #: src/language/command.def:129
-#, fuzzy
 msgid "Flip"
-msgstr "Vänd"
+msgstr "Växla"
 
 #: src/language/command.def:130 src/language/commands/chisquare.c:235
 #: src/language/commands/cochran.c:150 src/language/commands/median.c:305
@@ -2455,7 +2444,6 @@ msgid "Logistic Regression"
 msgstr "Logistisk regression"
 
 #: src/language/command.def:135 src/ui/gui/means.ui:25
-#, fuzzy
 msgid "Means"
 msgstr "Medelvärden"
 
@@ -2493,7 +2481,6 @@ msgid "Rename Variables"
 msgstr "Döp om variabler"
 
 #: src/language/command.def:144
-#, fuzzy
 msgid "ROC"
 msgstr "ROC"
 
@@ -2723,137 +2710,134 @@ msgstr "Syntaxfel där heltal mindre än eller lika med %ld förväntades."
 #: src/language/lexer/lexer.c:1229 src/language/lexer/lexer.c:1255
 #: src/language/lexer/lexer.c:1309 src/language/lexer/lexer.c:1335
 #: src/language/lexer/lexer.c:1390
-#, fuzzy
 msgid "Syntax error expecting number."
-msgstr "Syntaxfel där siffra förväntades."
+msgstr "Syntaxfel där tal förväntades."
 
 #: src/language/lexer/lexer.c:1079 src/language/lexer/lexer.c:1146
 #: src/language/lexer/lexer.c:1172 src/language/lexer/lexer.c:1227
 #: src/language/lexer/lexer.c:1253 src/language/lexer/lexer.c:1307
 #: src/language/lexer/lexer.c:1333 src/language/lexer/lexer.c:1387
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number for %s."
-msgstr "Syntaxfel där siffra förväntades för %s."
+msgstr "Syntaxfel där tal förväntades för %s."
 
 #: src/language/lexer/lexer.c:1086
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g for %s."
-msgstr "Syntaxfel där siffra %g förväntades för %s."
+msgstr "Syntaxfel där tal %g förväntades för %s."
 
 #: src/language/lexer/lexer.c:1089
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g."
-msgstr "Syntaxfel där siffra %g förväntades."
+msgstr "Syntaxfel där tal %g förväntades."
 
 #: src/language/lexer/lexer.c:1100
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number between %g and %g for %s."
-msgstr "Syntaxfel där siffra mellan %g och %g förväntades för %s."
+msgstr "Syntaxfel där tal mellan %g och %g förväntades för %s."
 
 #: src/language/lexer/lexer.c:1104
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number between %g and %g."
-msgstr "Syntaxfel där siffra mellan %g och %g förväntades."
+msgstr "Syntaxfel där tal mellan %g och %g förväntades."
 
 #: src/language/lexer/lexer.c:1113 src/language/lexer/lexer.c:1196
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting non-negative number for %s."
-msgstr "Syntaxfel där icke-negativ siffra förväntades för %s."
+msgstr "Syntaxfel där icke-negativt tal förväntades för %s."
 
 #: src/language/lexer/lexer.c:1117 src/language/lexer/lexer.c:1200
-#, fuzzy
 msgid "Syntax error expecting non-negative number."
-msgstr "Syntaxfel där icke-negativ siffra förväntades."
+msgstr "Syntaxfel där icke-negativt tal förväntades."
 
 #: src/language/lexer/lexer.c:1123 src/language/lexer/lexer.c:1206
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g or greater for %s."
-msgstr "Syntaxfel där siffra %g eller högre förväntades för %s."
+msgstr "Syntaxfel där ett tal %g eller högre förväntades för %s."
 
 #: src/language/lexer/lexer.c:1127 src/language/lexer/lexer.c:1210
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g or greater."
-msgstr "Syntaxfel där siffra %g eller högre förväntades."
+msgstr "Syntaxfel där ett tal %g eller högre förväntades."
 
 #: src/language/lexer/lexer.c:1135
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number less than or equal to %g for %s."
-msgstr "Syntaxfel där siffra mindre än eller lika med %g förväntades för %s."
+msgstr "Syntaxfel där ett tal mindre än eller lika med %g förväntades för %s."
 
 #: src/language/lexer/lexer.c:1139
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number less than or equal to %g."
-msgstr "Syntaxfel där siffra mindre än eller lika med %g förväntades."
+msgstr "Syntaxfel där ett tal mindre än eller lika med %g förväntades."
 
 #: src/language/lexer/lexer.c:1184
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in [%g,%g) for %s."
-msgstr "Syntaxfel där siffra förväntades i [%g, %g) för %s."
+msgstr "Syntaxfel där ett tal förväntades i [%g, %g) för %s."
 
 #: src/language/lexer/lexer.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in [%g,%g)."
-msgstr "Syntaxfel där siffra förväntades i [%g, %g)."
+msgstr "Syntaxfel där ett tal förväntades i [%g, %g)."
 
 #: src/language/lexer/lexer.c:1218 src/language/lexer/lexer.c:1377
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number less than %g for %s."
-msgstr "Syntaxfel där siffra mindre än %g förväntades för %s."
+msgstr "Syntaxfel där ett tal mindre än %g förväntades för %s."
 
 #: src/language/lexer/lexer.c:1221 src/language/lexer/lexer.c:1381
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number less than %g."
-msgstr "Syntaxfel där siffra mindre än %g förväntades."
+msgstr "Syntaxfel där ett tal mindre än %g förväntades."
 
 #: src/language/lexer/lexer.c:1265
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in (%g,%g] for %s."
-msgstr "Syntaxfel där siffra förväntades i (%g, %g] för %s."
+msgstr "Syntaxfel där ett tal förväntades i (%g, %g] för %s."
 
 #: src/language/lexer/lexer.c:1269
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in (%g,%g]."
-msgstr "Syntaxfel där siffra förväntades i (%g, %g]."
+msgstr "Syntaxfel där ett tal förväntades i (%g, %g]."
 
 #: src/language/lexer/lexer.c:1277 src/language/lexer/lexer.c:1357
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting positive number for %s."
-msgstr "Syntaxfel där positiv siffra förväntades för %s."
+msgstr "Syntaxfel där positivt tal förväntades för %s."
 
 #: src/language/lexer/lexer.c:1281 src/language/lexer/lexer.c:1360
-#, fuzzy
 msgid "Syntax error expecting positive number."
-msgstr "Syntaxfel där positiv siffra förväntades."
+msgstr "Syntaxfel där positivt tal förväntades."
 
 #: src/language/lexer/lexer.c:1286 src/language/lexer/lexer.c:1366
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number greater than %g for %s."
-msgstr "Syntaxfel där siffra större än %g förväntades för %s."
+msgstr "Syntaxfel där ett tal större än %g förväntades för %s."
 
 #: src/language/lexer/lexer.c:1290 src/language/lexer/lexer.c:1370
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number greater than %g."
-msgstr "Syntaxfel där siffra större än %g förväntades."
+msgstr "Syntaxfel där ett tal större än %g förväntades."
 
 #: src/language/lexer/lexer.c:1298
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g or less for %s."
-msgstr "Syntaxfel där siffra %g eller mindre förväntades för %s."
+msgstr "Syntaxfel där talet %g eller mindre förväntades för %s."
 
 #: src/language/lexer/lexer.c:1301
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number %g or less."
-msgstr "Syntaxfel där siffra %g eller mindre förväntades."
+msgstr "Syntaxfel där talet %g eller mindre förväntades."
 
 #: src/language/lexer/lexer.c:1345
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in (%g,%g) for %s."
-msgstr "Syntaxfel där siffra förväntades i (%g, %g) för %s."
+msgstr "Syntaxfel där ett tal förväntades i (%g, %g) för %s."
 
 #: src/language/lexer/lexer.c:1349
-#, fuzzy, c-format
+#, c-format
 msgid "Syntax error expecting number in (%g,%g)."
-msgstr "Syntaxfel där siffra förväntades i (%g, %g)."
+msgstr "Syntaxfel där ett tal förväntades i (%g, %g)."
 
 #: src/language/lexer/lexer.c:1404 src/language/commands/define.c:176
 #: src/language/commands/define.c:182
@@ -2908,17 +2892,17 @@ msgid "inside the expansion of `%s',"
 msgstr "inuti expansionen av '%s',"
 
 #: src/language/lexer/macro.c:611
-#, fuzzy, c-format
+#, c-format
 msgid "Reached end of command expecting %zu more token in argument %s to macro %s."
-msgstr "Nådde slutet av kommandot och förväntade %zu fler token i argumentet %s för makrot %s."
+msgstr "Nådde slutet av kommandot och förväntade %zu ytterligare token i argumentet %s för makrot %s."
 
 #: src/language/lexer/macro.c:613
-#, fuzzy, c-format
+#, c-format
 msgid "Reached end of command expecting %zu more tokens in argument %s to macro %s."
-msgstr "Nådde slutet av kommandot och förväntade %zu fler token i argumentet %s för makrot %s."
+msgstr "Nådde slutet av kommandot och förväntade %zu ytterligare tokens i argumentet %s för makrot %s."
 
 #: src/language/lexer/macro.c:623
-#, fuzzy, c-format
+#, c-format
 msgid "Reached end of command expecting \"%s\" in argument %s to macro %s."
 msgstr "Nådde slutet av kommandot och förväntade \"%s\" i argumentet %s för makro %s."
 
@@ -2990,17 +2974,15 @@ msgid "Expecting literal or function invocation in macro expression."
 msgstr "Literal- eller funktionsanrop förväntades i makrouttryck."
 
 #: src/language/lexer/macro.c:1570
-#, fuzzy, c-format
+#, c-format
 msgid "Macro expression must evaluate to a number (not \"%s\")."
-msgstr "Makrouttryck måste utvärderas mot ett nummer (inte \"%s\")."
+msgstr "Makrouttryck måste utvärderas mot ett tal (inte \"%s\")."
 
 #: src/language/lexer/macro.c:1630
-#, fuzzy
 msgid "!THEN expected in macro !IF construct."
 msgstr "!THEN förväntades i makrots !IF-construct."
 
 #: src/language/lexer/macro.c:1639
-#, fuzzy
 msgid "!ELSE or !IFEND expected in macro !IF construct."
 msgstr "!ELSE eller !FEND förväntades i makrots !IF-construct."
 
@@ -3130,9 +3112,8 @@ msgid "%s or %s must be part of a range."
 msgstr "%s eller %s måste vara en del av ett intervall."
 
 #: src/language/lexer/value-parser.c:120
-#, fuzzy
 msgid "System-missing value is not valid here."
-msgstr "Värdet system-missing är inte giltigt här."
+msgstr "Värdet för system-missing är inte giltigt här."
 
 #: src/language/lexer/value-parser.c:154
 msgid "This string is not representable in the dataset encoding."
@@ -3168,7 +3149,7 @@ msgid "%s is not a string variable.  It will not be included in the variable lis
 msgstr "%s är inte en strängvariabel.  Den kommer inte att inkluderas i variabellistan."
 
 #: src/language/lexer/variable-parser.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "Scratch variables (such as %s) are not allowed here."
 msgstr "Scratch-variabler (som %s) tillåts inte här."
 
@@ -3195,7 +3176,6 @@ msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
 msgstr "%s TO %s är inte en giltig syntax, eftersom %s kommer innan %s i ordboken."
 
 #: src/language/lexer/variable-parser.c:366
-#, fuzzy
 msgid "With the syntax <a> TO <b>, variables <a> and <b> must be both regular variables or both scratch variables."
 msgstr "Med syntaxen <a> TO <b> måste variablerna <a> och <b> båda vara vanliga variabler, eller båda scratch-variabler."
 
@@ -3205,7 +3185,7 @@ msgid "%s is a regular variable."
 msgstr "%s är en vanlig variabel."
 
 #: src/language/lexer/variable-parser.c:390
-#, fuzzy, c-format
+#, c-format
 msgid "%s is a scratch variable."
 msgstr "%s är en scratch-variabel."
 
@@ -3326,9 +3306,8 @@ msgid "Sum of values"
 msgstr "Summa av värden"
 
 #: src/language/commands/aggregate.h:35
-#, fuzzy
 msgid "Mean average"
-msgstr "Medelvärde"
+msgstr "Genomsnitt av medel"
 
 #: src/language/commands/aggregate.h:36 src/language/commands/ctables.c:373
 #: src/language/commands/examine.c:736 src/language/commands/frequencies.c:99
@@ -3570,14 +3549,12 @@ msgstr "Test prop."
 #: src/language/commands/binomial.c:192 src/language/commands/crosstabs.c:1439
 #: src/language/commands/mcnemar.c:224 src/language/commands/sign.c:103
 #: src/language/commands/wilcoxon.c:277
-#, fuzzy
 msgid "Exact Sig. (2-tailed)"
 msgstr "Exakt sig. (2-svansad)"
 
 #: src/language/commands/binomial.c:193 src/language/commands/crosstabs.c:1440
 #: src/language/commands/mcnemar.c:225 src/language/commands/sign.c:104
 #: src/language/commands/wilcoxon.c:278
-#, fuzzy
 msgid "Exact Sig. (1-tailed)"
 msgstr "Exakt sig. (1-svansad)"
 
@@ -3606,7 +3583,6 @@ msgstr "Grupp 2"
 #: src/language/commands/reliability.c:496 src/language/commands/sign.c:75
 #: src/language/commands/wilcoxon.c:239
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:93
-#, fuzzy
 msgid "Total"
 msgstr "Totalt"
 
@@ -3692,7 +3668,7 @@ msgstr "Variabel"
 #: src/language/commands/median.c:347 src/language/commands/sign.c:100
 #: src/language/commands/wilcoxon.c:268
 msgid "Test Statistics"
-msgstr "Testa statistik"
+msgstr "Statistiskt test"
 
 #: src/language/commands/chisquare.c:323
 msgid "Chi-square"
@@ -3857,12 +3833,10 @@ msgstr "Pearson-korrelation"
 #: src/language/commands/t-test-indep.c:268
 #: src/language/commands/t-test-one-sample.c:76
 #: src/language/commands/t-test-paired.c:254
-#, fuzzy
 msgid "Sig. (2-tailed)"
 msgstr "Sig. (2-svansad)"
 
 #: src/language/commands/correlations.c:141 src/language/commands/factor.c:1773
-#, fuzzy
 msgid "Sig. (1-tailed)"
 msgstr "Sig. (1-svansad)"
 
@@ -3981,7 +3955,6 @@ msgid "Crosstabulation %s contained no non-missing cases."
 msgstr "Korstabulering %s innehöll inga ej-saknade fall."
 
 #: src/language/commands/crosstabs.c:1343
-#, fuzzy
 msgid "Missing value"
 msgstr "Värde saknas"
 
@@ -4020,7 +3993,6 @@ msgid "Asymptotic Sig. (2-tailed)"
 msgstr "Asymptotisk sig. (2-svansad)"
 
 #: src/language/commands/crosstabs.c:1452
-#, fuzzy
 msgid "Symmetric Measures"
 msgstr "Symmetriska mätningar"
 
@@ -4047,9 +4019,8 @@ msgstr "Approx. sig."
 
 #: src/language/commands/crosstabs.c:1465
 #: src/language/commands/crosstabs.c:1550
-#, fuzzy
 msgid "Nominal by Nominal"
-msgstr "Nominal per nominal"
+msgstr "Nominal mot nominal"
 
 #: src/language/commands/crosstabs.c:1466
 msgid "Phi"
@@ -4065,9 +4036,8 @@ msgstr "Kontingenskoefficient"
 
 #: src/language/commands/crosstabs.c:1468
 #: src/language/commands/crosstabs.c:1555
-#, fuzzy
 msgid "Ordinal by Ordinal"
-msgstr "Ordinal per ordinal"
+msgstr "Ordinal mot ordinal"
 
 #: src/language/commands/crosstabs.c:1469
 msgid "Kendall's tau-b"
@@ -4087,9 +4057,8 @@ msgid "Spearman Correlation"
 msgstr "Spearman-korrelering"
 
 #: src/language/commands/crosstabs.c:1472
-#, fuzzy
 msgid "Interval by Interval"
-msgstr "Intervall per intervall"
+msgstr "Intervall mot intervall"
 
 #: src/language/commands/crosstabs.c:1473
 msgid "Pearson's R"
@@ -4138,7 +4107,6 @@ msgid "%s Dependent"
 msgstr "%s-beroende"
 
 #: src/language/commands/crosstabs.c:1537
-#, fuzzy
 msgid "Directional Measures"
 msgstr "Riktade mätningar"
 
@@ -4161,9 +4129,8 @@ msgid "Somers' d"
 msgstr "Somers d"
 
 #: src/language/commands/crosstabs.c:1558
-#, fuzzy
 msgid "Nominal by Interval"
-msgstr "Nominal per intervall"
+msgstr "Nominal mot intervall"
 
 #: src/language/commands/crosstabs.c:1559
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:84
@@ -4439,23 +4406,23 @@ msgstr "Total N"
 
 #: src/language/commands/ctables.c:383
 msgid "Adjusted Total N"
-msgstr "Justerad total N"
+msgstr "Justerade total N"
 
 #: src/language/commands/ctables.c:384
 msgid "Unweighted Total N"
-msgstr "Oviktat total N"
+msgstr "Oviktade total N"
 
 #: src/language/commands/ctables.c:385
 msgid "Valid N"
-msgstr "Giltig N"
+msgstr "Giltiga N"
 
 #: src/language/commands/ctables.c:386
 msgid "Adjusted Valid N"
-msgstr "Justerad giltig N"
+msgstr "Justerade giltiga N"
 
 #: src/language/commands/ctables.c:387
 msgid "Unweighted Valid N"
-msgstr "Oviktad giltig N"
+msgstr "Oviktade giltiga N"
 
 #: src/language/commands/ctables.c:388 src/language/commands/descriptives.c:110
 #: src/language/commands/examine.c:736 src/language/commands/frequencies.c:102
@@ -5168,9 +5135,8 @@ msgid "Only one ELSE is allowed within DO IF...END IF."
 msgstr "Endast en ELSE tillåts inuti DO IF...END IF."
 
 #: src/language/commands/do-if.c:73
-#, fuzzy
 msgid "This is the location of the previous ELSE clause."
-msgstr "Detta är platsen för tidigare ELSE-sats."
+msgstr "Detta är platsen för den föregående ELSE-satsen."
 
 #: src/language/commands/do-if.c:76
 msgid "This is the location of the DO IF command."
@@ -5301,7 +5267,6 @@ msgid "Case Number"
 msgstr "Fallnummer"
 
 #: src/language/commands/examine.c:829
-#, fuzzy
 msgid "Order"
 msgstr "Sortering"
 
@@ -5584,7 +5549,7 @@ msgid "Error reading %s temporary file: %s."
 msgstr "Fel vid läsning av %s temporärfil: %s."
 
 #: src/language/commands/flip.c:439
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected end of file reading %s temporary file."
 msgstr "Oväntat filslut vid läsning av %s temporärfil."
 
@@ -5848,7 +5813,6 @@ msgid "Input program did not create any variables."
 msgstr "Indataprogram skapade inga variabler."
 
 #: src/language/commands/inpt-pgm.c:372
-#, fuzzy
 msgid "REREAD: Column numbers must be positive finite numbers.  Column set to 1."
 msgstr "REREAD: Kolumnnummer måste vara positiva reala tal. Kolumn satt till 1."
 
@@ -6026,7 +5990,6 @@ msgid "Unweighted Cases"
 msgstr "Oviktade fall"
 
 #: src/language/commands/logistic.c:1247
-#, fuzzy
 msgid "Included in Analysis"
 msgstr "Inkluderade i analys"
 
@@ -6142,9 +6105,8 @@ msgid "%s may not appear on both SPLIT and FACTORS."
 msgstr "%s får inte förekomma på både SPLIT och FACTORS."
 
 #: src/language/commands/matrix-data.c:1039
-#, fuzzy
 msgid "FORMAT=FULL and FORMAT=NODIAGONAL are mutually exclusive."
-msgstr "FORMAT=FULL och FORMAT=NODIAGONAL är uteslutande."
+msgstr "FORMAT=FULL och FORMAT=NODIAGONAL kan inte användas tillsammans."
 
 #: src/language/commands/matrix-data.c:1085
 msgid "CELLS is ignored when VARIABLES includes ROWTYPE_"
@@ -6155,6 +6117,8 @@ msgid "CELLS is required when factor variables are specified and VARIABLES does 
 msgstr "CERLLS krävs när faktorvariabler anges och VARIABLES inte inkluderar ROWTYPE_."
 
 #: src/language/commands/matrix-data.c:1166
+#, fuzzy
+#| msgid "CONTENTS was not specified and VARIABLES does not include ROWTYPE_. Assuming CONTENTS=CORR."
 msgid "CONTENTS was not specified and VARIABLES does not include ROWTYPE_.  Assuming CONTENTS=CORR."
 msgstr "CONTENTS angavs inte och VARIABLES inkluderar inte ROWTYPE_. Antar CONTENTS=CORR."
 
@@ -6195,9 +6159,9 @@ msgid "Matrix dataset does not have any continuous variables."
 msgstr "Matrisens datauppsättning har inga kontinuerliga variabler."
 
 #: src/language/commands/matrix-reader.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "%s matrix has %zu columns but %zu rows named variables to be analyzed (and %zu rows named unknown variables)."
-msgstr "Matrisen %s har %zu kolumner, men %zu rader kallade variabler att analysera (och %zu rader kallade okända variabler)."
+msgstr "Matrisen %s har %zu kolumner, men %zu rader nämnde variabler att analysera (och %zu rader nämnde okända variabler)."
 
 #: src/language/commands/matrix.c:994
 #, c-format
@@ -7859,11 +7823,11 @@ msgstr "Fallsammanfattning"
 
 #: src/language/commands/roc.c:925
 msgid "Unweighted"
-msgstr "Oviktad"
+msgstr "Oviktade"
 
 #: src/language/commands/roc.c:926
 msgid "Weighted"
-msgstr "Viktad"
+msgstr "Viktade"
 
 #: src/language/commands/roc.c:959
 msgid "Coordinates of the Curve"
@@ -8081,9 +8045,8 @@ msgid "Positive Differences"
 msgstr "Positiva differenser"
 
 #: src/language/commands/sign.c:75 src/language/commands/wilcoxon.c:239
-#, fuzzy
 msgid "Ties"
-msgstr "Bindningar"
+msgstr "Lika värden"
 
 #: src/language/commands/sort-criteria.c:90
 #, c-format
@@ -9977,9 +9940,7 @@ msgstr "Ett program för analys av insamlad data"
 #. who have helped in the translation.
 #: src/ui/gui/help-menu.c:175
 msgid "translator-credits"
-msgstr ""
-"Översättning:\n"
-"Arve Eriksson <031299870@telia.com>, 2025"
+msgstr "Arve Eriksson <031299870@telia.com>, 2025"
 
 #: src/ui/gui/help-menu.c:227
 #, fuzzy, c-format
@@ -10158,7 +10119,7 @@ msgstr "Vikta med %s"
 #: src/ui/gui/psppire-import-assistant.c:370
 #: src/ui/gui/psppire-syntax-window.c:682 src/ui/gui/psppire-window.c:667
 msgid "All Files"
-msgstr "ALla filer"
+msgstr "Alla filer"
 
 #: src/ui/gui/psppire-data-window.c:536
 msgid "System File"
@@ -10517,7 +10478,7 @@ msgstr "Exportera utdata"
 
 #: src/ui/gui/psppire-output-window.c:520
 msgid "Output Viewer"
-msgstr "Uutdatavisare"
+msgstr "Utdatavisning"
 
 #. TRANSLATORS: This is part of a filename.  Please avoid whitespace.
 #: src/ui/gui/psppire-syntax-window.c:207
@@ -11078,7 +11039,6 @@ msgid "_Exclude entire case if any selected variable is missing"
 msgstr "_Exkludera hela fallet om någon vald variabel saknas"
 
 #: src/ui/gui/descriptives.ui:247
-#, fuzzy
 msgid "_Include user-missing data in analysis"
 msgstr "_Inkludera user-missing data i analys"
 
@@ -11256,7 +11216,7 @@ msgstr "Ma_ximalt antal iterationer för konvergens:"
 
 #: src/ui/gui/factor.ui:239 src/ui/gui/factor.ui:253
 msgid "Principal Components Analysis"
-msgstr "Analys av huduvkomponenter"
+msgstr "Analys av huvudkomponenter"
 
 #: src/ui/gui/factor.ui:244 src/ui/gui/factor.ui:256
 msgid "Principal Axis Factoring"
@@ -11423,7 +11383,6 @@ msgid "Draw _histograms"
 msgstr "Rita _histogram"
 
 #: src/ui/gui/frequencies.ui:509
-#, fuzzy
 msgid "Superimpose _normal curve"
 msgstr "Infoga _normalkurva"
 
@@ -11652,7 +11611,6 @@ msgid "_Coefficients:"
 msgstr "_Koefficienter:"
 
 #: src/ui/gui/oneway.ui:160
-#, fuzzy
 msgid "Coefficient Total: "
 msgstr "Koefficientsumma: "
 
@@ -11847,13 +11805,12 @@ msgid "Rank T_ypes"
 msgstr "Rangt_yper"
 
 #: src/ui/gui/rank.ui:696
-#, fuzzy
 msgid "_Ties..."
-msgstr "_Bindningar..."
+msgstr "_Lika värde..."
 
 #: src/ui/gui/rank.ui:758
 msgid "Rank Cases: Ties"
-msgstr "Rangordna fall: Bindnigar"
+msgstr "Rangordna fall: Lika värden"
 
 #: src/ui/gui/rank.ui:793
 msgid "_Mean"
@@ -11873,9 +11830,8 @@ msgid "_Sequential ranks to unique values"
 msgstr "_Sekventiella ranger till unika värden"
 
 #: src/ui/gui/rank.ui:880
-#, fuzzy
 msgid "Rank Assigned to Ties"
-msgstr "Rang tilldelad till bindningar"
+msgstr "Rang tilldelad till lika värden"
 
 #: src/ui/gui/runs.ui:155
 msgid "M_ean"
