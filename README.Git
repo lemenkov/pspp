@@ -83,15 +83,17 @@ or for a more thorough test:
 Building from git on Mac OS
 ---------------------------
 
-You can build on MacOS in the brew environment. After installing all
-required packages to resolve library dependencies and autotools e.t.c, you
-run make -f Smake as described above.
+You can build on MacOS in the brew environment. Install all
+required packages to resolve library dependencies and autotools.
+In brew the gettext automake macros are not found by default. Run
+
+ACLOCAL_PATH=`brew --prefix`/Cellar/gettext/0.25/share/gettext/m4 make -f Smake
 
 The brew system provides the libraries and header files in a separate
 location from the MacOS system libraries. The typical locations are
 
-Libraries: /usr/local/lib
-Headers:   /usr/local/include
+Libraries: `brew --prefix`/lib
+Headers:   `brew --prefix`/include
 
 pspp under brew will be linked against the brew libraries. The configure
 script has to be informed about the library and header locations. Assume the following
@@ -103,14 +105,18 @@ directory structure for an out of tree build:
   |----build   (The build directory)
   |----gnulib  (The gnulib directory as described above)
 
+The configure command finds by default the MacOS libiconv library. That library
+is not fully compatible to the gnu libiconv. So add the brew libiconv to the linker
+and compiler flags such that the brew libiconv is found.
 Then you can build with the following commands:
 
     cd ~/mypspp/pspp
     make -f Smake
     cd ../build
     ../pspp/configure --prefix=/Users/USER/mypspp/install \
-      LDFLAGS=-L/usr/local/lib \
-      CPPFLAGS=-I/usr/local/include \
+      --without-perl-module \
+      LDFLAGS='-L/opt/homebrew/lib -L/opt/homebrew/Cellar/libiconv/1.18/lib'\
+      CPPFLAGS='-I/opt/homebrew/include -I/opt/homebrew/Cellar/libiconv/1.18/include'\
       CFLAGS='-g -O0'
     make
     make install

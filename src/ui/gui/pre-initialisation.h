@@ -27,6 +27,7 @@ pre_initialisation (int *argc, char **argv)
 
 #include <sys/stat.h>
 #include <glib.h>
+#include "gl/relocatable.h"
 
 static inline void
 pre_initialisation (int *argc, char **argv)
@@ -67,7 +68,7 @@ pre_initialisation (int *argc, char **argv)
       struct stat sb;
 
       app_dir = g_path_get_dirname (resolved_path);
-      g_snprintf (tmp, sizeof(tmp), "%s/../../Resources", app_dir);
+      g_snprintf (tmp, sizeof(tmp), "%s/../Resources", app_dir);
       if (realpath (tmp, res_dir) && !stat (res_dir,&sb) && S_ISDIR (sb.st_mode))
         g_print ("pspp is started as MacOS application\n");
       else
@@ -93,10 +94,12 @@ pre_initialisation (int *argc, char **argv)
       g_snprintf (tmp, sizeof(tmp), "%s/share", res_dir);
       g_setenv ("XDG_DATA_DIRS", tmp, TRUE);
 
+      set_relocation_prefix(INSTALLPREFIX,res_dir);
+
       if (g_getenv ("HOME")!=NULL)
         {
           g_snprintf (tmp, sizeof(tmp),
-                      "%s/Library/Application Support/pspp/1.3/cache",
+                      "%s/Library/Application Support/pspp/cache",
                       g_getenv("HOME"));
           g_setenv ("XDG_CACHE_HOME", tmp, TRUE);
         }
