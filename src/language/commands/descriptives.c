@@ -614,6 +614,21 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
         }
     }
 
+  if (t->missing_type == DSC_LISTWISE)
+    {
+      assert (t->vars != NULL);
+      for (const struct variable **vars = t->vars; vars < t->vars + t->n_vars;
+           vars++)
+        {
+          double score = case_num (*c, *vars);
+          if (var_is_num_missing (*vars, score) & t->exclude)
+            {
+              descriptives_set_all_sysmis_zscores (t, *c);
+              return TRNS_CONTINUE;
+            }
+        }
+    }
+
   if (t->count <= 0)
     {
       struct ccase *z_case = casereader_read (t->z_reader);
@@ -644,21 +659,6 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
         }
     }
   t->count--;
-
-  if (t->missing_type == DSC_LISTWISE)
-    {
-      assert (t->vars != NULL);
-      for (const struct variable **vars = t->vars; vars < t->vars + t->n_vars;
-           vars++)
-        {
-          double score = case_num (*c, *vars);
-          if (var_is_num_missing (*vars, score) & t->exclude)
-            {
-              descriptives_set_all_sysmis_zscores (t, *c);
-              return TRNS_CONTINUE;
-            }
-        }
-    }
 
   for (struct dsc_z_score *z = t->z_scores; z < t->z_scores + t->n_z_scores;
        z++)

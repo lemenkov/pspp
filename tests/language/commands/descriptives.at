@@ -247,6 +247,41 @@ a,b,Za,Zb
 ])
 AT_CLEANUP
 
+AT_SETUP([DESCRIPTIVES -- Z scores, listwise missing])
+AT_DATA([descriptives.sps], [dnl
+DATA LIST LIST NOTABLE /a b.
+BEGIN DATA.
+1 50
+2 60
+3 70
+. .
+END DATA.
+
+DESCRIPTIVES /VAR=a b /MISSING=LISTWISE /SAVE.
+LIST.
+])
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Mapping of Variables to Z-scores
+Source,Target
+a,Za
+b,Zb
+
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
+a,3,2.00,1.00,1.00,3.00
+b,3,60.00,10.00,50.00,70.00
+Valid N (listwise),3,,,,
+Missing N (listwise),1,,,,
+
+Table: Data List
+a,b,Za,Zb
+1.00,50.00,-1.00,-1.00
+2.00,60.00,.00,.00
+3.00,70.00,1.00,1.00
+.  ,.  ,.  ,.  @&t@
+])
+AT_CLEANUP
+
 AT_SETUP([DESCRIPTIVES -- Z scores with SPLIT FILE])
 AT_DATA([descriptives.sps], [dnl
 DATA LIST LIST NOTABLE /group a b.
