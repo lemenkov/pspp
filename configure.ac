@@ -293,7 +293,7 @@ AC_C_INLINE
 
 AC_C_BIGENDIAN
 
-AC_CHECK_FUNCS([__setfpucw fork execl isinf isnan finite getpid feholdexcept fpsetmask popen round])
+AC_CHECK_FUNCS([__setfpucw fork execl isinf isnan finite getpid feholdexcept fpsetmask popen round fseeko64])
 
 AC_PROG_LN_S
 

@@ -36,6 +36,16 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+/* fseeko() doesn't work properly on Mingw despite Gnulib, but fseeko64() does,
+   according to Egbert van der Es:
+
+   https://lists.gnu.org/archive/html/bug-gnu-pspp/2025-05/msg00007.html
+   https://lists.gnu.org/archive/html/bug-gnu-pspp/2025-06/msg00001.html
+   https://lists.gnu.org/archive/html/bug-gnu-pspp/2025-06/msg00002.html */
+#if !HAVE_FSEEKO64
+#define fseeko64 fseeko
+#endif
+
 enum op
   {
     OP_WRITE, /* writing */
@@ -97,7 +107,7 @@ do_seek (const struct ext_array *ea_, off_t offset, enum op op)
     {
       if (ea->position == offset && ea->op == op)
         return true;
-      else if (fseeko (ea->file, offset, SEEK_SET) == 0)
+      else if (fseeko64 (ea->file, offset, SEEK_SET) == 0)
         {
           ea->position = offset;
           return true;
