@@ -16,6 +16,7 @@
 
 pub mod calendar;
 pub mod command;
+pub mod crypto;
 pub mod dictionary;
 pub mod endian;
 pub mod engine;

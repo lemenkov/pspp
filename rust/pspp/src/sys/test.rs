@@ -14,9 +14,15 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{io::Cursor, path::Path, sync::Arc};
+use std::{
+    fs::File,
+    io::{Cursor, Read, Seek},
+    path::Path,
+    sync::Arc,
+};
 
 use crate::{
+    crypto::EncryptedFile,
     endian::Endian,
     output::{
         pivot::{test::assert_lines_eq, Axis3, Dimension, Group, PivotTable, Value},
@@ -542,12 +548,31 @@ fn duplicate_variable_name() {
     test_sack_sysfile("duplicate_variable_name");
 }
 
+#[test]
+fn encrypted_file() {
+    test_encrypted_sysfile("test-encrypted.sav", "pspp");
+}
+
 fn test_raw_sysfile(name: &str) {
     let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("src/sys/testdata")
         .join(name)
         .with_extension("sav");
-    let sysfile = std::fs::read(&input_filename).unwrap();
+    let sysfile = File::open(&input_filename).unwrap();
+    let expected_filename = input_filename.with_extension("expected");
+    let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
+    test_sysfile(sysfile, &expected, &expected_filename);
+}
+
+fn test_encrypted_sysfile(name: &str, password: &str) {
+    let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("src/sys/testdata")
+        .join(name)
+        .with_extension("sav");
+    let sysfile = EncryptedFile::new(File::open(&input_filename).unwrap())
+        .unwrap()
+        .unlock(password.as_bytes())
+        .unwrap();
     let expected_filename = input_filename.with_extension("expected");
     let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
     test_sysfile(sysfile, &expected, &expected_filename);
@@ -570,14 +595,16 @@ fn test_sack_sysfile(name: &str) {
             },
         );
         let sysfile = sack(&input, Some(&input_filename), endian).unwrap();
-        test_sysfile(sysfile, &expected, &expected_filename);
+        test_sysfile(Cursor::new(sysfile), &expected, &expected_filename);
     }
 }
 
-fn test_sysfile(sysfile: Vec<u8>, expected: &str, expected_filename: &Path) {
-    let cursor = Cursor::new(sysfile);
+fn test_sysfile<R>(sysfile: R, expected: &str, expected_filename: &Path)
+where
+    R: Read + Seek + 'static,
+{
     let mut warnings = Vec::new();
-    let mut reader = Reader::new(cursor, |warning| warnings.push(warning)).unwrap();
+    let mut reader = Reader::new(sysfile, |warning| warnings.push(warning)).unwrap();
     let output = match reader.headers().collect() {
         Ok(headers) => {
             let cases = reader.cases();

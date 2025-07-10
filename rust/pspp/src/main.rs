@@ -14,9 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use encoding_rs::Encoding;
+use pspp::crypto::EncryptedFile;
 use pspp::sys::cooked::{Error, Headers};
 use pspp::sys::raw::{encoding_from_headers, Decoder, Magic, Reader, Record, Warning};
 use std::fs::File;
@@ -24,6 +25,7 @@ use std::io::{stdout, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::str;
 use thiserror::Error as ThisError;
+use zeroize::Zeroizing;
 
 /// PSPP, a program for statistical analysis of sampled data.
 #[derive(Parser, Debug)]
@@ -117,6 +119,42 @@ impl Convert {
     }
 }
 
+/// Decrypts an encrypted SPSS data, output, or syntax file.
+#[derive(Args, Clone, Debug)]
+struct Decrypt {
+    /// Input file name.
+    input: PathBuf,
+
+    /// Output file name.
+    output: PathBuf,
+
+    /// Password for decryption, with or without what SPSS calls "password encryption".
+    ///
+    /// If omitted, PSPP will prompt interactively for the password.
+    #[clap(short, long)]
+    password: Option<String>,
+}
+
+impl Decrypt {
+    fn run(self) -> Result<()> {
+        let input = EncryptedFile::new(File::open(&self.input)?)?;
+        let password = match self.password {
+            Some(password) => Zeroizing::new(password),
+            None => {
+                eprintln!("Please enter the password for {}:", self.input.display());
+                readpass::from_tty().unwrap()
+            }
+        };
+        let mut reader = match input.unlock(password.as_bytes()) {
+            Ok(reader) => reader,
+            Err(_) => return Err(anyhow!("Incorrect password.")),
+        };
+        let mut writer = File::create(self.output)?;
+        std::io::copy(&mut reader, &mut writer)?;
+        Ok(())
+    }
+}
+
 /// Dissects SPSS system files.
 #[derive(Args, Clone, Debug)]
 struct Dissect {
@@ -149,6 +187,7 @@ impl Dissect {
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
     Convert(Convert),
+    Decrypt(Decrypt),
     Dissect(Dissect),
 }
 
@@ -156,6 +195,7 @@ impl Command {
     fn run(self) -> Result<()> {
         match self {
             Command::Convert(convert) => convert.run(),
+            Command::Decrypt(decrypt) => decrypt.run(),
             Command::Dissect(dissect) => dissect.run(),
         }
     }
