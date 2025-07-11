@@ -67,8 +67,8 @@ pub struct CairoFsmStyle {
     /// Resolution, in units per inch, used for measuring font "points":
     ///
     /// - 72.0 if 1 pt is one device unit, e.g. for rendering to a surface
-    ///   created by [PsSurface::new] with its default transformation matrix of 72
-    ///   units/inch.p
+    ///   created by [cairo::PsSurface::new] with its default transformation
+    ///   matrix of 72 units/inch.p
     ///
     /// - 96.0 is traditional for a screen-based surface.
     pub font_resolution: f64,

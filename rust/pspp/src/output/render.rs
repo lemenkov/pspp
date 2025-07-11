@@ -79,10 +79,10 @@ pub struct Params {
     /// on-screen display).
     pub printing: bool,
 
-    /// Whether [RenderOps::adjust_break] is implemented.
+    /// Whether [Device::adjust_break] is implemented.
     pub can_adjust_break: bool,
 
-    /// Whether [RenderOps::scale] is implemented.
+    /// Whether [Device::scale] is implemented.
     pub can_scale: bool,
 }
 
@@ -123,8 +123,8 @@ pub trait Device {
     /// return value would be just sufficiently less that the breakpoint would
     /// be between lines of text.
     ///
-    /// Optional.  If [RenderParams::can_adjust_break] is false, the rendering
-    /// engine assumes that all breakpoints are acceptable.
+    /// Optional.  If [Params::can_adjust_break] is false, the rendering engine
+    /// assumes that all breakpoints are acceptable.
     fn adjust_break(&self, cell: &Content, size: Coord2) -> usize;
 
     /// Draws a generalized intersection of lines in `bb`.
@@ -162,8 +162,8 @@ pub trait Device {
     /// everything subsequent to be drawn half-size.  `factor` will be greater
     /// than 0 and less than or equal to 1.
     ///
-    /// Optional.  If [RenderParams::can_scale] is false, the rendering engine
-    /// won't try to scale output.
+    /// Optional.  If [Params::can_scale] is false, the rendering engine won't
+    /// try to scale output.
     fn scale(&mut self, factor: f64);
 }
 

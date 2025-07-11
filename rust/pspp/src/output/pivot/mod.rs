@@ -643,9 +643,9 @@ impl From<&str> for Category {
 
 /// Styling for a pivot table.
 ///
-/// The division between this and the style information in [Table] seems fairly
-/// arbitrary.  The ultimate reason for the division is simply because that's
-/// how SPSS documentation and file formats do it.
+/// The division between this and the style information in [PivotTable] seems
+/// fairly arbitrary.  The ultimate reason for the division is simply because
+/// that's how SPSS documentation and file formats do it.
 #[derive(Clone, Debug)]
 pub struct Look {
     pub name: Option<String>,
@@ -1766,8 +1766,8 @@ impl Display for Display26Adic {
 ///    category while creating the category.  See pivot_dimension_create() for
 ///    more details.
 ///
-///    [F]: crate::format::Format::F
-///    [Pct]: crate::format::Format::Pct
+///    [F]: crate::format::Type::F
+///    [Pct]: crate::format::Type::Pct
 ///
 /// 2. A numeric or string value obtained from data ([ValueInner::Number] or
 ///    [ValueInner::String]).  If such a value corresponds to a variable, then the

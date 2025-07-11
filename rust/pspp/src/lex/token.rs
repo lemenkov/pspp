@@ -257,7 +257,7 @@ pub enum Punct {
     /// `?` (only appears in macros).
     Question,
 
-    /// ```` (only appears in macros).
+    /// <code>`</code> (only appears in macros).
     Backtick,
 
     /// `.`.

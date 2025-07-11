@@ -674,7 +674,7 @@ impl<'a, 'b> DisplayDatum<'a, 'b> {
     /// [Type::PIB], and so on) as binary values, and writes other output
     /// formats in the given `encoding`.
     ///
-    /// If `dv` is a [DisplayValue], the difference between `write!(f, "{}",
+    /// If `dv` is a [DisplayDatum], the difference between `write!(f, "{}",
     /// dv)` and `dv.write(f, encoding)` is:
     ///
     /// * `write!` always outputs UTF-8. Binary formats are encoded as the
