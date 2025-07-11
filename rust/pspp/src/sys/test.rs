@@ -673,10 +673,10 @@ fn test_sysfile(sysfile: Vec<u8>, expected: &str, expected_filename: &Path) {
         Err(error) => Item::new(Details::Text(Box::new(Text::new_log(error.to_string())))),
     };
 
-    assert_lines_eq(
-        &expected,
-        expected_filename.display(),
-        &output.to_string(),
-        "actual",
-    );
+    let actual = output.to_string();
+    if expected != actual && std::env::var("PSPP_REFRESH_EXPECTED").is_ok() {
+        std::fs::write(expected_filename, actual).unwrap();
+        panic!("{}: refreshed output", expected_filename.display());
+    }
+    assert_lines_eq(&expected, expected_filename.display(), &actual, "actual");
 }
