@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Syntax segmentation.
+//! Low-level lexical analysis.
 //!
-//! PSPP divides traditional "lexical analysis" or "tokenization" into two
-//! phases: a lower-level phase called "segmentation" and a higher-level phase
-//! called "scanning".  This module implements the segmentation phase.
-//! [`super::scan`] contains declarations for the scanning phase.
+//! PSPP divides traditional "lexical analysis" or "tokenization" into [three
+//! phases](super).  This module implements the low-level segmentation phase.
 //!
 //! Segmentation accepts a stream of UTF-8 bytes as input.  It outputs a label
 //! (a segment type) for each byte or contiguous sequence of bytes in the input.
@@ -34,11 +32,11 @@
 //! form a single string token [Token::String].  Still other segments are
 //! ignored (e.g. [Segment::Spaces]) or trigger special behavior such as error
 //! messages later in tokenization (e.g. [Segment::ExpectedQuote]).
+//!
+//! [Token::Id]: crate::lex::token::Token::Id
+//! [Token::String]: crate::lex::token::Token::String
 
 use std::cmp::Ordering;
-
-#[cfg(doc)]
-use crate::lex::token::Token;
 
 use crate::{
     identifier::{id_match, id_match_n, IdentifierChar},
@@ -65,6 +63,8 @@ use super::command_name::{command_match, COMMAND_NAMES};
 pub enum Syntax {
     /// Try to interpret input correctly regardless of whether it is written
     /// for interactive or batch syntax.
+    ///
+    /// This is `Syntax::default()`.
     #[default]
     Auto,
 
@@ -76,52 +76,133 @@ pub enum Syntax {
 }
 
 /// The type of a segment.
+///
+/// A [Segment] is a label for a string slice and is normally paired with one.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Segment {
+    /// A number.
     Number,
+
+    /// A quoted string (`'...'` or `"..."`)..
     QuotedString,
+
+    /// A hexadecimal string (`X'...'` or `X"..."`).
     HexString,
+
+    /// A Unicode string (`U'...'` or `U"..."`).
     UnicodeString,
+
+    /// An unquoted string.
+    ///
+    /// Unquoted strings appear only in a few special-case constructs, such as
+    /// the `FILE LABEL` command.
     UnquotedString,
+
+    /// An identifier.
     Identifier,
+
+    /// A punctuator or operator.
     Punct,
+
+    /// `#!` at the beginning of a syntax file only.
     Shbang,
+
+    /// Spaces.
     Spaces,
+
+    /// A comment (`/* ... */`).
     Comment,
+
+    /// New-line.
     Newline,
+
+    /// A comment command (`* ...` or `COMMENT ...`).
     CommentCommand,
+
+    /// In a `DO REPEAT` command, one of the lines to be repeated.
     DoRepeatCommand,
+
+    /// Indicates `DO REPEAT` nested more deeply than supported.
     DoRepeatOverflow,
+
+    /// A line of inline data inside `BEGIN DATA`...`END DATA`.
     InlineData,
+
+    /// In `!DEFINE`, an identifier for the macro being defined.
+    ///
+    /// Distinguished from [Identifier](Self::Identifier) because a `MacroName`
+    /// must never be macro-expanded.
     MacroName,
+
+    /// Contents of `!DEFINE`...`!ENDDEFINE`.
     MacroBody,
+
+    /// Represents the `DOCUMENT` beginning a `DOCUMENT` command.
+    ///
+    /// This token is not associated with any text: the actual `DOCUMENT`
+    /// keyword is part of the following [Document](Self::Document) segment.
+    /// This is because documents include the `DOCUMENT` keyword.
     StartDocument,
+
+    /// One of the lines of documents in a `DOCUMENT` command.
+    ///
+    /// The first line of a document includes the `DOCUMENT` keyword itself.
     Document,
+
+    /// A command separator.
+    ///
+    /// This segment is usually for `+`, `-`, or `.` at the beginning of a line.
     StartCommand,
+
+    /// A command separator.
+    ///
+    /// This segment is usually for a blank line.  It also appears at the end of
+    /// a file.
     SeparateCommands,
+
+    /// A command separator.
+    ///
+    /// This segment is for `.` at the end of a line.
     EndCommand,
+
+    /// Missing quote at the end of a line.
+    ///
+    /// This segment contains a partial quoted string.  It starts with a quote
+    /// mark (`"` or `'`, possibly preceded by `X` or `U`) but goes to the end
+    /// of the line without the matching end quote mark.
     ExpectedQuote,
+
+    /// Missing exponent in number.
+    ///
+    /// This segment contains a number that ends with `E` or `E+` or `E-`
+    /// without a following exponent.
     ExpectedExponent,
+
+    /// Unexpected character.
+    ///
+    /// The segment is a single character that isn't valid in syntax.
     UnexpectedChar,
 }
 
 bitflags! {
     #[derive(Copy, Clone, Debug)]
-    pub struct Substate: u8 {
+    struct Substate: u8 {
         const START_OF_LINE = 1;
         const START_OF_COMMAND = 2;
     }
 }
 
+/// Used by [Segmenter] to indicate that more input is needed.
+#[derive(Copy, Clone, Debug)]
+pub struct Incomplete;
+
+/// Labels syntax input with [Segment]s.
 #[derive(Copy, Clone)]
 pub struct Segmenter {
     state: (State, Substate),
     nest: u8,
     syntax: Syntax,
 }
-
-#[derive(Copy, Clone, Debug)]
-pub struct Incomplete;
 
 impl Segmenter {
     /// Returns a segmenter with the given `syntax`.
@@ -147,6 +228,7 @@ impl Segmenter {
         }
     }
 
+    /// Returns the [Syntax] variant passed in to [new](Self::new).
     pub fn syntax(&self) -> Syntax {
         self.syntax
     }
@@ -162,8 +244,8 @@ impl Segmenter {
     /// Returns the style of command prompt to display to an interactive user
     /// for input in the current state..  The return value is most accurate in
     /// with [Syntax::Interactive] syntax and at the beginning of a line (that
-    /// is, if [`Segmenter::push`] consumed as much as possible of the input up
-    /// to a new-line).
+    /// is, if [Segmenter::push] consumed as much as possible of the input up to
+    /// a new-line).
     pub fn prompt(&self) -> PromptStyle {
         match self.state.0 {
             State::Shbang => PromptStyle::First,
@@ -202,36 +284,6 @@ impl Segmenter {
         }
     }
 
-    /// Attempts to label a prefix of the remaining input with a segment type.
-    /// The caller supplies a prefix of the remaining input as `input`.  If
-    /// `eof` is true, then `input` is the entire (remainder) of the input; if
-    /// `eof` is false, then further input is potentially available.
-    ///
-    /// The input may contain '\n' or '\r\n' line ends in any combination.
-    ///
-    /// If successful, returns `Ok((n, type))`, where `n` is the number of bytes
-    /// in the segment at the beginning of `input` (a number in
-    /// `0..=input.len()`) and the type of that segment.  The next call should
-    /// not include those bytes in `input`, because they have (figuratively)
-    /// been consumed by the segmenter.
-    ///
-    /// Segments can have zero length, including segment types `Type::End`,
-    /// `Type::SeparateCommands`, `Type::StartDocument`, `Type::InlineData`, and
-    /// `Type::Spaces`.
-    ///
-    /// Failure occurs only if the segment type of the bytes in `input` cannot
-    /// yet be determined.  In this case, this function returns `Err(Incomplete)`.  If
-    /// more input is available, the caller should obtain some more, then call
-    /// again with a longer `input`.  If this is not enough, the process might
-    /// need to repeat again and again.  If input is exhausted, then the caller
-    /// may call again setting `eof` to true.  This function will never return
-    /// `Err(Incomplete)` when `eof` is true.
-    ///
-    /// The caller must not, in a sequence of calls, supply contradictory input.
-    /// That is, bytes provided as part of `input` in one call, but not
-    /// consumed, must not be provided with *different* values on subsequent
-    /// calls.  This is because the function must often make decisions based on
-    /// looking ahead beyond the bytes that it consumes.
     fn push_rest<'a>(
         &mut self,
         input: &'a str,
@@ -279,6 +331,36 @@ impl Segmenter {
         }
     }
 
+    /// Attempts to label a prefix of the remaining input with a segment type.
+    /// The caller supplies a prefix of the remaining input as `input`.  If
+    /// `eof` is true, then `input` is the entire (remainder) of the input; if
+    /// `eof` is false, then further input is potentially available.
+    ///
+    /// The input may contain `\n` or `\r\n` line ends in any combination.
+    ///
+    /// If successful, returns `Ok((n, type))`, where `n` is the number of bytes
+    /// in the segment at the beginning of `input` (a number in
+    /// `0..=input.len()`) and the type of that segment.  The next call should
+    /// not include those bytes in `input`, because the segmenter has
+    /// (figuratively) consumed them.
+    ///
+    /// Segments can have zero length, including segment types
+    /// [Segment::SeparateCommands], [Segment::StartDocument],
+    /// [Segment::InlineData], and [Segment::Spaces].
+    ///
+    /// Failure occurs only if the segment type of the bytes in `input` cannot
+    /// yet be determined.  In this case, this function returns
+    /// `Err(Incomplete)`.  If more input is available, the caller should obtain
+    /// some more, then call again with a longer `input`.  If this is still not
+    /// enough, the process might need to repeat again and again.  If input is
+    /// exhausted, then the caller may call again setting `eof` to true.  This
+    /// function will never return `Err(Incomplete)` when `eof` is true.
+    ///
+    /// The caller must not, in a sequence of calls, supply contradictory input.
+    /// That is, bytes provided as part of `input` in one call, but not
+    /// consumed, must not be provided with *different* values on subsequent
+    /// calls.  This is because the function must often make decisions based on
+    /// looking ahead beyond the bytes that it consumes.
     pub fn push(&mut self, input: &str, eof: bool) -> Result<Option<(usize, Segment)>, Incomplete> {
         Ok(self
             .push_rest(input, eof)?

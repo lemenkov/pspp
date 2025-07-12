@@ -68,10 +68,10 @@ use thiserror::Error as ThisError;
 use tlo::parse_tlo;
 
 use crate::{
-    dictionary::{Datum, Variable},
+    data::Datum,
+    dictionary::{VarType, Variable},
     format::{Decimal, Format, Settings as FormatSettings, Type, UncheckedFormat},
     settings::{Settings, Show},
-    sys::raw::VarType,
 };
 
 pub mod output;
@@ -727,16 +727,16 @@ impl Default for Look {
 
 #[derive(ThisError, Debug)]
 pub enum ParseLookError {
-    #[error("{0}")]
+    #[error(transparent)]
     XmlError(#[from] DeError),
 
-    #[error("{0}")]
+    #[error(transparent)]
     Utf8Error(#[from] Utf8Error),
 
-    #[error("{0}")]
+    #[error(transparent)]
     BinError(#[from] BinError),
 
-    #[error("{0}")]
+    #[error(transparent)]
     IoError(#[from] std::io::Error),
 }
 

@@ -14,472 +14,766 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{collections::BTreeMap, ops::Range};
+use std::{
+    collections::BTreeMap,
+    fs::File,
+    io::{Read, Seek},
+    ops::Range,
+    path::Path,
+};
 
 use crate::{
     calendar::date_time_to_pspp,
+    crypto::EncryptedFile,
+    data::{Datum, RawString},
     dictionary::{
-        Datum, Dictionary, InvalidRole, MultipleResponseSet, MultipleResponseType, VarWidth,
-        Variable, VariableSet,
+        Dictionary, InvalidRole, MissingValues, MissingValuesError, MultipleResponseSet,
+        MultipleResponseType, VarWidth, Variable, VariableSet,
     },
     endian::Endian,
     format::{Error as FormatError, Format, UncheckedFormat},
     hexfloat::HexFloat,
     identifier::{ByIdentifier, Error as IdError, Identifier},
     output::pivot::{Group, Value},
-    sys::{
-        encoding::Error as EncodingError,
-        raw::{
-            self, Cases, DecodedRecord, DocumentRecord, EncodingRecord, Extension,
-            FileAttributesRecord, FloatInfoRecord, HeaderRecord, IntegerInfoRecord, LongName,
-            LongNamesRecord, LongStringMissingValueRecord, LongStringValueLabelRecord,
-            MissingValues, MissingValuesError, MultipleResponseRecord, NumberOfCasesRecord,
-            ProductInfoRecord, RawStrArray, RawString, RawWidth, ValueLabel, ValueLabelRecord,
+    sys::raw::{
+        self, infer_encoding,
+        records::{
+            Compression, DocumentRecord, EncodingRecord, Extension, FileAttributesRecord,
+            FileHeader, FloatInfoRecord, IntegerInfoRecord, LongName, LongNamesRecord,
+            LongStringMissingValueRecord, LongStringValueLabelRecord, MultipleResponseRecord,
+            NumberOfCasesRecord, ProductInfoRecord, RawFormat, ValueLabel, ValueLabelRecord,
             VarDisplayRecord, VariableAttributesRecord, VariableRecord, VariableSetRecord,
-            VeryLongStringsRecord, ZHeader, ZTrailer,
+            VeryLongStringsRecord,
         },
+        Cases, DecodedRecord, RawDatum, RawWidth, Reader,
     },
 };
+use anyhow::{anyhow, Error as AnyError};
+use binrw::io::BufReader;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use encoding_rs::Encoding;
 use indexmap::set::MutableValues;
 use itertools::Itertools;
 use thiserror::Error as ThisError;
 
-pub use crate::sys::raw::{CategoryLabels, Compression};
-
+/// A warning for decoding [Records] into a [SystemFile].
 #[derive(ThisError, Clone, Debug)]
 pub enum Error {
-    #[error("Missing header record")]
-    MissingHeaderRecord,
+    /// File creation date is not in the expected format format.
+    #[error("File creation date {0} is not in the expected format \"DD MMM YY\" format.  Using 01 Jan 1970.")]
+    InvalidCreationDate(
+        /// Date.
+        String,
+    ),
 
-    #[error("{0}")]
-    EncodingError(EncodingError),
+    /// File creation time is not in the expected format.
+    #[error("File creation time {0} is not in the expected format \"HH:MM:SS\" format.  Using midnight.")]
+    InvalidCreationTime(
+        /// Time.
+        String,
+    ),
 
-    #[error("Using default encoding {0}.")]
-    UsingDefaultEncoding(String),
-
-    #[error("Variable record from offset {:x} to {:x} specifies width {width} not in valid range [-1,255).", offsets.start, offsets.end)]
-    InvalidVariableWidth { offsets: Range<u64>, width: i32 },
-
-    #[error("This file has corrupted metadata written by a buggy version of PSPP.  To ensure that other software can read it correctly, save a new copy of the file.")]
-    InvalidLongMissingValueFormat,
-
-    #[error("File creation date {creation_date} is not in the expected format \"DD MMM YY\" format.  Using 01 Jan 1970.")]
-    InvalidCreationDate { creation_date: String },
-
-    #[error("File creation time {creation_time} is not in the expected format \"HH:MM:SS\" format.  Using midnight.")]
-    InvalidCreationTime { creation_time: String },
-
+    /// Invalid variable name.
     #[error("{id_error}  Renaming variable to {new_name}.")]
     InvalidVariableName {
+        /// Identifier error.
         id_error: IdError,
+        /// New name.
         new_name: Identifier,
     },
 
+    /// Invalid print format.
     #[error(
-        "Substituting {new_spec} for invalid print format on variable {variable}.  {format_error}"
+        "Substituting {new_format} for invalid print format on variable {variable}.  {format_error}"
     )]
     InvalidPrintFormat {
-        new_spec: Format,
+        /// New format.
+        new_format: Format,
+        /// Variable.
         variable: Identifier,
+        /// Underlying error.
         format_error: FormatError,
     },
 
+    /// Invalid write format.
     #[error(
-        "Substituting {new_spec} for invalid write format on variable {variable}.  {format_error}"
+        "Substituting {new_format} for invalid write format on variable {variable}.  {format_error}"
     )]
     InvalidWriteFormat {
-        new_spec: Format,
+        /// New format.
+        new_format: Format,
+        /// Variable.
         variable: Identifier,
+        /// Underlying error.
         format_error: FormatError,
     },
 
+    /// Renaming variable with duplicate name {duplicate_name} to {new_name}..
     #[error("Renaming variable with duplicate name {duplicate_name} to {new_name}.")]
     DuplicateVariableName {
+        /// Duplicate name.
         duplicate_name: Identifier,
+        /// New name.
         new_name: Identifier,
     },
 
-    #[error("Dictionary index {dict_index} is outside valid range [1,{max_index}].")]
-    InvalidDictIndex { dict_index: usize, max_index: usize },
-
-    #[error("Dictionary index {0} refers to a long string continuation.")]
-    DictIndexIsContinuation(usize),
-
-    #[error("At offset {offset:#x}, one or more variable indexes for value labels referred to long string continuation records: {indexes:?}")]
-    LongStringContinuationIndexes { offset: u64, indexes: Vec<u32> },
-
+    /// Variable index {start_index} is a {width} that should be followed by
+    /// long string continuation records through index {end_index} (inclusive),
+    /// but index {error_index} is not a continuation.
     #[error("Variable index {start_index} is a {width} that should be followed by long string continuation records through index {end_index} (inclusive), but index {error_index} is not a continuation")]
     MissingLongStringContinuation {
+        /// Width of variable.
         width: RawWidth,
+        /// First variable index.
         start_index: usize,
+        /// Last variable index.
         end_index: usize,
+        /// Index of error.
         error_index: usize,
     },
 
+    /// Invalid long string value labels.
     #[error(
         "At offsets {:#x}...{:#x}, record types 3 and 4 may not add value labels to one or more long string variables: {}", .offsets.start, .offsets.end, variables.iter().join(", ")
     )]
     InvalidLongStringValueLabels {
+        /// Range of file offsets.
         offsets: Range<u64>,
+        /// Variables.
         variables: Vec<Identifier>,
     },
 
-    #[error("Variables associated with value label are not all of identical type.  Variable {numeric_var} is numeric, but variable {string_var} is string.")]
-    ValueLabelsDifferentTypes {
-        numeric_var: Identifier,
-        string_var: Identifier,
-    },
-
+    /// Variable has duplicate value labels.
     #[error("{variable} has duplicate value labels for the following value(s): {}", values.iter().join(", "))]
     DuplicateValueLabels {
+        /// Variable.
         variable: Identifier,
+        /// Duplicate values.
         values: Vec<String>,
     },
 
+    /// Invalid multiple response set name.
     #[error("Invalid multiple response set name.  {0}")]
-    InvalidMrSetName(IdError),
+    InvalidMrSetName(
+        /// Identifier error.
+        IdError,
+    ),
 
+    /// Multiple response set includes unknown variable.
     #[error("Multiple response set {mr_set} includes unknown variable {short_name}.")]
     UnknownMrSetVariable {
+        /// Multiple response set name.
         mr_set: Identifier,
+        /// Short name of variable.
         short_name: Identifier,
     },
 
+    /// Multiple response set {mr_set} includes variable {variable} more than once.
     #[error("Multiple response set {mr_set} includes variable {variable} more than once.")]
     DuplicateMrSetVariable {
+        /// Multiple response set name.
         mr_set: Identifier,
+        /// Duplicated variable.
         variable: Identifier,
     },
 
+    /// Multiple response set {0} has no variables.
     #[error("Multiple response set {0} has no variables.")]
-    EmptyMrSet(Identifier),
+    EmptyMrSet(
+        /// Multiple response set name.
+        Identifier,
+    ),
 
+    /// Multiple response set {0} has only one variable.
     #[error("Multiple response set {0} has only one variable.")]
-    OneVarMrSet(Identifier),
+    OneVarMrSet(
+        /// Multiple response set name.
+        Identifier,
+    ),
 
+    /// Multiple response set {0} contains both string and numeric variables.
     #[error("Multiple response set {0} contains both string and numeric variables.")]
-    MixedMrSet(Identifier),
+    MixedMrSet(
+        /// Multiple response set name.
+        Identifier,
+    ),
 
+    /// Invalid numeric format for counted value {number} in multiple response set {mr_set}.
     #[error(
         "Invalid numeric format for counted value {number} in multiple response set {mr_set}."
     )]
-    InvalidMDGroupCountedValue { mr_set: Identifier, number: String },
+    InvalidMDGroupCountedValue {
+        /// Multiple response set name.
+        mr_set: Identifier,
+        /// Value that should be numeric.
+        number: String,
+    },
 
+    /// Counted value {value} has width {width}, but it must be no wider than
+    /// {max_width}, the width of the narrowest variable in multiple response
+    /// set {mr_set}.
     #[error("Counted value {value} has width {width}, but it must be no wider than {max_width}, the width of the narrowest variable in multiple response set {mr_set}.")]
     TooWideMDGroupCountedValue {
+        /// Multiple response set name.
         mr_set: Identifier,
+        /// Counted value.
         value: String,
+        /// Width of counted value.
         width: usize,
+        /// Maximum allowed width of counted value.
         max_width: u16,
     },
 
-    #[error("Long string value label for variable {name} has width {width}, which is not in the valid range [{min_width},{max_width}].")]
-    InvalidLongValueLabelWidth {
-        name: Identifier,
-        width: u32,
-        min_width: u16,
-        max_width: u16,
-    },
-
+    /// Ignoring long string value label for unknown variable {0}.
     #[error("Ignoring long string value label for unknown variable {0}.")]
-    UnknownLongStringValueLabelVariable(Identifier),
+    UnknownLongStringValueLabelVariable(
+        /// Variable name.
+        Identifier,
+    ),
 
+    /// Ignoring long string value label for numeric variable {0}.
     #[error("Ignoring long string value label for numeric variable {0}.")]
-    LongStringValueLabelNumericVariable(Identifier),
+    LongStringValueLabelNumericVariable(
+        /// Variable name.
+        Identifier,
+    ),
 
-    #[error("Invalid attribute name.  {0}")]
-    InvalidAttributeName(IdError),
+    /// Invalid variable name {0} in variable attribute record.
+    #[error("Invalid variable name {0} in variable attribute record.")]
+    UnknownAttributeVariableName(
+        /// Variable name.
+        Identifier,
+    ),
 
-    #[error("Invalid short name in long variable name record.  {0}")]
-    InvalidShortName(IdError),
+    /// Unknown short name {0} in long variable name record.
+    #[error("Unknown short name {0} in long variable name record.")]
+    UnknownShortName(
+        /// Short variable name.
+        Identifier,
+    ),
 
-    #[error("Invalid name in long variable name record.  {0}")]
-    InvalidLongName(IdError),
-
+    /// Duplicate long variable name {0}.
     #[error("Duplicate long variable name {0}.")]
-    DuplicateLongName(Identifier),
+    DuplicateLongName(
+        /// Long variable name.
+        Identifier,
+    ),
 
-    #[error("Invalid variable name in very long string record.  {0}")]
-    InvalidLongStringName(IdError),
+    /// Very long string entry for unknown variable {0}.
+    #[error("Very long string entry for unknown variable {0}.")]
+    UnknownVeryLongString(
+        /// Variable name.
+        Identifier,
+    ),
 
+    /// Variable with short name {short_name} listed in very long string record
+    /// with width {width}, which requires only one segment.
     #[error("Variable with short name {short_name} listed in very long string record with width {width}, which requires only one segment.")]
-    ShortVeryLongString { short_name: Identifier, width: u16 },
+    ShortVeryLongString {
+        /// Short variable name.
+        short_name: Identifier,
+        /// Invalid width.
+        width: u16,
+    },
 
+    /// Variable with short name {short_name} listed in very long string record
+    /// with width {width} requires string segments for {n_segments} dictionary
+    /// indexes starting at index {index}, but the dictionary only contains
+    /// {len} indexes.
     #[error("Variable with short name {short_name} listed in very long string record with width {width} requires string segments for {n_segments} dictionary indexes starting at index {index}, but the dictionary only contains {len} indexes.")]
     VeryLongStringOverflow {
+        /// Short variable name.
         short_name: Identifier,
+        /// Width.
         width: u16,
+        /// Starting index.
         index: usize,
+        /// Expected number of segments.
         n_segments: usize,
+        /// Number of indexes in dictionary.
         len: usize,
     },
 
+    /// Variable with short name {short_name} listed in very long string record
+    /// with width {width} has segment {index} of width {actual} (expected
+    /// {expected}).
     #[error("Variable with short name {short_name} listed in very long string record with width {width} has segment {index} of width {actual} (expected {expected}).")]
     VeryLongStringInvalidSegmentWidth {
+        /// Variable short name.
         short_name: Identifier,
+        /// Variable width.
         width: u16,
+        /// Variable index.
         index: usize,
+        /// Actual width.
         actual: usize,
+        /// Expected width.
         expected: usize,
     },
 
-    #[error("Invalid variable name in long string value label record.  {0}")]
-    InvalidLongStringValueLabelName(IdError),
-
-    #[error("Invalid variable name in attribute record.  {0}")]
-    InvalidAttributeVariableName(IdError),
-
-    // XXX This is risky because `text` might be arbitarily long.
-    #[error("Text string contains invalid bytes for {encoding} encoding: {text}")]
-    MalformedString { encoding: String, text: String },
-
+    /// File contains multiple {0:?} records.
     #[error("File contains multiple {0:?} records.")]
-    MoreThanOne(&'static str),
+    MoreThanOne(
+        /// Record name.
+        &'static str,
+    ),
 
+    /// File designates string variable {name} (index {index}) as weight
+    /// variable, but weight variables must be numeric.
     #[error("File designates string variable {name} (index {index}) as weight variable, but weight variables must be numeric.")]
-    InvalidWeightVar { name: Identifier, index: u32 },
+    InvalidWeightVar {
+        /// Variable name.
+        name: Identifier,
+        /// Variable index.
+        index: u32,
+    },
 
+    /// File weight variable index {index} is invalid because it exceeds maximum
+    /// variable index {max_index}.
     #[error(
         "File weight variable index {index} is invalid because it exceeds maximum variable index {max_index}."
     )]
-    WeightIndexOutOfRange { index: u32, max_index: usize },
+    WeightIndexOutOfRange {
+        /// Variable index.
+        index: u32,
+        /// Maximum variable index.
+        max_index: usize,
+    },
 
+    /// File weight variable index {index} is invalid because it refers to long
+    /// string continuation for variable {name}.
     #[error(
         "File weight variable index {index} is invalid because it refers to long string continuation for variable {name}."
     )]
-    WeightIndexStringContinuation { index: u32, name: Identifier },
+    WeightIndexStringContinuation {
+        /// Variable index.
+        index: u32,
+        /// Variable name.
+        name: Identifier,
+    },
 
-    #[error("{0}")]
-    InvalidRole(InvalidRole),
+    /// Invalid role.
+    #[error(transparent)]
+    InvalidRole(
+        /// Role error.
+        InvalidRole,
+    ),
 
+    /// File header claims {expected} variable positions but {actual} were read
+    /// from file.
     #[error("File header claims {expected} variable positions but {actual} were read from file.")]
-    WrongVariablePositions { actual: usize, expected: usize },
+    WrongVariablePositions {
+        /// Actual number of variable positions.
+        actual: usize,
+        /// Number of variable positions claimed by file header.
+        expected: usize,
+    },
 
+    /// Unknown variable name \"{name}\" in long string missing value record.
     #[error("Unknown variable name \"{name}\" in long string missing value record.")]
-    LongStringMissingValueUnknownVariable { name: Identifier },
+    LongStringMissingValueUnknownVariable {
+        /// Variable name.
+        name: Identifier,
+    },
 
+    /// Invalid long string missing value for {} variable {name}.
     #[error("Invalid long string missing value for {} variable {name}.", width.display_adjective())]
-    LongStringMissingValueBadWdith { name: Identifier, width: VarWidth },
+    LongStringMissingValueBadWdith {
+        /// Variable name.
+        name: Identifier,
+        /// Variable width.
+        width: VarWidth,
+    },
 
+    /// Long string missing values record says variable {name} has {count}
+    /// missing values, but only 1 to 3 missing values are allowed.
     #[error("Long string missing values record says variable {name} has {count} missing values, but only 1 to 3 missing values are allowed.")]
-    LongStringMissingValueInvalidCount { name: Identifier, count: usize },
+    LongStringMissingValueInvalidCount {
+        /// Variable name.
+        name: Identifier,
+        /// Claimed number of missing values.
+        count: usize,
+    },
 
+    /// Long string missing values for variable {0} are too wide.
+    #[error("Long string missing values for variable {0} are too wide.")]
+    MissingValuesTooWide(
+        /// Variable name.
+        Identifier,
+    ),
+
+    /// Unknown extension record with subtype {subtype} at offset {offset:#x},
+    /// consisting of {count} {size}-byte units.  Please feel free to report
+    /// this as a bug.
     #[error("Unknown extension record with subtype {subtype} at offset {offset:#x}, consisting of {count} {size}-byte units.  Please feel free to report this as a bug.")]
     UnknownExtensionRecord {
+        /// Extension record file starting offset.
         offset: u64,
+        /// Extension record subtype.
         subtype: u32,
+        /// Extension record per-element size.
         size: u32,
+        /// Number of elements in extension record.
         count: u32,
     },
 
+    /// Floating-point representation indicated by system file ({0}) differs from expected (1).
     #[error(
         "Floating-point representation indicated by system file ({0}) differs from expected (1)."
     )]
-    UnexpectedFloatFormat(i32),
+    UnexpectedFloatFormat(
+        /// Floating-point format.
+        i32,
+    ),
 
+    /// Integer format indicated by system file ({actual}) differs from
+    /// expected ({expected})..
     #[error(
         "Integer format indicated by system file ({actual}) differs from expected ({expected})."
     )]
-    UnexpectedEndianess { actual: i32, expected: i32 },
+    UnexpectedEndianess {
+        /// Endianness declared by system file.
+        actual: i32,
+        /// Actual endianness used in system file.
+        expected: i32,
+    },
 
+    /// System file specifies value {actual:?} ({}) as {name} but {expected:?} ({}) was expected..
     #[error(
         "System file specifies value {actual:?} ({}) as {name} but {expected:?} ({}) was expected.",
         HexFloat(*actual),
         HexFloat(*expected)
     )]
     UnexpectedFloatValue {
+        /// Actual floating-point value in system file.
         actual: f64,
+        /// Expected floating-point value in system file.
         expected: f64,
+        /// Name for this special floating-point value.
         name: &'static str,
     },
 
+    /// Variable set \"{variable_set}\" includes unknown variable {variable}.
     #[error("Variable set \"{variable_set}\" includes unknown variable {variable}.")]
     UnknownVariableSetVariable {
+        /// Name of variable set.
         variable_set: String,
+        /// Variable name.
         variable: Identifier,
     },
 
-    #[error("Details TBD (cooked)")]
-    TBD,
+    /// Dictionary has {expected} variables but {actual} variable display
+    /// entries are present.
+    #[error(
+        "Dictionary has {expected} variables but {actual} variable display entries are present."
+    )]
+    WrongNumberOfVarDisplay {
+        /// Expected number of variable-display entries.
+        expected: usize,
+        /// Number of variable-display entries actually present.
+        actual: usize,
+    },
 }
 
-#[derive(Clone, Debug)]
-pub struct Headers {
-    pub header: HeaderRecord<String>,
-    pub variable: Vec<VariableRecord<String>>,
-    pub value_label: Vec<ValueLabelRecord<RawStrArray<8>, String>>,
-    pub document: Vec<DocumentRecord<String>>,
-    pub integer_info: Option<IntegerInfoRecord>,
-    pub float_info: Option<FloatInfoRecord>,
-    pub var_display: Option<VarDisplayRecord>,
-    pub multiple_response: Vec<MultipleResponseRecord<Identifier, String>>,
-    pub long_string_value_labels: Vec<LongStringValueLabelRecord<Identifier, String>>,
-    pub long_string_missing_values: Vec<LongStringMissingValueRecord<Identifier>>,
-    pub encoding: Option<EncodingRecord>,
-    pub number_of_cases: Option<NumberOfCasesRecord>,
-    pub variable_sets: Vec<VariableSetRecord>,
-    pub product_info: Option<ProductInfoRecord>,
-    pub long_names: Vec<LongNamesRecord>,
-    pub very_long_strings: Vec<VeryLongStringsRecord>,
-    pub file_attributes: Vec<FileAttributesRecord>,
-    pub variable_attributes: Vec<VariableAttributesRecord>,
-    pub other_extension: Vec<Extension>,
-    pub end_of_headers: Option<u32>,
-    pub z_header: Option<ZHeader>,
-    pub z_trailer: Option<ZTrailer>,
+/// Options for reading a system file.
+#[derive(Default, Clone, Debug)]
+pub struct ReaderOptions {
+    /// Character encoding for text in the system file.
+    ///
+    /// If not set, the character encoding will be determined from reading the
+    /// file, or a default encoding will be used.
+    pub encoding: Option<&'static Encoding>,
+
+    /// Password to use to unlock an encrypted system file.
+    ///
+    /// For an encrypted system file, this must be set to the (encoded or
+    /// unencoded) password.
+    ///
+    /// For a plaintext system file, this must be `None`.
+    pub password: Option<String>,
 }
 
-fn take_first<T>(
-    mut vec: Vec<T>,
-    record_name: &'static str,
-    warn: &mut impl FnMut(Error),
-) -> Option<T> {
-    if vec.len() > 1 {
-        warn(Error::MoreThanOne(record_name));
+impl ReaderOptions {
+    /// Construct a new `ReaderOptions` that initially does not specify an
+    /// encoding or password.
+    pub fn new() -> Self {
+        Self::default()
     }
-    vec.drain(..).next()
+
+    /// Causes the file to be read using the specified `encoding`, or with a
+    /// default if `encoding` is None.
+    pub fn with_encoding(self, encoding: Option<&'static Encoding>) -> Self {
+        Self { encoding, ..self }
+    }
+
+    /// Causes the file to be read by decrypting it with the given `password` or
+    /// without decrypting if `encoding` is None.
+    pub fn with_password(self, password: Option<String>) -> Self {
+        Self { password, ..self }
+    }
+
+    /// Opens the file at `path`, reporting warnings using `warn`.
+    pub fn open_file<P, F>(self, path: P, warn: F) -> Result<SystemFile, AnyError>
+    where
+        P: AsRef<Path>,
+        F: FnMut(AnyError),
+    {
+        let file = File::open(path)?;
+        if self.password.is_some() {
+            // Don't create `BufReader`, because [EncryptedReader] will buffer.
+            self.open_reader(file, warn)
+        } else {
+            self.open_reader(BufReader::new(file), warn)
+        }
+    }
+
+    /// Opens the file read from `reader`, reporting warnings using `warn`.
+    pub fn open_reader<R, F>(self, reader: R, warn: F) -> Result<SystemFile, AnyError>
+    where
+        R: Read + Seek + 'static,
+        F: FnMut(AnyError),
+    {
+        if let Some(password) = &self.password {
+            Self::open_reader_inner(
+                EncryptedFile::new(reader)?
+                    .unlock(password.as_bytes())
+                    .map_err(|_| anyhow!("Incorrect password."))?,
+                self.encoding,
+                warn,
+            )
+        } else {
+            Self::open_reader_inner(reader, self.encoding, warn)
+        }
+    }
+
+    fn open_reader_inner<R, F>(
+        reader: R,
+        encoding: Option<&'static Encoding>,
+        mut warn: F,
+    ) -> Result<SystemFile, AnyError>
+    where
+        R: Read + Seek + 'static,
+        F: FnMut(AnyError),
+    {
+        let mut reader = Reader::new(reader, |warning| warn(warning.into()))?;
+        let records = reader.records().collect::<Result<Vec<_>, _>>()?;
+        let header = reader.header().clone();
+        let cases = reader.cases();
+        let encoding = if let Some(encoding) = encoding {
+            encoding
+        } else {
+            infer_encoding(&records, |warning| warn(warning.into()))?
+        };
+        let mut decoder = raw::Decoder::new(encoding, |warning| warn(warning.into()));
+        let header = header.decode(&mut decoder);
+        let records = records
+            .into_iter()
+            .map(|record| record.decode(&mut decoder))
+            .collect::<Records>();
+        let encoding = decoder.into_encoding();
+
+        Ok(records.decode(header, cases, encoding, |e| warn(e.into())))
+    }
 }
 
-impl Headers {
-    pub fn new(
-        headers: Vec<raw::DecodedRecord>,
-        warn: &mut impl FnMut(Error),
-    ) -> Result<Headers, Error> {
-        let mut file_header = Vec::new();
-        let mut variable = Vec::new();
-        let mut value_label = Vec::new();
-        let mut document = Vec::new();
-        let mut integer_info = Vec::new();
-        let mut float_info = Vec::new();
-        let mut var_display = Vec::new();
-        let mut multiple_response = Vec::new();
-        let mut long_string_value_labels = Vec::new();
-        let mut long_string_missing_values = Vec::new();
-        let mut encoding = Vec::new();
-        let mut number_of_cases = Vec::new();
-        let mut variable_sets = Vec::new();
-        let mut product_info = Vec::new();
-        let mut long_names = Vec::new();
-        let mut very_long_strings = Vec::new();
-        let mut file_attributes = Vec::new();
-        let mut variable_attributes = Vec::new();
-        let mut other_extension = Vec::new();
-        let mut end_of_headers = Vec::new();
-        let mut z_header = Vec::new();
-        let mut z_trailer = Vec::new();
+/// The content of an SPSS system file.
+#[derive(Debug)]
+pub struct SystemFile {
+    /// The system file dictionary.
+    pub dictionary: Dictionary,
 
-        for header in headers {
-            match header {
-                DecodedRecord::Header(record) => {
-                    file_header.push(record);
-                }
+    /// System file metadata that is not part of the dictionary.
+    pub metadata: Metadata,
+
+    /// Data in the system file.
+    pub cases: Cases,
+}
+
+impl SystemFile {
+    /// Returns the individual parts of the [SystemFile].
+    pub fn into_parts(self) -> (Dictionary, Metadata, Cases) {
+        (self.dictionary, self.metadata, self.cases)
+    }
+}
+
+/// Decoded records in a system file, arranged by type.
+///
+/// The `Vec` fields are all in order read from the file.
+#[derive(Clone, Debug, Default)]
+pub struct Records {
+    /// Variable records.
+    pub variable: Vec<VariableRecord<String>>,
+
+    /// Value label records.
+    pub value_label: Vec<ValueLabelRecord<RawDatum, String>>,
+
+    /// Document records.
+    pub document: Vec<DocumentRecord<String>>,
+
+    /// Integer info record.
+    pub integer_info: Vec<IntegerInfoRecord>,
+
+    /// Float info record.
+    pub float_info: Vec<FloatInfoRecord>,
+
+    /// Variable display record.
+    pub var_display: Vec<VarDisplayRecord>,
+
+    /// Multiple response set records.
+    pub multiple_response: Vec<MultipleResponseRecord<Identifier, String>>,
+
+    /// Long string value label records.
+    pub long_string_value_labels: Vec<LongStringValueLabelRecord<Identifier, String>>,
+
+    /// Long string missing value records.
+    pub long_string_missing_values: Vec<LongStringMissingValueRecord<Identifier>>,
+
+    /// Encoding record.
+    pub encoding: Vec<EncodingRecord>,
+
+    /// Number of cases record.
+    pub number_of_cases: Vec<NumberOfCasesRecord>,
+
+    /// Variable sets records.
+    pub variable_sets: Vec<VariableSetRecord>,
+
+    /// Product info record.
+    pub product_info: Vec<ProductInfoRecord>,
+
+    /// Long variable naems records.
+    pub long_names: Vec<LongNamesRecord>,
+
+    /// Very long string variable records.
+    pub very_long_strings: Vec<VeryLongStringsRecord>,
+
+    /// File attribute records.
+    pub file_attributes: Vec<FileAttributesRecord>,
+
+    /// Variable attribute records.
+    pub variable_attributes: Vec<VariableAttributesRecord>,
+
+    /// Other extension records.
+    pub other_extension: Vec<Extension>,
+}
+
+impl Extend<raw::DecodedRecord> for Records {
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = raw::DecodedRecord>,
+    {
+        for record in iter {
+            match record {
                 DecodedRecord::Variable(record) => {
-                    variable.push(record);
+                    self.variable.push(record);
                 }
                 DecodedRecord::ValueLabel(record) => {
-                    value_label.push(record);
+                    self.value_label.push(record);
                 }
                 DecodedRecord::Document(record) => {
-                    document.push(record);
+                    self.document.push(record);
                 }
                 DecodedRecord::IntegerInfo(record) => {
-                    integer_info.push(record);
+                    self.integer_info.push(record);
                 }
                 DecodedRecord::FloatInfo(record) => {
-                    float_info.push(record);
+                    self.float_info.push(record);
                 }
                 DecodedRecord::VariableSets(record) => {
-                    variable_sets.push(record);
+                    self.variable_sets.push(record);
                 }
                 DecodedRecord::VarDisplay(record) => {
-                    var_display.push(record);
+                    self.var_display.push(record);
                 }
                 DecodedRecord::MultipleResponse(record) => {
-                    multiple_response.push(record);
+                    self.multiple_response.push(record);
                 }
                 DecodedRecord::LongStringValueLabels(record) => {
-                    long_string_value_labels.push(record)
+                    self.long_string_value_labels.push(record)
                 }
                 DecodedRecord::LongStringMissingValues(record) => {
-                    long_string_missing_values.push(record);
+                    self.long_string_missing_values.push(record);
                 }
                 DecodedRecord::Encoding(record) => {
-                    encoding.push(record);
+                    self.encoding.push(record);
                 }
                 DecodedRecord::NumberOfCases(record) => {
-                    number_of_cases.push(record);
+                    self.number_of_cases.push(record);
                 }
                 DecodedRecord::ProductInfo(record) => {
-                    product_info.push(record);
+                    self.product_info.push(record);
                 }
                 DecodedRecord::LongNames(record) => {
-                    long_names.push(record);
+                    self.long_names.push(record);
                 }
                 DecodedRecord::VeryLongStrings(record) => {
-                    very_long_strings.push(record);
+                    self.very_long_strings.push(record);
                 }
                 DecodedRecord::FileAttributes(record) => {
-                    file_attributes.push(record);
+                    self.file_attributes.push(record);
                 }
                 DecodedRecord::VariableAttributes(record) => {
-                    variable_attributes.push(record);
+                    self.variable_attributes.push(record);
                 }
                 DecodedRecord::OtherExtension(record) => {
-                    other_extension.push(record);
+                    self.other_extension.push(record);
                 }
-                DecodedRecord::EndOfHeaders(record) => {
-                    end_of_headers.push(record);
-                }
-                DecodedRecord::ZHeader(record) => {
-                    z_header.push(record);
-                }
-                DecodedRecord::ZTrailer(record) => {
-                    z_trailer.push(record);
-                }
+                DecodedRecord::EndOfHeaders(_)
+                | DecodedRecord::ZHeader(_)
+                | DecodedRecord::ZTrailer(_) => (),
             }
         }
+    }
+}
 
-        let Some(file_header) = take_first(file_header, "file header", warn) else {
-            return Err(Error::MissingHeaderRecord);
-        };
+impl FromIterator<DecodedRecord> for Records {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = DecodedRecord>,
+    {
+        let mut records = Records::default();
+        records.extend(iter);
+        records
+    }
+}
 
-        Ok(Headers {
-            header: file_header,
-            variable,
-            value_label,
-            document,
-            integer_info: take_first(integer_info, "integer info", warn),
-            float_info: take_first(float_info, "float info", warn),
-            var_display: take_first(var_display, "variable display", warn),
-            multiple_response,
-            long_string_value_labels,
-            long_string_missing_values,
-            encoding: take_first(encoding, "encoding", warn),
-            number_of_cases: take_first(number_of_cases, "number of cases", warn),
-            variable_sets,
-            product_info: take_first(product_info, "product info", warn),
-            long_names,
-            very_long_strings,
-            file_attributes,
-            variable_attributes,
-            other_extension,
-            end_of_headers: take_first(end_of_headers, "end of headers", warn),
-            z_header: take_first(z_header, "z_header", warn),
-            z_trailer: take_first(z_trailer, "z_trailer", warn),
-        })
+impl Records {
+    /// Constructs `Records` from the raw records in `iter`, decoding them with
+    /// `decoder`.
+    pub fn from_raw<T>(iter: T, decoder: &mut raw::Decoder) -> Self
+    where
+        T: IntoIterator<Item = raw::Record>,
+    {
+        iter.into_iter()
+            .map(|record| record.decode(decoder))
+            .collect()
     }
 
+    /// Decodes this [Records] along with `header` and `cases` into a
+    /// [SystemFile].  `encoding` is the encoding that was used to decode these
+    /// records.  Uses `warn` to report warnings.
     pub fn decode(
         mut self,
+        header: FileHeader<String>,
         mut cases: Cases,
         encoding: &'static Encoding,
         mut warn: impl FnMut(Error),
-    ) -> Result<(Dictionary, Metadata, Cases), Error> {
+    ) -> SystemFile {
+        for (count, record_name) in [
+            (self.integer_info.len(), "integer info"),
+            (self.float_info.len(), "float info"),
+            (self.var_display.len(), "variable display"),
+            (self.encoding.len(), "encoding"),
+            (self.number_of_cases.len(), "number of cases"),
+            (self.product_info.len(), "product info"),
+        ] {
+            if count > 1 {
+                warn(Error::MoreThanOne(record_name));
+            }
+        }
+
         let mut dictionary = Dictionary::new(encoding);
 
-        let file_label = fix_line_ends(self.header.file_label.trim_end_matches(' '));
+        let file_label = fix_line_ends(header.file_label.trim_end_matches(' '));
         if !file_label.is_empty() {
             dictionary.file_label = Some(file_label);
         }
@@ -497,13 +791,13 @@ impl Headers {
             .map(trim_end_spaces)
             .collect();
 
-        if let Some(integer_info) = &self.integer_info {
+        if let Some(integer_info) = self.integer_info.first() {
             let floating_point_rep = integer_info.floating_point_rep;
             if floating_point_rep != 1 {
                 warn(Error::UnexpectedFloatFormat(floating_point_rep))
             }
 
-            let expected = match self.header.endian {
+            let expected = match header.endian {
                 Endian::Big => 1,
                 Endian::Little => 2,
             };
@@ -513,7 +807,7 @@ impl Headers {
             }
         };
 
-        if let Some(float_info) = &self.float_info {
+        if let Some(float_info) = self.float_info.get(0) {
             for (expected, expected2, actual, name) in [
                 (f64::MIN, None, float_info.sysmis, "SYSMIS"),
                 (f64::MAX, None, float_info.highest, "HIGHEST"),
@@ -534,12 +828,12 @@ impl Headers {
             }
         }
 
-        if let Some(nominal_case_size) = self.header.nominal_case_size {
+        if let Some(nominal_case_size) = header.nominal_case_size {
             let n_vars = self.variable.len();
             if n_vars != nominal_case_size as usize
                 && self
                     .integer_info
-                    .as_ref()
+                    .get(0)
                     .is_none_or(|info| info.version.0 != 13)
             {
                 warn(Error::WrongVariablePositions {
@@ -605,7 +899,7 @@ impl Headers {
                 variable.width,
                 |new_spec, format_error| {
                     warn(Error::InvalidPrintFormat {
-                        new_spec,
+                        new_format: new_spec,
                         variable: variable.name.clone(),
                         format_error,
                     })
@@ -616,7 +910,7 @@ impl Headers {
                 variable.width,
                 |new_spec, format_error| {
                     warn(Error::InvalidWriteFormat {
-                        new_spec,
+                        new_format: new_spec,
                         variable: variable.name.clone(),
                         format_error,
                     })
@@ -646,7 +940,7 @@ impl Headers {
             value_index += n_values;
         }
 
-        if let Some(weight_index) = self.header.weight_index {
+        if let Some(weight_index) = header.weight_index {
             let index = weight_index as usize - 1;
             if index >= value_index {
                 warn(Error::WeightIndexOutOfRange {
@@ -695,7 +989,7 @@ impl Headers {
                 });
             }
 
-            let written_by_readstat = self.header.eye_catcher.contains("ReadStat");
+            let written_by_readstat = header.eye_catcher.contains("ReadStat");
             for dict_index in dict_indexes {
                 let variable = dictionary.variables.get_index_mut2(dict_index).unwrap();
                 let mut duplicates = Vec::new();
@@ -734,20 +1028,23 @@ impl Headers {
             }
         }
 
-        if let Some(display) = &self.var_display {
-            for (index, display) in display.0.iter().enumerate() {
-                if let Some(variable) = dictionary.variables.get_index_mut2(index) {
-                    if let Some(width) = display.width {
-                        variable.display_width = width;
-                    }
-                    if let Some(alignment) = display.alignment {
-                        variable.alignment = alignment;
-                    }
-                    if let Some(measure) = display.measure {
-                        variable.measure = Some(measure);
-                    }
-                } else {
-                    warn(dbg!(Error::TBD));
+        if let Some(display) = self.var_display.first() {
+            if display.0.len() != dictionary.variables.len() {
+                warn(Error::WrongNumberOfVarDisplay {
+                    expected: dictionary.variables.len(),
+                    actual: display.0.len(),
+                });
+            }
+            for (display, index) in display.0.iter().zip(0..dictionary.variables.len()) {
+                let variable = dictionary.variables.get_index_mut2(index).unwrap();
+                if let Some(width) = display.width {
+                    variable.display_width = width;
+                }
+                if let Some(alignment) = display.alignment {
+                    variable.alignment = alignment;
+                }
+                if let Some(measure) = display.measure {
+                    variable.measure = Some(measure);
                 }
             }
         }
@@ -755,7 +1052,7 @@ impl Headers {
         for record in self
             .multiple_response
             .iter()
-            .flat_map(|record| record.0.iter())
+            .flat_map(|record| record.sets.iter())
         {
             match MultipleResponseSet::decode(&dictionary, record, &mut warn) {
                 Ok(mrset) => {
@@ -772,26 +1069,26 @@ impl Headers {
                 .flat_map(|record| record.0.into_iter())
             {
                 let Some(index) = dictionary.variables.get_index_of(&record.short_name.0) else {
-                    warn(dbg!(Error::TBD));
+                    warn(Error::UnknownVeryLongString(record.short_name.clone()));
                     continue;
                 };
                 let width = VarWidth::String(record.length);
                 let n_segments = width.n_segments();
                 if n_segments == 1 {
-                    warn(dbg!(Error::ShortVeryLongString {
+                    warn(Error::ShortVeryLongString {
                         short_name: record.short_name.clone(),
-                        width: record.length
-                    }));
+                        width: record.length,
+                    });
                     continue;
                 }
                 if index + n_segments > dictionary.variables.len() {
-                    warn(dbg!(Error::VeryLongStringOverflow {
+                    warn(Error::VeryLongStringOverflow {
                         short_name: record.short_name.clone(),
                         width: record.length,
                         index,
                         n_segments,
-                        len: dictionary.variables.len()
-                    }));
+                        len: dictionary.variables.len(),
+                    });
                     continue;
                 }
                 let mut short_names = Vec::with_capacity(n_segments);
@@ -853,7 +1150,7 @@ impl Headers {
                         .unwrap()
                         .short_names = vec![short_name];
                 } else {
-                    warn(dbg!(Error::TBD));
+                    warn(Error::UnknownShortName(short_name.clone()));
                 }
             }
         }
@@ -869,7 +1166,9 @@ impl Headers {
             {
                 variable.attributes.append(&mut attr_set.attributes);
             } else {
-                warn(dbg!(Error::TBD));
+                warn(Error::UnknownAttributeVariableName(
+                    attr_set.long_var_name.clone(),
+                ));
             }
         }
 
@@ -887,7 +1186,7 @@ impl Headers {
         for record in self
             .long_string_value_labels
             .drain(..)
-            .flat_map(|record| record.0.into_iter())
+            .flat_map(|record| record.labels.into_iter())
         {
             let Some((_, variable)) = dictionary.variables.get_full_mut2(&record.var_name.0) else {
                 warn(Error::UnknownLongStringValueLabelVariable(
@@ -912,7 +1211,7 @@ impl Headers {
         for mut record in self
             .long_string_missing_values
             .drain(..)
-            .flat_map(|record| record.0.into_iter())
+            .flat_map(|record| record.values.into_iter())
         {
             let Some((_, variable)) = dictionary.variables.get_full_mut2(&record.var_name.0) else {
                 warn(Error::LongStringMissingValueUnknownVariable {
@@ -945,7 +1244,9 @@ impl Headers {
                 .collect::<Vec<_>>();
             match MissingValues::new(values, None) {
                 Ok(missing_values) => variable.missing_values = missing_values,
-                Err(MissingValuesError::TooWide) => warn(dbg!(Error::TBD)),
+                Err(MissingValuesError::TooWide) => {
+                    warn(Error::MissingValuesTooWide(record.var_name.clone()))
+                }
                 Err(MissingValuesError::TooMany) | Err(MissingValuesError::MixedTypes) => {
                     unreachable!()
                 }
@@ -985,26 +1286,56 @@ impl Headers {
             });
         }
 
-        let metadata = Metadata::decode(&self, warn);
+        let metadata = Metadata::decode(&header, &self, warn);
         if let Some(n_cases) = metadata.n_cases {
             cases = cases.with_expected_cases(n_cases);
         }
-        Ok((dictionary, metadata, cases))
+        SystemFile {
+            dictionary,
+            metadata,
+            cases,
+        }
     }
 }
 
+/// System file metadata that is not part of [Dictionary].
+///
+/// [Dictionary]: crate::dictionary::Dictionary
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Metadata {
+    /// Creation date and time.
+    ///
+    /// This comes from the file header, not from the file system.
     pub creation: NaiveDateTime,
+
+    /// Endianness of integers and floating-point numbers in the file.
     pub endian: Endian,
+
+    /// Compression type (if any).
     pub compression: Option<Compression>,
+
+    /// Number of cases in the file, if it says.
+    ///
+    /// This is not trustworthy: there can be more or fewer.
     pub n_cases: Option<u64>,
+
+    /// Name of the product that wrote the file.
     pub product: String,
+
+    /// Extended name of the product that wrote the file.
     pub product_ext: Option<String>,
+
+    /// Version number of the product that wrote the file.
+    ///
+    /// For example, `(1,2,3)` is version 1.2.3.
     pub version: Option<(i32, i32, i32)>,
 }
 
 impl Metadata {
+    /// Returns a pivot table [Group] and associated [Value]s that describe this
+    /// `Metadata` if they are put into a [PivotTable].
+    ///
+    /// [PivotTable]: crate::output::pivot::PivotTable
     pub fn to_pivot_rows(&self) -> (Group, Vec<Value>) {
         let mut group = Group::new("File Information");
         let mut values = Vec::new();
@@ -1055,20 +1386,16 @@ impl Metadata {
         (group, values)
     }
 
-    fn decode(headers: &Headers, mut warn: impl FnMut(Error)) -> Self {
-        let header = &headers.header;
+    fn decode(header: &FileHeader<String>, headers: &Records, mut warn: impl FnMut(Error)) -> Self {
+        let header = &header;
         let creation_date = NaiveDate::parse_from_str(&header.creation_date, "%e %b %y")
             .unwrap_or_else(|_| {
-                warn(Error::InvalidCreationDate {
-                    creation_date: header.creation_date.to_string(),
-                });
+                warn(Error::InvalidCreationDate(header.creation_date.to_string()));
                 Default::default()
             });
         let creation_time = NaiveTime::parse_from_str(&header.creation_time, "%H:%M:%S")
             .unwrap_or_else(|_| {
-                warn(Error::InvalidCreationTime {
-                    creation_time: header.creation_time.to_string(),
-                });
+                warn(Error::InvalidCreationTime(header.creation_time.to_string()));
                 Default::default()
             });
         let creation = NaiveDateTime::new(creation_date, creation_time);
@@ -1085,12 +1412,12 @@ impl Metadata {
             compression: header.compression,
             n_cases: headers
                 .number_of_cases
-                .as_ref()
+                .first()
                 .map(|record| record.n_cases)
                 .or_else(|| header.n_cases.map(|n| n as u64)),
             product,
-            product_ext: headers.product_info.as_ref().map(|pe| fix_line_ends(&pe.0)),
-            version: headers.integer_info.as_ref().map(|ii| ii.version),
+            product_ext: headers.product_info.first().map(|pe| fix_line_ends(&pe.0)),
+            version: headers.integer_info.first().map(|ii| ii.version),
         }
     }
 }
@@ -1120,7 +1447,7 @@ impl Decoder {
 impl MultipleResponseSet {
     fn decode(
         dictionary: &Dictionary,
-        input: &raw::MultipleResponseSet<Identifier, String>,
+        input: &raw::records::MultipleResponseSet<Identifier, String>,
         warn: &mut impl FnMut(Error),
     ) -> Result<Self, Error> {
         let mr_set_name = input.name.clone();
@@ -1203,7 +1530,7 @@ fn fix_line_ends(s: &str) -> String {
 }
 
 fn decode_format(
-    raw: raw::Spec,
+    raw: RawFormat,
     width: VarWidth,
     mut warn: impl FnMut(Format, FormatError),
 ) -> Format {
@@ -1220,11 +1547,11 @@ fn decode_format(
 impl MultipleResponseType {
     fn decode(
         mr_set: &Identifier,
-        input: &raw::MultipleResponseType,
+        input: &raw::records::MultipleResponseType,
         min_width: VarWidth,
     ) -> Result<Self, Error> {
         match input {
-            raw::MultipleResponseType::MultipleDichotomy { value, labels } => {
+            raw::records::MultipleResponseType::MultipleDichotomy { value, labels } => {
                 let value = match min_width {
                     VarWidth::Numeric => {
                         let string = String::from_utf8_lossy(&value.0);
@@ -1258,7 +1585,7 @@ impl MultipleResponseType {
                     labels: *labels,
                 })
             }
-            raw::MultipleResponseType::MultipleCategory => {
+            raw::records::MultipleResponseType::MultipleCategory => {
                 Ok(MultipleResponseType::MultipleCategory)
             }
         }

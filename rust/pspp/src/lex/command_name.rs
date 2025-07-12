@@ -14,28 +14,61 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
+//! Command names.
+//!
+//! PSPP needs to parse command names in a few contexts:
+//!
+//! - For executing command syntax.
+//!
+//! - For lexical analysis in [Auto](crate::lex::segment::Syntax::Auto) syntax
+//!   mode.  In this syntax mode, a line of syntax begins a new command if the
+//!   line has no leading white space and it begins with the name of a known
+//!   command.
+//!
+//! This module supports identifying commands for these purposes.
+
 use crate::identifier::id_match_n_nonstatic;
 
+/// How a string matches the name of a command.
 pub struct Match {
+    /// Is this an exact match?
+    ///
+    /// Words in command names are allowed to be abbreviated to their first 3
+    /// letters.  An exact match means that none of the words were abbreviated.
     pub exact: bool,
+
+    /// Number of words omitted from the command name.
+    ///
+    /// It means:
+    ///
+    /// - Positive: Number of words omitted at the end of the command name
+    ///   (command names may be abbreviated as only as many words needed to be
+    ///   unambiguous).
+    ///
+    /// - Negative: The absolute value is the number of extra words at the end
+    ///   of the string that are not part of the command name.
+    ///
+    /// - Zero: The string and command name match exactly.
     pub missing_words: isize,
 }
 
-/// Compares `string` obtained from the user against the full name of a `command`,
-/// using this algorithm:
+/// Compares `string` obtained from the user against the full name of a
+/// `command`.
+///
+/// It uses this algorithm:
 ///
 ///   1. Divide `command` into words `c[0]` through `c[n - 1]`.
 ///
 ///   2. Divide `string` into words `s[0]` through `s[m - 1]`.
 ///
-///   3. Compare word `c[i]` against `s[i]` for `0 <= i < min(n, m)`, using the keyword
-///      matching algorithm implemented by lex_id_match().  If any of them fail to
-///      match, then `string` does not match `command` and the function returns false.
+///   3. Compare word `c[i]` against `s[i]` for `0 <= i < min(n, m)`, using the
+///      keyword matching algorithm implemented by lex_id_match().  If any of
+///      them fail to match, then `string` does not match `command` and the
+///      function returns `None`.
 ///
-///   4. Otherwise, `string` and `command` match.  Set *MISSING_WORDS to n - m.  Set
-///      *EXACT to false if any of the `S[i]` were found to be abbreviated in the
-///      comparisons done in step 3, or to true if they were all exactly equal
-///      (modulo case).  Return true.
+///   4. Otherwise, `string` and `command` match.  Returns a [Match] with
+///     `missing_words` set to `n - m` and `exact` set based on whether any of
+///     the words in the command name were abbreviated.
 pub fn command_match(command: &str, string: &str) -> Option<Match> {
     let mut command_words = command.split_whitespace();
     let mut string_words = string.split_whitespace();
@@ -73,6 +106,7 @@ pub struct CommandMatcher<'a, T> {
 }
 
 impl<'a, T> CommandMatcher<'a, T> {
+    /// Creates a new matcher for `string`.
     pub fn new(string: &'a str) -> Self {
         Self {
             string,
@@ -85,8 +119,8 @@ impl<'a, T> CommandMatcher<'a, T> {
     }
 
     /// Consider `command` as a candidate for the command name being parsed. If
-    /// `command` is the correct command name, then [Self::get_match] will
-    /// return `aux` later.
+    /// `command` is the correct command name, then [get_match](Self::get_match)
+    /// will return `aux` later.
     pub fn add(&mut self, command: &str, aux: T) {
         if let Some(Match {
             missing_words,
@@ -110,6 +144,11 @@ impl<'a, T> CommandMatcher<'a, T> {
         }
     }
 
+    /// Returns the best match among the possibilities passed to
+    /// [add](Self::add).  Also returns the number of additional words that the
+    /// caller should consider reading, because the full command name might be
+    /// longer (if a command was returned) or because more words might be needed
+    /// for disambiguation (if no command name was returned).
     pub fn get_match(self) -> (Option<T>, isize) {
         if self.extensible {
             (None, 1)
@@ -123,6 +162,9 @@ impl<'a, T> CommandMatcher<'a, T> {
     }
 }
 
+/// List of all PSPP command names.
+///
+/// This includes commands that are not yet implemented.
 pub const COMMAND_NAMES: &[&str] = &[
     "2SLS",
     "ACF",

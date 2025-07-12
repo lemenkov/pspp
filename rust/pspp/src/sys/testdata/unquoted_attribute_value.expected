@@ -1,6 +1,6 @@
-Attribute for Attr1[1] missing quotations.
+Warning at file offsets 0xe0 to 0xed: In file or variable attribute record: Attribute for Attr1[1] missing quotations.
 
-Attribute for fred[1] missing quotations.
+Warning at file offsets 0xfd to 0x10f: In file or variable attribute record: Attribute for fred[1] missing quotations.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

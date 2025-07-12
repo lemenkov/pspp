@@ -1,4 +1,4 @@
-Missing `=` separator in long variable name record.
+Warning at file offsets 0xe0 to 0xe5: In long variable name record: Missing `=` separator.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

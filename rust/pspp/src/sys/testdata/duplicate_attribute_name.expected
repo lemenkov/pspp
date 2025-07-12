@@ -1,6 +1,6 @@
-Duplicate dataset attributes with names: Attr1.
+Warning at file offsets 0xe0 to 0xfe: In file or variable attribute record: Duplicate dataset attributes with names: Attr1.
 
-Duplicate attributes for variable FIRSTVAR: fred.
+Warning at file offsets 0x10e to 0x12d: In file or variable attribute record: Duplicate attributes for variable FIRSTVAR: fred.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

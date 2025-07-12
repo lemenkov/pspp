@@ -16,11 +16,10 @@
 
 use crate::{
     calendar::{calendar_gregorian_to_offset, DateError},
-    dictionary::Datum,
+    data::{Datum, EncodedStr, EncodedString},
     endian::{Endian, Parse},
     format::{DateTemplate, Decimals, Settings, TemplateItem, Type},
     settings::{EndianSettings, Settings as PsppSettings},
-    sys::raw::{EncodedStr, EncodedString},
 };
 use encoding_rs::Encoding;
 use smallstr::SmallString;
@@ -134,7 +133,7 @@ enum ParseErrorKind {
     TrailingGarbage(String),
 
     /// Invalid date.
-    #[error("{0}")]
+    #[error(transparent)]
     InvalidDate(#[from] DateError),
 
     /// Invalid zoned decimal (Z) syntax.
@@ -921,14 +920,13 @@ mod test {
 
     use crate::{
         calendar::{days_in_month, is_leap_year},
-        dictionary::Datum,
+        data::{Datum, EncodedStr},
         endian::Endian,
         format::{
             parse::{ParseError, ParseErrorKind, Sign},
             Epoch, Format, Settings as FormatSettings, Type,
         },
         settings::EndianSettings,
-        sys::raw::EncodedStr,
     };
 
     fn test(name: &str, type_: Type) {

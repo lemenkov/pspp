@@ -1,4 +1,4 @@
-In long string missing values record starting at offset 0x238, value length at offset 0x2a8 is 12 instead of the expected 8.
+Warning at file offsets 0x238 to 0x2f2: In long string missing values record: Value length at offset 0x2a8 is 12 instead of the expected 8.
 
 File header claims 8 variable positions but 9 were read from file.
 

@@ -1,4 +1,4 @@
-At offset 0xe0, variable display record has bad size 8 bytes instead of the expected 4.
+Warning at file offsets 0xe0 to 0xf0: In extension record: variable display record has bad size 8 bytes instead of the expected 4.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

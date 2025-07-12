@@ -22,7 +22,7 @@
 │str15│       5│     │Nominal          │Input│   15│Left     │A15         │A15         │              │
 ╰─────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
-Unexpected end of file at offset 0x1ac, 0 bytes and 2 compression chunks into a compressed case.
+Unexpected end of file 0 bytes and 2 compression chunks into a compressed case.
 
 ╭────┬──────┬────┬────┬────────┬───────────────╮
 │Case│ num1 │num2│str4│  str8  │     str15     │

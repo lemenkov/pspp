@@ -46,7 +46,7 @@ mod tests {
 
     use encoding_rs::UTF_8;
 
-    use crate::lex::lexer::{Source, SourceFile};
+    use crate::lex::lexer::{Source, SyntaxFile};
 
     use super::Engine;
 
@@ -54,20 +54,18 @@ mod tests {
     #[ignore]
     fn test_echo() {
         let mut engine = Engine::new();
-        engine.run(Source::new_default(&Arc::new(
-            SourceFile::for_file_contents(
-                "ECHO 'hi there'.\nECHO 'bye there'.\n".to_string(),
-                Some("test.sps".to_string()),
-                UTF_8,
-            ),
-        )));
+        engine.run(Source::new_default(&Arc::new(SyntaxFile::new(
+            "ECHO 'hi there'.\nECHO 'bye there'.\n".to_string(),
+            Some("test.sps".to_string()),
+            UTF_8,
+        ))));
     }
 
     #[test]
     fn test_descriptives() {
         let mut engine = Engine::new();
         engine.run(Source::new_default(&Arc::new(
-            SourceFile::for_file_contents(
+            SyntaxFile::new(
                 "DESCRIPTIVES VARIABLES=a (za) b to c/MISSING=x y z/MISSING=VARIABLE INCLUDE/STATISTICS=DEFAULT/SAVE/SORT=SKEWNESS (A)\n".to_string(),
                 Some("test.sps".to_string()),
                 UTF_8,

@@ -1,4 +1,4 @@
-Syntax error in multiple response record (missing variable name delimiter)
+Warning at file offsets 0xe0 to 0xec: In multiple response set record: Syntax error (missing variable name delimiter).
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

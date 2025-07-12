@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
+//! Character encodings in system files.
+
 use std::sync::LazyLock;
 
 use crate::locale_charset::locale_charset;
@@ -21,6 +23,8 @@ use encoding_rs::{Encoding, UTF_8};
 
 include!(concat!(env!("OUT_DIR"), "/encodings.rs"));
 
+/// Returns the code page number corresponding to `encoding`, or `None` if
+/// unknown.
 pub fn codepage_from_encoding(encoding: &str) -> Option<u32> {
     CODEPAGE_NAME_TO_NUMBER
         .get(encoding.to_ascii_lowercase().as_str())
@@ -29,27 +33,49 @@ pub fn codepage_from_encoding(encoding: &str) -> Option<u32> {
 
 use thiserror::Error as ThisError;
 
+/// An error or warning related to encodings.
 #[derive(Clone, ThisError, Debug, PartialEq, Eq)]
 pub enum Error {
+    /// Warning that the system file doesn't indicate its own encoding.
     #[error("This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings.")]
     NoEncoding,
 
+    /// Unknown code page.
     #[error("This system file encodes text strings with unknown code page {0}.")]
-    UnknownCodepage(i32),
+    UnknownCodepage(
+        /// The code page number.
+        i32,
+    ),
 
+    /// Unknown encoding.
     #[error("This system file encodes text strings with unknown encoding {0}.")]
-    UnknownEncoding(String),
+    UnknownEncoding(
+        /// The encoding name.
+        String,
+    ),
 
+    /// EBCDIC not supported.
     #[error("This system file is encoded in EBCDIC, which is not supported.")]
     Ebcdic,
 }
 
+/// Returns the default encoding to use.
+///
+/// The default encoding is taken from the system or user's configured locale.
 pub fn default_encoding() -> &'static Encoding {
     static DEFAULT_ENCODING: LazyLock<&'static Encoding> =
         LazyLock::new(|| Encoding::for_label(locale_charset().as_bytes()).unwrap_or(UTF_8));
     &DEFAULT_ENCODING
 }
 
+/// Returns the character encoding to use for a system file.
+///
+/// `encoding`, if any, should come from [EncodingRecord], and `character_code`,
+/// if any, should from [IntegerInfoRecord].  Returns an error if the encoding
+/// to use is unclear or unspecified, or if (for EBCDIC) it is unsupported.
+///
+/// [EncodingRecord]: crate::sys::raw::records::EncodingRecord
+/// [IntegerInfoRecord]: crate::sys::raw::records::IntegerInfoRecord
 pub fn get_encoding(
     encoding: Option<&str>,
     character_code: Option<i32>,
@@ -78,34 +104,3 @@ pub fn get_encoding(
 
     Encoding::for_label(label.as_bytes()).ok_or(Error::UnknownEncoding(label.into()))
 }
-
-/*
-#[cfg(test)]
-mod tests {
-    use std::thread::spawn;
-
-    use encoding_rs::{EUC_JP, UTF_8, WINDOWS_1252};
-
-    #[test]
-    fn round_trip() {
-        let mut threads = Vec::new();
-        for thread in 0..128 {
-            let start: u32 = thread << 25;
-            let end = start + ((1 << 25) - 1);
-            threads.push(spawn(move || {
-                for i in start..=end {
-                    let s = i.to_le_bytes();
-                    let (utf8, replacement) = EUC_JP.decode_without_bom_handling(&s);
-                    if !replacement {
-                        let s2 = UTF_8.encode(&utf8).0;
-                        assert_eq!(s.as_slice(), &*s2);
-                    }
-                }
-            }));
-        }
-        for thread in threads {
-            thread.join().unwrap();
-        }
-    }
-}
-*/

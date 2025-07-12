@@ -36,7 +36,7 @@ use crate::{
     lex::{
         command_name::CommandMatcher,
         lexer::{LexToken, TokenSlice},
-        token::{Punct, Token},
+        Punct, Token,
     },
     message::{Diagnostic, Diagnostics},
 };

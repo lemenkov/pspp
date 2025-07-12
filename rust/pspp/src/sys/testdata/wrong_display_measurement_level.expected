@@ -1,4 +1,4 @@
-Invalid variable measurement level value 4
+Warning at file offsets 0xe0 to 0xe8: In variable display record: Invalid variable measurement level value 4.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

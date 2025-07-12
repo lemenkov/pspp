@@ -54,13 +54,22 @@ impl Show {
     }
 }
 
-#[derive(Copy, Clone, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct EndianSettings {
     /// Endianness for reading IB, PIB, and RB formats.
     pub input: Endian,
 
     /// Endianness for writing IB, PIB, and RB formats.
     pub output: Endian,
+}
+
+impl Default for EndianSettings {
+    fn default() -> Self {
+        Self {
+            input: Endian::NATIVE,
+            output: Endian::NATIVE,
+        }
+    }
 }
 
 impl EndianSettings {

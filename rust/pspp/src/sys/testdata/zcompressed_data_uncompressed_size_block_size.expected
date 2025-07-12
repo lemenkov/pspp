@@ -1,4 +1,4 @@
-ZLIB block descriptor 0 reported block size 0x400000, when at most 0x3ff000 was expected.
+Warning at file offsets 0x1c4 to 0x1dc: In ZLIB trailer: ZLIB block descriptor 0 reported block size 0x400000, when at most 0x3ff000 was expected.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

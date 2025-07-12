@@ -14,59 +14,26 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use enum_iterator::Sequence;
 use smallvec::SmallVec;
 
-/// The endianness for integer and floating-point numbers in SPSS system files.
-///
-/// SPSS system files can declare IBM 370 and DEC VAX floating-point
-/// representations, but no file that uses either of these has ever been found
-/// in the wild, so this code does not handle them.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Sequence)]
-pub enum Endian {
-    /// Big-endian: MSB at lowest address.
-    #[cfg_attr(target_endian = "big", default)]
-    Big,
+pub use binrw::Endian;
 
-    /// Little-endian: LSB at lowest address.
-    #[cfg_attr(target_endian = "little", default)]
-    Little,
-}
-
-impl Endian {
-    pub fn identify_u32(expected_value: u32, bytes: [u8; 4]) -> Option<Self> {
-        let as_big: u32 = Endian::Big.parse(bytes);
-        let as_little: u32 = Endian::Little.parse(bytes);
-        match (as_big == expected_value, as_little == expected_value) {
-            (true, false) => Some(Endian::Big),
-            (false, true) => Some(Endian::Little),
-            _ => None,
-        }
+pub fn endian_to_smallvec<const N: usize>(
+    endian: Endian,
+    mut value: u64,
+    n: usize,
+) -> SmallVec<[u8; N]> {
+    debug_assert!(n <= 8);
+    let mut vec = SmallVec::new();
+    value <<= 8 * (8 - n);
+    for _ in 0..n {
+        vec.push((value >> 56) as u8);
+        value <<= 8;
     }
-
-    pub fn identify_f64(expected_value: f64, bytes: [u8; 8]) -> Option<Self> {
-        let as_big: f64 = Endian::Big.parse(bytes);
-        let as_little: f64 = Endian::Little.parse(bytes);
-        match (as_big == expected_value, as_little == expected_value) {
-            (true, false) => Some(Endian::Big),
-            (false, true) => Some(Endian::Little),
-            _ => None,
-        }
+    if endian == Endian::Little {
+        vec.reverse();
     }
-
-    pub fn to_smallvec<const N: usize>(self, mut value: u64, n: usize) -> SmallVec<[u8; N]> {
-        debug_assert!(n <= 8);
-        let mut vec = SmallVec::new();
-        value <<= 8 * (8 - n);
-        for _ in 0..n {
-            vec.push((value >> 56) as u8);
-            value <<= 8;
-        }
-        if self == Endian::Little {
-            vec.reverse();
-        }
-        vec
-    }
+    vec
 }
 
 pub trait ToBytes<T, const N: usize> {

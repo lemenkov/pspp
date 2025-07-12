@@ -120,13 +120,13 @@ pub enum Error {
     #[error("\"!\" is not a valid identifier.")]
     Bang,
 
-    #[error("\"{0}\" may not be used as an identifier because it begins with disallowed character {1:?}.")]
-    BadFirstCharacter(String, char),
+    #[error("{string:?} may not be used as an identifier because it begins with disallowed character {c:?}.")]
+    BadFirstCharacter { string: String, c: char },
 
     #[error(
-        "\"{0}\" may not be used as an identifier because it contains disallowed character {1:?}."
+        "{string:?} may not be used as an identifier because it contains disallowed character {c:?}."
     )]
-    BadLaterCharacter(String, char),
+    BadLaterCharacter { string: String, c: char },
 
     #[error("Identifier \"{id}\" is {length} bytes in the encoding in use ({encoding}), which exceeds the {max}-byte limit.")]
     TooLong {
@@ -270,11 +270,17 @@ impl Identifier {
         let mut i = s.chars();
         let first = i.next().unwrap();
         if !first.may_start_id() {
-            return Err(Error::BadFirstCharacter(s.into(), first));
+            return Err(Error::BadFirstCharacter {
+                string: s.into(),
+                c: first,
+            });
         }
         for c in i {
             if !c.may_continue_id() {
-                return Err(Error::BadLaterCharacter(s.into(), c));
+                return Err(Error::BadLaterCharacter {
+                    string: s.into(),
+                    c,
+                });
             }
         }
         Ok(())
@@ -305,7 +311,10 @@ impl Identifier {
             _ => {
                 let s = self.0.into_inner();
                 let first = s.chars().next().unwrap();
-                Err(Error::BadFirstCharacter(s, first))
+                Err(Error::BadFirstCharacter {
+                    string: s,
+                    c: first,
+                })
             }
         }
     }

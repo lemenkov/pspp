@@ -1,4 +1,4 @@
-At offset 0xe0, floating point record has bad count 4 instead of the expected 3.
+Warning at file offsets 0xe0 to 0x100: In extension record: floating point record has bad count 4 instead of the expected 3.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

@@ -1,4 +1,4 @@
-At offset 0x1c8, variable attributes record has bad size 4 bytes instead of the expected 1.
+Warning at file offsets 0x1c8 to 0x1e8: In extension record: variable attributes record has bad size 4 bytes instead of the expected 1.
 
 This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING="DETECT" to analyze the possible encodings.
 

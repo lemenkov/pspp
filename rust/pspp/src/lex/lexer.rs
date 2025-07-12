@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
+//! High-level lexical analysis.
+
 use std::{
     borrow::{Borrow, Cow},
     collections::VecDeque,
@@ -30,17 +32,17 @@ use std::{
 
 use chardetng::EncodingDetector;
 use encoding_rs::{Encoding, UTF_8};
-use thiserror::Error as ThisError;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::{
+    lex::scan::merge_tokens,
     macros::{macro_tokens_to_syntax, MacroSet, ParseStatus, Parser},
     message::{Category, Diagnostic, Location, Point, Severity},
     settings::Settings,
 };
 
 use super::{
-    scan::{MergeResult, ScanError, ScanToken, StringScanner},
+    scan::{MergeAction, ScanError, StringScanner},
     segment::{Segmenter, Syntax},
     token::Token,
 };
@@ -62,35 +64,30 @@ pub enum ErrorHandling {
     Stop,
 }
 
-pub struct SourceFile {
+/// A syntax file and its contents.
+///
+/// This holds the entire contents of a syntax file, which are always read into
+/// memory in their entirety, recoded into UTF-8 if necessary.  It includes the
+/// file name (if any), and an index to make finding lines by line number more
+/// efficient.
+pub struct SyntaxFile {
     /// `None` if this reader is not associated with a file.
     file_name: Option<Arc<String>>,
 
-    /// Encoding.
+    /// Original encoding.
     #[allow(dead_code)]
     encoding: &'static Encoding,
 
     /// Source file contents.
-    buffer: String,
+    contents: String,
 
     /// Byte offsets into `buffer` of starts of lines.  The first element is 0.
     lines: Vec<usize>,
 }
 
-impl SourceFile {
-    fn new(buffer: String, encoding: &'static Encoding, file_name: Option<String>) -> Self {
-        let lines = once(0)
-            .chain(buffer.match_indices('\n').map(|(index, _s)| index + 1))
-            .filter(|index| *index < buffer.len())
-            .collect::<Vec<_>>();
-        Self {
-            file_name: file_name.map(Arc::new),
-            encoding,
-            buffer,
-            lines,
-        }
-    }
-
+impl SyntaxFile {
+    /// Returns a `SyntaxFile` by reading `path` and recoding it from
+    /// `encoding`.
     pub fn for_file<P>(path: P, encoding: Option<&'static Encoding>) -> IoResult<Self>
     where
         P: AsRef<Path>,
@@ -104,21 +101,29 @@ impl SourceFile {
         let (contents, _malformed) = encoding.decode_with_bom_removal(&bytes);
         Ok(Self::new(
             contents.to_string(),
-            encoding,
             Some(path.as_ref().to_string_lossy().to_string()),
+            encoding,
         ))
     }
 
-    pub fn for_file_contents(
-        contents: String,
-        file_name: Option<String>,
-        encoding: &'static Encoding,
-    ) -> Self {
-        Self::new(contents, encoding, file_name)
+    /// Creates a new `SyntaxFile` for `contents`, recording that `contents` was
+    /// originally encoded in `encoding` and that it was read from `file_name`.
+    pub fn new(contents: String, file_name: Option<String>, encoding: &'static Encoding) -> Self {
+        let lines = once(0)
+            .chain(contents.match_indices('\n').map(|(index, _s)| index + 1))
+            .filter(|index| *index < contents.len())
+            .collect::<Vec<_>>();
+        Self {
+            file_name: file_name.map(Arc::new),
+            encoding,
+            contents,
+            lines,
+        }
     }
 
-    pub fn for_string(contents: String, encoding: &'static Encoding) -> Self {
-        Self::new(contents, encoding, None)
+    /// Returns a `SyntaxFile` for `contents`.
+    pub fn for_string(contents: String) -> Self {
+        Self::new(contents, None, UTF_8)
     }
 
     fn offset_to_point(&self, offset: usize) -> Point {
@@ -128,7 +133,7 @@ impl SourceFile {
         Point {
             line: line as i32,
             column: Some(
-                self.buffer
+                self.contents
                     .get(self.lines[line - 1]..offset)
                     .unwrap_or_default()
                     .width() as i32
@@ -143,12 +148,12 @@ impl SourceFile {
             let line_number = line_number as usize;
             let start = self.lines[line_number - 1];
             let end = self.lines.get(line_number).copied().unwrap_or(
-                self.buffer[start..]
+                self.contents[start..]
                     .find('\n')
                     .map(|ofs| ofs + start)
-                    .unwrap_or(self.buffer.len()),
+                    .unwrap_or(self.contents.len()),
             );
-            self.buffer[start..end].strip_newline()
+            self.contents[start..end].strip_newline()
         } else {
             ""
         }
@@ -165,9 +170,9 @@ impl SourceFile {
     }
 }
 
-impl Default for SourceFile {
+impl Default for SyntaxFile {
     fn default() -> Self {
-        Self::new(String::new(), UTF_8, None)
+        Self::new(String::new(), None, UTF_8)
     }
 }
 
@@ -201,11 +206,15 @@ fn ellipsize(s: &str) -> Cow<str> {
 }
 
 /// A token in a [`Source`].
+///
+/// This relates a token back to where it was read, which allows for better
+/// error reporting.
 pub struct LexToken {
-    /// The regular token.
+    /// The token.
     pub token: Token,
 
-    pub file: Arc<SourceFile>,
+    /// The source file that the token was read from.
+    pub file: Arc<SyntaxFile>,
 
     /// For a token obtained through the lexer in an ordinary way, this is the
     /// location of the token in the [`Source`]'s buffer.
@@ -242,7 +251,7 @@ impl Borrow<Token> for LexToken {
 
 impl LexToken {
     fn representation(&self) -> &str {
-        &self.file.buffer[self.pos.clone()]
+        &self.file.contents[self.pos.clone()]
     }
 }
 
@@ -254,13 +263,7 @@ struct MacroRepresentation {
     pos: RangeInclusive<usize>,
 }
 
-#[derive(ThisError, Clone, Debug, PartialEq, Eq)]
-pub enum Error {
-    /// Error forming tokens from the input.
-    #[error("{0}")]
-    TokenError(#[from] ScanError),
-}
-
+/// A sequence of tokens.
 pub struct Tokens {
     tokens: Vec<LexToken>,
 }
@@ -285,18 +288,22 @@ impl Debug for Tokens {
     }
 }
 
+/// An iterator for [TokenSlice].
 pub struct TokenSliceIter<'a> {
     slice: &'a TokenSlice,
     rest: Range<usize>,
 }
 
 impl<'a> TokenSliceIter<'a> {
+    /// Creates a new iterator for `slice`.
     pub fn new(slice: &'a TokenSlice) -> Self {
         Self {
             slice,
             rest: slice.range.clone(),
         }
     }
+
+    /// Returns the tokens not yet visited by the iterator.
     pub fn remainder(&self) -> TokenSlice {
         TokenSlice {
             backing: self.slice.backing.clone(),
@@ -318,6 +325,7 @@ impl<'a> Iterator for TokenSliceIter<'a> {
     }
 }
 
+/// A subrange of tokens inside [Tokens].
 #[derive(Clone)]
 pub struct TokenSlice {
     backing: Rc<Tokens>,
@@ -337,7 +345,9 @@ impl Debug for TokenSlice {
     }
 }
 
+#[allow(missing_docs)]
 impl TokenSlice {
+    /// Create a new slice that initially contains all of `backing`.
     pub fn new(backing: Rc<Tokens>) -> Self {
         let range = 0..backing.tokens.len() - 1;
         Self { backing, range }
@@ -346,14 +356,19 @@ impl TokenSlice {
     fn tokens(&self) -> &[LexToken] {
         &self.backing.tokens[self.range.clone()]
     }
+    /// Returns the token with the given `index`, or `None` if `index` is out of
+    /// range.
     pub fn get_token(&self, index: usize) -> Option<&Token> {
         self.get(index).map(|token| &token.token)
     }
 
+    /// Returns the [LexToken] with the given `index`, or `None` if `index` is
+    /// out of range.
     pub fn get(&self, index: usize) -> Option<&LexToken> {
         self.tokens().get(index)
     }
 
+    /// Returns an error with the given `text`, citing these tokens.
     pub fn error<S>(&self, text: S) -> Diagnostic
     where
         S: ToString,
@@ -361,6 +376,7 @@ impl TokenSlice {
         self.diagnostic(Severity::Error, text.to_string())
     }
 
+    /// Returns a warning with the given `text`, citing these tokens.
     pub fn warning<S>(&self, text: S) -> Diagnostic
     where
         S: ToString,
@@ -389,7 +405,7 @@ impl TokenSlice {
         self.subslice(self.len()..self.len())
     }
 
-    fn file(&self) -> Option<&Arc<SourceFile>> {
+    fn file(&self) -> Option<&Arc<SyntaxFile>> {
         let first = self.first();
         let last = self.last();
         if Arc::ptr_eq(&first.file, &last.file) {
@@ -426,7 +442,7 @@ impl TokenSlice {
                 let start = token0.pos.start;
                 let end = token1.pos.end;
                 if start < end {
-                    return Some(&file.buffer[start..end]);
+                    return Some(&file.contents[start..end]);
                 }
             }
         }
@@ -547,19 +563,22 @@ impl TokenSlice {
     }
 }
 
+/// A source of tokens read from a [SyntaxFile].
 pub struct Source {
-    file: Arc<SourceFile>,
+    file: Arc<SyntaxFile>,
     segmenter: Segmenter,
     seg_pos: usize,
     lookahead: VecDeque<LexToken>,
 }
 
 impl Source {
-    pub fn new_default(file: &Arc<SourceFile>) -> Self {
+    /// Creates a new `Source` reading from `file`, using the default [Syntax].
+    pub fn new_default(file: &Arc<SyntaxFile>) -> Self {
         Self::new(file, Syntax::default())
     }
 
-    pub fn new(file: &Arc<SourceFile>, syntax: Syntax) -> Self {
+    /// Creates a new `Source` reading from `file` using `syntax`.
+    pub fn new(file: &Arc<SyntaxFile>, syntax: Syntax) -> Self {
         Self {
             file: file.clone(),
             segmenter: Segmenter::new(syntax, false),
@@ -568,6 +587,8 @@ impl Source {
         }
     }
 
+    /// Reads and returns a whole command from this source, expanding the given
+    /// `macros` as it reads.
     pub fn read_command(&mut self, macros: &MacroSet) -> Option<Tokens> {
         loop {
             if let Some(end) = self
@@ -581,7 +602,7 @@ impl Source {
                 if self.lookahead.is_empty() {
                     return None;
                 }
-                let len = self.file.buffer.len();
+                let len = self.file.contents.len();
                 self.lookahead.push_back(LexToken {
                     token: Token::End,
                     file: self.file.clone(),
@@ -592,20 +613,20 @@ impl Source {
         }
     }
 
-    pub fn read_lookahead(&mut self, macros: &MacroSet) -> bool {
+    fn read_lookahead(&mut self, macros: &MacroSet) -> bool {
         let mut errors = Vec::new();
         let mut pp = VecDeque::new();
         while let Some((seg_len, seg_type)) = self
             .segmenter
-            .push(&self.file.buffer[self.seg_pos..], true)
+            .push(&self.file.contents[self.seg_pos..], true)
             .unwrap()
         {
             let pos = self.seg_pos..self.seg_pos + seg_len;
             self.seg_pos += seg_len;
 
-            match ScanToken::from_segment(&self.file.buffer[pos.clone()], seg_type) {
+            match seg_type.to_token(&self.file.contents[pos.clone()]) {
                 None => (),
-                Some(ScanToken::Token(token)) => {
+                Some(Ok(token)) => {
                     let end = token == Token::End;
                     pp.push_back(LexToken {
                         file: self.file.clone(),
@@ -617,7 +638,7 @@ impl Source {
                         break;
                     }
                 }
-                Some(ScanToken::Error(error)) => errors.push(LexError { error, pos }),
+                Some(Err(error)) => errors.push(LexError { error, pos }),
             }
         }
         // XXX report errors
@@ -636,11 +657,11 @@ impl Source {
         };
 
         while let Ok(Some(result)) =
-            ScanToken::merge(|index| Ok(merge.get(index).map(|token| &token.token)))
+            merge_tokens(|index| Ok(merge.get(index).map(|token| &token.token)))
         {
             match result {
-                MergeResult::Copy => self.lookahead.push_back(merge.pop_front().unwrap()),
-                MergeResult::Expand { n, token } => {
+                MergeAction::Copy => self.lookahead.push_back(merge.pop_front().unwrap()),
+                MergeAction::Expand { n, token } => {
                     let first = &merge[0];
                     let last = &merge[n - 1];
                     self.lookahead.push_back(LexToken {
@@ -677,7 +698,7 @@ impl Source {
             return;
         };
         for token in src.range(1..) {
-            if parser.push(&token.token, &self.file.buffer[token.pos.clone()], &|e| {
+            if parser.push(&token.token, &self.file.contents[token.pos.clone()], &|e| {
                 println!("{e:?}")
             }) == ParseStatus::Complete
             {
@@ -739,7 +760,7 @@ mod new_lexer_tests {
 
     use crate::macros::MacroSet;
 
-    use super::{Source, SourceFile};
+    use super::{Source, SyntaxFile};
 
     #[test]
     fn test() {
@@ -750,7 +771,7 @@ END DATA.
 
 CROSSTABS VARIABLES X (1,7) Y (1,7) /TABLES X BY Y.
 "#;
-        let file = Arc::new(SourceFile::for_file_contents(
+        let file = Arc::new(SyntaxFile::new(
             String::from(code),
             Some(String::from("crosstabs.sps")),
             UTF_8,

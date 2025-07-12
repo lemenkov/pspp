@@ -1,4 +1,4 @@
-Syntax error parsing counted string (length 4 goes past end of input)
+Warning at file offsets 0xe0 to 0xe9: In multiple response set record: Syntax error parsing counted string (length 4 goes past end of input).
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

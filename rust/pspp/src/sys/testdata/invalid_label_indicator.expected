@@ -1,1 +1,1 @@
-In variable record starting at offset 0xb4, variable label code 2 at offset 0xb8 is not 0 or 1.
+Error at file offsets 0xb4 to 0xd0: In variable record, variable label code 2 is not 0 or 1.

@@ -14,9 +14,25 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod cooked;
+//! Reading and writing system files.
+//!
+//! This module enables reading and writing "system files", the binary format
+//! for SPSS data files.  The system file format dates back 40+ years and has
+//! evolved greatly over that time to support new features, but in a way to
+//! facilitate interchange between even the oldest and newest versions of
+//! software.
+//!
+//! To read a system file in the simplest way, use [ReaderOptions].
+
+// Warn about missing docs, but not for items declared with `#[cfg(test)]`.
+#![cfg_attr(not(test), warn(missing_docs))]
+
+mod cooked;
+pub use cooked::*;
 pub mod encoding;
 pub mod raw;
+
+#[cfg(test)]
 pub mod sack;
 
 #[cfg(test)]

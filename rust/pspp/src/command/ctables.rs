@@ -380,14 +380,16 @@ mod tests {
 
     use crate::{
         engine::Engine,
-        lex::lexer::{Source, SourceFile},
+        lex::lexer::{Source, SyntaxFile},
     };
 
     fn test(syntax: &str) {
         let mut engine = Engine::new();
-        engine.run(Source::new_default(&Arc::new(
-            SourceFile::for_file_contents(syntax.to_string(), Some("test.sps".to_string()), UTF_8),
-        )));
+        engine.run(Source::new_default(&Arc::new(SyntaxFile::new(
+            syntax.to_string(),
+            Some("test.sps".to_string()),
+            UTF_8,
+        ))));
     }
 
     #[test]

@@ -28,8 +28,10 @@ use thiserror::Error as ThisError;
 use unicode_width::UnicodeWidthStr;
 
 use crate::{
-    dictionary::{Datum, VarWidth},
-    sys::raw::{self, RawString, VarType},
+    data::RawString,
+    data::Datum,
+    dictionary::{VarType, VarWidth},
+    sys::raw,
 };
 
 mod display;
@@ -800,10 +802,10 @@ impl UncheckedFormat {
     }
 }
 
-impl TryFrom<raw::Spec> for UncheckedFormat {
+impl TryFrom<raw::records::RawFormat> for UncheckedFormat {
     type Error = Error;
 
-    fn try_from(raw: raw::Spec) -> Result<Self, Self::Error> {
+    fn try_from(raw: raw::records::RawFormat) -> Result<Self, Self::Error> {
         let raw = raw.0;
         let raw_format = (raw >> 16) as u16;
         let format = raw_format.try_into()?;

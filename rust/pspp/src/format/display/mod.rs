@@ -29,8 +29,8 @@ use smallvec::{Array, SmallVec};
 
 use crate::{
     calendar::{calendar_offset_to_gregorian, day_of_year, month_name, short_month_name},
-    dictionary::Datum,
-    endian::ToBytes,
+    data::Datum,
+    endian::{endian_to_smallvec, ToBytes},
     format::{Category, DateTemplate, Decimal, Format, NumberStyle, Settings, TemplateItem, Type},
     settings::{EndianSettings, Settings as PsppSettings},
 };
@@ -777,7 +777,7 @@ impl<'a, 'b> DisplayDatum<'a, 'b> {
         } else {
             integer
         };
-        self.endian.output.to_smallvec(integer, self.format.w())
+        endian_to_smallvec(self.endian.output, integer, self.format.w())
     }
 
     fn pib(&self, number: Option<f64>) -> SmallVec<[u8; 16]> {
@@ -788,7 +788,7 @@ impl<'a, 'b> DisplayDatum<'a, 'b> {
             number
         };
         let integer = number.abs() as u64;
-        self.endian.output.to_smallvec(integer, self.format.w())
+        endian_to_smallvec(self.endian.output, integer, self.format.w())
     }
 
     fn rb(&self, number: Option<f64>, w: usize) -> SmallVec<[u8; 16]> {

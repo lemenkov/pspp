@@ -404,7 +404,7 @@ impl FromStr for Dimension {
 #[derive(ThisError, Debug, PartialEq, Eq)]
 enum DimensionParseError {
     /// Invalid number.
-    #[error("{0}")]
+    #[error(transparent)]
     ParseFloatError(ParseFloatError),
 
     /// Unknown unit.

@@ -18,28 +18,42 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use crate::identifier::Identifier;
 
+/// A PSPP syntax token.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     /// Identifier.
-    Id(Identifier),
+    Id(
+        /// The identifier.
+        Identifier,
+    ),
 
     /// Number.
-    Number(f64),
+    Number(
+        /// Numeric value.
+        f64,
+    ),
 
     /// Quoted string.
     String(String),
 
     /// Command terminator or separator.
     ///
-    /// Usually this is `.`, but a blank line also separates commands, and in
-    /// batch mode any line that begins with a non-blank starts a new command.
+    /// The most common command terminator is `.`.  A blank line also separates
+    /// commands.  In [Batch](crate::lex::segment::Syntax::Batch) mode, any line
+    /// that begins with a non-blank starts a new command.  Other special cases
+    /// exist, too.
     End,
 
     /// Operators, punctuators, and reserved words.
-    Punct(Punct),
+    Punct(
+        /// The punctuator.
+        Punct,
+    ),
 }
 
 impl Token {
+    /// Returns the [Identifier] within this token, or `None` if this is not an
+    /// identifier token.
     pub fn id(&self) -> Option<&Identifier> {
         match self {
             Self::Id(identifier) => Some(identifier),
@@ -47,10 +61,14 @@ impl Token {
         }
     }
 
+    /// Returns true if this token contains an [Identifier] that matches
+    /// `keyword` as decided by [Identifier::matches_keyword], false otherwise.
     pub fn matches_keyword(&self, keyword: &str) -> bool {
         self.id().is_some_and(|id| id.matches_keyword(keyword))
     }
 
+    /// Returns the number within this token, or `None` if this is not a number
+    /// token.
     pub fn as_number(&self) -> Option<f64> {
         if let Self::Number(number) = self {
             Some(*number)
@@ -59,6 +77,8 @@ impl Token {
         }
     }
 
+    /// Returns the integer within this token, or `None` if this is not a number
+    /// token with an integer value.
     pub fn as_integer(&self) -> Option<i64> {
         match self {
             Self::Number(number)
@@ -72,13 +92,8 @@ impl Token {
         }
     }
 
-    pub fn as_id(&self) -> Option<&Identifier> {
-        match self {
-            Self::Id(id) => Some(id),
-            _ => None,
-        }
-    }
-
+    /// Returns the quoted string within this token, or `None` if this is not a
+    /// [Token::String] token.
     pub fn as_string(&self) -> Option<&str> {
         match self {
             Self::String(string) => Some(string.as_str()),
@@ -162,6 +177,7 @@ mod test {
     }
 }
 
+/// An operator, punctuator, or reserved word.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Punct {
     /// `+`.
@@ -276,6 +292,11 @@ pub enum Punct {
 }
 
 impl Punct {
+    /// Returns a syntax representation of this punctuator.
+    ///
+    /// Some punctuators have more than one valid syntax representation (for
+    /// example, [Punct::And] can be written as `AND` or `&`).  This returns one
+    /// of the valid representations.
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Plus => "+",

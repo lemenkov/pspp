@@ -23,7 +23,7 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fmt::{Debug, Display, Formatter, Result as FmtResult},
     hash::Hash,
-    ops::{Bound, RangeBounds, RangeInclusive},
+    ops::{Bound, Not, RangeBounds, RangeInclusive},
     str::FromStr,
 };
 
@@ -31,20 +31,57 @@ use encoding_rs::Encoding;
 use enum_map::{Enum, EnumMap};
 use indexmap::IndexSet;
 use num::integer::div_ceil;
-use ordered_float::OrderedFloat;
 use thiserror::Error as ThisError;
 use unicase::UniCase;
 
 use crate::{
-    format::Format,
+    data::Datum,
+    format::{DisplayPlain, Format},
     identifier::{ByIdentifier, HasIdentifier, Identifier},
     output::pivot::{Axis3, Dimension, Footnote, Footnotes, Group, PivotTable, Value},
     settings::Show,
-    sys::raw::{Alignment, CategoryLabels, Measure, MissingValues, RawString, VarType},
 };
 
 /// An index within [Dictionary::variables].
 pub type DictIndex = usize;
+
+/// Variable type.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum VarType {
+    /// A numeric variable.
+    Numeric,
+
+    /// A string variable.
+    String,
+}
+
+impl Not for VarType {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Numeric => Self::String,
+            Self::String => Self::Numeric,
+        }
+    }
+}
+
+impl Not for &VarType {
+    type Output = VarType;
+
+    fn not(self) -> Self::Output {
+        !*self
+    }
+}
+
+impl Display for VarType {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match self {
+            VarType::Numeric => write!(f, "numeric"),
+            VarType::String => write!(f, "string"),
+        }
+    }
+}
 
 /// [VarType], plus a width for [VarType::String].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -194,162 +231,6 @@ impl Display for VarWidthAdjective {
             VarWidth::Numeric => write!(f, "numeric"),
             VarWidth::String(width) => write!(f, "{width}-byte string"),
         }
-    }
-}
-
-#[derive(Clone)]
-pub enum Datum<S = RawString> {
-    Number(Option<f64>),
-    String(S),
-}
-
-impl<S> Debug for Datum<S>
-where
-    S: Debug,
-{
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        match self {
-            Datum::Number(Some(number)) => write!(f, "{number:?}"),
-            Datum::Number(None) => write!(f, "SYSMIS"),
-            Datum::String(s) => write!(f, "{:?}", s),
-        }
-    }
-}
-
-impl PartialEq for Datum {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Number(Some(l0)), Self::Number(Some(r0))) => {
-                OrderedFloat(*l0) == OrderedFloat(*r0)
-            }
-            (Self::Number(None), Self::Number(None)) => true,
-            (Self::String(l0), Self::String(r0)) => l0 == r0,
-            _ => false,
-        }
-    }
-}
-
-impl Eq for Datum {}
-
-impl PartialOrd for Datum {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Datum {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            (Datum::Number(a), Datum::Number(b)) => match (a, b) {
-                (None, None) => Ordering::Equal,
-                (None, Some(_)) => Ordering::Less,
-                (Some(_), None) => Ordering::Greater,
-                (Some(a), Some(b)) => a.total_cmp(b),
-            },
-            (Datum::Number(_), Datum::String(_)) => Ordering::Less,
-            (Datum::String(_), Datum::Number(_)) => Ordering::Greater,
-            (Datum::String(a), Datum::String(b)) => a.cmp(b),
-        }
-    }
-}
-
-impl Hash for Datum {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            Datum::Number(number) => number.map(OrderedFloat).hash(state),
-            Datum::String(string) => string.hash(state),
-        }
-    }
-}
-
-impl Datum {
-    pub const fn sysmis() -> Self {
-        Self::Number(None)
-    }
-
-    pub fn as_number(&self) -> Option<Option<f64>> {
-        match self {
-            Datum::Number(number) => Some(*number),
-            Datum::String(_) => None,
-        }
-    }
-
-    pub fn as_string(&self) -> Option<&RawString> {
-        match self {
-            Datum::Number(_) => None,
-            Datum::String(s) => Some(s),
-        }
-    }
-
-    pub fn is_resizable(&self, width: VarWidth) -> bool {
-        match (self, width) {
-            (Datum::Number(_), VarWidth::Numeric) => true,
-            (Datum::String(s), VarWidth::String(new_width)) => {
-                let new_len = new_width as usize;
-                new_len >= s.len() || s.0[new_len..].iter().all(|c| *c == b' ')
-            }
-            _ => false,
-        }
-    }
-
-    pub fn resize(&mut self, width: VarWidth) {
-        match (self, width) {
-            (Datum::Number(_), VarWidth::Numeric) => (),
-            (Datum::String(s), VarWidth::String(new_width)) => s.resize(new_width as usize),
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn var_type(&self) -> VarType {
-        match self {
-            Self::Number(_) => VarType::Numeric,
-            Self::String(_) => VarType::String,
-        }
-    }
-
-    pub fn width(&self) -> VarWidth {
-        match self {
-            Datum::Number(_) => VarWidth::Numeric,
-            Datum::String(s) => VarWidth::String(s.len().try_into().unwrap()),
-        }
-    }
-
-    pub fn eq_ignore_trailing_spaces(&self, other: &Datum) -> bool {
-        match (self, other) {
-            (Self::String(a), Self::String(b)) => a.eq_ignore_trailing_spaces(b),
-            _ => self == other,
-        }
-    }
-
-    pub fn trim_end(&mut self) {
-        match self {
-            Self::Number(_) => (),
-            Self::String(s) => s.trim_end(),
-        }
-    }
-}
-
-impl From<f64> for Datum {
-    fn from(number: f64) -> Self {
-        Some(number).into()
-    }
-}
-
-impl From<Option<f64>> for Datum {
-    fn from(value: Option<f64>) -> Self {
-        Self::Number(value)
-    }
-}
-
-impl From<&str> for Datum {
-    fn from(value: &str) -> Self {
-        value.as_bytes().into()
-    }
-}
-
-impl From<&[u8]> for Datum {
-    fn from(value: &[u8]) -> Self {
-        Self::String(value.into())
     }
 }
 
@@ -1404,6 +1285,268 @@ impl ValueLabels {
             })
             .collect();
     }
+}
+
+#[derive(Clone, Default)]
+pub struct MissingValues {
+    /// Individual missing values, up to 3 of them.
+    values: Vec<Datum>,
+
+    /// Optional range of missing values.
+    range: Option<MissingValueRange>,
+}
+
+impl Debug for MissingValues {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        DisplayMissingValues {
+            mv: self,
+            encoding: None,
+        }
+        .fmt(f)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum MissingValuesError {
+    TooMany,
+    TooWide,
+    MixedTypes,
+}
+
+impl MissingValues {
+    pub fn new(
+        mut values: Vec<Datum>,
+        range: Option<MissingValueRange>,
+    ) -> Result<Self, MissingValuesError> {
+        if values.len() > 3 {
+            return Err(MissingValuesError::TooMany);
+        }
+
+        let mut var_type = None;
+        for value in values.iter_mut() {
+            value.trim_end();
+            match value.width() {
+                VarWidth::String(w) if w > 8 => return Err(MissingValuesError::TooWide),
+                _ => (),
+            }
+            if var_type.is_some_and(|t| t != value.var_type()) {
+                return Err(MissingValuesError::MixedTypes);
+            }
+            var_type = Some(value.var_type());
+        }
+
+        if var_type == Some(VarType::String) && range.is_some() {
+            return Err(MissingValuesError::MixedTypes);
+        }
+
+        Ok(Self { values, range })
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty() && self.range.is_none()
+    }
+
+    pub fn var_type(&self) -> Option<VarType> {
+        if let Some(datum) = self.values.first() {
+            Some(datum.var_type())
+        } else if self.range.is_some() {
+            Some(VarType::Numeric)
+        } else {
+            None
+        }
+    }
+
+    pub fn contains(&self, value: &Datum) -> bool {
+        if self
+            .values
+            .iter()
+            .any(|datum| datum.eq_ignore_trailing_spaces(value))
+        {
+            return true;
+        }
+
+        match value {
+            Datum::Number(Some(number)) => self.range.is_some_and(|range| range.contains(*number)),
+            _ => false,
+        }
+    }
+
+    pub fn is_resizable(&self, width: VarWidth) -> bool {
+        self.values.iter().all(|datum| datum.is_resizable(width))
+            && self.range.iter().all(|range| range.is_resizable(width))
+    }
+
+    pub fn resize(&mut self, width: VarWidth) {
+        for datum in &mut self.values {
+            datum.resize(width);
+        }
+        if let Some(range) = &mut self.range {
+            range.resize(width);
+        }
+    }
+
+    pub fn display(&self, encoding: &'static Encoding) -> DisplayMissingValues<'_> {
+        DisplayMissingValues {
+            mv: self,
+            encoding: Some(encoding),
+        }
+    }
+}
+
+pub struct DisplayMissingValues<'a> {
+    mv: &'a MissingValues,
+    encoding: Option<&'static Encoding>,
+}
+
+impl<'a> Display for DisplayMissingValues<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        if let Some(range) = &self.mv.range {
+            write!(f, "{range}")?;
+            if !self.mv.values.is_empty() {
+                write!(f, "; ")?;
+            }
+        }
+
+        for (i, value) in self.mv.values.iter().enumerate() {
+            if i > 0 {
+                write!(f, "; ")?;
+            }
+            match self.encoding {
+                Some(encoding) => value.display_plain(encoding).fmt(f)?,
+                None => value.fmt(f)?,
+            }
+        }
+
+        if self.mv.is_empty() {
+            write!(f, "none")?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum MissingValueRange {
+    In { low: f64, high: f64 },
+    From { low: f64 },
+    To { high: f64 },
+}
+
+impl MissingValueRange {
+    pub fn new(low: f64, high: f64) -> Self {
+        const LOWEST: f64 = f64::MIN.next_up();
+        match (low, high) {
+            (f64::MIN | LOWEST, _) => Self::To { high },
+            (_, f64::MAX) => Self::From { low },
+            (_, _) => Self::In { low, high },
+        }
+    }
+
+    pub fn low(&self) -> Option<f64> {
+        match self {
+            MissingValueRange::In { low, .. } | MissingValueRange::From { low } => Some(*low),
+            MissingValueRange::To { .. } => None,
+        }
+    }
+
+    pub fn high(&self) -> Option<f64> {
+        match self {
+            MissingValueRange::In { high, .. } | MissingValueRange::To { high } => Some(*high),
+            MissingValueRange::From { .. } => None,
+        }
+    }
+
+    pub fn contains(&self, number: f64) -> bool {
+        match self {
+            MissingValueRange::In { low, high } => (*low..*high).contains(&number),
+            MissingValueRange::From { low } => number >= *low,
+            MissingValueRange::To { high } => number <= *high,
+        }
+    }
+
+    pub fn is_resizable(&self, width: VarWidth) -> bool {
+        width.is_numeric()
+    }
+
+    pub fn resize(&self, width: VarWidth) {
+        assert_eq!(width, VarWidth::Numeric);
+    }
+}
+
+impl Display for MissingValueRange {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self.low() {
+            Some(low) => low.display_plain().fmt(f)?,
+            None => write!(f, "LOW")?,
+        }
+
+        write!(f, " THRU ")?;
+
+        match self.high() {
+            Some(high) => high.display_plain().fmt(f)?,
+            None => write!(f, "HIGH")?,
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Alignment {
+    Left,
+    Right,
+    Center,
+}
+
+impl Alignment {
+    pub fn default_for_type(var_type: VarType) -> Self {
+        match var_type {
+            VarType::Numeric => Self::Right,
+            VarType::String => Self::Left,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Alignment::Left => "Left",
+            Alignment::Right => "Right",
+            Alignment::Center => "Center",
+        }
+    }
+}
+
+/// [Level of measurement](https://en.wikipedia.org/wiki/Level_of_measurement).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Measure {
+    /// Nominal values can only be compared for equality.
+    Nominal,
+
+    /// Ordinal values can be meaningfully ordered.
+    Ordinal,
+
+    /// Scale values can be meaningfully compared for the degree of difference.
+    Scale,
+}
+
+impl Measure {
+    pub fn default_for_type(var_type: VarType) -> Option<Measure> {
+        match var_type {
+            VarType::Numeric => None,
+            VarType::String => Some(Self::Nominal),
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Measure::Nominal => "Nominal",
+            Measure::Ordinal => "Ordinal",
+            Measure::Scale => "Scale",
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum CategoryLabels {
+    VarLabels,
+    CountedValues,
 }
 
 #[cfg(test)]

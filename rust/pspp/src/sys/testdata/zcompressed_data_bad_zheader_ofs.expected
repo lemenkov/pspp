@@ -1,1 +1,1 @@
-ZLIB header's zlib_offset is 0x0 instead of expected 0x194.
+Error at file offsets 0x194 to 0x1a0: ZLIB header's zlib_offset is 0x0 instead of expected 0x194.

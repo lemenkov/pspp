@@ -14,20 +14,27 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//! PSPP syntax scanning.
+//! PSPP lexical analysis.
 //!
-//! PSPP divides traditional "lexical analysis" or "tokenization" into two
-//! phases: a lower-level phase called "segmentation" and a higher-level phase
-//! called "scanning".  [segment] implements the segmentation phase and
-//! this module the scanning phase.
+//! PSPP divides traditional "lexical analysis" or "tokenization" into three
+//! phases:
 //!
-//! Scanning accepts as input a stream of segments, which are UTF-8 strings each
-//! labeled with a segment type.  It outputs a stream of "scan tokens", which
-//! are the same as the tokens used by the PSPP parser with a few additional
-//! types.
+//! 1. A low level called "segmentation", implemented in the [segment] module.
+//!    This labels syntax strings with [Segment](segment::Segment)s.
+//!
+//! 2. A middle level called "scanning", implemented in the [scan] module.
+//!    This transforms and merges segments to form [Token]s.
+//!
+//! 3. A high level called "lexing", implemented in the [lexer] module.  Lexing
+//!    brings together multiple source files and invokes macro expansion on the
+//!    tokens output by the scanner.
+
+// Warn about missing docs, but not for items declared with `#[cfg(test)]`.
+#![cfg_attr(not(test), warn(missing_docs))]
 
 pub mod command_name;
 pub mod lexer;
 pub mod scan;
 pub mod segment;
-pub mod token;
+mod token;
+pub use token::{Punct, Token};

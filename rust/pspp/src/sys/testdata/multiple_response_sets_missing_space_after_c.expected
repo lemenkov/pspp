@@ -1,4 +1,4 @@
-Syntax error in multiple response record (missing space after multiple response type)
+Warning at file offsets 0xe0 to 0xe5: In multiple response set record: Syntax error (missing space after multiple response type).
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

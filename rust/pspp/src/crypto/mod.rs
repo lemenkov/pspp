@@ -107,6 +107,13 @@ where
     /// This reads enough of the file to verify that it is in the expected
     /// format and returns an error if it cannot be read or is not the expected
     /// format.
+    ///
+    /// `reader` doesn't need to be [BufRead], and probably should not be.  The
+    /// [EncryptedReader] returned by [unlock] or [unlock_literal] will be
+    /// [BufRead].
+    ///
+    /// [unlock]: Self::unlock
+    /// [unlock_literal]: Self::unlock_literal
     pub fn new(mut reader: R) -> Result<Self, Error> {
         let header =
             EncryptedHeader::read_le(&mut NoSeek::new(&mut reader)).map_err(

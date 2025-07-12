@@ -1,4 +1,4 @@
-At offset 0xe8, at least one valid variable index for value labels is required but none were specified.
+Warning at file offsets 0xec to 0xf0: In value label record: At least one valid variable index is required but none were specified.
 
 This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING="DETECT" to analyze the possible encodings.
 

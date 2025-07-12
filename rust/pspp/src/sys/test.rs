@@ -29,13 +29,11 @@ use crate::{
         Details, Item, Text,
     },
     sys::{
-        cooked::Headers,
-        raw::{encoding_from_headers, Decoder, Reader},
+        cooked::ReaderOptions,
+        raw::{self, ErrorDetails},
         sack::sack,
     },
 };
-
-use enum_iterator::all;
 
 #[test]
 fn variable_labels_and_missing_values() {
@@ -553,6 +551,19 @@ fn encrypted_file() {
     test_encrypted_sysfile("test-encrypted.sav", "pspp");
 }
 
+#[test]
+fn encrypted_file_without_password() {
+    let error = ReaderOptions::new()
+        .open_file("src/crypto/testdata/test-encrypted.sav", |_| {
+            panic!();
+        })
+        .unwrap_err();
+    assert!(matches!(
+        error.downcast::<raw::Error>().unwrap().details,
+        ErrorDetails::Encrypted
+    ));
+}
+
 fn test_raw_sysfile(name: &str) {
     let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("src/sys/testdata")
@@ -586,7 +597,7 @@ fn test_sack_sysfile(name: &str) {
     let input = String::from_utf8(std::fs::read(&input_filename).unwrap()).unwrap();
     let expected_filename = input_filename.with_extension("expected");
     let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
-    for endian in all::<Endian>() {
+    for endian in [Endian::Big, Endian::Little] {
         let expected = expected.replace(
             "{endian}",
             match endian {
@@ -604,23 +615,9 @@ where
     R: Read + Seek + 'static,
 {
     let mut warnings = Vec::new();
-    let mut reader = Reader::new(sysfile, |warning| warnings.push(warning)).unwrap();
-    let output = match reader.headers().collect() {
-        Ok(headers) => {
-            let cases = reader.cases();
-            let encoding =
-                encoding_from_headers(&headers, &mut |warning| warnings.push(warning)).unwrap();
-            let mut decoder = Decoder::new(encoding, |warning| warnings.push(warning));
-            let mut decoded_records = Vec::new();
-            for header in headers {
-                decoded_records.push(header.decode(&mut decoder).unwrap());
-            }
-            drop(decoder);
-
-            let mut errors = Vec::new();
-            let headers = Headers::new(decoded_records, &mut |e| errors.push(e)).unwrap();
-            let (dictionary, metadata, cases) =
-                headers.decode(cases, encoding, |e| errors.push(e)).unwrap();
+    let output = match ReaderOptions::new().open_reader(sysfile, |warning| warnings.push(warning)) {
+        Ok(system_file) => {
+            let (dictionary, metadata, cases) = system_file.into_parts();
             let (group, data) = metadata.to_pivot_rows();
             let metadata_table = PivotTable::new([(Axis3::Y, Dimension::new(group))]).with_data(
                 data.into_iter()
@@ -640,11 +637,6 @@ where
                 warnings
                     .into_iter()
                     .map(|warning| Arc::new(Item::from(Text::new_log(warning.to_string())))),
-            );
-            output.extend(
-                errors
-                    .into_iter()
-                    .map(|error| Arc::new(Item::from(Text::new_log(error.to_string())))),
             );
             output.push(Arc::new(metadata_table.into()));
             output.push(Arc::new(dictionary_table.into()));
@@ -673,7 +665,8 @@ where
                         case_numbers
                             .push(Value::new_integer(Some((case_numbers.len() + 1) as f64)));
                         data.push(
-                            case.into_iter()
+                            case.0
+                                .into_iter()
                                 .map(|datum| Value::new_datum(&datum, dictionary.encoding))
                                 .collect::<Vec<_>>(),
                         );

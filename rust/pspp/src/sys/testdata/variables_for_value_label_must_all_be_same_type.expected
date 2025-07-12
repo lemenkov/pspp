@@ -1,4 +1,4 @@
-At offset 0x110, the first variable index is for a string variable but the following variable indexes are for numeric variables: [2]
+Warning at file offsets 0x110 to 0x118: In value label record: First variable index is for a string variable but the following variable indexes are for numeric variables: [2]
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

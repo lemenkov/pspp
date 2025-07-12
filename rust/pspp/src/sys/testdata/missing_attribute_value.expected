@@ -1,6 +1,6 @@
-Attribute for Attr1[1] lacks value.
+Warning at file offsets 0xe0 to 0xe6: In file or variable attribute record: Attribute for Attr1[1] lacks value.
 
-Attribute for fred[2] lacks value.
+Warning at file offsets 0xf6 to 0x109: In file or variable attribute record: Attribute for fred[2] lacks value.
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│

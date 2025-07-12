@@ -23,14 +23,10 @@ use smallstr::SmallString;
 use smallvec::SmallVec;
 
 use crate::{
-    dictionary::Datum,
+    data::Datum,
     endian::Endian,
     format::{AbstractFormat, Epoch, Format, Settings, Type, UncheckedFormat, CC},
-    lex::{
-        scan::StringScanner,
-        segment::Syntax,
-        token::{Punct, Token},
-    },
+    lex::{scan::StringScanner, segment::Syntax, Punct, Token},
     settings::EndianSettings,
 };
 

@@ -17,13 +17,19 @@
 use anyhow::{anyhow, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use encoding_rs::Encoding;
-use pspp::crypto::EncryptedFile;
-use pspp::sys::cooked::{Error, Headers};
-use pspp::sys::raw::{encoding_from_headers, Decoder, Magic, Reader, Record, Warning};
-use std::fs::File;
-use std::io::{stdout, BufReader, Write};
-use std::path::{Path, PathBuf};
-use std::str;
+use pspp::{
+    crypto::EncryptedFile,
+    sys::{
+        raw::{infer_encoding, Decoder, Magic, Reader, Record},
+        ReaderOptions, Records,
+    },
+};
+use std::{
+    fs::File,
+    io::{stdout, BufReader, Write},
+    path::{Path, PathBuf},
+    str,
+};
 use thiserror::Error as ThisError;
 use zeroize::Zeroizing;
 
@@ -61,6 +67,12 @@ struct Convert {
     #[arg(short = 'e', long, value_parser = parse_encoding)]
     encoding: Option<&'static Encoding>,
 
+    /// Password for decryption, with or without what SPSS calls "password encryption".
+    ///
+    /// Specify only for an encrypted system file.
+    #[clap(short, long)]
+    password: Option<String>,
+
     /// Maximum number of cases to print.
     #[arg(short = 'c', long = "cases")]
     max_cases: Option<u64>,
@@ -77,26 +89,16 @@ struct CsvOptions {
 }
 
 impl Convert {
-    fn warn(warning: Warning) {
-        eprintln!("warning: {warning}");
-    }
-
-    fn err(error: Error) {
-        eprintln!("error: {error}");
-    }
-
     fn run(self) -> Result<()> {
-        let mut reader = Reader::new(BufReader::new(File::open(&self.input)?), Self::warn)?;
-        let headers = reader.headers().collect::<Result<Vec<_>, _>>()?;
-        let encoding = encoding_from_headers(&headers, &mut |w| Self::warn(w))?;
-        let mut decoder = Decoder::new(encoding, |w| Self::warn(w));
-        let mut decoded_records = Vec::new();
-        for header in headers {
-            decoded_records.push(header.decode(&mut decoder)?);
+        fn warn(warning: anyhow::Error) {
+            eprintln!("warning: {warning}");
         }
-        let headers = Headers::new(decoded_records, &mut |e| Self::err(e))?;
-        let (dictionary, _metadata, cases) =
-            headers.decode(reader.cases(), encoding, |e| Self::err(e))?;
+
+        let (dictionary, _, cases) = ReaderOptions::new()
+            .with_encoding(self.encoding)
+            .with_password(self.password.clone())
+            .open_file(&self.input, warn)?
+            .into_parts();
         let writer = match self.output {
             Some(path) => Box::new(File::create(path)?) as Box<dyn Write>,
             None => Box::new(stdout()),
@@ -107,7 +109,7 @@ impl Convert {
         }
 
         for (_case_number, case) in (0..self.max_cases.unwrap_or(u64::MAX)).zip(cases) {
-            output.write_record(case?.into_iter().zip(dictionary.variables.iter()).map(
+            output.write_record(case?.0.into_iter().zip(dictionary.variables.iter()).map(
                 |(datum, variable)| {
                     datum
                         .display(variable.print_format, variable.encoding)
@@ -237,10 +239,7 @@ fn dissect(
 
     match mode {
         Mode::Identify => {
-            let Record::Header(header) = reader.headers().next().unwrap()? else {
-                unreachable!()
-            };
-            match header.magic {
+            match reader.header().magic {
                 Magic::Sav => println!("SPSS System File"),
                 Magic::Zsav => println!("SPSS System File with Zlib compression"),
                 Magic::Ebcdic => println!("EBCDIC-encoded SPSS System File"),
@@ -248,8 +247,8 @@ fn dissect(
             return Ok(());
         }
         Mode::Raw => {
-            for header in reader.headers() {
-                let header = header?;
+            for record in reader.records() {
+                let header = record?;
                 println!("{:?}", header);
             }
             for (_index, case) in (0..max_cases).zip(reader.cases()) {
@@ -257,13 +256,13 @@ fn dissect(
             }
         }
         Mode::Decoded => {
-            let headers: Vec<Record> = reader.headers().collect::<Result<Vec<_>, _>>()?;
+            let records: Vec<Record> = reader.records().collect::<Result<Vec<_>, _>>()?;
             let encoding = match encoding {
                 Some(encoding) => encoding,
-                None => encoding_from_headers(&headers, &mut |e| eprintln!("{e}"))?,
+                None => infer_encoding(&records, &mut |e| eprintln!("{e}"))?,
             };
             let mut decoder = Decoder::new(encoding, |e| eprintln!("{e}"));
-            for header in headers {
+            for header in records {
                 let header = header.decode(&mut decoder);
                 println!("{:?}", header);
                 /*
@@ -280,19 +279,21 @@ fn dissect(
             }
         }
         Mode::Cooked => {
-            let headers: Vec<Record> = reader.headers().collect::<Result<Vec<_>, _>>()?;
+            let records: Vec<Record> = reader.records().collect::<Result<Vec<_>, _>>()?;
             let encoding = match encoding {
                 Some(encoding) => encoding,
-                None => encoding_from_headers(&headers, &mut |e| eprintln!("{e}"))?,
+                None => infer_encoding(&records, &mut |e| eprintln!("{e}"))?,
             };
             let mut decoder = Decoder::new(encoding, |e| eprintln!("{e}"));
-            let mut decoded_records = Vec::new();
-            for header in headers {
-                decoded_records.push(header.decode(&mut decoder)?);
-            }
-            let headers = Headers::new(decoded_records, &mut |e| eprintln!("{e}"))?;
-            let (dictionary, metadata, _cases) =
-                headers.decode(reader.cases(), encoding, |e| eprintln!("{e}"))?;
+            let records = Records::from_raw(records, &mut decoder);
+            let (dictionary, metadata, _) = records
+                .decode(
+                    reader.header().clone().decode(&mut decoder),
+                    reader.cases(),
+                    encoding,
+                    |e| eprintln!("{e}"),
+                )
+                .into_parts();
             println!("{dictionary:#?}");
             println!("{metadata:#?}");
         }

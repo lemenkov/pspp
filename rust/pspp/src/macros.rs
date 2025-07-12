@@ -31,9 +31,9 @@ use unicase::UniCase;
 use crate::{
     identifier::Identifier,
     lex::{
-        scan::{ScanError, ScanToken, StringScanner, StringSegmenter},
+        scan::{ScanError, StringScanner, StringSegmenter},
         segment::Syntax,
-        token::{Punct, Token},
+        Punct, Token,
     },
     message::Location,
     settings::Settings,
@@ -277,11 +277,11 @@ fn tokenize_string_into(
 ) {
     for (syntax, token) in StringSegmenter::new(s, mode, true) {
         match token {
-            ScanToken::Token(token) => output.push(MacroToken {
+            Ok(token) => output.push(MacroToken {
                 token,
                 syntax: String::from(syntax),
             }),
-            ScanToken::Error(scan_error) => error(MacroError::ScanError(scan_error)),
+            Err(scan_error) => error(MacroError::ScanError(scan_error)),
         }
     }
 }
@@ -298,7 +298,7 @@ fn tokenize_string(
 
 fn try_unquote_string(input: &str, mode: Syntax) -> Option<String> {
     let mut scanner = StringScanner::new(input, mode, true);
-    let Some(ScanToken::Token(Token::String(unquoted))) = scanner.next() else {
+    let Some(Ok(Token::String(unquoted))) = scanner.next() else {
         return None;
     };
     let None = scanner.next() else { return None };
@@ -1157,14 +1157,14 @@ impl Expander<'_> {
     /// Parses one function argument from `input`.  Each argument to a macro
     /// function is one of:
     ///
-    ///     - A quoted string or other single literal token.
+    /// - A quoted string or other single literal token.
     ///
-    ///     - An argument to the macro being expanded, e.g. `!1` or a named
-    ///       argument.
+    /// - An argument to the macro being expanded, e.g. `!1` or a named
+    ///   argument.
     ///
-    ///     - `!*`.
+    /// - `!*`.
     ///
-    ///     - A function invocation.
+    /// - A function invocation.
     ///
     /// Each function invocation yields a character sequence to be turned into a
     /// sequence of tokens.  The case where that character sequence is a single

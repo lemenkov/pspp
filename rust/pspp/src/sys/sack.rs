@@ -71,6 +71,47 @@ impl Display for Error {
     }
 }
 
+/// SAv Construction Kit
+///
+/// The input is a sequence of data items, each followed by a semicolon.  Each
+/// data item is converted to the output format and written on stdout.  A data
+/// item is one of the following:
+///
+///   - An integer in decimal, in hexadecimal prefixed by `0x`, or in octal
+///     prefixed by `0`.  Output as a 32-bit binary integer.
+///
+///   - A floating-point number.  Output in 64-bit IEEE 754 format.
+///
+///   - A string enclosed in double quotes.  Output literally.  There is no
+///     syntax for "escapes".  Strings may not contain new-lines.
+///
+///   - A literal of the form `s<number>` followed by a quoted string as above.
+///     Output as the string's contents followed by enough spaces to fill up
+///     `<number>` bytes.  For example, `s8 "foo"` is output as `foo` followed
+///     by 5 spaces.
+///
+///   - The literal `i8`, `i16`, or `i64` followed by an integer.  Output
+///     as a binary integer with the specified number of bits.
+///
+///   - One of the literals `SYSMIS`, `LOWEST`, or `HIGHEST`.  Output as a
+///     64-bit IEEE 754 float of the appropriate PSPP value.
+///
+///   - `PCSYSMIS`.  Output as SPSS/PC+ system-missing value.
+///
+///   - The literal `ENDIAN`.  Output as a 32-bit binary integer, either with
+///     value 1 if `--be` is in effect or 2 if `--le` is in effect.
+///
+///   - A pair of parentheses enclosing a sequence of data items, each followed
+///     by a semicolon (the last semicolon is optional).  Output as the enclosed
+///     data items in sequence.
+///
+///   - The literal `COUNT` or `COUNT8` followed by a sequence of parenthesized
+///     data items, as above.  Output as a 32-bit or 8-bit binary integer whose
+///     value is the number of bytes enclosed within the parentheses, followed
+///     by the enclosed data items themselves.
+///
+/// optionally followed by an asterisk and a positive integer, which specifies a
+/// repeat count for the data item.
 pub fn sack(input: &str, input_file_name: Option<&Path>, endian: Endian) -> Result<Vec<u8>> {
     let mut symbol_table = HashMap::new();
     let output = _sack(input, input_file_name, endian, &mut symbol_table)?;

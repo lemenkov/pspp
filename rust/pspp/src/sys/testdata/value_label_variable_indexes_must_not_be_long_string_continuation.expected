@@ -1,4 +1,4 @@
-At offset 0x110, one or more variable indexes for value labels were not in the valid range [1,2] or referred to string continuations: [2]
+Warning at file offsets 0x110 to 0x114: In value label record: One or more variable indexes were not in the valid range [1,2] or referred to string continuations: [2]
 
 ╭──────────────────────┬────────────────────────╮
 │       Created        │    01-JAN-2011 20:53:52│
