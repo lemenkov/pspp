@@ -17,6 +17,7 @@ Variable set "vs2" includes unknown variable foo.
 │Variables│                      10│
 ╰─────────┴────────────────────────╯
 
+                                              Variables
 ╭──┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │  │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├──┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
@@ -32,6 +33,7 @@ Variable set "vs2" includes unknown variable foo.
 │j │      10│     │Nominal          │Input│    4│Left     │A4          │A4          │              │
 ╰──┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
+             Variable Sets
 ╭───────────────────────────┬────────╮
 │Variable Set and Position  │Variable│
 ├───────────────────────────┼────────┤

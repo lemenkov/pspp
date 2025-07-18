@@ -13,6 +13,7 @@ File weight variable index 2 is invalid because it refers to long string continu
 │Variables│2│
 ╰─────────┴─╯
 
+                                               Variables
 ╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

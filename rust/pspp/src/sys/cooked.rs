@@ -16,8 +16,9 @@
 
 use std::{
     collections::BTreeMap,
+    fmt::{Debug, Display},
     fs::File,
-    io::{Read, Seek},
+    io::{BufRead, BufReader, Read, Seek},
     ops::Range,
     path::Path,
 };
@@ -25,35 +26,39 @@ use std::{
 use crate::{
     calendar::date_time_to_pspp,
     crypto::EncryptedFile,
-    data::{Datum, RawString},
+    data::{ByteString, Case, Datum, MutRawString, RawString},
     dictionary::{
-        Dictionary, InvalidRole, MissingValues, MissingValuesError, MultipleResponseSet,
-        MultipleResponseType, VarWidth, Variable, VariableSet,
+        DictIndexMultipleResponseSet, DictIndexVariableSet, Dictionary, MrSetError,
+        MultipleResponseType,
     },
-    endian::Endian,
     format::{Error as FormatError, Format, UncheckedFormat},
     hexfloat::HexFloat,
-    identifier::{ByIdentifier, Error as IdError, Identifier},
-    output::pivot::{Group, Value},
-    sys::raw::{
-        self, infer_encoding,
-        records::{
-            Compression, DocumentRecord, EncodingRecord, Extension, FileAttributesRecord,
-            FileHeader, FloatInfoRecord, IntegerInfoRecord, LongName, LongNamesRecord,
-            LongStringMissingValueRecord, LongStringValueLabelRecord, MultipleResponseRecord,
-            NumberOfCasesRecord, ProductInfoRecord, RawFormat, ValueLabel, ValueLabelRecord,
-            VarDisplayRecord, VariableAttributesRecord, VariableRecord, VariableSetRecord,
-            VeryLongStringsRecord,
+    identifier::{Error as IdError, Identifier},
+    output::pivot::{Axis3, Dimension, Group, PivotTable, Value},
+    sys::{
+        raw::{
+            self, infer_encoding,
+            records::{
+                Compression, DocumentRecord, EncodingRecord, Extension, FileAttributesRecord,
+                FileHeader, FloatInfoRecord, IntegerInfoRecord, LongName, LongNamesRecord,
+                LongStringMissingValueRecord, LongStringValueLabelRecord, MultipleResponseRecord,
+                NumberOfCasesRecord, ProductInfoRecord, RawFormat, ValueLabel, ValueLabelRecord,
+                VarDisplayRecord, VariableAttributesRecord, VariableRecord, VariableSetRecord,
+                VeryLongStringsRecord,
+            },
+            DecodedRecord, RawCases, RawDatum, RawWidth, Reader,
         },
-        Cases, DecodedRecord, RawDatum, RawWidth, Reader,
+        serialize_endian,
     },
+    variable::{InvalidRole, MissingValues, MissingValuesError, VarType, VarWidth, Variable},
 };
 use anyhow::{anyhow, Error as AnyError};
-use binrw::io::BufReader;
+use binrw::{BinRead, BinWrite, Endian};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
-use encoding_rs::Encoding;
+use encoding_rs::{Encoding, UTF_8};
 use indexmap::set::MutableValues;
 use itertools::Itertools;
+use serde::Serialize;
 use thiserror::Error as ThisError;
 
 /// A warning for decoding [Records] into a [SystemFile].
@@ -191,12 +196,9 @@ pub enum Error {
         Identifier,
     ),
 
-    /// Multiple response set {0} contains both string and numeric variables.
-    #[error("Multiple response set {0} contains both string and numeric variables.")]
-    MixedMrSet(
-        /// Multiple response set name.
-        Identifier,
-    ),
+    /// Error adding multiple response set.
+    #[error("{0}")]
+    MrSetError(#[from] MrSetError),
 
     /// Invalid numeric format for counted value {number} in multiple response set {mr_set}.
     #[error(
@@ -207,21 +209,6 @@ pub enum Error {
         mr_set: Identifier,
         /// Value that should be numeric.
         number: String,
-    },
-
-    /// Counted value {value} has width {width}, but it must be no wider than
-    /// {max_width}, the width of the narrowest variable in multiple response
-    /// set {mr_set}.
-    #[error("Counted value {value} has width {width}, but it must be no wider than {max_width}, the width of the narrowest variable in multiple response set {mr_set}.")]
-    TooWideMDGroupCountedValue {
-        /// Multiple response set name.
-        mr_set: Identifier,
-        /// Counted value.
-        value: String,
-        /// Width of counted value.
-        width: usize,
-        /// Maximum allowed width of counted value.
-        max_width: u16,
     },
 
     /// Ignoring long string value label for unknown variable {0}.
@@ -476,8 +463,11 @@ pub enum Error {
 }
 
 /// Options for reading a system file.
-#[derive(Default, Clone, Debug)]
-pub struct ReaderOptions {
+#[derive(Clone, Debug)]
+pub struct ReadOptions<F> {
+    /// Function called to report warnings.
+    pub warn: F,
+
     /// Character encoding for text in the system file.
     ///
     /// If not set, the character encoding will be determined from reading the
@@ -493,11 +483,15 @@ pub struct ReaderOptions {
     pub password: Option<String>,
 }
 
-impl ReaderOptions {
-    /// Construct a new `ReaderOptions` that initially does not specify an
-    /// encoding or password.
-    pub fn new() -> Self {
-        Self::default()
+impl<F> ReadOptions<F> {
+    /// Construct a new `ReadOptions` that reports warnings by calling `warn`
+    /// and initially does not specify an encoding or password.
+    pub fn new(warn: F) -> Self {
+        Self {
+            warn,
+            encoding: None,
+            password: None,
+        }
     }
 
     /// Causes the file to be read using the specified `encoding`, or with a
@@ -512,47 +506,56 @@ impl ReaderOptions {
         Self { password, ..self }
     }
 
-    /// Opens the file at `path`, reporting warnings using `warn`.
-    pub fn open_file<P, F>(self, path: P, warn: F) -> Result<SystemFile, AnyError>
+    /// Opens the file at `path`.
+    pub fn open_file<P>(mut self, path: P) -> Result<SystemFile, AnyError>
     where
         P: AsRef<Path>,
         F: FnMut(AnyError),
     {
         let file = File::open(path)?;
-        if self.password.is_some() {
+        if let Some(password) = self.password.take() {
             // Don't create `BufReader`, because [EncryptedReader] will buffer.
-            self.open_reader(file, warn)
+            self.open_reader_encrypted(file, password)
         } else {
-            self.open_reader(BufReader::new(file), warn)
+            Self::open_reader_inner(BufReader::new(file), self.encoding, self.warn)
         }
     }
 
-    /// Opens the file read from `reader`, reporting warnings using `warn`.
-    pub fn open_reader<R, F>(self, reader: R, warn: F) -> Result<SystemFile, AnyError>
+    /// Opens the file read from `reader`.
+    fn open_reader_encrypted<R>(self, reader: R, password: String) -> Result<SystemFile, AnyError>
     where
         R: Read + Seek + 'static,
         F: FnMut(AnyError),
     {
-        if let Some(password) = &self.password {
-            Self::open_reader_inner(
-                EncryptedFile::new(reader)?
-                    .unlock(password.as_bytes())
-                    .map_err(|_| anyhow!("Incorrect password."))?,
-                self.encoding,
-                warn,
-            )
+        Self::open_reader_inner(
+            EncryptedFile::new(reader)?
+                .unlock(password.as_bytes())
+                .map_err(|_| anyhow!("Incorrect password."))?,
+            self.encoding,
+            self.warn,
+        )
+    }
+
+    /// Opens the file read from `reader`.
+    pub fn open_reader<R>(mut self, reader: R) -> Result<SystemFile, AnyError>
+    where
+        R: BufRead + Seek + 'static,
+        F: FnMut(AnyError),
+    {
+        if let Some(password) = self.password.take() {
+            self.open_reader_encrypted(reader, password)
         } else {
-            Self::open_reader_inner(reader, self.encoding, warn)
+            Self::open_reader_inner(reader, self.encoding, self.warn)
         }
     }
 
-    fn open_reader_inner<R, F>(
+    fn open_reader_inner<R>(
         reader: R,
         encoding: Option<&'static Encoding>,
         mut warn: F,
     ) -> Result<SystemFile, AnyError>
     where
-        R: Read + Seek + 'static,
+        R: BufRead + Seek + 'static,
         F: FnMut(AnyError),
     {
         let mut reader = Reader::new(reader, |warning| warn(warning.into()))?;
@@ -593,6 +596,16 @@ impl SystemFile {
     /// Returns the individual parts of the [SystemFile].
     pub fn into_parts(self) -> (Dictionary, Metadata, Cases) {
         (self.dictionary, self.metadata, self.cases)
+    }
+
+    /// Converts this system file reader into one encoded in UTF-8.
+    pub fn into_unicode(mut self) -> Self {
+        self.dictionary.codepage_to_unicode();
+        Self {
+            dictionary: self.dictionary,
+            metadata: self.metadata,
+            cases: self.cases.into_unicode(),
+        }
     }
 }
 
@@ -754,7 +767,7 @@ impl Records {
     pub fn decode(
         mut self,
         header: FileHeader<String>,
-        mut cases: Cases,
+        mut cases: RawCases,
         encoding: &'static Encoding,
         mut warn: impl FnMut(Error),
     ) -> SystemFile {
@@ -792,7 +805,7 @@ impl Records {
             .collect();
 
         if let Some(integer_info) = self.integer_info.first() {
-            let floating_point_rep = integer_info.floating_point_rep;
+            let floating_point_rep = integer_info.inner.floating_point_rep;
             if floating_point_rep != 1 {
                 warn(Error::UnexpectedFloatFormat(floating_point_rep))
             }
@@ -801,7 +814,7 @@ impl Records {
                 Endian::Big => 1,
                 Endian::Little => 2,
             };
-            let actual = integer_info.endianness;
+            let actual = integer_info.inner.endianness;
             if actual != expected {
                 warn(Error::UnexpectedEndianess { actual, expected });
             }
@@ -834,7 +847,7 @@ impl Records {
                 && self
                     .integer_info
                     .get(0)
-                    .is_none_or(|info| info.version.0 != 13)
+                    .is_none_or(|info| info.inner.version.0 != 13)
             {
                 warn(Error::WrongVariablePositions {
                     actual: n_vars,
@@ -892,7 +905,10 @@ impl Records {
 
             variable.label = input.label.clone();
 
-            variable.missing_values = input.missing_values.clone();
+            variable
+                .missing_values_mut()
+                .replace(input.missing_values.decode(encoding).unwrap())
+                .unwrap();
 
             variable.print_format = decode_format(
                 input.print_format,
@@ -949,20 +965,17 @@ impl Records {
                 });
             } else {
                 let (var_index, dict_index) = var_index_map.range(..=&index).last().unwrap();
-                let variable = &dictionary.variables[*dict_index];
                 if *var_index == index {
-                    if variable.is_numeric() {
-                        dictionary.weight = Some(*dict_index);
-                    } else {
+                    if dictionary.set_weight(Some(*dict_index)).is_err() {
                         warn(Error::InvalidWeightVar {
                             index: weight_index,
-                            name: variable.name.clone(),
+                            name: dictionary.variables[*dict_index].name.clone(),
                         });
                     }
                 } else {
                     warn(Error::WeightIndexStringContinuation {
                         index: weight_index,
-                        name: variable.name.clone(),
+                        name: dictionary.variables[*dict_index].name.clone(),
                     });
                 }
             }
@@ -1017,7 +1030,8 @@ impl Records {
                             .map(|value| {
                                 value
                                     .decode(variable.width)
-                                    .display(variable.print_format, variable.encoding)
+                                    .as_encoded(variable.encoding())
+                                    .display(variable.print_format)
                                     .with_trimming()
                                     .with_quoted_string()
                                     .to_string()
@@ -1054,9 +1068,9 @@ impl Records {
             .iter()
             .flat_map(|record| record.sets.iter())
         {
-            match MultipleResponseSet::decode(&dictionary, record, &mut warn) {
+            match DictIndexMultipleResponseSet::decode(&dictionary, record, &mut warn) {
                 Ok(mrset) => {
-                    dictionary.mrsets.insert(ByIdentifier::new(mrset));
+                    dictionary.mrsets_mut().insert(mrset).unwrap();
                 }
                 Err(error) => warn(error),
             }
@@ -1073,7 +1087,7 @@ impl Records {
                     continue;
                 };
                 let width = VarWidth::String(record.length);
-                let n_segments = width.n_segments();
+                let n_segments = width.segments().len();
                 if n_segments == 1 {
                     warn(Error::ShortVeryLongString {
                         short_name: record.short_name.clone(),
@@ -1121,7 +1135,7 @@ impl Records {
             // converted to lowercase, as the long variable names.
             for index in 0..dictionary.variables.len() {
                 let lower = dictionary.variables[index].name.0.as_ref().to_lowercase();
-                if let Ok(new_name) = Identifier::from_encoding(lower, dictionary.encoding) {
+                if let Ok(new_name) = Identifier::from_encoding(lower, dictionary.encoding()) {
                     let _ = dictionary.try_rename_var(index, new_name);
                 }
             }
@@ -1237,17 +1251,22 @@ impl Records {
                 .missing_values
                 .into_iter()
                 .map(|v| {
-                    let mut value = RawString::from(v.0.as_slice());
-                    value.resize(variable.width.as_string_width().unwrap());
-                    Datum::String(value)
+                    let mut value = ByteString::from(v.0.as_slice());
+                    let _ = value.resize(variable.width.as_string_width().unwrap()); // XXX check error
+                    Datum::String(value.with_encoding(encoding))
                 })
                 .collect::<Vec<_>>();
             match MissingValues::new(values, None) {
-                Ok(missing_values) => variable.missing_values = missing_values,
+                Ok(missing_values) => variable
+                    .missing_values_mut()
+                    .replace(missing_values)
+                    .unwrap(),
                 Err(MissingValuesError::TooWide) => {
                     warn(Error::MissingValuesTooWide(record.var_name.clone()))
                 }
-                Err(MissingValuesError::TooMany) | Err(MissingValuesError::MixedTypes) => {
+                Err(MissingValuesError::TooMany)
+                | Err(MissingValuesError::MixedTypes)
+                | Err(MissingValuesError::SystemMissing) => {
                     unreachable!()
                 }
             }
@@ -1270,11 +1289,11 @@ impl Records {
                 };
                 variables.push(dict_index);
             }
-            let variable_set = VariableSet {
+            let variable_set = DictIndexVariableSet {
                 name: record.name,
                 variables,
             };
-            dictionary.variable_sets.push(variable_set);
+            dictionary.add_variable_set(variable_set);
         }
 
         for record in self.other_extension.drain(..) {
@@ -1293,15 +1312,81 @@ impl Records {
         SystemFile {
             dictionary,
             metadata,
-            cases,
+            cases: Cases::new(encoding, cases),
         }
+    }
+}
+
+/// Product version number in a system file.
+///
+/// # Example
+///
+/// `ProductVersion(1,2,3)` is version 1.2.3.
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, BinRead, BinWrite, Serialize)]
+pub struct ProductVersion(
+    /// Major version.
+    pub i32,
+    /// Minor version
+    pub i32,
+    /// Revision.
+    pub i32,
+);
+
+impl ProductVersion {
+    /// This version of PSPP.
+    pub const VERSION: Self = {
+        const fn parse_integer(mut s: &[u8]) -> (i32, &[u8]) {
+            let mut value = 0;
+            let mut n = 0;
+            while let Some((c, rest)) = s.split_first()
+                && *c >= b'0'
+                && *c <= b'9'
+            {
+                value = value * 10 + (*c - b'0') as i32;
+                n += 1;
+                s = rest;
+            }
+            assert!(n > 0);
+            (value, s)
+        }
+
+        const fn skip_dot(s: &[u8]) -> &[u8] {
+            let Some((c, rest)) = s.split_first() else {
+                unreachable!()
+            };
+            assert!(*c == b'.');
+            rest
+        }
+
+        // Parse `CARGO_PKG_VERSION`.  This could be easier if `const` contexts
+        // were less restricted.
+        let s = env!("CARGO_PKG_VERSION").as_bytes();
+        let (first, s) = parse_integer(s);
+        let s = skip_dot(s);
+        let (second, s) = parse_integer(s);
+        let s = skip_dot(s);
+        let (third, s) = parse_integer(s);
+        assert!(matches!(s.first(), None | Some(b'-' | b'+')));
+        Self(first, second, third)
+    };
+}
+
+impl Display for ProductVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.0, self.1, self.2)
+    }
+}
+
+impl Debug for ProductVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <Self as Display>::fmt(self, f)
     }
 }
 
 /// System file metadata that is not part of [Dictionary].
 ///
 /// [Dictionary]: crate::dictionary::Dictionary
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Metadata {
     /// Creation date and time.
     ///
@@ -1309,6 +1394,7 @@ pub struct Metadata {
     pub creation: NaiveDateTime,
 
     /// Endianness of integers and floating-point numbers in the file.
+    #[serde(serialize_with = "serialize_endian")]
     pub endian: Endian,
 
     /// Compression type (if any).
@@ -1327,8 +1413,7 @@ pub struct Metadata {
 
     /// Version number of the product that wrote the file.
     ///
-    /// For example, `(1,2,3)` is version 1.2.3.
-    pub version: Option<(i32, i32, i32)>,
+    pub version: Option<ProductVersion>,
 }
 
 impl Metadata {
@@ -1403,7 +1488,7 @@ impl Metadata {
         let product = header
             .eye_catcher
             .trim_start_matches("@(#) SPSS DATA FILE")
-            .trim_end()
+            .trim()
             .to_string();
 
         Self {
@@ -1413,12 +1498,24 @@ impl Metadata {
             n_cases: headers
                 .number_of_cases
                 .first()
-                .map(|record| record.n_cases)
+                .and_then(|record| record.n_cases)
                 .or_else(|| header.n_cases.map(|n| n as u64)),
             product,
             product_ext: headers.product_info.first().map(|pe| fix_line_ends(&pe.0)),
-            version: headers.integer_info.first().map(|ii| ii.version),
+            version: headers.integer_info.first().map(|ii| ii.inner.version),
         }
+    }
+}
+
+impl From<&Metadata> for PivotTable {
+    fn from(value: &Metadata) -> Self {
+        let (group, data) = value.to_pivot_rows();
+        PivotTable::new([(Axis3::Y, Dimension::new(group))]).with_data(
+            data.into_iter()
+                .enumerate()
+                .filter(|(_row, value)| !value.is_empty())
+                .map(|(row, value)| ([row], value)),
+        )
     }
 }
 
@@ -1444,7 +1541,7 @@ impl Decoder {
     }
 }
 
-impl MultipleResponseSet {
+impl DictIndexMultipleResponseSet {
     fn decode(
         dictionary: &Dictionary,
         input: &raw::records::MultipleResponseSet<Identifier, String>,
@@ -1482,21 +1579,18 @@ impl MultipleResponseSet {
             _ => (),
         }
 
-        let Some((Some(min_width), Some(max_width))) = variables
+        let Ok(var_type) = variables
             .iter()
-            .copied()
-            .map(|dict_index| dictionary.variables[dict_index].width)
-            .map(|w| (Some(w), Some(w)))
-            .reduce(|(na, wa), (nb, wb)| (VarWidth::narrower(na, nb), VarWidth::wider(wa, wb)))
+            .map(|dict_index| VarType::from(dictionary.variables[*dict_index].width))
+            .all_equal_value()
         else {
-            return Err(Error::MixedMrSet(mr_set_name));
+            return Err(MrSetError::MixedMrSet(mr_set_name).into());
         };
 
-        let mr_type = MultipleResponseType::decode(&mr_set_name, &input.mr_type, min_width)?;
+        let mr_type = MultipleResponseType::decode(&mr_set_name, &input.mr_type, var_type)?;
 
-        Ok(MultipleResponseSet {
+        Ok(DictIndexMultipleResponseSet {
             name: mr_set_name,
-            width: min_width..=max_width,
             label: input.label.to_string(),
             mr_type,
             variables,
@@ -1548,12 +1642,12 @@ impl MultipleResponseType {
     fn decode(
         mr_set: &Identifier,
         input: &raw::records::MultipleResponseType,
-        min_width: VarWidth,
+        var_type: VarType,
     ) -> Result<Self, Error> {
         match input {
             raw::records::MultipleResponseType::MultipleDichotomy { value, labels } => {
-                let value = match min_width {
-                    VarWidth::Numeric => {
+                let value = match var_type {
+                    VarType::Numeric => {
                         let string = String::from_utf8_lossy(&value.0);
                         let number: f64 = string.trim().parse().map_err(|_| {
                             Error::InvalidMDGroupCountedValue {
@@ -1563,21 +1657,10 @@ impl MultipleResponseType {
                         })?;
                         Datum::Number(Some(number))
                     }
-                    VarWidth::String(max_width) => {
-                        let mut value = value.0.as_slice();
-                        while value.ends_with(b" ") {
-                            value = &value[..value.len() - 1];
-                        }
-                        let width = value.len();
-                        if width > max_width as usize {
-                            return Err(Error::TooWideMDGroupCountedValue {
-                                mr_set: mr_set.clone(),
-                                value: String::from_utf8_lossy(value).into(),
-                                width,
-                                max_width,
-                            });
-                        };
-                        Datum::String(value.into())
+                    VarType::String => {
+                        let mut value = value.clone();
+                        value.trim_end();
+                        Datum::String(value)
                     }
                 };
                 Ok(MultipleResponseType::MultipleDichotomy {
@@ -1592,32 +1675,59 @@ impl MultipleResponseType {
     }
 }
 
-/*
-trait Quoted {
-    fn quoted(self) -> WithQuotes<Self>
-    where
-        Self: Display + Sized;
+/// Reads cases from a system file.
+pub struct Cases {
+    encoding: &'static Encoding,
+    into_unicode: bool,
+    inner: RawCases,
 }
 
-impl<T> Quoted for T
-where
-    T: Display,
-{
-    fn quoted(self) -> WithQuotes<Self> {
-        WithQuotes(self)
+impl Cases {
+    /// Constructs a new reader for `inner` with the given `encoding`.
+    ///
+    /// No recoding will take place; the caller is simply saying that the cases
+    /// are already encoded in `encoding`.
+    pub fn new(encoding: &'static Encoding, inner: RawCases) -> Self {
+        Self {
+            encoding,
+            inner,
+            into_unicode: false,
+        }
+    }
+
+    /// Returns a reader that will recode cases from their existing encoding
+    /// into UTF-8.  If the cases were already in UTF-8, this is a no-op;
+    /// otherwise, the widths of strings are tripled in the process.
+    pub fn into_unicode(self) -> Self {
+        Self {
+            into_unicode: {
+                // We only need to convert if we're not starting out as UTF-8.
+                self.encoding != UTF_8
+            },
+            ..self
+        }
     }
 }
 
-struct WithQuotes<T>(T)
-where
-    T: Display;
-
-impl<T> Display for WithQuotes<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\"{}\"", &self.0)
+impl Debug for Cases {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Cases")
     }
 }
-*/
+
+impl Iterator for Cases {
+    type Item = Result<Case<Vec<Datum<ByteString>>>, raw::Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|result| {
+            result.map(|case| {
+                let case = case.with_encoding(self.encoding);
+                if self.into_unicode {
+                    case.into_unicode()
+                } else {
+                    case
+                }
+            })
+        })
+    }
+}

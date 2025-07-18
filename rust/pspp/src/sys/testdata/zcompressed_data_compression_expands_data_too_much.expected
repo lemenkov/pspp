@@ -1,1 +1,1 @@
-Error at file offsets 0x1c4 to 0x1dc: ZLIB block descriptor 0 reports compressed size 100 and uncompressed size 50.
+Error at file offsets 0x1c4 to 0x1dc: Error reading ZLIB trailer: Block descriptor 0 reports compressed size 100 and uncompressed size 50.

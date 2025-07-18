@@ -22,6 +22,7 @@ use std::{
 
 use enum_map::EnumMap;
 use pivot::PivotTable;
+use serde::Serialize;
 
 use crate::{
     message::Diagnostic,
@@ -34,6 +35,7 @@ pub mod cairo;
 pub mod csv;
 pub mod driver;
 pub mod html;
+pub mod json;
 pub mod page;
 pub mod pivot;
 pub mod render;
@@ -43,6 +45,7 @@ pub mod text;
 pub mod text_line;
 
 /// A single output item.
+#[derive(Serialize)]
 pub struct Item {
     /// The localized label for the item that appears in the outline pane in the
     /// output viewer and in PDF outlines.  This is `None` if no label has been
@@ -94,6 +97,7 @@ where
     }
 }
 
+#[derive(Serialize)]
 pub enum Details {
     Chart,
     Image,
@@ -144,6 +148,18 @@ impl Details {
     }
 }
 
+impl<A> FromIterator<A> for Details
+where
+    A: Into<Arc<Item>>,
+{
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = A>,
+    {
+        Self::Group(iter.into_iter().map(|value| value.into()).collect())
+    }
+}
+
 impl From<Diagnostic> for Details {
     fn from(value: Diagnostic) -> Self {
         Self::Message(Box::new(value))
@@ -180,7 +196,7 @@ impl From<Box<Text>> for Details {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Text {
     type_: TextType,
 
@@ -188,10 +204,10 @@ pub struct Text {
 }
 
 impl Text {
-    pub fn new_log(s: impl Into<String>) -> Self {
+    pub fn new_log(value: impl Into<Value>) -> Self {
         Self {
             type_: TextType::Log,
-            content: Value::new_user_text(s),
+            content: value.into(),
         }
     }
 }
@@ -228,7 +244,8 @@ impl From<&Diagnostic> for Text {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TextType {
     /// `TITLE` and `SUBTITLE` commands.
     PageTitle,

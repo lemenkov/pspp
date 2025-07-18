@@ -15,6 +15,7 @@ This system file does not indicate its own character encoding.  For best results
 │Variables│1│
 ╰─────────┴─╯
 
+                                               Variables
 ╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

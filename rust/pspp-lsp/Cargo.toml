@@ -7,6 +7,6 @@ publish = false
 [dependencies]
 env_logger = "0.11.5"
 log = "0.4.22"
-pspp = { version = "0.1.0", path = "../pspp" }
+pspp = { version = "0.2.0", path = "../pspp" }
 tokio = { version = "1.39.3", features = ["full"] }
 tower-lsp = "0.20.0"

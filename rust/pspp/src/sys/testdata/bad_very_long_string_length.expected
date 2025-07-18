@@ -17,6 +17,7 @@ Variable with short name NUM1 listed in very long string record with width 256 r
 │Variables│1│
 ╰─────────┴─╯
 
+                                               Variables
 ╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

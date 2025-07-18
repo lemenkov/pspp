@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use binrw::Endian;
 use num::{Bounded, Zero};
 use ordered_float::OrderedFloat;
 use std::{
@@ -24,7 +25,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::endian::{Endian, ToBytes};
+use crate::endian::ToBytes;
 
 pub type Result<T, F = Error> = std::result::Result<T, F>;
 
@@ -552,7 +553,7 @@ impl<'a> Lexer<'a> {
                         "i64" => Token::I64,
                         "SYSMIS" => Token::Float(OrderedFloat(-f64::MAX)),
                         "PCSYSMIS" => Token::PcSysmis,
-                        "LOWEST" => Token::Float((-f64::MAX).next_up().into()),
+                        "LOWEST" => Token::Float(f64::MIN.next_up().into()),
                         "HIGHEST" => Token::Float(f64::MAX.into()),
                         "ENDIAN" => Token::Integer(if self.endian == Endian::Big { 1 } else { 2 }),
                         "COUNT" => Token::Count,
@@ -573,10 +574,9 @@ impl<'a> Lexer<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::endian::Endian;
     use crate::sys::sack::sack;
     use anyhow::Result;
-    use hexplay::HexView;
+    use binrw::Endian;
 
     #[test]
     fn basic_sack() -> Result<()> {
@@ -592,8 +592,7 @@ mod test {
 "PSPP synthetic test file: "; i8 244; i8 245; i8 246; i8 248; s34 "";
 i8 0 *3;
 "#;
-        let output = sack(input, None, Endian::Big)?;
-        HexView::new(&output).print()?;
+        sack(input, None, Endian::Big)?;
         Ok(())
     }
 
@@ -677,8 +676,7 @@ DATA:
     s16 "stuvwxyzAB"; s16 "CDEFGHIJKLM";
 DATA_END:
 "#;
-        let output = sack(input, None, Endian::Big)?;
-        HexView::new(&output).print()?;
+        sack(input, None, Endian::Big)?;
         Ok(())
     }
 }

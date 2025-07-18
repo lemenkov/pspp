@@ -24,14 +24,15 @@ use std::{
 use chrono::{Datelike, Local};
 use enum_iterator::{all, Sequence};
 use enum_map::{Enum, EnumMap};
+use serde::{Deserialize, Serialize};
+use smallstr::SmallString;
 use thiserror::Error as ThisError;
 use unicode_width::UnicodeWidthStr;
 
 use crate::{
-    data::RawString,
-    data::Datum,
-    dictionary::{VarType, VarWidth},
+    data::{ByteString, Datum},
     sys::raw,
+    variable::{VarType, VarWidth},
 };
 
 mod display;
@@ -124,7 +125,7 @@ impl From<Type> for Category {
     }
 }
 
-#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Hash, Sequence)]
+#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Hash, Sequence, Serialize)]
 pub enum CC {
     A,
     B,
@@ -151,7 +152,7 @@ impl Display for CC {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Sequence)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Sequence, Serialize)]
 pub enum Type {
     // Basic numeric formats.
     F,
@@ -392,10 +393,10 @@ impl Type {
         }
     }
 
-    pub fn default_value(&self) -> Datum {
+    pub fn default_value(&self) -> Datum<ByteString> {
         match self.var_type() {
             VarType::Numeric => Datum::sysmis(),
-            VarType::String => Datum::String(RawString::default()),
+            VarType::String => Datum::String(ByteString::default()),
         }
     }
 }
@@ -487,6 +488,17 @@ pub struct Format {
     type_: Type,
     w: Width,
     d: Decimals,
+}
+
+impl Serialize for Format {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = SmallString::<[u8; 16]>::new();
+        write!(&mut s, "{}", self).unwrap();
+        s.serialize(serializer)
+    }
 }
 
 impl Format {
@@ -620,10 +632,10 @@ impl Format {
         Ok(self)
     }
 
-    pub fn default_value(&self) -> Datum {
+    pub fn default_value(&self) -> Datum<ByteString> {
         match self.var_width() {
             VarWidth::Numeric => Datum::sysmis(),
-            VarWidth::String(width) => Datum::String(RawString::spaces(width as usize)),
+            VarWidth::String(width) => Datum::String(ByteString::spaces(width as usize)),
         }
     }
 
@@ -638,6 +650,18 @@ impl Format {
                 };
             }
             _ => *self = Self::default_for_width(width),
+        }
+    }
+
+    pub fn codepage_to_unicode(&mut self) {
+        let mut width = self.var_width();
+        width.codepage_to_unicode();
+        if let Some(width) = width.as_string_width() {
+            if self.type_ == Type::AHex {
+                self.w = width as u16 * 2;
+            } else {
+                self.w = width as u16;
+            }
         }
     }
 }
@@ -829,7 +853,8 @@ impl Display for UncheckedFormat {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Enum)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Enum, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Decimal {
     #[default]
     Dot,
@@ -883,7 +908,7 @@ impl Not for Decimal {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct Epoch(pub i32);
 
 impl Epoch {
@@ -922,7 +947,7 @@ impl Display for Epoch {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Settings {
     pub epoch: Epoch,
 
@@ -1048,7 +1073,7 @@ impl Settings {
 
 /// A numeric output style.  This can express numeric formats in
 /// [Category::Basic] and [Category::Custom].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct NumberStyle {
     pub neg_prefix: Affix,
     pub prefix: Affix,
@@ -1071,6 +1096,7 @@ pub struct NumberStyle {
     /// can be used to size memory allocations: for example, the formatted
     /// result of `CCA20.5` requires no more than `(20 + extra_bytes)` bytes in
     /// UTF-8.
+    #[serde(skip)]
     pub extra_bytes: usize,
 }
 
@@ -1125,11 +1151,12 @@ impl NumberStyle {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Affix {
     /// String contents of affix.
     pub s: String,
 
+    #[serde(skip)]
     /// Display width in columns (see [unicode_width])
     pub width: usize,
 }
@@ -1332,5 +1359,34 @@ impl Iterator for DateTemplate {
             n += 1;
         }
         Some(TemplateItem { c, n })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::format::{Format, Type, Width};
+
+    #[test]
+    fn codepage_to_unicode() {
+        fn check_format(input: Format, expected_width: Width) {
+            let mut output = input;
+            output.codepage_to_unicode();
+            let expected = Format::new(input.type_, expected_width, input.d).unwrap();
+            assert_eq!(output, expected);
+        }
+        check_format(Format::new(Type::A, 1, 0).unwrap(), 3);
+        check_format(Format::new(Type::A, 2, 0).unwrap(), 6);
+        check_format(Format::new(Type::A, 3, 0).unwrap(), 9);
+        check_format(Format::new(Type::A, 1000, 0).unwrap(), 3000);
+        check_format(Format::new(Type::A, 20000, 0).unwrap(), 32767);
+
+        check_format(Format::new(Type::AHex, 2, 0).unwrap(), 6);
+        check_format(Format::new(Type::AHex, 4, 0).unwrap(), 12);
+        check_format(Format::new(Type::AHex, 6, 0).unwrap(), 18);
+        check_format(Format::new(Type::AHex, 2000, 0).unwrap(), 6000);
+        check_format(Format::new(Type::AHex, 20000, 0).unwrap(), 60000);
+        check_format(Format::new(Type::AHex, 30000, 0).unwrap(), 65534);
+
+        check_format(Format::new(Type::F, 40, 0).unwrap(), 40);
     }
 }

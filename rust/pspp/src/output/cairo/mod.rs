@@ -22,7 +22,7 @@ mod driver;
 pub mod fsm;
 pub mod pager;
 
-pub use driver::CairoDriver;
+pub use driver::{CairoConfig, CairoDriver};
 
 /// Conversion from 1/96" units ("pixels") to Cairo/Pango units.
 fn px_to_xr(x: usize) -> usize {
@@ -43,10 +43,10 @@ fn horz_align_to_pango(horz_align: HorzAlign) -> pango::Alignment {
 
 #[cfg(test)]
 mod test {
-    use crate::output::cairo::CairoDriver;
+    use crate::output::cairo::{CairoConfig, CairoDriver};
 
     #[test]
     fn create() {
-        CairoDriver::new("test.pdf");
+        CairoDriver::new(&CairoConfig::new("test.pdf")).unwrap();
     }
 }

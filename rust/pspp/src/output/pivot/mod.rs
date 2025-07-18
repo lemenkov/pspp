@@ -56,22 +56,25 @@ use binrw::Error as BinError;
 use chrono::NaiveDateTime;
 pub use color::ParseError as ParseColorError;
 use color::{palette::css::TRANSPARENT, AlphaColor, Rgba8, Srgb};
-use encoding_rs::{Encoding, UTF_8};
 use enum_iterator::Sequence;
 use enum_map::{enum_map, Enum, EnumMap};
 use look_xml::TableProperties;
 use quick_xml::{de::from_str, DeError};
-use serde::{de::Visitor, Deserialize};
+use serde::{
+    de::Visitor,
+    ser::{SerializeMap, SerializeStruct},
+    Deserialize, Serialize, Serializer,
+};
 use smallstr::SmallString;
 use smallvec::SmallVec;
 use thiserror::Error as ThisError;
 use tlo::parse_tlo;
 
 use crate::{
-    data::Datum,
-    dictionary::{VarType, Variable},
+    data::{ByteString, Datum, EncodedString, RawString},
     format::{Decimal, Format, Settings as FormatSettings, Type, UncheckedFormat},
     settings::{Settings, Show},
+    variable::{VarType, Variable},
 };
 
 pub mod output;
@@ -101,6 +104,31 @@ pub enum Area {
 
     /// Layer indication.
     Layers,
+}
+
+impl Display for Area {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Area::Title => write!(f, "title"),
+            Area::Caption => write!(f, "caption"),
+            Area::Footer => write!(f, "footer"),
+            Area::Corner => write!(f, "corner"),
+            Area::Labels(axis2) => write!(f, "labels({axis2})"),
+            Area::Data => write!(f, "data"),
+            Area::Layers => write!(f, "layers"),
+        }
+    }
+}
+
+impl Serialize for Area {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = SmallString::<[u8; 16]>::new();
+        write!(&mut s, "{}", self).unwrap();
+        serializer.serialize_str(&s)
+    }
 }
 
 impl Area {
@@ -188,8 +216,34 @@ impl Border {
     }
 }
 
+impl Display for Border {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Border::Title => write!(f, "title"),
+            Border::OuterFrame(box_border) => write!(f, "outer_frame({box_border})"),
+            Border::InnerFrame(box_border) => write!(f, "inner_frame({box_border})"),
+            Border::Dimension(row_col_border) => write!(f, "dimension({row_col_border})"),
+            Border::Category(row_col_border) => write!(f, "category({row_col_border})"),
+            Border::DataLeft => write!(f, "data(left)"),
+            Border::DataTop => write!(f, "data(top)"),
+        }
+    }
+}
+
+impl Serialize for Border {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = SmallString::<[u8; 32]>::new();
+        write!(&mut s, "{}", self).unwrap();
+        serializer.serialize_str(&s)
+    }
+}
+
 /// The borders on a box.
-#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum BoxBorder {
     Left,
     Top,
@@ -197,8 +251,26 @@ pub enum BoxBorder {
     Bottom,
 }
 
+impl BoxBorder {
+    fn as_str(&self) -> &'static str {
+        match self {
+            BoxBorder::Left => "left",
+            BoxBorder::Top => "top",
+            BoxBorder::Right => "right",
+            BoxBorder::Bottom => "bottom",
+        }
+    }
+}
+
+impl Display for BoxBorder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// Borders between rows and columns.
-#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub struct RowColBorder(
     /// Row or column headings.
     pub HeadingRegion,
@@ -206,11 +278,17 @@ pub struct RowColBorder(
     pub Axis2,
 );
 
+impl Display for RowColBorder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", self.0, self.1)
+    }
+}
+
 /// Sizing for rows or columns of a rendered table.
 ///
 /// The comments below talk about columns and their widths but they apply
 /// equally to rows and their heights.
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Serialize)]
 pub struct Sizing {
     /// Specific column widths, in 1/96" units.
     widths: Vec<i32>,
@@ -223,7 +301,8 @@ pub struct Sizing {
     keeps: Vec<Range<usize>>,
 }
 
-#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Sequence)]
+#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Sequence, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Axis3 {
     X,
     Y,
@@ -250,7 +329,7 @@ impl From<Axis2> for Axis3 {
 }
 
 /// An axis within a pivot table.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Axis {
     /// `dimensions[0]` is the innermost dimension.
     pub dimensions: Vec<usize>,
@@ -304,7 +383,7 @@ impl PivotTable {
             format,
             honor_small: class == Class::Other,
             value: number,
-            var_name: None,
+            variable: None,
             value_label: None,
         }));
         self.insert(data_indexes, value);
@@ -339,7 +418,7 @@ impl PivotTable {
 /// (A dimension or a group can contain zero categories, but this is unusual.
 /// If a dimension contains no categories, then its table cannot contain any
 /// data.)
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Dimension {
     /// Hierarchy of categories within the dimension.  The groups and categories
     /// are sorted in the order that should be used for display.  This might be
@@ -400,8 +479,9 @@ impl Dimension {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Group {
+    #[serde(skip)]
     len: usize,
     pub name: Box<Value>,
 
@@ -416,11 +496,15 @@ pub struct Group {
 }
 
 impl Group {
-    pub fn new(name: impl Into<Value>) -> Group {
+    pub fn new(name: impl Into<Value>) -> Self {
+        Self::with_capacity(name, 0)
+    }
+
+    pub fn with_capacity(name: impl Into<Value>, capacity: usize) -> Self {
         Self {
             len: 0,
             name: Box::new(name.into()),
-            children: Vec::new(),
+            children: Vec::with_capacity(capacity),
             show_label: false,
         }
     }
@@ -505,7 +589,7 @@ where
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Footnotes(pub Vec<Arc<Footnote>>);
 
 impl Footnotes {
@@ -540,6 +624,15 @@ impl Leaf {
     }
 }
 
+impl Serialize for Leaf {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.name.serialize(serializer)
+    }
+}
+
 /// Pivot result classes.
 ///
 /// These are used to mark [Leaf] categories as having particular types of data,
@@ -556,7 +649,7 @@ pub enum Class {
 }
 
 /// A pivot_category is a leaf (a category) or a group.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum Category {
     Group(Group),
     Leaf(Leaf),
@@ -641,12 +734,24 @@ impl From<&str> for Category {
     }
 }
 
+impl From<String> for Category {
+    fn from(name: String) -> Self {
+        Self::Leaf(Leaf::new(Value::new_text(name)))
+    }
+}
+
+impl From<&String> for Category {
+    fn from(name: &String) -> Self {
+        Self::Leaf(Leaf::new(Value::new_text(name)))
+    }
+}
+
 /// Styling for a pivot table.
 ///
 /// The division between this and the style information in [PivotTable] seems
 /// fairly arbitrary.  The ultimate reason for the division is simply because
 /// that's how SPSS documentation and file formats do it.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Look {
     pub name: Option<String>,
 
@@ -777,7 +882,7 @@ impl Look {
 }
 
 /// Position for group labels.
-#[derive(Copy, Clone, Debug, Default, Deserialize, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 pub enum LabelPosition {
     /// Hierarachically enclosing the categories.
     ///
@@ -828,10 +933,26 @@ pub enum LabelPosition {
 /// │                  │                                                 │
 /// └──────────────────┴─────────────────────────────────────────────────┘
 /// ```
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Enum)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Enum, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum HeadingRegion {
     Rows,
     Columns,
+}
+
+impl HeadingRegion {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            HeadingRegion::Rows => "rows",
+            HeadingRegion::Columns => "columns",
+        }
+    }
+}
+
+impl Display for HeadingRegion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 impl From<Axis2> for HeadingRegion {
@@ -843,13 +964,13 @@ impl From<Axis2> for HeadingRegion {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct AreaStyle {
     pub cell_style: CellStyle,
     pub font_style: FontStyle,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct CellStyle {
     /// `None` means "mixed" alignment: align strings to the left, numbers to
     /// the right.
@@ -865,7 +986,8 @@ pub struct CellStyle {
     pub margins: EnumMap<Axis2, [i32; 2]>,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum HorzAlign {
     /// Right aligned.
     Right,
@@ -895,7 +1017,8 @@ impl HorzAlign {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum VertAlign {
     /// Top alignment.
     Top,
@@ -907,7 +1030,7 @@ pub enum VertAlign {
     Bottom,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct FontStyle {
     pub bold: bool,
     pub italic: bool,
@@ -1001,6 +1124,17 @@ impl FromStr for Color {
     }
 }
 
+impl Serialize for Color {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = SmallString::<[u8; 32]>::new();
+        write!(&mut s, "{}", self.display_css()).unwrap();
+        serializer.serialize_str(&s)
+    }
+}
+
 impl<'de> Deserialize<'de> for Color {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -1048,6 +1182,18 @@ pub struct BorderStyle {
     pub color: Color,
 }
 
+impl Serialize for BorderStyle {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = serializer.serialize_struct("BorderStyle", 2)?;
+        s.serialize_field("stroke", &self.stroke)?;
+        s.serialize_field("color", &self.color)?;
+        s.end()
+    }
+}
+
 impl BorderStyle {
     pub const fn none() -> Self {
         Self {
@@ -1071,7 +1217,7 @@ impl BorderStyle {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Enum, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Enum, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Stroke {
     None,
@@ -1096,7 +1242,8 @@ impl Stroke {
 }
 
 /// An axis of a 2-dimensional table.
-#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Enum, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Axis2 {
     X,
     Y,
@@ -1105,6 +1252,19 @@ pub enum Axis2 {
 impl Axis2 {
     pub fn new_enum<T>(x: T, y: T) -> EnumMap<Axis2, T> {
         EnumMap::from_array([x, y])
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Axis2::X => "x",
+            Axis2::Y => "y",
+        }
+    }
+}
+
+impl Display for Axis2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 
@@ -1237,7 +1397,7 @@ impl IndexMut<Axis2> for Rect2 {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, Deserialize, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum FootnoteMarkerType {
     /// a, b, c, ...
@@ -1248,7 +1408,7 @@ pub enum FootnoteMarkerType {
     Numeric,
 }
 
-#[derive(Copy, Clone, Debug, Default, Deserialize, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum FootnoteMarkerPosition {
     /// Subscripts.
@@ -1310,7 +1470,7 @@ impl IntoValueOptions for ValueOptions {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct PivotTable {
     pub look: Arc<Look>,
 
@@ -1373,20 +1533,20 @@ impl PivotTable {
         self
     }
 
-    pub fn with_caption(mut self, caption: Value) -> Self {
-        self.caption = Some(Box::new(caption));
+    pub fn with_caption(mut self, caption: impl Into<Value>) -> Self {
+        self.caption = Some(Box::new(caption.into()));
         self.show_caption = true;
         self
     }
 
-    pub fn with_corner_text(mut self, corner_text: Value) -> Self {
-        self.corner_text = Some(Box::new(corner_text));
+    pub fn with_corner_text(mut self, corner_text: impl Into<Value>) -> Self {
+        self.corner_text = Some(Box::new(corner_text.into()));
         self
     }
 
-    pub fn with_subtype(self, subtype: Value) -> Self {
+    pub fn with_subtype(self, subtype: impl Into<Value>) -> Self {
         Self {
-            subtype: Some(Box::new(subtype)),
+            subtype: Some(Box::new(subtype.into())),
             ..self
         }
     }
@@ -1515,10 +1675,10 @@ where
 }
 
 impl PivotTable {
-    pub fn new(dimensions_and_axes: impl IntoIterator<Item = (Axis3, Dimension)>) -> Self {
+    pub fn new(axes_and_dimensions: impl IntoIterator<Item = (Axis3, Dimension)>) -> Self {
         let mut dimensions = Vec::new();
         let mut axes = EnumMap::<Axis3, Axis>::default();
-        for (axis, dimension) in dimensions_and_axes {
+        for (axis, dimension) in axes_and_dimensions {
             axes[axis].dimensions.push(dimensions.len());
             dimensions.push(dimension);
         }
@@ -1665,8 +1825,9 @@ where
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Footnote {
+    #[serde(skip)]
     index: usize,
     pub content: Box<Value>,
     pub marker: Option<Box<Value>>,
@@ -1725,23 +1886,42 @@ impl Display for DisplayMarker<'_> {
         } else {
             let i = self.footnote.index + 1;
             match self.options.footnote_marker_type {
-                FootnoteMarkerType::Alphabetic => write!(f, "{}", Display26Adic(i)),
+                FootnoteMarkerType::Alphabetic => write!(f, "{}", Display26Adic::new_lowercase(i)),
                 FootnoteMarkerType::Numeric => write!(f, "{i}"),
             }
         }
     }
 }
 
-pub struct Display26Adic(pub usize);
+/// Displays a number in 26adic notation.
+///
+/// Zero is displayed as the empty string, 1 through 26 as `a` through `z`, 27
+/// through 52 as `aa` through `az`, and so on.
+pub struct Display26Adic {
+    value: usize,
+    base: u8,
+}
+
+impl Display26Adic {
+    /// Constructs a `Display26Adic` for `value`, with letters in lowercase.
+    pub fn new_lowercase(value: usize) -> Self {
+        Self { value, base: b'a' }
+    }
+
+    /// Constructs a `Display26Adic` for `value`, with letters in uppercase.
+    pub fn new_uppercase(value: usize) -> Self {
+        Self { value, base: b'A' }
+    }
+}
 
 impl Display for Display26Adic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut output = SmallVec::<[u8; 16]>::new();
-        let mut number = self.0;
+        let mut number = self.value;
         while number > 0 {
             number -= 1;
             let digit = (number % 26) as u8;
-            output.push(digit + b'a');
+            output.push(digit + self.base);
             number /= 26;
         }
         output.reverse();
@@ -1794,7 +1974,34 @@ pub struct Value {
     pub styling: Option<Box<ValueStyle>>,
 }
 
+impl Serialize for Value {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.inner.serialize(serializer)
+    }
+}
+
+/// Wrapper for [Value] that uses [Value::serialize_bare] for serialization.
+#[derive(Serialize)]
+struct BareValue<'a>(#[serde(serialize_with = "Value::serialize_bare")] pub &'a Value);
+
 impl Value {
+    pub fn serialize_bare<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match &self.inner {
+            ValueInner::Number(number_value) => number_value.serialize_bare(serializer),
+            ValueInner::String(string_value) => string_value.s.serialize(serializer),
+            ValueInner::Variable(variable_value) => variable_value.var_name.serialize(serializer),
+            ValueInner::Text(text_value) => text_value.localized.serialize(serializer),
+            ValueInner::Template(template_value) => template_value.localized.serialize(serializer),
+            ValueInner::Empty => serializer.serialize_none(),
+        }
+    }
+
     fn new(inner: ValueInner) -> Self {
         Self {
             inner,
@@ -1807,7 +2014,7 @@ impl Value {
             format,
             honor_small: false,
             value: x,
-            var_name: None,
+            variable: None,
             value_label: None,
         }))
     }
@@ -1818,13 +2025,16 @@ impl Value {
             variable_label: variable.label.clone(),
         }))
     }
-    pub fn new_datum(value: &Datum, encoding: &'static Encoding) -> Self {
+    pub fn new_datum<B>(value: &Datum<B>) -> Self
+    where
+        B: EncodedString,
+    {
         match value {
             Datum::Number(number) => Self::new_number(*number),
-            Datum::String(string) => Self::new_user_text(string.decode(encoding).into_owned()),
+            Datum::String(string) => Self::new_user_text(string.as_str()),
         }
     }
-    pub fn new_variable_value(variable: &Variable, value: &Datum) -> Self {
+    pub fn new_variable_value(variable: &Variable, value: &Datum<ByteString>) -> Self {
         let var_name = Some(variable.name.as_str().into());
         let value_label = variable.value_labels.get(value).map(String::from);
         match value {
@@ -1842,13 +2052,16 @@ impl Value {
                 },
                 honor_small: false,
                 value: *number,
-                var_name,
+                variable: var_name,
                 value_label,
             })),
             Datum::String(string) => Self::new(ValueInner::String(StringValue {
                 show: None,
                 hex: variable.print_format.type_() == Type::AHex,
-                s: string.decode(variable.encoding).into_owned(),
+                s: string
+                    .as_ref()
+                    .with_encoding(variable.encoding())
+                    .into_string(),
                 var_name,
                 value_label,
             })),
@@ -1870,9 +2083,9 @@ impl Value {
         } else {
             Self::new(ValueInner::Text(TextValue {
                 user_provided: true,
-                local: s.clone(),
-                c: s.clone(),
-                id: s.clone(),
+                localized: s.clone(),
+                c: None,
+                id: None,
             }))
         }
     }
@@ -2164,7 +2377,12 @@ impl Display for DisplayValue<'_> {
                         *format
                     };
                     let mut buf = SmallString::<[u8; 40]>::new();
-                    write!(&mut buf, "{}", Datum::Number(*value).display(format, UTF_8)).unwrap();
+                    write!(
+                        &mut buf,
+                        "{}",
+                        Datum::<&str>::Number(*value).display(format)
+                    )
+                    .unwrap();
                     write!(f, "{}", buf.trim_start_matches(' '))?;
                 }
                 if let Some(label) = self.show_label {
@@ -2186,7 +2404,9 @@ impl Display for DisplayValue<'_> {
                 }
             }
 
-            ValueInner::Text(TextValue { local, .. }) => {
+            ValueInner::Text(TextValue {
+                localized: local, ..
+            }) => {
                 /*
                 if self
                     .inner
@@ -2199,9 +2419,11 @@ impl Display for DisplayValue<'_> {
                 f.write_str(local)
             }
 
-            ValueInner::Template(TemplateValue { args, local, .. }) => {
-                self.template(f, local, args)
-            }
+            ValueInner::Template(TemplateValue {
+                args,
+                localized: local,
+                ..
+            }) => self.template(f, local, args),
 
             ValueInner::Empty => Ok(()),
         }?;
@@ -2239,27 +2461,83 @@ impl Debug for Value {
 
 #[derive(Clone, Debug)]
 pub struct NumberValue {
-    pub show: Option<Show>,
-    pub format: Format,
-    pub honor_small: bool,
+    /// The numerical value, or `None` if it is a missing value.
     pub value: Option<f64>,
-    pub var_name: Option<String>,
+    pub format: Format,
+    pub show: Option<Show>,
+    pub honor_small: bool,
+    pub variable: Option<String>,
     pub value_label: Option<String>,
 }
 
-#[derive(Clone, Debug)]
-pub struct StringValue {
-    pub show: Option<Show>,
-    pub hex: bool,
+impl Serialize for NumberValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if self.format.type_() == Type::F && self.variable.is_none() && self.value_label.is_none() {
+            self.value.serialize(serializer)
+        } else {
+            let mut s = serializer.serialize_map(None)?;
+            s.serialize_entry("value", &self.value)?;
+            s.serialize_entry("format", &self.format)?;
+            if let Some(show) = self.show {
+                s.serialize_entry("show", &show)?;
+            }
+            if self.honor_small {
+                s.serialize_entry("honor_small", &self.honor_small)?;
+            }
+            if let Some(variable) = &self.variable {
+                s.serialize_entry("variable", variable)?;
+            }
+            if let Some(value_label) = &self.value_label {
+                s.serialize_entry("value_label", value_label)?;
+            }
+            s.end()
+        }
+    }
+}
 
-    /// If `hex` is true, this string should already be hex digits
+impl NumberValue {
+    pub fn serialize_bare<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(number) = self.value
+            && number.trunc() == number
+            && number >= -(1i64 << 53) as f64
+            && number <= (1i64 << 53) as f64
+        {
+            (number as u64).serialize(serializer)
+        } else {
+            self.value.serialize(serializer)
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct BareNumberValue<'a>(
+    #[serde(serialize_with = "NumberValue::serialize_bare")] pub &'a NumberValue,
+);
+
+#[derive(Clone, Debug, Serialize)]
+pub struct StringValue {
+    /// The string value.
+    ///
+    /// If `hex` is true, this should contain hex digits, not raw binary data
     /// (otherwise it would be impossible to encode non-UTF-8 data).
     pub s: String,
+
+    /// True if `s` is hex digits.
+    pub hex: bool,
+
+    pub show: Option<Show>,
+
     pub var_name: Option<String>,
     pub value_label: Option<String>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VariableValue {
     pub show: Option<Show>,
     pub var_name: String,
@@ -2270,21 +2548,59 @@ pub struct VariableValue {
 pub struct TextValue {
     pub user_provided: bool,
     /// Localized.
-    pub local: String,
+    pub localized: String,
     /// English.
-    pub c: String,
+    pub c: Option<String>,
     /// Identifier.
-    pub id: String,
+    pub id: Option<String>,
 }
 
-#[derive(Clone, Debug)]
+impl Serialize for TextValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if self.user_provided && self.c.is_none() && self.id.is_none() {
+            serializer.serialize_str(&self.localized)
+        } else {
+            let mut s = serializer.serialize_struct(
+                "TextValue",
+                2 + self.c.is_some() as usize + self.id.is_some() as usize,
+            )?;
+            s.serialize_field("user_provided", &self.user_provided)?;
+            s.serialize_field("localized", &self.localized)?;
+            if let Some(c) = &self.c {
+                s.serialize_field("c", &c)?;
+            }
+            if let Some(id) = &self.id {
+                s.serialize_field("id", &id)?;
+            }
+            s.end()
+        }
+    }
+}
+
+impl TextValue {
+    pub fn localized(&self) -> &str {
+        self.localized.as_str()
+    }
+    pub fn c(&self) -> &str {
+        self.c.as_ref().unwrap_or(&self.localized).as_str()
+    }
+    pub fn id(&self) -> &str {
+        self.id.as_ref().unwrap_or(&self.localized).as_str()
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
 pub struct TemplateValue {
     pub args: Vec<Vec<Value>>,
-    pub local: String,
+    pub localized: String,
     pub id: String,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ValueInner {
     Number(NumberValue),
     String(StringValue),
@@ -2377,5 +2693,168 @@ impl ValueInner {
             show_value,
             show_label,
         }
+    }
+}
+
+pub struct MetadataEntry {
+    pub name: Value,
+    pub value: MetadataValue,
+}
+
+pub enum MetadataValue {
+    Leaf(Value),
+    Group(Vec<MetadataEntry>),
+}
+
+impl MetadataEntry {
+    pub fn into_pivot_table(self) -> PivotTable {
+        let mut data = Vec::new();
+        let group = match self.visit(&mut data) {
+            Category::Group(group) => group,
+            Category::Leaf(leaf) => Group::new("Metadata").with(leaf).with_label_shown(),
+        };
+        PivotTable::new([(Axis3::Y, Dimension::new(group))]).with_data(
+            data.into_iter()
+                .enumerate()
+                .filter(|(_row, value)| !value.is_empty())
+                .map(|(row, value)| ([row], value)),
+        )
+    }
+    fn visit(self, data: &mut Vec<Value>) -> Category {
+        match self.value {
+            MetadataValue::Leaf(value) => {
+                data.push(value);
+                Leaf::new(self.name).into()
+            }
+            MetadataValue::Group(items) => Group::with_capacity(self.name, items.len())
+                .with_multiple(items.into_iter().map(|item| item.visit(data)))
+                .into(),
+        }
+    }
+}
+
+impl Serialize for MetadataValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            MetadataValue::Leaf(value) => value.serialize_bare(serializer),
+            MetadataValue::Group(items) => {
+                let mut map = serializer.serialize_map(Some(items.len()))?;
+                for item in items {
+                    let name = item.name.display(()).to_string();
+                    map.serialize_entry(&name, &item.value)?;
+                }
+                map.end()
+            }
+        }
+    }
+}
+impl Serialize for MetadataEntry {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match &self.value {
+            MetadataValue::Leaf(value) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                let name = self.name.display(()).to_string();
+                map.serialize_entry(&name, &BareValue(&value))?;
+                map.end()
+            }
+            MetadataValue::Group(items) => {
+                let mut map = serializer.serialize_map(Some(items.len()))?;
+                for item in items {
+                    let name = item.name.display(()).to_string();
+                    map.serialize_entry(&name, &item.value)?;
+                }
+                map.end()
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::output::pivot::{Display26Adic, MetadataEntry, MetadataValue, Value};
+
+    #[test]
+    fn display_26adic() {
+        for (number, lowercase, uppercase) in [
+            (0, "", ""),
+            (1, "a", "A"),
+            (2, "b", "B"),
+            (26, "z", "Z"),
+            (27, "aa", "AA"),
+            (28, "ab", "AB"),
+            (29, "ac", "AC"),
+            (18278, "zzz", "ZZZ"),
+            (18279, "aaaa", "AAAA"),
+            (19010, "abcd", "ABCD"),
+        ] {
+            assert_eq!(Display26Adic::new_lowercase(number).to_string(), lowercase);
+            assert_eq!(Display26Adic::new_uppercase(number).to_string(), uppercase);
+        }
+    }
+
+    #[test]
+    fn metadata_entry() {
+        let tree = MetadataEntry {
+            name: Value::from("Group"),
+            value: MetadataValue::Group(vec![
+                MetadataEntry {
+                    name: Value::from("Name 1"),
+                    value: MetadataValue::Leaf(Value::from("Value 1")),
+                },
+                MetadataEntry {
+                    name: Value::from("Subgroup 1"),
+                    value: MetadataValue::Group(vec![
+                        MetadataEntry {
+                            name: Value::from("Subname 1"),
+                            value: MetadataValue::Leaf(Value::from("Subvalue 1")),
+                        },
+                        MetadataEntry {
+                            name: Value::from("Subname 2"),
+                            value: MetadataValue::Leaf(Value::from("Subvalue 2")),
+                        },
+                        MetadataEntry {
+                            name: Value::from("Subname 3"),
+                            value: MetadataValue::Leaf(Value::new_integer(Some(3.0))),
+                        },
+                    ]),
+                },
+                MetadataEntry {
+                    name: Value::from("Name 2"),
+                    value: MetadataValue::Leaf(Value::from("Value 2")),
+                },
+            ]),
+        };
+        assert_eq!(
+            serde_json::to_string_pretty(&tree).unwrap(),
+            r#"{
+  "Name 1": "Value 1",
+  "Subgroup 1": {
+    "Subname 1": "Subvalue 1",
+    "Subname 2": "Subvalue 2",
+    "Subname 3": 3
+  },
+  "Name 2": "Value 2"
+}"#
+        );
+
+        assert_eq!(
+            tree.into_pivot_table().to_string(),
+            r#"╭────────────────────┬──────────╮
+│           Name 1   │Value 1   │
+├────────────────────┼──────────┤
+│Subgroup 1 Subname 1│Subvalue 1│
+│           Subname 2│Subvalue 2│
+│           Subname 3│         3│
+├────────────────────┼──────────┤
+│           Name 2   │Value 2   │
+╰────────────────────┴──────────╯
+"#
+        );
     }
 }

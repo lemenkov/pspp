@@ -13,6 +13,7 @@ File weight variable index 3 is invalid because it exceeds maximum variable inde
 │Variables│2│
 ╰─────────┴─╯
 
+                                               Variables
 ╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

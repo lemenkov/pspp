@@ -14,11 +14,16 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{borrow::Cow, path::Path, sync::Arc};
+use std::{
+    borrow::Cow,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use cairo::{Context, PdfSurface};
 use enum_map::{enum_map, EnumMap};
 use pango::SCALE;
+use serde::{Deserialize, Serialize};
 
 use crate::output::{
     cairo::{
@@ -26,12 +31,30 @@ use crate::output::{
         pager::{CairoPageStyle, CairoPager},
     },
     driver::Driver,
-    page::Setup,
+    page::PageSetup,
     pivot::{Color, Coord2, FontStyle},
     Item,
 };
 
 use crate::output::pivot::Axis2;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CairoConfig {
+    /// Output file name.
+    pub file: PathBuf,
+
+    /// Page setup.
+    pub page_setup: Option<PageSetup>,
+}
+
+impl CairoConfig {
+    pub fn new(path: impl AsRef<Path>) -> Self {
+        Self {
+            file: path.as_ref().to_path_buf(),
+            page_setup: None,
+        }
+    }
+}
 
 pub struct CairoDriver {
     fsm_style: Arc<CairoFsmStyle>,
@@ -41,12 +64,19 @@ pub struct CairoDriver {
 }
 
 impl CairoDriver {
-    pub fn new(path: impl AsRef<Path>) -> CairoDriver {
+    pub fn new(config: &CairoConfig) -> cairo::Result<Self> {
         fn scale(inches: f64) -> usize {
             (inches * 72.0 * SCALE as f64).max(0.0).round() as usize
         }
 
-        let page_setup = Setup::default();
+        let default_page_setup;
+        let page_setup = match &config.page_setup {
+            Some(page_setup) => page_setup,
+            None => {
+                default_page_setup = PageSetup::default();
+                &default_page_setup
+            }
+        };
         let printable = page_setup.printable_size();
         let page_style = CairoPageStyle {
             margins: EnumMap::from_fn(|axis| {
@@ -85,15 +115,14 @@ impl CairoDriver {
         let surface = PdfSurface::new(
             page_setup.paper[Axis2::X] * 72.0,
             page_setup.paper[Axis2::Y] * 72.0,
-            path,
-        )
-        .unwrap();
-        Self {
+            &config.file,
+        )?;
+        Ok(Self {
             fsm_style: Arc::new(fsm_style),
             page_style: Arc::new(page_style),
             pager: None,
             surface,
-        }
+        })
     }
 }
 

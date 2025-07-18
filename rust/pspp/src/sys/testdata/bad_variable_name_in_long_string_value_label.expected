@@ -15,6 +15,7 @@ Ignoring long string value label for numeric variable NUM1.
 │Variables│2│
 ╰─────────┴─╯
 
+                                               Variables
 ╭─────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │     │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├─────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
@@ -22,6 +23,7 @@ Ignoring long string value label for numeric variable NUM1.
 │str14│       2│     │Nominal          │Input│   14│Left     │A14         │A14         │              │
 ╰─────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
+                              Value Labels
 ╭─────────────────────────────┬────────────────────────────────────────╮
 │Variable Value               │                                        │
 ├─────────────────────────────┼────────────────────────────────────────┤

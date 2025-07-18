@@ -19,9 +19,9 @@ use std::{fmt::Display, fs::File, path::Path, sync::Arc};
 use enum_map::EnumMap;
 
 use crate::output::{
-    cairo::CairoDriver,
+    cairo::{CairoConfig, CairoDriver},
     driver::Driver,
-    html::HtmlRenderer,
+    html::HtmlDriver,
     pivot::{
         Area, Axis2, Border, BorderStyle, Class, Color, Dimension, Footnote,
         FootnoteMarkerPosition, FootnoteMarkerType, Footnotes, Group, HeadingRegion, LabelPosition,
@@ -175,18 +175,18 @@ pub fn assert_rendering(name: &str, pivot_table: &PivotTable, expected: &str) {
     let item = Arc::new(Item::new(Details::Table(Box::new(pivot_table.clone()))));
     if let Some(dir) = std::env::var_os("PSPP_TEST_HTML_DIR") {
         let writer = File::create(Path::new(&dir).join(name).with_extension("html")).unwrap();
-        HtmlRenderer::new(writer).write(&item);
+        HtmlDriver::for_writer(writer).write(&item);
     }
 
     let item = Arc::new(Item::new(Details::Table(Box::new(pivot_table.clone()))));
     if let Some(dir) = std::env::var_os("PSPP_TEST_PDF_DIR") {
-        let path = Path::new(&dir).join(name).with_extension("pdf");
-        CairoDriver::new(path).write(&item);
+        let config = CairoConfig::new(Path::new(&dir).join(name).with_extension("pdf"));
+        CairoDriver::new(&config).unwrap().write(&item);
     }
 
     if let Some(dir) = std::env::var_os("PSPP_TEST_SPV_DIR") {
         let writer = File::create(Path::new(&dir).join(name).with_extension("spv")).unwrap();
-        SpvDriver::new(writer).write(&item);
+        SpvDriver::for_writer(writer).write(&item);
     }
 }
 

@@ -1,1 +1,1 @@
-Error at file offsets 0x1ac to 0x1c4: Block count 1 in ZLIB trailer differs from expected block count 2 calculated from trailer length 72.
+Error at file offsets 0x1ac to 0x1c4: Error reading ZLIB trailer: Block count 1 differs from expected block count 2 calculated from trailer length 72.

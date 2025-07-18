@@ -27,6 +27,7 @@ Substituting A4 for invalid write format on variable STR2.  String variable with
 │Variables│4│
 ╰─────────┴─╯
 
+                                               Variables
 ╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

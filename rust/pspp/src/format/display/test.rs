@@ -16,24 +16,21 @@
 
 use std::{fmt::Write, fs::File, io::BufRead, path::Path};
 
-use binrw::io::BufReader;
+use binrw::{io::BufReader, Endian};
 use encoding_rs::UTF_8;
 use itertools::Itertools;
 use smallstr::SmallString;
 use smallvec::SmallVec;
 
 use crate::{
-    data::Datum,
-    endian::Endian,
+    data::{ByteString, Datum, WithEncoding},
     format::{AbstractFormat, Epoch, Format, Settings, Type, UncheckedFormat, CC},
     lex::{scan::StringScanner, segment::Syntax, Punct, Token},
     settings::EndianSettings,
 };
 
 fn test(name: &str) {
-    let filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/format/testdata/display")
-        .join(name);
+    let filename = Path::new("src/format/testdata/display").join(name);
     let input = BufReader::new(File::open(&filename).unwrap());
     let settings = Settings::default()
         .with_cc(CC::A, ",,,".parse().unwrap())
@@ -75,8 +72,8 @@ fn test(name: &str) {
                 let format: Format = format.try_into().unwrap();
                 assert_eq!(tokens.get(1), Some(&Token::Punct(Punct::Colon)));
                 let expected = tokens[2].as_string().unwrap();
-                let actual = Datum::Number(value)
-                    .display(format, UTF_8)
+                let actual = Datum::<WithEncoding<ByteString>>::Number(value)
+                    .display(format)
                     .with_settings(&settings)
                     .with_endian(endian)
                     .to_string();
@@ -183,11 +180,11 @@ fn leading_zeros() {
         }
 
         fn test_with_settings(value: f64, expected: [&str; 2], settings: &Settings) {
-            let value = Datum::from(value);
+            let value = Datum::<WithEncoding<ByteString>>::from(value);
             for (expected, d) in expected.into_iter().zip([2, 1].into_iter()) {
                 assert_eq!(
                     &value
-                        .display(Format::new(Type::F, 5, d).unwrap(), UTF_8)
+                        .display(Format::new(Type::F, 5, d).unwrap())
                         .with_settings(settings)
                         .to_string(),
                     expected
@@ -214,8 +211,8 @@ fn leading_zeros() {
 fn non_ascii_cc() {
     fn test(settings: &Settings, value: f64, expected: &str) {
         assert_eq!(
-            &Datum::from(value)
-                .display(Format::new(Type::CC(CC::A), 10, 2).unwrap(), UTF_8)
+            &Datum::<WithEncoding<ByteString>>::from(value)
+                .display(Format::new(Type::CC(CC::A), 10, 2).unwrap())
                 .with_settings(settings)
                 .to_string(),
             expected
@@ -233,9 +230,7 @@ fn non_ascii_cc() {
 }
 
 fn test_binhex(name: &str) {
-    let filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/format/testdata/display")
-        .join(name);
+    let filename = Path::new("src/format/testdata/display").join(name);
     let input = BufReader::new(File::open(&filename).unwrap());
     let mut value = None;
     let mut value_name = String::new();
@@ -266,8 +261,8 @@ fn test_binhex(name: &str) {
                 assert_eq!(tokens.get(1), Some(&Token::Punct(Punct::Colon)));
                 let expected = tokens[2].as_string().unwrap();
                 let mut actual = SmallVec::<[u8; 16]>::new();
-                Datum::Number(value)
-                    .display(format, UTF_8)
+                Datum::<WithEncoding<ByteString>>::Number(value)
+                    .display(format)
                     .with_endian(endian)
                     .write(&mut actual, UTF_8)
                     .unwrap();
@@ -339,11 +334,8 @@ fn test_dates(format: Format, expect: &[&str]) {
     ];
     assert_eq!(expect.len(), INPUTS.len());
     for (input, expect) in INPUTS.iter().copied().zip_eq(expect.iter().copied()) {
-        let value = parser.parse(input).unwrap();
-        let formatted = value
-            .display(format, UTF_8)
-            .with_settings(&settings)
-            .to_string();
+        let value = parser.parse(input).unwrap().with_encoding(UTF_8);
+        let formatted = value.display(format).with_settings(&settings).to_string();
         assert_eq!(&formatted, expect);
     }
 }
@@ -1281,7 +1273,7 @@ fn ymdhms25_5() {
 }
 
 fn test_times(format: Format, name: &str) {
-    let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/format/testdata/display");
+    let directory = Path::new("src/format/testdata/display");
     let input_filename = directory.join("time-input.txt");
     let input = BufReader::new(File::open(&input_filename).unwrap());
 
@@ -1295,8 +1287,12 @@ fn test_times(format: Format, name: &str) {
         .zip_eq(output.lines().map(|r| r.unwrap()))
         .zip(1..)
     {
-        let value = parser.parse(&input).unwrap();
-        let formatted = value.display(format, UTF_8).to_string();
+        let formatted = parser
+            .parse(input)
+            .unwrap()
+            .with_encoding(UTF_8)
+            .display(format)
+            .to_string();
         assert!(
                 formatted == expect,
                 "formatting {}:{line_number} as {format}:\n  actual: {formatted:?}\nexpected: {expect:?}",

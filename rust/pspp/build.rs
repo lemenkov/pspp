@@ -188,6 +188,20 @@ fn main() -> AnyResult<()> {
     }
     process_converter(&converter, &mut codepages);
 
+    for (codepage, source, name) in [
+        (20932, Source::Codepage, "EUC-JP"),
+        (50220, Source::Codepage, "ISO-2022-JP"),
+        (28600, Source::Windows, "ISO-8859-10"),
+        (28604, Source::Windows, "ISO-8859-14"),
+        (28606, Source::Windows, "ISO-8859-16"),
+        (99998, Source::Codepage, "replacement"),
+        (99999, Source::Codepage, "x-user-defined"),
+    ] {
+        assert!(codepages
+            .insert(codepage, [(source, vec![name])].into_iter().collect())
+            .is_none());
+    }
+
     let output_file_name = Path::new(&var_os("OUT_DIR").unwrap()).join("encodings.rs");
 
     write_output(&codepages, &output_file_name)

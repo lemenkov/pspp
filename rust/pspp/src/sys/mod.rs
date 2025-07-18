@@ -22,12 +22,14 @@
 //! facilitate interchange between even the oldest and newest versions of
 //! software.
 //!
-//! To read a system file in the simplest way, use [ReaderOptions].
+//! Use [ReadOptions] to read a system file in the simplest way.
+//! Use [WriteOptions] to write a system file.
 
 // Warn about missing docs, but not for items declared with `#[cfg(test)]`.
 #![cfg_attr(not(test), warn(missing_docs))]
 
 mod cooked;
+use binrw::Endian;
 pub use cooked::*;
 pub mod encoding;
 pub mod raw;
@@ -35,5 +37,19 @@ pub mod raw;
 #[cfg(test)]
 pub mod sack;
 
+mod write;
+use serde::Serializer;
+pub use write::{SystemFileVersion, WriteOptions, Writer};
+
 #[cfg(test)]
 mod test;
+
+fn serialize_endian<S>(endian: &Endian, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match endian {
+        Endian::Big => serializer.serialize_unit_variant("Endian", 0, "Big"),
+        Endian::Little => serializer.serialize_unit_variant("Endian", 1, "Little"),
+    }
+}

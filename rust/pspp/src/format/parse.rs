@@ -16,11 +16,12 @@
 
 use crate::{
     calendar::{calendar_gregorian_to_offset, DateError},
-    data::{Datum, EncodedStr, EncodedString},
-    endian::{Endian, Parse},
+    data::{ByteString, Datum, EncodedString, OwnedDatum, RawString, WithEncoding},
+    endian::FromBytes,
     format::{DateTemplate, Decimals, Settings, TemplateItem, Type},
     settings::{EndianSettings, Settings as PsppSettings},
 };
+use binrw::Endian;
 use encoding_rs::Encoding;
 use smallstr::SmallString;
 use std::{
@@ -32,7 +33,7 @@ use thiserror::Error as ThisError;
 #[derive(Clone, Debug)]
 pub struct ParseError {
     type_: Type,
-    input: EncodedString,
+    input: WithEncoding<ByteString>,
     kind: ParseErrorKind,
 }
 
@@ -43,7 +44,7 @@ impl Display for ParseError {
         write!(
             f,
             "{} cannot be parsed as {}: {}",
-            self.input.borrowed().quoted(),
+            self.input.quoted(),
             &self.type_,
             &self.kind
         )
@@ -190,13 +191,12 @@ impl<'a> ParseValue<'a> {
     /// input into UTF-8, but this will screw up parsing of binary formats,
     /// because recoding bytes from (e.g.) windows-1252 into UTF-8, and then
     /// interpreting them as a binary number yields nonsense.
-    pub fn parse<'b, T>(&self, input: T) -> Result<Datum, ParseError>
-    where
-        T: Into<EncodedStr<'b>>,
-    {
-        let input: EncodedStr = input.into();
+    pub fn parse(&self, input: impl EncodedString) -> Result<OwnedDatum, ParseError> {
         if input.is_empty() {
-            return Ok(self.type_.default_value());
+            return Ok(self
+                .type_
+                .default_value()
+                .with_encoding(self.output_encoding));
         }
         match self.type_ {
             Type::F | Type::Comma | Type::Dot | Type::Dollar | Type::Pct | Type::E => {
@@ -222,24 +222,24 @@ impl<'a> ParseValue<'a> {
             | Type::DTime => self.parse_date(&input.as_str()),
             Type::WkDay => self.parse_wkday(&input.as_str()),
             Type::Month => self.parse_month(&input.as_str()),
-            Type::P => self.parse_p(input.as_bytes()),
-            Type::PK => self.parse_pk(input.as_bytes()),
-            Type::IB => self.parse_ib(input.as_bytes()),
-            Type::PIB => self.parse_pib(input.as_bytes()),
-            Type::RB => self.parse_rb(input.as_bytes()),
+            Type::P => self.parse_p(input.raw_string_bytes()),
+            Type::PK => self.parse_pk(input.raw_string_bytes()),
+            Type::IB => self.parse_ib(input.raw_string_bytes()),
+            Type::PIB => self.parse_pib(input.raw_string_bytes()),
+            Type::RB => self.parse_rb(input.raw_string_bytes()),
             Type::A => Ok(Datum::String(
-                input.to_encoding(self.output_encoding).into(),
+                input.to_encoding(self.output_encoding).into_owned(),
             )),
             Type::AHex => self.parse_ahex(&input.as_str()),
         }
         .map_err(|kind| ParseError {
             type_: self.type_,
-            input: input.into(),
+            input: input.cloned(),
             kind,
         })
     }
 
-    fn parse_number(&self, input: &str, type_: Type) -> Result<Datum, ParseErrorKind> {
+    fn parse_number(&self, input: &str, type_: Type) -> Result<OwnedDatum, ParseErrorKind> {
         let style = self.settings.number_style(type_);
 
         let input = input.trim();
@@ -312,14 +312,14 @@ impl<'a> ParseValue<'a> {
         }
     }
 
-    fn parse_n(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_n(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         match input.chars().find(|c| !c.is_ascii_digit()) {
             None => Ok(Datum::Number(Some(input.parse().unwrap()))),
             Some(nondigit) => Err(ParseErrorKind::Nondigit(nondigit)),
         }
     }
 
-    fn parse_z(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_z(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         let input = input.trim();
         if input.is_empty() || input == "." {
             return Ok(Datum::sysmis());
@@ -396,12 +396,12 @@ impl<'a> ParseValue<'a> {
         }
     }
 
-    fn parse_pk(&self, input: &[u8]) -> Result<Datum, ParseErrorKind> {
+    fn parse_pk(&self, input: &[u8]) -> Result<OwnedDatum, ParseErrorKind> {
         let number = Self::parse_bcd(input)?;
         Ok(Datum::Number(Some(self.apply_decimals(number as f64))))
     }
 
-    fn parse_p(&self, input: &[u8]) -> Result<Datum, ParseErrorKind> {
+    fn parse_p(&self, input: &[u8]) -> Result<OwnedDatum, ParseErrorKind> {
         if input.is_empty() {
             return Ok(Datum::Number(None));
         };
@@ -423,7 +423,7 @@ impl<'a> ParseValue<'a> {
         }
     }
 
-    fn parse_ib(&self, input: &[u8]) -> Result<Datum, ParseErrorKind> {
+    fn parse_ib(&self, input: &[u8]) -> Result<OwnedDatum, ParseErrorKind> {
         let number = self.parse_binary(input);
         let sign_bit = 1 << (input.len() * 8 - 1);
         let number = if (number & sign_bit) == 0 {
@@ -434,12 +434,12 @@ impl<'a> ParseValue<'a> {
         Ok(Datum::Number(Some(self.apply_decimals(number as f64))))
     }
 
-    fn parse_pib(&self, input: &[u8]) -> Result<Datum, ParseErrorKind> {
+    fn parse_pib(&self, input: &[u8]) -> Result<OwnedDatum, ParseErrorKind> {
         let number = self.parse_binary(input);
         Ok(Datum::Number(Some(self.apply_decimals(number as f64))))
     }
 
-    fn parse_rb(&self, input: &[u8]) -> Result<Datum, ParseErrorKind> {
+    fn parse_rb(&self, input: &[u8]) -> Result<OwnedDatum, ParseErrorKind> {
         let mut bytes = [0; 8];
         let len = input.len().min(8);
         bytes[..len].copy_from_slice(&input[..len]);
@@ -453,7 +453,7 @@ impl<'a> ParseValue<'a> {
         Ok(Datum::Number(number))
     }
 
-    fn parse_ahex(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_ahex(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         let mut result = Vec::with_capacity(input.len() / 2);
         let mut iter = input.chars();
         while let Some(hi) = iter.next() {
@@ -468,7 +468,9 @@ impl<'a> ParseValue<'a> {
             };
             result.push((hi * 16 + lo) as u8);
         }
-        Ok(Datum::String(result.into()))
+        Ok(Datum::String(
+            ByteString(result).with_encoding(self.output_encoding),
+        ))
     }
 
     fn parse_hex(&self, input: &str) -> Result<Option<u64>, ParseErrorKind> {
@@ -483,17 +485,17 @@ impl<'a> ParseValue<'a> {
         }
     }
 
-    fn parse_pibhex(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_pibhex(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         self.parse_hex(input)
             .map(|value| Datum::Number(value.map(|number| number as f64)))
     }
 
-    fn parse_rbhex(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_rbhex(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         self.parse_hex(input)
             .map(|value| Datum::Number(value.map(f64::from_bits)))
     }
 
-    fn parse_date(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_date(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         let mut p = StrParser(input.trim());
         if p.0.is_empty() || p.0 == "." {
             return Ok(Datum::sysmis());
@@ -609,7 +611,7 @@ impl<'a> ParseValue<'a> {
         Ok(time + seconds)
     }
 
-    fn parse_wkday(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_wkday(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         let mut p = StrParser(input.trim());
         if p.0.is_empty() || p.0 == "." {
             Ok(Datum::sysmis())
@@ -620,7 +622,7 @@ impl<'a> ParseValue<'a> {
         }
     }
 
-    fn parse_month(&self, input: &str) -> Result<Datum, ParseErrorKind> {
+    fn parse_month(&self, input: &str) -> Result<OwnedDatum, ParseErrorKind> {
         let mut p = StrParser(input.trim());
         if p.0.is_empty() || p.0 == "." {
             Ok(Datum::sysmis())
@@ -915,13 +917,13 @@ mod test {
         path::Path,
     };
 
+    use binrw::Endian;
     use encoding_rs::UTF_8;
     use rand::random;
 
     use crate::{
         calendar::{days_in_month, is_leap_year},
-        data::{Datum, EncodedStr},
-        endian::Endian,
+        data::{ByteStr, Datum, EncodedString, OwnedDatum, RawString},
         format::{
             parse::{ParseError, ParseErrorKind, Sign},
             Epoch, Format, Settings as FormatSettings, Type,
@@ -930,7 +932,7 @@ mod test {
     };
 
     fn test(name: &str, type_: Type) {
-        let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/format/testdata/parse");
+        let base = Path::new("src/format/testdata/parse");
         let input_stream = BufReader::new(File::open(base.join("num-in.txt")).unwrap());
         let expected_stream = BufReader::new(File::open(base.join(name)).unwrap());
         for ((input, expected), line_number) in input_stream
@@ -942,8 +944,8 @@ mod test {
             let result = type_.parser(UTF_8).parse(&input);
             let error = result.clone().err();
             let value = result
-                .unwrap_or(type_.default_value())
-                .display(Format::new(Type::F, 10, 4).unwrap(), UTF_8)
+                .unwrap_or(type_.default_value().with_encoding(UTF_8))
+                .display(Format::new(Type::F, 10, 4).unwrap())
                 .to_string();
             if value != expected {
                 panic!(
@@ -1229,7 +1231,7 @@ mod test {
                     .with_settings(&settings)
                     .parse(&formatted)
                     .unwrap();
-                assert_eq!(parsed, Datum::Number(Some(expected as f64)));
+                assert_eq!(parsed, OwnedDatum::Number(Some(expected as f64)));
             }
         }
 
@@ -1607,8 +1609,8 @@ mod test {
                 assert_eq!(parsed, expected);
             }
         }
-        assert_eq!(parser.parse(".").unwrap(), Datum::Number(None));
-        assert_eq!(parser.parse("",).unwrap(), Datum::Number(None));
+        assert_eq!(parser.parse(".").unwrap(), OwnedDatum::Number(None));
+        assert_eq!(parser.parse("",).unwrap(), OwnedDatum::Number(None));
     }
 
     #[test]
@@ -1635,7 +1637,7 @@ mod test {
             let parsed = Type::RB
                 .parser(UTF_8)
                 .with_endian(EndianSettings::new(Endian::Big))
-                .parse(EncodedStr::new(&raw[..], UTF_8))
+                .parse(ByteStr(raw.as_slice()).with_encoding(UTF_8))
                 .unwrap()
                 .as_number()
                 .unwrap()
@@ -1697,7 +1699,7 @@ mod test {
                 assert_eq!(parsed, number as f64, "formatted as {formatted:?}");
             }
         }
-        assert_eq!(parser.parse(".").unwrap(), Datum::Number(None));
+        assert_eq!(parser.parse(".").unwrap(), OwnedDatum::Number(None));
 
         let parser = Type::Z.parser(UTF_8).with_implied_decimals(1);
         for number in -999i32..=999 {
@@ -1732,7 +1734,6 @@ mod test {
                 .unwrap()
                 .as_string()
                 .unwrap()
-                .as_encoded(UTF_8)
                 .as_str(),
             "abcdefgh"
         );

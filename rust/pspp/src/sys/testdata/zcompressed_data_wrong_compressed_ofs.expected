@@ -1,1 +1,1 @@
-Error at file offsets 0x1c4 to 0x1dc: ZLIB block descriptor 0 reported compressed data offset 0x191, when 0x1ac was expected.
+Error at file offsets 0x1c4 to 0x1dc: Error reading ZLIB trailer: Block descriptor 0 reported compressed data offset 0x191, when 0x1ac was expected.

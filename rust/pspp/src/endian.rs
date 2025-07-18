@@ -14,28 +14,11 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use smallvec::SmallVec;
+//! Converting big- and little-endian `[u8]` arrays to and from primitive types.
 
-pub use binrw::Endian;
+use binrw::Endian;
 
-pub fn endian_to_smallvec<const N: usize>(
-    endian: Endian,
-    mut value: u64,
-    n: usize,
-) -> SmallVec<[u8; N]> {
-    debug_assert!(n <= 8);
-    let mut vec = SmallVec::new();
-    value <<= 8 * (8 - n);
-    for _ in 0..n {
-        vec.push((value >> 56) as u8);
-        value <<= 8;
-    }
-    if endian == Endian::Little {
-        vec.reverse();
-    }
-    vec
-}
-
+/// Converts a primitive type into a big- or little-endian `[u8]` array.
 pub trait ToBytes<T, const N: usize> {
     fn to_bytes(self, value: T) -> [u8; N];
 }
@@ -93,13 +76,12 @@ impl ToBytes<f64, 8> for Endian {
     }
 }
 
-/// Parses an `N`-byte array in one of the supported formats into native format
-/// as type `T`.
-pub trait Parse<T, const N: usize> {
+/// Parses a `[u8]` array as a big- or little-endian primitive type.
+pub trait FromBytes<T, const N: usize> {
     /// Given 'bytes', returns `T`.
     fn parse(self, bytes: [u8; N]) -> T;
 }
-impl Parse<u64, 8> for Endian {
+impl FromBytes<u64, 8> for Endian {
     fn parse(self, bytes: [u8; 8]) -> u64 {
         match self {
             Endian::Big => u64::from_be_bytes(bytes),
@@ -107,7 +89,7 @@ impl Parse<u64, 8> for Endian {
         }
     }
 }
-impl Parse<u32, 4> for Endian {
+impl FromBytes<u32, 4> for Endian {
     fn parse(self, bytes: [u8; 4]) -> u32 {
         match self {
             Endian::Big => u32::from_be_bytes(bytes),
@@ -115,7 +97,7 @@ impl Parse<u32, 4> for Endian {
         }
     }
 }
-impl Parse<u16, 2> for Endian {
+impl FromBytes<u16, 2> for Endian {
     fn parse(self, bytes: [u8; 2]) -> u16 {
         match self {
             Endian::Big => u16::from_be_bytes(bytes),
@@ -123,7 +105,7 @@ impl Parse<u16, 2> for Endian {
         }
     }
 }
-impl Parse<u8, 1> for Endian {
+impl FromBytes<u8, 1> for Endian {
     fn parse(self, bytes: [u8; 1]) -> u8 {
         match self {
             Endian::Big => u8::from_be_bytes(bytes),
@@ -131,7 +113,7 @@ impl Parse<u8, 1> for Endian {
         }
     }
 }
-impl Parse<i64, 8> for Endian {
+impl FromBytes<i64, 8> for Endian {
     fn parse(self, bytes: [u8; 8]) -> i64 {
         match self {
             Endian::Big => i64::from_be_bytes(bytes),
@@ -139,7 +121,7 @@ impl Parse<i64, 8> for Endian {
         }
     }
 }
-impl Parse<i32, 4> for Endian {
+impl FromBytes<i32, 4> for Endian {
     fn parse(self, bytes: [u8; 4]) -> i32 {
         match self {
             Endian::Big => i32::from_be_bytes(bytes),
@@ -147,7 +129,7 @@ impl Parse<i32, 4> for Endian {
         }
     }
 }
-impl Parse<i16, 2> for Endian {
+impl FromBytes<i16, 2> for Endian {
     fn parse(self, bytes: [u8; 2]) -> i16 {
         match self {
             Endian::Big => i16::from_be_bytes(bytes),
@@ -155,7 +137,7 @@ impl Parse<i16, 2> for Endian {
         }
     }
 }
-impl Parse<i8, 1> for Endian {
+impl FromBytes<i8, 1> for Endian {
     fn parse(self, bytes: [u8; 1]) -> i8 {
         match self {
             Endian::Big => i8::from_be_bytes(bytes),
@@ -163,7 +145,7 @@ impl Parse<i8, 1> for Endian {
         }
     }
 }
-impl Parse<f64, 8> for Endian {
+impl FromBytes<f64, 8> for Endian {
     fn parse(self, bytes: [u8; 8]) -> f64 {
         match self {
             Endian::Big => f64::from_be_bytes(bytes),
@@ -171,13 +153,13 @@ impl Parse<f64, 8> for Endian {
         }
     }
 }
-impl Parse<Option<f64>, 8> for Endian {
+impl FromBytes<Option<f64>, 8> for Endian {
     fn parse(self, bytes: [u8; 8]) -> Option<f64> {
         let number: f64 = self.parse(bytes);
         (number != -f64::MAX).then_some(number)
     }
 }
-impl Parse<f32, 4> for Endian {
+impl FromBytes<f32, 4> for Endian {
     fn parse(self, bytes: [u8; 4]) -> f32 {
         match self {
             Endian::Big => f32::from_be_bytes(bytes),
@@ -185,7 +167,7 @@ impl Parse<f32, 4> for Endian {
         }
     }
 }
-impl Parse<Option<f32>, 4> for Endian {
+impl FromBytes<Option<f32>, 4> for Endian {
     fn parse(self, bytes: [u8; 4]) -> Option<f32> {
         let number: f32 = self.parse(bytes);
         (number != -f32::MAX).then_some(number)

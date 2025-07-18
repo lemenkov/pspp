@@ -15,6 +15,7 @@ This system file does not indicate its own character encoding.  For best results
 │Variables│4│
 ╰─────────┴─╯
 
+                                                 Variables
 ╭────────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │        │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
@@ -24,6 +25,7 @@ This system file does not indicate its own character encoding.  For best results
 │VAR00004│       4│     │Nominal          │Input│    8│Left     │A1          │A1          │              │
 ╰────────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
+          Value Labels
 ╭───────────────────┬──────────╮
 │Variable Value     │          │
 ├───────────────────┼──────────┤

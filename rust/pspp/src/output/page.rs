@@ -14,29 +14,38 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::path::PathBuf;
-
 use enum_map::{enum_map, EnumMap};
+use serde::{Deserialize, Serialize};
 
 use super::pivot::{Axis2, HorzAlign};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Orientation {
     #[default]
     Portrait,
     Landscape,
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+/// Chart size.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ChartSize {
+    /// Size specified in the chart itself.
     #[default]
     AsIs,
+
+    /// Full page.
     FullHeight,
+
+    /// Half-page.
     HalfHeight,
+
+    /// Quarter-page.
     QuarterHeight,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Paragraph {
     pub markup: String,
     pub horz_align: HorzAlign,
@@ -51,10 +60,13 @@ impl Default for Paragraph {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Heading(pub Vec<Paragraph>);
 
-pub struct Setup {
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct PageSetup {
+    /// Page number of first page.
     pub initial_page_number: i32,
 
     /// Paper size in inches.
@@ -63,20 +75,20 @@ pub struct Setup {
     /// Margin width in inches.
     pub margins: EnumMap<Axis2, [f64; 2]>,
 
+    /// Portrait or landscape.
     pub orientation: Orientation,
 
     /// Space between objects, in inches.
     pub object_spacing: f64,
 
+    /// Size of charts.
     pub chart_size: ChartSize,
 
     /// Header and footer.
     pub headings: [Heading; 2],
-
-    file_name: Option<PathBuf>,
 }
 
-impl Default for Setup {
+impl Default for PageSetup {
     fn default() -> Self {
         Self {
             initial_page_number: 1,
@@ -86,12 +98,11 @@ impl Default for Setup {
             object_spacing: 12.0 / 72.0,
             chart_size: Default::default(),
             headings: Default::default(),
-            file_name: None,
         }
     }
 }
 
-impl Setup {
+impl PageSetup {
     pub fn printable_size(&self) -> EnumMap<Axis2, f64> {
         EnumMap::from_fn(|axis| self.paper[axis] - self.margins[axis][0] - self.margins[axis][1])
     }

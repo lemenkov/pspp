@@ -18,8 +18,10 @@ use core::f64;
 use std::{
     borrow::Cow,
     fmt::Write as _,
+    fs::File,
     io::{Cursor, Seek, Write},
     iter::{repeat, repeat_n},
+    path::PathBuf,
     sync::Arc,
 };
 
@@ -31,6 +33,7 @@ use quick_xml::{
     writer::Writer as XmlWriter,
     ElementWriter,
 };
+use serde::{Deserialize, Serialize};
 use smallstr::SmallString;
 use zip::{result::ZipResult, write::SimpleFileOptions, ZipWriter};
 
@@ -38,6 +41,7 @@ use crate::{
     format::{Format, Type},
     output::{
         driver::Driver,
+        page::{Heading, PageSetup},
         pivot::{
             Area, AreaStyle, Axis2, Axis3, Border, BorderStyle, BoxBorder, Category, CellStyle,
             Color, Dimension, FontStyle, Footnote, FootnoteMarkerPosition, FootnoteMarkerType,
@@ -60,6 +64,15 @@ fn output_viewer_name(heading_id: u64, is_heading: bool) -> String {
     )
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SpvConfig {
+    /// Output file name.
+    pub file: PathBuf,
+
+    /// Page setup.
+    pub page_setup: Option<PageSetup>,
+}
+
 pub struct SpvDriver<W>
 where
     W: Write + Seek,
@@ -68,13 +81,24 @@ where
     needs_page_break: bool,
     next_table_id: u64,
     next_heading_id: u64,
+    page_setup: Option<PageSetup>,
+}
+
+impl SpvDriver<File> {
+    pub fn new(config: &SpvConfig) -> std::io::Result<Self> {
+        let mut driver = Self::for_writer(File::create(&config.file)?);
+        if let Some(page_setup) = &config.page_setup {
+            driver = driver.with_page_setup(page_setup.clone());
+        }
+        Ok(driver)
+    }
 }
 
 impl<W> SpvDriver<W>
 where
     W: Write + Seek,
 {
-    pub fn new(writer: W) -> Self {
+    pub fn for_writer(writer: W) -> Self {
         let mut writer = ZipWriter::new(writer);
         writer
             .start_file("META-INF/MANIFEST.MF", SimpleFileOptions::default())
@@ -85,6 +109,14 @@ where
             needs_page_break: false,
             next_table_id: 1,
             next_heading_id: 1,
+            page_setup: None,
+        }
+    }
+
+    pub fn with_page_setup(self, page_setup: PageSetup) -> Self {
+        Self {
+            page_setup: Some(page_setup),
+            ..self
         }
     }
 
@@ -533,7 +565,9 @@ where
             .write_inner_content(|w| {
                 w.create_element("label")
                     .write_text_content(BytesText::new("Output"))?;
-                // XXX page setup
+                if let Some(page_setup) = self.page_setup.take() {
+                    write_page_setup(&page_setup, w)?;
+                }
                 self.write_item(item, w);
                 Ok(())
             })
@@ -550,6 +584,80 @@ where
             .unwrap(); // XXX
         self.writer.write_all(&headings).unwrap(); // XXX
     }
+}
+
+fn write_page_setup<X>(page_setup: &PageSetup, writer: &mut XmlWriter<X>) -> std::io::Result<()>
+where
+    X: Write,
+{
+    fn inches<'a>(x: f64) -> Cow<'a, str> {
+        Cow::from(format!("{:.2}in", x))
+    }
+
+    writer
+        .create_element("vps:pageSetup")
+        .with_attribute((
+            "initial-page-number",
+            Cow::from(format!("{}", page_setup.initial_page_number)),
+        ))
+        .with_attribute((
+            "chart-size",
+            match page_setup.chart_size {
+                super::page::ChartSize::AsIs => "as-is",
+                super::page::ChartSize::FullHeight => "full-height",
+                super::page::ChartSize::HalfHeight => "half-height",
+                super::page::ChartSize::QuarterHeight => "quarter-height",
+            },
+        ))
+        .with_attribute(("margin-left", inches(page_setup.margins[Axis2::X][0])))
+        .with_attribute(("margin-right", inches(page_setup.margins[Axis2::X][1])))
+        .with_attribute(("margin-top", inches(page_setup.margins[Axis2::Y][0])))
+        .with_attribute(("margin-bottom", inches(page_setup.margins[Axis2::Y][1])))
+        .with_attribute(("paper-height", inches(page_setup.paper[Axis2::Y])))
+        .with_attribute(("paper-width", inches(page_setup.paper[Axis2::X])))
+        .with_attribute((
+            "reference-orientation",
+            match page_setup.orientation {
+                crate::output::page::Orientation::Portrait => "portrait",
+                crate::output::page::Orientation::Landscape => "landscape",
+            },
+        ))
+        .with_attribute((
+            "space-after",
+            Cow::from(format!("{:.1}pt", page_setup.object_spacing * 72.0)),
+        ))
+        .write_inner_content(|w| {
+            write_page_heading(&page_setup.headings[0], "vps:pageHeader", w)?;
+            write_page_heading(&page_setup.headings[1], "vps:pageFooter", w)?;
+            Ok(())
+        })?;
+    Ok(())
+}
+
+fn write_page_heading<X>(
+    heading: &Heading,
+    name: &str,
+    writer: &mut XmlWriter<X>,
+) -> std::io::Result<()>
+where
+    X: Write,
+{
+    let element = writer.create_element(name);
+    if !heading.0.is_empty() {
+        element.write_inner_content(|w| {
+            w.create_element("vps:pageParagraph")
+                .write_inner_content(|w| {
+                    for paragraph in &heading.0 {
+                        w.create_element("vtx:text")
+                            .with_attribute(("text", "title"))
+                            .write_text_content(BytesText::new(&paragraph.markup))?;
+                    }
+                    Ok(())
+                })?;
+            Ok(())
+        })?;
+    }
+    Ok(())
 }
 
 fn maybe_with_attribute<'a, 'b, W, I>(
@@ -899,7 +1007,7 @@ where
     }
 }
 
-struct Zeros(usize);
+pub struct Zeros(pub usize);
 
 impl BinWrite for Zeros {
     type Args<'a> = ();
@@ -1170,13 +1278,13 @@ impl BinWrite for Value {
                     format: number.format,
                     honor_small: number.honor_small,
                 };
-                if number.var_name.is_some() || number.value_label.is_some() {
+                if number.variable.is_some() || number.value_label.is_some() {
                     (
                         2u8,
                         ValueMod::new(self),
                         format,
-                        number.value.unwrap_or(-f64::MAX),
-                        SpvString::optional(&number.var_name),
+                        number.value.unwrap_or(f64::MIN),
+                        SpvString::optional(&number.variable),
                         SpvString::optional(&number.value_label),
                         Show::as_spv(&number.show),
                     )
@@ -1186,7 +1294,7 @@ impl BinWrite for Value {
                         1u8,
                         ValueMod::new(self),
                         format,
-                        number.value.unwrap_or(-f64::MAX),
+                        number.value.unwrap_or(f64::MIN),
                     )
                         .write_options(writer, endian, args)?;
                 }
@@ -1223,10 +1331,10 @@ impl BinWrite for Value {
             ValueInner::Text(text) => {
                 (
                     3u8,
-                    SpvString(&text.local),
+                    SpvString(&text.localized),
                     ValueMod::new(self),
-                    SpvString(&text.id),
-                    SpvString(&text.c),
+                    SpvString(text.id()),
+                    SpvString(text.c()),
                     SpvBool(true),
                 )
                     .write_options(writer, endian, args)?;
@@ -1235,7 +1343,7 @@ impl BinWrite for Value {
                 (
                     0u8,
                     ValueMod::new(self),
-                    SpvString(&template.local),
+                    SpvString(&template.localized),
                     template.args.len() as u32,
                 )
                     .write_options(writer, endian, args)?;

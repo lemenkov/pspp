@@ -16,23 +16,31 @@
 
 use std::{
     fs::File,
-    io::{Cursor, Read, Seek},
-    path::Path,
+    io::{BufRead, BufReader, Cursor, Seek},
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
+use binrw::Endian;
+use encoding_rs::UTF_8;
+use itertools::Itertools;
+
 use crate::{
     crypto::EncryptedFile,
-    endian::Endian,
+    data::Datum,
+    dictionary::Dictionary,
+    identifier::Identifier,
     output::{
         pivot::{test::assert_lines_eq, Axis3, Dimension, Group, PivotTable, Value},
         Details, Item, Text,
     },
     sys::{
-        cooked::ReaderOptions,
-        raw::{self, ErrorDetails},
+        cooked::ReadOptions,
+        raw::{self, records::Compression, ErrorDetails},
         sack::sack,
+        WriteOptions,
     },
+    variable::{VarWidth, Variable},
 };
 
 #[test]
@@ -553,31 +561,159 @@ fn encrypted_file() {
 
 #[test]
 fn encrypted_file_without_password() {
-    let error = ReaderOptions::new()
-        .open_file("src/crypto/testdata/test-encrypted.sav", |_| {
-            panic!();
-        })
-        .unwrap_err();
+    let error = ReadOptions::new(|_| {
+        panic!();
+    })
+    .open_file("src/crypto/testdata/test-encrypted.sav")
+    .unwrap_err();
     assert!(matches!(
         error.downcast::<raw::Error>().unwrap().details,
         ErrorDetails::Encrypted
     ));
 }
 
+/// Tests the most basic kind of writing a system file, just writing a few
+/// numeric variables and cases.
+fn write_numeric(compression: Option<Compression>, compression_string: &str) {
+    let mut dictionary = Dictionary::new(UTF_8);
+    for i in 0..4 {
+        let name = Identifier::new(format!("variable{i}")).unwrap();
+        dictionary
+            .add_var(Variable::new(name, VarWidth::Numeric, UTF_8))
+            .unwrap();
+    }
+    let mut cases = WriteOptions::reproducible(compression)
+        .write_writer(&dictionary, Cursor::new(Vec::new()))
+        .unwrap();
+    for case in [
+        [1, 1, 1, 2],
+        [1, 1, 2, 30],
+        [1, 2, 1, 8],
+        [1, 2, 2, 20],
+        [2, 1, 1, 2],
+        [2, 1, 2, 22],
+        [2, 2, 1, 1],
+        [2, 2, 2, 3],
+    ] {
+        cases
+            .write_case(
+                case.into_iter()
+                    .map(|number| Datum::<&str>::Number(Some(number as f64))),
+            )
+            .unwrap();
+    }
+    let sysfile = cases.finish().unwrap().unwrap().into_inner();
+    let expected_filename = PathBuf::from(&format!(
+        "src/sys/testdata/write-numeric-{compression_string}.expected"
+    ));
+    let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
+    test_sysfile(Cursor::new(sysfile), &expected, &expected_filename);
+}
+
+#[test]
+fn write_numeric_uncompressed() {
+    write_numeric(None, "uncompressed");
+}
+
+#[test]
+fn write_numeric_simple() {
+    write_numeric(Some(Compression::Simple), "simple");
+}
+
+#[test]
+fn write_numeric_zlib() {
+    write_numeric(Some(Compression::ZLib), "zlib");
+}
+
+/// Tests writing string data.
+fn write_string(compression: Option<Compression>, compression_string: &str) {
+    let mut dictionary = Dictionary::new(UTF_8);
+    dictionary
+        .add_var(Variable::new(
+            Identifier::new("s1").unwrap(),
+            VarWidth::String(1),
+            UTF_8,
+        ))
+        .unwrap();
+
+    dictionary
+        .add_var(Variable::new(
+            Identifier::new("s2").unwrap(),
+            VarWidth::String(2),
+            UTF_8,
+        ))
+        .unwrap();
+
+    dictionary
+        .add_var(Variable::new(
+            Identifier::new("s3").unwrap(),
+            VarWidth::String(3),
+            UTF_8,
+        ))
+        .unwrap();
+
+    dictionary
+        .add_var(Variable::new(
+            Identifier::new("s4").unwrap(),
+            VarWidth::String(9),
+            UTF_8,
+        ))
+        .unwrap();
+
+    dictionary
+        .add_var(Variable::new(
+            Identifier::new("s566").unwrap(),
+            VarWidth::String(566),
+            UTF_8,
+        ))
+        .unwrap();
+
+    let mut cases = WriteOptions::reproducible(compression)
+        .write_writer(&dictionary, Cursor::new(Vec::new()))
+        .unwrap();
+    for case in [
+            ["1", "1", "1", "xyzzyquux", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n"],
+            ["1", "2", "1", "8", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
+        ] {
+            cases
+                .write_case(case.into_iter().map(|s| Datum::String(s)))
+                .unwrap();
+        }
+    let sysfile = cases.finish().unwrap().unwrap().into_inner();
+    let expected_filename = PathBuf::from(&format!(
+        "src/sys/testdata/write-string-{compression_string}.expected"
+    ));
+    let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
+    test_sysfile(Cursor::new(sysfile), &expected, &expected_filename);
+}
+
+#[test]
+fn write_string_uncompressed() {
+    write_string(None, "uncompressed");
+}
+
+#[test]
+fn write_string_simple() {
+    write_string(Some(Compression::Simple), "simple");
+}
+
+#[test]
+fn write_string_zlib() {
+    write_string(Some(Compression::ZLib), "zlib");
+}
+
 fn test_raw_sysfile(name: &str) {
-    let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/sys/testdata")
+    let input_filename = Path::new("src/sys/testdata")
         .join(name)
         .with_extension("sav");
-    let sysfile = File::open(&input_filename).unwrap();
+    let sysfile = BufReader::new(File::open(&input_filename).unwrap());
     let expected_filename = input_filename.with_extension("expected");
     let expected = String::from_utf8(std::fs::read(&expected_filename).unwrap()).unwrap();
     test_sysfile(sysfile, &expected, &expected_filename);
 }
 
 fn test_encrypted_sysfile(name: &str, password: &str) {
-    let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/sys/testdata")
+    let input_filename = Path::new("src/sys/testdata")
         .join(name)
         .with_extension("sav");
     let sysfile = EncryptedFile::new(File::open(&input_filename).unwrap())
@@ -590,8 +726,7 @@ fn test_encrypted_sysfile(name: &str, password: &str) {
 }
 
 fn test_sack_sysfile(name: &str) {
-    let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/sys/testdata")
+    let input_filename = Path::new("src/sys/testdata")
         .join(name)
         .with_extension("sack");
     let input = String::from_utf8(std::fs::read(&input_filename).unwrap()).unwrap();
@@ -612,49 +747,21 @@ fn test_sack_sysfile(name: &str) {
 
 fn test_sysfile<R>(sysfile: R, expected: &str, expected_filename: &Path)
 where
-    R: Read + Seek + 'static,
+    R: BufRead + Seek + 'static,
 {
     let mut warnings = Vec::new();
-    let output = match ReaderOptions::new().open_reader(sysfile, |warning| warnings.push(warning)) {
+    let output = match ReadOptions::new(|warning| warnings.push(warning)).open_reader(sysfile) {
         Ok(system_file) => {
             let (dictionary, metadata, cases) = system_file.into_parts();
-            let (group, data) = metadata.to_pivot_rows();
-            let metadata_table = PivotTable::new([(Axis3::Y, Dimension::new(group))]).with_data(
-                data.into_iter()
-                    .enumerate()
-                    .filter(|(_row, value)| !value.is_empty())
-                    .map(|(row, value)| ([row], value)),
-            );
-            let (group, data) = dictionary.to_pivot_rows();
-            let dictionary_table = PivotTable::new([(Axis3::Y, Dimension::new(group))]).with_data(
-                data.into_iter()
-                    .enumerate()
-                    .filter(|(_row, value)| !value.is_empty())
-                    .map(|(row, value)| ([row], value)),
-            );
+
             let mut output = Vec::new();
             output.extend(
                 warnings
                     .into_iter()
-                    .map(|warning| Arc::new(Item::from(Text::new_log(warning.to_string())))),
+                    .map(|warning| Item::from(Text::new_log(warning.to_string()))),
             );
-            output.push(Arc::new(metadata_table.into()));
-            output.push(Arc::new(dictionary_table.into()));
-            output.push(Arc::new(
-                dictionary.output_variables().to_pivot_table().into(),
-            ));
-            if let Some(pt) = dictionary.output_value_labels().to_pivot_table() {
-                output.push(Arc::new(pt.into()));
-            }
-            if let Some(pt) = dictionary.output_mrsets().to_pivot_table() {
-                output.push(Arc::new(pt.into()));
-            }
-            if let Some(pt) = dictionary.output_attributes().to_pivot_table() {
-                output.push(Arc::new(pt.into()));
-            }
-            if let Some(pt) = dictionary.output_variable_sets().to_pivot_table() {
-                output.push(Arc::new(pt.into()));
-            }
+            output.push(PivotTable::from(&metadata).into());
+            output.extend(dictionary.all_pivot_tables().into_iter().map_into());
             let variables =
                 Group::new("Variable").with_multiple(dictionary.variables.iter().map(|var| &**var));
             let mut case_numbers = Group::new("Case").with_label_shown();
@@ -665,14 +772,13 @@ where
                         case_numbers
                             .push(Value::new_integer(Some((case_numbers.len() + 1) as f64)));
                         data.push(
-                            case.0
-                                .into_iter()
-                                .map(|datum| Value::new_datum(&datum, dictionary.encoding))
+                            case.into_iter()
+                                .map(|datum| Value::new_datum(&datum))
                                 .collect::<Vec<_>>(),
                         );
                     }
                     Err(error) => {
-                        output.push(Arc::new(Item::from(Text::new_log(error.to_string()))));
+                        output.push(Item::from(Text::new_log(error.to_string())));
                     }
                 }
             }
@@ -686,17 +792,21 @@ where
                         pt.insert(&[column_number, row_number], datum);
                     }
                 }
-                output.push(Arc::new(pt.into()));
+                output.push(pt.into());
             }
-            Item::new(Details::Group(output))
+            Item::new(Details::Group(output.into_iter().map(Arc::new).collect()))
         }
         Err(error) => Item::new(Details::Text(Box::new(Text::new_log(error.to_string())))),
     };
 
     let actual = output.to_string();
-    if expected != actual && std::env::var("PSPP_REFRESH_EXPECTED").is_ok() {
-        std::fs::write(expected_filename, actual).unwrap();
-        panic!("{}: refreshed output", expected_filename.display());
+    if expected != actual {
+        if std::env::var("PSPP_REFRESH_EXPECTED").is_ok() {
+            std::fs::write(expected_filename, actual).unwrap();
+            panic!("{}: refreshed output", expected_filename.display());
+        } else {
+            eprintln!("note: rerun with PSPP_REFRESH_EXPECTED=1 to refresh expected output");
+        }
     }
     assert_lines_eq(&expected, expected_filename.display(), &actual, "actual");
 }

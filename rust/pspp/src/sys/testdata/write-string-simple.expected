@@ -1,0 +1,63 @@
+╭──────────────────────┬────────────────────╮
+│       Created        │30-JUL-2025 15:07:55│
+├──────────────────────┼────────────────────┤
+│Writer Product        │PSPP TEST DATA FILE │
+│       Version        │1.2.3               │
+├──────────────────────┼────────────────────┤
+│       Compression    │SAV                 │
+│       Number of Cases│                   2│
+╰──────────────────────┴────────────────────╯
+
+╭─────────┬─╮
+│Variables│5│
+╰─────────┴─╯
+
+                                               Variables
+╭────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
+│    │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
+├────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
+│s1  │       1│     │Nominal          │Input│    1│Left     │A1          │A1          │              │
+│s2  │       2│     │Nominal          │Input│    2│Left     │A2          │A2          │              │
+│s3  │       3│     │Nominal          │Input│    3│Left     │A3          │A3          │              │
+│s4  │       4│     │Nominal          │Input│    9│Left     │A9          │A9          │              │
+│s566│       5│     │Nominal          │Input│   32│Left     │A566        │A566        │              │
+╰────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
+
+Data File and Variable Attributes
+╭────────────────────────┬─────╮
+│Variable and Name       │Value│
+├────────────────────────┼─────┤
+│s1                $@Role│0    │
+├────────────────────────┼─────┤
+│s2                $@Role│0    │
+├────────────────────────┼─────┤
+│s3                $@Role│0    │
+├────────────────────────┼─────┤
+│s4                $@Role│0    │
+├────────────────────────┼─────┤
+│s566              $@Role│0    │
+╰────────────────────────┴─────╯
+
+╭────┬──┬──┬───┬─────────┬──────────────────────────────────────────────────────────────╮
+│Case│s1│s2│ s3│    s4   │                             s566                             │
+├────┼──┼──┼───┼─────────┼──────────────────────────────────────────────────────────────┤
+│1   │1 │1 │1  │xyzzyquux│abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│    │  │  │   │         │abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789│
+│2   │1 │2 │1  │8        │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  │
+│    │  │  │   │         │xxxxxxxxxxxxxxxxx                                             │
+╰────┴──┴──┴───┴─────────┴──────────────────────────────────────────────────────────────╯

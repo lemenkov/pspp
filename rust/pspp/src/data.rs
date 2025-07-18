@@ -21,195 +21,355 @@
 //! associated [Variable].  (All the variables in a [Dictionary] have the same
 //! character encoding.)
 //!
-//! [Variable]: crate::dictionary::Variable
+//! [Variable]: crate::variable::Variable
 //! [Dictionary]: crate::dictionary::Dictionary
 
 // Warn about missing docs, but not for items declared with `#[cfg(test)]`.
-#![cfg_attr(not(test), warn(missing_docs))]
+//#![cfg_attr(not(test), warn(missing_docs))]
 
 use std::{
-    borrow::{Borrow, Cow},
+    borrow::{Borrow, BorrowMut, Cow},
     cmp::Ordering,
     fmt::{Debug, Display, Formatter},
     hash::Hash,
-    ops::Deref,
     str::from_utf8,
 };
 
 use encoding_rs::{mem::decode_latin1, Encoding, UTF_8};
+use itertools::Itertools;
 use ordered_float::OrderedFloat;
+use serde::{
+    ser::{SerializeSeq, SerializeTupleVariant},
+    Serialize,
+};
 
-use crate::dictionary::{VarType, VarWidth};
+use crate::{
+    format::DisplayPlain,
+    variable::{VarType, VarWidth},
+};
 
-/// An owned string in an unspecified character encoding.
-///
-/// A [RawString] is usually associated with a [Variable] and uses the
-/// variable's character encoding.  We assume that the encoding is one supported
-/// by [encoding_rs] with byte units (that is, not a `UTF-16` encoding).  All of
-/// these encodings have some basic ASCII compatibility.
-///
-/// A [RawString] owns its contents and can grow and shrink, like a [Vec] or
-/// [String].  For a borrowed raw string, see [RawStr].
-///
-/// [Variable]: crate::dictionary::Variable
-#[derive(Clone, PartialEq, Default, Eq, PartialOrd, Ord, Hash)]
-pub struct RawString(pub Vec<u8>);
-
-impl RawString {
-    /// Creates a new [RawString] that consists of `n` ASCII spaces.
-    pub fn spaces(n: usize) -> Self {
-        Self(std::iter::repeat_n(b' ', n).collect())
-    }
-
-    /// Creates an [EncodedStr] with `encoding` that borrows this string's
-    /// contents.
-    pub fn as_encoded(&self, encoding: &'static Encoding) -> EncodedStr<'_> {
-        EncodedStr::new(&self.0, encoding)
-    }
-
-    /// Extends or shortens this [RawString] to exactly `len` bytes.  If the
-    /// string needs to be extended, does so by appending spaces.
-    ///
-    /// If this shortens the string, it can cut off a multibyte character in the
-    /// middle.
-    pub fn resize(&mut self, len: usize) {
-        self.0.resize(len, b' ');
-    }
-
-    /// Removes any trailing ASCII spaces.
-    pub fn trim_end(&mut self) {
-        while self.0.pop_if(|c| *c == b' ').is_some() {}
-    }
-}
-
-impl Borrow<RawStr> for RawString {
-    fn borrow(&self) -> &RawStr {
-        RawStr::from_bytes(&self.0)
-    }
-}
-
-impl Deref for RawString {
-    type Target = RawStr;
-
-    fn deref(&self) -> &Self::Target {
-        self.borrow()
-    }
-}
-
-impl From<Cow<'_, [u8]>> for RawString {
-    fn from(value: Cow<'_, [u8]>) -> Self {
-        Self(value.into_owned())
-    }
-}
-
-impl From<Vec<u8>> for RawString {
-    fn from(source: Vec<u8>) -> Self {
-        Self(source)
-    }
-}
-
-impl From<&[u8]> for RawString {
-    fn from(source: &[u8]) -> Self {
-        Self(source.into())
-    }
-}
-
-impl Debug for RawString {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", *self)
-    }
-}
-
-/// A borrowed string in an unspecified encoding.
-///
-/// A [RawString] is usually associated with a [Variable] and uses the
-/// variable's character encoding.  We assume that the encoding is one supported
-/// by [encoding_rs] with byte units (that is, not a `UTF-16` encoding).  All of
-/// these encodings have some basic ASCII compatibility.
-///
-/// For an owned raw string, see [RawString].
-///
-/// [Variable]: crate::dictionary::Variable
-#[repr(transparent)]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RawStr(pub [u8]);
-
-impl RawStr {
-    /// Creates a new [RawStr] that contains `bytes`.
-    pub fn from_bytes(bytes: &[u8]) -> &Self {
-        // SAFETY: `RawStr` is a transparent wrapper around `[u8]`, so we can
-        // turn a reference to the wrapped type into a reference to the wrapper
-        // type.
-        unsafe { &*(bytes as *const [u8] as *const Self) }
-    }
-
-    /// Returns the raw string's contents as a borrowed byte slice.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.0
-    }
-
-    /// Returns an object that implements [Display] for printing this [RawStr],
-    /// given that it is encoded in `encoding`.
-    pub fn display(&self, encoding: &'static Encoding) -> DisplayRawString {
-        DisplayRawString(encoding.decode_without_bom_handling(&self.0).0)
-    }
-
-    /// Interprets the raw string's contents as the specified `encoding` and
-    /// returns it decoded into UTF-8, replacing any malformed sequences by
-    /// [REPLACEMENT_CHARACTER].
-    ///
-    /// [REPLACEMENT_CHARACTER]: std::char::REPLACEMENT_CHARACTER
-    pub fn decode(&self, encoding: &'static Encoding) -> Cow<'_, str> {
-        encoding.decode_without_bom_handling(&self.0).0
-    }
+pub trait RawString: Debug + PartialEq + Eq + PartialOrd + Ord + Hash {
+    fn raw_string_bytes(&self) -> &[u8];
 
     /// Compares this string and `other` for equality, ignoring trailing ASCII
     /// spaces in either string for the purpose of comparison.  (This is
     /// acceptable because we assume that the encoding is ASCII-compatible.)
-    pub fn eq_ignore_trailing_spaces(&self, other: &RawStr) -> bool {
-        let mut this = self.0.iter();
-        let mut other = other.0.iter();
-        loop {
-            match (this.next(), other.next()) {
-                (Some(a), Some(b)) if a == b => (),
-                (Some(_), Some(_)) => return false,
-                (None, None) => return true,
-                (Some(b' '), None) => return this.all(|c| *c == b' '),
-                (None, Some(b' ')) => return other.all(|c| *c == b' '),
-                (Some(_), None) | (None, Some(_)) => return false,
-            }
+    ///
+    /// This compares the bytes of the strings, disregarding their encodings (if
+    /// known).
+    fn eq_ignore_trailing_spaces<R>(&self, other: &R) -> bool
+    where
+        R: RawString,
+    {
+        self.raw_string_bytes()
+            .iter()
+            .copied()
+            .zip_longest(other.raw_string_bytes().iter().copied())
+            .all(|elem| {
+                let (left, right) = elem.or(b' ', b' ');
+                left == right
+            })
+    }
+
+    /// Returns true if this raw string can be resized to `len` bytes without
+    /// dropping non-space characters.
+    fn is_resizable(&self, new_len: usize) -> bool {
+        new_len >= self.len()
+            || self.raw_string_bytes()[new_len..]
+                .iter()
+                .copied()
+                .all(|b| b == b' ')
+    }
+
+    fn is_empty(&self) -> bool {
+        self.raw_string_bytes().is_empty()
+    }
+
+    fn len(&self) -> usize {
+        self.raw_string_bytes().len()
+    }
+
+    fn as_ref(&self) -> ByteStr<'_> {
+        ByteStr(self.raw_string_bytes())
+    }
+
+    fn without_trailing_spaces(&self) -> ByteStr<'_> {
+        let mut raw = self.raw_string_bytes();
+        while let Some(trimmed) = raw.strip_suffix(b" ") {
+            raw = trimmed;
+        }
+        ByteStr(raw)
+    }
+
+    fn as_encoded(&self, encoding: &'static Encoding) -> WithEncoding<ByteStr<'_>>
+    where
+        Self: Sized,
+    {
+        WithEncoding::new(self.as_ref(), encoding)
+    }
+
+    fn with_encoding(self, encoding: &'static Encoding) -> WithEncoding<Self>
+    where
+        Self: Sized,
+    {
+        WithEncoding::new(self, encoding)
+    }
+}
+
+pub trait MutRawString: RawString {
+    fn resize(&mut self, new_len: usize) -> Result<(), ResizeError>;
+    fn trim_end(&mut self);
+}
+
+impl RawString for &'_ str {
+    fn raw_string_bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl RawString for String {
+    fn raw_string_bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl RawString for &'_ String {
+    fn raw_string_bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ByteStr<'a>(pub &'a [u8]);
+
+impl RawString for ByteStr<'_> {
+    fn raw_string_bytes(&self) -> &[u8] {
+        self.0
+    }
+}
+
+impl Serialize for ByteStr<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if let Ok(s) = str::from_utf8(self.0) {
+            let (variant_index, variant) = if self.0.iter().all(|b| b.is_ascii()) {
+                (0, "Ascii")
+            } else {
+                (1, "Utf8")
+            };
+            let mut tuple =
+                serializer.serialize_tuple_variant("RawString", variant_index, variant, 1)?;
+            tuple.serialize_field(s)?;
+            tuple.end()
+        } else {
+            let mut tuple = serializer.serialize_tuple_variant("RawString", 2, "Windows1252", 1)?;
+            tuple.serialize_field(&decode_latin1(self.0))?;
+            tuple.end()
         }
     }
-
-    /// Returns the string's length in bytes.
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
 }
 
-/// Helper struct for printing [RawStr] with [format!].
-///
-/// Created by [RawStr::display].
-pub struct DisplayRawString<'a>(Cow<'a, str>);
-
-impl<'a> Display for DisplayRawString<'a> {
+impl Debug for ByteStr<'_> {
     // If `s` is valid UTF-8, displays it as UTF-8, otherwise as Latin-1
     // (actually bytes interpreted as Unicode code points).
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.0)
-    }
-}
-
-impl Debug for RawStr {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let s = from_utf8(&self.0).map_or_else(|_| decode_latin1(&self.0), Cow::from);
+        let s = from_utf8(&self.0).map_or_else(|_| decode_latin1(self.0), Cow::from);
         write!(f, "{s:?}")
     }
 }
 
-/// The value of a [Variable](crate::dictionary::Variable).
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ByteCow<'a>(pub Cow<'a, [u8]>);
+
+impl ByteCow<'_> {
+    pub fn into_owned(self) -> ByteString {
+        ByteString(self.0.into_owned())
+    }
+}
+
+impl Serialize for ByteCow<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ByteStr(&self.0).serialize(serializer)
+    }
+}
+
+impl RawString for ByteCow<'_> {
+    fn raw_string_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl Debug for ByteCow<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        ByteStr(&self.0).fmt(f)
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ByteStrArray<const N: usize>(pub [u8; N]);
+
+impl<const N: usize> Serialize for ByteStrArray<N> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ByteStr(&self.0).serialize(serializer)
+    }
+}
+
+impl<const N: usize> RawString for ByteStrArray<N> {
+    fn raw_string_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl<const N: usize> Debug for ByteStrArray<N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        ByteStr(&self.0).fmt(f)
+    }
+}
+
+#[derive(Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ByteString(pub Vec<u8>);
+
+impl ByteString {
+    /// Creates a new [ByteString] that consists of `n` ASCII spaces.
+    pub fn spaces(n: usize) -> Self {
+        Self(std::iter::repeat_n(b' ', n).collect())
+    }
+}
+
+impl From<String> for ByteString {
+    fn from(value: String) -> Self {
+        value.into_bytes().into()
+    }
+}
+
+impl From<&'_ str> for ByteString {
+    fn from(value: &str) -> Self {
+        value.as_bytes().into()
+    }
+}
+
+impl From<Cow<'_, str>> for ByteString {
+    fn from(value: Cow<'_, str>) -> Self {
+        value.into_owned().into()
+    }
+}
+
+impl From<Cow<'_, [u8]>> for ByteString {
+    fn from(value: Cow<'_, [u8]>) -> Self {
+        value.into_owned().into()
+    }
+}
+
+impl From<Vec<u8>> for ByteString {
+    fn from(value: Vec<u8>) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&[u8]> for ByteString {
+    fn from(value: &[u8]) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<&ByteString> for ByteString {
+    fn from(value: &ByteString) -> Self {
+        value.clone()
+    }
+}
+
+impl<const N: usize> From<&ByteStrArray<N>> for ByteString {
+    fn from(value: &ByteStrArray<N>) -> Self {
+        Self::from(value.raw_string_bytes())
+    }
+}
+
+impl<const N: usize> From<[u8; N]> for ByteString {
+    fn from(value: [u8; N]) -> Self {
+        value.as_slice().into()
+    }
+}
+
+impl RawString for ByteString {
+    fn raw_string_bytes(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
+
+impl Serialize for ByteString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if let Ok(s) = str::from_utf8(&self.0) {
+            let (variant_index, variant) = if self.0.iter().all(|b| b.is_ascii()) {
+                (0, "Ascii")
+            } else {
+                (1, "Utf8")
+            };
+            let mut tuple =
+                serializer.serialize_tuple_variant("RawString", variant_index, variant, 1)?;
+            tuple.serialize_field(s)?;
+            tuple.end()
+        } else {
+            let mut tuple = serializer.serialize_tuple_variant("RawString", 2, "Windows1252", 1)?;
+            tuple.serialize_field(&decode_latin1(&self.0))?;
+            tuple.end()
+        }
+    }
+}
+
+impl Debug for ByteString {
+    // If `s` is valid UTF-8, displays it as UTF-8, otherwise as Latin-1
+    // (actually bytes interpreted as Unicode code points).
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let s =
+            from_utf8(&self.0.borrow()).map_or_else(|_| decode_latin1(self.0.borrow()), Cow::from);
+        write!(f, "{s:?}")
+    }
+}
+
+impl MutRawString for ByteString {
+    fn resize(&mut self, new_len: usize) -> Result<(), ResizeError> {
+        match new_len.cmp(&self.0.len()) {
+            Ordering::Less => {
+                if !self.0[new_len..].iter().all(|b| *b == b' ') {
+                    return Err(ResizeError::TooWide);
+                }
+                self.0.truncate(new_len);
+            }
+            Ordering::Equal => (),
+            Ordering::Greater => self.0.resize(new_len, b' '),
+        }
+        Ok(())
+    }
+
+    /// Removes any trailing ASCII spaces.
+    fn trim_end(&mut self) {
+        while self.0.pop_if(|c| *c == b' ').is_some() {}
+    }
+}
+
+mod encoded;
+pub use encoded::{Encoded, EncodedString, WithEncoding};
+
+/// A [Datum] that owns its string data (if any).
+pub type OwnedDatum = Datum<WithEncoding<ByteString>>;
+
+/// The value of a [Variable](crate::variable::Variable).
+///
+/// `T` is the type for a string `Datum`, typically [ByteString] or
+/// `WithEncoding<ByteString>` or some borrowed type.
 #[derive(Clone)]
-pub enum Datum {
+pub enum Datum<T> {
     /// A numeric value.
     Number(
         /// A number, or `None` for the system-missing value.
@@ -218,67 +378,159 @@ pub enum Datum {
     /// A string value.
     String(
         /// The value, in the variable's encoding.
-        RawString,
+        T,
     ),
 }
 
-impl Debug for Datum {
+impl Datum<WithEncoding<ByteString>> {
+    pub fn new_utf8(s: impl Into<String>) -> Self {
+        let s: String = s.into();
+        Datum::String(ByteString::from(s).with_encoding(UTF_8))
+    }
+
+    pub fn codepage_to_unicode(&mut self) {
+        if let Some(s) = self.as_string_mut() {
+            s.codepage_to_unicode();
+        }
+    }
+
+    pub fn without_encoding(self) -> Datum<ByteString> {
+        self.map_string(|s| s.into_inner())
+    }
+}
+
+impl<'a> Datum<WithEncoding<ByteCow<'a>>> {
+    pub fn into_owned(self) -> Datum<WithEncoding<ByteString>> {
+        self.map_string(|s| s.into_owned())
+    }
+}
+
+impl<T> Datum<T>
+where
+    T: EncodedString,
+{
+    pub fn as_borrowed(&self) -> Datum<WithEncoding<ByteStr<'_>>> {
+        self.as_ref().map_string(|s| s.as_encoded_byte_str())
+    }
+    pub fn cloned(&self) -> Datum<WithEncoding<ByteString>> {
+        self.as_ref().map_string(|s| s.cloned())
+    }
+}
+
+impl<B> Debug for Datum<B>
+where
+    B: Debug,
+{
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
-            Datum::Number(Some(number)) => write!(f, "{number:?}"),
-            Datum::Number(None) => write!(f, "SYSMIS"),
-            Datum::String(s) => write!(f, "{:?}", s),
+            Self::Number(Some(number)) => write!(f, "{number:?}"),
+            Self::Number(None) => write!(f, "SYSMIS"),
+            Self::String(s) => write!(f, "{:?}", s),
         }
     }
 }
 
-impl PartialEq for Datum {
-    fn eq(&self, other: &Self) -> bool {
+impl<T> Display for Datum<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Number(None) => write!(f, "SYSMIS"),
+            Self::Number(Some(number)) => number.display_plain().fmt(f),
+            Self::String(string) => string.fmt(f),
+        }
+    }
+}
+
+impl<B> Serialize for Datum<B>
+where
+    B: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Self::Number(number) => number.serialize(serializer),
+            Self::String(raw_string) => raw_string.serialize(serializer),
+        }
+    }
+}
+
+impl<T, R> PartialEq<Datum<R>> for Datum<T>
+where
+    T: PartialEq<R>,
+{
+    fn eq(&self, other: &Datum<R>) -> bool {
         match (self, other) {
-            (Self::Number(Some(l0)), Self::Number(Some(r0))) => {
-                OrderedFloat(*l0) == OrderedFloat(*r0)
+            (Self::Number(Some(n1)), Datum::Number(Some(n2))) => {
+                OrderedFloat(*n1) == OrderedFloat(*n2)
             }
-            (Self::Number(None), Self::Number(None)) => true,
-            (Self::String(l0), Self::String(r0)) => l0 == r0,
+            (Self::Number(None), Datum::Number(None)) => true,
+            (Self::String(s1), Datum::String(s2)) => s1 == s2,
             _ => false,
         }
     }
 }
 
-impl Eq for Datum {}
+impl<T> Eq for Datum<T> where T: Eq {}
 
-impl PartialOrd for Datum {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Datum {
-    fn cmp(&self, other: &Self) -> Ordering {
+impl<T, R> PartialOrd<Datum<R>> for Datum<T>
+where
+    T: PartialOrd<R>,
+{
+    fn partial_cmp(&self, other: &Datum<R>) -> Option<Ordering> {
         match (self, other) {
-            (Datum::Number(a), Datum::Number(b)) => match (a, b) {
-                (None, None) => Ordering::Equal,
-                (None, Some(_)) => Ordering::Less,
-                (Some(_), None) => Ordering::Greater,
-                (Some(a), Some(b)) => a.total_cmp(b),
-            },
-            (Datum::Number(_), Datum::String(_)) => Ordering::Less,
-            (Datum::String(_), Datum::Number(_)) => Ordering::Greater,
-            (Datum::String(a), Datum::String(b)) => a.cmp(b),
+            (Self::Number(a), Datum::Number(b)) => {
+                a.map(OrderedFloat).partial_cmp(&b.map(OrderedFloat))
+            }
+            (Self::Number(_), Datum::String(_)) => Some(Ordering::Less),
+            (Self::String(_), Datum::Number(_)) => Some(Ordering::Greater),
+            (Self::String(a), Datum::String(b)) => a.partial_cmp(b),
         }
     }
 }
 
-impl Hash for Datum {
+impl<T> Ord for Datum<T>
+where
+    T: Ord,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
+impl<T> Hash for Datum<T>
+where
+    T: Hash,
+{
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         match self {
-            Datum::Number(number) => number.map(OrderedFloat).hash(state),
-            Datum::String(string) => string.hash(state),
+            Self::Number(number) => number.map(OrderedFloat).hash(state),
+            Self::String(string) => string.hash(state),
         }
     }
 }
 
-impl Datum {
+impl<B> Datum<B> {
+    pub fn as_ref(&self) -> Datum<&B> {
+        match self {
+            Datum::Number(number) => Datum::Number(*number),
+            Datum::String(string) => Datum::String(&string),
+        }
+    }
+
+    pub fn map_string<F, R>(self, f: F) -> Datum<R>
+    where
+        F: Fn(B) -> R,
+    {
+        match self {
+            Datum::Number(number) => Datum::Number(number),
+            Datum::String(string) => Datum::String(f(string)),
+        }
+    }
+
     /// Constructs a new numerical [Datum] for the system-missing value.
     pub const fn sysmis() -> Self {
         Self::Number(None)
@@ -288,55 +540,26 @@ impl Datum {
     /// datum.
     pub fn as_number(&self) -> Option<Option<f64>> {
         match self {
-            Datum::Number(number) => Some(*number),
-            Datum::String(_) => None,
+            Self::Number(number) => Some(*number),
+            Self::String(_) => None,
         }
     }
 
     /// Returns the string inside this datum, or `None` if this is a numeric
     /// datum.
-    pub fn as_string(&self) -> Option<&RawString> {
+    pub fn as_string(&self) -> Option<&B> {
         match self {
-            Datum::Number(_) => None,
-            Datum::String(s) => Some(s),
+            Self::Number(_) => None,
+            Self::String(s) => Some(s),
         }
     }
 
-    /// Returns the string inside this datum as a mutable borrow, or `None` if
-    /// this is a numeric datum.
-    pub fn as_string_mut(&mut self) -> Option<&mut RawString> {
+    /// Returns the string inside this datum, or `None` if this is a numeric
+    /// datum.
+    pub fn into_string(self) -> Option<B> {
         match self {
-            Datum::Number(_) => None,
-            Datum::String(s) => Some(s),
-        }
-    }
-
-    /// Returns true if this datum can be resized to the given `width` without
-    /// loss, which is true only if this datum and `width` are both string or
-    /// both numeric and, for string widths, if resizing would not drop any
-    /// non-space characters.
-    pub fn is_resizable(&self, width: VarWidth) -> bool {
-        match (self, width) {
-            (Datum::Number(_), VarWidth::Numeric) => true,
-            (Datum::String(s), VarWidth::String(new_width)) => {
-                let new_len = new_width as usize;
-                new_len >= s.len() || s.0[new_len..].iter().all(|c| *c == b' ')
-            }
-            _ => false,
-        }
-    }
-
-    /// Resizes this datum to the given `width`.
-    ///
-    /// # Panic
-    ///
-    /// Panics if resizing would change the datum from numeric to string or vice
-    /// versa.
-    pub fn resize(&mut self, width: VarWidth) {
-        match (self, width) {
-            (Datum::Number(_), VarWidth::Numeric) => (),
-            (Datum::String(s), VarWidth::String(new_width)) => s.resize(new_width as usize),
-            _ => unreachable!(),
+            Self::Number(_) => None,
+            Self::String(s) => Some(s),
         }
     }
 
@@ -347,225 +570,292 @@ impl Datum {
             Self::String(_) => VarType::String,
         }
     }
+}
+
+impl<T> Datum<T>
+where
+    T: RawString,
+{
+    /// Returns true if this datum can be resized to the given `width` without
+    /// loss, which is true only if this datum and `width` are both string or
+    /// both numeric and, for string widths, if resizing would not drop any
+    /// non-space characters.
+    pub fn is_resizable(&self, width: VarWidth) -> bool {
+        match (self, width) {
+            (Self::Number(_), VarWidth::Numeric) => true,
+            (Self::String(s), VarWidth::String(new_width)) => s.is_resizable(new_width as usize),
+            _ => false,
+        }
+    }
 
     /// Returns the [VarWidth] corresponding to this datum.
     pub fn width(&self) -> VarWidth {
         match self {
-            Datum::Number(_) => VarWidth::Numeric,
-            Datum::String(s) => VarWidth::String(s.len().try_into().unwrap()),
+            Self::Number(_) => VarWidth::Numeric,
+            Self::String(s) => VarWidth::String(s.len().try_into().unwrap()),
         }
     }
 
     /// Compares this datum and `other` for equality, ignoring trailing ASCII
     /// spaces in either, if they are both strings, for the purpose of
     /// comparison.
-    pub fn eq_ignore_trailing_spaces(&self, other: &Datum) -> bool {
+    pub fn eq_ignore_trailing_spaces<R>(&self, other: &Datum<R>) -> bool
+    where
+        R: RawString,
+    {
         match (self, other) {
-            (Self::String(a), Self::String(b)) => a.eq_ignore_trailing_spaces(b),
-            _ => self == other,
+            (Self::String(a), Datum::String(b)) => a.eq_ignore_trailing_spaces(b),
+            (Self::Number(a), Datum::Number(b)) => a == b,
+            _ => false,
         }
     }
 
-    /// Removes trailing ASCII spaces from this datum, if it is a string.
-    pub fn trim_end(&mut self) {
-        match self {
-            Self::Number(_) => (),
-            Self::String(s) => s.trim_end(),
+    pub fn as_encoded(&self, encoding: &'static Encoding) -> Datum<WithEncoding<ByteStr<'_>>> {
+        self.as_ref().map_string(|s| s.as_encoded(encoding))
+    }
+
+    pub fn with_encoding(self, encoding: &'static Encoding) -> Datum<WithEncoding<T>> {
+        self.map_string(|s| s.with_encoding(encoding))
+    }
+}
+
+impl<B> Datum<B>
+where
+    B: EncodedString,
+{
+    pub fn quoted<'a>(&'a self) -> QuotedDatum<'a, B> {
+        QuotedDatum(self)
+    }
+}
+
+pub struct QuotedDatum<'a, B>(&'a Datum<B>);
+
+impl<'a, B> Display for QuotedDatum<'a, B>
+where
+    B: Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self.0 {
+            Datum::Number(None) => write!(f, "SYSMIS"),
+            Datum::Number(Some(number)) => number.display_plain().fmt(f),
+            Datum::String(string) => write!(f, "\"{string}\""),
         }
     }
 }
 
-impl From<f64> for Datum {
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ResizeError {
+    MixedTypes,
+    TooWide,
+}
+
+impl<T> Datum<T> {
+    /// Returns the string inside this datum as a mutable borrow, or `None` if
+    /// this is a numeric datum.
+    pub fn as_string_mut(&mut self) -> Option<&mut T> {
+        match self {
+            Self::Number(_) => None,
+            Self::String(s) => Some(s.borrow_mut()),
+        }
+    }
+
+    /// Removes trailing ASCII spaces from this datum, if it is a string.
+    pub fn trim_end(&mut self)
+    where
+        T: MutRawString,
+    {
+        self.as_string_mut().map(|s| s.trim_end());
+    }
+
+    /// Resizes this datum to the given `width`.  Returns an error, without
+    /// modifying the datum, if [is_resizable](Self::is_resizable) would return
+    /// false.
+    pub fn resize(&mut self, width: VarWidth) -> Result<(), ResizeError>
+    where
+        T: MutRawString,
+    {
+        match (self, width) {
+            (Self::Number(_), VarWidth::Numeric) => Ok(()),
+            (Self::String(s), VarWidth::String(new_width)) => s.resize(new_width as usize),
+            _ => Err(ResizeError::MixedTypes),
+        }
+    }
+}
+
+impl<B> From<f64> for Datum<B> {
     fn from(number: f64) -> Self {
         Some(number).into()
     }
 }
 
-impl From<Option<f64>> for Datum {
+impl<B> From<Option<f64>> for Datum<B> {
     fn from(value: Option<f64>) -> Self {
         Self::Number(value)
     }
 }
 
-impl From<&str> for Datum {
-    fn from(value: &str) -> Self {
-        value.as_bytes().into()
+impl<'a> From<&'a str> for Datum<ByteStr<'a>> {
+    fn from(value: &'a str) -> Self {
+        Datum::String(ByteStr(value.as_bytes()))
     }
 }
 
-impl From<&[u8]> for Datum {
-    fn from(value: &[u8]) -> Self {
-        Self::String(value.into())
+impl<'a> From<&'a [u8]> for Datum<ByteStr<'a>> {
+    fn from(value: &'a [u8]) -> Self {
+        Self::String(ByteStr(value))
     }
 }
 
 /// A case in a data set.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Case(
+#[derive(Clone, Debug, Serialize)]
+pub struct RawCase(
     /// One [Datum] per variable in the corresponding [Dictionary], in the same
     /// order.
     ///
     /// [Dictionary]: crate::dictionary::Dictionary
-    pub Vec<Datum>,
+    pub Vec<Datum<ByteString>>,
 );
 
-/// An owned string and its [Encoding].
-///
-/// The string is not guaranteed to be valid in the encoding.
-///
-/// The borrowed form of such a string is [EncodedStr].
-#[derive(Clone, Debug)]
-pub enum EncodedString {
-    /// A string in arbitrary encoding.
-    Encoded {
-        /// The bytes of the string.
-        bytes: Vec<u8>,
-
-        /// The string's encoding.
-        ///
-        /// This can be [UTF_8].
-        encoding: &'static Encoding,
-    },
-
-    /// A string that is in UTF-8 and known to be valid.
-    Utf8 {
-        /// The string.
-        s: String,
-    },
-}
-
-impl EncodedString {
-    /// Returns the string's [Encoding].
-    pub fn encoding(&self) -> &'static Encoding {
-        match self {
-            EncodedString::Encoded { encoding, .. } => encoding,
-            EncodedString::Utf8 { .. } => UTF_8,
+impl RawCase {
+    pub fn as_encoding(&self, encoding: &'static Encoding) -> Case<&'_ [Datum<ByteString>]> {
+        Case {
+            encoding,
+            data: &self.0,
         }
     }
-
-    /// Returns a borrowed form of this string.
-    pub fn borrowed(&self) -> EncodedStr<'_> {
-        match self {
-            EncodedString::Encoded { bytes, encoding } => EncodedStr::Encoded { bytes, encoding },
-            EncodedString::Utf8 { s } => EncodedStr::Utf8 { s },
+    pub fn with_encoding(self, encoding: &'static Encoding) -> Case<Vec<Datum<ByteString>>> {
+        Case {
+            encoding,
+            data: self.0,
         }
     }
 }
 
-impl<'a> From<EncodedStr<'a>> for EncodedString {
-    fn from(value: EncodedStr<'a>) -> Self {
-        match value {
-            EncodedStr::Encoded { bytes, encoding } => Self::Encoded {
-                bytes: bytes.into(),
-                encoding,
-            },
-            EncodedStr::Utf8 { s } => Self::Utf8 { s: s.into() },
-        }
+pub struct Case<B>
+where
+    B: Borrow<[Datum<ByteString>]>,
+{
+    encoding: &'static Encoding,
+    data: B,
+}
+
+impl<B> Case<B>
+where
+    B: Borrow<[Datum<ByteString>]>,
+{
+    pub fn len(&self) -> usize {
+        self.data.borrow().len()
+    }
+    pub fn iter(&self) -> CaseIter<'_> {
+        self.into_iter()
     }
 }
 
-/// A borrowed string and its [Encoding].
-///
-/// The string is not guaranteed to be valid in the encoding.
-///
-/// The owned form of such a string is [EncodedString].
-pub enum EncodedStr<'a> {
-    /// A string in an arbitrary encoding
-    Encoded {
-        /// The bytes of the string.
-        bytes: &'a [u8],
-
-        /// The string's encoding.
-        ///
-        /// THis can be [UTF_8].
-        encoding: &'static Encoding,
-    },
-
-    /// A string in UTF-8 that is known to be valid.
-    Utf8 {
-        /// The string.
-        s: &'a str,
-    },
-}
-
-impl<'a> EncodedStr<'a> {
-    /// Construct a new string with an arbitrary encoding.
-    pub fn new(bytes: &'a [u8], encoding: &'static Encoding) -> Self {
-        Self::Encoded { bytes, encoding }
-    }
-
-    /// Returns this string recoded in UTF-8.  Invalid characters will be
-    /// replaced by [REPLACEMENT_CHARACTER].
-    ///
-    /// [REPLACEMENT_CHARACTER]: std::char::REPLACEMENT_CHARACTER
-    pub fn as_str(&self) -> Cow<'_, str> {
-        match self {
-            EncodedStr::Encoded { bytes, encoding } => {
-                encoding.decode_without_bom_handling(bytes).0
+impl Case<Vec<Datum<ByteString>>> {
+    pub fn into_unicode(self) -> Self {
+        if self.encoding == UTF_8 {
+            self
+        } else {
+            Self {
+                encoding: UTF_8,
+                data: self
+                    .data
+                    .into_iter()
+                    .map(|datum| {
+                        datum.map_string(|s| {
+                            let mut s = s.with_encoding(self.encoding);
+                            s.codepage_to_unicode();
+                            s.into_inner()
+                        })
+                    })
+                    .collect(),
             }
-            EncodedStr::Utf8 { s } => Cow::from(*s),
         }
-    }
-
-    /// Returns the bytes in the string, in its encoding.
-    pub fn as_bytes(&self) -> &[u8] {
-        match self {
-            EncodedStr::Encoded { bytes, .. } => bytes,
-            EncodedStr::Utf8 { s } => s.as_bytes(),
-        }
-    }
-
-    /// Returns this string recoded in `encoding`.  Invalid characters will be
-    /// replaced by [REPLACEMENT_CHARACTER].
-    ///
-    /// [REPLACEMENT_CHARACTER]: std::char::REPLACEMENT_CHARACTER
-    pub fn to_encoding(&self, encoding: &'static Encoding) -> Cow<[u8]> {
-        match self {
-            EncodedStr::Encoded { bytes, encoding } => {
-                let utf8 = encoding.decode_without_bom_handling(bytes).0;
-                match encoding.encode(&utf8).0 {
-                    Cow::Borrowed(_) => {
-                        // Recoding into UTF-8 and then back did not change anything.
-                        Cow::from(*bytes)
-                    }
-                    Cow::Owned(owned) => Cow::Owned(owned),
-                }
-            }
-            EncodedStr::Utf8 { s } => encoding.encode(s).0,
-        }
-    }
-
-    /// Returns true if this string is empty.
-    pub fn is_empty(&self) -> bool {
-        match self {
-            EncodedStr::Encoded { bytes, .. } => bytes.is_empty(),
-            EncodedStr::Utf8 { s } => s.is_empty(),
-        }
-    }
-
-    /// Returns a helper for displaying this string in double quotes.
-    pub fn quoted(&self) -> QuotedEncodedStr {
-        QuotedEncodedStr(self)
     }
 }
 
-impl<'a> From<&'a str> for EncodedStr<'a> {
-    fn from(s: &'a str) -> Self {
-        Self::Utf8 { s }
+impl<B> Serialize for Case<B>
+where
+    B: Borrow<[Datum<ByteString>]>,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.len()))?;
+        for datum in self.iter() {
+            seq.serialize_element(&datum)?;
+        }
+        seq.end()
     }
 }
 
-impl<'a> From<&'a String> for EncodedStr<'a> {
-    fn from(s: &'a String) -> Self {
-        Self::Utf8 { s: s.as_str() }
+pub struct CaseIter<'a> {
+    encoding: &'static Encoding,
+    iter: std::slice::Iter<'a, Datum<ByteString>>,
+}
+
+impl<'a> Iterator for CaseIter<'a> {
+    type Item = Datum<WithEncoding<ByteStr<'a>>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|d| d.as_encoded(self.encoding))
     }
 }
 
-/// Helper struct for displaying a [QuotedEncodedStr] in double quotes.
-pub struct QuotedEncodedStr<'a>(&'a EncodedStr<'a>);
+impl<'a, B> IntoIterator for &'a Case<B>
+where
+    B: Borrow<[Datum<ByteString>]>,
+{
+    type Item = Datum<WithEncoding<ByteStr<'a>>>;
 
-impl Display for QuotedEncodedStr<'_> {
+    type IntoIter = CaseIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        CaseIter {
+            encoding: self.encoding,
+            iter: self.data.borrow().into_iter(),
+        }
+    }
+}
+
+impl IntoIterator for Case<Vec<Datum<ByteString>>> {
+    type Item = Datum<WithEncoding<ByteString>>;
+
+    type IntoIter = CaseIntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        CaseIntoIter {
+            encoding: self.encoding,
+            iter: self.data.into_iter(),
+        }
+    }
+}
+
+pub struct CaseIntoIter {
+    encoding: &'static Encoding,
+    iter: std::vec::IntoIter<Datum<ByteString>>,
+}
+
+impl Iterator for CaseIntoIter {
+    type Item = Datum<WithEncoding<ByteString>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter
+            .next()
+            .map(|datum| datum.with_encoding(self.encoding))
+    }
+}
+
+pub struct Quoted<T>(T)
+where
+    T: Display;
+
+impl<T> Display for Quoted<T>
+where
+    T: Display,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.0.as_str())
+        write!(f, "\"{}\"", &self.0)
     }
 }

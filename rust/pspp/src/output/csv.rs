@@ -18,26 +18,65 @@ use std::{
     borrow::Cow,
     fmt::Display,
     fs::File,
-    io::{Error, Write},
+    io::{BufWriter, Error, Write},
+    path::PathBuf,
     sync::Arc,
+};
+
+use serde::{
+    de::{Unexpected, Visitor},
+    Deserialize, Deserializer, Serialize,
 };
 
 use crate::output::pivot::Coord2;
 
 use super::{driver::Driver, pivot::PivotTable, table::Table, Details, Item, TextType};
 
-struct CsvDriver {
-    file: File,
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CsvConfig {
+    file: PathBuf,
+    #[serde(flatten)]
+    options: CsvOptions,
+}
+
+pub struct CsvDriver {
+    file: BufWriter<File>,
     options: CsvOptions,
 
     /// Number of items written so far.
     n_items: usize,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 struct CsvOptions {
+    #[serde(deserialize_with = "deserialize_ascii_char")]
     quote: u8,
     delimiter: u8,
+}
+
+fn deserialize_ascii_char<'de, D>(deserializer: D) -> Result<u8, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct AsciiCharVisitor;
+    impl<'de> Visitor<'de> for AsciiCharVisitor {
+        type Value = u8;
+        fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            write!(f, "a single ASCII character")
+        }
+        fn visit_str<E>(self, s: &str) -> Result<u8, E>
+        where
+            E: serde::de::Error,
+        {
+            if s.len() == 1 {
+                Ok(s.chars().next().unwrap() as u8)
+            } else {
+                Err(serde::de::Error::invalid_value(Unexpected::Str(s), &self))
+            }
+        }
+    }
+    deserializer.deserialize_char(AsciiCharVisitor)
 }
 
 impl Default for CsvOptions {
@@ -89,12 +128,12 @@ impl Display for CsvField<'_> {
 }
 
 impl CsvDriver {
-    pub fn new(file: File) -> Self {
-        Self {
-            file,
-            options: CsvOptions::default(),
+    pub fn new(config: &CsvConfig) -> std::io::Result<Self> {
+        Ok(Self {
+            file: BufWriter::new(File::create(&config.file)?),
+            options: config.options.clone(),
             n_items: 0,
-        }
+        })
     }
 
     fn start_item(&mut self) {
@@ -162,7 +201,7 @@ impl Driver for CsvDriver {
             Details::Message(diagnostic) => {
                 self.start_item();
                 let text = diagnostic.to_string();
-                writeln!(&self.file, "{}", CsvField::new(&text, self.options)).unwrap();
+                writeln!(&mut self.file, "{}", CsvField::new(&text, self.options)).unwrap();
             }
             Details::Table(pivot_table) => {
                 for layer in pivot_table.layers(true) {
@@ -178,7 +217,7 @@ impl Driver for CsvDriver {
                 TextType::Title | TextType::Log => {
                     self.start_item();
                     for line in text.content.display(()).to_string().lines() {
-                        writeln!(&self.file, "{}", CsvField::new(line, self.options)).unwrap();
+                        writeln!(&mut self.file, "{}", CsvField::new(line, self.options)).unwrap();
                     }
                 }
             },

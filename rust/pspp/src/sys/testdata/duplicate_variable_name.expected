@@ -13,6 +13,7 @@ Renaming variable with duplicate name VAR1 to VAR001.
 │Variables│2│
 ╰─────────┴─╯
 
+                                                Variables
 ╭──────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │      │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├──────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

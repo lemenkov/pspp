@@ -1,1 +1,1 @@
-Error at file offsets 0x1ac to 0x1c4: ZLIB trailer specifies unexpected 4096-byte block size.
+Error at file offsets 0x1ac to 0x1c4: Error reading ZLIB trailer: Unexpected 1000-byte block size (expected 0x3ff000).

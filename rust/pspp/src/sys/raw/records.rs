@@ -5,38 +5,47 @@
 use std::{
     borrow::Cow,
     collections::BTreeMap,
-    fmt::{Debug, Formatter},
+    fmt::{Debug, Display, Formatter},
     io::{Cursor, ErrorKind, Read, Seek, SeekFrom},
     ops::Range,
     str::from_utf8,
 };
 
 use crate::{
-    data::{Datum, RawString},
-    dictionary::{
-        Alignment, Attributes, CategoryLabels, Measure, MissingValueRange, MissingValues, VarType,
-        VarWidth,
-    },
-    endian::{Endian, Parse},
+    data::{ByteStrArray, ByteString, Datum},
+    dictionary::CategoryLabels,
+    endian::FromBytes,
+    format::{DisplayPlainF64, Format, Type},
     identifier::{Error as IdError, Identifier},
-    sys::raw::{
-        read_bytes, read_string, read_vec, Decoder, Error, ErrorDetails, Magic, RawDatum,
-        RawStrArray, RawWidth, Record, UntypedDatum, VarTypes, Warning, WarningDetails,
+    sys::{
+        raw::{
+            read_bytes, read_string, read_vec, Decoder, Error, ErrorDetails, Magic, RawDatum,
+            RawWidth, Record, RecordString, UntypedDatum, VarTypes, Warning, WarningDetails,
+        },
+        serialize_endian, ProductVersion,
+    },
+    variable::{
+        Alignment, Attributes, Measure, MissingValueRange, MissingValues, MissingValuesError,
+        VarType, VarWidth,
     },
 };
 
-use binrw::BinRead;
+use binrw::{binrw, BinRead, BinWrite, Endian, Error as BinError};
+use clap::ValueEnum;
+use encoding_rs::Encoding;
 use itertools::Itertools;
+use serde::{ser::SerializeTuple, Serialize, Serializer};
 use thiserror::Error as ThisError;
 
 /// Type of compression in a system file.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, ValueEnum)]
 pub enum Compression {
     /// Simple bytecode-based compression.
     Simple,
     /// [ZLIB] compression.
     ///
     /// [ZLIB]: https://www.zlib.net/
+    #[value(name = "zlib", help = "ZLIB space-efficient compression")]
     ZLib,
 }
 
@@ -49,10 +58,10 @@ pub enum HeaderWarning {
 }
 
 /// A file header record in a system file.
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize)]
 pub struct FileHeader<S>
 where
-    S: Debug,
+    S: Debug + Serialize,
 {
     /// Magic number.
     pub magic: Magic,
@@ -91,43 +100,50 @@ where
     pub file_label: S,
 
     /// Endianness of the data in the file header.
+    #[serde(serialize_with = "serialize_endian")]
     pub endian: Endian,
 }
 
-impl<S> FileHeader<S>
-where
-    S: Debug,
-{
-    fn debug_field<T>(&self, f: &mut Formatter, name: &str, value: T) -> std::fmt::Result
-    where
-        T: Debug,
-    {
-        writeln!(f, "{name:>17}: {:?}", value)
-    }
+/// Raw file header.
+#[derive(BinRead, BinWrite)]
+pub struct RawHeader {
+    /// Magic number.
+    pub magic: [u8; 4],
+
+    /// Eye-catcher string and product name.
+    pub eye_catcher: [u8; 60],
+
+    /// Layout code, normally either 2 or 3.
+    pub layout_code: u32,
+
+    /// Claimed number of variable positions (not always accurate).
+    pub nominal_case_size: u32,
+
+    /// Compression type.
+    pub compression_code: u32,
+
+    /// 1-based variable index of the weight variable, or 0 if the file is
+    /// unweighted.
+    pub weight_index: u32,
+
+    /// Claimed number of cases, or [u32::MAX] if unknown.
+    pub n_cases: u32,
+
+    /// Compression bias, usually 100.0.
+    pub bias: f64,
+
+    /// `dd mmm yy` in the file's encoding.
+    pub creation_date: [u8; 9],
+
+    /// `HH:MM:SS` in the file's encoding.
+    pub creation_time: [u8; 8],
+
+    /// File label, in the file's encoding.  Padded on the right with spaces.
+    #[brw(pad_after = 3)]
+    pub file_label: [u8; 64],
 }
 
-impl<S> Debug for FileHeader<S>
-where
-    S: Debug,
-{
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(f, "File header record:")?;
-        self.debug_field(f, "Magic", self.magic)?;
-        self.debug_field(f, "Product name", &self.eye_catcher)?;
-        self.debug_field(f, "Layout code", self.layout_code)?;
-        self.debug_field(f, "Nominal case size", self.nominal_case_size)?;
-        self.debug_field(f, "Compression", self.compression)?;
-        self.debug_field(f, "Weight index", self.weight_index)?;
-        self.debug_field(f, "Number of cases", self.n_cases)?;
-        self.debug_field(f, "Compression bias", self.bias)?;
-        self.debug_field(f, "Creation date", &self.creation_date)?;
-        self.debug_field(f, "Creation time", &self.creation_time)?;
-        self.debug_field(f, "File label", &self.file_label)?;
-        self.debug_field(f, "Endianness", self.endian)
-    }
-}
-
-impl FileHeader<RawString> {
+impl FileHeader<ByteString> {
     /// Reads a header record from `r`, reporting any warnings via `warn`.
     pub fn read<R>(r: &mut R, warn: &mut dyn FnMut(Warning)) -> Result<Self, Error>
     where
@@ -150,22 +166,6 @@ impl FileHeader<RawString> {
         header_bytes: &[u8],
         warn: &mut dyn FnMut(Warning),
     ) -> Result<Self, ErrorDetails> {
-        #[derive(BinRead)]
-        struct RawHeader {
-            magic: [u8; 4],
-            eye_catcher: [u8; 60],
-            layout_code: u32,
-            nominal_case_size: u32,
-            compression_code: u32,
-            weight_index: u32,
-            n_cases: u32,
-            bias: f64,
-            creation_date: [u8; 9],
-            creation_time: [u8; 8],
-            file_label: [u8; 64],
-            _padding: [u8; 3],
-        }
-
         if &header_bytes[8..20] == b"ENCRYPTEDSAV" {
             return Err(ErrorDetails::Encrypted);
         }
@@ -200,7 +200,7 @@ impl FileHeader<RawString> {
 
         let weight_index = (header.weight_index > 0).then_some(header.weight_index);
 
-        let n_cases = (header.n_cases < i32::MAX as u32 / 2).then_some(header.n_cases);
+        let n_cases = (header.n_cases <= u32::MAX / 2).then_some(header.n_cases);
 
         if header.bias != 100.0 && header.bias != 0.0 {
             warn(Warning::new(
@@ -208,10 +208,6 @@ impl FileHeader<RawString> {
                 HeaderWarning::UnexpectedBias(header.bias),
             ));
         }
-
-        let creation_date = RawString(header.creation_date.into());
-        let creation_time = RawString(header.creation_time.into());
-        let file_label = RawString(header.file_label.into());
 
         Ok(FileHeader {
             magic,
@@ -221,10 +217,10 @@ impl FileHeader<RawString> {
             weight_index,
             n_cases,
             bias: header.bias,
-            creation_date,
-            creation_time,
-            eye_catcher: RawString(header.eye_catcher.into()),
-            file_label,
+            creation_date: header.creation_date.into(),
+            creation_time: header.creation_time.into(),
+            eye_catcher: header.eye_catcher.into(),
+            file_label: header.file_label.into(),
             endian,
         })
     }
@@ -250,22 +246,70 @@ impl FileHeader<RawString> {
             endian: self.endian,
         }
     }
+
+    /// Returns [RecordString]s for this file header.
+    pub fn get_strings(&self) -> Vec<RecordString> {
+        vec![
+            RecordString::new("Product", &self.eye_catcher.0[5..], false),
+            RecordString::new("File Label", &self.file_label, false),
+        ]
+    }
 }
 
-/// [Format](crate::format::Format) as represented in a system file.
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+/// [Format] as represented in a system file.
+#[derive(Copy, Clone, PartialEq, Eq, Hash, BinRead, BinWrite)]
 pub struct RawFormat(
     /// The most-significant 16 bits are the type, the next 8 bytes are the
     /// width, and the least-significant 8 bits are the number of decimals.
     pub u32,
 );
 
+/// Cannot convert very long string (wider than 255 bytes) to [RawFormat].
+#[derive(Copy, Clone, Debug)]
+pub struct VeryLongStringError;
+
+impl TryFrom<Format> for RawFormat {
+    type Error = VeryLongStringError;
+
+    fn try_from(value: Format) -> Result<Self, Self::Error> {
+        let type_ = u16::from(value.type_()) as u32;
+        let w = match value.var_width() {
+            VarWidth::Numeric => value.w() as u8,
+            VarWidth::String(w) if w > 255 => return Err(VeryLongStringError),
+            VarWidth::String(w) if value.type_() == Type::AHex => (w * 2).min(255) as u8,
+            VarWidth::String(w) => w as u8,
+        } as u32;
+        let d = value.d() as u32;
+        Ok(Self((type_ << 16) | (w << 8) | d))
+    }
+}
+
+struct RawFormatDisplayMeaning(RawFormat);
+
+impl Display for RawFormatDisplayMeaning {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let type_ = format_name(self.0 .0 >> 16);
+        let w = (self.0 .0 >> 8) & 0xff;
+        let d = self.0 .0 & 0xff;
+        write!(f, "{type_}{w}.{d}")
+    }
+}
+
 impl Debug for RawFormat {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let type_ = format_name(self.0 >> 16);
-        let w = (self.0 >> 8) & 0xff;
-        let d = self.0 & 0xff;
-        write!(f, "{:06x} ({type_}{w}.{d})", self.0)
+        write!(f, "{:06x} ({})", self.0, RawFormatDisplayMeaning(*self))
+    }
+}
+
+impl Serialize for RawFormat {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut tuple = serializer.serialize_tuple(2)?;
+        tuple.serialize_element(&self.0)?;
+        tuple.serialize_element(&RawFormatDisplayMeaning(*self).to_string())?;
+        tuple.end()
     }
 }
 
@@ -313,7 +357,25 @@ fn format_name(type_: u32) -> Cow<'static, str> {
     .into()
 }
 
-impl MissingValues {
+/// Missing values in a [VariableRecord].
+///
+/// This is the format used before we know the character encoding for the system
+/// file.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct RawMissingValues {
+    /// Individual missing values, up to 3 of them.
+    pub values: Vec<Datum<ByteString>>,
+
+    /// Optional range of missing values.
+    pub range: Option<MissingValueRange>,
+}
+
+impl RawMissingValues {
+    /// Constructs new raw missing values.
+    pub fn new(values: Vec<Datum<ByteString>>, range: Option<MissingValueRange>) -> Self {
+        Self { values, range }
+    }
+
     fn read<R>(
         r: &mut R,
         offsets: Range<u64>,
@@ -392,7 +454,7 @@ impl MissingValues {
                 let range = range.map(|(low, high)| {
                     MissingValueRange::new(endian.parse(low), endian.parse(high))
                 });
-                return Ok(Self::new(values, range).unwrap());
+                return Ok(Self::new(values, range));
             }
             Ok(VarWidth::String(_)) if range.is_some() => warn(Warning::new(
                 Some(offsets),
@@ -402,9 +464,9 @@ impl MissingValues {
                 let width = width.min(8) as usize;
                 let values = values
                     .into_iter()
-                    .map(|value| Datum::String(RawString::from(&value[..width])))
+                    .map(|value| Datum::String(ByteString::from(&value[..width])))
                     .collect();
-                return Ok(Self::new(values, None).unwrap());
+                return Ok(Self::new(values, None));
             }
             Err(()) => warn(Warning::new(
                 Some(offsets),
@@ -412,6 +474,17 @@ impl MissingValues {
             )),
         }
         Ok(Self::default())
+    }
+
+    /// Returns [MissingValues] for these raw missing values, using `encoding`.
+    pub fn decode(&self, encoding: &'static Encoding) -> Result<MissingValues, MissingValuesError> {
+        MissingValues::new(
+            self.values
+                .iter()
+                .map(|datum| datum.clone().with_encoding(encoding))
+                .collect(),
+            self.range,
+        )
     }
 }
 
@@ -428,10 +501,10 @@ pub enum VariableWarning {
 }
 
 /// A variable record in a system file.
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VariableRecord<S>
 where
-    S: Debug,
+    S: Debug + Serialize,
 {
     /// Range of offsets in file.
     pub offsets: Range<u64>,
@@ -449,46 +522,45 @@ where
     pub write_format: RawFormat,
 
     /// Missing values.
-    pub missing_values: MissingValues,
+    pub missing_values: RawMissingValues,
 
     /// Optional variable label.
     pub label: Option<S>,
 }
 
-impl<S> Debug for VariableRecord<S>
-where
-    S: Debug,
-{
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(f, "Width: {}", self.width,)?;
-        writeln!(f, "Print format: {:?}", self.print_format)?;
-        writeln!(f, "Write format: {:?}", self.write_format)?;
-        writeln!(f, "Name: {:?}", &self.name)?;
-        writeln!(f, "Variable label: {:?}", self.label)?;
-        writeln!(f, "Missing values: {:?}", self.missing_values)
-    }
+/// Raw variable record.
+#[derive(BinRead, BinWrite)]
+pub struct RawVariableRecord {
+    /// Variable width, in the range -1..=255.
+    pub width: i32,
+
+    /// 1 if the variable has a label, 0 otherwise.
+    pub has_variable_label: u32,
+
+    /// - 0 for no missing values.
+    /// - 1 for one missing value.
+    /// - 2 for two missing values.
+    /// - 3 for three missing values.
+    /// - -2 for a range of missing values.
+    /// - -3 for an individual missing value plus a range.
+    pub missing_value_code: i32,
+
+    /// Print format.
+    pub print_format: RawFormat,
+
+    /// Write format.
+    pub write_format: RawFormat,
+
+    /// Variable name, padded with spaces.
+    pub name: [u8; 8],
 }
 
-impl VariableRecord<RawString> {
+impl VariableRecord<ByteString> {
     /// Reads a variable record from `r`.
-    pub fn read<R>(
-        r: &mut R,
-        endian: Endian,
-        warn: &mut dyn FnMut(Warning),
-    ) -> Result<Record, Error>
+    pub fn read<R>(r: &mut R, endian: Endian, warn: &mut dyn FnMut(Warning)) -> Result<Self, Error>
     where
         R: Read + Seek,
     {
-        #[derive(BinRead)]
-        struct RawVariableRecord {
-            width: i32,
-            has_variable_label: u32,
-            missing_value_code: i32,
-            print_format: u32,
-            write_format: u32,
-            name: [u8; 8],
-        }
-
         let start_offset = r.stream_position()?;
         let offsets = start_offset..start_offset + 28;
         let raw_record =
@@ -508,12 +580,12 @@ impl VariableRecord<RawString> {
             1 => {
                 let len: u32 = endian.parse(read_bytes(r)?);
                 let read_len = len.min(65535) as usize;
-                let label = RawString(read_vec(r, read_len)?);
+                let label = read_vec(r, read_len)?;
 
                 let padding_bytes = len.next_multiple_of(4) - len;
                 let _ = read_vec(r, padding_bytes as usize)?;
 
-                Some(label)
+                Some(label.into())
             }
             _ => {
                 return Err(Error::new(
@@ -523,7 +595,7 @@ impl VariableRecord<RawString> {
             }
         };
 
-        let missing_values = MissingValues::read(
+        let missing_values = RawMissingValues::read(
             r,
             offsets,
             width,
@@ -534,15 +606,15 @@ impl VariableRecord<RawString> {
 
         let end_offset = r.stream_position()?;
 
-        Ok(Record::Variable(VariableRecord {
+        Ok(Self {
             offsets: start_offset..end_offset,
             width,
-            name: RawString(raw_record.name.into()),
-            print_format: RawFormat(raw_record.print_format),
-            write_format: RawFormat(raw_record.write_format),
+            name: raw_record.name.into(),
+            print_format: raw_record.print_format,
+            write_format: raw_record.write_format,
             missing_values,
             label,
-        }))
+        })
     }
 
     /// Decodes a variable record using `decoder`.
@@ -591,11 +663,11 @@ pub enum ValueLabelWarning {
 }
 
 /// A value and label in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ValueLabel<D, S>
 where
-    D: Debug,
-    S: Debug,
+    D: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// The value being labeled.
     pub datum: D,
@@ -607,11 +679,11 @@ where
 ///
 /// This represents both the type-3 and type-4 records together, since they are
 /// always paired anyway.
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ValueLabelRecord<D, S>
 where
-    D: Debug,
-    S: Debug,
+    D: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// Range of offsets in file.
     pub offsets: Range<u64>,
@@ -626,28 +698,10 @@ where
     pub var_type: VarType,
 }
 
-impl<D, S> Debug for ValueLabelRecord<D, S>
-where
-    D: Debug,
-    S: Debug,
-{
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        writeln!(f, "labels: ")?;
-        for label in self.labels.iter() {
-            writeln!(f, "{label:?}")?;
-        }
-        write!(f, "apply to {} variables", self.var_type)?;
-        for dict_index in self.dict_indexes.iter() {
-            write!(f, " #{dict_index}")?;
-        }
-        Ok(())
-    }
-}
-
 impl<D, S> ValueLabelRecord<D, S>
 where
-    D: Debug,
-    S: Debug,
+    D: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// Maximum number of value labels in a record.
     pub const MAX_LABELS: u32 = u32::MAX / 8;
@@ -656,13 +710,16 @@ where
     pub const MAX_INDEXES: u32 = u32::MAX / 8;
 }
 
-impl ValueLabelRecord<RawDatum, RawString> {
-    pub(super) fn read<R: Read + Seek>(
+impl ValueLabelRecord<RawDatum, ByteString> {
+    /// Reads a value label record from `r`, with the given `endian`, given that
+    /// the variables in the system file have the types in `var_types`, and
+    /// using `warn` to report warnings.
+    pub fn read<R: Read + Seek>(
         r: &mut R,
         endian: Endian,
         var_types: &VarTypes,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Option<Record>, Error> {
+    ) -> Result<Option<Self>, Error> {
         let label_offset = r.stream_position()?;
         let n: u32 = endian.parse(read_bytes(r)?);
         if n > Self::MAX_LABELS {
@@ -684,7 +741,7 @@ impl ValueLabelRecord<RawDatum, RawString> {
 
             let mut label = read_vec(r, padded_len - 1)?;
             label.truncate(label_len);
-            labels.push((value, RawString(label)));
+            labels.push((value, label.into()));
         }
 
         let index_offset = r.stream_position()?;
@@ -739,10 +796,10 @@ impl ValueLabelRecord<RawDatum, RawString> {
         let Some(&first_index) = dict_indexes.first() else {
             return Ok(None);
         };
-        let var_type = VarType::from(var_types.types[first_index as usize - 1].unwrap());
+        let var_type = var_types.var_type_at(first_index as usize).unwrap();
         let mut wrong_type_indexes = Vec::new();
         dict_indexes.retain(|&index| {
-            if var_types.types[index as usize - 1].map(VarType::from) != Some(var_type) {
+            if var_types.var_type_at(index as usize) != Some(var_type) {
                 wrong_type_indexes.push(index);
                 false
             } else {
@@ -768,12 +825,12 @@ impl ValueLabelRecord<RawDatum, RawString> {
             .collect();
 
         let end_offset = r.stream_position()?;
-        Ok(Some(Record::ValueLabel(ValueLabelRecord {
+        Ok(Some(ValueLabelRecord {
             offsets: label_offset..end_offset,
             labels,
             dict_indexes,
             var_type,
-        })))
+        }))
     }
 
     /// Decodes a value label record using `decoder`.
@@ -801,10 +858,10 @@ impl ValueLabelRecord<RawDatum, RawString> {
 }
 
 /// A document record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct DocumentRecord<S>
 where
-    S: Debug,
+    S: Debug + Serialize,
 {
     /// The range of file offsets occupied by the record.
     pub offsets: Range<u64>,
@@ -815,7 +872,7 @@ where
 }
 
 /// One line in a document.
-pub type RawDocumentLine = RawStrArray<DOC_LINE_LEN>;
+pub type RawDocumentLine = ByteStrArray<DOC_LINE_LEN>;
 
 /// Length of a line in a document.  Document lines are fixed-length and
 /// padded on the right with spaces.
@@ -827,7 +884,7 @@ impl DocumentRecord<RawDocumentLine> {
     pub const MAX_LINES: usize = i32::MAX as usize / DOC_LINE_LEN;
 
     /// Reads a document record from `r`.
-    pub fn read<R>(r: &mut R, endian: Endian) -> Result<Record, Error>
+    pub fn read<R>(r: &mut R, endian: Endian) -> Result<Self, Error>
     where
         R: Read + Seek,
     {
@@ -846,11 +903,11 @@ impl DocumentRecord<RawDocumentLine> {
             let offsets = start_offset..start_offset.saturating_add((n * DOC_LINE_LEN) as u64);
             let mut lines = Vec::with_capacity(n);
             for _ in 0..n {
-                lines.push(RawStrArray(
+                lines.push(ByteStrArray(
                     read_bytes(r).map_err(|e| Error::new(Some(offsets.clone()), e.into()))?,
                 ));
             }
-            Ok(Record::Document(DocumentRecord { offsets, lines }))
+            Ok(DocumentRecord { offsets, lines })
         }
     }
 
@@ -882,15 +939,21 @@ pub struct ExtensionRecord<'a> {
 }
 
 /// An integer info record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct IntegerInfoRecord {
     /// File offsets occupied by the record.
     pub offsets: Range<u64>,
 
+    /// Details.
+    #[serde(flatten)]
+    pub inner: RawIntegerInfoRecord,
+}
+
+/// Machine integer info record in [mod@binrw] format.
+#[derive(Clone, Debug, BinRead, BinWrite, Serialize)]
+pub struct RawIntegerInfoRecord {
     /// Version number.
-    ///
-    /// e.g. `(1,2,3)` for version 1.2.3.
-    pub version: (i32, i32, i32),
+    pub version: ProductVersion,
 
     /// Identifies the type of machine.
     ///
@@ -915,18 +978,12 @@ impl IntegerInfoRecord {
     pub fn parse(ext: &Extension, endian: Endian) -> Result<Record, WarningDetails> {
         ext.check_size(Some(4), Some(8), "integer record")?;
 
-        let mut input = &ext.data[..];
-        let data: Vec<i32> = (0..8)
-            .map(|_| endian.parse(read_bytes(&mut input).unwrap()))
-            .collect();
+        let inner =
+            RawIntegerInfoRecord::read_options(&mut Cursor::new(ext.data.as_slice()), endian, ())
+                .unwrap();
         Ok(Record::IntegerInfo(IntegerInfoRecord {
             offsets: ext.offsets.clone(),
-            version: (data[0], data[1], data[2]),
-            machine_code: data[3],
-            floating_point_rep: data[4],
-            compression_code: data[5],
-            endianness: data[6],
-            character_code: data[7],
+            inner,
         }))
     }
 }
@@ -936,20 +993,14 @@ impl FloatInfoRecord {
     pub fn parse(ext: &Extension, endian: Endian) -> Result<Record, WarningDetails> {
         ext.check_size(Some(8), Some(3), "floating point record")?;
 
-        let mut input = &ext.data[..];
-        let data: Vec<f64> = (0..3)
-            .map(|_| endian.parse(read_bytes(&mut input).unwrap()))
-            .collect();
-        Ok(Record::FloatInfo(FloatInfoRecord {
-            sysmis: data[0],
-            highest: data[1],
-            lowest: data[2],
-        }))
+        let data = FloatInfoRecord::read_options(&mut Cursor::new(ext.data.as_slice()), endian, ())
+            .unwrap();
+        Ok(Record::FloatInfo(data))
     }
 }
 
 /// A floating-point info record.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, BinRead, BinWrite, Serialize)]
 pub struct FloatInfoRecord {
     /// Value used for system-missing values.
     pub sysmis: f64,
@@ -962,10 +1013,10 @@ pub struct FloatInfoRecord {
 }
 
 /// Long variable names record.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct RawLongNamesRecord(
     /// Text contents of record.
-    TextRecord,
+    pub TextRecord,
 );
 
 impl RawLongNamesRecord {
@@ -993,13 +1044,13 @@ impl RawLongNamesRecord {
 }
 
 /// An extension record whose contents are a text string.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct TextRecord {
     /// Range of file offsets for this record in bytes.
     pub offsets: Range<u64>,
 
     /// The text content of the record.
-    pub text: RawString,
+    pub text: ByteString,
 }
 
 impl TextRecord {
@@ -1036,7 +1087,7 @@ pub enum VeryLongStringWarning {
 }
 
 /// A very long string parsed from a [VeryLongStringsRecord].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VeryLongString {
     /// Short name of very long string variable.
     pub short_name: Identifier,
@@ -1063,11 +1114,11 @@ impl VeryLongString {
 }
 
 /// A very long string record as text.
-#[derive(Clone, Debug)]
-pub struct RawVeryLongStringsRecord(TextRecord);
+#[derive(Clone, Debug, Serialize)]
+pub struct RawVeryLongStringsRecord(pub TextRecord);
 
 /// A parsed very long string record.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VeryLongStringsRecord(
     /// The very long strings.
     pub Vec<VeryLongString>,
@@ -1157,12 +1208,12 @@ pub enum MultipleResponseWarning {
 }
 
 /// The type of a multiple-response set.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum MultipleResponseType {
     /// Multiple-dichotomy set.
     MultipleDichotomy {
         /// The value that is counted in the set.
-        value: RawString,
+        value: ByteString,
 
         /// What categories are labeled.
         labels: CategoryLabels,
@@ -1189,16 +1240,23 @@ impl MultipleResponseType {
                 )
             }
             Some((b'E', input)) => {
-                let (labels, input) = if let Some(rest) = input.strip_prefix(b" 1 ") {
-                    (CategoryLabels::CountedValues, rest)
+                let (use_var_label_as_mrset_label, input) = if let Some(rest) =
+                    input.strip_prefix(b" 1 ")
+                {
+                    (false, rest)
                 } else if let Some(rest) = input.strip_prefix(b" 11 ") {
-                    (CategoryLabels::VarLabels, rest)
+                    (true, rest)
                 } else {
                     return Err(MultipleResponseWarning::InvalidMultipleDichotomyLabelType.into());
                 };
                 let (value, input) = parse_counted_string(input)?;
                 (
-                    MultipleResponseType::MultipleDichotomy { value, labels },
+                    MultipleResponseType::MultipleDichotomy {
+                        value,
+                        labels: CategoryLabels::CountedValues {
+                            use_var_label_as_mrset_label,
+                        },
+                    },
                     input,
                 )
             }
@@ -1209,11 +1267,11 @@ impl MultipleResponseType {
 }
 
 /// A multiple-response set in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct MultipleResponseSet<I, S>
 where
-    I: Debug,
-    S: Debug,
+    I: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// The set's name.
     pub name: I,
@@ -1225,7 +1283,7 @@ where
     pub short_names: Vec<I>,
 }
 
-impl MultipleResponseSet<RawString, RawString> {
+impl MultipleResponseSet<ByteString, ByteString> {
     /// Parses a multiple-response set from `input`.  Returns the set and the
     /// input remaining to be parsed following the set.
     fn parse(input: &[u8]) -> Result<(Self, &[u8]), WarningDetails> {
@@ -1309,11 +1367,11 @@ impl MultipleResponseSet<RawString, RawString> {
 }
 
 /// A multiple-response set record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct MultipleResponseRecord<I, S>
 where
-    I: Debug,
-    S: Debug,
+    I: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// File offsets of the record.
     pub offsets: Range<u64>,
@@ -1322,7 +1380,7 @@ where
     pub sets: Vec<MultipleResponseSet<I, S>>,
 }
 
-impl MultipleResponseRecord<RawString, RawString> {
+impl MultipleResponseRecord<ByteString, ByteString> {
     /// Parses a multiple-response set from `ext`.
     pub fn parse(ext: &Extension) -> Result<Record, WarningDetails> {
         ext.check_size(Some(1), None, "multiple response set record")?;
@@ -1347,7 +1405,7 @@ impl MultipleResponseRecord<RawString, RawString> {
     }
 }
 
-impl MultipleResponseRecord<RawString, RawString> {
+impl MultipleResponseRecord<ByteString, ByteString> {
     /// Decodes this record using `decoder`.
     pub fn decode(self, decoder: &mut Decoder) -> MultipleResponseRecord<Identifier, String> {
         let mut sets = Vec::new();
@@ -1366,7 +1424,7 @@ impl MultipleResponseRecord<RawString, RawString> {
     }
 }
 
-fn parse_counted_string(input: &[u8]) -> Result<(RawString, &[u8]), WarningDetails> {
+fn parse_counted_string(input: &[u8]) -> Result<(ByteString, &[u8]), WarningDetails> {
     let Some(space) = input.iter().position(|&b| b == b' ') else {
         return Err(MultipleResponseWarning::CountedStringMissingSpace.into());
     };
@@ -1436,7 +1494,7 @@ impl Alignment {
 }
 
 /// Variable display settings for one variable, in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VarDisplay {
     /// Measurement level.
     pub measure: Option<Measure>,
@@ -1449,7 +1507,7 @@ pub struct VarDisplay {
 }
 
 /// A variable display record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VarDisplayRecord(
     /// Variable display settings for each variable.
     pub Vec<VarDisplay>,
@@ -1520,19 +1578,19 @@ pub enum LongStringMissingValuesWarning {
 }
 
 /// Missing values for one long string variable.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongStringMissingValues<N>
 where
-    N: Debug,
+    N: Debug + Serialize,
 {
     /// Variable name.
     pub var_name: N,
 
     /// Missing values.
-    pub missing_values: Vec<RawStrArray<8>>,
+    pub missing_values: Vec<ByteStrArray<8>>,
 }
 
-impl LongStringMissingValues<RawString> {
+impl LongStringMissingValues<ByteString> {
     /// Decodes these settings using `decoder`.
     fn decode(
         &self,
@@ -1546,10 +1604,10 @@ impl LongStringMissingValues<RawString> {
 }
 
 /// Long string missing values record in a sytem file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongStringMissingValueRecord<N>
 where
-    N: Debug,
+    N: Debug + Serialize,
 {
     /// The record's file offsets.
     pub offsets: Range<u64>,
@@ -1558,7 +1616,7 @@ where
     pub values: Vec<LongStringMissingValues<N>>,
 }
 
-impl LongStringMissingValueRecord<RawString> {
+impl LongStringMissingValueRecord<ByteString> {
     /// Parses this record from `ext`.
     pub fn parse(
         ext: &Extension,
@@ -1596,7 +1654,7 @@ impl LongStringMissingValueRecord<RawString> {
                 }
 
                 let value: [u8; 8] = read_bytes(&mut input)?;
-                missing_values.push(RawStrArray(value));
+                missing_values.push(ByteStrArray(value));
             }
             missing_value_set.push(LongStringMissingValues {
                 var_name,
@@ -1631,7 +1689,7 @@ impl LongStringMissingValueRecord<RawString> {
 }
 
 /// A character encoding record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct EncodingRecord(
     /// The encoding name.
     pub String,
@@ -1649,13 +1707,13 @@ impl EncodingRecord {
 }
 
 /// The extended number of cases record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct NumberOfCasesRecord {
     /// Always observed as 1.
     pub one: u64,
 
     /// Number of cases.
-    pub n_cases: u64,
+    pub n_cases: Option<u64>,
 }
 
 impl NumberOfCasesRecord {
@@ -1666,6 +1724,7 @@ impl NumberOfCasesRecord {
         let mut input = &ext.data[..];
         let one = endian.parse(read_bytes(&mut input)?);
         let n_cases = endian.parse(read_bytes(&mut input)?);
+        let n_cases = (n_cases < u64::MAX).then_some(n_cases);
 
         Ok(Record::NumberOfCases(NumberOfCasesRecord { one, n_cases }))
     }
@@ -1687,7 +1746,7 @@ pub enum VariableSetWarning {
 }
 
 /// Raw (text) version of the variable set record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct RawVariableSetRecord(TextRecord);
 
 impl RawVariableSetRecord {
@@ -1718,8 +1777,8 @@ impl RawVariableSetRecord {
 }
 
 /// Raw (text) version of a product info record in a system file.
-#[derive(Clone, Debug)]
-pub struct RawProductInfoRecord(TextRecord);
+#[derive(Clone, Debug, Serialize)]
+pub struct RawProductInfoRecord(pub TextRecord);
 
 impl RawProductInfoRecord {
     /// Parses the record from `extension`.
@@ -1893,11 +1952,11 @@ impl Attributes {
 }
 
 /// A raw (text) file attributes record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct RawFileAttributesRecord(TextRecord);
 
 /// A decoded file attributes record in a system file.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct FileAttributesRecord(pub Attributes);
 
 impl RawFileAttributesRecord {
@@ -1938,7 +1997,7 @@ impl RawFileAttributesRecord {
 }
 
 /// A set of variable attributes in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VarAttributes {
     /// The long name of the variable associated with the attributes.
     pub long_var_name: Identifier,
@@ -1983,11 +2042,11 @@ impl VarAttributes {
 }
 
 /// A raw (text) variable attributes record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct RawVariableAttributesRecord(TextRecord);
 
 /// A decoded variable attributes record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VariableAttributesRecord(pub Vec<VarAttributes>);
 
 impl RawVariableAttributesRecord {
@@ -2040,7 +2099,7 @@ pub enum LongNameWarning {
 }
 
 /// A long variable name in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongName {
     /// The variable's short name.
     pub short_name: Identifier,
@@ -2071,15 +2130,15 @@ impl LongName {
 }
 
 /// A long variable name record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongNamesRecord(pub Vec<LongName>);
 
 /// A product info record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ProductInfoRecord(pub String);
 
 /// A variable set in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VariableSet {
     /// Name of the variable set.
     pub name: String,
@@ -2118,7 +2177,7 @@ impl VariableSet {
 }
 
 /// A variable set record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct VariableSetRecord {
     /// Range of file offsets occupied by the record.
     pub offsets: Range<u64>,
@@ -2179,7 +2238,7 @@ pub enum ExtensionWarning {
 ///
 /// Most of the records in system files are "extension records".  This structure
 /// collects everything in an extension record for later processing.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Extension {
     /// File offsets occupied by the extension record.
     ///
@@ -2232,7 +2291,10 @@ impl Extension {
         }
     }
 
-    pub(super) fn read<R: Read + Seek>(
+    /// Reads an extension record from `r`, with the given `endian`, given that
+    /// the variables in the system file have the types in `var_types`, and
+    /// using `warn` to report warnings.
+    pub fn read<R: Read + Seek>(
         r: &mut R,
         endian: Endian,
         var_types: &VarTypes,
@@ -2302,10 +2364,10 @@ pub enum LongStringValueLabelWarning {
 }
 
 /// One set of long string value labels record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongStringValueLabels<N, S>
 where
-    S: Debug,
+    S: Debug + Serialize,
 {
     /// The variable being labeled.
     pub var_name: N,
@@ -2314,10 +2376,10 @@ where
     pub width: u32,
 
     /// `(value, label)` pairs, where each value is `width` bytes.
-    pub labels: Vec<(RawString, S)>,
+    pub labels: Vec<(ByteString, S)>,
 }
 
-impl LongStringValueLabels<RawString, RawString> {
+impl LongStringValueLabels<ByteString, ByteString> {
     /// Decodes a set of long string value labels using `decoder`.
     fn decode(
         &self,
@@ -2342,11 +2404,11 @@ impl LongStringValueLabels<RawString, RawString> {
 }
 
 /// A long string value labels record in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct LongStringValueLabelRecord<N, S>
 where
-    N: Debug,
-    S: Debug,
+    N: Debug + Serialize,
+    S: Debug + Serialize,
 {
     /// File offsets occupied by the record.
     pub offsets: Range<u64>,
@@ -2355,7 +2417,7 @@ where
     pub labels: Vec<LongStringValueLabels<N, S>>,
 }
 
-impl LongStringValueLabelRecord<RawString, RawString> {
+impl LongStringValueLabelRecord<ByteString, ByteString> {
     /// Parses this record from `ext` using `endian`.
     fn parse(ext: &Extension, endian: Endian) -> Result<Record, WarningDetails> {
         ext.check_size(Some(1), None, "long string value labels record")?;
@@ -2401,11 +2463,19 @@ impl LongStringValueLabelRecord<RawString, RawString> {
 }
 
 /// ZLIB header, for [Compression::ZLib].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ZHeader {
     /// File offset to the start of the record.
     pub offset: u64,
 
+    /// Raw header.
+    #[serde(flatten)]
+    pub inner: RawZHeader,
+}
+
+/// A ZLIB header in a system file.
+#[derive(Clone, Debug, BinRead, BinWrite, Serialize)]
+pub struct RawZHeader {
     /// File offset to the ZLIB data header.
     pub zheader_offset: u64,
 
@@ -2423,37 +2493,74 @@ impl ZHeader {
         R: Read + Seek,
     {
         let offset = r.stream_position()?;
-        let zheader_offset: u64 = endian.parse(read_bytes(r)?);
-        let ztrailer_offset: u64 = endian.parse(read_bytes(r)?);
-        let ztrailer_len: u64 = endian.parse(read_bytes(r)?);
+        let inner = RawZHeader::read_options(r, endian, ()).map_err(|e| Error {
+            offsets: Some(offset..offset + 24),
+            details: ZHeaderError::from(e).into(),
+        })?;
 
-        if zheader_offset != offset {
-            Err(ErrorDetails::UnexpectedZHeaderOffset {
-                actual: zheader_offset,
+        if inner.zheader_offset != offset {
+            Err(ZHeaderError::UnexpectedZHeaderOffset {
+                actual: inner.zheader_offset,
                 expected: offset,
-            })
-        } else if ztrailer_offset < offset {
-            Err(ErrorDetails::ImpossibleZTrailerOffset(ztrailer_offset))
-        } else if ztrailer_len < 24 || ztrailer_len % 24 != 0 {
-            Err(ErrorDetails::InvalidZTrailerLength(ztrailer_len))
+            }
+            .into())
+        } else if inner.ztrailer_offset < offset {
+            Err(ZHeaderError::ImpossibleZTrailerOffset(inner.ztrailer_offset).into())
+        } else if inner.ztrailer_len < 24 || inner.ztrailer_len % 24 != 0 {
+            Err(ZHeaderError::InvalidZTrailerLength(inner.ztrailer_len).into())
         } else {
-            Ok(ZHeader {
-                offset,
-                zheader_offset,
-                ztrailer_offset,
-                ztrailer_len,
-            })
+            Ok(ZHeader { offset, inner })
         }
         .map_err(|details| Error::new(Some(offset..offset + 12), details))
     }
 }
 
+/// Error reading a [ZHeader].
+#[derive(ThisError, Debug)]
+pub enum ZHeaderError {
+    /// I/O error via [mod@binrw].
+    #[error("{}", DisplayBinError(&.0, "ZLIB header"))]
+    BinError(#[from] BinError),
+
+    /// Impossible ztrailer_offset {0:#x}.
+    #[error("Impossible ztrailer_offset {0:#x}.")]
+    ImpossibleZTrailerOffset(
+        /// `ztrailer_offset`
+        u64,
+    ),
+
+    /// zlib_offset is {actual:#x} instead of expected {expected:#x}.
+    #[error("zlib_offset is {actual:#x} instead of expected {expected:#x}.")]
+    UnexpectedZHeaderOffset {
+        /// Actual `zlib_offset`.
+        actual: u64,
+        /// Expected `zlib_offset`.
+        expected: u64,
+    },
+
+    /// Invalid ZLIB trailer length {0}.
+    #[error("Invalid ZLIB trailer length {0}.")]
+    InvalidZTrailerLength(
+        /// ZLIB trailer length.
+        u64,
+    ),
+}
+
 /// A ZLIB trailer in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ZTrailer {
     /// File offset to the start of the record.
     pub offset: u64,
 
+    /// The raw trailer.
+    #[serde(flatten)]
+    pub inner: RawZTrailer,
+}
+
+/// A ZLIB trailer in a system file.
+#[binrw]
+#[derive(Clone, Debug, Serialize)]
+pub struct RawZTrailer {
     /// Compression bias as a negative integer, e.g. -100.
     pub int_bias: i64,
 
@@ -2464,8 +2571,20 @@ pub struct ZTrailer {
     /// `0x3ff000` has been observed so far.
     pub block_size: u32,
 
+    /// Number of blocks.
+    #[bw(calc(blocks.len() as u32))]
+    pub n_blocks: u32,
+
     /// Block descriptors, always `(ztrailer_len - 24) / 24)` of them.
+    #[br(count = n_blocks)]
     pub blocks: Vec<ZBlock>,
+}
+
+impl RawZTrailer {
+    /// Returns the length of the trailer when it is written, in bytes.
+    pub fn len(&self) -> usize {
+        24 + self.blocks.len() * 24
+    }
 }
 
 /// Warning for a ZLIB trailer record.
@@ -2473,7 +2592,7 @@ pub struct ZTrailer {
 pub enum ZlibTrailerWarning {
     /// Wrong block size.
     #[error(
-        "ZLIB block descriptor {index} reported block size {actual:#x}, when {expected:#x} was expected."
+        "Block descriptor {index} reported block size {actual:#x}, when {expected:#x} was expected."
     )]
     ZlibTrailerBlockWrongSize {
         /// 0-based block descriptor index.
@@ -2486,7 +2605,7 @@ pub enum ZlibTrailerWarning {
 
     /// Block too big.
     #[error(
-        "ZLIB block descriptor {index} reported block size {actual:#x}, when at most {max_expected:#x} was expected."
+        "Block descriptor {index} reported block size {actual:#x}, when at most {max_expected:#x} was expected."
     )]
     ZlibTrailerBlockTooBig {
         /// 0-based block descriptor index.
@@ -2499,7 +2618,7 @@ pub enum ZlibTrailerWarning {
 }
 
 /// A ZLIB block descriptor in a system file.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, BinRead, BinWrite, Serialize)]
 pub struct ZBlock {
     /// Offset of block of data if simple compression were used.
     pub uncompressed_ofs: u64,
@@ -2517,15 +2636,6 @@ pub struct ZBlock {
 }
 
 impl ZBlock {
-    fn read<R: Read + Seek>(r: &mut R, endian: Endian) -> Result<ZBlock, Error> {
-        Ok(ZBlock {
-            uncompressed_ofs: endian.parse(read_bytes(r)?),
-            compressed_ofs: endian.parse(read_bytes(r)?),
-            uncompressed_size: endian.parse(read_bytes(r)?),
-            compressed_size: endian.parse(read_bytes(r)?),
-        })
-    }
-
     /// Returns true if the uncompressed and compressed sizes are plausible.
     ///
     /// [zlib Technical Details] says that the maximum expansion from
@@ -2540,6 +2650,120 @@ impl ZBlock {
     }
 }
 
+struct DisplayBinError<'a>(&'a BinError, &'static str);
+
+impl<'a> Display for DisplayBinError<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.0.is_eof() {
+            write!(f, "Unexpected end-of-file reading {}", self.1)
+        } else {
+            write!(f, "Error reading {}: {}", self.1, self.0.root_cause())
+        }
+    }
+}
+
+/// Error reading a [ZTrailer].
+#[derive(ThisError, Debug)]
+pub enum ZTrailerError {
+    /// I/O error via [mod@binrw].
+    #[error("{}", DisplayBinError(&.0, "ZLIB trailer"))]
+    BinError(#[from] BinError),
+
+    /// ZLIB trailer bias {actual} is not {} as expected from file header bias.
+    #[
+        error(
+        "Bias {actual} is not {} as expected from file header.",
+        DisplayPlainF64(*expected)
+    )]
+    WrongZlibTrailerBias {
+        /// ZLIB trailer bias read from file.
+        actual: i64,
+        /// Expected ZLIB trailer bias.
+        expected: f64,
+    },
+
+    /// ZLIB trailer zero field has nonzero value {0}.
+    #[error("Expected zero field has nonzero value {0}.")]
+    WrongZlibTrailerZero(
+        /// Actual value that should have been zero.
+        u64,
+    ),
+
+    /// ZLIB trailer specifies unexpected {0}-byte block size.
+    #[error("Unexpected {0:x}-byte block size (expected 0x3ff000).")]
+    WrongZlibTrailerBlockSize(
+        /// Block size read from file.
+        u32,
+    ),
+
+    /// Block count differs from expected block count calculated from trailer
+    /// length.
+    #[error(
+        "Block count {n_blocks} differs from expected block count {expected_n_blocks} calculated from trailer length {ztrailer_len}."
+    )]
+    BadZlibTrailerNBlocks {
+        /// Number of blocks.
+        n_blocks: usize,
+        /// Expected number of blocks.
+        expected_n_blocks: u64,
+        /// ZLIB trailer length in bytes.
+        ztrailer_len: u64,
+    },
+
+    /// ZLIB block descriptor reported uncompressed data offset different from
+    /// expected.
+    #[error(
+        "Block descriptor {index} reported uncompressed data offset {actual:#x}, when {expected:#x} was expected."
+    )]
+    ZlibTrailerBlockWrongUncmpOfs {
+        /// Block descriptor index.
+        index: usize,
+        /// Actual uncompressed data offset.
+        actual: u64,
+        /// Expected uncompressed data offset.
+        expected: u64,
+    },
+
+    /// Block descriptor {index} reported compressed data offset
+    /// {actual:#x}, when {expected:#x} was expected.
+    #[error(
+        "Block descriptor {index} reported compressed data offset {actual:#x}, when {expected:#x} was expected."
+    )]
+    ZlibTrailerBlockWrongCmpOfs {
+        /// Block descriptor index.
+        index: usize,
+        /// Actual compressed data offset.
+        actual: u64,
+        /// Expected compressed data offset.
+        expected: u64,
+    },
+
+    /// Block descriptor {index} reports compressed size {compressed_size}
+    /// and uncompressed size {uncompressed_size}.
+    #[error(
+        "Block descriptor {index} reports compressed size {compressed_size} and uncompressed size {uncompressed_size}."
+    )]
+    ZlibExpansion {
+        /// Block descriptor index.
+        index: usize,
+        /// Compressed size.
+        compressed_size: u32,
+        /// Uncompressed size.
+        uncompressed_size: u32,
+    },
+
+    /// ZLIB trailer at unexpected offset.
+    #[error(
+        "ZLIB trailer is at offset {actual:#x} but {expected:#x} would be expected from block descriptors."
+    )]
+    ZlibTrailerOffsetInconsistency {
+        /// Expected offset.
+        expected: u64,
+        /// Actual offset.
+        actual: u64,
+    },
+}
+
 impl ZTrailer {
     /// Reads a ZLIB trailer from `reader` using `endian`.  `bias` is the
     /// floating-point bias for confirmation against the trailer, and `zheader`
@@ -2548,7 +2772,7 @@ impl ZTrailer {
         reader: &mut R,
         endian: Endian,
         bias: f64,
-        zheader: &ZHeader,
+        zheader: &RawZHeader,
         warn: &mut dyn FnMut(Warning),
     ) -> Result<Option<ZTrailer>, Error>
     where
@@ -2561,84 +2785,85 @@ impl ZTrailer {
         {
             return Ok(None);
         }
-        let int_bias = endian.parse(read_bytes(reader)?);
-        let zero = endian.parse(read_bytes(reader)?);
-        let block_size = endian.parse(read_bytes(reader)?);
-        let n_blocks: u32 = endian.parse(read_bytes(reader)?);
-        if int_bias as f64 != -bias {
-            Err(ErrorDetails::WrongZlibTrailerBias {
-                actual: int_bias,
+        let inner = RawZTrailer::read_options(reader, endian, ()).map_err(|e| Error {
+            offsets: Some(zheader.ztrailer_offset..zheader.ztrailer_offset + zheader.ztrailer_len),
+            details: ZTrailerError::from(e).into(),
+        })?;
+        if inner.int_bias as f64 != -bias {
+            Err(ZTrailerError::WrongZlibTrailerBias {
+                actual: inner.int_bias,
                 expected: -bias,
-            })
-        } else if zero != 0 {
-            Err(ErrorDetails::WrongZlibTrailerZero(zero))
-        } else if block_size != 0x3ff000 {
-            Err(ErrorDetails::WrongZlibTrailerBlockSize(block_size))
+            }
+            .into())
+        } else if inner.zero != 0 {
+            Err(ZTrailerError::WrongZlibTrailerZero(inner.zero).into())
+        } else if inner.block_size != 0x3ff000 {
+            Err(ZTrailerError::WrongZlibTrailerBlockSize(inner.block_size).into())
         } else if let expected_n_blocks = (zheader.ztrailer_len - 24) / 24
-            && n_blocks as u64 != expected_n_blocks
+            && inner.blocks.len() as u64 != expected_n_blocks
         {
-            Err(ErrorDetails::BadZlibTrailerNBlocks {
-                n_blocks,
+            Err(ZTrailerError::BadZlibTrailerNBlocks {
+                n_blocks: inner.blocks.len(),
                 expected_n_blocks,
                 ztrailer_len: zheader.ztrailer_len,
-            })
+            }
+            .into())
         } else {
             Ok(())
         }
         .map_err(|details| Error::new(Some(start_offset..start_offset + 24), details))?;
 
-        let blocks = (0..n_blocks)
-            .map(|_| ZBlock::read(reader, endian))
-            .collect::<Result<Vec<_>, _>>()?;
-
         let mut expected_uncmp_ofs = zheader.zheader_offset;
         let mut expected_cmp_ofs = zheader.zheader_offset + 24;
-        for (index, block) in blocks.iter().enumerate() {
+        for (index, block) in inner.blocks.iter().enumerate() {
             let block_start = start_offset + 24 + 24 * index as u64;
             let block_offsets = block_start..block_start + 24;
 
             if block.uncompressed_ofs != expected_uncmp_ofs {
-                Err(ErrorDetails::ZlibTrailerBlockWrongUncmpOfs {
+                Err(ZTrailerError::ZlibTrailerBlockWrongUncmpOfs {
                     index,
                     actual: block.uncompressed_ofs,
                     expected: expected_cmp_ofs,
-                })
+                }
+                .into())
             } else if block.compressed_ofs != expected_cmp_ofs {
-                Err(ErrorDetails::ZlibTrailerBlockWrongCmpOfs {
+                Err(ZTrailerError::ZlibTrailerBlockWrongCmpOfs {
                     index,
                     actual: block.compressed_ofs,
                     expected: expected_cmp_ofs,
-                })
+                }
+                .into())
             } else if !block.has_plausible_sizes() {
-                Err(ErrorDetails::ZlibExpansion {
+                Err(ZTrailerError::ZlibExpansion {
                     index,
                     compressed_size: block.compressed_size,
                     uncompressed_size: block.uncompressed_size,
-                })
+                }
+                .into())
             } else {
                 Ok(())
             }
             .map_err(|details| Error::new(Some(block_offsets.clone()), details))?;
 
-            if index < blocks.len() - 1 {
-                if block.uncompressed_size != block_size {
+            if index < inner.blocks.len() - 1 {
+                if block.uncompressed_size != inner.block_size {
                     warn(Warning::new(
                         Some(block_offsets),
                         ZlibTrailerWarning::ZlibTrailerBlockWrongSize {
                             index,
                             actual: block.uncompressed_size,
-                            expected: block_size,
+                            expected: inner.block_size,
                         },
                     ));
                 }
             } else {
-                if block.uncompressed_size > block_size {
+                if block.uncompressed_size > inner.block_size {
                     warn(Warning::new(
                         Some(block_offsets),
                         ZlibTrailerWarning::ZlibTrailerBlockTooBig {
                             index,
                             actual: block.uncompressed_size,
-                            max_expected: block_size,
+                            max_expected: inner.block_size,
                         },
                     ));
                 }
@@ -2650,21 +2875,19 @@ impl ZTrailer {
 
         if expected_cmp_ofs != zheader.ztrailer_offset {
             return Err(Error::new(
-                Some(start_offset..start_offset + 24 + 24 * n_blocks as u64),
-                ErrorDetails::ZlibTrailerOffsetInconsistency {
+                Some(start_offset..start_offset + 24 + 24 * inner.blocks.len() as u64),
+                ZTrailerError::ZlibTrailerOffsetInconsistency {
                     expected: expected_cmp_ofs,
                     actual: zheader.ztrailer_offset,
-                },
+                }
+                .into(),
             ));
         }
 
         reader.seek(SeekFrom::Start(start_offset))?;
         Ok(Some(ZTrailer {
             offset: zheader.ztrailer_offset,
-            int_bias,
-            zero,
-            block_size,
-            blocks,
+            inner,
         }))
     }
 }

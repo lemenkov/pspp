@@ -16,10 +16,11 @@
 
 use std::sync::{Arc, OnceLock};
 
+use binrw::Endian;
 use enum_map::EnumMap;
+use serde::Serialize;
 
 use crate::{
-    endian::Endian,
     format::{Format, Settings as FormatSettings},
     message::Severity,
     output::pivot::Look,
@@ -27,7 +28,8 @@ use crate::{
 
 /// Whether to show variable or value labels or the underlying value or variable
 /// name.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Show {
     /// Value (or variable name) only.
     Value,

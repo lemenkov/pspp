@@ -20,10 +20,12 @@ use std::{
     fs::File,
     io::{BufWriter, Write as IoWrite},
     ops::{Index, Range},
+    path::PathBuf,
     sync::{Arc, LazyLock},
 };
 
 use enum_map::{enum_map, Enum, EnumMap};
+use serde::{Deserialize, Serialize};
 use unicode_linebreak::{linebreaks, BreakOpportunity};
 use unicode_width::UnicodeWidthStr;
 
@@ -38,7 +40,8 @@ use super::{
     Details, Item,
 };
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Boxes {
     Ascii,
     #[default]
@@ -54,26 +57,27 @@ impl Boxes {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct TextRendererConfig {
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TextConfig {
+    /// Output file name.
+    file: Option<PathBuf>,
+
+    /// Renderer config.
+    #[serde(flatten)]
+    options: TextRendererOptions,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct TextRendererOptions {
     /// Enable bold and underline in output?
     pub emphasis: bool,
 
     /// Page width.
-    pub width: usize,
+    pub width: Option<usize>,
 
     /// ASCII or Unicode
     pub boxes: Boxes,
-}
-
-impl Default for TextRendererConfig {
-    fn default() -> Self {
-        Self {
-            emphasis: false,
-            width: usize::MAX,
-            boxes: Boxes::default(),
-        }
-    }
 }
 
 pub struct TextRenderer {
@@ -95,20 +99,21 @@ pub struct TextRenderer {
 
 impl Default for TextRenderer {
     fn default() -> Self {
-        Self::new(&TextRendererConfig::default())
+        Self::new(&TextRendererOptions::default())
     }
 }
 
 impl TextRenderer {
-    pub fn new(config: &TextRendererConfig) -> Self {
+    pub fn new(config: &TextRendererOptions) -> Self {
+        let width = config.width.unwrap_or(usize::MAX);
         Self {
             emphasis: config.emphasis,
-            width: config.width,
+            width,
             min_hbreak: 20,
             box_chars: config.boxes.box_chars(),
             n_objects: 0,
             params: Params {
-                size: Coord2::new(config.width, usize::MAX),
+                size: Coord2::new(width, usize::MAX),
                 font_size: EnumMap::from_fn(|_| 1),
                 line_widths: EnumMap::from_fn(|stroke| if stroke == Stroke::None { 0 } else { 1 }),
                 px_size: None,
@@ -358,11 +363,14 @@ pub struct TextDriver {
 }
 
 impl TextDriver {
-    pub fn new(file: File) -> TextDriver {
-        Self {
-            file: BufWriter::new(file),
-            renderer: TextRenderer::default(),
-        }
+    pub fn new(config: &TextConfig) -> std::io::Result<TextDriver> {
+        Ok(Self {
+            file: BufWriter::new(match &config.file {
+                Some(file) => File::create(&file)?,
+                None => File::options().write(true).open("/dev/stdout")?,
+            }),
+            renderer: TextRenderer::new(&config.options),
+        })
     }
 }
 

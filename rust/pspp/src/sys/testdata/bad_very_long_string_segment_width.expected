@@ -15,6 +15,7 @@ Variable with short name STR1 listed in very long string record with width 256 h
 │Variables│2│
 ╰─────────┴─╯
 
+                                                Variables
 ╭──────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │      │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├──────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

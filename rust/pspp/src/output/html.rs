@@ -17,10 +17,13 @@
 use std::{
     borrow::Cow,
     fmt::{Display, Write as _},
+    fs::File,
     io::Write,
+    path::PathBuf,
     sync::Arc,
 };
 
+use serde::{Deserialize, Serialize};
 use smallstr::SmallString;
 
 use crate::output::{
@@ -30,7 +33,12 @@ use crate::output::{
     Details, Item,
 };
 
-pub struct HtmlRenderer<W> {
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct HtmlConfig {
+    file: PathBuf,
+}
+
+pub struct HtmlDriver<W> {
     writer: W,
     fg: Color,
     bg: Color,
@@ -49,11 +57,17 @@ impl Stroke {
     }
 }
 
-impl<W> HtmlRenderer<W>
+impl HtmlDriver<File> {
+    pub fn new(config: &HtmlConfig) -> std::io::Result<Self> {
+        Ok(Self::for_writer(File::create(&config.file)?))
+    }
+}
+
+impl<W> HtmlDriver<W>
 where
     W: Write,
 {
-    pub fn new(mut writer: W) -> Self {
+    pub fn for_writer(mut writer: W) -> Self {
         let _ = put_header(&mut writer);
         Self {
             fg: Color::BLACK,
@@ -412,7 +426,7 @@ a:active {
 <body>
 "#;
 
-impl<W> Driver for HtmlRenderer<W>
+impl<W> Driver for HtmlDriver<W>
 where
     W: Write,
 {

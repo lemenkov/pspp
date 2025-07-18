@@ -14,6 +14,7 @@ Warning at file offsets 0x54 to 0x5c: In file header: Compression bias is 50 ins
 │Variables│                       5│
 ╰─────────┴────────────────────────╯
 
+                                               Variables
 ╭─────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │     │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├─────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

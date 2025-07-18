@@ -15,12 +15,14 @@ Warning at file offsets 0x10e to 0x12d: In file or variable attribute record: Du
 │Variables│1│
 ╰─────────┴─╯
 
+                                                 Variables
 ╭────────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │        │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
 │firstvar│       1│     │                 │Input│    8│Right    │F8.0        │F8.0        │              │
 ╰────────┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
+Data File and Variable Attributes
 ╭───────────────────────┬─────╮
 │Variable and Name      │Value│
 ├───────────────────────┼─────┤

@@ -19,6 +19,7 @@ Duplicate long variable name LONGVARIABLENAME.
 │Variables│4│
 ╰─────────┴─╯
 
+                                                     Variables
 ╭────────────────┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │                │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├────────────────┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

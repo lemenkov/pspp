@@ -22,10 +22,12 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use encoding_rs::{EncoderResult, Encoding, UTF_8};
+use encoding_rs::{CoderResult, Encoder, EncoderResult, Encoding, UTF_8};
+use serde::Serialize;
 use thiserror::Error as ThisError;
 use unicase::UniCase;
 use unicode_properties::UnicodeGeneralCategory;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Class {
@@ -209,8 +211,30 @@ impl Identifier {
     /// encoding used by the dictionary, not in UTF-8.
     pub const MAX_LEN: usize = 64;
 
+    fn new_unchecked(s: impl Into<UniCase<String>>) -> Self {
+        let s: UniCase<String> = s.into();
+        debug_assert!(Self::check_plausible(&s).is_ok());
+        Identifier(s)
+    }
+
     pub fn new(s: impl Into<UniCase<String>>) -> Result<Self, Error> {
         Self::from_encoding(s, UTF_8)
+    }
+
+    /// Converts this identifier to UTF-8.  This is generally a no-op, because
+    /// our internal encoding is UTF-8, but some identifiers are longer in UTF-8
+    /// than in their code page, which means that to satisfy the 64-byte limit
+    /// this function sometimes has to remove trailing grapheme clusters.
+    pub fn codepage_to_unicode(&mut self) {
+        while self.len() > Self::MAX_LEN {
+            let (new_len, _) = self.as_str().grapheme_indices(true).next_back().unwrap();
+            self.0.truncate(new_len);
+            if self.0.is_empty() {
+                // We had a grapheme cluster longer than 64 bytes!
+                *self = Identifier::new("VAR").unwrap();
+                return;
+            }
+        }
     }
 
     pub fn from_encoding(
@@ -218,7 +242,7 @@ impl Identifier {
         encoding: &'static Encoding,
     ) -> Result<Identifier, Error> {
         let s: UniCase<String> = s.into();
-        Self::is_plausible(&s)?;
+        Self::check_plausible(&s)?;
         let identifier = Identifier(s);
         identifier.check_encoding(encoding)?;
         Ok(identifier)
@@ -260,7 +284,7 @@ impl Identifier {
         }*/
         Ok(())
     }
-    pub fn is_plausible(s: &str) -> Result<(), Error> {
+    pub fn check_plausible(s: &str) -> Result<(), Error> {
         if s.is_empty() {
             return Err(Error::Empty);
         }
@@ -329,6 +353,120 @@ impl Identifier {
 
     pub fn as_str(&self) -> &str {
         self.0.as_ref()
+    }
+
+    /// Returns this this identifier truncated to at most 8 bytes in `encoding`.
+    pub fn shortened(&self, encoding: &'static Encoding) -> Self {
+        let new_len = shortened_len(self, "", encoding, 8);
+        Self::new_unchecked(self.0[..new_len].to_string())
+    }
+
+    /// Returns a prefix of this identifier concatenated with all of `suffix`,
+    /// including as many grapheme clusters from the beginning of this
+    /// identifier as would fit within `max_len` bytes if the resulting string
+    /// were to be re-encoded in `encoding`.
+    ///
+    /// `max_len` would ordinarily be 64, since that's the maximum length of an
+    /// identifier, but a value of 8 is appropriate for short variable names.
+    ///
+    /// This function fails if adding or using `suffix` produces an invalid
+    /// [Identifier], for example if `max_len` is short enough that none of the
+    /// identifier can be included and `suffix` begins with `'_'` or another
+    /// character that may not appear at the beginning of an identifier.
+    ///
+    /// # Examples
+    ///
+    /// Simple examples for UTF-8 `encoding` with `max_len` of 6:
+    ///
+    /// ```text
+    /// identifier="abc",  suffix="xyz"     => "abcxyz"
+    /// identifier="abcd", suffix="xyz"     => "abcxyz"
+    /// identifier="abc",  suffix="uvwxyz"  => "uvwxyz"
+    /// identifier="abc",  suffix="tuvwxyz" => "tuvwxyz"
+    /// ```
+    ///
+    /// Examples for windows-1252 `encoding` with `max_len` of 6:
+    ///
+    /// ```text
+    /// identifier="éèä",  suffix="xyz"    => "éèäxyz"
+    /// ```
+    ///
+    /// (each letter in the identifier is only 1 byte in windows-1252 even
+    /// though they each take 2 bytes in UTF-8)
+    pub fn with_suffix(
+        &self,
+        suffix: &str,
+        encoding: &'static Encoding,
+        max_len: usize,
+    ) -> Result<Self, Error> {
+        let prefix_len = shortened_len(self, suffix, encoding, max_len);
+        if prefix_len == 0 {
+            Self::new(suffix)
+        } else {
+            Self::new(format!("{}{suffix}", &self[..prefix_len]))
+        }
+    }
+}
+
+impl Serialize for Identifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.as_str().serialize(serializer)
+    }
+}
+
+fn encode_fully(encoder: &mut Encoder, mut src: &str, dst: &mut Vec<u8>, last: bool) {
+    while let (CoderResult::OutputFull, read, _) = encoder.encode_from_utf8_to_vec(src, dst, last) {
+        src = &src[read..];
+        dst.reserve((dst.capacity() * 2) - dst.len());
+    }
+}
+
+fn shortened_len(prefix: &str, suffix: &str, encoding: &'static Encoding, max_len: usize) -> usize {
+    assert!(max_len <= 64);
+    if encoding == UTF_8 {
+        if prefix.len() + suffix.len() <= max_len {
+            prefix.len()
+        } else if suffix.len() >= max_len {
+            0
+        } else {
+            let mut copy_len = 0;
+            for (cluster_start, cluster) in prefix.grapheme_indices(true) {
+                let cluster_end = cluster_start + cluster.len();
+                if cluster_end > max_len - suffix.len() {
+                    break;
+                }
+                copy_len = cluster_end;
+            }
+            copy_len
+        }
+    } else {
+        let mut copy_len = 0;
+        let mut tmp = Vec::with_capacity(max_len);
+        for (cluster_start, cluster) in prefix.grapheme_indices(true) {
+            let cluster_end = cluster_start + cluster.len();
+            let mut encoder = encoding.new_encoder();
+            tmp.clear();
+            encode_fully(&mut encoder, &prefix[..cluster_end], &mut tmp, false);
+            if tmp.len() <= max_len {
+                encode_fully(&mut encoder, suffix, &mut tmp, true);
+            }
+            if tmp.len() > max_len {
+                break;
+            }
+            copy_len = cluster_end;
+        }
+        copy_len
+    }
+}
+
+impl Deref for Identifier {
+    type Target = UniCase<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -488,5 +626,136 @@ where
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl<T> Serialize for ByIdentifier<T>
+where
+    T: HasIdentifier + Clone + Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use encoding_rs::{Encoding, UTF_8, WINDOWS_1252};
+    use unicase::UniCase;
+
+    use crate::identifier::Identifier;
+
+    use super::{ByIdentifier, HasIdentifier};
+
+    #[derive(PartialEq, Eq, Debug, Clone)]
+    struct SimpleVar {
+        name: Identifier,
+        value: i32,
+    }
+
+    impl HasIdentifier for SimpleVar {
+        fn identifier(&self) -> &UniCase<String> {
+            &self.name.0
+        }
+    }
+
+    #[test]
+    fn identifier() {
+        // Variables should not be the same if their values differ.
+        let abcd = Identifier::new("abcd").unwrap();
+        let abcd1 = SimpleVar {
+            name: abcd.clone(),
+            value: 1,
+        };
+        let abcd2 = SimpleVar {
+            name: abcd,
+            value: 2,
+        };
+        assert_ne!(abcd1, abcd2);
+
+        // But [ByIdentifier]` should treat them the same.
+        let abcd1_by_name = ByIdentifier::new(abcd1);
+        let abcd2_by_name = ByIdentifier::new(abcd2);
+        assert_eq!(abcd1_by_name, abcd2_by_name);
+
+        // And a [HashSet] of [ByIdentifier] should also treat them the same.
+        let mut vars: HashSet<ByIdentifier<SimpleVar>> = HashSet::new();
+        assert!(vars.insert(ByIdentifier::new(abcd1_by_name.0.clone())));
+        assert!(!vars.insert(ByIdentifier::new(abcd2_by_name.0.clone())));
+        assert_eq!(
+            vars.get(&UniCase::new(String::from("abcd")))
+                .unwrap()
+                .0
+                .value,
+            1
+        );
+    }
+
+    #[test]
+    fn with_suffix() {
+        for (head, suffix, encoding, max_len, expected) in [
+            ("abc", "xyz", UTF_8, 6, "abcxyz"),
+            ("abcd", "xyz", UTF_8, 6, "abcxyz"),
+            ("abcd", "uvwxyz", UTF_8, 6, "uvwxyz"),
+            ("abc", "tuvwxyz", UTF_8, 6, "tuvwxyz"),
+            ("éèä", "xyz", UTF_8, 6, "éxyz"),
+            ("éèä", "xyz", WINDOWS_1252, 6, "éèäxyz"),
+        ] {
+            let head = Identifier::new(head).unwrap();
+            let suffix = Identifier::new(suffix).unwrap();
+            let actual = head.with_suffix(&suffix, encoding, max_len).unwrap();
+            assert_eq!(&actual, expected);
+        }
+    }
+
+    #[test]
+    fn shortened() {
+        for (long, expected_short, encoding) in [
+            ("abc", "abc", UTF_8),
+            ("éèäîVarNameA", "éèäî", UTF_8),
+            ("éèäîVarNameA", "éèäîVarN", WINDOWS_1252),
+        ] {
+            let long = Identifier::new(long).unwrap();
+            let short = long.shortened(encoding);
+            assert_eq!(&short, expected_short);
+        }
+    }
+
+    #[test]
+    fn codepage_to_unicode() {
+        fn check_unicode(identifier: &str, encoding: &'static Encoding, expected: &str) {
+            let identifier = Identifier::from_encoding(String::from(identifier), encoding).unwrap();
+            let mut actual = identifier.clone();
+            actual.codepage_to_unicode();
+            assert_eq!(actual.as_str(), expected);
+        }
+
+        check_unicode("abc", UTF_8, "abc");
+        check_unicode("éèäî", UTF_8, "éèäî");
+
+        // 32 bytes in windows-1252, 64 bytes in UTF-8, no truncation.
+        check_unicode(
+            "éèäîéèäîéèäîéèäîéèäîéèäîéèäîéèäî",
+            WINDOWS_1252,
+            "éèäîéèäîéèäîéèäîéèäîéèäîéèäîéèäî",
+        );
+
+        // 33 or 34 bytes in windows-1252, 65 or 66 bytes in UTF-8, truncate
+        // last (2-byte) character.
+        check_unicode(
+            "xéèäîéèäîéèäîéèäîéèäîéèäîéèäîéèäî",
+            WINDOWS_1252,
+            "xéèäîéèäîéèäîéèäîéèäîéèäîéèäîéèä",
+        );
+        check_unicode(
+            "xyéèäîéèäîéèäîéèäîéèäîéèäîéèäîéèäî",
+            WINDOWS_1252,
+            "xyéèäîéèäîéèäîéèäîéèäîéèäîéèäîéèä",
+        );
     }
 }

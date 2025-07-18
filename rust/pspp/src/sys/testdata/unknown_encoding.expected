@@ -16,6 +16,7 @@ Text string contains invalid bytes for UTF-8 encoding: "PSPP synthetic test file
 │Variables│                             4│
 ╰─────────┴──────────────────────────────╯
 
+                                             Variables
 ╭─┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │ │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├─┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤

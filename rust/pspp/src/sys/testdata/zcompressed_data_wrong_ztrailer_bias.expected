@@ -1,1 +1,1 @@
-Error at file offsets 0x1ac to 0x1c4: ZLIB trailer bias 0 is not -100 as expected from file header bias.
+Error at file offsets 0x1ac to 0x1c4: Error reading ZLIB trailer: Bias 0 is not -100 as expected from file header.

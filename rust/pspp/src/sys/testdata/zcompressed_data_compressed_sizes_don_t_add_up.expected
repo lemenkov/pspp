@@ -1,1 +1,1 @@
-Error at file offsets 0x1ac to 0x1dc: ZLIB trailer is at offset 0x205 but 0x204 would be expected from block descriptors.
+Error at file offsets 0x1ac to 0x1dc: Error reading ZLIB trailer: ZLIB trailer is at offset 0x205 but 0x204 would be expected from block descriptors.

@@ -588,9 +588,7 @@ mod test {
     use crate::crypto::{EncodedPassword, EncryptedFile, FileType};
 
     fn test_decrypt(input_name: &Path, expected_name: &Path, password: &str, file_type: FileType) {
-        let input_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/crypto/testdata")
-            .join(input_name);
+        let input_filename = Path::new("src/crypto/testdata").join(input_name);
         let input = std::fs::read(&input_filename).unwrap();
         let mut cursor = Cursor::new(&input);
         let file = EncryptedFile::new(&mut cursor).unwrap();
@@ -600,9 +598,7 @@ mod test {
         let mut actual = Vec::new();
         std::io::copy(&mut reader, &mut actual).unwrap();
 
-        let expected_filename = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/crypto/testdata")
-            .join(expected_name);
+        let expected_filename = Path::new("src/crypto/testdata").join(expected_name);
         let expected = std::fs::read(&expected_filename).unwrap();
         if actual != expected {
             panic!();

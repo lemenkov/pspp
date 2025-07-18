@@ -21,6 +21,7 @@ use std::{
     str::from_utf8_unchecked,
 };
 
+use binrw::Endian;
 use chrono::{Datelike, NaiveDate};
 use encoding_rs::{Encoding, UTF_8};
 use libm::frexp;
@@ -29,18 +30,17 @@ use smallvec::{Array, SmallVec};
 
 use crate::{
     calendar::{calendar_offset_to_gregorian, day_of_year, month_name, short_month_name},
-    data::Datum,
-    endian::{endian_to_smallvec, ToBytes},
+    data::{ByteStr, Datum, EncodedString, QuotedDatum, WithEncoding},
+    endian::ToBytes,
     format::{Category, DateTemplate, Decimal, Format, NumberStyle, Settings, TemplateItem, Type},
     settings::{EndianSettings, Settings as PsppSettings},
 };
 
-pub struct DisplayDatum<'a, 'b> {
+pub struct DisplayDatum<'b, B> {
     format: Format,
     settings: &'b Settings,
     endian: EndianSettings,
-    datum: &'a Datum,
-    encoding: &'static Encoding,
+    datum: Datum<B>,
 
     /// If true, the output will remove leading and trailing spaces from numeric
     /// values, and trailing spaces from string values.  (This might make the
@@ -83,68 +83,38 @@ impl Display for DisplayPlainF64 {
     }
 }
 
-impl Datum {
+impl<'a, D> Datum<D>
+where
+    D: EncodedString,
+{
     /// Returns an object that implements [Display] for printing this [Datum] as
-    /// `format`.  `encoding` specifies this `Datum`'s encoding (therefore, it
-    /// is used only if this is a `Datum::String`).
+    /// `format`.
     ///
     /// [Display]: std::fmt::Display
-    pub fn display(&self, format: Format, encoding: &'static Encoding) -> DisplayDatum {
-        DisplayDatum::new(format, self, encoding)
+    pub fn display(&'a self, format: Format) -> DisplayDatum<'a, WithEncoding<ByteStr<'a>>> {
+        DisplayDatum::new(format, self.as_borrowed())
     }
 
-    pub fn display_plain(&self, encoding: &'static Encoding) -> DisplayDatumPlain {
-        DisplayDatumPlain {
-            datum: self,
-            encoding,
-            quote_strings: true,
-        }
+    pub fn display_plain(&self) -> QuotedDatum<'_, D> {
+        self.quoted()
     }
 }
 
-pub struct DisplayDatumPlain<'a> {
-    datum: &'a Datum,
-    encoding: &'static Encoding,
-    quote_strings: bool,
-}
-
-impl DisplayDatumPlain<'_> {
-    pub fn without_quotes(self) -> Self {
-        Self {
-            quote_strings: false,
-            ..self
-        }
-    }
-}
-
-impl Display for DisplayDatumPlain<'_> {
+impl<'a, 'b, B> Display for DisplayDatum<'b, B>
+where
+    B: EncodedString,
+{
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.datum {
-            Datum::Number(None) => write!(f, "SYSMIS"),
-            Datum::Number(Some(number)) => number.display_plain().fmt(f),
-            Datum::String(string) => {
-                if self.quote_strings {
-                    write!(f, "\"{}\"", string.display(self.encoding))
-                } else {
-                    string.display(self.encoding).fmt(f)
-                }
-            }
-        }
-    }
-}
-
-impl Display for DisplayDatum<'_, '_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        let number = match self.datum {
+        let number = match &self.datum {
             Datum::Number(number) => *number,
             Datum::String(string) => {
                 if self.format.type_() == Type::AHex {
-                    for byte in &string.0 {
+                    for byte in string.raw_string_bytes() {
                         write!(f, "{byte:02x}")?;
                     }
                 } else {
                     let quote = if self.quote_strings { "\"" } else { "" };
-                    let s = self.encoding.decode_without_bom_handling(&string.0).0;
+                    let s = string.as_str();
                     let s = if self.trim_spaces {
                         s.trim_end_matches(' ')
                     } else {
@@ -195,13 +165,15 @@ impl Display for DisplayDatum<'_, '_> {
     }
 }
 
-impl<'a, 'b> DisplayDatum<'a, 'b> {
-    pub fn new(format: Format, value: &'a Datum, encoding: &'static Encoding) -> Self {
+impl<'b, B> DisplayDatum<'b, B>
+where
+    B: EncodedString,
+{
+    pub fn new(format: Format, datum: Datum<B>) -> Self {
         let settings = PsppSettings::global();
         Self {
             format,
-            datum: value,
-            encoding,
+            datum,
             settings: &settings.formats,
             endian: settings.endian,
             trim_spaces: false,
@@ -1175,4 +1147,22 @@ where
             *dot = b',';
         }
     }
+}
+
+pub fn endian_to_smallvec<const N: usize>(
+    endian: Endian,
+    mut value: u64,
+    n: usize,
+) -> SmallVec<[u8; N]> {
+    debug_assert!(n <= 8);
+    let mut vec = SmallVec::new();
+    value <<= 8 * (8 - n);
+    for _ in 0..n {
+        vec.push((value >> 56) as u8);
+        value <<= 8;
+    }
+    if endian == Endian::Little {
+        vec.reverse();
+    }
+    vec
 }

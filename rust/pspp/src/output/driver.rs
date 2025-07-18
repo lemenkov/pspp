@@ -14,9 +14,21 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, path::Path, sync::Arc};
 
-use super::{page::Setup, Item};
+use clap::ValueEnum;
+use serde::{Deserialize, Serialize};
+
+use crate::output::{
+    cairo::{CairoConfig, CairoDriver},
+    csv::{CsvConfig, CsvDriver},
+    html::{HtmlConfig, HtmlDriver},
+    json::{JsonConfig, JsonDriver},
+    spv::{SpvConfig, SpvDriver},
+    text::{TextConfig, TextDriver},
+};
+
+use super::{page::PageSetup, Item};
 
 // An output driver.
 pub trait Driver {
@@ -25,7 +37,7 @@ pub trait Driver {
     fn write(&mut self, item: &Arc<Item>);
 
     /// Returns false if the driver doesn't support page setup.
-    fn setup(&mut self, page_setup: &Setup) -> bool {
+    fn setup(&mut self, page_setup: &PageSetup) -> bool {
         let _ = page_setup;
         false
     }
@@ -53,29 +65,100 @@ pub trait Driver {
     }
 }
 
-/*
-/// An abstract way for the output subsystem to create an output driver.
-trait DriverFactory {
-    /// The file extension, without the leading dot, e.g. "pdf".
-    fn extension(&self) ->  OsString;
+impl Driver for Box<dyn Driver> {
+    fn name(&self) -> Cow<'static, str> {
+        (&**self).name()
+    }
 
-    /// The default file name, including extension.
-    ///
-    /// If this is `-`, that implies that by default output will be directed to
-    /// stdout.
-    fn default_file_name(&self) -> PathBuf;
+    fn write(&mut self, item: &Arc<Item>) {
+        (&mut **self).write(item);
+    }
 
-    /// Creates a new output driver of this class.  `name` and `type` should be
-    /// passed directly to output_driver_init.
-    ///
-    /// It is up to the driver class to decide how to interpret `options`.  The
-    /// create function should delete pairs that it understands from `options`,
-    /// because the caller may issue errors about unknown options for any pairs
-    /// that remain.
-    fn create(&self, file_handle: (),
+    fn setup(&mut self, page_setup: &PageSetup) -> bool {
+        (&mut **self).setup(page_setup)
+    }
 
-                                     enum settings_output_devices type,
-                                     struct driver_options *);
+    fn flush(&mut self) {
+        (&mut **self).flush();
+    }
 
+    fn handles_show(&self) -> bool {
+        (&**self).handles_show()
+    }
+
+    fn handles_groups(&self) -> bool {
+        (&**self).handles_groups()
+    }
 }
-*/
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "driver", rename_all = "snake_case")]
+pub enum Config {
+    Text(TextConfig),
+    Pdf(CairoConfig),
+    Html(HtmlConfig),
+    Json(JsonConfig),
+    Csv(CsvConfig),
+    Spv(SpvConfig),
+}
+
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, ValueEnum)]
+#[serde(rename_all = "snake_case")]
+pub enum DriverType {
+    Text,
+    Pdf,
+    Html,
+    Csv,
+    Json,
+    Spv,
+}
+
+impl dyn Driver {
+    pub fn new(config: &Config) -> anyhow::Result<Box<Self>> {
+        match config {
+            Config::Text(text_config) => Ok(Box::new(TextDriver::new(text_config)?)),
+            Config::Pdf(cairo_config) => Ok(Box::new(CairoDriver::new(cairo_config)?)),
+            Config::Html(html_config) => Ok(Box::new(HtmlDriver::new(html_config)?)),
+            Config::Csv(csv_config) => Ok(Box::new(CsvDriver::new(csv_config)?)),
+            Config::Json(json_config) => Ok(Box::new(JsonDriver::new(json_config)?)),
+            Config::Spv(spv_config) => Ok(Box::new(SpvDriver::new(spv_config)?)),
+        }
+    }
+
+    pub fn driver_type_from_filename(file: impl AsRef<Path>) -> Option<&'static str> {
+        match file.as_ref().extension()?.to_str()? {
+            "txt" | "text" => Some("text"),
+            "pdf" => Some("pdf"),
+            "htm" | "html" => Some("html"),
+            "csv" => Some("csv"),
+            "json" => Some("json"),
+            "spv" => Some("spv"),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde::Serialize;
+
+    use crate::output::driver::Config;
+
+    #[test]
+    fn toml() {
+        let config = r#"driver = "text"
+file = "filename.text"
+"#;
+        let toml: Config = toml::from_str(config).unwrap();
+        println!("{}", toml::to_string_pretty(&toml).unwrap());
+
+        #[derive(Serialize)]
+        struct Map<'a> {
+            file: &'a str,
+        }
+        println!(
+            "{}",
+            toml::to_string_pretty(&Map { file: "filename" }).unwrap()
+        );
+    }
+}

@@ -17,6 +17,7 @@ Invalid multiple response set name.  Multiple response set name "e" does not beg
 │Variables│                      16│
 ╰─────────┴────────────────────────╯
 
+                                              Variables
 ╭──┬────────┬─────┬─────────────────┬─────┬─────┬─────────┬────────────┬────────────┬──────────────╮
 │  │Position│Label│Measurement Level│ Role│Width│Alignment│Print Format│Write Format│Missing Values│
 ├──┼────────┼─────┼─────────────────┼─────┼─────┼─────────┼────────────┼────────────┼──────────────┤
@@ -38,6 +39,7 @@ Invalid multiple response set name.  Multiple response set name "e" does not beg
 │p │      16│     │Nominal          │Input│    6│Left     │A6          │A6          │              │
 ╰──┴────────┴─────┴─────────────────┴─────┴─────┴─────────┴────────────┴────────────┴──────────────╯
 
+                     Multiple Response Sets
 ╭────┬─────────────┬───────────┬─────────────┬────────────────╮
 │Name│    Label    │  Encoding │Counted Value│Member Variables│
 ├────┼─────────────┼───────────┼─────────────┼────────────────┤

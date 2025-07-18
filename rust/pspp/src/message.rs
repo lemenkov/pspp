@@ -22,10 +22,11 @@ use std::{
 };
 
 use enum_map::Enum;
+use serde::Serialize;
 use unicode_width::UnicodeWidthStr;
 
 /// A line number and optional column number within a source file.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct Point {
     /// 1-based line number.
     pub line: i32,
@@ -65,7 +66,7 @@ impl Point {
 }
 
 /// Location relevant to an diagnostic message.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Location {
     /// File name, if any.
     pub file_name: Option<Arc<String>>,
@@ -76,6 +77,7 @@ pub struct Location {
     /// Normally, if `span` contains column information, then displaying the
     /// message will underline the location.  Setting this to true disables
     /// displaying underlines.
+    #[serde(skip)]
     pub omit_underlines: bool,
 }
 
@@ -136,7 +138,8 @@ impl Location {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Enum)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Enum, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Severity {
     Error,
     Warning,
@@ -167,13 +170,15 @@ impl Display for Severity {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Category {
     General,
     Syntax,
     Data,
 }
 
+#[derive(Serialize)]
 pub struct Stack {
     location: Location,
     description: String,
@@ -188,6 +193,7 @@ impl From<Diagnostic> for Diagnostics {
     }
 }
 
+#[derive(Serialize)]
 pub struct Diagnostic {
     pub severity: Severity,
     pub category: Category,
