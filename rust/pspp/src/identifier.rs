@@ -23,9 +23,9 @@ use std::{
 };
 
 use encoding_rs::{EncoderResult, Encoding, UTF_8};
-use finl_unicode::categories::{CharacterCategories, MajorCategory};
 use thiserror::Error as ThisError;
 use unicase::UniCase;
+use unicode_properties::UnicodeGeneralCategory;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Class {
@@ -88,9 +88,10 @@ impl IdentifierChar for char {
         if self < '\u{0080}' {
             self.ascii_may_start_id()
         } else {
-            use MajorCategory::*;
+            use unicode_properties::GeneralCategoryGroup::*;
 
-            [L, M, S].contains(&self.get_major_category()) && self != char::REPLACEMENT_CHARACTER
+            matches!(self.general_category_group(), Letter | Mark | Symbol)
+                && self != char::REPLACEMENT_CHARACTER
         }
     }
 
@@ -102,9 +103,12 @@ impl IdentifierChar for char {
         if self < '\u{0080}' {
             self.ascii_may_continue_id()
         } else {
-            use MajorCategory::*;
+            use unicode_properties::GeneralCategoryGroup::*;
 
-            [L, M, S, N].contains(&self.get_major_category()) && self != char::REPLACEMENT_CHARACTER
+            matches!(
+                self.general_category_group(),
+                Letter | Mark | Symbol | Number
+            ) && self != char::REPLACEMENT_CHARACTER
         }
     }
 }
