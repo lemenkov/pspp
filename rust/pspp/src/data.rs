@@ -557,6 +557,10 @@ impl<B> Datum<B> {
         Self::Number(None)
     }
 
+    pub const fn is_sysmis(&self) -> bool {
+        matches!(self, Self::Number(None))
+    }
+
     /// Returns the number inside this datum, or `None` if this is a string
     /// datum.
     pub fn as_number(&self) -> Option<Option<f64>> {

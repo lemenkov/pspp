@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 use anyhow::{anyhow, bail, Error as AnyError, Result};
+use chrono::{Datelike, NaiveTime, Timelike};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use encoding_rs::Encoding;
 use pspp::{
+    calendar::calendar_offset_to_gregorian,
     crypto::EncryptedFile,
-    data::Datum,
+    format::{DisplayPlain, Type},
     output::{
         driver::{Config, Driver},
         pivot::PivotTable,
@@ -102,10 +104,6 @@ struct Convert {
     #[arg(short = 'e', long, value_parser = parse_encoding)]
     encoding: Option<&'static Encoding>,
 
-    /// If true, convert to Unicode (UTF-8) encoding.
-    #[arg(long = "unicode")]
-    to_unicode: bool,
-
     /// Password for decryption, with or without what SPSS calls "password encryption".
     ///
     /// Specify only for an encrypted system file.
@@ -128,10 +126,45 @@ struct CsvOptions {
     /// Omit writing variable names as the first line of output.
     #[arg(long)]
     no_var_names: bool,
+
+    /// Writes user-missing values like system-missing values.  Otherwise,
+    /// user-missing values are written the same way as non-missing values.
+    #[arg(long)]
+    recode: bool,
+
+    /// Write value labels instead of values.
+    #[arg(long)]
+    labels: bool,
+
+    /// Use print formats for numeric variables.
+    #[arg(long)]
+    print_formats: bool,
+
+    /// Decimal point.
+    #[arg(long, default_value_t = '.')]
+    decimal: char,
+
+    /// Delimiter.
+    ///
+    /// The default is `,` unless that would be the same as the decimal point,
+    /// in which case `;` is the default.
+    #[arg(long)]
+    delimiter: Option<char>,
+
+    /// Character used to quote the delimiter.
+    #[arg(long, default_value_t = '"')]
+    qualifier: char,
 }
 
 #[derive(Args, Clone, Debug)]
 struct SysOptions {
+    /// Write the output file with Unicode (UTF-8) encoding.
+    ///
+    /// If the input was not already encoded in Unicode, this triples the width
+    /// of string variables.
+    #[arg(long = "unicode")]
+    to_unicode: bool,
+
     /// How to compress data in the system file.
     #[arg(long, default_value = "simple")]
     compression: Option<Compression>,
@@ -143,11 +176,19 @@ impl Convert {
             eprintln!("warning: {warning}");
         }
 
+        let output_format = match self.output_format {
+            Some(format) => format,
+            None => match &self.output {
+                Some(output) => output.as_path().try_into()?,
+                _ => OutputFormat::Csv,
+            },
+        };
+
         let mut system_file = ReadOptions::new(warn)
             .with_encoding(self.encoding)
             .with_password(self.password.clone())
             .open_file(&self.input)?;
-        if self.to_unicode {
+        if output_format == OutputFormat::Sys && self.sys_options.to_unicode {
             system_file = system_file.into_unicode();
         }
         let (dictionary, _, cases) = system_file.into_parts();
@@ -155,23 +196,23 @@ impl Convert {
         // Take only the first `self.max_cases` cases.
         let cases = cases.take(self.max_cases.unwrap_or(usize::MAX));
 
-        let output_format = match self.output_format {
-            Some(format) => format,
-            None => {
-                let Some(output) = &self.output else {
-                    bail!("either --output-format or an output file name must be specified");
-                };
-                output.as_path().try_into()?
-            }
-        };
-
         match output_format {
             OutputFormat::Csv => {
                 let writer = match self.output {
                     Some(path) => Box::new(File::create(path)?) as Box<dyn Write>,
                     None => Box::new(stdout()),
                 };
-                let mut output = csv::WriterBuilder::new().from_writer(writer);
+                let decimal: u8 = self.csv_options.decimal.try_into()?;
+                let delimiter: u8 = match self.csv_options.delimiter {
+                    Some(delimiter) => delimiter.try_into()?,
+                    None if decimal != b',' => b',',
+                    None => b';',
+                };
+                let qualifier: u8 = self.csv_options.qualifier.try_into()?;
+                let mut output = csv::WriterBuilder::new()
+                    .delimiter(delimiter)
+                    .quote(qualifier)
+                    .from_writer(writer);
                 if !self.csv_options.no_var_names {
                     output
                         .write_record(dictionary.variables.iter().map(|var| var.name.as_str()))?;
@@ -180,10 +221,120 @@ impl Convert {
                 for case in cases {
                     output.write_record(case?.into_iter().zip(dictionary.variables.iter()).map(
                         |(datum, variable)| {
-                            if datum == Datum::sysmis() {
+                            if self.csv_options.labels
+                                && let Some(label) = variable.value_labels.get(&datum)
+                            {
+                                String::from(label)
+                            } else if datum.is_sysmis() {
                                 String::from(" ")
+                            } else if self.csv_options.print_formats {
+                                datum
+                                    .display(variable.print_format)
+                                    .with_trimming()
+                                    .to_string()
                             } else {
-                                datum.display(variable.print_format).to_string()
+                                match variable.print_format.type_() {
+                                    Type::F
+                                    | Type::Comma
+                                    | Type::Dot
+                                    | Type::Dollar
+                                    | Type::Pct
+                                    | Type::E
+                                    | Type::CC(_)
+                                    | Type::N
+                                    | Type::Z
+                                    | Type::P
+                                    | Type::PK
+                                    | Type::IB
+                                    | Type::PIB
+                                    | Type::PIBHex
+                                    | Type::RB
+                                    | Type::RBHex
+                                    | Type::WkDay
+                                    | Type::Month => datum
+                                        .as_number()
+                                        .unwrap()
+                                        .unwrap()
+                                        .display_plain()
+                                        .with_decimal(self.csv_options.decimal)
+                                        .to_string(),
+
+                                    Type::Date
+                                    | Type::ADate
+                                    | Type::EDate
+                                    | Type::JDate
+                                    | Type::SDate
+                                    | Type::QYr
+                                    | Type::MoYr
+                                    | Type::WkYr => {
+                                        let number = datum.as_number().unwrap().unwrap();
+                                        if number >= 0.0
+                                            && let Some(date) = calendar_offset_to_gregorian(
+                                                number / 60.0 / 60.0 / 24.0,
+                                            )
+                                        {
+                                            format!(
+                                                "{:02}/{:02}/{:04}",
+                                                date.month(),
+                                                date.day(),
+                                                date.year()
+                                            )
+                                        } else {
+                                            String::from(" ")
+                                        }
+                                    }
+
+                                    Type::DateTime | Type::YmdHms => {
+                                        let number = datum.as_number().unwrap().unwrap();
+                                        if number >= 0.0
+                                            && let Some(date) = calendar_offset_to_gregorian(
+                                                number / 60.0 / 60.0 / 24.0,
+                                            )
+                                            && let Some(time) =
+                                                NaiveTime::from_num_seconds_from_midnight_opt(
+                                                    (number % (60.0 * 60.0 * 24.0)) as u32,
+                                                    0,
+                                                )
+                                        {
+                                            format!(
+                                                "{:02}/{:02}/{:04} {:02}:{:02}:{:02}",
+                                                date.month(),
+                                                date.day(),
+                                                date.year(),
+                                                time.hour(),
+                                                time.minute(),
+                                                time.second()
+                                            )
+                                        } else {
+                                            String::from(" ")
+                                        }
+                                    }
+
+                                    Type::MTime | Type::Time | Type::DTime => {
+                                        let number = datum.as_number().unwrap().unwrap();
+                                        if let Some(time) =
+                                            NaiveTime::from_num_seconds_from_midnight_opt(
+                                                number.abs() as u32,
+                                                0,
+                                            )
+                                        {
+                                            format!(
+                                                "{}{:02}:{:02}:{:02}",
+                                                if number.is_sign_negative() { "-" } else { "" },
+                                                time.hour(),
+                                                time.minute(),
+                                                time.second()
+                                            )
+                                        } else {
+                                            String::from(" ")
+                                        }
+                                    }
+
+                                    Type::A | Type::AHex => datum
+                                        .display(variable.print_format)
+                                        .with_trimming()
+                                        .to_string(),
+                                }
                             }
                         },
                     ))?;
