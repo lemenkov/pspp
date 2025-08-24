@@ -35,7 +35,7 @@ use smallvec::SmallVec;
 use crate::{
     data::{Datum, RawString},
     dictionary::{CategoryLabels, Dictionary, MultipleResponseType},
-    format::{DisplayPlainF64, Format},
+    format::{DisplayPlain, Format},
     identifier::Identifier,
     output::spv::Zeros,
     sys::{
@@ -536,7 +536,7 @@ where
 
                     let mut value = match datum {
                         Datum::Number(Some(number)) => {
-                            DisplayPlainF64(*number).to_string().into_bytes()
+                            number.display_plain().to_string().into_bytes()
                         }
                         Datum::Number(None) => vec![b'.'],
                         Datum::String(raw_string) => raw_string.0.clone(),

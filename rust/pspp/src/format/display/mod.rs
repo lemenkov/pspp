@@ -56,29 +56,63 @@ pub struct DisplayDatum<'b, B> {
 mod test;
 
 pub trait DisplayPlain {
-    fn display_plain(&self) -> impl Display;
+    fn display_plain(&self) -> DisplayPlainF64;
 }
 
 impl DisplayPlain for f64 {
-    fn display_plain(&self) -> impl Display {
-        DisplayPlainF64(*self)
+    fn display_plain(&self) -> DisplayPlainF64 {
+        DisplayPlainF64 {
+            value: *self,
+            decimal: '.',
+        }
     }
 }
 
-pub struct DisplayPlainF64(pub f64);
+pub struct DisplayPlainF64 {
+    pub value: f64,
+    pub decimal: char,
+}
+
+impl DisplayPlainF64 {
+    pub fn with_decimal(self, decimal: char) -> Self {
+        Self { decimal, ..self }
+    }
+}
 
 impl Display for DisplayPlainF64 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        if self.0.abs() < 0.0005 || self.0.abs() > 1e15 {
-            // Print self.0s that would otherwise have lots of leading or
-            // trailing zeros in scientific notation with full precision.
-            write!(f, "{:.e}", self.0)
-        } else if self.0 == self.0.trunc() {
-            // Print integers without decimal places.
-            write!(f, "{:.0}", self.0)
-        } else {
-            // Print other numbers with full precision.
-            write!(f, "{:.}", self.0)
+        struct Inner(f64);
+
+        impl Display for Inner {
+            fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+                let value = self.0;
+                if (value.abs() < 0.0005 && value != 0.0) || value.abs() > 1e15 {
+                    // Print 0s that would otherwise have lots of leading or
+                    // trailing zeros in scientific notation with full precision.
+                    write!(f, "{value:.e}")
+                } else if value == value.trunc() {
+                    // Print integers without decimal places.
+                    write!(f, "{value:.0}")
+                } else {
+                    // Print other numbers with full precision.
+                    write!(f, "{value:.}")
+                }
+            }
+        }
+
+        match self.decimal {
+            '.' => write!(f, "{}", Inner(self.value)),
+            _ => {
+                let mut tmp = SmallString::<[u8; 64]>::new();
+                write!(&mut tmp, "{}", Inner(self.value)).unwrap();
+                if let Some(position) = tmp.find('.') {
+                    f.write_str(&tmp[..position])?;
+                    f.write_char(self.decimal)?;
+                    f.write_str(&tmp[position + 1..])
+                } else {
+                    f.write_str(&tmp)
+                }
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ use crate::{
     data::{ByteStrArray, ByteString, Datum},
     dictionary::CategoryLabels,
     endian::FromBytes,
-    format::{DisplayPlainF64, Format, Type},
+    format::{DisplayPlain, Format, Type},
     identifier::{Error as IdError, Identifier},
     sys::{
         raw::{
@@ -2672,8 +2672,8 @@ pub enum ZTrailerError {
     /// ZLIB trailer bias {actual} is not {} as expected from file header bias.
     #[
         error(
-        "Bias {actual} is not {} as expected from file header.",
-        DisplayPlainF64(*expected)
+            "Bias {actual} is not {} as expected from file header.",
+            expected.display_plain()
     )]
     WrongZlibTrailerBias {
         /// ZLIB trailer bias read from file.
