@@ -28,6 +28,8 @@ can instead `cd` into `rust/pspp` in the source tree and run:
 cargo install --path .
 ```
 
+The `install` commands above also work for upgrades.
+
 To uninstall later, run:
 
 ```
@@ -42,17 +44,16 @@ After installing PSPP using one of the methods above, run it with:
 pspp
 ```
 
-For help, use `pspp --help`.  The only really useful PSPP command
-currently is `convert`.  For help with it, run:
-
-```
-pspp convert --help
-```
+For help, use `pspp --help`.  The only really useful PSPP commands
+currently are `convert` and `show`.  Help for individual commands is
+available with `pspp <command> --help`.
 
 ## Reading the manual
 
-The PSPP manual is maintained in [mdBook] format.  To build the
-manual, first install mdBook using the instructions at
+The PSPP manual may be read at [https://pspp.benpfaff.org/manual].
+
+The manual is maintained in [mdBook] format.  To build it yourself,
+first install mdBook using the instructions at
 https://rust-lang.github.io/mdBook/guide/installation.html.  Then,
 from the root of a checked-out copy of this repository, build the
 manual with:
