@@ -1060,7 +1060,7 @@ impl Debug for RawDatum {
         match self {
             RawDatum::Number(Some(number)) => write!(f, "{number:?}"),
             RawDatum::Number(None) => write!(f, "SYSMIS"),
-            RawDatum::String(s) => write!(f, "{:?}", ByteStr(s)),
+            RawDatum::String(s) => write!(f, "{:?}", ByteStr::new(s)),
         }
     }
 }
@@ -1072,7 +1072,7 @@ impl Serialize for RawDatum {
     {
         match self {
             RawDatum::Number(number) => number.serialize(serializer),
-            RawDatum::String(s) => ByteStr(s).serialize(serializer),
+            RawDatum::String(s) => ByteStr::new(s).serialize(serializer),
         }
     }
 }
@@ -1755,7 +1755,7 @@ impl Debug for UntypedDatum {
         } else {
             big
         };
-        write!(f, "{number}/{:?}", ByteStr(&self.0))
+        write!(f, "{number}/{:?}", ByteStr::new(&self.0))
     }
 }
 

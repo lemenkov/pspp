@@ -1637,7 +1637,7 @@ mod test {
             let parsed = Type::RB
                 .parser(UTF_8)
                 .with_endian(EndianSettings::new(Endian::Big))
-                .parse(ByteStr(raw.as_slice()).with_encoding(UTF_8))
+                .parse(ByteStr::new(raw.as_slice()).with_encoding(UTF_8))
                 .unwrap()
                 .as_number()
                 .unwrap()

@@ -89,19 +89,19 @@ pub trait RawString: Debug + PartialEq + Eq + PartialOrd + Ord + Hash {
         self.raw_string_bytes().len()
     }
 
-    fn as_ref(&self) -> ByteStr<'_> {
-        ByteStr(self.raw_string_bytes())
+    fn as_ref(&self) -> &ByteStr {
+        ByteStr::new(self.raw_string_bytes())
     }
 
-    fn without_trailing_spaces(&self) -> ByteStr<'_> {
+    fn without_trailing_spaces(&self) -> &ByteStr {
         let mut raw = self.raw_string_bytes();
         while let Some(trimmed) = raw.strip_suffix(b" ") {
             raw = trimmed;
         }
-        ByteStr(raw)
+        ByteStr::new(raw)
     }
 
-    fn as_encoded(&self, encoding: &'static Encoding) -> WithEncoding<ByteStr<'_>>
+    fn as_encoded(&self, encoding: &'static Encoding) -> WithEncoding<&ByteStr>
     where
         Self: Sized,
     {
@@ -139,21 +139,30 @@ impl RawString for &'_ String {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ByteStr<'a>(pub &'a [u8]);
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+pub struct ByteStr(pub [u8]);
 
-impl RawString for ByteStr<'_> {
-    fn raw_string_bytes(&self) -> &[u8] {
-        self.0
+impl ByteStr {
+    pub fn new(s: &[u8]) -> &ByteStr {
+        // SAFETY: ByteStr is just a wrapper of [u8],
+        // therefore converting &[u8] to &ByteStr is safe.
+        unsafe { &*(s as *const [u8] as *const ByteStr) }
     }
 }
 
-impl Serialize for ByteStr<'_> {
+impl<'a> RawString for &'a ByteStr {
+    fn raw_string_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl<'a> Serialize for &'a ByteStr {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        if let Ok(s) = str::from_utf8(self.0) {
+        if let Ok(s) = str::from_utf8(&self.0) {
             let (variant_index, variant) = if self.0.iter().all(|b| b.is_ascii()) {
                 (0, "Ascii")
             } else {
@@ -165,17 +174,17 @@ impl Serialize for ByteStr<'_> {
             tuple.end()
         } else {
             let mut tuple = serializer.serialize_tuple_variant("RawString", 2, "Windows1252", 1)?;
-            tuple.serialize_field(&decode_latin1(self.0))?;
+            tuple.serialize_field(&decode_latin1(&self.0))?;
             tuple.end()
         }
     }
 }
 
-impl Debug for ByteStr<'_> {
+impl Debug for ByteStr {
     // If `s` is valid UTF-8, displays it as UTF-8, otherwise as Latin-1
     // (actually bytes interpreted as Unicode code points).
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let s = from_utf8(&self.0).map_or_else(|_| decode_latin1(self.0), Cow::from);
+        let s = from_utf8(&self.0).map_or_else(|_| decode_latin1(&self.0), Cow::from);
         write!(f, "{s:?}")
     }
 }
@@ -194,7 +203,7 @@ impl Serialize for ByteCow<'_> {
     where
         S: serde::Serializer,
     {
-        ByteStr(&self.0).serialize(serializer)
+        ByteStr::new(&self.0).serialize(serializer)
     }
 }
 
@@ -206,7 +215,7 @@ impl RawString for ByteCow<'_> {
 
 impl Debug for ByteCow<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        ByteStr(&self.0).fmt(f)
+        ByteStr::new(&self.0).fmt(f)
     }
 }
 
@@ -218,7 +227,7 @@ impl<const N: usize> Serialize for ByteStrArray<N> {
     where
         S: serde::Serializer,
     {
-        ByteStr(&self.0).serialize(serializer)
+        ByteStr::new(&self.0).serialize(serializer)
     }
 }
 
@@ -230,7 +239,7 @@ impl<const N: usize> RawString for ByteStrArray<N> {
 
 impl<const N: usize> Debug for ByteStrArray<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        ByteStr(&self.0).fmt(f)
+        ByteStr::new(&self.0).fmt(f)
     }
 }
 
@@ -241,6 +250,12 @@ impl ByteString {
     /// Creates a new [ByteString] that consists of `n` ASCII spaces.
     pub fn spaces(n: usize) -> Self {
         Self(std::iter::repeat_n(b' ', n).collect())
+    }
+}
+
+impl Borrow<ByteStr> for ByteString {
+    fn borrow(&self) -> &ByteStr {
+        ByteStr::new(&self.0)
     }
 }
 
@@ -409,7 +424,7 @@ impl<T> Datum<T>
 where
     T: EncodedString,
 {
-    pub fn as_borrowed(&self) -> Datum<WithEncoding<ByteStr<'_>>> {
+    pub fn as_borrowed(&self) -> Datum<WithEncoding<&ByteStr>> {
         self.as_ref().map_string(|s| s.as_encoded_byte_str())
     }
     pub fn cloned(&self) -> Datum<WithEncoding<ByteString>> {
@@ -610,7 +625,7 @@ where
         }
     }
 
-    pub fn as_encoded(&self, encoding: &'static Encoding) -> Datum<WithEncoding<ByteStr<'_>>> {
+    pub fn as_encoded(&self, encoding: &'static Encoding) -> Datum<WithEncoding<&ByteStr>> {
         self.as_ref().map_string(|s| s.as_encoded(encoding))
     }
 
@@ -694,15 +709,15 @@ impl<B> From<Option<f64>> for Datum<B> {
     }
 }
 
-impl<'a> From<&'a str> for Datum<ByteStr<'a>> {
+impl<'a> From<&'a str> for Datum<&'a ByteStr> {
     fn from(value: &'a str) -> Self {
-        Datum::String(ByteStr(value.as_bytes()))
+        Datum::String(ByteStr::new(value.as_bytes()))
     }
 }
 
-impl<'a> From<&'a [u8]> for Datum<ByteStr<'a>> {
+impl<'a> From<&'a [u8]> for Datum<&'a ByteStr> {
     fn from(value: &'a [u8]) -> Self {
-        Self::String(ByteStr(value))
+        Self::String(ByteStr::new(value))
     }
 }
 
@@ -796,7 +811,7 @@ pub struct CaseIter<'a> {
 }
 
 impl<'a> Iterator for CaseIter<'a> {
-    type Item = Datum<WithEncoding<ByteStr<'a>>>;
+    type Item = Datum<WithEncoding<&'a ByteStr>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iter.next().map(|d| d.as_encoded(self.encoding))
@@ -807,7 +822,7 @@ impl<'a, B> IntoIterator for &'a Case<B>
 where
     B: Borrow<[Datum<ByteString>]>,
 {
-    type Item = Datum<WithEncoding<ByteStr<'a>>>;
+    type Item = Datum<WithEncoding<&'a ByteStr>>;
 
     type IntoIter = CaseIter<'a>;
 

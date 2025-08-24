@@ -112,8 +112,8 @@ pub trait EncodedString: Encoded + RawString + Display + Debug {
         self.as_str().into_owned()
     }
     fn to_encoding(&self, encoding: &'static Encoding) -> WithEncoding<ByteCow<'_>>;
-    fn as_encoded_byte_str(&self) -> WithEncoding<ByteStr<'_>> {
-        WithEncoding::new(ByteStr(self.raw_string_bytes()), self.encoding())
+    fn as_encoded_byte_str(&self) -> WithEncoding<&ByteStr> {
+        WithEncoding::new(ByteStr::new(self.raw_string_bytes()), self.encoding())
     }
     fn cloned(&self) -> WithEncoding<ByteString> {
         WithEncoding::new(ByteString::from(self.raw_string_bytes()), self.encoding())

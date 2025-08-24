@@ -91,7 +91,7 @@ where
     /// `format`.
     ///
     /// [Display]: std::fmt::Display
-    pub fn display(&'a self, format: Format) -> DisplayDatum<'a, WithEncoding<ByteStr<'a>>> {
+    pub fn display(&'a self, format: Format) -> DisplayDatum<'a, WithEncoding<&'a ByteStr>> {
         DisplayDatum::new(format, self.as_borrowed())
     }
 
