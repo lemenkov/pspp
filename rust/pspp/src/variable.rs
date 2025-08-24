@@ -17,7 +17,7 @@
 //! Variables.
 
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::BTreeMap,
     fmt::{Debug, Display},
     hash::{DefaultHasher, Hash, Hasher},
     ops::{Deref, Not},
@@ -25,13 +25,17 @@ use std::{
 };
 
 use encoding_rs::{Encoding, UTF_8};
+use hashbrown::HashMap;
+use indexmap::Equivalent;
 use num::integer::div_ceil;
 use serde::{ser::SerializeSeq, Serialize};
 use thiserror::Error as ThisError;
 use unicase::UniCase;
 
 use crate::{
-    data::{ByteString, Datum, Encoded, EncodedString, ResizeError, WithEncoding},
+    data::{
+        ByteStr, ByteString, Datum, Encoded, EncodedString, RawString, ResizeError, WithEncoding,
+    },
     format::{DisplayPlain, Format},
     identifier::{HasIdentifier, Identifier},
 };
@@ -585,6 +589,12 @@ impl HasIdentifier for Variable {
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct ValueLabels(pub HashMap<Datum<ByteString>, String>);
 
+impl<'a> Equivalent<Datum<ByteString>> for Datum<&'a ByteStr> {
+    fn equivalent(&self, key: &Datum<ByteString>) -> bool {
+        self == key
+    }
+}
+
 impl ValueLabels {
     pub fn new() -> Self {
         Self::default()
@@ -594,8 +604,11 @@ impl ValueLabels {
         self.0.is_empty()
     }
 
-    pub fn get(&self, value: &Datum<ByteString>) -> Option<&str> {
-        self.0.get(value).map(|s| s.as_str())
+    pub fn get<T>(&self, value: &Datum<T>) -> Option<&str>
+    where
+        T: RawString,
+    {
+        self.0.get(&value.as_raw()).map(|s| s.as_str())
     }
 
     pub fn insert(&mut self, value: Datum<ByteString>, label: impl Into<String>) -> Option<String> {

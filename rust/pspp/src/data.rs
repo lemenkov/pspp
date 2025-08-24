@@ -143,6 +143,12 @@ impl RawString for &'_ String {
 #[repr(transparent)]
 pub struct ByteStr(pub [u8]);
 
+impl PartialEq<ByteString> for &ByteStr {
+    fn eq(&self, other: &ByteString) -> bool {
+        self.raw_string_bytes() == other.raw_string_bytes()
+    }
+}
+
 impl ByteStr {
     pub fn new(s: &[u8]) -> &ByteStr {
         // SAFETY: ByteStr is just a wrapper of [u8],
@@ -623,6 +629,10 @@ where
             (Self::Number(a), Datum::Number(b)) => a == b,
             _ => false,
         }
+    }
+
+    pub fn as_raw(&self) -> Datum<&ByteStr> {
+        self.as_ref().map_string(|s| s.as_ref())
     }
 
     pub fn as_encoded(&self, encoding: &'static Encoding) -> Datum<WithEncoding<&ByteStr>> {
