@@ -25,13 +25,13 @@ use chrono::{Datelike, Local};
 use enum_iterator::{all, Sequence};
 use enum_map::{Enum, EnumMap};
 use serde::{Deserialize, Serialize};
-use smallstr::SmallString;
 use thiserror::Error as ThisError;
 use unicode_width::UnicodeWidthStr;
 
 use crate::{
     data::{ByteString, Datum},
     sys::raw,
+    util::ToSmallString,
     variable::{VarType, VarWidth},
 };
 
@@ -495,9 +495,7 @@ impl Serialize for Format {
     where
         S: serde::Serializer,
     {
-        let mut s = SmallString::<[u8; 16]>::new();
-        write!(&mut s, "{}", self).unwrap();
-        s.serialize(serializer)
+        self.to_small_string::<16>().serialize(serializer)
     }
 }
 

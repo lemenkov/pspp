@@ -17,7 +17,6 @@
 use core::f64;
 use std::{
     borrow::Cow,
-    fmt::Write as _,
     fs::File,
     io::{Cursor, Seek, Write},
     iter::{repeat, repeat_n},
@@ -34,7 +33,6 @@ use quick_xml::{
     ElementWriter,
 };
 use serde::{Deserialize, Serialize};
-use smallstr::SmallString;
 use zip::{result::ZipResult, write::SimpleFileOptions, ZipWriter};
 
 use crate::{
@@ -51,6 +49,7 @@ use crate::{
         Item, Text,
     },
     settings::Show,
+    util::ToSmallString,
 };
 
 fn light_table_name(table_id: u64) -> String {
@@ -1040,9 +1039,8 @@ impl BinWrite for Color {
         endian: Endian,
         args: Self::Args<'_>,
     ) -> binrw::BinResult<()> {
-        let mut s = SmallString::<[u8; 16]>::new();
-        write!(&mut s, "{}", self.without_alpha().display_css()).unwrap();
-        SpvString(&s).write_options(writer, endian, args)
+        SpvString(&self.without_alpha().display_css().to_small_string::<16>())
+            .write_options(writer, endian, args)
     }
 }
 

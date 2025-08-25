@@ -74,6 +74,7 @@ use crate::{
     data::{ByteString, Datum, EncodedString, RawString},
     format::{Decimal, Format, Settings as FormatSettings, Type, UncheckedFormat},
     settings::{Settings, Show},
+    util::ToSmallString,
     variable::{VarType, Variable},
 };
 
@@ -125,9 +126,7 @@ impl Serialize for Area {
     where
         S: serde::Serializer,
     {
-        let mut s = SmallString::<[u8; 16]>::new();
-        write!(&mut s, "{}", self).unwrap();
-        serializer.serialize_str(&s)
+        serializer.serialize_str(&self.to_small_string::<16>())
     }
 }
 
@@ -235,9 +234,7 @@ impl Serialize for Border {
     where
         S: serde::Serializer,
     {
-        let mut s = SmallString::<[u8; 32]>::new();
-        write!(&mut s, "{}", self).unwrap();
-        serializer.serialize_str(&s)
+        serializer.serialize_str(&self.to_small_string::<32>())
     }
 }
 
@@ -1129,9 +1126,7 @@ impl Serialize for Color {
     where
         S: serde::Serializer,
     {
-        let mut s = SmallString::<[u8; 32]>::new();
-        write!(&mut s, "{}", self.display_css()).unwrap();
-        serializer.serialize_str(&s)
+        serializer.serialize_str(&self.display_css().to_small_string::<32>())
     }
 }
 

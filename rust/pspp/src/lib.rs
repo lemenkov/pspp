@@ -35,6 +35,7 @@ pub mod output;
 pub mod prompt;
 pub mod settings;
 pub mod sys;
+pub mod util;
 pub mod variable;
 
 /// This is [slice::element_offset] copied out from the standard library so that

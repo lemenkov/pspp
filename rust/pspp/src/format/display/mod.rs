@@ -34,6 +34,7 @@ use crate::{
     endian::ToBytes,
     format::{Category, DateTemplate, Decimal, Format, NumberStyle, Settings, TemplateItem, Type},
     settings::{EndianSettings, Settings as PsppSettings},
+    util::ToSmallString,
 };
 
 pub struct DisplayDatum<'b, B> {
@@ -103,8 +104,7 @@ impl Display for DisplayPlainF64 {
         match self.decimal {
             '.' => write!(f, "{}", Inner(self.value)),
             _ => {
-                let mut tmp = SmallString::<[u8; 64]>::new();
-                write!(&mut tmp, "{}", Inner(self.value)).unwrap();
+                let tmp = Inner(self.value).to_small_string::<64>();
                 if let Some(position) = tmp.find('.') {
                     f.write_str(&tmp[..position])?;
                     f.write_char(self.decimal)?;
@@ -526,8 +526,7 @@ where
         if len > w {
             self.overflow(f)
         } else {
-            let mut s = SmallString::<[u8; 40]>::new();
-            write!(&mut s, "{legacy}")?;
+            let mut s = legacy.to_small_string::<40>();
             if number < 0.0 {
                 if let Some(last) = s.pop() {
                     let last = last.to_digit(10).unwrap();
@@ -698,11 +697,7 @@ where
             None if encoding == UTF_8 => {
                 write!(&mut w, "{}", self)
             }
-            None => {
-                let mut temp = SmallString::<[u8; 64]>::new();
-                write!(&mut temp, "{}", self).unwrap();
-                w.write_all(&encoding.encode(&temp).0)
-            }
+            None => w.write_all(&encoding.encode(&self.to_small_string::<64>()).0),
         }
     }
 
