@@ -561,6 +561,14 @@ impl<B> Datum<B> {
         matches!(self, Self::Number(None))
     }
 
+    pub const fn is_number(&self) -> bool {
+        matches!(self, Self::Number(_))
+    }
+
+    pub const fn is_string(&self) -> bool {
+        matches!(self, Self::String(_))
+    }
+
     /// Returns the number inside this datum, or `None` if this is a string
     /// datum.
     pub fn as_number(&self) -> Option<Option<f64>> {
