@@ -3,12 +3,10 @@
 [Introduction](introduction.md)
 [License](license.md)
 
-# Running PSPP
-
-- [Invoking `pspp`](invoking/pspp.md)
-- [Invoking `pspp-convert`](invoking/pspp-convert.md)
-- [Invoking `pspp-output`](invoking/pspp-output.md)
-- [Invoking `pspp-dump-sav`](invoking/pspp-dump-sav.md)
+- [Running PSPP](invoking/index.md)
+  - [Converting data](invoking/pspp-convert.md)
+  - [Inspecting data](invoking/pspp-show.md)
+  - [Decrypting files](invoking/pspp-decrypt.md)
 
 # Language Overview
 
