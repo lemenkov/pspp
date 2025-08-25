@@ -17,10 +17,12 @@
 use anyhow::{anyhow, bail, Error as AnyError, Result};
 use chrono::{Datelike, NaiveTime, Timelike};
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use csv::Writer;
 use encoding_rs::Encoding;
 use pspp::{
     calendar::calendar_offset_to_gregorian,
     crypto::EncryptedFile,
+    data::{ByteString, Datum, WithEncoding},
     format::{DisplayPlain, Type},
     output::{
         driver::{Config, Driver},
@@ -34,6 +36,8 @@ use pspp::{
         },
         ReadOptions, Records,
     },
+    util::ToSmallString,
+    variable::Variable,
 };
 use serde::Serialize;
 use std::{
@@ -156,6 +160,133 @@ struct CsvOptions {
     qualifier: char,
 }
 
+impl CsvOptions {
+    fn write_field<W>(
+        &self,
+        datum: &Datum<WithEncoding<ByteString>>,
+        variable: &Variable,
+        writer: &mut Writer<W>,
+    ) -> csv::Result<()>
+    where
+        W: Write,
+    {
+        if self.labels
+            && let Some(label) = variable.value_labels.get(&datum)
+        {
+            writer.write_field(label)
+        } else if datum.is_sysmis() {
+            writer.write_field(" ")
+        } else if self.print_formats || datum.is_string() {
+            writer.write_field(
+                &datum
+                    .display(variable.print_format)
+                    .with_trimming()
+                    .to_small_string::<64>(),
+            )
+        } else {
+            let number = datum.as_number().unwrap().unwrap();
+            match variable.print_format.type_() {
+                Type::F
+                | Type::Comma
+                | Type::Dot
+                | Type::Dollar
+                | Type::Pct
+                | Type::E
+                | Type::CC(_)
+                | Type::N
+                | Type::Z
+                | Type::P
+                | Type::PK
+                | Type::IB
+                | Type::PIB
+                | Type::PIBHex
+                | Type::RB
+                | Type::RBHex
+                | Type::WkDay
+                | Type::Month => writer.write_field(
+                    &number
+                        .display_plain()
+                        .with_decimal(self.decimal)
+                        .to_small_string::<64>(),
+                ),
+
+                Type::Date
+                | Type::ADate
+                | Type::EDate
+                | Type::JDate
+                | Type::SDate
+                | Type::QYr
+                | Type::MoYr
+                | Type::WkYr => {
+                    if number >= 0.0
+                        && let Some(date) =
+                            calendar_offset_to_gregorian(number / 60.0 / 60.0 / 24.0)
+                    {
+                        writer.write_field(
+                            &format_args!(
+                                "{:02}/{:02}/{:04}",
+                                date.month(),
+                                date.day(),
+                                date.year()
+                            )
+                            .to_small_string::<64>(),
+                        )
+                    } else {
+                        writer.write_field(" ")
+                    }
+                }
+
+                Type::DateTime | Type::YmdHms => {
+                    if number >= 0.0
+                        && let Some(date) =
+                            calendar_offset_to_gregorian(number / 60.0 / 60.0 / 24.0)
+                        && let Some(time) = NaiveTime::from_num_seconds_from_midnight_opt(
+                            (number % (60.0 * 60.0 * 24.0)) as u32,
+                            0,
+                        )
+                    {
+                        writer.write_field(
+                            &format_args!(
+                                "{:02}/{:02}/{:04} {:02}:{:02}:{:02}",
+                                date.month(),
+                                date.day(),
+                                date.year(),
+                                time.hour(),
+                                time.minute(),
+                                time.second()
+                            )
+                            .to_small_string::<64>(),
+                        )
+                    } else {
+                        writer.write_field(" ")
+                    }
+                }
+
+                Type::MTime | Type::Time | Type::DTime => {
+                    if let Some(time) =
+                        NaiveTime::from_num_seconds_from_midnight_opt(number.abs() as u32, 0)
+                    {
+                        writer.write_field(
+                            format_args!(
+                                "{}{:02}:{:02}:{:02}",
+                                if number.is_sign_negative() { "-" } else { "" },
+                                time.hour(),
+                                time.minute(),
+                                time.second()
+                            )
+                            .to_small_string::<64>(),
+                        )
+                    } else {
+                        writer.write_field(" ")
+                    }
+                }
+
+                Type::A | Type::AHex => unreachable!(),
+            }
+        }
+    }
+}
+
 #[derive(Args, Clone, Debug)]
 struct SysOptions {
     /// Write the output file with Unicode (UTF-8) encoding.
@@ -219,125 +350,11 @@ impl Convert {
                 }
 
                 for case in cases {
-                    output.write_record(case?.into_iter().zip(dictionary.variables.iter()).map(
-                        |(datum, variable)| {
-                            if self.csv_options.labels
-                                && let Some(label) = variable.value_labels.get(&datum)
-                            {
-                                String::from(label)
-                            } else if datum.is_sysmis() {
-                                String::from(" ")
-                            } else if self.csv_options.print_formats {
-                                datum
-                                    .display(variable.print_format)
-                                    .with_trimming()
-                                    .to_string()
-                            } else {
-                                match variable.print_format.type_() {
-                                    Type::F
-                                    | Type::Comma
-                                    | Type::Dot
-                                    | Type::Dollar
-                                    | Type::Pct
-                                    | Type::E
-                                    | Type::CC(_)
-                                    | Type::N
-                                    | Type::Z
-                                    | Type::P
-                                    | Type::PK
-                                    | Type::IB
-                                    | Type::PIB
-                                    | Type::PIBHex
-                                    | Type::RB
-                                    | Type::RBHex
-                                    | Type::WkDay
-                                    | Type::Month => datum
-                                        .as_number()
-                                        .unwrap()
-                                        .unwrap()
-                                        .display_plain()
-                                        .with_decimal(self.csv_options.decimal)
-                                        .to_string(),
-
-                                    Type::Date
-                                    | Type::ADate
-                                    | Type::EDate
-                                    | Type::JDate
-                                    | Type::SDate
-                                    | Type::QYr
-                                    | Type::MoYr
-                                    | Type::WkYr => {
-                                        let number = datum.as_number().unwrap().unwrap();
-                                        if number >= 0.0
-                                            && let Some(date) = calendar_offset_to_gregorian(
-                                                number / 60.0 / 60.0 / 24.0,
-                                            )
-                                        {
-                                            format!(
-                                                "{:02}/{:02}/{:04}",
-                                                date.month(),
-                                                date.day(),
-                                                date.year()
-                                            )
-                                        } else {
-                                            String::from(" ")
-                                        }
-                                    }
-
-                                    Type::DateTime | Type::YmdHms => {
-                                        let number = datum.as_number().unwrap().unwrap();
-                                        if number >= 0.0
-                                            && let Some(date) = calendar_offset_to_gregorian(
-                                                number / 60.0 / 60.0 / 24.0,
-                                            )
-                                            && let Some(time) =
-                                                NaiveTime::from_num_seconds_from_midnight_opt(
-                                                    (number % (60.0 * 60.0 * 24.0)) as u32,
-                                                    0,
-                                                )
-                                        {
-                                            format!(
-                                                "{:02}/{:02}/{:04} {:02}:{:02}:{:02}",
-                                                date.month(),
-                                                date.day(),
-                                                date.year(),
-                                                time.hour(),
-                                                time.minute(),
-                                                time.second()
-                                            )
-                                        } else {
-                                            String::from(" ")
-                                        }
-                                    }
-
-                                    Type::MTime | Type::Time | Type::DTime => {
-                                        let number = datum.as_number().unwrap().unwrap();
-                                        if let Some(time) =
-                                            NaiveTime::from_num_seconds_from_midnight_opt(
-                                                number.abs() as u32,
-                                                0,
-                                            )
-                                        {
-                                            format!(
-                                                "{}{:02}:{:02}:{:02}",
-                                                if number.is_sign_negative() { "-" } else { "" },
-                                                time.hour(),
-                                                time.minute(),
-                                                time.second()
-                                            )
-                                        } else {
-                                            String::from(" ")
-                                        }
-                                    }
-
-                                    Type::A | Type::AHex => datum
-                                        .display(variable.print_format)
-                                        .with_trimming()
-                                        .to_string(),
-                                }
-                            }
-                        },
-                    ))?;
+                    for (datum, variable) in case?.into_iter().zip(dictionary.variables.iter()) {
+                        self.csv_options
+                            .write_field(&datum, variable, &mut output)?;
+                    }
+                    output.write_record(None::<&[u8]>)?;
                 }
             }
             OutputFormat::Sys => {
