@@ -467,23 +467,23 @@ impl Dictionary {
         assert!(self.try_rename_var(index, new_name).is_ok());
     }
 
-    pub fn output_variables(&self) -> OutputVariables {
+    pub fn output_variables(&self) -> OutputVariables<'_> {
         OutputVariables::new(self)
     }
 
-    pub fn output_value_labels(&self) -> OutputValueLabels {
+    pub fn output_value_labels(&self) -> OutputValueLabels<'_> {
         OutputValueLabels::new(self)
     }
 
-    pub fn output_variable_sets(&self) -> OutputVariableSets {
+    pub fn output_variable_sets(&self) -> OutputVariableSets<'_> {
         OutputVariableSets::new(self)
     }
 
-    pub fn output_mrsets(&self) -> OutputMrsets {
+    pub fn output_mrsets(&self) -> OutputMrsets<'_> {
         OutputMrsets::new(self)
     }
 
-    pub fn output_attributes(&self) -> OutputAttributes {
+    pub fn output_attributes(&self) -> OutputAttributes<'_> {
         OutputAttributes::new(self)
     }
 

@@ -49,7 +49,7 @@ impl AxisEnumeration {
         &self.indexes[start..start + self.stride]
     }
 
-    fn iter(&self) -> AxisEnumerationIter {
+    fn iter(&self) -> AxisEnumerationIter<'_> {
         AxisEnumerationIter {
             enumeration: self,
             position: 0,

@@ -187,7 +187,7 @@ impl StripNewline for str {
     }
 }
 
-fn ellipsize(s: &str) -> Cow<str> {
+fn ellipsize(s: &str) -> Cow<'_, str> {
     if s.width() > 64 {
         let mut out = String::new();
         let mut width = 0;
@@ -423,7 +423,7 @@ impl TokenSlice {
         self.len() == 0
     }
 
-    pub fn iter(&self) -> TokenSliceIter {
+    pub fn iter(&self) -> TokenSliceIter<'_> {
         TokenSliceIter::new(self)
     }
 
