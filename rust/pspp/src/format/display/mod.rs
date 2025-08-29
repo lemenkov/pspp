@@ -134,7 +134,7 @@ where
     }
 }
 
-impl<'a, 'b, B> Display for DisplayDatum<'b, B>
+impl<'b, B> Display for DisplayDatum<'b, B>
 where
     B: EncodedString,
 {
@@ -275,7 +275,7 @@ where
                 "Unknown"
             };
             let w = if self.trim_spaces { 0 } else { self.format.w() };
-            write!(f, "{s:>0$.*}", w)
+            write!(f, "{s:>w$.w$}")
         } else {
             self.overflow(f)
         }
@@ -645,7 +645,7 @@ where
                     } else if excess_width >= 5 {
                         let d = min(self.format.d(), excess_width as usize - 4);
                         let w = d + 3;
-                        write!(&mut output, ":{:02$.*}", d, time, w).unwrap();
+                        write!(&mut output, ":{time:0w$.d$}").unwrap();
                         if self.settings.decimal == Decimal::Comma {
                             fix_decimal_point(&mut output);
                         }
@@ -695,7 +695,7 @@ where
         match self.to_binary() {
             Some(binary) => w.write_all(&binary),
             None if encoding == UTF_8 => {
-                write!(&mut w, "{}", self)
+                write!(&mut w, "{self}")
             }
             None => w.write_all(&encoding.encode(&self.to_small_string::<64>()).0),
         }

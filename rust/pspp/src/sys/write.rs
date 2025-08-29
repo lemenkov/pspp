@@ -327,7 +327,7 @@ where
 
             // Variable label.
             if let Some(label) = variable.label() {
-                let label = variable.encoding().encode(&label).0;
+                let label = variable.encoding().encode(label).0;
                 let len = label.len().min(255) as u32;
                 let padded_len = len.next_multiple_of(4);
                 (len, &*label, Zeros((padded_len - len) as usize)).write_le(self.writer)?;
@@ -426,7 +426,7 @@ where
             (3u32, value_labels.0.len() as u32).write_le(self.writer)?;
             for (datum, label) in &value_labels.0 {
                 let datum_padding = datum.width().as_string_width().map_or(0, |width| 8 - width);
-                let label = &*self.dictionary.encoding().encode(&label).0;
+                let label = &*self.dictionary.encoding().encode(label).0;
                 let label = if label.len() > 255 {
                     &label[..255]
                 } else {
@@ -453,7 +453,7 @@ where
         if !self.dictionary.documents.is_empty() {
             (6u32, self.dictionary.documents.len() as u32).write_le(self.writer)?;
             for line in &self.dictionary.documents {
-                Padded::exact(&*self.dictionary.encoding().encode(&line).0, 80, b' ')
+                Padded::exact(&self.dictionary.encoding().encode(line).0, 80, b' ')
                     .write_le(self.writer)?;
             }
         }
@@ -647,7 +647,7 @@ where
 
             for (value, label) in &variable.value_labels.0 {
                 let value = value.as_string().unwrap();
-                let label = self.dictionary.encoding().encode(&label).0;
+                let label = self.dictionary.encoding().encode(label).0;
                 (
                     value.len() as u32,
                     value.raw_string_bytes(),
@@ -728,7 +728,7 @@ where
     }
 
     fn write_string_record(&mut self, subtype: u32, s: &str) -> Result<(), BinError> {
-        self.write_bytes_record(subtype, &self.dictionary.encoding().encode(&s).0)
+        self.write_bytes_record(subtype, &self.dictionary.encoding().encode(s).0)
     }
 }
 
@@ -891,8 +891,8 @@ where
     fn flush_compressed(&mut self) -> Result<(), BinError> {
         if !self.opcodes.is_empty() {
             self.opcodes.resize(8, 0);
-            self.inner.write_all(&mut self.opcodes)?;
-            self.inner.write(&mut self.data)?;
+            self.inner.write_all(self.opcodes)?;
+            self.inner.write_all(self.data)?;
             self.opcodes.clear();
             self.data.clear();
         }
@@ -906,7 +906,7 @@ where
         Ok(())
     }
 
-    fn write_case_uncompressed<'c, B>(
+    fn write_case_uncompressed<B>(
         &mut self,
         case: impl Iterator<Item = Datum<B>>,
     ) -> Result<(), BinError>
@@ -940,7 +940,7 @@ where
         }
         Ok(())
     }
-    fn write_case_compressed<'c, B>(
+    fn write_case_compressed<B>(
         &mut self,
         case: impl Iterator<Item = Datum<B>>,
     ) -> Result<(), BinError>
@@ -952,9 +952,7 @@ where
                 CaseVar::Numeric => match datum.as_number().unwrap() {
                     None => self.put_opcode(255)?,
                     Some(number) => {
-                        if number >= 1.0 - BIAS
-                            && number <= 251.0 - BIAS
-                            && number == number.trunc()
+                        if (1.0 - BIAS..=251.0 - BIAS).contains(&number) && number == number.trunc()
                         {
                             self.put_opcode((number + BIAS) as u8)?
                         } else {
@@ -1073,7 +1071,7 @@ where
     /// # Panic
     ///
     /// Panics if [try_finish](Self::try_finish) has been called.
-    pub fn write_case<'a, B>(
+    pub fn write_case<B>(
         &mut self,
         case: impl IntoIterator<Item = Datum<B>>,
     ) -> Result<(), BinError>
@@ -1189,7 +1187,7 @@ where
 {
     fn write(&mut self, mut buf: &[u8]) -> Result<usize, IoError> {
         let n = buf.len();
-        while buf.len() > 0 {
+        while !buf.is_empty() {
             if self.encoder.total_in() >= ZBLOCK_SIZE {
                 self.flush_block()?;
             }

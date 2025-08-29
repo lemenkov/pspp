@@ -101,27 +101,16 @@ impl PartialEq for Dictionary {
     fn eq(&self, other: &Self) -> bool {
         // We have to compare the dereferenced versions of fields that use
         // [ByIdentifier.  Otherwise we would just be comparing their names.
-        self.variables
-            .iter()
-            .map(|var| &*var)
-            .eq(other.variables.iter().map(|var| &*var))
+        self.variables.iter().eq(other.variables.iter())
             && self.split_file == other.split_file
             && self.weight == other.weight
             && self.filter == other.filter
             && self.case_limit == other.case_limit
             && self.file_label == other.file_label
             && self.documents == other.documents
-            && self
-                .vectors
-                .iter()
-                .map(|vector| &*vector)
-                .eq(other.vectors.iter().map(|vector| &*vector))
+            && self.vectors.iter().eq(other.vectors.iter())
             && self.attributes == other.attributes
-            && self
-                .mrsets
-                .iter()
-                .map(|mrset| &*mrset)
-                .eq(other.mrsets.iter().map(|mrset| &*mrset))
+            && self.mrsets.iter().eq(other.mrsets.iter())
             && self.variable_sets == other.variable_sets
             && self.encoding == other.encoding
     }
@@ -495,7 +484,7 @@ impl Dictionary {
         values.push(
             self.file_label
                 .as_ref()
-                .map(|label| Value::new_user_text(label))
+                .map(Value::new_user_text)
                 .unwrap_or_default(),
         );
 
@@ -617,7 +606,7 @@ impl Dictionary {
         for (variable, short_names) in self.variables.iter().zip(short_names.iter_mut()) {
             if short_names[0].is_none()
                 && let Some(short_name) = variable.short_names.first()
-                && !used_names.contains(&short_name)
+                && !used_names.contains(short_name)
             {
                 used_names.insert(short_name.clone());
                 short_names[0] = Some(short_name.clone());
@@ -627,7 +616,7 @@ impl Dictionary {
             for (index, assigned_short_name) in short_names.iter_mut().enumerate().skip(1) {
                 if assigned_short_name.is_none()
                     && let Some(short_name) = variable.short_names.get(index)
-                    && !used_names.contains(&short_name)
+                    && !used_names.contains(short_name)
                 {
                     used_names.insert(short_name.clone());
                     *assigned_short_name = Some(short_name.clone());
@@ -754,7 +743,7 @@ impl<'a> OutputVariables<'a> {
     fn get_field_value(index: usize, variable: &Variable, field: VariableField) -> Option<Value> {
         match field {
             VariableField::Position => Some(Value::new_integer(Some(index as f64 + 1.0))),
-            VariableField::Label => variable.label().map(|label| Value::new_user_text(label)),
+            VariableField::Label => variable.label().map(Value::new_user_text),
             VariableField::Measure => variable
                 .measure
                 .map(|measure| Value::new_text(measure.as_str())),
@@ -1153,6 +1142,7 @@ impl<'a> MappedVariables<'a> {
         Ok(Self::new_unchecked(dictionary, dict_indexes))
     }
 
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.dict_indexes.len()
     }
@@ -1176,7 +1166,7 @@ impl<'a> Index<usize> for MappedVariables<'a> {
     type Output = Variable;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &*self.dictionary.variables[self.dict_indexes[index]]
+        &self.dictionary.variables[self.dict_indexes[index]]
     }
 }
 
@@ -1274,6 +1264,9 @@ impl<'a> Vectors<'a> {
     fn new(dictionary: &'a Dictionary) -> Self {
         Self(dictionary)
     }
+    pub fn is_empty(&self) -> bool {
+        self.0.vectors.is_empty()
+    }
     pub fn len(&self) -> usize {
         self.0.vectors.len()
     }
@@ -1281,7 +1274,7 @@ impl<'a> Vectors<'a> {
         self.0
             .vectors
             .get(&name.0)
-            .map(|vector| Vector::new_unchecked(self.0, &*vector))
+            .map(|vector| Vector::new_unchecked(self.0, vector))
     }
     pub fn iter(&self) -> VectorsIter<'a> {
         VectorsIter::new(self.0)
@@ -1340,6 +1333,9 @@ impl<'a> VariableSets<'a> {
     fn new(dictionary: &'a Dictionary) -> Self {
         Self(dictionary)
     }
+    pub fn is_empty(&self) -> bool {
+        self.0.variable_sets.is_empty()
+    }
     pub fn len(&self) -> usize {
         self.0.variable_sets.len()
     }
@@ -1349,7 +1345,7 @@ impl<'a> VariableSets<'a> {
             .get(index)
             .map(|variable_set| VariableSet {
                 dictionary: self.0,
-                variable_set: &*variable_set,
+                variable_set,
             })
     }
     pub fn iter(&self) -> VariableSetsIter<'a> {
@@ -1458,6 +1454,10 @@ pub struct MultipleResponseSets<'a>(&'a Dictionary);
 impl<'a> MultipleResponseSets<'a> {
     fn new(dictionary: &'a Dictionary) -> Self {
         Self(dictionary)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.mrsets.is_empty()
     }
 
     pub fn len(&self) -> usize {
@@ -1661,26 +1661,25 @@ pub enum MultipleResponseType {
 
 impl MultipleResponseType {
     pub fn supported_before_v14(&self) -> bool {
-        match self {
+        !matches!(
+            self,
             MultipleResponseType::MultipleDichotomy {
                 labels: CategoryLabels::CountedValues { .. },
                 datum: _,
-            } => false,
-            _ => true,
-        }
+            }
+        )
     }
 
     pub fn label_from_var_label(&self) -> bool {
-        match self {
+        matches!(
+            self,
             MultipleResponseType::MultipleDichotomy {
-                labels:
-                    CategoryLabels::CountedValues {
-                        use_var_label_as_mrset_label: true,
-                    },
+                labels: CategoryLabels::CountedValues {
+                    use_var_label_as_mrset_label: true,
+                },
                 ..
-            } => true,
-            _ => false,
-        }
+            }
+        )
     }
 }
 

@@ -843,7 +843,7 @@ impl ValueLabelRecord<RawDatum, ByteString> {
                      datum: value,
                      label,
                  }| ValueLabel {
-                    datum: value.clone(),
+                    datum: *value,
                     label: decoder.decode(label).to_string(),
                 },
             )
@@ -2519,7 +2519,7 @@ impl ZHeader {
 #[derive(ThisError, Debug)]
 pub enum ZHeaderError {
     /// I/O error via [mod@binrw].
-    #[error("{}", DisplayBinError(&.0, "ZLIB header"))]
+    #[error("{}", DisplayBinError(.0, "ZLIB header"))]
     BinError(#[from] BinError),
 
     /// Impossible ztrailer_offset {0:#x}.
@@ -2582,6 +2582,7 @@ pub struct RawZTrailer {
 
 impl RawZTrailer {
     /// Returns the length of the trailer when it is written, in bytes.
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         24 + self.blocks.len() * 24
     }
@@ -2666,7 +2667,7 @@ impl<'a> Display for DisplayBinError<'a> {
 #[derive(ThisError, Debug)]
 pub enum ZTrailerError {
     /// I/O error via [mod@binrw].
-    #[error("{}", DisplayBinError(&.0, "ZLIB trailer"))]
+    #[error("{}", DisplayBinError(.0, "ZLIB trailer"))]
     BinError(#[from] BinError),
 
     /// ZLIB trailer bias {actual} is not {} as expected from file header bias.
@@ -2856,17 +2857,15 @@ impl ZTrailer {
                         },
                     ));
                 }
-            } else {
-                if block.uncompressed_size > inner.block_size {
-                    warn(Warning::new(
-                        Some(block_offsets),
-                        ZlibTrailerWarning::ZlibTrailerBlockTooBig {
-                            index,
-                            actual: block.uncompressed_size,
-                            max_expected: inner.block_size,
-                        },
-                    ));
-                }
+            } else if block.uncompressed_size > inner.block_size {
+                warn(Warning::new(
+                    Some(block_offsets),
+                    ZlibTrailerWarning::ZlibTrailerBlockTooBig {
+                        index,
+                        actual: block.uncompressed_size,
+                        max_expected: inner.block_size,
+                    },
+                ));
             }
 
             expected_cmp_ofs += block.compressed_size as u64;

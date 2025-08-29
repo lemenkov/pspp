@@ -126,7 +126,7 @@ pub trait EncodedString: Encoded + RawString + Display + Debug {
     }
 }
 
-impl<'a> EncodedString for &'a str {
+impl EncodedString for &str {
     fn as_str(&self) -> Cow<'_, str> {
         Cow::from(*self)
     }
@@ -138,21 +138,21 @@ impl<'a> EncodedString for &'a str {
 
 impl EncodedString for String {
     fn as_str(&self) -> Cow<'_, str> {
-        Cow::from(String::as_str(&self))
+        Cow::from(String::as_str(self))
     }
 
     fn to_encoding(&self, encoding: &'static Encoding) -> WithEncoding<ByteCow<'_>> {
-        WithEncoding::new(ByteCow(encoding.encode(&self).0), encoding)
+        WithEncoding::new(ByteCow(encoding.encode(self).0), encoding)
     }
 }
 
 impl EncodedString for &'_ String {
     fn as_str(&self) -> Cow<'_, str> {
-        Cow::from(String::as_str(&self))
+        Cow::from(String::as_str(self))
     }
 
     fn to_encoding(&self, encoding: &'static Encoding) -> WithEncoding<ByteCow<'_>> {
-        WithEncoding::new(ByteCow(encoding.encode(String::as_str(&self)).0), encoding)
+        WithEncoding::new(ByteCow(encoding.encode(String::as_str(self)).0), encoding)
     }
 }
 

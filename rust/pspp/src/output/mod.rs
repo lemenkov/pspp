@@ -76,7 +76,7 @@ impl Item {
             label: None,
             command_name: details.command_name().cloned(),
             show: true,
-            details: details,
+            details,
         }
     }
 
@@ -141,10 +141,7 @@ impl Details {
     }
 
     pub fn is_page_break(&self) -> bool {
-        match self {
-            Self::PageBreak => true,
-            _ => false,
-        }
+        matches!(self, Self::PageBreak)
     }
 }
 

@@ -32,7 +32,7 @@ impl<T: Float> Display for HexFloat<T> {
             _ => (),
         };
         let (significand, mut exponent, _) = self.0.integer_decode();
-        let mut hex_sig = format!("{:x}", significand);
+        let mut hex_sig = format!("{significand:x}");
         while hex_sig.ends_with('0') {
             hex_sig.pop();
             exponent += 4;

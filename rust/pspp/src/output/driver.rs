@@ -67,27 +67,27 @@ pub trait Driver {
 
 impl Driver for Box<dyn Driver> {
     fn name(&self) -> Cow<'static, str> {
-        (&**self).name()
+        (**self).name()
     }
 
     fn write(&mut self, item: &Arc<Item>) {
-        (&mut **self).write(item);
+        (**self).write(item);
     }
 
     fn setup(&mut self, page_setup: &PageSetup) -> bool {
-        (&mut **self).setup(page_setup)
+        (**self).setup(page_setup)
     }
 
     fn flush(&mut self) {
-        (&mut **self).flush();
+        (**self).flush();
     }
 
     fn handles_show(&self) -> bool {
-        (&**self).handles_show()
+        (**self).handles_show()
     }
 
     fn handles_groups(&self) -> bool {
-        (&**self).handles_groups()
+        (**self).handles_groups()
     }
 }
 

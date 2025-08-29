@@ -131,7 +131,7 @@ impl CsvDriver {
     pub fn new(config: &CsvConfig) -> std::io::Result<Self> {
         Ok(Self {
             file: BufWriter::new(File::create(&config.file)?),
-            options: config.options.clone(),
+            options: config.options,
             n_items: 0,
         })
     }

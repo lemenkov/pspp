@@ -660,6 +660,10 @@ impl Category {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn len(&self) -> usize {
         match self {
             Category::Group(group) => group.len,
@@ -1600,7 +1604,7 @@ impl PivotTable {
 
     pub fn title(&self) -> &Value {
         match &self.title {
-            Some(title) => &*title,
+            Some(title) => title,
             None => {
                 static EMPTY: Value = Value::empty();
                 &EMPTY
@@ -1610,7 +1614,7 @@ impl PivotTable {
 
     pub fn subtype(&self) -> &Value {
         match &self.subtype {
-            Some(subtype) => &*subtype,
+            Some(subtype) => subtype,
             None => {
                 static EMPTY: Value = Value::empty();
                 &EMPTY
@@ -2755,7 +2759,7 @@ impl Serialize for MetadataEntry {
             MetadataValue::Leaf(value) => {
                 let mut map = serializer.serialize_map(Some(1))?;
                 let name = self.name.display(()).to_string();
-                map.serialize_entry(&name, &BareValue(&value))?;
+                map.serialize_entry(&name, &BareValue(value))?;
                 map.end()
             }
             MetadataValue::Group(items) => {

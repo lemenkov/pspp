@@ -589,7 +589,7 @@ impl HasIdentifier for Variable {
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct ValueLabels(pub HashMap<Datum<ByteString>, String>);
 
-impl<'a> Equivalent<Datum<ByteString>> for Datum<&'a ByteStr> {
+impl Equivalent<Datum<ByteString>> for Datum<&ByteStr> {
     fn equivalent(&self, key: &Datum<ByteString>) -> bool {
         self == key
     }
@@ -623,7 +623,9 @@ impl ValueLabels {
         self.0 = self
             .0
             .drain()
-            .filter_map(|(mut datum, string)| datum.resize(width).is_ok().then(|| (datum, string)))
+            .filter_map(|(mut datum, string)| {
+                datum.resize(width).is_ok().then_some((datum, string))
+            })
             .collect();
     }
 
@@ -749,7 +751,7 @@ pub struct MissingValues {
 
 impl Debug for MissingValues {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{self}")
     }
 }
 

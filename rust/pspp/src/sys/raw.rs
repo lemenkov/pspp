@@ -626,15 +626,14 @@ impl Record {
                             false,
                         ));
                     }
-                    match &set.mr_type {
-                        records::MultipleResponseType::MultipleDichotomy { value, .. } => {
-                            strings.push(RecordString::new(
-                                "Multiple Response Set Counted Value",
-                                value,
-                                false,
-                            ));
-                        }
-                        _ => (),
+                    if let records::MultipleResponseType::MultipleDichotomy { value, .. } =
+                        &set.mr_type
+                    {
+                        strings.push(RecordString::new(
+                            "Multiple Response Set Counted Value",
+                            value,
+                            false,
+                        ));
                     }
                 }
             }
@@ -1174,7 +1173,7 @@ impl Datum<ByteString> {
                 Some(code) => return Ok(Some(endian.to_bytes(code as f64 - bias))),
                 None => {
                     match try_read_bytes::<8, _>(reader)? {
-                        Some(new_codes) => codes.extend(new_codes.into_iter()),
+                        Some(new_codes) => codes.extend(new_codes),
                         None => return Ok(None),
                     };
                 }
@@ -1747,9 +1746,9 @@ pub struct UntypedDatum(pub [u8; 8]);
 impl Debug for UntypedDatum {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         let little: f64 = Endian::Little.parse(self.0);
-        let little = format!("{:?}", little);
+        let little = format!("{little:?}");
         let big: f64 = Endian::Big.parse(self.0);
-        let big = format!("{:?}", big);
+        let big = format!("{big:?}");
         let number = if little.len() <= big.len() {
             little
         } else {
@@ -1761,7 +1760,7 @@ impl Debug for UntypedDatum {
 
 fn skip_bytes<R: Read>(r: &mut R, mut n: usize) -> Result<(), IoError> {
     thread_local! {
-        static BUF: RefCell<[u8; 256]> = RefCell::new([0u8; 256]);
+        static BUF: RefCell<[u8; 256]> = const { RefCell::new([0u8; 256]) };
     }
     BUF.with_borrow_mut(|buf| {
         while n > 0 {
@@ -2092,7 +2091,7 @@ impl From<&EncodingReport> for Details {
                     .strings
                     .iter()
                     .enumerate()
-                    .map(|(purpose, rs)| {
+                    .flat_map(|(purpose, rs)| {
                         rs.interpretations
                             .iter()
                             .enumerate()
@@ -2103,7 +2102,6 @@ impl From<&EncodingReport> for Details {
                                 )
                             })
                     })
-                    .flatten()
                     .collect::<Vec<_>>()).into(),
                     );
             }
@@ -2164,7 +2162,7 @@ impl EncodingReport {
             records: &[Record],
             cases: impl Iterator<Item = Result<RawCase, Error>>,
         ) -> Result<EncodingReport, Error> {
-            let (encoding, codepage) = get_encoding_info(&records);
+            let (encoding, codepage) = get_encoding_info(records);
             let label = encoding
                 .map(|encoding| (String::from(encoding), get_encoding(Some(encoding), None)));
             let codepage = codepage.map(|codepage| (codepage, get_encoding(None, Some(codepage))));

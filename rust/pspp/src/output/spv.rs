@@ -194,7 +194,7 @@ where
             super::Details::Group(children) => {
                 let mut attributes = Vec::<Attribute>::new();
                 if let Some(command_name) = &item.command_name {
-                    attributes.push((("commandName", command_name.as_str())).into());
+                    attributes.push(("commandName", command_name.as_str()).into());
                 }
                 if !item.show {
                     attributes.push(("visibility", "collapsed").into());
@@ -218,14 +218,14 @@ where
             super::Details::PageBreak => {
                 self.needs_page_break = true;
             }
-            super::Details::Table(pivot_table) => self.write_table(&*item, pivot_table, structure),
+            super::Details::Table(pivot_table) => self.write_table(item, pivot_table, structure),
             super::Details::Text(text) => self.write_text(item, text, structure),
         }
     }
 
-    fn container<'a, X, F>(
+    fn container<X, F>(
         &mut self,
-        writer: &'a mut XmlWriter<X>,
+        writer: &mut XmlWriter<X>,
         item: &Item,
         inner_elem: &str,
         closure: F,
@@ -590,7 +590,7 @@ where
     X: Write,
 {
     fn inches<'a>(x: f64) -> Cow<'a, str> {
-        Cow::from(format!("{:.2}in", x))
+        Cow::from(format!("{x:.2}in"))
     }
 
     writer
@@ -1222,13 +1222,10 @@ impl<'a> BinWrite for ValueMod<'a> {
             style
                 .style
                 .as_ref()
-                .map_or_else(
-                    || StylePair::default(),
-                    |area_style| StylePair {
-                        font_style: Some(&area_style.font_style),
-                        cell_style: Some(&area_style.cell_style),
-                    },
-                )
+                .map_or_else(StylePair::default, |area_style| StylePair {
+                    font_style: Some(&area_style.font_style),
+                    cell_style: Some(&area_style.cell_style),
+                })
                 .write_options(writer, endian, args)?;
             v3_start.finish_le32(writer)
         } else {

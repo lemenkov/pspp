@@ -117,14 +117,14 @@ impl CsvOptions {
         W: Write,
     {
         if self.labels
-            && let Some(label) = variable.value_labels.get(&datum)
+            && let Some(label) = variable.value_labels.get(datum)
         {
             writer.write_field(label)
         } else if datum.is_sysmis() {
             writer.write_field(" ")
         } else if self.print_formats || datum.is_string() {
             writer.write_field(
-                &datum
+                datum
                     .display(variable.print_format)
                     .with_trimming()
                     .to_small_string::<64>(),
@@ -150,7 +150,7 @@ impl CsvOptions {
                 | Type::RBHex
                 | Type::WkDay
                 | Type::Month => writer.write_field(
-                    &number
+                    number
                         .display_plain()
                         .with_decimal(self.decimal)
                         .to_small_string::<64>(),
@@ -169,7 +169,7 @@ impl CsvOptions {
                             calendar_offset_to_gregorian(number / 60.0 / 60.0 / 24.0)
                     {
                         writer.write_field(
-                            &format_args!(
+                            format_args!(
                                 "{:02}/{:02}/{:04}",
                                 date.month(),
                                 date.day(),
@@ -192,7 +192,7 @@ impl CsvOptions {
                         )
                     {
                         writer.write_field(
-                            &format_args!(
+                            format_args!(
                                 "{:02}/{:02}/{:04} {:02}:{:02}:{:02}",
                                 date.month(),
                                 date.day(),

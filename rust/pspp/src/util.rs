@@ -12,7 +12,7 @@ where
 {
     fn to_small_string<const N: usize>(&self) -> SmallString<[u8; N]> {
         let mut s = SmallString::new();
-        write!(&mut s, "{}", self).unwrap();
+        write!(&mut s, "{self}").unwrap();
         s
     }
 }

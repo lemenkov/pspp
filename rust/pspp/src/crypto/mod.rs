@@ -220,7 +220,7 @@ where
         // Decrypt first block to verify password.
         let mut out = [0; 16];
         aes.decrypt_block_b2b(
-            &GenericArray::from_slice(&self.first_block),
+            GenericArray::from_slice(&self.first_block),
             GenericArray::from_mut_slice(&mut out),
         );
         static MAGIC: &[&[u8]] = &[
@@ -229,13 +229,13 @@ where
             b"* Encoding",
             b"PK\x03\x04\x14\0\x08",
         ];
-        if !MAGIC.iter().any(|magic| out.starts_with(*magic)) {
+        if !MAGIC.iter().any(|magic| out.starts_with(magic)) {
             return Err(self);
         }
 
         // Decrypt last block to check padding and get final length.
         aes.decrypt_block_b2b(
-            &GenericArray::from_slice(&self.last_block),
+            GenericArray::from_slice(&self.last_block),
             GenericArray::from_mut_slice(&mut out),
         );
         let Some(padding_length) = parse_padding(&out) else {
@@ -537,8 +537,7 @@ impl EncodedPassword {
             input
                 .iter()
                 .copied()
-                .map(|byte| [encode_byte(&AH, &AL, byte), encode_byte(&BH, &BL, byte)])
-                .flatten()
+                .flat_map(|byte| [encode_byte(&AH, &AL, byte), encode_byte(&BH, &BL, byte)])
                 .collect(),
         )
     }

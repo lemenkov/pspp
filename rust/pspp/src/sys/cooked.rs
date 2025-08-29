@@ -820,7 +820,7 @@ impl Records {
             }
         };
 
-        if let Some(float_info) = self.float_info.get(0) {
+        if let Some(float_info) = self.float_info.first() {
             for (expected, expected2, actual, name) in [
                 (f64::MIN, None, float_info.sysmis, "SYSMIS"),
                 (f64::MAX, None, float_info.highest, "HIGHEST"),
@@ -846,7 +846,7 @@ impl Records {
             if n_vars != nominal_case_size as usize
                 && self
                     .integer_info
-                    .get(0)
+                    .first()
                     .is_none_or(|info| info.inner.version.0 != 13)
             {
                 warn(Error::WrongVariablePositions {
@@ -1442,7 +1442,7 @@ impl Metadata {
         values.push(
             self.product_ext
                 .as_ref()
-                .map(|product_ext| Value::new_user_text(product_ext))
+                .map(Value::new_user_text)
                 .unwrap_or_default(),
         );
         product.push("Version");

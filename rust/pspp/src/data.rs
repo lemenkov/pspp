@@ -157,13 +157,13 @@ impl ByteStr {
     }
 }
 
-impl<'a> RawString for &'a ByteStr {
+impl RawString for &ByteStr {
     fn raw_string_bytes(&self) -> &[u8] {
         &self.0
     }
 }
 
-impl<'a> Serialize for &'a ByteStr {
+impl Serialize for &ByteStr {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -353,7 +353,7 @@ impl Debug for ByteString {
     // (actually bytes interpreted as Unicode code points).
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         let s =
-            from_utf8(&self.0.borrow()).map_or_else(|_| decode_latin1(self.0.borrow()), Cow::from);
+            from_utf8(self.0.borrow()).map_or_else(|_| decode_latin1(self.0.borrow()), Cow::from);
         write!(f, "{s:?}")
     }
 }
@@ -446,7 +446,7 @@ where
         match self {
             Self::Number(Some(number)) => write!(f, "{number:?}"),
             Self::Number(None) => write!(f, "SYSMIS"),
-            Self::String(s) => write!(f, "{:?}", s),
+            Self::String(s) => write!(f, "{s:?}"),
         }
     }
 }
@@ -538,7 +538,7 @@ impl<B> Datum<B> {
     pub fn as_ref(&self) -> Datum<&B> {
         match self {
             Datum::Number(number) => Datum::Number(*number),
-            Datum::String(string) => Datum::String(&string),
+            Datum::String(string) => Datum::String(string),
         }
     }
 
@@ -701,7 +701,9 @@ impl<T> Datum<T> {
     where
         T: MutRawString,
     {
-        self.as_string_mut().map(|s| s.trim_end());
+        if let Some(s) = self.as_string_mut() {
+            s.trim_end()
+        }
     }
 
     /// Resizes this datum to the given `width`.  Returns an error, without
@@ -780,6 +782,9 @@ impl<B> Case<B>
 where
     B: Borrow<[Datum<ByteString>]>,
 {
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     pub fn len(&self) -> usize {
         self.data.borrow().len()
     }
@@ -851,7 +856,7 @@ where
     fn into_iter(self) -> Self::IntoIter {
         CaseIter {
             encoding: self.encoding,
-            iter: self.data.borrow().into_iter(),
+            iter: self.data.borrow().iter(),
         }
     }
 }

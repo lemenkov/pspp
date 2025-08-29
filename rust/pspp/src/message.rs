@@ -84,7 +84,7 @@ pub struct Location {
 impl Display for Location {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         if let Some(file_name) = &self.file_name {
-            write!(f, "{}", file_name)?;
+            f.write_str(file_name)?;
         }
 
         if let Some(span) = &self.span {

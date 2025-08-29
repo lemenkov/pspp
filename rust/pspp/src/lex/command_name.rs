@@ -67,8 +67,8 @@ pub struct Match {
 ///      function returns `None`.
 ///
 ///   4. Otherwise, `string` and `command` match.  Returns a [Match] with
-///     `missing_words` set to `n - m` and `exact` set based on whether any of
-///     the words in the command name were abbreviated.
+///      `missing_words` set to `n - m` and `exact` set based on whether any of
+///      the words in the command name were abbreviated.
 pub fn command_match(command: &str, string: &str) -> Option<Match> {
     let mut command_words = command.split_whitespace();
     let mut string_words = string.split_whitespace();

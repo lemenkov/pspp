@@ -51,8 +51,8 @@ pub enum Boxes {
 impl Boxes {
     fn box_chars(&self) -> &'static BoxChars {
         match self {
-            Boxes::Ascii => &*ASCII_BOX,
-            Boxes::Unicode => &*UNICODE_BOX,
+            Boxes::Ascii => &ASCII_BOX,
+            Boxes::Unicode => &UNICODE_BOX,
         }
     }
 }
@@ -366,7 +366,7 @@ impl TextDriver {
     pub fn new(config: &TextConfig) -> std::io::Result<TextDriver> {
         Ok(Self {
             file: BufWriter::new(match &config.file {
-                Some(file) => File::create(&file)?,
+                Some(file) => File::create(file)?,
                 None => File::options().write(true).open("/dev/stdout")?,
             }),
             renderer: TextRenderer::new(&config.options),
@@ -393,7 +393,7 @@ impl TextRenderer {
             }
             Details::Message(_diagnostic) => todo!(),
             Details::PageBreak => Ok(()),
-            Details::Table(pivot_table) => self.render_table(&*pivot_table, writer),
+            Details::Table(pivot_table) => self.render_table(pivot_table, writer),
             Details::Text(text) => self.render_table(&PivotTable::from((**text).clone()), writer),
         }
     }
@@ -411,7 +411,7 @@ impl TextRenderer {
             while pager.has_next(self) {
                 pager.draw_next(self, usize::MAX);
                 for line in self.lines.drain(..) {
-                    writeln!(writer, "{}", line)?;
+                    writeln!(writer, "{line}")?;
                 }
             }
         }
