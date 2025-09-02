@@ -10,14 +10,14 @@ Data from real sources is rarely error free.  PSPP has a number of
 procedures which can be used to help identify data which might be
 incorrect.
 
-The [`DESCRIPTIVES`](../../commands/statistics/descriptives.md)
-command is used to generate simple linear statistics for a dataset.
-It is also useful for identifying potential problems in the data.  The
-example file `physiology.sav` contains a number of physiological
-measurements of a sample of healthy adults selected at random.
-However, the data entry clerk made a number of mistakes when entering
-the data.  The following example illustrates the use of `DESCRIPTIVES`
-to screen this data and identify the erroneous values:
+The [`DESCRIPTIVES`](../../commands/descriptives.md) command is used
+to generate simple linear statistics for a dataset.  It is also useful
+for identifying potential problems in the data.  The example file
+`physiology.sav` contains a number of physiological measurements of a
+sample of healthy adults selected at random.  However, the data entry
+clerk made a number of mistakes when entering the data.  The following
+example illustrates the use of `DESCRIPTIVES` to screen this data and
+identify the erroneous values:
 
 ```
 PSPP> get file='/usr/local/share/pspp/examples/physiology.sav'.
@@ -97,7 +97,7 @@ decide to disregard these values.  PSPP has a feature for [missing
 values](../../language/basics/missing-values.md), whereby data can
 assume the special value 'SYSMIS', and will be disregarded in future
 analysis.  You can set the two suspect values to the `SYSMIS` value
-using the [`RECODE`](../../commands/data/recode.md) command.
+using the [`RECODE`](../../commands/recode.md) command.
 
 ```
 PSPP> recode height (179 = SYSMIS).
@@ -204,9 +204,9 @@ recode v3 (1 = 5) (2 = 4) (4 = 2) (5 = 1).
 ```
 
 However an easier and more elegant way uses the
-[`COMPUTE`](../../commands/data/compute.md) command.  Since the
-variables are Likert variables in the range (1 ... 5), subtracting
-their value from 6 has the effect of inverting them:
+[`COMPUTE`](../../commands/compute.md) command.  Since the variables
+are Likert variables in the range (1 ... 5), subtracting their value
+from 6 has the effect of inverting them:
 
 ```
 compute VAR = 6 - VAR.
@@ -224,11 +224,10 @@ questionnaires have been completed thoughtfully.  If you examine the
 labels of variables v1, v3 and v4, you will notice that they ask very
 similar questions.  One would therefore expect the values of these
 variables (after recoding) to closely follow one another, and we can
-test that with the
-[`RELIABILITY`](../../commands/statistics/reliability.md) command.
-The following example shows a PSPP session where the user recodes
-negatively scaled variables and then requests reliability statistics
-for v1, v3, and v4.
+test that with the [`RELIABILITY`](../../commands/reliability.md)
+command.  The following example shows a PSPP session where the user
+recodes negatively scaled variables and then requests reliability
+statistics for v1, v3, and v4.
 
 ```
 PSPP> get file='/usr/local/share/pspp/examples/hotel.sav'.
@@ -379,7 +378,6 @@ close to zero.  This provides some confidence that the mtbf_ln
 variable is normally distributed and thus safe for linear analysis.
 In the event that no suitable transformation can be found, then it
 would be worth considering an appropriate non-parametric test instead
-of a linear one.  See [`NPAR
-TESTS`](../../commands/statistics/npar-tests.md), for information
-about non-parametric tests.
+of a linear one.  See [`NPAR TESTS`](../../commands/npar-tests.md),
+for information about non-parametric tests.
 

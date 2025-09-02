@@ -9,6 +9,6 @@ each variable.
 called the "active dataset".  Most PSPP commands work only with the
 active dataset.  In addition to the active dataset, PSPP also supports
 any number of additional open datasets.  The [`DATASET`
-commands](../../commands/data-io/dataset.md) can choose a new active
-dataset from among those that are open, as well as create and destroy
+commands](../../commands/dataset.md) can choose a new active dataset
+from among those that are open, as well as create and destroy
 datasets.

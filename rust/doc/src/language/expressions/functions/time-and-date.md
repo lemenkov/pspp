@@ -90,8 +90,8 @@ represent dates.  Arguments taken by these functions are:
 * `YEAR`  
   Refers to a year, 1582 or greater.  Years between 0 and 99 are
   treated according to the epoch set on [`SET
-  EPOCH`](../../../commands/utilities/set.md#epoch), by default
-  beginning 69 years before the current date.
+  EPOCH`](../../../commands/set.md#epoch), by default beginning 69
+  years before the current date.
 
 If these functions' arguments are out-of-range, they are correctly
 normalized before conversion to date format.  Non-integers are rounded

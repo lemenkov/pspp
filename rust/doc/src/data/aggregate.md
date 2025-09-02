@@ -50,10 +50,10 @@ If the active dataset is already sorted or grouped by the break
 variables, specify `PRESORTED` to save time.  With
 `MODE=ADDVARIABLES`, the data must be pre-sorted.
 
-Specify `DOCUMENT` to copy the [documents](../utilities/document.md)
-from the active dataset into the aggregate file.  Otherwise, the
-aggregate file does not contain any documents, even if the aggregate
-file replaces the active dataset.
+Specify `DOCUMENT` to copy the [documents](document.md) from the
+active dataset into the aggregate file.  Otherwise, the aggregate file
+does not contain any documents, even if the aggregate file replaces
+the active dataset.
 
 Normally, `AGGREGATE` produces a non-missing value whenever there is
 enough non-missing data for the aggregation function in use, that is,
@@ -144,8 +144,8 @@ variables:
 * `N(VAR_NAME...)`  
   `NMISS(VAR_NAME...)`  
   Total weight of non-missing or missing values, respectively.  The
-  default format is `F7.0` if weighting is not enabled, `F8.2` if it is
-  (see [`WEIGHT`](../selection/weight.md)).
+  default format is `F7.0` if weighting is not enabled, `F8.2` if it
+  is (see [`WEIGHT`](weight.md)).
 
 * `NU(VAR_NAME...)`  
   `NUMISS(VAR_NAME...)`  
@@ -165,7 +165,7 @@ These aggregation functions do not accept source variables:
 * `N`  
   Total weight of cases aggregated to form this group.  The default
   format is `F7.0` if weighting is not enabled, `F8.2` if it is (see
-  [`WEIGHT`](../selection/weight.md)).
+  [`WEIGHT`](weight.md)).
 
 * `NU`  
   Count of cases aggregated to form this group, ignoring case
@@ -181,7 +181,7 @@ specifying such a function as the last token on a line causes the
 period to be interpreted as the end of the command.)
 
 `AGGREGATE` both ignores and cancels the current [`SPLIT
-FILE`](../selection/split-file.md) settings.
+FILE`](split-file.md) settings.
 
 ## Aggregate Example
 

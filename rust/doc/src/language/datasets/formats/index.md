@@ -17,12 +17,12 @@ decimal format.
 
    Every variable has two output formats, called its "print format"
 and "write format".  Print formats are used in most output contexts;
-only the [`WRITE`](../../../commands/data-io/write.md) command uses
-write formats.  Newly created variables have identical print and write
-formats, and [`FORMATS`](../../../commands/variables/formats.md), the
-most commonly used command for changing formats, sets both of them to
-the same value as well.  This means that the distinction between print
-and write formats is usually unimportant.
+only the [`WRITE`](../../../commands/write.md) command uses write
+formats.  Newly created variables have identical print and write
+formats, and [`FORMATS`](../../../commands/formats.md), the most
+commonly used command for changing formats, sets both of them to the
+same value as well.  This means that the distinction between print and
+write formats is usually unimportant.
 
    Input and output formats are specified to PSPP with a "format
 specification" of the form `TypeW` or `TypeW.D`, where `Type` is one

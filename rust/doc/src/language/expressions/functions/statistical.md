@@ -4,8 +4,8 @@ Statistical functions compute descriptive statistics on a list of
 values.  Some statistics can be computed on numeric or string values;
 other can only be computed on numeric values.  Their results have the
 same type as their arguments.  The current case's
-[weight](../../../commands/selection/weight.md) has no effect on
-statistical functions.
+[weight](../../../commands/weight.md) has no effect on statistical
+functions.
 
    These functions' argument lists may include entire ranges of
 variables using the `VAR1 TO VAR2` syntax.

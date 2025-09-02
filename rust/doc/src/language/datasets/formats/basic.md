@@ -21,7 +21,7 @@ output some variation on this style:
    - Numbers in `COMMA` format are additionally grouped every three digits
      by inserting a grouping character.  The grouping character is
      ordinarily a comma, but it can be changed to a period (with [`SET
-     DECIMAL`](../../../commands/utilities/set.md#decimal)).
+     DECIMAL`](../../../commands/set.md#decimal)).
 
    - `DOT` format is like `COMMA` format, but it interchanges the role of
      the decimal point and grouping characters.  That is, the current
@@ -45,7 +45,7 @@ lowercase), or by a letter followed by a sign.  A single space may
 follow the letter or the sign or both.
 
    On [fixed-format `DATA
-LIST`](../../../commands/data-io/data-list.md#data-list-fixed) and in
+LIST`](../../../commands/data-list.md#data-list-fixed) and in
 a few other contexts, decimals are implied when the field does not
 contain a decimal point.  In `F6.5` format, for example, the field
 `314159` is taken as the value 3.14159 with implied decimals.
@@ -126,7 +126,7 @@ More details of basic numeric output formatting are given below:
   output is 0, and a decimal point is included, then PSPP ordinarily
   drops the zero before the decimal point.  However, in `F`, `COMMA`,
   or `DOT` formats, PSPP keeps the zero if [`SET
-  LEADZERO`](../../../commands/utilities/set.md#leadzero) is set to
+  LEADZERO`](../../../commands/set.md#leadzero) is set to
   `ON`.
 
   In scientific notation, the number always includes a decimal point,

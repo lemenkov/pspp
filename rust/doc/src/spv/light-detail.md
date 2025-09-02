@@ -529,8 +529,8 @@ language; it is often empty and, when it is not, sometimes the same as
 `command`.
 
 `include-leading-zero` is the
-[`LEADZERO`](../commands/utilities/set.md#leadzero) setting for the
-table, where false is `OFF` (the default) and true is `ON`.
+[`LEADZERO`](../commands/set.md#leadzero) setting for the table, where
+false is `OFF` (the default) and true is `ON`.
 
 `missing` is the character used to indicate that a cell contains a
 missing value.  It is always observed as `.`.

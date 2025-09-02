@@ -46,9 +46,9 @@ formats are input and output:
   Year.  In output, `DATETIME` and `YMDHMS` always produce 4-digit
   years; other formats can produce a 2- or 4-digit year.  The century
   assumed for 2-digit years depends on the
-  [`EPOCH`](../../../commands/utilities/set.md#epoch) setting.  In
-  output, a year outside the epoch causes the whole field to be filled
-  with asterisks (`*`).
+  [`EPOCH`](../../../commands/set.md#epoch) setting.  In output, a
+  year outside the epoch causes the whole field to be filled with
+  asterisks (`*`).
 
 * `jjj`  
   Day of year (Julian day), from 1 to 366.  This is exactly three
@@ -88,7 +88,7 @@ formats are input and output:
   On input, seconds and fractional seconds are optional.  The
   `DECIMAL` setting controls the character accepted and displayed as
   the decimal point (see [`SET
-  DECIMAL`](../../../commands/utilities/set.md#decimal)).
+  DECIMAL`](../../../commands/set.md#decimal)).
 
    For output, the date and time formats use the delimiters indicated in
 the table.  For input, date components may be separated by spaces or by

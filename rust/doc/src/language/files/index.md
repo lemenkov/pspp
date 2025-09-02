@@ -9,8 +9,8 @@ most important of these files:
   These names (synonyms) refer to the file that contains instructions
   that tell PSPP what to do.  The syntax file's name is specified on
   the PSPP command line.  Syntax files can also be read with
-  [`INCLUDE`](../../commands/utilities/include.md) or
-  [`INSERT`](../../commands/utilities/insert.md).
+  [`INCLUDE`](../../commands/include.md) or
+  [`INSERT`](../../commands/insert.md).
 
 * data file  
   Data files contain raw data in text or binary format.  Data can

@@ -66,7 +66,7 @@ causes the field to be read as system-missing.
 
    The decimal point character for input and output is always `.`,
 even if the decimal point character is a comma (see [`SET
-DECIMAL`](../../../commands/utilities/set.md#decimal)).
+DECIMAL`](../../../commands/set.md#decimal)).
 
    Nonzero, negative values output in `Z` format are marked as
 negative even when no nonzero digits are output.  For example, -0.2 is

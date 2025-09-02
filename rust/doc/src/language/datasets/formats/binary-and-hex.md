@@ -12,7 +12,7 @@ Thus, data in binary formats should not be included in syntax files or
 read from data files with variable-length records, such as ordinary
 text files.  They may be read from or written to data files with
 fixed-length records.  See [`FILE
-HANDLE`](../../../commands/data-io/file-handle.md), for information on
+HANDLE`](../../../commands/file-handle.md), for information on
 working with fixed-length records.
 
 ## `P` and `PK` Formats
@@ -43,9 +43,9 @@ were requested).
 These are integer binary formats.  `IB` reads and writes 2's
 complement binary integers, and `PIB` reads and writes unsigned binary
 integers.  The byte ordering is by default the host machine's, but
-[`SET RIB`](../../../commands/utilities/set.md#rib) may be used to
-select a specific byte ordering for reading and [`SET
-WIB`](../../../commands/utilities/set.md#wib), similarly, for writing.
+[`SET RIB`](../../../commands/set.md#rib) may be used to select a
+specific byte ordering for reading and [`SET
+WIB`](../../../commands/set.md#wib), similarly, for writing.
 
    The maximum field width is 8.  Decimal places may range from 0 up to
 the number of decimal digits in the largest value representable in the
@@ -59,10 +59,9 @@ field width, plus 1 if the format has decimal places.
 
 This is a binary format for real numbers.  It reads and writes the
 host machine's floating-point format.  The byte ordering is by default
-the host machine's, but [`SET
-RIB`](../../../commands/utilities/set.md#rib) may be used to select a
-specific byte ordering for reading and [`SET
-WIB`](../../../commands/utilities/set.md#wib), similarly, for writing.
+the host machine's, but [`SET RIB`](../../../commands/set.md#rib) may
+be used to select a specific byte ordering for reading and [`SET
+WIB`](../../../commands/set.md#wib), similarly, for writing.
 
 The field width should be 4, for 32-bit floating-point numbers, or 8,
 for 64-bit floating-point numbers.  Other field widths do not produce

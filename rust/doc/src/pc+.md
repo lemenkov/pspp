@@ -158,8 +158,8 @@ char                label[64];
   seconds are always written as two digits.
 
 * `char file_label[64];`  
-  [File label](commands/utilities/file-label.md) declared by the user,
-  if any.  Padded on the right with spaces.
+  [File label](commands/file-label.md) declared by the user, if any.
+  Padded on the right with spaces.
 
 ## Record 1: Variables Record
 

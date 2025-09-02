@@ -35,8 +35,8 @@ results.
   Halves are rounded away from zero, as are values that fall short of
   halves by less than `FUZZBITS` of errors in the least-significant
   bits of X.  If `FUZZBITS` is not specified then the default is taken
-  from [`SET FUZZBITS`](../../../commands/utilities/set.md#fuzzbits),
-  which is 6 unless overridden.
+  from [`SET FUZZBITS`](../../../commands/set.md#fuzzbits), which is 6
+  unless overridden.
 
 * `SQRT(X)`  
   Takes the square root of `X`.  If `X` is negative, the result is
@@ -49,6 +49,6 @@ results.
   `FUZZBITS` of errors in the least-significant bits of `X` are
   rounded away from zero.  If `FUZZBITS` is not specified then the
   default is taken from [`SET
-  FUZZBITS`](../../../commands/utilities/set.md#fuzzbits), which is 6
-  unless overridden.
+  FUZZBITS`](../../../commands/set.md#fuzzbits), which is 6 unless
+  overridden.
 

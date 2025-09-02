@@ -21,8 +21,8 @@ The following `<MODE>`s are available:
   `--data`, also outputs cases from the system file.
 
   This can be useful as an alternative to PSPP syntax commands such as
-  [`SYSFILE INFO`](../commands/spss-io/sysfile-info.md) or [`DISPLAY
-  DICTIONARY`](../commands/variables/display.md).
+  [`SYSFILE INFO`](../commands/sysfile-info.md) or [`DISPLAY
+  DICTIONARY`](../commands/display.md).
 
   [`pspp convert`](pspp-convert.md) is a better way to convert a
   system file to another format.

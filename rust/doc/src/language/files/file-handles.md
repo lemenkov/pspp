@@ -12,7 +12,7 @@ from a file using a program such as `zcat` (e.g. `GET '|zcat
 mydata.sav.gz'`), and for many other purposes.
 
    PSPP also supports declaring named file handles with the [`FILE
-HANDLE`](../../commands/data-io/file-handle.md) command.  This command
+HANDLE`](../../commands/file-handle.md) command.  This command
 associates an identifier of your choice (the file handle's name) with
 a file.  Later, the file handle name can be substituted for the name
 of the file.  When PSPP syntax accesses a file multiple times,
@@ -30,10 +30,10 @@ writes a portable file; otherwise, PSPP writes a system file.
 
    `INLINE` is reserved as a file handle name.  It refers to the "data
 file" embedded into the syntax file between [`BEGIN DATA` and `END
-DATA`](../../commands/data-io/begin-data.md).
+DATA`](../../commands/begin-data.md).
 
    The file to which a file handle refers may be reassigned on a later
 `FILE HANDLE` command if it is first closed using [`CLOSE FILE
-HANDLE`](../../commands/data-io/close-file-handle.md).
+HANDLE`](../../commands/close-file-handle.md).
 
 

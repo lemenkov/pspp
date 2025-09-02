@@ -32,13 +32,12 @@ Each variable has a number of attributes, including:
 
 * Position  
   Variables in the dictionary are arranged in a specific order.
-  [`DISPLAY`](../../commands/variables/display.md) can show this
-  order.
+  [`DISPLAY`](../../commands/display.md) can show this order.
 
 * Initialization  
   Either reinitialized to 0 or spaces for each case, or left at its
-  existing value.  Use [`LEAVE`](../../commands/variables/leave.md) to
-  avoid reinitializing a variable.
+  existing value.  Use [`LEAVE`](../../commands/leave.md) to avoid
+  reinitializing a variable.
 
 * Missing values  
   Optionally, up to three values, or a range of values, or a specific
@@ -50,36 +49,35 @@ Each variable has a number of attributes, including:
   while the system-missing value is not a value at all.  See [Handling
   Missing Values](../../language/basics/missing-values.md) for more
   information on missing values.  The [`MISSING
-  VALUES`](../../commands/variables/missing-values.md) command sets
-  missing values.
+  VALUES`](../../commands/missing-values.md) command sets missing
+  values.
 
 * Variable label  
   A string that describes the variable.  The [`VARIABLE
-  LABELS`](../../commands/variables/variable-labels.md) command sets
-  variable labels.
+  LABELS`](../../commands/variable-labels.md) command sets variable
+  labels.
 
 * Value label  
   Optionally, these associate each possible value of the variable with
-  a string.  The [`VALUE
-  LABELS`](../../commands/variables/value-labels.md) and [`ADD VALUE
-  LABELS`](../../commands/variables/add-value-labels.md) commands set
-  value labels.
+  a string.  The [`VALUE LABELS`](../../commands/value-labels.md) and
+  [`ADD VALUE LABELS`](../../commands/add-value-labels.md) commands
+  set value labels.
 
 * Print format  
   Display width, format, and (for numeric variables) number of decimal
   places.  This attribute does not affect how data are stored, just
   how they are displayed.  See [Input and Output
   Formats](../../language/datasets/formats/index.md) for details.  The
-  [`FORMATS`](../../commands/variables/formats.md) and [`PRINT
-  FORMATS`](../../commands/variables/print-formats.md) commands set
-  print formats.
+  [`FORMATS`](../../commands/formats.md) and [`PRINT
+  FORMATS`](../../commands/print-formats.md) commands set print
+  formats.
 
 * Write format  
   Similar to print format, but used by the
-  [`WRITE`](../../commands/data-io/write.md) command.  The
-  [`FORMATS`](../../commands/variables/formats.md) and [`WRITE
-  FORMATS`](../../commands/variables/write-formats.md) commands set
-  write formats.
+  [`WRITE`](../../commands/write.md) command.  The
+  [`FORMATS`](../../commands/formats.md) and [`WRITE
+  FORMATS`](../../commands/write-formats.md) commands set write
+  formats.
 
 * <a name="measurement-level">Measurement level</a>  
   One of the following:
@@ -104,8 +102,8 @@ Each variable has a number of attributes, including:
     attached, such as age in years, income in dollars, or distance in
     miles.  Only numeric variables are scalar.
 
-  The [`VARIABLE LEVEL`](../../commands/variables/variable-level.md)
-  command sets measurement levels.
+  The [`VARIABLE LEVEL`](../../commands/variable-level.md) command
+  sets measurement levels.
 
   Variables created by `COMPUTE` and similar transformations,
   obtained from external sources, etc., initially have an unknown
@@ -132,20 +130,18 @@ Each variable has a number of attributes, including:
 
   - Scale, if the variable has 24 or more unique valid values.  The
     value 24 is the default.  Use [`SET
-    SCALEMIN`](../../commands/utilities/set.md#scalemin) to change the
-    default.
+    SCALEMIN`](../../commands/set.md#scalemin) to change the default.
 
   Finally, if none of the above is true, PSPP assigns the variable a
   nominal measurement level.
 
 * Custom attributes  
   User-defined associations between names and values.  The [`VARIABLE
-  ATTRIBUTE`](../../commands/variables/variable-attribute.md) command
-  sets variable atributes.
+  ATTRIBUTE`](../../commands/variable-attribute.md) command sets
+  variable atributes.
 
 * Role  
   The intended role of a variable for use in dialog boxes in graphical
   user interfaces.  The [`VARIABLE
-  ROLE`](../../commands/variables/variable-role.md) command sets
-  variable roles.
+  ROLE`](../../commands/variable-role.md) command sets variable roles.
 

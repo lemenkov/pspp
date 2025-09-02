@@ -174,9 +174,9 @@ improve the accuracy of their quotations.  It was suggested that the
 time to repair might be related to the time between failures and the
 duty cycle of the equipment.  The p-value of 0.1 was chosen for this
 investigation.  In order to investigate this hypothesis, the
-[`REGRESSION`](../../commands/statistics/regression.md) command was
-used.  This command not only tests if the variables are related, but
-also identifies the potential linear relationship.
+[`REGRESSION`](../../commands/regression.md) command was used.  This
+command not only tests if the variables are related, but also
+identifies the potential linear relationship.
 
 A first attempt includes `duty_cycle`:
 

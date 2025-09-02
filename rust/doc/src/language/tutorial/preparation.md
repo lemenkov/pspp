@@ -48,11 +48,11 @@ PSPP>
 There are several things to note about this example.
 
 - The words `data list list` are an example of the [`DATA
-  LIST`](../../commands/data-io/data-list.md).  command, which tells
-  PSPP to prepare for reading data.  The word `list` intentionally
-  appears twice.  The first occurrence is part of the `DATA LIST`
-  call, whilst the second tells PSPP that the data is to be read as
-  free format data with one record per line.
+  LIST`](../../commands/data-list.md).  command, which tells PSPP to
+  prepare for reading data.  The word `list` intentionally appears
+  twice.  The first occurrence is part of the `DATA LIST` call, whilst
+  the second tells PSPP that the data is to be read as free format
+  data with one record per line.
 
   Usually this manual shows command names and other fixed elements of
   syntax in upper case, but case doesn't matter in most parts of
@@ -115,7 +115,7 @@ following output:
 Note that the numeric variable height is displayed to 2 decimal
 places, because the format for that variable is `F8.2`.  For a
 complete description of the `LIST` command, see
-[`LIST`](../../commands/data-io/list.md).
+[`LIST`](../../commands/list.md).
 
 ## Reading data from a text file
 
@@ -143,7 +143,7 @@ however, that it is still necessary to specify the names of the
 variables and their formats, since this information is not contained
 in the file.  It is also possible to specify the file's character
 encoding and other parameters.  For full details refer to [`DATA
-LIST`](../../commands/data-io/data-list.md).
+LIST`](../../commands/data-list.md).
 
 ## Reading data from a pre-prepared PSPP file
 
@@ -181,8 +181,8 @@ Otherwise it will be created.
 
 Sometimes it's useful to be able to read data from comma separated
 text, from spreadsheets, databases or other sources.  In these
-instances you should use the [`GET
-DATA`](../../commands/spss-io/get-data.md) command.
+instances you should use the [`GET DATA`](../../commands/get-data.md)
+command.
 
 ## Exiting PSPP
 
