@@ -17,9 +17,8 @@ dataset.  These commands can combine data files in the following ways:
   a matching case in the primary data file, or it adds a new case if
   no matching case can be found.
 
-These commands share the majority of their syntax, described below,
-followed by an individual section for each command that describes its
-specific syntax and semantics.
+These commands share the majority of their syntax, described below.
+Each command's documentation explains its additional syntax.
 
 ## Common Syntax
 
