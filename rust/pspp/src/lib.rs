@@ -1,3 +1,88 @@
+//! # PSPP in Rust
+//!
+//! PSPP is a program for statistical analysis of sampled data.  It is
+//! a free replacement for the proprietary program SPSS.
+//!
+//! This is an experimental rewrite of PSPP in Rust.  It includes both programs
+//! directly useful to users and a library that can be used by other software.
+//! The goal of the rewrite is to ensure that PSPP can be as robust as possible,
+//! while remaining fast and portable.
+//!
+//! This new version is very incomplete--in fact, only a subset of the
+//! `pspp-convert` utility is really ready for use.
+//!
+//! ## Installing PSPP
+//!
+//! To install PSPP in Rust from source, [install Rust], version 1.88 or later.
+//! Then, either:
+//!
+//! - Use the following command to download PSPP source code from `crates.io`
+//!   and build and install it:
+//!
+//!   ```
+//!   cargo install pspp
+//!   ```
+//!
+//! - Clone a local copy of this repository and build and install it from there,
+//!   with: can instead `cd` into `rust/pspp` in the source tree and run:
+//!
+//!   ```
+//!   git clone git://git.sv.gnu.org/pspp
+//!   cd pspp/rust/pspp
+//!   cargo install --path .
+//!   ```
+//!
+//! The above commands also work for upgrades.
+//!
+//! [install Rust]: https://www.rust-lang.org/tools/install
+//!
+//! ### Uninstalling
+//!
+//! To uninstall PSPP, run:
+//!
+//! ```
+//! cargo uninstall pspp
+//! ```
+//!
+//! ## Running PSPP
+//!
+//! After installing PSPP using one of the methods above, run it with:
+//!
+//! ```
+//! pspp
+//! ```
+//!
+//! For help, use `pspp --help`.  The only really useful PSPP commands
+//! currently are `convert` and `show`.  Help for individual commands is
+//! available with `pspp <command> --help`.
+//!
+//! ## Reading the manual
+//!
+//! The PSPP manual may be [read online].
+//!
+//! To build the manual, install [mdBook] using its [instructions] then, from
+//! the root of a checked-out copy of this repository, build the manual with:
+//!
+//! ```
+//! (cd rust/doc && mdbook build)
+//! ```
+//!
+//! This will output the manual as HTML under `rust/doc/book/html`.
+//!
+//! [read online]: https://pspp.benpfaff.org/manual
+//! [mdBook]: https://rust-lang.github.io/mdBook/
+//! [instructions]: https://rust-lang.github.io/mdBook/guide/installation.html
+//!
+//! ## Reporting bugs
+//!
+//! As this is an experiment, please don't have high expectations (yet).
+//! However, questions and comments about using PSPP may be sent to
+//! <pspp-users@gnu.org>.  Please email bug reports to <bug-gnu-pspp@gnu.org> or
+//! file them online at [Savannah].  Please indicate that you are referring to
+//! the Rust rewrite.
+//!
+//! [Savannah]: https://savannah.gnu.org/bugs/?group=pspp
+
 // PSPP - a program for statistical analysis.
 // Copyright (C) 2025 Free Software Foundation, Inc.
 //
@@ -13,7 +98,6 @@
 //
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-
 use std::ops::Range;
 
 pub mod calendar;
