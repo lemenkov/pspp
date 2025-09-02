@@ -50,14 +50,14 @@ pub struct Show {
 
     /// File to show.
     #[arg(required = true)]
-    input_file: PathBuf,
+    input: PathBuf,
 
     /// Output file name.  If omitted, output is written to stdout.
-    output_file: Option<PathBuf>,
+    output: Option<PathBuf>,
 
-    /// Output driver configuration options.
-    #[arg(short = 'o')]
-    output_options: Vec<String>,
+    /// The encoding to use.
+    #[arg(long, value_parser = parse_encoding, help_heading = "Input file options")]
+    encoding: Option<&'static Encoding>,
 
     /// Maximum number of cases to read.
     ///
@@ -66,17 +66,18 @@ pub struct Show {
         long = "data",
         num_args = 0..=1,
         default_missing_value = "18446744073709551615",
-        default_value_t = 0
+        default_value_t = 0,
+        help_heading = "Input file options"
     )]
     max_cases: u64,
 
-    /// Output format.
-    #[arg(long, short = 'f')]
-    format: Option<ShowFormat>,
+    /// Output driver configuration options.
+    #[arg(short = 'o', help_heading = "Output options")]
+    output_options: Vec<String>,
 
-    /// The encoding to use.
-    #[arg(long, value_parser = parse_encoding)]
-    encoding: Option<&'static Encoding>,
+    /// Output format.
+    #[arg(long, short = 'f', help_heading = "Output options")]
+    format: Option<ShowFormat>,
 }
 
 enum Output {
@@ -170,7 +171,7 @@ impl Show {
     pub fn run(self) -> Result<()> {
         let format = if let Some(format) = self.format {
             format
-        } else if let Some(output_file) = &self.output_file {
+        } else if let Some(output_file) = &self.output {
             match output_file
                 .extension()
                 .unwrap_or(OsStr::new(""))
@@ -189,7 +190,7 @@ impl Show {
             ShowFormat::Output => {
                 let mut config = String::new();
 
-                if let Some(file) = &self.output_file {
+                if let Some(file) = &self.output {
                     #[derive(Serialize)]
                     struct File<'a> {
                         file: &'a Path,
@@ -206,7 +207,7 @@ impl Show {
 
                 let table: toml::Table = toml::from_str(&config)?;
                 if !table.contains_key("driver") {
-                    let driver = if let Some(file) = &self.output_file {
+                    let driver = if let Some(file) = &self.output {
                         <dyn Driver>::driver_type_from_filename(file).ok_or_else(|| {
                             anyhow!("{}: no default output format for file name", file.display())
                         })?
@@ -232,7 +233,7 @@ impl Show {
             }
             ShowFormat::Json | ShowFormat::Ndjson => Output::Json {
                 pretty: format == ShowFormat::Json,
-                writer: if let Some(output_file) = &self.output_file {
+                writer: if let Some(output_file) = &self.output {
                     Rc::new(RefCell::new(Box::new(File::create(output_file)?)))
                 } else {
                     Rc::new(RefCell::new(Box::new(stdout())))
@@ -241,7 +242,7 @@ impl Show {
             ShowFormat::Discard => Output::Discard,
         };
 
-        let reader = File::open(&self.input_file)?;
+        let reader = File::open(&self.input)?;
         let reader = BufReader::new(reader);
         let mut reader = Reader::new(reader, Box::new(|warning| output.warn(&warning)))?;
 
@@ -328,16 +329,16 @@ impl Show {
 /// What to show in a system file.
 #[derive(Clone, Copy, Debug, Default, PartialEq, ValueEnum)]
 enum Mode {
-    /// The file dictionary, including variables, value labels, attributes, and so on.
+    /// The kind of file.
+    Identity,
+
+    /// File dictionary, with variables, value labels, attributes, ...
     #[default]
     #[value(alias = "dict")]
     Dictionary,
 
-    /// Possible encodings of text in the file dictionary and (with `--data`) cases.
+    /// Possible encodings of text in file dictionary and (with `--data`) cases.
     Encodings,
-
-    /// The kind of file.
-    Identity,
 
     /// Raw file records, without assuming a particular character encoding.
     Raw,

@@ -1,8 +1,15 @@
 # Converting data files with `pspp convert`
 
-`pspp convert <INPUT> [OUTPUT]` reads an SPSS data file from `<INPUT>`
-and writes a copy of it to `[OUTPUT]` (or to the terminal, if
-`[OUTPUT]` is omitted).
+The `pspp convert` command reads data from one file and writes it to
+another.  The basic syntax is:
+
+```
+pspp convert <INPUT> [OUTPUT]
+```
+
+which reads an SPSS data file from `<INPUT>` and writes a copy of it
+to `[OUTPUT]`.  If `[OUTPUT]` is omitted, output is written to the
+terminal.
 
 If `[OUTPUT]` is specified, then `pspp convert` tries to guess the
 output format based on its extension:
@@ -38,7 +45,7 @@ for unrecognized extensions.
 
   `<ENCODING>` must be one of the labels for encodings in the
   [Encoding Standard].  PSPP does not support UTF-16 or EBCDIC
-  encodings data files.
+  encodings in data files.
 
   `pspp show encodings` can help figure out the correct encoding for a
   system file.

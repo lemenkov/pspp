@@ -1,8 +1,14 @@
 # Decrypting SPSS files with `pspp decrypt`
 
-SPSS supports encryption using a password for data, viewer, and syntax
-files.  `pspp decrypt <INPUT> <OUTPUT>` reads an encrypted file
-`<INPUT>` and writes an equivalent plaintext file `<OUTPUT>`.
+The `pspp decrypt` command reads an encrypted SPSS file and writes out
+an equivalent plaintext file.  The basic syntax is:
+
+```
+pspp decrypt <INPUT> <OUTPUT>
+```
+
+which reads an encrypted SPSS data, viewer, or syntax file `<INPUT>`,
+decrypts it, and writes the decrypted version to `<OUTPUT>`.
 
 Other commands, such as [`pspp convert`](pspp-convert.md), can also
 read encrypted files directly.
