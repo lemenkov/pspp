@@ -19,14 +19,14 @@
 //! - Use the following command to download PSPP source code from `crates.io`
 //!   and build and install it:
 //!
-//!   ```
+//!   ```text
 //!   cargo install pspp
 //!   ```
 //!
 //! - Clone a local copy of this repository and build and install it from there,
 //!   with: can instead `cd` into `rust/pspp` in the source tree and run:
 //!
-//!   ```
+//!   ```text
 //!   git clone git://git.sv.gnu.org/pspp
 //!   cd pspp/rust/pspp
 //!   cargo install --path .
@@ -40,7 +40,7 @@
 //!
 //! To uninstall PSPP, run:
 //!
-//! ```
+//! ```text
 //! cargo uninstall pspp
 //! ```
 //!
@@ -48,7 +48,7 @@
 //!
 //! After installing PSPP using one of the methods above, run it with:
 //!
-//! ```
+//! ```text
 //! pspp
 //! ```
 //!
@@ -63,7 +63,7 @@
 //! To build the manual, install [mdBook] using its [instructions] then, from
 //! the root of a checked-out copy of this repository, build the manual with:
 //!
-//! ```
+//! ```text
 //! (cd rust/doc && mdbook build)
 //! ```
 //!
