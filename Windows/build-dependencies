@@ -98,7 +98,7 @@ tarballs="$tarballs gettext-0.21.tar.xz"
 tarballs="$tarballs libffi-3.3.tar.gz"
 tarballs="$tarballs pixman-0.40.0.tar.gz"
 tarballs="$tarballs libpng-1.6.37.tar.gz"
-tarballs="$tarballs libxml2-2.9.10.tar.gz"
+tarballs="$tarballs libxml2-2.9.10.tar.xz"
 tarballs="$tarballs freetype-2.10.4.tar.xz"
 tarballs="$tarballs fribidi-1.0.10.tar.xz"
 tarballs="$tarballs harfbuzz-2.7.4.tar.xz"
@@ -211,9 +211,9 @@ for t in $tarballs ; do
         libiconv-1.16.tar.gz)
             url="https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz";
             hash=e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04;;
-        libxml2-2.9.10.tar.gz)
-            url="ftp://xmlsoft.org/libxml2/libxml2-2.9.10.tar.gz";
-            hash=aafee193ffb8fe0c82d4afef6ef91972cbaf5feea100edc2f262750611b4be1f;;
+        libxml2-2.9.10.tar.xz)
+            url="https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.10.tar.xz";
+            hash=593b7b751dd18c2d6abcd0c4bcb29efc203d0b4373a6df98e3a455ea74ae2813;;
         *) hash=XX;;
     esac
 
