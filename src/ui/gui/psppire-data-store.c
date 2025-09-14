@@ -757,7 +757,7 @@ psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first,
 {
   g_return_val_if_fail (ds, FALSE);
   g_return_val_if_fail (ds->datasheet, FALSE);
-
+  g_return_val_if_fail (n_cases > 0, FALSE);
   g_return_val_if_fail (first + n_cases <=
                         psppire_data_store_get_case_count (ds), FALSE);
 

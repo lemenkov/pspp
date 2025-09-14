@@ -152,7 +152,11 @@ delete_cases (PsppireDataSheet *sheet)
 
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
-
+  if (range->start_y > range->end_y) {
+    gint temp = range->start_y;
+    range->start_y = range->end_y;
+    range->end_y = temp;
+  }
   psppire_data_store_delete_cases (data_store, range->start_y,
                                      range->end_y - range->start_y + 1);
 
