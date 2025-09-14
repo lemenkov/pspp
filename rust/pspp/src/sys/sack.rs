@@ -573,7 +573,7 @@ impl<'a> Lexer<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::sys::sack::sack;
     use anyhow::Result;
     use binrw::Endian;

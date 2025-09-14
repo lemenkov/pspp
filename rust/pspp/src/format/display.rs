@@ -54,7 +54,7 @@ pub struct DisplayDatum<'b, B> {
 }
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 pub trait DisplayPlain {
     fn display_plain(&self) -> DisplayPlainF64;

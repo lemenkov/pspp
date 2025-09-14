@@ -1439,4 +1439,4 @@ fn strip_prefix_ignore_ascii_case<'a>(line: &'a str, pattern: &str) -> Option<&'
 }
 
 #[cfg(test)]
-mod test;
+mod tests;

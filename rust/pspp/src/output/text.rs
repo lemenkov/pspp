@@ -652,7 +652,7 @@ impl Device for TextRenderer {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
     use crate::output::text::new_line_breaks;

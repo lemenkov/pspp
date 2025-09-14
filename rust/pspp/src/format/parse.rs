@@ -910,7 +910,7 @@ fn nibble(b: u8) -> Result<u128, ParseErrorKind> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use std::{
         fs::File,
         io::{BufRead, BufReader},

@@ -42,7 +42,7 @@ fn horz_align_to_pango(horz_align: HorzAlign) -> pango::Alignment {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::output::cairo::{CairoConfig, CairoDriver};
 
     #[test]

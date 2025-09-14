@@ -479,4 +479,4 @@ impl Iterator for StringScanner<'_> {
 }
 
 #[cfg(test)]
-mod test;
+mod tests;

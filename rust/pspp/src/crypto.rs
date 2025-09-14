@@ -581,7 +581,7 @@ impl EncodedPassword {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use std::{io::Cursor, path::Path};
 
     use crate::crypto::{EncodedPassword, EncryptedFile, FileType};

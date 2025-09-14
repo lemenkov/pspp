@@ -560,7 +560,7 @@ impl Debug for U8String {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::output::pivot::tlo::parse_tlo;
 
     #[test]

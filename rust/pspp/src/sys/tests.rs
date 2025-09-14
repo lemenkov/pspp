@@ -31,7 +31,7 @@ use crate::{
     dictionary::Dictionary,
     identifier::Identifier,
     output::{
-        pivot::{test::assert_lines_eq, Axis3, Dimension, Group, PivotTable, Value},
+        pivot::{tests::assert_lines_eq, Axis3, Dimension, Group, PivotTable, Value},
         Details, Item, Text,
     },
     sys::{

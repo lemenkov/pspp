@@ -439,7 +439,7 @@ impl<'de> Deserialize<'de> for Dimension {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use std::str::FromStr;
 
     use quick_xml::de::from_str;

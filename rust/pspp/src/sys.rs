@@ -42,7 +42,7 @@ use serde::Serializer;
 pub use write::{SystemFileVersion, WriteOptions, Writer};
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 fn serialize_endian<S>(endian: &Endian, serializer: S) -> Result<S::Ok, S::Error>
 where

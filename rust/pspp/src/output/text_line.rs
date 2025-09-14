@@ -330,7 +330,7 @@ pub fn clip_text<'a>(
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::{Emphasis, TextLine};
     use enum_iterator::all;
 

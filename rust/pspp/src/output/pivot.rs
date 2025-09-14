@@ -82,7 +82,7 @@ pub mod output;
 
 mod look_xml;
 #[cfg(test)]
-pub mod test;
+pub mod tests;
 mod tlo;
 
 /// Areas of a pivot table for styling purposes.
@@ -2775,7 +2775,7 @@ impl Serialize for MetadataEntry {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use crate::output::pivot::{Display26Adic, MetadataEntry, MetadataValue, Value};
 
     #[test]

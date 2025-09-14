@@ -159,7 +159,7 @@ impl Display for Token {
 
 /// Check that all negative numbers, even -0, get formatted with a leading `-`.
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::lex::token::Token;
 
     #[test]
