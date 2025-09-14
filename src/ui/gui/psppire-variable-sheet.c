@@ -254,11 +254,11 @@ delete_variables (SswSheet *sheet)
   PsppireDict *dict = NULL;
   g_object_get (sheet, "data-model", &dict, NULL);
 
-  if (range->start_x > range->end_x)
+  if (range->start_y > range->end_y)
     {
-      gint temp = range->start_x;
-      range->start_x = range->end_x;
-      range->end_x = temp;
+      gint temp = range->start_y;
+      range->start_y = range->end_y;
+      range->end_y = temp;
     }
 
   psppire_dict_delete_variables (dict, range->start_y,
