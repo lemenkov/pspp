@@ -1474,6 +1474,7 @@ impl Metadata {
     fn decode(header: &FileHeader<String>, headers: &Records, mut warn: impl FnMut(Error)) -> Self {
         let header = &header;
         let creation_date = NaiveDate::parse_from_str(&header.creation_date, "%e %b %y")
+            .or_else(|_| NaiveDate::parse_from_str(&header.creation_date, "%e-%b-%y"))
             .unwrap_or_else(|_| {
                 warn(Error::InvalidCreationDate(header.creation_date.to_string()));
                 Default::default()

@@ -263,14 +263,14 @@ A system file begins with the file header, with the following format:
 
   Date of creation of the system file, in `dd mmm yy` format, with
   the month as standard English abbreviations, using an initial
-  capital letter and following with lowercase.  If the date is not
-  available then this field is arbitrarily set to `01 Jan 70`.
+  capital letter and following with lowercase.
+
+  > Some files in the corpus have the date in `dd-mmm-yy` format.
 
 * `char creation_time[8];`
 
   Time of creation of the system file, in `hh:mm:ss` format and using
-  24-hour time.  If the time is not available then this field is
-  arbitrarily set to `00:00:00`.
+  24-hour time.
 
 * `char file_label[64];`
 
