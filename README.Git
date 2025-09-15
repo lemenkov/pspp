@@ -36,14 +36,30 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
- commit 37d43aa09011b2474b843e9386c6c246f50065c7 (origin/stable-202307)
- Author: Collin Funk <collin.funk1@gmail.com>
- Date:   Sun Mar 10 01:02:30 2024 -0800
+commit 11ec314e8d35829efac53b7a55a0a63fcabfadf1 (HEAD, origin/stable-202501)
+Author: Paul Eggert <eggert@cs.ucla.edu>
+Date:   Mon Sep 1 11:25:00 2025 -0700
 
-     gnulib-tool: Don't remove comments referencing @NMD@, part 2.
+    tests: more fixes for AT_FDCWD portability
 
-     * gnulib-tool (func_emit_tests_Makefile_am): Replace lines that start
-     with @NMD@ or @!NMD@ instead of lines that contain them.
+    * tests/test-areadlinkat-with-size.c (main):
+    * tests/test-areadlinkat.c (main):
+    * tests/test-faccessat.c (main):
+    * tests/test-fchmodat.c (main):
+    * tests/test-fchownat.c (main):
+    * tests/test-fstatat.c (main):
+    * tests/test-linkat.c (main):
+    * tests/test-mkdirat.c (main):
+    * tests/test-mkfifoat.c (main):
+    * tests/test-openat.c (main):
+    * tests/test-openat-safer.c (main):
+    * tests/test-readlinkat.c (main):
+    * tests/test-renameat.c (main):
+    * tests/test-renameatu.c (main):
+    * tests/test-symlinkat.c (main):
+    * tests/test-unlinkat.c (main):
+    * tests/test-utimensat.c (main):
+    Work even if AT_FDCWD == -1.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
