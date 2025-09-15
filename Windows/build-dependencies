@@ -90,6 +90,8 @@ objcopy = '$arch-objcopy'
 strip = '$arch-strip'
 pkgconfig = 'pkg-config'
 windres = '$arch-windres'
+glib-compile-resources = 'glib-compile-resources'
+glib-compile-schemas = 'glib-compile-schemas'
 EOF
 
 tarballs="zlib-1.2.11.tar.gz"
@@ -101,16 +103,17 @@ tarballs="$tarballs libpng-1.6.37.tar.gz"
 tarballs="$tarballs libxml2-2.9.10.tar.xz"
 tarballs="$tarballs freetype-2.10.4.tar.xz"
 tarballs="$tarballs fribidi-1.0.10.tar.xz"
-tarballs="$tarballs harfbuzz-2.7.4.tar.xz"
-tarballs="$tarballs glib-2.67.6.tar.xz"
+tarballs="$tarballs harfbuzz-11.4.5.tar.xz"
+tarballs="$tarballs pcre2-10.44.tar.bz2"
+tarballs="$tarballs glib-2.79.3.tar.xz"
 tarballs="$tarballs cairo-1.17.4.tar.xz"
 tarballs="$tarballs pango-1.48.0.tar.xz"
 tarballs="$tarballs atk-2.36.0.tar.xz"
 tarballs="$tarballs gdk-pixbuf-2.42.2.tar.xz"
 tarballs="$tarballs libepoxy-1.5.5.tar.xz"
-tarballs="$tarballs gtk+-3.24.27.tar.xz"
+tarballs="$tarballs gtk-3.24.50.tar.xz"
 tarballs="$tarballs gsl-2.6.tar.gz"
-tarballs="$tarballs gtksourceview-3.24.9.tar.xz"
+tarballs="$tarballs gtksourceview-4.8.4.tar.xz"
 tarballs="$tarballs spread-sheet-widget-0.10.tar.gz"
 tarballs="$tarballs hicolor-icon-theme-0.17.tar.xz"
 tarballs="$tarballs adwaita-icon-theme-3.38.0.tar.xz"
@@ -120,13 +123,13 @@ for t in $tarballs ; do
     url=""
     case $t in
         ncurses-6.2.tar.gz)
-            url="ftp://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz";
+            url="http://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz";
             hash=30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d;;
         readline-8.1.tar.gz)
-            url="ftp://ftp.gnu.org/gnu/readline/readline-8.1.tar.gz";
+            url="http://ftpmirror.gnu.org/gnu/readline/readline-8.1.tar.gz";
             hash=f8ceb4ee131e3232226a17f51b164afc46cd0b9e6cef344be87c65962cb82b02;;
         termcap-1.3.1.tar.gz)
-            url="ftp://ftp.gnu.org/gnu/termcap/termcap-1.3.1.tar.gz";
+            url="http://ftpmirror.gnu.org/gnu/termcap/termcap-1.3.1.tar.gz";
             hash=91a0e22e5387ca4467b5bcb18edf1c51b930262fd466d5fda396dd9d26719100;;
         fontconfig-2.12.6.tar.bz2)
             url="https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.6.tar.bz2";
@@ -147,14 +150,14 @@ for t in $tarballs ; do
             url="https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-0.17.tar.xz";
             hash=317484352271d18cbbcfac3868eab798d67fff1b8402e740baa6ff41d588a9d8;;
         gettext-0.21.tar.xz)
-            url="https://ftp.gnu.org/gnu/gettext/gettext-0.21.tar.xz";
+            url="https://ftpmirror.gnu.org/gnu/gettext/gettext-0.21.tar.xz";
             hash=d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192;;
         spread-sheet-widget-0.10.tar.gz)
             url="https://alpha.gnu.org/gnu/ssw/spread-sheet-widget-0.10.tar.gz";
             hash=80692ec350271995e147dc759929cdd79d3b645e6b5efaa6b57f4d2d05e847e5;;
-        gtksourceview-3.24.9.tar.xz)
-            url="https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.9.tar.xz"
-            hash=699d76a453e6a3d3331906346e3dbfa25f2cbc9ec090e46635e9c6bb595e07c2;;
+        gtksourceview-4.8.4.tar.xz)
+            url="https://download.gnome.org/sources/gtksourceview/4.8/gtksourceview-4.8.4.tar.xz"
+            hash=7ec9d18fb283d1f84a3a3eff3b7a72b09a10c9c006597b3fbabbb5958420a87d;;
         libepoxy-1.5.5.tar.xz)
             url="https://github.com/anholt/libepoxy/releases/download/1.5.5/libepoxy-1.5.5.tar.xz"
             hash=261663db21bcc1cc232b07ea683252ee6992982276536924271535875f5b0556;;
@@ -167,15 +170,15 @@ for t in $tarballs ; do
         atk-2.36.0.tar.xz)
             url="https://download.gnome.org/sources/atk/2.36/atk-2.36.0.tar.xz";
             hash=fb76247e369402be23f1f5c65d38a9639c1164d934e40f6a9cf3c9e96b652788;;
-        gtk+-3.24.27.tar.xz)
-            url="https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.27.tar.xz";
-            hash=f71c067570339f9f8efac7bb87717a2c52279cb50223fb8b5ba7085930757a26;;
+        gtk-3.24.50.tar.xz)
+            url="https://download.gnome.org/sources/gtk/3.24/gtk-3.24.50.tar.xz";
+            hash=399118a5699314622165a11b769ea9b6ed68e037b6d46d57cfcf4851dec07529;;
         cairo-1.17.4.tar.xz)
             url="https://cairographics.org/snapshots/cairo-1.17.4.tar.xz";
             hash=74b24c1ed436bbe87499179a3b27c43f4143b8676d8ad237a6fa787401959705;;
-        harfbuzz-2.7.4.tar.xz)
-            url="https://github.com/harfbuzz/harfbuzz/releases/download/2.7.4/harfbuzz-2.7.4.tar.xz";
-            hash=6ad11d653347bd25d8317589df4e431a2de372c0cf9be3543368e07ec23bb8e7;;
+        harfbuzz-11.4.5.tar.xz)
+            url="https://github.com/harfbuzz/harfbuzz/releases/download/11.4.5/harfbuzz-11.4.5.tar.xz";
+            hash=0f052eb4ab01d8bae98ba971c954becb32be57d7250f18af343b1d27892e03fa;;
         fribidi-1.0.10.tar.xz)
             url="https://github.com/fribidi/fribidi/releases/download/v1.0.10/fribidi-1.0.10.tar.xz";
             hash=7f1c687c7831499bcacae5e8675945a39bacbad16ecaa945e9454a32df653c01;;
@@ -197,23 +200,26 @@ for t in $tarballs ; do
         freetype-2.10.4.tar.xz)
             url="https://download.savannah.gnu.org/releases/freetype/freetype-2.10.4.tar.xz";
             hash=86a854d8905b19698bbc8f23b860bc104246ce4854dcea8e3b0fb21284f75784;;
-        glib-2.67.6.tar.xz)
-            url="https://download.gnome.org/sources/glib/2.67/glib-2.67.6.tar.xz";
-            hash=dd7f563509b410e8f94ef2d4cc7f74620a6b29d7c5d529fedec53c5e8018d9c5;;
+        glib-2.79.3.tar.xz)
+            url="https://download.gnome.org/sources/glib/2.79/glib-2.79.3.tar.xz";
+            hash=00d1a313677ed5f5c5e6f7a77ca66e31cf7aa1e3d6b92b6041a16d7a024580c6;;
         pango-1.48.0.tar.xz)
             url="https://download.gnome.org/sources/pango/1.48/pango-1.48.0.tar.xz";
             hash=391f26f3341c2d7053e0fb26a956bd42360dadd825efe7088b1e9340a65e74e6;;
         pango-1.40.0.tar.xz)
             hash=da17985df314cb07d066ab5424f59c21ce973ece05b7de4df04d798ec8511c8b;;
         gsl-2.6.tar.gz)
-            url="https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz";
+            url="http://ftpmirror.gnu.org/gnu/gsl/gsl-2.6.tar.gz";
             hash=b782339fc7a38fe17689cb39966c4d821236c28018b6593ddb6fd59ee40786a8;;
         libiconv-1.16.tar.gz)
-            url="https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz";
+            url="http://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz";
             hash=e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04;;
         libxml2-2.9.10.tar.xz)
             url="https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.10.tar.xz";
             hash=593b7b751dd18c2d6abcd0c4bcb29efc203d0b4373a6df98e3a455ea74ae2813;;
+        pcre2-10.44.tar.bz2)
+            url="https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.44/pcre2-10.44.tar.bz2";
+            hash=d34f02e113cf7193a1ebf2770d3ac527088d485d4e047ed10e5d217c6ef5de96;;
         *) hash=XX;;
     esac
 
@@ -272,7 +278,7 @@ for t in $tarballs ; do
         # Deal with the special cases here
         zlib-*)
             cd $SANDBOX/Build/$pkg && \
-                CC=$arch-gcc LDSHAREDLIBC="" $SANDBOX/Source/$pkg/configure --prefix="$SANDBOX/Install" && \
+                CC=$arch-gcc AR=$arch-ar RANLIB=$arch-ranlib LDSHAREDLIBC="" $SANDBOX/Source/$pkg/configure --prefix="$SANDBOX/Install" && \
                 make -j $build_procs && make install
             ;;
         # And now the generic cases
@@ -281,6 +287,10 @@ for t in $tarballs ; do
             build_system="autoconf"
             pre_configure=""
             prefix=$SANDBOX/Install
+            meson_opts=""
+            extra_cflags=""
+            extra_ldflags=""
+            extra_config_flags=""
             case $pkg in
                 cairo-*)
                     extra_cflags="-fstack-protector";;
@@ -294,9 +304,13 @@ for t in $tarballs ; do
                 libepoxy-*)
                     build_system="meson";
                     ;;
-                gtk+-*)
+                gtk-*)
                     build_system="meson";
                     meson_opts="-Dintrospection=false -Dtests=false -Ddemos=false -Dexamples=false";
+                    ;;
+                gtksourceview-*)
+                    build_system="meson";
+                    meson_opts="-Dgir=false";
                     ;;
                 gdk-pixbuf-*)
                     build_system="meson";
@@ -310,14 +324,16 @@ for t in $tarballs ; do
                     build_system="meson";
                     meson_opts=-Dintrospection=false;
                     ;;
+                pcre2-*)
+                    ;;
                 glib-*)
                     build_system="meson";
-                    meson_opts="-Dtests=false";
-                    extra_cflags=-Wno-format;  #no-format seems to be necessary for 32 bit builds
+                    meson_opts="-Dtests=false -Dintrospection=disabled";
+                    #extra_cflags=-Wno-format;  #no-format seems to be necessary for 32 bit builds
                     ;;
                 harfbuzz*)
                     build_system="meson";
-                    meson_opts=-Dglib=disabled;
+                    meson_opts="-Dglib=disabled -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled";
                     ;;
                 freetype-*)
                     extra_config_flags="--enable-static=no";
@@ -349,6 +365,9 @@ for t in $tarballs ; do
             case $build_system in
                 meson)
                     PKG_CONFIG_LIBDIR="$SANDBOX/Install/lib/pkgconfig" \
+                    CFLAGS="-I$SANDBOX/Install/include" \
+                    CPPFLAGS="-I$SANDBOX/Install/include" \
+                    LDFLAGS="-L$SANDBOX/Install/lib" \
                                      meson setup --prefix=$prefix \
                                      --libdir=lib \
                                      --cross-file=$SANDBOX/cross-file.txt \
@@ -368,7 +387,7 @@ for t in $tarballs ; do
                             --prefix="$prefix" \
                             "$extra_config_flags" \
                             CFLAGS="$extra_cflags" \
-                            CPPFLAGS="-I $depdir/include $extra_cppflags" \
+                            CPPFLAGS="-I$depdir/include $extra_cppflags" \
                             LDFLAGS="-L$depdir/lib $extra_ldflags" \
                             PKG_CONFIG_LIBDIR="$depdir/lib/pkgconfig" &&
                         make -j $build_procs && make install && $extra_build

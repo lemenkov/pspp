@@ -1,2 +1,70 @@
 This is not part of the GNU PSPP program, but is used with GNU PSPP to help
 create a self extracting installer program for MS windows.
+
+## Setup
+
+Assume you have the following diretory structure
+
+~/pspp
+  |----pspp    (This is the pspp source directory)
+  |----sandbox (The cross compile sandbox (empty))
+  |----build   (The build directory (empty))
+
+The source directory is assumed to be from a source
+tarball. If you build from git, then read "README.Git"
+how to create the configure script.
+
+## Install build environment
+
+On Debian install the following packages:
+
+sudo apt install -y build-essential python3 perl texinfo texlive \
+    libgsl-dev libgtk-3-dev libgtksourceview-4.0-dev \
+    pkg-config gperf git zip curl autoconf libtool \
+    gettext libreadline-dev appstream \
+    mingw-w64 meson ninja-build \
+    imagemagick wget nsis texlive-plain-generic
+
+For latest infos you can also look at the scripts
+from the buildbot:
+
+  https://github.com/fredowski/pspp-buildbot/tree/master
+
+## Crosscompiling the dependencies
+
+The "build-dependencies" script will
+  - download the source tarballs
+  - unpack, compile and install
+all dependencies like gtk e.t.c.
+
+The tarballs, source- and build directories and the install
+directory are all inside the "sandbox" directory.
+
+sandboxdir=$HOME/pspp/sandbox
+
+cd $HOME/pspp/pspp/Windows
+
+./build-dependencies --arch=x86_64-w64-mingw32 \
+      --sandbox=$sandboxdir --no-clean
+
+Once you have installed all dependencies, you can
+start the pspp build.
+
+## Configure and build pspp
+
+cd $HOME/pspp/build
+
+../pspp/configure --host="x86_64-w64-mingw32" \
+  CPPFLAGS="-I$sandboxdir/Install/include" \
+  LDFLAGS="-L$sandboxdir/Install/lib" \
+  PKG_CONFIG_LIBDIR="$sandboxdir/Install/lib/pkgconfig" \
+  --prefix=$sandboxdir/psppinst \
+  --enable-relocatable
+
+make
+make install
+make install-html
+make install-pdf
+make Windows/installers
+
+The installers are in $HOME/pspp/build/Windows
