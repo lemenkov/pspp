@@ -116,7 +116,7 @@ any_reader_open (struct file_handle *handle)
             return NULL;
           }
 
-        return class->open (handle);
+        return class->open_reader (handle);
       }
 
     case FH_REF_INLINE:
@@ -124,7 +124,7 @@ any_reader_open (struct file_handle *handle)
       return NULL;
 
     case FH_REF_DATASET:
-      return dataset_reader_class.open (handle);
+      return dataset_reader_class.open_reader (handle);
     }
   NOT_REACHED ();
 }

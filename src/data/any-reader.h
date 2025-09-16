@@ -41,7 +41,7 @@ struct any_reader_class
        not, and a negative errno value if there is an error reading FILE. */
     int (*detect) (FILE *file);
 
-    struct any_reader *(*open) (struct file_handle *);
+    struct any_reader *(*open_reader) (struct file_handle *);
     bool (*close) (struct any_reader *);
     struct casereader *(*decode) (struct any_reader *, const char *encoding,
                                   struct dictionary **,
