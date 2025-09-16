@@ -355,6 +355,7 @@ Function .onInit
   ${Endif}
   ${Endif}
 
+IfSilent continue
   MessageBox MB_OKCANCEL "This windoze installer is work in progress.  It is known to have deficiencies and is recommended for testing and evaluation purposes only." IDOK continue
   Abort ; Allow the use to decide not to continue
   continue:
