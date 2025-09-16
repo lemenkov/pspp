@@ -36,30 +36,17 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
-commit 11ec314e8d35829efac53b7a55a0a63fcabfadf1 (HEAD, origin/stable-202501)
-Author: Paul Eggert <eggert@cs.ucla.edu>
-Date:   Mon Sep 1 11:25:00 2025 -0700
+commit c0184d73eb46dacdd410d1dde8a6ef70470a8ccf (HEAD -> master, origin/master, origin/HEAD)
+Author: Pádraig Brady <P@draigBrady.com>
+Date:   Tue Sep 16 17:38:57 2025 +0100
 
-    tests: more fixes for AT_FDCWD portability
+    cpu-supports: remove assert dependency
 
-    * tests/test-areadlinkat-with-size.c (main):
-    * tests/test-areadlinkat.c (main):
-    * tests/test-faccessat.c (main):
-    * tests/test-fchmodat.c (main):
-    * tests/test-fchownat.c (main):
-    * tests/test-fstatat.c (main):
-    * tests/test-linkat.c (main):
-    * tests/test-mkdirat.c (main):
-    * tests/test-mkfifoat.c (main):
-    * tests/test-openat.c (main):
-    * tests/test-openat-safer.c (main):
-    * tests/test-readlinkat.c (main):
-    * tests/test-renameat.c (main):
-    * tests/test-renameatu.c (main):
-    * tests/test-symlinkat.c (main):
-    * tests/test-unlinkat.c (main):
-    * tests/test-utimensat.c (main):
-    Work even if AT_FDCWD == -1.
+    Avoid LGPL incompatibility issues by removing assert.
+
+    * lib/cpu-supports.c (hwcaps_allowed): Replace assert()s
+    with defensive returns allowing the passed hwcap.
+    * modules/cpu-supports: Remove the dependency.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
