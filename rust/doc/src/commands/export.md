@@ -15,6 +15,9 @@ EXPORT
    The `EXPORT` procedure writes the active dataset's dictionary and
 data to a specified portable file.
 
+> `EXPORT` is obsolete and retained only for compatibility.  New
+> syntax should use [`SAVE`](save.md) instead.
+
    `UNSELECTED` controls whether cases excluded with
 [`FILTER`](filter.md) are written to the file.  These can
 be excluded by specifying `DELETE` on the `UNSELECTED` subcommand.

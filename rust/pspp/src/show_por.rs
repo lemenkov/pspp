@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::parse_encoding;
 use anyhow::{anyhow, Result};
 use clap::{Args, ValueEnum};
-use encoding_rs::Encoding;
 use pspp::{
     data::cases_to_output,
     output::{
@@ -25,10 +23,7 @@ use pspp::{
         pivot::PivotTable,
         Details, Item, Text,
     },
-    sys::{
-        raw::{infer_encoding, Decoder, EncodingReport, Magic, Reader, Record},
-        Records,
-    },
+    por::PortableFile,
 };
 use serde::Serialize;
 use std::{
@@ -42,9 +37,9 @@ use std::{
     sync::Arc,
 };
 
-/// Show information about SPSS system files.
+/// Show information about SPSS portable files.
 #[derive(Args, Clone, Debug)]
-pub struct Show {
+pub struct ShowPor {
     /// What to show.
     #[arg(value_enum)]
     mode: Mode,
@@ -56,10 +51,6 @@ pub struct Show {
     /// Output file name.  If omitted, output is written to stdout.
     output: Option<PathBuf>,
 
-    /// The encoding to use.
-    #[arg(long, value_parser = parse_encoding, help_heading = "Input file options")]
-    encoding: Option<&'static Encoding>,
-
     /// Maximum number of cases to read.
     ///
     /// If specified without an argument, all cases will be read.
@@ -70,7 +61,7 @@ pub struct Show {
         default_value_t = 0,
         help_heading = "Input file options"
     )]
-    max_cases: u64,
+    max_cases: usize,
 
     /// Output driver configuration options.
     #[arg(short = 'o', help_heading = "Output options")]
@@ -94,37 +85,6 @@ enum Output {
 }
 
 impl Output {
-    /*
-    fn show_metadata(&self, metadata: MetadataEntry) -> Result<()> {
-        match self {
-            Self::Driver { driver, .. } => {
-                driver
-                    .borrow_mut()
-                    .write(&Arc::new(Item::new(metadata.into_pivot_table())));
-                Ok(())
-            }
-            Self::Json { .. } => self.show_json(&metadata),
-            Self::Discard => Ok(()),
-        }
-    }*/
-
-    fn show<T>(&self, value: &T) -> Result<()>
-    where
-        T: Serialize,
-        for<'a> &'a T: Into<Details>,
-    {
-        match self {
-            Self::Driver { driver, .. } => {
-                driver
-                    .borrow_mut()
-                    .write(&Arc::new(Item::new(value.into())));
-                Ok(())
-            }
-            Self::Json { .. } => self.show_json(value),
-            Self::Discard => Ok(()),
-        }
-    }
-
     fn show_json<T>(&self, value: &T) -> Result<()>
     where
         T: Serialize,
@@ -168,7 +128,7 @@ impl Output {
     }
 }
 
-impl Show {
+impl ShowPor {
     pub fn run(self) -> Result<()> {
         let format = if let Some(format) = self.format {
             format
@@ -243,59 +203,19 @@ impl Show {
             ShowFormat::Discard => Output::Discard,
         };
 
-        let reader = File::open(&self.input)?;
-        let reader = BufReader::new(reader);
-        let mut reader = Reader::new(reader, Box::new(|warning| output.warn(&warning)))?;
-
+        let reader = BufReader::new(File::open(&self.input)?);
         match self.mode {
-            Mode::Identity => {
-                match reader.header().magic {
-                    Magic::Sav => println!("SPSS System File"),
-                    Magic::Zsav => println!("SPSS System File with Zlib compression"),
-                    Magic::Ebcdic => println!("EBCDIC-encoded SPSS System File"),
-                }
-                return Ok(());
-            }
-            Mode::Raw => {
-                output.show_json(reader.header())?;
-                for record in reader.records() {
-                    output.show_json(&record?)?;
-                }
-                for (_index, case) in (0..self.max_cases).zip(reader.cases()) {
-                    output.show_json(&case?)?;
-                }
-            }
-            Mode::Decoded => {
-                let records: Vec<Record> = reader.records().collect::<Result<Vec<_>, _>>()?;
-                let encoding = match self.encoding {
-                    Some(encoding) => encoding,
-                    None => infer_encoding(&records, &mut |e| output.warn(&e))?,
-                };
-                let mut decoder = Decoder::new(encoding, |e| output.warn(&e));
-                for record in records {
-                    output.show_json(&record.decode(&mut decoder))?;
-                }
-            }
             Mode::Dictionary => {
-                let records: Vec<Record> = reader.records().collect::<Result<Vec<_>, _>>()?;
-                let encoding = match self.encoding {
-                    Some(encoding) => encoding,
-                    None => infer_encoding(&records, &mut |e| output.warn(&e))?,
-                };
-                let mut decoder = Decoder::new(encoding, |e| output.warn(&e));
-                let records = Records::from_raw(records, &mut decoder);
-                let (dictionary, metadata, cases) = records
-                    .decode(
-                        reader.header().clone().decode(&mut decoder),
-                        reader.cases(),
-                        encoding,
-                        |e| output.warn(&e),
-                    )
-                    .into_parts();
+                let PortableFile {
+                    dictionary,
+                    metadata: _,
+                    cases,
+                } = PortableFile::open(reader, |warning| output.warn(&warning))?;
+                let cases = cases.take(self.max_cases);
+
                 match &output {
                     Output::Driver { driver, mode: _ } => {
                         let mut output = Vec::new();
-                        output.push(Item::new(PivotTable::from(&metadata)));
                         output.extend(
                             dictionary
                                 .all_pivot_tables()
@@ -311,7 +231,6 @@ impl Show {
                     }
                     Output::Json { .. } => {
                         output.show_json(&dictionary)?;
-                        output.show_json(&metadata)?;
                         for (_index, case) in (0..self.max_cases).zip(cases) {
                             output.show_json(&case?)?;
                         }
@@ -319,12 +238,45 @@ impl Show {
                     Output::Discard => (),
                 }
             }
-            Mode::Encodings => {
-                let encoding_report = EncodingReport::new(reader, self.max_cases)?;
-                output.show(&encoding_report)?;
+            Mode::Metadata => {
+                let metadata =
+                    PortableFile::open(reader, |warning| output.warn(&warning))?.metadata;
+
+                match &output {
+                    Output::Driver { driver, mode: _ } => {
+                        driver
+                            .borrow_mut()
+                            .write(&Arc::new(Item::new(PivotTable::from(&metadata))));
+                    }
+                    Output::Json { .. } => {
+                        output.show_json(&metadata)?;
+                    }
+                    Output::Discard => (),
+                }
+            }
+            Mode::Histogram => {
+                let (histogram, translations) = PortableFile::read_histogram(reader)?;
+                let h = histogram
+                    .into_iter()
+                    .enumerate()
+                    .filter_map(|(index, count)| {
+                        if count > 0
+                            && index != translations[index as u8] as usize
+                            && translations[index as u8] != 0
+                        {
+                            Some((
+                                format!("{index:02x}"),
+                                translations[index as u8] as char,
+                                count,
+                            ))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                output.show_json(&h)?;
             }
         }
-
         Ok(())
     }
 }
@@ -332,32 +284,24 @@ impl Show {
 /// What to show in a system file.
 #[derive(Clone, Copy, Debug, Default, PartialEq, ValueEnum)]
 enum Mode {
-    /// The kind of file.
-    Identity,
-
-    /// File dictionary, with variables, value labels, attributes, ...
+    /// File dictionary, with variables, value labels, ...
     #[default]
     #[value(alias = "dict")]
     Dictionary,
 
-    /// Possible encodings of text in file dictionary and (with `--data`) cases.
-    Encodings,
+    /// File metadata not included in the dictionary.
+    Metadata,
 
-    /// Raw file records, without assuming a particular character encoding.
-    Raw,
-
-    /// Raw file records decoded with a particular character encoding.
-    Decoded,
+    /// Histogram of character incidence in the file.
+    Histogram,
 }
 
 impl Mode {
     fn as_str(&self) -> &'static str {
         match self {
             Mode::Dictionary => "dictionary",
-            Mode::Identity => "identity",
-            Mode::Raw => "raw",
-            Mode::Decoded => "decoded",
-            Mode::Encodings => "encodings",
+            Mode::Metadata => "metadata",
+            Mode::Histogram => "histogram",
         }
     }
 }

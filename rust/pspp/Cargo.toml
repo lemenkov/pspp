@@ -53,6 +53,8 @@ unicode-segmentation = "1.12.0"
 serde_json = "1.0.141"
 toml = "0.9.5"
 hashbrown = { version = "0.15.5", features = ["serde"] }
+displaydoc = "0.2.5"
+codepage-437 = "0.1.0"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.48.0", features = ["Win32_Globalization"] }

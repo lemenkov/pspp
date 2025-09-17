@@ -13,9 +13,12 @@ The `IMPORT` transformation clears the active dataset dictionary and
 data and replaces them with a dictionary and data from a system file or
 portable file.
 
+> `IMPORT` is obsolete and retained only for compatibility with
+> existing portable files.  New syntax should use [`SAVE`](save.md) to
+> write system files instead, and [`GET`](get.md) to read them.
+
 The `FILE` subcommand, which is the only required subcommand,
 specifies the portable file to be read as a file name string or a
-[file handle](../language/files/file-handles.md).
 [file handle](../language/files/file-handles.md).
 
 The `TYPE` subcommand is currently not used.

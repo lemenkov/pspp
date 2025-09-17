@@ -1,7 +1,8 @@
-# Inspecting data files with `pspp show`
+# Inspecting `.sav` files with `pspp show`
 
-The `pspp show` command reads an SPSS data file and produces a report.
-The basic syntax is:
+The `pspp show` command reads an SPSS "system file" or data file,
+which usually has a `.sav` extension, and produces a report.  The
+basic syntax is:
 
 ```
 pspp show <MODE> <INPUT> [OUTPUT]
@@ -43,6 +44,9 @@ The following `<MODE>`s are available:
   investigating cases of system file corruption, especially when the
   character encoding is unknown or uncertain.
 
+  This command is most useful with some knowledge of the [system file
+  format](../system-file.md).
+
 * `decoded`: Outputs the raw structure of the system file dictionary
   and (with `--data`) cases.  Versus `raw`, this command does decode
   the dictionary and data with a particular character encoding, which
@@ -50,6 +54,9 @@ The following `<MODE>`s are available:
 
   This is useful for debugging how PSPP reads system files and for
   investigating cases of system file corruption.
+
+  This command is most useful with some knowledge of the [system file
+  format](../system-file.md).
 
 ## Options
 

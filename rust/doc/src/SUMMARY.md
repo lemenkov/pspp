@@ -4,9 +4,10 @@
 [License](license.md)
 
 - [Running PSPP](invoking/index.md)
-  - [Converting data](invoking/pspp-convert.md)
-  - [Inspecting data](invoking/pspp-show.md)
-  - [Decrypting files](invoking/pspp-decrypt.md)
+  - [Converting Data](invoking/pspp-convert.md)
+  - [Inspecting `.sav` Data](invoking/pspp-show.md)
+  - [Inspecting `.por` Data](invoking/pspp-show-por.md)
+  - [Decrypting Files](invoking/pspp-decrypt.md)
 
 # Language Overview
 

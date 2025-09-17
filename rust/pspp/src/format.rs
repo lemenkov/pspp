@@ -695,7 +695,7 @@ impl TryFrom<UncheckedFormat> for Format {
         } else if !format.width_range().contains(&w) {
             Err(Error::BadWidth(source))
         } else if d > max_d {
-            if format.takes_decimals() {
+            if !format.takes_decimals() {
                 Err(Error::DecimalsNotAllowedForFormat(source))
             } else if max_d > 0 {
                 Err(Error::TooManyDecimalsForWidth {

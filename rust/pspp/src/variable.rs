@@ -24,6 +24,7 @@ use std::{
     str::FromStr,
 };
 
+use displaydoc::Display;
 use encoding_rs::{Encoding, UTF_8};
 use hashbrown::HashMap;
 use indexmap::Equivalent;
@@ -47,6 +48,9 @@ pub enum VarType {
     Numeric,
 
     /// A string variable.
+    ///
+    /// The string width is unspecified; use [VarWidth] for type and width
+    /// together.
     String,
 }
 
@@ -78,11 +82,22 @@ impl Display for VarType {
     }
 }
 
-/// [VarType], plus a width for [VarType::String].
+/// A variable's width.
+///
+/// This is essentially [VarType] plus a width for [VarType::String].
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub enum VarWidth {
+    /// A numeric variable.
     Numeric,
-    String(u16), // XXX change to NonZeroU16, or to 1..=32767 range type
+
+    /// A string variable.
+    String(
+        /// The width of the string variable.
+        ///
+        /// Must be in `1..=32767`, although the type system does not yet
+        /// enforce this.
+        u16,
+    ), // XXX change to NonZeroU16, or to 1..=32767 range type
 }
 
 impl VarWidth {
@@ -601,7 +616,11 @@ impl ValueLabels {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.len() == 0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 
     pub fn get<T>(&self, value: &Datum<T>) -> Option<&str>
@@ -671,6 +690,16 @@ impl Hash for ValueLabels {
             hash ^= hasher.finish();
         }
         state.write_u64(hash);
+    }
+}
+
+impl<'a> IntoIterator for &'a ValueLabels {
+    type Item = (&'a Datum<ByteString>, &'a String);
+
+    type IntoIter = hashbrown::hash_map::Iter<'a, Datum<ByteString>, String>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
 
@@ -778,11 +807,19 @@ impl Display for MissingValues {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+/// Invalid missing values.
+#[derive(Display, Copy, Clone, Debug, ThisError)]
 pub enum MissingValuesError {
+    /// Too many missing values.
     TooMany,
+
+    /// Missing values too wide (missing values may be no wider than 8 bytes).
     TooWide,
+
+    /// Missing values must be all string or all numeric.
     MixedTypes,
+
+    /// The system-missing value may not be a user-missing value.
     SystemMissing,
 }
 

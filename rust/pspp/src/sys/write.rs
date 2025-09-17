@@ -1030,7 +1030,7 @@ where
     ///
     /// # Panic
     ///
-    /// Attempts to write more cases after calling this function may will panic.
+    /// Attempts to write more cases after calling this function will panic.
     pub fn try_finish(&mut self) -> Result<Option<W>, BinError> {
         let Some(inner) = self.inner.take() else {
             return Ok(None);

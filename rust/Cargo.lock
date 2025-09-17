@@ -404,6 +404,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "codepage-437"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e40c1169585d8d08e5675a39f2fc056cd19a258fc4cba5e3bbf4a9c1026de535"
+dependencies = [
+ "csv",
+]
+
+[[package]]
 name = "color"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1626,10 +1635,12 @@ dependencies = [
  "chrono",
  "clap",
  "cmac",
+ "codepage-437",
  "color",
  "csv",
  "derive_more",
  "diff",
+ "displaydoc",
  "either",
  "encoding_rs",
  "enum-iterator",

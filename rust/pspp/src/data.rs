@@ -44,7 +44,12 @@ use serde::{
 };
 
 use crate::{
+    dictionary::Dictionary,
     format::DisplayPlain,
+    output::{
+        pivot::{Axis3, Dimension, Group, PivotTable, Value},
+        Item, Text,
+    },
     variable::{VarType, VarWidth},
 };
 
@@ -774,14 +779,20 @@ pub struct Case<B>
 where
     B: Borrow<[Datum<ByteString>]>,
 {
-    encoding: &'static Encoding,
     data: B,
+    encoding: &'static Encoding,
 }
 
 impl<B> Case<B>
 where
     B: Borrow<[Datum<ByteString>]>,
 {
+    pub fn new(data: B, encoding: &'static Encoding) -> Self {
+        Self { data, encoding }
+    }
+    pub fn encoding(&self) -> &'static Encoding {
+        self.encoding
+    }
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -814,6 +825,47 @@ impl Case<Vec<Datum<ByteString>>> {
             }
         }
     }
+}
+
+pub fn cases_to_output<C, E>(dictionary: &Dictionary, cases: C) -> Vec<Item>
+where
+    C: IntoIterator<Item = Result<Case<Vec<Datum<ByteString>>>, E>>,
+    E: Display,
+{
+    let mut output = Vec::new();
+    let cases = cases.into_iter();
+    let variables =
+        Group::new("Variable").with_multiple(dictionary.variables.iter().map(|var| &**var));
+    let mut case_numbers = Group::new("Case").with_label_shown();
+    let mut data = Vec::new();
+    for case in cases {
+        match case {
+            Ok(case) => {
+                case_numbers.push(Value::new_integer(Some((case_numbers.len() + 1) as f64)));
+                data.push(
+                    case.into_iter()
+                        .map(|datum| Value::new_datum(&datum))
+                        .collect::<Vec<_>>(),
+                );
+            }
+            Err(error) => {
+                output.push(Item::from(Text::new_log(error.to_string())));
+            }
+        }
+    }
+    if !data.is_empty() {
+        let mut pt = PivotTable::new([
+            (Axis3::X, Dimension::new(variables)),
+            (Axis3::Y, Dimension::new(case_numbers)),
+        ]);
+        for (row_number, row) in data.into_iter().enumerate() {
+            for (column_number, datum) in row.into_iter().enumerate() {
+                pt.insert(&[column_number, row_number], datum);
+            }
+        }
+        output.push(pt.into());
+    }
+    output
 }
 
 impl<B> Serialize for Case<B>

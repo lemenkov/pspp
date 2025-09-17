@@ -17,24 +17,26 @@
 use std::{
     fs::File,
     io::{stdout, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Error as AnyError, Result};
 use chrono::{Datelike, NaiveTime, Timelike};
-use clap::Args;
+use clap::{Args, ValueEnum};
 use csv::Writer;
 use encoding_rs::Encoding;
 use pspp::{
     calendar::calendar_offset_to_gregorian,
-    data::{ByteString, Datum, WithEncoding},
+    data::{ByteString, Case, Datum, WithEncoding},
+    file::FileType,
     format::{DisplayPlain, Type},
+    por::PortableFile,
     sys::{raw::records::Compression, ReadOptions, WriteOptions},
     util::ToSmallString,
     variable::Variable,
 };
 
-use crate::{parse_encoding, OutputFormat};
+use crate::parse_encoding;
 
 /// Convert SPSS data files into other formats.
 #[derive(Args, Clone, Debug)]
@@ -247,12 +249,42 @@ struct SysOptions {
     compression: Option<Compression>,
 }
 
+/// Output file format.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+enum OutputFormat {
+    /// Comma-separated values using each variable's print format (variable
+    /// names are written as the first line)
+    Csv,
+
+    /// System file
+    Sys,
+
+    /// Portable file
+    Por,
+}
+
+impl TryFrom<&Path> for OutputFormat {
+    type Error = AnyError;
+
+    fn try_from(value: &Path) -> std::result::Result<Self, Self::Error> {
+        let extension = value.extension().unwrap_or_default();
+        if extension.eq_ignore_ascii_case("csv") || extension.eq_ignore_ascii_case("txt") {
+            Ok(OutputFormat::Csv)
+        } else if extension.eq_ignore_ascii_case("sav") || extension.eq_ignore_ascii_case("sys") {
+            Ok(OutputFormat::Sys)
+        } else if extension.eq_ignore_ascii_case("por") {
+            Ok(OutputFormat::Por)
+        } else {
+            Err(anyhow!(
+                "Unknown output file extension '{}'",
+                extension.display()
+            ))
+        }
+    }
+}
+
 impl Convert {
     pub fn run(self) -> Result<()> {
-        fn warn(warning: anyhow::Error) {
-            eprintln!("warning: {warning}");
-        }
-
         let output_format = match self.output_format {
             Some(format) => format,
             None => match &self.output {
@@ -261,14 +293,39 @@ impl Convert {
             },
         };
 
-        let mut system_file = ReadOptions::new(warn)
-            .with_encoding(self.encoding)
-            .with_password(self.password.clone())
-            .open_file(&self.input)?;
-        if output_format == OutputFormat::Sys && self.sys_options.to_unicode {
-            system_file = system_file.into_unicode();
-        }
-        let (dictionary, _, cases) = system_file.into_parts();
+        let (dictionary, cases) = match FileType::from_file(&self.input)? {
+            Some(FileType::System { .. }) => {
+                fn warn(warning: anyhow::Error) {
+                    eprintln!("warning: {warning}");
+                }
+
+                let mut system_file = ReadOptions::new(warn)
+                    .with_encoding(self.encoding)
+                    .with_password(self.password.clone())
+                    .open_file(&self.input)?;
+                if output_format == OutputFormat::Sys && self.sys_options.to_unicode {
+                    system_file = system_file.into_unicode();
+                }
+                let (dictionary, _, cases) = system_file.into_parts();
+                let cases = cases.map(|result| result.map_err(AnyError::from));
+                let cases = Box::new(cases)
+                    as Box<dyn Iterator<Item = Result<Case<Vec<Datum<ByteString>>>, AnyError>>>;
+                (dictionary, cases)
+            }
+            Some(FileType::Portable) => {
+                fn warn_portable(warning: pspp::por::Warning) {
+                    eprintln!("warning: {warning}");
+                }
+
+                let portable_file = PortableFile::open_file(&self.input, warn_portable)?;
+                let (dictionary, _, cases) = portable_file.into_parts();
+                let cases = cases.map(|result| result.map_err(AnyError::from));
+                let cases = Box::new(cases)
+                    as Box<dyn Iterator<Item = Result<Case<Vec<Datum<ByteString>>>, AnyError>>>;
+                (dictionary, cases)
+            }
+            _ => bail!("{}: not a system or portable file", self.input.display()),
+        };
 
         // Take only the first `self.max_cases` cases.
         let cases = cases.take(self.max_cases.unwrap_or(usize::MAX));
@@ -310,6 +367,15 @@ impl Convert {
                 let mut output = WriteOptions::new()
                     .with_compression(self.sys_options.compression)
                     .write_file(&dictionary, output)?;
+                for case in cases {
+                    output.write_case(case?)?;
+                }
+            }
+            OutputFormat::Por => {
+                let Some(output) = &self.output else {
+                    bail!("output file name must be specified for output to a portable file")
+                };
+                let mut output = pspp::por::WriteOptions::new().write_file(&dictionary, output)?;
                 for case in cases {
                     output.write_case(case?)?;
                 }

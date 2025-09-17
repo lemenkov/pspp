@@ -24,7 +24,6 @@ use std::{
 };
 
 use crate::{
-    calendar::date_time_to_pspp,
     crypto::EncryptedFile,
     data::{ByteString, Case, Datum, MutRawString, RawString},
     dictionary::{
@@ -579,7 +578,7 @@ impl<F> ReadOptions<F> {
     }
 }
 
-/// The content of an SPSS system file.
+/// An SPSS system file read with [ReadOptions].
 #[derive(Debug)]
 pub struct SystemFile {
     /// The system file dictionary.
@@ -1426,10 +1425,7 @@ impl Metadata {
         let mut values = Vec::new();
 
         group.push("Created");
-        values.push(Value::new_number_with_format(
-            Some(date_time_to_pspp(self.creation)),
-            Format::DATETIME40_0,
-        ));
+        values.push(Value::new_date_time(self.creation));
 
         let mut product = Group::new("Writer");
         product.push("Product");

@@ -71,6 +71,7 @@ use thiserror::Error as ThisError;
 use tlo::parse_tlo;
 
 use crate::{
+    calendar::date_time_to_pspp,
     data::{ByteString, Datum, EncodedString, RawString},
     format::{Decimal, Format, Settings as FormatSettings, Type, UncheckedFormat},
     settings::{Settings, Show},
@@ -2006,6 +2007,9 @@ impl Value {
             inner,
             styling: None,
         }
+    }
+    pub fn new_date_time(date_time: NaiveDateTime) -> Self {
+        Self::new_number_with_format(Some(date_time_to_pspp(date_time)), Format::DATETIME40_0)
     }
     pub fn new_number_with_format(x: Option<f64>, format: Format) -> Self {
         Self::new(ValueInner::Number(NumberValue {

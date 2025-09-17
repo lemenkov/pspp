@@ -17,13 +17,15 @@
 //! Reading and writing system files.
 //!
 //! This module enables reading and writing "system files", the binary format
-//! for SPSS data files.  The system file format dates back 40+ years and has
+//! for SPSS data files.  The [system file format] dates back 40+ years and has
 //! evolved greatly over that time to support new features, but in a way to
 //! facilitate interchange between even the oldest and newest versions of
 //! software.
 //!
 //! Use [ReadOptions] to read a system file in the simplest way.
 //! Use [WriteOptions] to write a system file.
+//!
+//! [system file format]: https://pspp.benpfaff.org/manual/system-file.html
 
 // Warn about missing docs, but not for items declared with `#[cfg(test)]`.
 #![cfg_attr(not(test), warn(missing_docs))]

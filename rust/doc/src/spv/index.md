@@ -20,12 +20,18 @@ new-line.  PSPP uses this string to identify an SPV file; it is
 invariant across the corpus.
 
 > SPV files always begin with the 7-byte sequence 50 4b 03 04 14 00
-08, but this is not a useful magic number because most Zip archives
-start the same way.
-
+> 08, but this is not a useful magic number because most Zip archives
+> start the same way.
+>
+> Checking only for the presence of `META-INF/MANIFEST.MF` is also not
+> a useful magic number because this file name also appears in every
+> [Java JAR archive].
+>
 > SPSS writes `META-INF/MANIFEST.MF` to every SPV file, but it does
-not read it or even require it to exist, so using different contents,
-e.g. `allowPivoting=false`, has no effect.
+> not read it or even require it to exist, so using different
+> contents, e.g. `allowPivoting=false`, has no effect.
+>
+> [Java JAR archive]: https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html
 
 The rest of the members in an SPV file's Zip archive fall into two
 categories: "structure" and "detail" members.  Structure member names
