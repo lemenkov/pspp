@@ -355,10 +355,6 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
           break;
         }
     }
-
-  if (1 == psppire_window_register_n_items (reg))
-    gtk_main_quit ();
-
   return FALSE;
 }
 

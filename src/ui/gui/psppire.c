@@ -135,13 +135,41 @@ de_initialize (void)
   i18n_done ();
 }
 
+// We end here via the menu File->Quit
+// Try to close all open windows via the "delete-event" signal callbacks
+// to check if all unsaved data should be saved before quitting
 void
 psppire_quit (GApplication *app)
 {
-  g_application_quit (app);
+  while (TRUE)
+  {
+    GList *windows = gtk_application_get_windows(GTK_APPLICATION(app));
+
+    if (windows == NULL)
+      {
+        // All windows closed
+        break;
+      }
+
+    // Take the first window and try to close it
+    GtkWindow *w = GTK_WINDOW(windows->data);
+    gtk_window_close(w);
+
+    // Process all pending events to let the delete-event handler run
+    while (gtk_events_pending())
+      gtk_main_iteration();
+
+    // Check if the window is still there
+    GList *updated_windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    if (g_list_find(updated_windows, w))
+      {
+        // Window is still there, user probably cancelled
+        return;
+      }
+    // Window was closed, continue with the next one
+  }
 }
 
-
 static void
 handle_msg (const struct msg *m_, struct lexer *lexer)
 {
