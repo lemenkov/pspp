@@ -19,11 +19,12 @@ use clap::{Parser, Subcommand};
 use encoding_rs::Encoding;
 use thiserror::Error as ThisError;
 
-use crate::{convert::Convert, decrypt::Decrypt, show::Show, show_por::ShowPor};
+use crate::{convert::Convert, decrypt::Decrypt, show::Show, show_pc::ShowPc, show_por::ShowPor};
 
 mod convert;
 mod decrypt;
 mod show;
+mod show_pc;
 mod show_por;
 
 /// PSPP, a program for statistical analysis of sampled data.
@@ -40,6 +41,7 @@ enum Command {
     Decrypt(Decrypt),
     Show(Show),
     ShowPor(ShowPor),
+    ShowPc(ShowPc),
 }
 
 impl Command {
@@ -49,6 +51,7 @@ impl Command {
             Command::Decrypt(decrypt) => decrypt.run(),
             Command::Show(show) => show.run(),
             Command::ShowPor(show_por) => show_por.run(),
+            Command::ShowPc(show_pc) => show_pc.run(),
         }
     }
 }

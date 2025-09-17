@@ -58,9 +58,10 @@ char                filename[128];
 
 * `char filename[128];`  
   In most files in the corpus, this field is entirely filled with
-  spaces.  In one file, it contains a file name, followed by a null
-  bytes, followed by spaces to fill the remainder of the field.  The
-  meaning is unknown.
+  spaces or null bytes.  In others, it contains a filename, which
+  generally contains doubled backslashes,
+  e.g. `c:\\doli\\altm\\f_sum94.sys`.  The unusual extension `(_)` is
+  also common, e.g. `DER56.(_)`.
 
 The following sections describe the contents of each record,
 identified by the index into the `records` array.
@@ -75,7 +76,8 @@ All files in the corpus have this record at offset 0x100 with length
 
 ```
 uint16              one0;
-char                product[62];
+char                family[2];
+char                product[60];
 flt64               sysmis;
 uint32              zero0;
 uint32              zero1;
@@ -84,12 +86,12 @@ uint16              compressed;
 uint16              nominal_case_size;
 uint16              n_cases0;
 uint16              weight_index;
-uint16              zero2;
+uint16              unknown;
 uint16              n_cases1;
-uint16              zero3;
+uint16              zero2;
 char                creation_date[8];
 char                creation_time[8];
-char                label[64];
+char                file_label[64];
 ```
 
 * `uint16 one0;`  
@@ -99,23 +101,26 @@ char                label[64];
 * `uint32 zero0;`  
   `uint32 zero1;`  
   `uint16 zero2;`  
-  `uint16 zero3;`  
   Always set to 0.
 
-  It seems likely that one of these variables is set to 1 if
-  weighting is enabled, but none of the files in the corpus is
-  weighted.
+* `uint16 unknown;`
+  Unknown meaning.  Usually set to 0.
 
-* `char product[62];`  
+* `char family[2];`  
+  Identifies the product family that created the file.  This is either
+  `PC` for SPSS/PC+ and related software, or `DE` for SPSS Data Entry
+  and related software.
+
+* `char product[60];`  
   Name of the program that created the file.  Only the following
   unique values have been observed, in each case padded on the right
   with spaces:
 
   ```
-  DESPSS/PC+ System File Written by Data Entry II
-  PCSPSS SYSTEM FILE.  IBM PC DOS, SPSS/PC+
-  PCSPSS SYSTEM FILE.  IBM PC DOS, SPSS/PC+ V3.0
-  PCSPSS SYSTEM FILE.  IBM PC DOS, SPSS for Windows
+  SPSS/PC+ System File Written by Data Entry II
+  SPSS SYSTEM FILE.  IBM PC DOS, SPSS/PC+
+  SPSS SYSTEM FILE.  IBM PC DOS, SPSS/PC+ V3.0
+  SPSS SYSTEM FILE.  IBM PC DOS, SPSS for Windows
   ```
 
   Thus, it is reasonable to use the presence of the string `SPSS` at
@@ -128,6 +133,8 @@ char                label[64];
   Set to 0 if the data in the file is not compressed, 1 if the data
   is compressed with simple bytecode compression.
 
+  > The corpus contains a mix of compressed and uncompressed files.
+
 * `uint16 nominal_case_size;`  
   Number of data elements per case.  This is the number of variables,
   except that long string variables add extra data elements (one for
@@ -137,8 +144,10 @@ char                label[64];
 * `uint16 n_cases0;`  
   `uint16 n_cases1;`  
   The number of cases in the data record.  Both values are the same.
-  Some files in the corpus contain data for the number of cases noted
-  here, followed by garbage that somewhat resembles data.
+
+  > Readers must use these case counts because some files in the corpus
+  contain garbage that somewhat resembles data after the specified
+  number of cases.
 
 * `uint16 weight_index;`  
   0, if the file is unweighted, otherwise a 1-based index into the
@@ -147,15 +156,17 @@ char                label[64];
 
 * `char creation_date[8];`  
   The date that the file was created, in `mm/dd/yy` format.
-  Single-digit days and months are not prefixed by zeros.  The string
+
+  > Single-digit days and months are not prefixed by zeros.  The string
   is padded with spaces on right or left or both, e.g.  `_2/4/93_`,
   `10/5/87_`, and `_1/11/88` (with `_` standing in for a space) are
   all actual examples from the corpus.
 
 * `char creation_time[8];`  
   The time that the file was created, in `HH:MM:SS` format.
-  Single-digit hours are padded on a left with a space.  Minutes and
-  seconds are always written as two digits.
+
+  > Single-digit hours are padded on the left with a space.  Minutes
+  and seconds are always written as two digits.
 
 * `char file_label[64];`  
   [File label](commands/file-label.md) declared by the user, if any.
@@ -194,14 +205,21 @@ these additional instances for long strings.
 
 * `uint32 value_label_start;`  
   `uint32 value_label_end;`  
-  For a variable with value labels, these specify offsets into the
-  label record of the start and end of this variable's value
-  labels, respectively.  See the [labels
-  record](#record-2-labels-record), for more information.
+  These specify offsets into the label record of the start and end of
+  value labels for this variable.  They are zero if there are no value
+  labels.  See the [labels record](#record-2-labels-record), for more
+  information.  A long string variable may not have value labels.
 
-  For a variable without any value labels, these are both zero.
+  Sometimes the data is, instead of value labels, some form of data
+  validation rules for SPSS Data Entry.  There is no known way to
+  distinguish, except that data validation rules often cannot be
+  interpreted as valid value labels because the label length field
+  makes them not fit exactly in the allocated space.
 
-  A long string variable may not have value labels.
+  > It appears that SPSS products cannot properly read these either.
+  > All the files in the corpus with these problems are closely
+  > related, so it's also possible that they are corrupted in some
+  > way.
 
 * `uint32 var_label_ofs;`  
   For a variable with a variable label, this specifies an offset into
@@ -224,13 +242,15 @@ these additional instances for long strings.
   variable's user-missing value.  For string variables, `missing.s`
   is a string missing value.  A variable without a user-missing value
   is indicated with `missing.f` set to the system-missing value, even
-  for string variables (!).  A Long string variable may not have a
+  for string variables (!).  A long string variable may not have a
   missing value.
 
 In addition to the user-defined variables, every SPSS/PC+ system file
 contains, as its first three variables, the following system-defined
 variables, in the following order.  The system-defined variables have
-no variable label, value labels, or missing values.
+no variable label, value labels, or missing values.  PSPP renames
+these variables to start with `@` when it reads an SPSS/PC+ system
+file.
 
 * `$CASENUM`  
   A numeric variable with format `F8.0`.  Most of the time this is a
@@ -247,8 +267,7 @@ no variable label, value labels, or missing values.
 
 * `$WEIGHT`  
   A numeric variable with format `F8.2`.  This represents the case's
-  weight; SPSS/PC+ files do not have a user-defined weighting
-  variable.  If weighting has not been enabled, every case has value
+  weight.  If weighting has not been enabled, every case has value
   1.0.
 
 ## Record 2: Labels Record
@@ -263,7 +282,7 @@ fields in a variable record are all offsets relative to the beginning of
 the labels record, with an additional 7-byte offset.  That is, if the
 labels record starts at byte offset `labels_ofs` and a variable has a
 given `var_label_ofs`, then the variable label begins at byte offset
-`labels_ofs` + `var_label_ofs` + 7 in the file.
+`labels_ofs` + `var_label_ofs + 7` in the file.
 
 A variable label, starting at the offset indicated by
 `var_label_ofs`, consists of a one-byte length followed by the specified
@@ -274,7 +293,7 @@ uint8               length;
 char                s[length];
 ```
 
-   A set of value labels, extending from `value_label_start` to
+A set of value labels, extending from `value_label_start` to
 `value_label_end` (exclusive), consists of a numeric or string value
 followed by a string in the format just described.  String values are
 padded on the right with spaces to fill the 8-byte field, like this:
@@ -288,10 +307,10 @@ uint8               length;
 char                s[length];
 ```
 
-   The labels record begins with a pair of `uint32` values.  The first of
-these is always 3.  The second is between 8 and 16 less than the number
-of bytes in the record.  Neither value is important for interpreting the
-file.
+The labels record begins with a pair of `uint32` values.  The first of
+these is always 3.  The second is between 8 and 16 less than the
+number of bytes in the record.  Neither value is important for
+interpreting the file.
 
 ## Record 3: Data Record
 
@@ -321,15 +340,16 @@ The format of the data record varies depending on the value of
     following the command bytes, and so on.
 
   - 2 through 255  
-    A number with value CODE - 100, where CODE is the value of the
+    A number with value `CODE - 100`, where `CODE` is the value of the
     compression code.  For example, code 105 indicates a numeric
     variable of value 5.
 
-  The end of the 8-byte group of bytecodes is followed by any 8-byte
-  blocks of non-compressible values indicated by code 1.  After that
-  follows another 8-byte group of bytecodes, then those bytecodes'
-  non-compressible values.  The pattern repeats up to the number of
-  cases specified by the main header record have been seen.
+  The end of the 8-byte group of command codes is followed by any
+  8-byte blocks of non-compressible values indicated by code 1.  After
+  that follows another 8-byte group of command codes, then those
+  command codes' non-compressible values.  The pattern repeats up to
+  the number of cases specified by the main header record have been
+  seen.
 
   The corpus does not contain any files with command codes 2 through
   95, so it is possible that some of these codes are used for special

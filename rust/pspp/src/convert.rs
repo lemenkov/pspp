@@ -30,6 +30,7 @@ use pspp::{
     data::{ByteString, Case, Datum, WithEncoding},
     file::FileType,
     format::{DisplayPlain, Type},
+    pc::PcFile,
     por::PortableFile,
     sys::{ReadOptions, WriteOptions, raw::records::Compression},
     util::ToSmallString,
@@ -324,7 +325,22 @@ impl Convert {
                     as Box<dyn Iterator<Item = Result<Case<Vec<Datum<ByteString>>>, AnyError>>>;
                 (dictionary, cases)
             }
-            _ => bail!("{}: not a system or portable file", self.input.display()),
+            Some(FileType::Pc) => {
+                fn warn_pc(warning: pspp::pc::Warning) {
+                    eprintln!("warning: {warning}");
+                }
+
+                let pc_file = PcFile::open_file(&self.input, warn_pc)?;
+                let (dictionary, _, cases) = pc_file.into_parts();
+                let cases = cases.map(|result| result.map_err(AnyError::from));
+                let cases = Box::new(cases)
+                    as Box<dyn Iterator<Item = Result<Case<Vec<Datum<ByteString>>>, AnyError>>>;
+                (dictionary, cases)
+            }
+            _ => bail!(
+                "{}: not a system, portable, or SPSS/PC+ file",
+                self.input.display()
+            ),
         };
 
         // Take only the first `self.max_cases` cases.

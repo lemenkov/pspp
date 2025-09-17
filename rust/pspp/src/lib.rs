@@ -117,6 +117,7 @@ pub mod locale_charset;
 pub mod macros;
 pub mod message;
 pub mod output;
+pub mod pc;
 pub mod por;
 pub mod prompt;
 pub mod settings;

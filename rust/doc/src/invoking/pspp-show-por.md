@@ -1,4 +1,4 @@
-# Inspecting `.por` files with `pspp show-por`
+# Inspecting Portable (`.por`) Files with `pspp show-por`
 
 The `pspp show-por` command reads an SPSS "portable file",
 which usually has a `.por` extension, and produces a report.  The

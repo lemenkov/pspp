@@ -48,6 +48,7 @@ use crate::{
 };
 
 use binrw::Endian;
+use displaydoc::Display;
 use encoding_rs::{
     BIG5, EUC_JP, EUC_KR, Encoding, GB18030, IBM866, ISO_2022_JP, ISO_8859_2, ISO_8859_3,
     ISO_8859_4, ISO_8859_5, ISO_8859_6, ISO_8859_7, ISO_8859_8, ISO_8859_10, ISO_8859_13,
@@ -79,24 +80,27 @@ pub mod records;
 ///
 /// Any error prevents reading further data from the system file.
 #[derive(Debug)]
-pub struct Error {
+pub struct Error<D> {
     /// Range of file offsets where the error occurred.
     pub offsets: Option<Range<u64>>,
 
     /// Details of the error.
-    pub details: ErrorDetails,
+    pub details: D,
 }
 
-impl std::error::Error for Error {}
+impl<D> std::error::Error for Error<D> where D: Debug + Display {}
 
-impl Error {
+impl<D> Error<D> {
     /// Constructs an error from `offsets` and `details`.
-    pub fn new(offsets: Option<Range<u64>>, details: ErrorDetails) -> Self {
+    pub fn new(offsets: Option<Range<u64>>, details: D) -> Self {
         Self { offsets, details }
     }
 }
 
-impl Display for Error {
+impl<D> Display for Error<D>
+where
+    D: Display,
+{
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         if let Some(offsets) = &self.offsets
             && !offsets.is_empty()
@@ -115,7 +119,10 @@ impl Display for Error {
     }
 }
 
-impl From<IoError> for Error {
+impl<D> From<IoError> for Error<D>
+where
+    D: From<IoError>,
+{
     fn from(value: IoError) -> Self {
         Self::new(None, value.into())
     }
@@ -225,33 +232,6 @@ pub enum ErrorDetails {
         count: u32,
     },
 
-    /// Unexpected end of file {case_ofs} bytes into a {case_len}-byte case.
-    #[error(
-        "Unexpected end of file {case_ofs} bytes into case {case_number} with expected length {case_len} bytes."
-    )]
-    EofInCase {
-        /// Offset into case in bytes.
-        case_ofs: u64,
-        /// Expected case length in bytes.
-        case_len: usize,
-        /// 1-based case number in file.
-        case_number: u64,
-    },
-
-    /// Unexpected end of file {case_ofs} bytes and {n_chunks} compression
-    /// chunks into a compressed case.
-    #[error(
-        "Unexpected end of file {case_ofs} bytes and {n_chunks} compression chunks into compressed case {case_number}."
-    )]
-    EofInCompressedCase {
-        /// Offset into case in bytes.
-        case_ofs: u64,
-        /// Number of compression codes consumed.
-        n_chunks: usize,
-        /// 1-based case number in file.
-        case_number: u64,
-    },
-
     /// Error reading a [ZHeader].
     #[error("Error reading ZLIB header: {0}")]
     ZHeader(#[from] ZHeaderError),
@@ -259,15 +239,6 @@ pub enum ErrorDetails {
     /// Error reading a [ZTrailer].
     #[error("Error reading ZLIB trailer: {0}")]
     ZTrailer(#[from] ZTrailerError),
-
-    /// File metadata says it contains {expected} cases, but {actual} cases were read.
-    #[error("File metadata says it contains {expected} cases, but {actual} cases were read.")]
-    WrongNumberOfCases {
-        /// Expected number of cases.
-        expected: u64,
-        /// Actual number of cases.
-        actual: u64,
-    },
 
     /// Encoding error.
     #[error(transparent)]
@@ -747,7 +718,7 @@ impl Record {
         endian: Endian,
         var_types: &VarTypes,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Option<Record>, Error>
+    ) -> Result<Option<Record>, Error<ErrorDetails>>
     where
         R: BufRead + Seek,
     {
@@ -829,7 +800,7 @@ impl Record {
 pub fn infer_encoding(
     records: &[Record],
     mut warn: impl FnMut(Warning),
-) -> Result<&'static Encoding, Error> {
+) -> Result<&'static Encoding, Error<ErrorDetails>> {
     let (encoding, character_code) = get_encoding_info(records);
     match get_encoding(encoding, character_code) {
         Ok(encoding) => Ok(encoding),
@@ -889,7 +860,10 @@ impl<'de> Decoder<'de> {
     /// EBCDIC encoding, since this crate only supports ASCII-based encodings.
     ///
     /// `warn` will be used to report warnings while decoding records.
-    pub fn with_inferred_encoding<F>(records: &[Record], mut warn: F) -> Result<Self, Error>
+    pub fn with_inferred_encoding<F>(
+        records: &[Record],
+        mut warn: F,
+    ) -> Result<Self, Error<ErrorDetails>>
     where
         F: FnMut(Warning) + 'de,
     {
@@ -1098,26 +1072,111 @@ impl RawDatum {
     }
 }
 
+/// The meaning of a compression opcode byte.
+///
+/// This abstraction exists because SPSS and SPSS/PC+ system files have similar
+/// compression structures but their opcodes are slightly different.
+pub enum CompressionAction {
+    /// Ignored.
+    NoOp,
+
+    /// A compressed integer.
+    CompressedInt(
+        /// The compressed integer.
+        f64,
+    ),
+
+    /// End of file.
+    Eof,
+
+    /// Literal 8-byte value follows the block of opcodes.
+    Literal,
+
+    /// Represents a group of 8 spaces.
+    Spaces,
+
+    /// Represents the system-missing value.
+    Sysmis,
+}
+
+impl CompressionAction {
+    /// Interprets an SPSS system file compression opcode.
+    fn from_sysfile(code: u8, bias: f64) -> Self {
+        match code {
+            0 => Self::NoOp,
+            252 => Self::Eof,
+            253 => Self::Literal,
+            254 => Self::Spaces,
+            255 => Self::Sysmis,
+            _ => Self::CompressedInt(code as f64 - bias),
+        }
+    }
+}
+
+/// An error reading a case from a system file.
+///
+/// Used for SPSS system files and SPSS/PC+ system files.
+#[derive(ThisError, Display, Debug)]
+pub enum CaseDetails {
+    /// Unexpected end of file {case_ofs} bytes into case {case_number} with expected length {case_len} bytes.
+    EofInCase {
+        /// Offset into case in bytes.
+        case_ofs: u64,
+        /// Expected case length in bytes.
+        case_len: usize,
+        /// 1-based case number in file.
+        case_number: u64,
+    },
+
+    /// Unexpected end of file {case_ofs} bytes and {n_chunks} compression chunks into compressed case {case_number}.
+    EofInCompressedCase {
+        /// Offset into case in bytes.
+        case_ofs: u64,
+        /// Number of compression codes consumed.
+        n_chunks: usize,
+        /// 1-based case number in file.
+        case_number: u64,
+    },
+
+    /// File metadata says it contains {expected} cases, but {actual} cases were read.
+    WrongNumberOfCases {
+        /// Expected number of cases.
+        expected: u64,
+        /// Actual number of cases.
+        actual: u64,
+    },
+
+    /// I/O error ({0})
+    Io(#[from] IoError),
+}
+
 impl Datum<ByteString> {
-    fn read_case<R: Read + Seek>(
+    /// Reads an uncompressed case with variables `case_vars` from `reader`,
+    /// with numbers in the given `endian`.
+    ///
+    /// `case_number` is used in error messages.
+    pub fn read_case<R>(
         reader: &mut R,
         case_number: u64,
         case_vars: &[CaseVar],
         endian: Endian,
-    ) -> Result<Option<RawCase>, Error> {
+    ) -> Result<Option<RawCase>, Error<CaseDetails>>
+    where
+        R: Read + Seek,
+    {
         fn eof<R: Seek>(
             reader: &mut R,
             case_number: u64,
             case_vars: &[CaseVar],
             case_start: u64,
-        ) -> Result<Option<RawCase>, Error> {
+        ) -> Result<Option<RawCase>, Error<CaseDetails>> {
             let offset = reader.stream_position()?;
             if offset == case_start {
                 Ok(None)
             } else {
                 Err(Error::new(
                     Some(case_start..offset),
-                    ErrorDetails::EofInCase {
+                    CaseDetails::EofInCase {
                         case_ofs: offset - case_start,
                         case_len: case_vars.iter().map(CaseVar::bytes).sum(),
                         case_number,
@@ -1156,20 +1215,26 @@ impl Datum<ByteString> {
         Ok(Some(RawCase(values)))
     }
 
-    fn read_compressed_chunk<R: Read>(
+    fn read_compressed_chunk<R, F>(
         reader: &mut R,
         codes: &mut VecDeque<u8>,
+        decode_compression_action: F,
         endian: Endian,
-        bias: f64,
-    ) -> Result<Option<[u8; 8]>, Error> {
+    ) -> Result<Option<[u8; 8]>, Error<CaseDetails>>
+    where
+        F: Fn(u8) -> CompressionAction,
+        R: Read,
+    {
         loop {
-            match codes.pop_front() {
-                Some(0) => (),
-                Some(252) => return Ok(None),
-                Some(253) => return Ok(Some(read_bytes(reader)?)),
-                Some(254) => return Ok(Some([b' '; 8])),
-                Some(255) => return Ok(Some(endian.to_bytes(-f64::MAX))),
-                Some(code) => return Ok(Some(endian.to_bytes(code as f64 - bias))),
+            match codes.pop_front().map(&decode_compression_action) {
+                Some(CompressionAction::NoOp) => (),
+                Some(CompressionAction::Eof) => return Ok(None),
+                Some(CompressionAction::Literal) => return Ok(Some(read_bytes(reader)?)),
+                Some(CompressionAction::Spaces) => return Ok(Some([b' '; 8])),
+                Some(CompressionAction::Sysmis) => return Ok(Some(endian.to_bytes(-f64::MAX))),
+                Some(CompressionAction::CompressedInt(value)) => {
+                    return Ok(Some(endian.to_bytes(value)));
+                }
                 None => {
                     match try_read_bytes::<8, _>(reader)? {
                         Some(new_codes) => codes.extend(new_codes),
@@ -1179,25 +1244,37 @@ impl Datum<ByteString> {
             };
         }
     }
-    fn read_compressed_case<R: Read + Seek>(
+
+    /// Reads an compressed case with variables `case_vars` from `reader`, with
+    /// numbers in the given `endian`.
+    ///
+    /// `codes` is used for compression codes, which are interpreted using
+    /// `decode_compression_action`.
+    ///
+    /// `case_number` is used in error messages.
+    pub fn read_compressed_case<R, F>(
         reader: &mut R,
         case_number: u64,
         case_vars: &[CaseVar],
         codes: &mut VecDeque<u8>,
+        decode_compression_action: F,
         endian: Endian,
-        bias: f64,
-    ) -> Result<Option<RawCase>, Error> {
+    ) -> Result<Option<RawCase>, Error<CaseDetails>>
+    where
+        R: Read + Seek,
+        F: Fn(u8) -> CompressionAction,
+    {
         fn eof<R: Seek>(
             reader: &mut R,
             case_number: u64,
             case_start: u64,
             n_chunks: usize,
-        ) -> Result<Option<RawCase>, Error> {
+        ) -> Result<Option<RawCase>, Error<CaseDetails>> {
             let offset = reader.stream_position()?;
             if n_chunks > 0 {
                 Err(Error::new(
                     Some(case_start..offset),
-                    ErrorDetails::EofInCompressedCase {
+                    CaseDetails::EofInCompressedCase {
                         case_ofs: offset - case_start,
                         n_chunks,
                         case_number,
@@ -1214,7 +1291,12 @@ impl Datum<ByteString> {
         for var in case_vars {
             match var {
                 CaseVar::Numeric => {
-                    let Some(raw) = Self::read_compressed_chunk(reader, codes, endian, bias)?
+                    let Some(raw) = Self::read_compressed_chunk(
+                        reader,
+                        codes,
+                        &decode_compression_action,
+                        endian,
+                    )?
                     else {
                         return eof(reader, case_number, case_start, n_chunks);
                     };
@@ -1227,8 +1309,12 @@ impl Datum<ByteString> {
                         let mut data_bytes = segment.data_bytes;
                         let mut padding_bytes = segment.padding_bytes;
                         while data_bytes > 0 || padding_bytes > 0 {
-                            let Some(raw) =
-                                Self::read_compressed_chunk(reader, codes, endian, bias)?
+                            let Some(raw) = Self::read_compressed_chunk(
+                                reader,
+                                codes,
+                                &decode_compression_action,
+                                endian,
+                            )?
                             else {
                                 return eof(reader, case_number, case_start, n_chunks);
                             };
@@ -1329,7 +1415,10 @@ where
     ///
     /// To read an encrypted system file, wrap `reader` in
     /// [EncryptedReader](crate::crypto::EncryptedReader).
-    pub fn new(mut reader: R, mut warn: impl FnMut(Warning) + 'a) -> Result<Self, Error> {
+    pub fn new(
+        mut reader: R,
+        mut warn: impl FnMut(Warning) + 'a,
+    ) -> Result<Self, Error<ErrorDetails>> {
         let header = FileHeader::read(&mut reader, &mut warn)?;
         Ok(Self {
             reader: Some(reader),
@@ -1451,7 +1540,7 @@ impl<'a, 'b, R> Iterator for Records<'a, 'b, R>
 where
     R: BufRead + Seek + 'static,
 {
-    type Item = Result<Record, Error>;
+    type Item = Result<Record, Error<ErrorDetails>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_inner().inspect(|retval| {
@@ -1465,9 +1554,17 @@ where
 trait ReadSeek: Read + Seek {}
 impl<T> ReadSeek for T where T: Read + Seek {}
 
+/// Part of a string variable for reading data from a system file.
+///
+/// A string variable in a system file is usually just the string itself
+/// followed by padding out to a multiple of 8 bytes.  Very long strings (longer
+/// than 255 bytes) consist of multiple segments.
 #[derive(Debug)]
-struct StringSegment {
+pub struct StringSegment {
+    /// Number of bytes of string data.
     data_bytes: usize,
+
+    /// Number of bytes to ignore following the string data.
     padding_bytes: usize,
 }
 
@@ -1482,16 +1579,27 @@ fn segment_widths(width: usize) -> impl Iterator<Item = usize> {
         .map(|w| w.next_multiple_of(8))
 }
 
-enum CaseVar {
+/// Format for reading a variable in a system file.
+#[derive(Debug)]
+pub enum CaseVar {
+    /// A numeric variable, represented in the system file as an `f64`.
     Numeric,
+
+    /// A string variable.
     String {
+        /// Total number of bytes (sum of `data_bytes` across the `encoding`).
         width: usize,
+
+        /// How the string variable is represented in the file.
+        ///
+        /// Widths 255 or less have a single [StringSegment]; wider variables
+        /// have multiple.
         encoding: SmallVec<[StringSegment; 1]>,
     },
 }
 
-impl CaseVar {
-    fn new(width: VarWidth) -> Self {
+impl From<VarWidth> for CaseVar {
+    fn from(width: VarWidth) -> Self {
         match width {
             VarWidth::Numeric => Self::Numeric,
             VarWidth::String(width) => {
@@ -1515,7 +1623,9 @@ impl CaseVar {
             }
         }
     }
+}
 
+impl CaseVar {
     fn bytes(&self) -> usize {
         match self {
             CaseVar::Numeric => 8,
@@ -1595,7 +1705,7 @@ impl RawCases {
                 .iter()
                 .flatten()
                 .copied()
-                .map(CaseVar::new)
+                .map_into()
                 .collect::<Vec<_>>(),
             compression: header.compression,
             bias: header.bias,
@@ -1613,7 +1723,7 @@ impl RawCases {
     /// very long string variables (see [RawCases] for details).
     pub fn with_widths(self, widths: impl IntoIterator<Item = VarWidth>) -> Self {
         Self {
-            case_vars: widths.into_iter().map(CaseVar::new).collect::<Vec<_>>(),
+            case_vars: widths.into_iter().map_into().collect::<Vec<_>>(),
             ..self
         }
     }
@@ -1629,7 +1739,7 @@ impl RawCases {
 }
 
 impl Iterator for RawCases {
-    type Item = Result<RawCase, Error>;
+    type Item = Result<RawCase, Error<CaseDetails>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.eof {
@@ -1644,8 +1754,8 @@ impl Iterator for RawCases {
                 self.read_cases + 1,
                 &self.case_vars,
                 &mut self.codes,
+                |code| CompressionAction::from_sysfile(code, self.bias),
                 self.endian,
-                self.bias,
             )
             .transpose()
         } else {
@@ -1665,7 +1775,7 @@ impl Iterator for RawCases {
                 {
                     return Some(Err(Error::new(
                         None,
-                        ErrorDetails::WrongNumberOfCases {
+                        CaseDetails::WrongNumberOfCases {
                             expected: expected_cases,
                             actual: self.read_cases,
                         },
@@ -2152,15 +2262,15 @@ impl EncodingReportString {
 impl EncodingReport {
     /// Constructs an encoding report from `reader`, reading no more than
     /// `max_cases` from it.
-    pub fn new<R>(mut reader: Reader<R>, max_cases: u64) -> Result<Self, Error>
+    pub fn new<R>(mut reader: Reader<R>, max_cases: u64) -> anyhow::Result<Self>
     where
         R: BufRead + Seek + 'static,
     {
         fn inner(
             header: FileHeader<ByteString>,
             records: &[Record],
-            cases: impl Iterator<Item = Result<RawCase, Error>>,
-        ) -> Result<EncodingReport, Error> {
+            cases: impl Iterator<Item = Result<RawCase, Error<CaseDetails>>>,
+        ) -> Result<EncodingReport, Error<CaseDetails>> {
             let (encoding, codepage) = get_encoding_info(records);
             let label = encoding
                 .map(|encoding| (String::from(encoding), get_encoding(Some(encoding), None)));
@@ -2277,7 +2387,11 @@ impl EncodingReport {
 
         let records: Vec<Record> = reader.records().collect::<Result<Vec<_>, _>>()?;
         let header = reader.header().clone();
-        inner(header, &records, reader.cases().take(max_cases as usize))
+        Ok(inner(
+            header,
+            &records,
+            reader.cases().take(max_cases as usize),
+        )?)
     }
 }
 

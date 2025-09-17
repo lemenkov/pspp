@@ -146,7 +146,7 @@ pub struct RawHeader {
 
 impl FileHeader<ByteString> {
     /// Reads a header record from `r`, reporting any warnings via `warn`.
-    pub fn read<R>(r: &mut R, warn: &mut dyn FnMut(Warning)) -> Result<Self, Error>
+    pub fn read<R>(r: &mut R, warn: &mut dyn FnMut(Warning)) -> Result<Self, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {
@@ -384,7 +384,7 @@ impl RawMissingValues {
         code: i32,
         endian: Endian,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Self, Error>
+    ) -> Result<Self, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {
@@ -558,7 +558,11 @@ pub struct RawVariableRecord {
 
 impl VariableRecord<ByteString> {
     /// Reads a variable record from `r`.
-    pub fn read<R>(r: &mut R, endian: Endian, warn: &mut dyn FnMut(Warning)) -> Result<Self, Error>
+    pub fn read<R>(
+        r: &mut R,
+        endian: Endian,
+        warn: &mut dyn FnMut(Warning),
+    ) -> Result<Self, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {
@@ -720,7 +724,7 @@ impl ValueLabelRecord<RawDatum, ByteString> {
         endian: Endian,
         var_types: &VarTypes,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Option<Self>, Error> {
+    ) -> Result<Option<Self>, Error<ErrorDetails>> {
         let label_offset = r.stream_position()?;
         let n: u32 = endian.parse(read_bytes(r)?);
         if n > Self::MAX_LABELS {
@@ -885,7 +889,7 @@ impl DocumentRecord<RawDocumentLine> {
     pub const MAX_LINES: usize = i32::MAX as usize / DOC_LINE_LEN;
 
     /// Reads a document record from `r`.
-    pub fn read<R>(r: &mut R, endian: Endian) -> Result<Self, Error>
+    pub fn read<R>(r: &mut R, endian: Endian) -> Result<Self, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {
@@ -2300,7 +2304,7 @@ impl Extension {
         endian: Endian,
         var_types: &VarTypes,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Option<Record>, Error> {
+    ) -> Result<Option<Record>, Error<ErrorDetails>> {
         let subtype = endian.parse(read_bytes(r)?);
         let header_offset = r.stream_position()?;
         let size: u32 = endian.parse(read_bytes(r)?);
@@ -2489,7 +2493,7 @@ pub struct RawZHeader {
 
 impl ZHeader {
     /// Reads a ZLIB header from `r` using `endian`.
-    pub fn read<R>(r: &mut R, endian: Endian) -> Result<ZHeader, Error>
+    pub fn read<R>(r: &mut R, endian: Endian) -> Result<ZHeader, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {
@@ -2776,7 +2780,7 @@ impl ZTrailer {
         bias: f64,
         zheader: &RawZHeader,
         warn: &mut dyn FnMut(Warning),
-    ) -> Result<Option<ZTrailer>, Error>
+    ) -> Result<Option<ZTrailer>, Error<ErrorDetails>>
     where
         R: Read + Seek,
     {

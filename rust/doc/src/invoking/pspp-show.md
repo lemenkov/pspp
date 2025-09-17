@@ -1,4 +1,4 @@
-# Inspecting `.sav` files with `pspp show`
+# Inspecting System (`.sav`) Files with `pspp show`
 
 The `pspp show` command reads an SPSS "system file" or data file,
 which usually has a `.sav` extension, and produces a report.  The

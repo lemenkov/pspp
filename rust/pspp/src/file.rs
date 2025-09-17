@@ -40,7 +40,7 @@ pub enum FileType {
     Portable,
 
     /// An SPSS PC+ data file.
-    PcPlus,
+    Pc,
 
     /// An [SPSS Viewer file](crate::output::spv).
     Viewer {
@@ -148,7 +148,7 @@ impl FileType {
         }
 
         if buf.get(0x104..0x108) == Some(b"SPSS") {
-            return Ok(Some(Self::PcPlus));
+            return Ok(Some(Self::Pc));
         }
 
         let mut string = String::new();

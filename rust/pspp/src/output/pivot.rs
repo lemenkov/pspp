@@ -2704,12 +2704,13 @@ pub struct MetadataEntry {
     pub value: MetadataValue,
 }
 
-pub enum MetadataValue {
-    Leaf(Value),
-    Group(Vec<MetadataEntry>),
-}
-
 impl MetadataEntry {
+    pub fn new(name: impl Into<Value>, value: MetadataValue) -> Self {
+        Self {
+            name: name.into(),
+            value,
+        }
+    }
     pub fn into_pivot_table(self) -> PivotTable {
         let mut data = Vec::new();
         let group = match self.visit(&mut data) {
@@ -2733,6 +2734,17 @@ impl MetadataEntry {
                 .with_multiple(items.into_iter().map(|item| item.visit(data)))
                 .into(),
         }
+    }
+}
+
+pub enum MetadataValue {
+    Leaf(Value),
+    Group(Vec<MetadataEntry>),
+}
+
+impl MetadataValue {
+    pub fn new_leaf(value: impl Into<Value>) -> Self {
+        Self::Leaf(value.into())
     }
 }
 

@@ -36,7 +36,7 @@ use crate::{
     output::pivot::{Axis3, Dimension, Group, PivotTable, Value},
     sys::{
         raw::{
-            self, DecodedRecord, RawCases, RawDatum, RawWidth, Reader, infer_encoding,
+            self, CaseDetails, DecodedRecord, RawCases, RawDatum, RawWidth, Reader, infer_encoding,
             records::{
                 Compression, DocumentRecord, EncodingRecord, Extension, FileAttributesRecord,
                 FileHeader, FloatInfoRecord, IntegerInfoRecord, LongName, LongNamesRecord,
@@ -1728,7 +1728,7 @@ impl Debug for Cases {
 }
 
 impl Iterator for Cases {
-    type Item = Result<Case<Vec<Datum<ByteString>>>, raw::Error>;
+    type Item = Result<Case<Vec<Datum<ByteString>>>, raw::Error<CaseDetails>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.inner.next().map(|result| {

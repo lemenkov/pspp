@@ -5,8 +5,9 @@
 
 - [Running PSPP](invoking/index.md)
   - [Converting Data](invoking/pspp-convert.md)
-  - [Inspecting `.sav` Data](invoking/pspp-show.md)
-  - [Inspecting `.por` Data](invoking/pspp-show-por.md)
+  - [Inspecting System Files](invoking/pspp-show.md)
+  - [Inspecting Portable Files](invoking/pspp-show-por.md)
+  - [Inspecting SPSS/PC+ Files](invoking/pspp-show-pc.md)
   - [Decrypting Files](invoking/pspp-decrypt.md)
 
 # Language Overview

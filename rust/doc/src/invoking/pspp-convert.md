@@ -7,9 +7,9 @@ another.  The basic syntax is:
 pspp convert <INPUT> [OUTPUT]
 ```
 
-which reads an SPSS system file or portable file from `<INPUT>` and
-writes a copy of it to `[OUTPUT]`.  If `[OUTPUT]` is omitted, output
-is written to the terminal.
+which reads an SPSS system file or portable file or SPSS/PC+ system
+file from `<INPUT>` and writes a copy of it to `[OUTPUT]`.  If
+`[OUTPUT]` is omitted, output is written to the terminal.
 
 If `[OUTPUT]` is specified, then `pspp convert` tries to guess the
 output format based on its extension:
