@@ -223,8 +223,7 @@ psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet,
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
 
-  const struct variable *v = psppire_dict_insert_variable (data_store->dict,
-                                                           posn, NULL);
+  psppire_dict_insert_variable (data_store->dict, posn, NULL);
 
   ssw_sheet_scroll_to (SSW_SHEET (sheet), posn, -1);
 

@@ -331,7 +331,7 @@ insert_existing_items (PsppireWindow *window)
 static gboolean
 on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 {
-  PsppireWindowRegister *reg = psppire_window_register_new ();
+  psppire_window_register_new ();
 
   if (w->edited != NULL)
     {
