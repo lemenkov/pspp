@@ -64,6 +64,7 @@ struct zip_member
     uint32_t size;              /* Length of member file data, in bytes. */
     uint32_t crc;               /* CRC-32 of member file data.. */
     char *name;                 /* Name of member file. */
+    uint16_t flag;              /* general purpose bit flag for this member */
   };
 
 static void
@@ -180,6 +181,7 @@ void
 zip_writer_add_finish (struct zip_writer *zw)
 {
   assert (zw->m_name);
+  bool used_data_descriptor = true;
 
   /* Try to seek back to the local file header.  If successful, overwrite it
      with the correct file size and CRC.  Otherwise, write data descriptor. */
@@ -194,6 +196,7 @@ zip_writer_add_finish (struct zip_writer *zw)
           zw->ok = false;
         }
       zw->offset = save_offset;
+      used_data_descriptor = false;
     }
   else
     {
@@ -201,6 +204,7 @@ zip_writer_add_finish (struct zip_writer *zw)
       put_u32 (zw, zw->m_crc);
       put_u32 (zw, zw->m_size);
       put_u32 (zw, zw->m_size);
+      used_data_descriptor = true;
     }
 
   /* Add to set of members. */
@@ -212,6 +216,7 @@ zip_writer_add_finish (struct zip_writer *zw)
   member->size = zw->m_size;
   member->crc = zw->m_crc;
   member->name = zw->m_name;
+  member->flag = used_data_descriptor ? (1 << 3) : 0; /* store the flag */
 
   zw->m_name = NULL;
   zw->m_start = zw->m_size = zw->m_crc = 0;
@@ -279,7 +284,7 @@ zip_writer_close (struct zip_writer *zw)
       put_u32 (zw, MAGIC_SOCD);       /* central file header signature */
       put_u16 (zw, 63);               /* version made by */
       put_u16 (zw, 10);               /* version needed to extract */
-      put_u16 (zw, 1 << 3);           /* general purpose bit flag */
+      put_u16 (zw, m->flag);          /* general purpose bit flag */
       put_u16 (zw, 0);                /* compression method */
       put_u16 (zw, zw->time);         /* last mod file time */
       put_u16 (zw, zw->date);         /* last mod file date */
