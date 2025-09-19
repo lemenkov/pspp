@@ -222,7 +222,6 @@ psppire_preload_file (const gchar *file, GtkWindow *victim)
       else
         {
           free (error);
-          create_data_window ();
           open_syntax_window (filename, NULL);
         }
     }
