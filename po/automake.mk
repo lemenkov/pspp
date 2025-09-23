@@ -34,10 +34,12 @@ POFILES = \
 	po/nl.po \
 	po/pl.po \
 	po/pt_BR.po \
+	po/ro.po \
 	po/ru.po \
 	po/sl.po \
 	po/sv.po \
 	po/ta.po \
+	po/th.po \
 	po/tr.po \
 	po/uk.po \
 	po/zh_CN.po
