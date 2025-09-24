@@ -161,12 +161,12 @@ struct Expression(MulExpression, Seq0<(Either<Plus, Dash>, Expression)>);
 
 impl Debug for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.1 .0.is_empty() {
+        if self.1.0.is_empty() {
             self.0.fmt(f)
         } else {
             write!(f, "(")?;
             self.0.fmt(f)?;
-            for (operator, operand) in &self.1 .0 {
+            for (operator, operand) in &self.1.0 {
                 if operator.is_left() {
                     write!(f, " + ")?;
                 } else {
@@ -187,12 +187,12 @@ struct MulExpression(
 
 impl Debug for MulExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.1 .0.is_empty() {
+        if self.1.0.is_empty() {
             self.0.fmt(f)
         } else {
             write!(f, "(")?;
             self.0.fmt(f)?;
-            for (operator, operand) in &self.1 .0 {
+            for (operator, operand) in &self.1.0 {
                 if operator.is_left() {
                     write!(f, " * ")?;
                 } else {
@@ -210,12 +210,12 @@ struct PowExpression(Terminal, Seq0<(Exp, PowExpression)>);
 
 impl Debug for PowExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.1 .0.is_empty() {
+        if self.1.0.is_empty() {
             self.0.fmt(f)
         } else {
             write!(f, "(")?;
             self.0.fmt(f)?;
-            for (_operator, operand) in &self.1 .0 {
+            for (_operator, operand) in &self.1.0 {
                 write!(f, " ** {operand:?}")?;
             }
             write!(f, ")")

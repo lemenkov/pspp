@@ -21,19 +21,19 @@ use std::{
 };
 
 use cairo::{Context, PdfSurface};
-use enum_map::{enum_map, EnumMap};
+use enum_map::{EnumMap, enum_map};
 use pango::SCALE;
 use serde::{Deserialize, Serialize};
 
 use crate::output::{
+    Item,
     cairo::{
-        fsm::{parse_font_style, CairoFsmStyle},
+        fsm::{CairoFsmStyle, parse_font_style},
         pager::{CairoPageStyle, CairoPager},
     },
     driver::Driver,
     page::PageSetup,
     pivot::{Color, Coord2, FontStyle},
-    Item,
 };
 
 use crate::output::pivot::Axis2;

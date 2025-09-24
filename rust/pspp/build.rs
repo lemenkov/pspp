@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use anyhow::{anyhow, Result as AnyResult};
+use anyhow::{Result as AnyResult, anyhow};
 use std::{
     collections::{BTreeMap, HashSet, VecDeque},
     env::var_os,
-    fs::{read_to_string, File},
+    fs::{File, read_to_string},
     io::{Error as IoError, Write},
     path::{Path, PathBuf},
 };
@@ -197,9 +197,11 @@ fn main() -> AnyResult<()> {
         (99998, Source::Codepage, "replacement"),
         (99999, Source::Codepage, "x-user-defined"),
     ] {
-        assert!(codepages
-            .insert(codepage, [(source, vec![name])].into_iter().collect())
-            .is_none());
+        assert!(
+            codepages
+                .insert(codepage, [(source, vec![name])].into_iter().collect())
+                .is_none()
+        );
     }
 
     let output_file_name = Path::new(&var_os("OUT_DIR").unwrap()).join("encodings.rs");

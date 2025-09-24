@@ -36,7 +36,7 @@ use crate::{
     output::pivot::{Axis3, Dimension, Group, PivotTable, Value},
     sys::{
         raw::{
-            self, infer_encoding,
+            self, DecodedRecord, RawCases, RawDatum, RawWidth, Reader, infer_encoding,
             records::{
                 Compression, DocumentRecord, EncodingRecord, Extension, FileAttributesRecord,
                 FileHeader, FloatInfoRecord, IntegerInfoRecord, LongName, LongNamesRecord,
@@ -45,13 +45,12 @@ use crate::{
                 VarDisplayRecord, VariableAttributesRecord, VariableRecord, VariableSetRecord,
                 VeryLongStringsRecord,
             },
-            DecodedRecord, RawCases, RawDatum, RawWidth, Reader,
         },
         serialize_endian,
     },
     variable::{InvalidRole, MissingValues, MissingValuesError, VarType, VarWidth, Variable},
 };
-use anyhow::{anyhow, Error as AnyError};
+use anyhow::{Error as AnyError, anyhow};
 use binrw::{BinRead, BinWrite, Endian};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use encoding_rs::{Encoding, UTF_8};
@@ -64,14 +63,18 @@ use thiserror::Error as ThisError;
 #[derive(ThisError, Clone, Debug)]
 pub enum Error {
     /// File creation date is not in the expected format format.
-    #[error("File creation date {0} is not in the expected format \"DD MMM YY\" format.  Using 01 Jan 1970.")]
+    #[error(
+        "File creation date {0} is not in the expected format \"DD MMM YY\" format.  Using 01 Jan 1970."
+    )]
     InvalidCreationDate(
         /// Date.
         String,
     ),
 
     /// File creation time is not in the expected format.
-    #[error("File creation time {0} is not in the expected format \"HH:MM:SS\" format.  Using midnight.")]
+    #[error(
+        "File creation time {0} is not in the expected format \"HH:MM:SS\" format.  Using midnight."
+    )]
     InvalidCreationTime(
         /// Time.
         String,
@@ -124,7 +127,9 @@ pub enum Error {
     /// Variable index {start_index} is a {width} that should be followed by
     /// long string continuation records through index {end_index} (inclusive),
     /// but index {error_index} is not a continuation.
-    #[error("Variable index {start_index} is a {width} that should be followed by long string continuation records through index {end_index} (inclusive), but index {error_index} is not a continuation")]
+    #[error(
+        "Variable index {start_index} is a {width} that should be followed by long string continuation records through index {end_index} (inclusive), but index {error_index} is not a continuation"
+    )]
     MissingLongStringContinuation {
         /// Width of variable.
         width: RawWidth,
@@ -200,9 +205,7 @@ pub enum Error {
     MrSetError(#[from] MrSetError),
 
     /// Invalid numeric format for counted value {number} in multiple response set {mr_set}.
-    #[error(
-        "Invalid numeric format for counted value {number} in multiple response set {mr_set}."
-    )]
+    #[error("Invalid numeric format for counted value {number} in multiple response set {mr_set}.")]
     InvalidMDGroupCountedValue {
         /// Multiple response set name.
         mr_set: Identifier,
@@ -254,7 +257,9 @@ pub enum Error {
 
     /// Variable with short name {short_name} listed in very long string record
     /// with width {width}, which requires only one segment.
-    #[error("Variable with short name {short_name} listed in very long string record with width {width}, which requires only one segment.")]
+    #[error(
+        "Variable with short name {short_name} listed in very long string record with width {width}, which requires only one segment."
+    )]
     ShortVeryLongString {
         /// Short variable name.
         short_name: Identifier,
@@ -266,7 +271,9 @@ pub enum Error {
     /// with width {width} requires string segments for {n_segments} dictionary
     /// indexes starting at index {index}, but the dictionary only contains
     /// {len} indexes.
-    #[error("Variable with short name {short_name} listed in very long string record with width {width} requires string segments for {n_segments} dictionary indexes starting at index {index}, but the dictionary only contains {len} indexes.")]
+    #[error(
+        "Variable with short name {short_name} listed in very long string record with width {width} requires string segments for {n_segments} dictionary indexes starting at index {index}, but the dictionary only contains {len} indexes."
+    )]
     VeryLongStringOverflow {
         /// Short variable name.
         short_name: Identifier,
@@ -283,7 +290,9 @@ pub enum Error {
     /// Variable with short name {short_name} listed in very long string record
     /// with width {width} has segment {index} of width {actual} (expected
     /// {expected}).
-    #[error("Variable with short name {short_name} listed in very long string record with width {width} has segment {index} of width {actual} (expected {expected}).")]
+    #[error(
+        "Variable with short name {short_name} listed in very long string record with width {width} has segment {index} of width {actual} (expected {expected})."
+    )]
     VeryLongStringInvalidSegmentWidth {
         /// Variable short name.
         short_name: Identifier,
@@ -306,7 +315,9 @@ pub enum Error {
 
     /// File designates string variable {name} (index {index}) as weight
     /// variable, but weight variables must be numeric.
-    #[error("File designates string variable {name} (index {index}) as weight variable, but weight variables must be numeric.")]
+    #[error(
+        "File designates string variable {name} (index {index}) as weight variable, but weight variables must be numeric."
+    )]
     InvalidWeightVar {
         /// Variable name.
         name: Identifier,
@@ -373,7 +384,9 @@ pub enum Error {
 
     /// Long string missing values record says variable {name} has {count}
     /// missing values, but only 1 to 3 missing values are allowed.
-    #[error("Long string missing values record says variable {name} has {count} missing values, but only 1 to 3 missing values are allowed.")]
+    #[error(
+        "Long string missing values record says variable {name} has {count} missing values, but only 1 to 3 missing values are allowed."
+    )]
     LongStringMissingValueInvalidCount {
         /// Variable name.
         name: Identifier,
@@ -391,7 +404,9 @@ pub enum Error {
     /// Unknown extension record with subtype {subtype} at offset {offset:#x},
     /// consisting of {count} {size}-byte units.  Please feel free to report
     /// this as a bug.
-    #[error("Unknown extension record with subtype {subtype} at offset {offset:#x}, consisting of {count} {size}-byte units.  Please feel free to report this as a bug.")]
+    #[error(
+        "Unknown extension record with subtype {subtype} at offset {offset:#x}, consisting of {count} {size}-byte units.  Please feel free to report this as a bug."
+    )]
     UnknownExtensionRecord {
         /// Extension record file starting offset.
         offset: u64,

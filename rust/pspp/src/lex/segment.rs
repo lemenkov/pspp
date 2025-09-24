@@ -39,12 +39,12 @@
 use std::cmp::Ordering;
 
 use crate::{
-    identifier::{id_match, id_match_n, IdentifierChar},
+    identifier::{IdentifierChar, id_match, id_match_n},
     prompt::PromptStyle,
 };
 use bitflags::bitflags;
 
-use super::command_name::{command_match, COMMAND_NAMES};
+use super::command_name::{COMMAND_NAMES, command_match};
 
 /// Syntax variant.
 ///
@@ -1286,7 +1286,7 @@ impl Segmenter {
             };
             match c {
                 '!' if strip_prefix_ignore_ascii_case(input, "!ENDDEFINE").is_some() => {
-                    return Some(input)
+                    return Some(input);
                 }
                 '\'' | '"' => {
                     let index = rest.find(c)?;

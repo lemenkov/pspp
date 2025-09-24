@@ -28,7 +28,7 @@ use codepage_437::CP437_WINGDINGS;
 use encoding_rs::WINDOWS_1252;
 use indexmap::set::MutableValues;
 use num::{Bounded, NumCast};
-use serde::{ser::SerializeSeq, Serialize, Serializer};
+use serde::{Serialize, Serializer, ser::SerializeSeq};
 
 use crate::{
     data::{ByteString, Case, Datum, RawString, WithEncoding},
@@ -1158,8 +1158,8 @@ mod tests {
     use crate::{
         data::cases_to_output,
         output::{
-            pivot::{tests::assert_lines_eq, PivotTable},
             Details, Item, Text,
+            pivot::{PivotTable, tests::assert_lines_eq},
         },
         por::{PortableFile, ReadPad},
     };
@@ -1170,7 +1170,10 @@ mod tests {
             b"abcdefghijklmnop\r\n0123456789\r\n",
         )))
         .lines();
-        assert_eq!(lines.next().unwrap().unwrap(), "abcdefghijklmnop                                                                0123456789                                                                      ");
+        assert_eq!(
+            lines.next().unwrap().unwrap(),
+            "abcdefghijklmnop                                                                0123456789                                                                      "
+        );
     }
 
     fn test_porfile(name: &str) {

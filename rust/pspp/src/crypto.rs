@@ -12,8 +12,8 @@
 #![cfg_attr(not(test), warn(missing_docs))]
 
 use aes::{
-    cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit},
     Aes256, Aes256Dec,
+    cipher::{BlockDecrypt, KeyInit, generic_array::GenericArray},
 };
 use cmac::{Cmac, Mac};
 use smallvec::SmallVec;
@@ -23,7 +23,7 @@ use std::{
 };
 use thiserror::Error as ThisError;
 
-use binrw::{io::NoSeek, BinRead};
+use binrw::{BinRead, io::NoSeek};
 
 /// Error reading an encrypted file.
 #[derive(Clone, Debug, ThisError)]
@@ -130,7 +130,7 @@ where
             _ => {
                 return Err(Error::UnknownFileType(
                     header.file_type.iter().map(|b| *b as char).collect(),
-                ))
+                ));
             }
         };
         let mut first_block = [0; 16];

@@ -20,7 +20,7 @@ use std::iter::once;
 use std::ops::Range;
 use std::sync::Arc;
 
-use enum_map::{enum_map, Enum, EnumMap};
+use enum_map::{Enum, EnumMap, enum_map};
 use itertools::interleave;
 use num::Integer;
 use smallvec::SmallVec;
@@ -777,9 +777,11 @@ impl Page {
                         overflow[a][1] +=
                             pixel1 + self.axis_width(a, cell_ofs(z1)..cell_ofs(cell.rect[a].end));
                     }
-                    assert!(overflows
-                        .insert(s.coord_to_subpage(cell.rect.top_left()), overflow)
-                        .is_none());
+                    assert!(
+                        overflows
+                            .insert(s.coord_to_subpage(cell.rect.top_left()), overflow)
+                            .is_none()
+                    );
                 }
                 z += cell.rect[b].len();
             }
@@ -796,9 +798,11 @@ impl Page {
                 let mut overflow = self.overflows.get(&d).cloned().unwrap_or_default();
                 overflow[a][1] +=
                     pixel1 + self.axis_width(a, cell_ofs(z1)..cell_ofs(cell.rect[a].end));
-                assert!(overflows
-                    .insert(s.coord_to_subpage(cell.rect.top_left()), overflow)
-                    .is_none());
+                assert!(
+                    overflows
+                        .insert(s.coord_to_subpage(cell.rect.top_left()), overflow)
+                        .is_none()
+                );
             }
             z += cell.rect[b].len();
         }
@@ -1130,11 +1134,7 @@ fn measure_rule(device: &dyn Device, table: &Table, a: Axis2, z: usize) -> usize
         .into_iter()
         .map(
             |(rule, present)| {
-                if present {
-                    line_widths[rule]
-                } else {
-                    0
-                }
+                if present { line_widths[rule] } else { 0 }
             },
         )
         .max()

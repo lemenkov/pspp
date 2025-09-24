@@ -25,7 +25,7 @@ use crate::{
 };
 
 use super::{Area, BorderStyle, Color, HorzAlign, Look, Stroke, VertAlign};
-use binrw::{binread, BinRead, BinResult, Error as BinError};
+use binrw::{BinRead, BinResult, Error as BinError, binread};
 use enum_map::enum_map;
 
 #[binread]

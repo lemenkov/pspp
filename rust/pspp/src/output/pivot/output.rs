@@ -16,7 +16,7 @@
 
 use std::{iter::zip, ops::Range, sync::Arc};
 
-use enum_map::{enum_map, EnumMap};
+use enum_map::{EnumMap, enum_map};
 use itertools::Itertools;
 
 use crate::output::{

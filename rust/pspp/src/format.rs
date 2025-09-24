@@ -22,7 +22,7 @@ use std::{
 };
 
 use chrono::{Datelike, Local};
-use enum_iterator::{all, Sequence};
+use enum_iterator::{Sequence, all};
 use enum_map::{Enum, EnumMap};
 use serde::{Deserialize, Serialize};
 use thiserror::Error as ThisError;
@@ -68,7 +68,9 @@ pub enum Error {
     #[error("Numeric variable is not compatible with string format {0}.")]
     UnnamedVariableNotCompatibleWithStringFormat(Type),
 
-    #[error("String variable {variable} with width {width} is not compatible with format {bad_spec}.  Use format {good_spec} instead.")]
+    #[error(
+        "String variable {variable} with width {width} is not compatible with format {bad_spec}.  Use format {good_spec} instead."
+    )]
     NamedStringVariableBadSpecWidth {
         variable: String,
         width: Width,
@@ -76,7 +78,9 @@ pub enum Error {
         good_spec: Format,
     },
 
-    #[error("String variable with width {width} is not compatible with format {bad_spec}.  Use format {good_spec} instead.")]
+    #[error(
+        "String variable with width {width} is not compatible with format {bad_spec}.  Use format {good_spec} instead."
+    )]
     UnnamedStringVariableBadSpecWidth {
         width: Width,
         bad_spec: Format,

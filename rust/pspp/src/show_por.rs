@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, ValueEnum};
 use pspp::{
     data::cases_to_output,
     output::{
+        Details, Item, Text,
         driver::{Config, Driver},
         pivot::PivotTable,
-        Details, Item, Text,
     },
     por::PortableFile,
 };
@@ -31,7 +31,7 @@ use std::{
     ffi::OsStr,
     fmt::{Display, Write as _},
     fs::File,
-    io::{stdout, BufReader, Write},
+    io::{BufReader, Write, stdout},
     path::{Path, PathBuf},
     rc::Rc,
     sync::Arc,

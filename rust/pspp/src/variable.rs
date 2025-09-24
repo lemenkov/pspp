@@ -29,7 +29,7 @@ use encoding_rs::{Encoding, UTF_8};
 use hashbrown::HashMap;
 use indexmap::Equivalent;
 use num::integer::div_ceil;
-use serde::{ser::SerializeSeq, Serialize};
+use serde::{Serialize, ser::SerializeSeq};
 use thiserror::Error as ThisError;
 use unicase::UniCase;
 

@@ -35,20 +35,20 @@ use std::{
     str::from_utf8,
 };
 
-use encoding_rs::{mem::decode_latin1, Encoding, UTF_8};
+use encoding_rs::{Encoding, UTF_8, mem::decode_latin1};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{
-    ser::{SerializeSeq, SerializeTupleVariant},
     Serialize,
+    ser::{SerializeSeq, SerializeTupleVariant},
 };
 
 use crate::{
     dictionary::Dictionary,
     format::DisplayPlain,
     output::{
-        pivot::{Axis3, Dimension, Group, PivotTable, Value},
         Item, Text,
+        pivot::{Axis3, Dimension, Group, PivotTable, Value},
     },
     variable::{VarType, VarWidth},
 };

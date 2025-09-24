@@ -39,15 +39,15 @@ use crate::{
     identifier::Identifier,
     output::spv::Zeros,
     sys::{
+        ProductVersion,
         encoding::codepage_from_encoding,
         raw::{
+            Magic,
             records::{
                 Compression, FloatInfoRecord, RawFormat, RawHeader, RawIntegerInfoRecord,
                 RawVariableRecord, RawZHeader, RawZTrailer, ZBlock,
             },
-            Magic,
         },
-        ProductVersion,
     },
     variable::{Alignment, Attributes, Measure, ValueLabels, VarWidth},
 };
@@ -1232,14 +1232,14 @@ mod tests {
         },
         identifier::Identifier,
         sys::{
+            ReadOptions, WriteOptions,
             raw::{
+                Decoder, VarTypes,
                 records::{
                     DocumentRecord, Extension, RawHeader, RawVariableRecord, VariableRecord,
                 },
-                Decoder, VarTypes,
             },
             write::DictionaryWriter,
-            ReadOptions, WriteOptions,
         },
         variable::{Alignment, Attributes, Measure, MissingValueRange, VarWidth, Variable},
     };
@@ -1694,10 +1694,12 @@ mod tests {
             .unwrap()
             .dictionary;
 
-        assert!(actual
-            .variable_sets()
-            .iter()
-            .eq(expected.variable_sets().iter()),);
+        assert!(
+            actual
+                .variable_sets()
+                .iter()
+                .eq(expected.variable_sets().iter()),
+        );
     }
 
     /// Test writing multiple response sets.

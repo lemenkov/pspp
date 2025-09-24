@@ -46,24 +46,24 @@ use std::{
     collections::HashMap,
     fmt::{Debug, Display, Write},
     io::Read,
-    iter::{once, repeat, repeat_n, FusedIterator},
+    iter::{FusedIterator, once, repeat, repeat_n},
     ops::{Index, IndexMut, Not, Range, RangeInclusive},
-    str::{from_utf8, FromStr, Utf8Error},
+    str::{FromStr, Utf8Error, from_utf8},
     sync::{Arc, OnceLock},
 };
 
 use binrw::Error as BinError;
 use chrono::NaiveDateTime;
 pub use color::ParseError as ParseColorError;
-use color::{palette::css::TRANSPARENT, AlphaColor, Rgba8, Srgb};
+use color::{AlphaColor, Rgba8, Srgb, palette::css::TRANSPARENT};
 use enum_iterator::Sequence;
-use enum_map::{enum_map, Enum, EnumMap};
+use enum_map::{Enum, EnumMap, enum_map};
 use look_xml::TableProperties;
-use quick_xml::{de::from_str, DeError};
+use quick_xml::{DeError, de::from_str};
 use serde::{
+    Deserialize, Serialize, Serializer,
     de::Visitor,
     ser::{SerializeMap, SerializeStruct},
-    Deserialize, Serialize, Serializer,
 };
 use smallstr::SmallString;
 use smallvec::SmallVec;

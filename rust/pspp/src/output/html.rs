@@ -27,10 +27,10 @@ use serde::{Deserialize, Serialize};
 use smallstr::SmallString;
 
 use crate::output::{
+    Details, Item,
     driver::Driver,
     pivot::{Axis2, BorderStyle, Color, Coord2, HorzAlign, PivotTable, Rect2, Stroke, VertAlign},
     table::{DrawCell, Table},
-    Details, Item,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

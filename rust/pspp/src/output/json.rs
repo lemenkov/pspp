@@ -24,7 +24,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use super::{driver::Driver, Item};
+use super::{Item, driver::Driver};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct JsonConfig {

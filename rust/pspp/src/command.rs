@@ -26,7 +26,7 @@ use ctables::ctables_command;
 use data_list::data_list_command;
 use descriptives::descriptives_command;
 use either::Either;
-use flagset::{flags, FlagSet};
+use flagset::{FlagSet, flags};
 use pspp_derive::FromTokens;
 
 use crate::{
@@ -34,9 +34,9 @@ use crate::{
     identifier::Identifier,
     integer::ToInteger,
     lex::{
+        Punct, Token,
         command_name::CommandMatcher,
         lexer::{LexToken, TokenSlice},
-        Punct, Token,
     },
     message::{Diagnostic, Diagnostics},
 };

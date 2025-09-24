@@ -24,20 +24,20 @@ use std::{
     sync::{Arc, LazyLock},
 };
 
-use enum_map::{enum_map, Enum, EnumMap};
+use enum_map::{Enum, EnumMap, enum_map};
 use serde::{Deserialize, Serialize};
-use unicode_linebreak::{linebreaks, BreakOpportunity};
+use unicode_linebreak::{BreakOpportunity, linebreaks};
 use unicode_width::UnicodeWidthStr;
 
 use crate::output::{render::Extreme, table::DrawCell, text_line::Emphasis};
 
 use super::{
+    Details, Item,
     driver::Driver,
     pivot::{Axis2, BorderStyle, Coord2, HorzAlign, PivotTable, Rect2, Stroke},
     render::{Device, Pager, Params},
     table::Content,
-    text_line::{clip_text, TextLine},
-    Details, Item,
+    text_line::{TextLine, clip_text},
 };
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -672,7 +672,9 @@ mod tests {
     fn test_line_breaks(input: &str, width: usize, expected: Vec<&str>) {
         let actual = new_line_breaks(input, width).collect::<Vec<_>>();
         if expected != actual {
-            panic!("filling {input:?} to {width} columns:\nexpected: {expected:?}\nactual:   {actual:?}");
+            panic!(
+                "filling {input:?} to {width} columns:\nexpected: {expected:?}\nactual:   {actual:?}"
+            );
         }
     }
     #[test]

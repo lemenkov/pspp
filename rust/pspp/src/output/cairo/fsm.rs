@@ -17,21 +17,21 @@
 use std::{cmp::min, f64::consts::PI, fmt::Write, ops::DerefMut, sync::Arc};
 
 use cairo::Context;
-use enum_map::{enum_map, EnumMap};
+use enum_map::{EnumMap, enum_map};
 use itertools::Itertools;
 use pango::{
-    parse_markup, AttrFloat, AttrFontDesc, AttrInt, AttrList, Attribute, FontDescription, FontMask,
-    Layout, Underline, Weight, SCALE, SCALE_SMALL,
+    AttrFloat, AttrFontDesc, AttrInt, AttrList, Attribute, FontDescription, FontMask, Layout,
+    SCALE, SCALE_SMALL, Underline, Weight, parse_markup,
 };
 use pangocairo::functions::show_layout;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
 use crate::output::cairo::{horz_align_to_pango, px_to_xr, xr_to_pt};
 use crate::output::pivot::{Axis2, BorderStyle, Coord2, FontStyle, HorzAlign, Rect2, Stroke};
 use crate::output::render::{Device, Extreme, Pager, Params};
 use crate::output::table::DrawCell;
-use crate::output::{pivot::Color, table::Content};
 use crate::output::{Details, Item};
+use crate::output::{pivot::Color, table::Content};
 
 /// Width of an ordinary line.
 const LINE_WIDTH: usize = LINE_SPACE / 2;

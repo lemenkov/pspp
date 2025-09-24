@@ -19,6 +19,7 @@ use std::{fmt::Display, fs::File, path::Path, sync::Arc};
 use enum_map::EnumMap;
 
 use crate::output::{
+    Details, Item,
     cairo::{CairoConfig, CairoDriver},
     driver::Driver,
     html::HtmlDriver,
@@ -28,7 +29,6 @@ use crate::output::{
         Look, PivotTable, RowColBorder, Stroke,
     },
     spv::SpvDriver,
-    Details, Item,
 };
 
 use super::{Axis3, Value};

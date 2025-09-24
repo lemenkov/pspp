@@ -126,7 +126,9 @@ pub enum Error {
     #[error("\"!\" is not a valid identifier.")]
     Bang,
 
-    #[error("{string:?} may not be used as an identifier because it begins with disallowed character {c:?}.")]
+    #[error(
+        "{string:?} may not be used as an identifier because it begins with disallowed character {c:?}."
+    )]
     BadFirstCharacter { string: String, c: char },
 
     #[error(
@@ -134,7 +136,9 @@ pub enum Error {
     )]
     BadLaterCharacter { string: String, c: char },
 
-    #[error("Identifier \"{id}\" is {length} bytes in the encoding in use ({encoding}), which exceeds the {max}-byte limit.")]
+    #[error(
+        "Identifier \"{id}\" is {length} bytes in the encoding in use ({encoding}), which exceeds the {max}-byte limit."
+    )]
     TooLong {
         id: String,
         length: usize,
@@ -142,7 +146,9 @@ pub enum Error {
         max: usize,
     },
 
-    #[error("\"{id}\" may not be used as an identifier because the encoding in use ({encoding}) cannot represent \"{c}\".")]
+    #[error(
+        "\"{id}\" may not be used as an identifier because the encoding in use ({encoding}) cannot represent \"{c}\"."
+    )]
     NotEncodable {
         id: String,
         encoding: &'static str,

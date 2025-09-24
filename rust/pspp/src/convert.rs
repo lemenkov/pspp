@@ -16,11 +16,11 @@
 
 use std::{
     fs::File,
-    io::{stdout, Write},
+    io::{Write, stdout},
     path::{Path, PathBuf},
 };
 
-use anyhow::{anyhow, bail, Error as AnyError, Result};
+use anyhow::{Error as AnyError, Result, anyhow, bail};
 use chrono::{Datelike, NaiveTime, Timelike};
 use clap::{Args, ValueEnum};
 use csv::Writer;
@@ -31,7 +31,7 @@ use pspp::{
     file::FileType,
     format::{DisplayPlain, Type},
     por::PortableFile,
-    sys::{raw::records::Compression, ReadOptions, WriteOptions},
+    sys::{ReadOptions, WriteOptions, raw::records::Compression},
     util::ToSmallString,
     variable::Variable,
 };

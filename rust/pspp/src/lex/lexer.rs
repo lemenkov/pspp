@@ -36,7 +36,7 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::{
     lex::scan::merge_tokens,
-    macros::{macro_tokens_to_syntax, MacroSet, ParseStatus, Parser},
+    macros::{MacroSet, ParseStatus, Parser, macro_tokens_to_syntax},
     message::{Category, Diagnostic, Location, Point, Severity},
     settings::Settings,
 };

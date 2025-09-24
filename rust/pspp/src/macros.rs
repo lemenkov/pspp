@@ -31,9 +31,9 @@ use unicase::UniCase;
 use crate::{
     identifier::Identifier,
     lex::{
+        Punct, Token,
         scan::{ScanError, StringScanner, StringSegmenter},
         segment::Syntax,
-        Punct, Token,
     },
     message::Location,
     settings::Settings,
@@ -134,11 +134,15 @@ pub enum MacroError {
     BadNumericMacroExpression(String),
 
     /// Too many iteration for list-based loop.
-    #[error("`!DO` loop over list exceeded maximum number of iterations {0}.  (Use `SET MITERATE` to change the limit.)")]
+    #[error(
+        "`!DO` loop over list exceeded maximum number of iterations {0}.  (Use `SET MITERATE` to change the limit.)"
+    )]
     MiterateList(usize),
 
     /// Too many iteration for numerical loop.
-    #[error("Numerical `!DO` loop  exceeded maximum number of iterations {0}.  (Use `SET MITERATE` to change the limit.)")]
+    #[error(
+        "Numerical `!DO` loop  exceeded maximum number of iterations {0}.  (Use `SET MITERATE` to change the limit.)"
+    )]
     MiterateNumeric(usize),
 
     /// Expecting `!TO`  in numerical `!DO` loop.

@@ -19,7 +19,7 @@
 use core::str;
 use std::{
     borrow::Cow,
-    collections::{btree_set, BTreeSet, HashSet},
+    collections::{BTreeSet, HashSet, btree_set},
     ops::{Bound, Index, RangeBounds, RangeInclusive},
 };
 
@@ -27,8 +27,8 @@ use encoding_rs::{Encoding, UTF_8};
 use enum_map::{Enum, EnumMap};
 use indexmap::IndexSet;
 use serde::{
-    ser::{SerializeMap, SerializeSeq, SerializeStruct},
     Serialize,
+    ser::{SerializeMap, SerializeSeq, SerializeStruct},
 };
 use smallvec::SmallVec;
 use thiserror::Error as ThisError;
@@ -275,10 +275,11 @@ impl Dictionary {
     }
 
     pub fn add_variable_set(&mut self, set: DictIndexVariableSet) {
-        assert!(set
-            .variables
-            .iter()
-            .all(|dict_index| *dict_index < self.variables.len()));
+        assert!(
+            set.variables
+                .iter()
+                .all(|dict_index| *dict_index < self.variables.len())
+        );
         self.variable_sets.push(set);
     }
 
@@ -1412,7 +1413,9 @@ pub enum MrSetError {
     /// Counted value {value} has width {width}, but it must be no wider than
     /// {max_width}, the width of the narrowest variable in multiple response
     /// set {mr_set}.
-    #[error("Counted value {value} has width {width}, but it must be no wider than {max_width}, the width of the narrowest variable in multiple response set {mr_set}.")]
+    #[error(
+        "Counted value {value} has width {width}, but it must be no wider than {max_width}, the width of the narrowest variable in multiple response set {mr_set}."
+    )]
     TooWideMDGroupCountedValue {
         /// Multiple response set name.
         mr_set: Identifier,

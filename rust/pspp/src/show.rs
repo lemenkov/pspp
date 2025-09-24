@@ -15,19 +15,19 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::parse_encoding;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, ValueEnum};
 use encoding_rs::Encoding;
 use pspp::{
     data::cases_to_output,
     output::{
+        Details, Item, Text,
         driver::{Config, Driver},
         pivot::PivotTable,
-        Details, Item, Text,
     },
     sys::{
-        raw::{infer_encoding, Decoder, EncodingReport, Magic, Reader, Record},
         Records,
+        raw::{Decoder, EncodingReport, Magic, Reader, Record, infer_encoding},
     },
 };
 use serde::Serialize;
@@ -36,7 +36,7 @@ use std::{
     ffi::OsStr,
     fmt::{Display, Write as _},
     fs::File,
-    io::{stdout, BufReader, Write},
+    io::{BufReader, Write, stdout},
     path::{Path, PathBuf},
     rc::Rc,
     sync::Arc,

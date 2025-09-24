@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use enum_map::{enum_map, EnumMap};
+use enum_map::{EnumMap, enum_map};
 use serde::{Deserialize, Serialize};
 
 use super::pivot::{Axis2, HorzAlign};

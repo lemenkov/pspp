@@ -24,13 +24,13 @@ use std::{
 };
 
 use serde::{
-    de::{Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
+    de::{Unexpected, Visitor},
 };
 
 use crate::output::pivot::Coord2;
 
-use super::{driver::Driver, pivot::PivotTable, table::Table, Details, Item, TextType};
+use super::{Details, Item, TextType, driver::Driver, pivot::PivotTable, table::Table};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CsvConfig {

@@ -24,11 +24,11 @@ use crate::{
     endian::{FromBytes, ToBytes},
     identifier::{Error as IdError, Identifier},
     output::{
-        pivot::{Axis3, Dimension, Group, PivotTable, Value},
         Details, Item, Text,
+        pivot::{Axis3, Dimension, Group, PivotTable, Value},
     },
     sys::{
-        encoding::{default_encoding, get_encoding, Error as EncodingError},
+        encoding::{Error as EncodingError, default_encoding, get_encoding},
         raw::records::{
             AttributeWarning, Compression, DocumentRecord, EncodingRecord, Extension,
             ExtensionWarning, FileAttributesRecord, FileHeader, FloatInfoRecord, HeaderWarning,
@@ -49,11 +49,11 @@ use crate::{
 
 use binrw::Endian;
 use encoding_rs::{
-    Encoding, BIG5, EUC_JP, EUC_KR, GB18030, IBM866, ISO_2022_JP, ISO_8859_10, ISO_8859_13,
-    ISO_8859_14, ISO_8859_16, ISO_8859_2, ISO_8859_3, ISO_8859_4, ISO_8859_5, ISO_8859_6,
-    ISO_8859_7, ISO_8859_8, KOI8_R, KOI8_U, MACINTOSH, SHIFT_JIS, UTF_8, WINDOWS_1250,
-    WINDOWS_1251, WINDOWS_1252, WINDOWS_1253, WINDOWS_1254, WINDOWS_1255, WINDOWS_1256,
-    WINDOWS_1257, WINDOWS_1258, WINDOWS_874,
+    BIG5, EUC_JP, EUC_KR, Encoding, GB18030, IBM866, ISO_2022_JP, ISO_8859_2, ISO_8859_3,
+    ISO_8859_4, ISO_8859_5, ISO_8859_6, ISO_8859_7, ISO_8859_8, ISO_8859_10, ISO_8859_13,
+    ISO_8859_14, ISO_8859_16, KOI8_R, KOI8_U, MACINTOSH, SHIFT_JIS, UTF_8, WINDOWS_874,
+    WINDOWS_1250, WINDOWS_1251, WINDOWS_1252, WINDOWS_1253, WINDOWS_1254, WINDOWS_1255,
+    WINDOWS_1256, WINDOWS_1257, WINDOWS_1258,
 };
 use flate2::bufread::ZlibDecoder;
 use indexmap::IndexMap;
@@ -65,7 +65,7 @@ use std::{
     cell::RefCell,
     collections::VecDeque,
     fmt::{Debug, Display, Formatter, Result as FmtResult},
-    io::{empty, BufRead, Error as IoError, Read, Seek, SeekFrom},
+    io::{BufRead, Error as IoError, Read, Seek, SeekFrom, empty},
     iter::repeat_n,
     mem::take,
     num::NonZeroU8,
@@ -149,9 +149,7 @@ pub enum ErrorDetails {
     InvalidZsavCompression(u32),
 
     /// Document record has document line count ({n}) greater than the maximum number {max}.
-    #[error(
-        "Document record has document line count ({n}) greater than the maximum number {max}."
-    )]
+    #[error("Document record has document line count ({n}) greater than the maximum number {max}.")]
     BadDocumentLength {
         /// Number of document lines.
         n: usize,
@@ -194,10 +192,9 @@ pub enum ErrorDetails {
 
     /// Following value label record, found record type {0} instead of expected
     /// type 4 for variable index record.
-    #[
-        error(
-            "Following value label record, found record type {0} instead of expected type 4 for variable index record"
-        )]
+    #[error(
+        "Following value label record, found record type {0} instead of expected type 4 for variable index record"
+    )]
     ExpectedVarIndexRecord(
         /// Record type.
         u32,
@@ -229,7 +226,9 @@ pub enum ErrorDetails {
     },
 
     /// Unexpected end of file {case_ofs} bytes into a {case_len}-byte case.
-    #[error("Unexpected end of file {case_ofs} bytes into case {case_number} with expected length {case_len} bytes.")]
+    #[error(
+        "Unexpected end of file {case_ofs} bytes into case {case_number} with expected length {case_len} bytes."
+    )]
     EofInCase {
         /// Offset into case in bytes.
         case_ofs: u64,
@@ -2291,7 +2290,7 @@ fn common_prefix<'a>(a: &'a str, b: &'a str) -> &'a str {
                 }
             }
             EitherOrBoth::Left((offset, _)) | EitherOrBoth::Right((offset, _)) => {
-                return &a[..offset]
+                return &a[..offset];
             }
         }
     }

@@ -47,7 +47,9 @@ pub fn codepage_from_encoding(encoding: &'static Encoding) -> u32 {
 #[serde(rename_all = "snake_case")]
 pub enum Error {
     /// Warning that the system file doesn't indicate its own encoding.
-    #[error("This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings.")]
+    #[error(
+        "This system file does not indicate its own character encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
+    )]
     NoEncoding,
 
     /// Unknown code page.

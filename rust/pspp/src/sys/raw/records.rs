@@ -18,11 +18,12 @@ use crate::{
     format::{DisplayPlain, Format, Type},
     identifier::{Error as IdError, Identifier},
     sys::{
+        ProductVersion,
         raw::{
-            read_bytes, read_string, read_vec, Decoder, Error, ErrorDetails, Magic, RawDatum,
-            RawWidth, Record, RecordString, UntypedDatum, VarTypes, Warning, WarningDetails,
+            Decoder, Error, ErrorDetails, Magic, RawDatum, RawWidth, Record, RecordString,
+            UntypedDatum, VarTypes, Warning, WarningDetails, read_bytes, read_string, read_vec,
         },
-        serialize_endian, ProductVersion,
+        serialize_endian,
     },
     variable::{
         Alignment, Attributes, Measure, MissingValueRange, MissingValues, MissingValuesError,
@@ -30,11 +31,11 @@ use crate::{
     },
 };
 
-use binrw::{binrw, BinRead, BinWrite, Endian, Error as BinError};
+use binrw::{BinRead, BinWrite, Endian, Error as BinError, binrw};
 use clap::ValueEnum;
 use encoding_rs::Encoding;
 use itertools::Itertools;
-use serde::{ser::SerializeTuple, Serialize, Serializer};
+use serde::{Serialize, Serializer, ser::SerializeTuple};
 use thiserror::Error as ThisError;
 
 /// Type of compression in a system file.
@@ -288,9 +289,9 @@ struct RawFormatDisplayMeaning(RawFormat);
 
 impl Display for RawFormatDisplayMeaning {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let type_ = format_name(self.0 .0 >> 16);
-        let w = (self.0 .0 >> 8) & 0xff;
-        let d = self.0 .0 & 0xff;
+        let type_ = format_name(self.0.0 >> 16);
+        let w = (self.0.0 >> 8) & 0xff;
+        let d = self.0.0 & 0xff;
         write!(f, "{type_}{w}.{d}")
     }
 }
@@ -396,7 +397,7 @@ impl RawMissingValues {
                 return Err(Error::new(
                     Some(offsets),
                     ErrorDetails::BadMissingValueCode(code),
-                ))
+                ));
             }
         };
 

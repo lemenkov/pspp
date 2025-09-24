@@ -16,7 +16,7 @@
 
 use std::{fmt::Write, fs::File, io::BufRead, path::Path};
 
-use binrw::{io::BufReader, Endian};
+use binrw::{Endian, io::BufReader};
 use encoding_rs::UTF_8;
 use itertools::Itertools;
 use smallstr::SmallString;
@@ -24,8 +24,8 @@ use smallvec::SmallVec;
 
 use crate::{
     data::{ByteString, Datum, WithEncoding},
-    format::{AbstractFormat, Epoch, Format, Settings, Type, UncheckedFormat, CC},
-    lex::{scan::StringScanner, segment::Syntax, Punct, Token},
+    format::{AbstractFormat, CC, Epoch, Format, Settings, Type, UncheckedFormat},
+    lex::{Punct, Token, scan::StringScanner, segment::Syntax},
     settings::EndianSettings,
 };
 
@@ -1294,10 +1294,10 @@ fn test_times(format: Format, name: &str) {
             .display(format)
             .to_string();
         assert!(
-                formatted == expect,
-                "formatting {}:{line_number} as {format}:\n  actual: {formatted:?}\nexpected: {expect:?}",
-                input_filename.display()
-            );
+            formatted == expect,
+            "formatting {}:{line_number} as {format}:\n  actual: {formatted:?}\nexpected: {expect:?}",
+            input_filename.display()
+        );
     }
 }
 

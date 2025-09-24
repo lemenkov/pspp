@@ -28,16 +28,17 @@ use binrw::{BinWrite, Endian};
 use chrono::Utc;
 use enum_map::EnumMap;
 use quick_xml::{
-    events::{attributes::Attribute, BytesText},
-    writer::Writer as XmlWriter,
     ElementWriter,
+    events::{BytesText, attributes::Attribute},
+    writer::Writer as XmlWriter,
 };
 use serde::{Deserialize, Serialize};
-use zip::{result::ZipResult, write::SimpleFileOptions, ZipWriter};
+use zip::{ZipWriter, result::ZipResult, write::SimpleFileOptions};
 
 use crate::{
     format::{Format, Type},
     output::{
+        Item, Text,
         driver::Driver,
         page::{Heading, PageSetup},
         pivot::{
@@ -46,7 +47,6 @@ use crate::{
             Footnotes, Group, HeadingRegion, HorzAlign, LabelPosition, Leaf, PivotTable,
             RowColBorder, Stroke, Value, ValueInner, ValueStyle, VertAlign,
         },
-        Item, Text,
     },
     settings::Show,
     util::ToSmallString,

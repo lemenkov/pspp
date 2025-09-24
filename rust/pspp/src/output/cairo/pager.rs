@@ -21,13 +21,13 @@ use enum_map::EnumMap;
 use pango::{FontDescription, Layout};
 
 use crate::output::{
+    Item, ItemCursor,
     cairo::{
         fsm::{CairoFsm, CairoFsmStyle},
         horz_align_to_pango, xr_to_pt,
     },
     page::Heading,
     pivot::Axis2,
-    Item, ItemCursor,
 };
 
 #[derive(Clone, Debug)]

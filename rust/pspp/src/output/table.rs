@@ -28,7 +28,7 @@
 
 use std::{ops::Range, sync::Arc};
 
-use enum_map::{enum_map, EnumMap};
+use enum_map::{EnumMap, enum_map};
 use ndarray::{Array, Array2};
 
 use crate::output::pivot::{Coord2, DisplayValue, Footnote, HorzAlign, ValueInner};

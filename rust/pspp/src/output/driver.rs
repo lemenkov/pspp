@@ -28,7 +28,7 @@ use crate::output::{
     text::{TextConfig, TextDriver},
 };
 
-use super::{page::PageSetup, Item};
+use super::{Item, page::PageSetup};
 
 // An output driver.
 pub trait Driver {

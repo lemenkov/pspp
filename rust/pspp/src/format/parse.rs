@@ -15,7 +15,7 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{
-    calendar::{calendar_gregorian_to_offset, DateError},
+    calendar::{DateError, calendar_gregorian_to_offset},
     data::{ByteString, Datum, EncodedString, OwnedDatum, RawString, WithEncoding},
     endian::FromBytes,
     format::{DateTemplate, Decimals, Settings, TemplateItem, Type},
@@ -106,7 +106,9 @@ enum ParseErrorKind {
     InvalidWeek(i32),
 
     /// Unrecognized month format.
-    #[error("Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names.")]
+    #[error(
+        "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
+    )]
     InvalidMonth,
 
     /// Delimiter expected between fields in time.
@@ -122,7 +124,9 @@ enum ParseErrorKind {
     InvalidMinute(i32),
 
     /// Invalid weekday name.
-    #[error("Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified.")]
+    #[error(
+        "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
+    )]
     InvalidWeekdayName,
 
     /// Expected character.
@@ -925,8 +929,8 @@ mod tests {
         calendar::{days_in_month, is_leap_year},
         data::{ByteStr, Datum, EncodedString, OwnedDatum, RawString},
         format::{
-            parse::{ParseError, ParseErrorKind, Sign},
             Epoch, Format, Settings as FormatSettings, Type,
+            parse::{ParseError, ParseErrorKind, Sign},
         },
         settings::EndianSettings,
     };

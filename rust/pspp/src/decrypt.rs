@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Args;
 use pspp::crypto::EncryptedFile;
 use std::{fs::File, path::PathBuf};

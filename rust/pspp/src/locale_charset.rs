@@ -221,11 +221,11 @@ fn map_aliases(s: &str) -> &'static str {
 #[cfg(unix)]
 mod inner {
     use std::{
-        ffi::{c_int, CStr, CString},
+        ffi::{CStr, CString, c_int},
         ptr::null,
     };
 
-    use libc::{self, nl_langinfo, setlocale, CODESET, LC_CTYPE};
+    use libc::{self, CODESET, LC_CTYPE, nl_langinfo, setlocale};
 
     unsafe fn string_from_pointer(s: *const i8) -> Option<String> {
         if s.is_null() {
@@ -256,7 +256,7 @@ mod inner {
 
 #[cfg(windows)]
 mod inner {
-    use libc::{setlocale, LC_CTYPE};
+    use libc::{LC_CTYPE, setlocale};
     use std::ffi::{CStr, CString};
     use windows_sys::Win32::Globalization::GetACP;
 

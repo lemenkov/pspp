@@ -18,7 +18,7 @@ use binrw::Endian;
 use num::{Bounded, Zero};
 use ordered_float::OrderedFloat;
 use std::{
-    collections::{hash_map::Entry, HashMap},
+    collections::{HashMap, hash_map::Entry},
     error::Error as StdError,
     fmt::{Display, Formatter, Result as FmtResult},
     iter::repeat_n,

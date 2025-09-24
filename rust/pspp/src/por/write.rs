@@ -295,11 +295,7 @@ where
 {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         fn handle_error(error: std::io::Error, ofs: usize) -> std::io::Result<usize> {
-            if ofs > 0 {
-                Ok(ofs)
-            } else {
-                Err(error)
-            }
+            if ofs > 0 { Ok(ofs) } else { Err(error) }
         }
 
         fn write_chunk<W>(mut writer: W, chunk: &[u8]) -> std::io::Result<usize>
@@ -831,15 +827,15 @@ mod tests {
 
     use encoding_rs::{UTF_8, WINDOWS_1252};
     use indexmap::set::MutableValues;
-    use itertools::{zip_eq, Itertools};
+    use itertools::{Itertools, zip_eq};
 
     use crate::{
         data::{ByteString, Datum, RawString},
         dictionary::Dictionary,
         identifier::Identifier,
         por::{
-            write::{write_case, DictionaryWriter, Precision, TrigesimalFloat, TrigesimalInt},
             WriteOptions,
+            write::{DictionaryWriter, Precision, TrigesimalFloat, TrigesimalInt, write_case},
         },
         variable::{MissingValueRange, MissingValues, VarWidth, Variable},
     };
@@ -1242,12 +1238,20 @@ A1/\
         output.sort();
 
         let expected = [
-   ("1/4/VAR01/", vec!["1/3/One"]),
-    ("1/4/VAR31/", vec!["4/abcd3/One"]),
-    ("1/4/VAR41/", vec!["8/abcdefghI/Longer value label"]),
-    ("1/4/VAR51/", vec!["9/abcdefghiS/value label for 9-byte value"]),
-    ("1/4/VAR61/", vec!["A0/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx10/value label for 300-byte value"]),
-    ("2/4/VAR14/VAR22/", vec!["1/3/One", "2/3/Two"]),
+            ("1/4/VAR01/", vec!["1/3/One"]),
+            ("1/4/VAR31/", vec!["4/abcd3/One"]),
+            ("1/4/VAR41/", vec!["8/abcdefghI/Longer value label"]),
+            (
+                "1/4/VAR51/",
+                vec!["9/abcdefghiS/value label for 9-byte value"],
+            ),
+            (
+                "1/4/VAR61/",
+                vec![
+                    "A0/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx10/value label for 300-byte value",
+                ],
+            ),
+            ("2/4/VAR14/VAR22/", vec!["1/3/One", "2/3/Two"]),
         ];
 
         for (actual, (exp_prefix, exp_suffixes)) in zip_eq(output, expected) {
