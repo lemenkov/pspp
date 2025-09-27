@@ -184,6 +184,9 @@ Section "PSPP" SecDummy
   SetOutPath "$INSTDIR\share\icons\Adwaita"
   File /r /x cursors /x legacy "${EnvDir}/share/icons/Adwaita/*" ;; legacy and cursors are HUGE!
 
+  SetOutPath "$INSTDIR\share\gtksourceview-4"
+  File /r "${EnvDir}/share/gtksourceview-4/*"
+
   SetOutPath "$INSTDIR\share\glib-2.0\schemas"
   File /r "${EnvDir}/share/glib-2.0/schemas/*"
   ExecWait '"$INSTDIR\bin\glib-compile-schemas.exe" "$INSTDIR\share\glib-2.0\schemas"' $0
