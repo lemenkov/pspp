@@ -88,6 +88,26 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
     }
   while (lex_token (lexer) != T_ENDCMD);
 
+  /* Renaming must not change the dict class */
+  for (int i = 0; i < n_new_names; i++)
+    {
+      struct variable *var = vars_to_be_renamed[i];
+      enum dict_class dc = var_get_dict_class (var);
+      enum dict_class new_dc = dict_class_from_id (new_names[i]);
+
+      if (new_dc != dc)
+        {
+          lex_msg (lexer, SE,
+                   _("Variable %s is of class %s, but renaming it to %s would make it of class %s."),
+                  var_get_name (var),
+                  dict_class_to_name (dc),
+                  new_names[i],
+                  dict_class_to_name (new_dc));
+
+          goto lossage;
+        }
+    }
+
   if (!dict_rename_vars (dataset_dict (ds),
                          vars_to_be_renamed, new_names, n_new_names,
                          &err_name))
