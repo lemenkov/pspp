@@ -134,5 +134,32 @@ LIST.
 
 AT_CHECK([pspp -O format=csv rename-variables.sps], [1], [ignore])
 
+AT_CLEANUP
+
+
+AT_SETUP([RENAME -- scratch-variable])
+AT_DATA([rename-variables.sps], [dnl
+SET LOCALE='UTF-8'.
+DATA LIST notable LIST /aèiöu aeiou.
+BEGIN DATA
+1 2
+END DATA.
+LIST AÈIÖU
+RENAME VARIABLE (aèiöu=#ÈIÖU).
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv rename-variables.sps],[1],
+[Table: Data List
+aèiöu
+1.00
+
+"rename-variables.sps:7.30: error: RENAME VARIABLES: Variable aèiöu is of class ordinary, but renaming it to #ÈIÖU would make it of class scratch.
+    7 | RENAME VARIABLE (aèiöu=[#]ÈIÖU).
+      |                              ^"
+
+rename-variables.sps:8: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+
 
 AT_CLEANUP
