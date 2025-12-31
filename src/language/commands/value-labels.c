@@ -63,7 +63,7 @@ cmd_add_value_labels (struct lexer *lexer, struct dataset *ds)
 static int
 do_value_labels (struct lexer *lexer, const struct dictionary *dict, bool erase)
 {
-  struct variable **vars; /* Variable list. */
+  struct variable **vars = NULL; /* Variable list. */
   size_t n_vars;         /* Number of variables. */
   int parse_err=0;        /* true if error parsing variables */
 

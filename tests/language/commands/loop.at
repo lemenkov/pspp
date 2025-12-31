@@ -372,3 +372,24 @@ loop.sps:36.10: error: LOOP: Syntax error expecting end of command.
 error: LOOP: At end of input: Syntax error expecting END LOOP.
 ])
 AT_CLEANUP
+
+
+AT_SETUP([LOOP without end])
+
+AT_DATA([xloop.sps], [dnl
+DATA LIST FREE / a.
+LOOP b
+BEGINefghi jk
+NEW FILE.
+VALUE LABELS p.
+])
+
+AT_CHECK([pspp -O format=csv xloop.sps],[1],
+["xloop.sps:3.1-3.10: error: LOOP: Syntax error expecting `='.
+    3 | BEGINefghi jk
+      | ^~~~~~~~~~"
+
+error: LOOP: At end of input: Syntax error expecting END LOOP.
+])
+
+AT_CLEANUP

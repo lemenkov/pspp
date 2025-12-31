@@ -826,8 +826,8 @@ proc_push_transformations (struct dataset *ds)
 void
 proc_pop_transformations (struct dataset *ds, struct trns_chain *chain)
 {
-  assert (ds->n_stack > 0);
-  *chain = ds->stack[--ds->n_stack];
+  if (ds->n_stack > 0)
+    *chain = ds->stack[--ds->n_stack];
 }
 
 bool
