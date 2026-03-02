@@ -416,6 +416,8 @@ AC_DEFUN([PSPP_CHECK_XGETTEXT],
     minor=`echo $majmin | sed -e 's/^[[0-9]]*\.//'`
     if test "$major" -lt 0; then
       pspp_cv_progrecent_xgettext=no;
+    elif test "$major" -gt 0; then
+      pspp_cv_progrecent_xgettext=yes
     elif test "$minor" -lt 20; then
       pspp_cv_progrecent_xgettext=no
     else
