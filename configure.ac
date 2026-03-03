@@ -87,12 +87,6 @@ if test "x$XGETTEXT" = x; then
   PSPP_REQUIRED_PREREQ([xgettext (is usually provided with gettext)])
 fi
 
-PSPP_CHECK_XGETTEXT
-
-if test "$pspp_cv_progrecent_xgettext"  != "yes"; then
-   PSPP_REQUIRED_PREREQ([xgettext version 0.20 or greater])
-fi
-
 dnl Checks for libraries.
 AC_SYS_LARGEFILE
 AC_SEARCH_LIBS([sin], [m])
