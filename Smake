@@ -352,6 +352,7 @@ prep_ph:
 	$$LIBTOOLIZE --force --automake --copy
 
 aclocal.m4:
+	autopoint --force
 	aclocal -I m4 -I gl/m4
 
 configure: configure.ac aclocal.m4
