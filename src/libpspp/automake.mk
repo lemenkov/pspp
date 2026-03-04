@@ -139,11 +139,7 @@ src/libpspp/version.c: $(top_srcdir)/AUTHORS Makefile
 	  echo "#include \"version.h\""; \
 	  echo "const char bare_version[] = \"$(VERSION)\";"; \
 	  echo "const char version[] = \"GNU $(PACKAGE) $(VERSION)\";"; \
-	  printf "const char announced_version[] = \"GNU $(PACKAGE) $(VERSION)\""; \
-	  case `echo $(VERSION) | $(SED) -e 's/[0-9][0-9]*\.[0-9]*\([0-9]\)\.[0-9][0-9]*/\1/'` in \
-	    [13579]) printf "\"\\\nThis is an unreleased test version. It is not recommended for production use. Use at your own risk\"" ;; \
-	  esac; \
-	  printf ";\n"; \
+	  echo "const char announced_version[] = \"GNU $(PACKAGE) $(VERSION)\";"; \
 	  echo "const char host_system[] = \"$(host_triplet)\";"; \
 	  echo "const char build_system[] = \"$(build_triplet)\";"; \
 	  echo "const char locale_dir[] = \"$(datadir)/locale\";"; \
