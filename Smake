@@ -352,11 +352,11 @@ prep_ph:
 	$$LIBTOOLIZE --force --automake --copy
 
 aclocal.m4:
-	autopoint --force
+	#autopoint --force
 	aclocal -I m4 -I gl/m4
 
 configure: configure.ac aclocal.m4
-	autoconf || rm $@  # autoconf 2.69 has (what I think is) a bug.  It will create configure even when failure is detected.
+	autoreconf -fi
 
 config.h.in: configure.ac
 	autoheader
