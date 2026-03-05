@@ -24,6 +24,7 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_vector.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <math.h>
 #include <uniwidth.h>
@@ -3447,7 +3448,7 @@ is_integer_range (const gsl_matrix *m)
     return false;
 
   double d = to_scalar (m);
-  return d >= DBL_UNIT_LONG_MIN && d <= DBL_UNIT_LONG_MAX;
+  return d >= -DBL_UNIT_MAX && d <= DBL_UNIT_MAX;
 }
 
 static void
@@ -3458,11 +3459,11 @@ note_noninteger_range (const gsl_matrix *m, const struct matrix_expr *e)
   else
     {
       double d = to_scalar (m);
-      if (d < DBL_UNIT_LONG_MIN || d > DBL_UNIT_LONG_MAX)
+      if (d < -DBL_UNIT_MAX || d > DBL_UNIT_MAX)
         msg_at (SN, matrix_expr_location (e),
                 _("This operand with value %g is outside the supported integer "
-                  "range from %ld to %ld."),
-                d, DBL_UNIT_LONG_MIN, DBL_UNIT_LONG_MAX);
+                  "range from %" PRId64 " to %" PRId64 "."),
+                d, (int64_t) -DBL_UNIT_MAX, (int64_t) DBL_UNIT_MAX);
     }
 }
 
@@ -3486,9 +3487,9 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
       return NULL;
     }
 
-  long int start = to_scalar (start_);
-  long int end = to_scalar (end_);
-  long int by = by_ ? to_scalar (by_) : 1;
+  int64_t start = to_scalar (start_);
+  int64_t end = to_scalar (end_);
+  int64_t by = by_ ? to_scalar (by_) : 1;
 
   if (!by)
     {
@@ -3497,10 +3498,10 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
       return NULL;
     }
 
-  long int n = (end >= start && by > 0 ? (end - start + by) / by
+  int64_t n = (end >= start && by > 0 ? (end - start + by) / by
                 : end <= start && by < 0 ? (start - end - by) / -by
                 : 0);
-  gsl_matrix *m = n <= (long) INT32_MAX ? gsl_matrix_alloc (1, n) : NULL;
+  gsl_matrix *m = n <= INT32_MAX ? gsl_matrix_alloc (1, n) : NULL;
   if (m == NULL)
     {
       msg_at (SE, matrix_expr_location (e),
@@ -3508,7 +3509,7 @@ matrix_expr_evaluate_seq (const struct matrix_expr *e,
       return NULL;
     }
 
-  for (long int i = 0; i < n; i++)
+  for (int64_t i = 0; i < n; i++)
     gsl_matrix_set (m, 0, i, start + i * by);
   return m;
 }
