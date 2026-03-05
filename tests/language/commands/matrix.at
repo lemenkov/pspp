@@ -5131,6 +5131,7 @@ AT_CLEANUP
 
 dnl Check that attempting to allocate huge matrices fails gracefully
 AT_SETUP([MATRIX - very large matrices])
+AT_SKIP_IF([test "$(getconf LONG_BIT 2>/dev/null)" -lt 64])
 AT_DATA([matrix.sps], [dnl
 MATRIX.
 PRINT 2:230000000000.
