@@ -5,6 +5,14 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Changes from 2.1.0 to 2.1.1:
+
+ * Translation updates.
+
+ * Bug fixes in build system and tests.
+
+ * No longer mistakenly labeled as a "test release".
+
 Changes from 2.0.1 to 2.1.0:
 
  * Bug fixes.
