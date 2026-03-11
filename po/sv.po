@@ -2,14 +2,14 @@
 # Copyright (C) 2025 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
 # Arve Eriksson <031299870@telia.com>, 2025.
+# Arve Eriksson <031299870@telia.com>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 2.0.1\n"
+"Project-Id-Version: pspp 2.1.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2024-03-21 16:29-0700\n"
-"PO-Revision-Date: 2025-02-23 19:39+0100\n"
+"POT-Creation-Date: 2026-03-04 10:01-0800\n"
+"PO-Revision-Date: 2026-03-07 08:37+0100\n"
 "Last-Translator: Arve Eriksson <031299870@telia.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -19,61 +19,63 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-Generator: Poedit 3.4.2\n"
+"X-Poedit-Basepath: ../Projekt/PSPP-test/pspp-2.1.1\n"
+"X-Poedit-SearchPath-0: .\n"
 
-#: gl/clean-temp.c:234
+#: gl/clean-temp.c:237
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "kan inte hitta en temporärkatalog, försök sätta $TMPDIR"
 
-#: gl/clean-temp.c:249
+#: gl/clean-temp.c:252
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "kan inte skapa en temporärkatalog med mallen \"%s\""
 
-#: gl/clean-temp.c:370
+#: gl/clean-temp.c:373
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "kan inte ta bort temporärkatalog %s"
 
-#: gl/clean-temp-simple.c:296
+#: gl/clean-temp-simple.c:270
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "kan inte ta bort temporärfil %s"
 
-#: gl/error.c:194
+#: gl/error.c:208
 msgid "Unknown system error"
 msgstr "Okänt systemfel"
 
-#: gl/getopt.c:278
+#: gl/getopt.c:282
 #, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: alternativet '%s%s' är tvetydigt\n"
 
-#: gl/getopt.c:284
+#: gl/getopt.c:288
 #, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: alternativet '%s%s' är tvetydigt; möjliga val:"
 
-#: gl/getopt.c:319
+#: gl/getopt.c:322
 #, c-format
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: okänt alternativ '%s%s'\n"
 
-#: gl/getopt.c:345
+#: gl/getopt.c:348
 #, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: alternativet '%s%s' tillåter inte ett argument\n"
 
-#: gl/getopt.c:360
+#: gl/getopt.c:363
 #, c-format
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: alternativet '%s%s' kräver ett argument\n"
 
-#: gl/getopt.c:621
+#: gl/getopt.c:624
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: ogiltigt alternativ -- '%c'\n"
 
-#: gl/getopt.c:636 gl/getopt.c:682
+#: gl/getopt.c:639 gl/getopt.c:685
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: alternativet kräver ett argument -- '%c'\n"
@@ -103,9 +105,6 @@ msgid ""
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr ""
-"Licens GPLv3+: GNU GPL version 3 eller senare <%s>.\n"
-"Detta är fri mjukvara: du har friheten att ändra och vidaredistribuera den.\n"
-"Detta är INTE EN GARANTI, efter vad lagtext föreskriver.\n"
 
 #. TRANSLATORS: %s denotes an author name.
 #: gl/version-etc.c:105
@@ -129,89 +128,81 @@ msgstr "Skrevs av %s, %s, och %s.\n"
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:120
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "and %s.\n"
-msgstr "Skrevs av %s, %s, %s, och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:127
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, and %s.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:134
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, and %s.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, %s, och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:142
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, and %s.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, %s, %s, och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:150
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "and %s.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, %s, %s, %s,\n"
-"och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:159
-#, c-format
+#, fuzzy, c-format
+#| msgid "Written by %s, %s, and %s.\n"
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s, and %s.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, %s, %s, %s,\n"
-"%s, och %s.\n"
+msgstr "Skrevs av %s, %s, och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:170
-#, c-format
+#, fuzzy, c-format
+#| msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, %s, or %s."
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s, %s, and others.\n"
-msgstr ""
-"Skrevs av %s, %s, %s,\n"
-"%s, %s, %s, %s,\n"
-"%s, %s, och andra.\n"
+msgstr "Syntaxfel där %s, %s, %s, %s, %s, %s, %s, eller %s förväntades."
 
 #. TRANSLATORS: The placeholder indicates the bug-reporting address
 #. for this package.  Please add _another line_ saying
@@ -661,7 +652,7 @@ msgstr "Strängvariabeln %s med bredden %d är inte kompatibel med formatet %s. 
 #: src/data/format.c:564
 #, c-format
 msgid "String variable with width %d is not compatible with format %s.  Use format %s instead."
-msgstr "Strängvariabel med bredden %d är inte kompatibel med formatet %s.  Använd formatet %s istället."
+msgstr "Strängvariabel med bredden %d är inte kompatibel med formatet %s. Använd formatet %s istället."
 
 #: src/data/format.c:1159 src/language/command.def:101
 #: src/ui/gui/var-type-dialog.ui:48
@@ -915,7 +906,7 @@ msgstr "Filetikett"
 #: src/data/pc+-file-reader.c:419
 #, c-format
 msgid "Using default encoding %s to read this SPSS/PC+ system file.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Använder standardkodning %s för att läsa denna SPSS/PC+-systemfil.  För bästa resultat, ange en kodning uttryckligen. Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
+msgstr "Använder standardkodning %s för att läsa denna SPSS/PC+-systemfil. För bästa resultat, ange en kodning uttryckligen. Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
 
 #: src/data/pc+-file-reader.c:471 src/data/sys-file-reader.c:901
 #, c-format
@@ -1204,7 +1195,7 @@ msgstr "SPSS portabel fil"
 #: src/data/por-file-writer.c:139
 #, c-format
 msgid "Invalid decimal digits count %d.  Treating as %d."
-msgstr "Ogiltigt antal decimaler %d.  Behandlar som %d."
+msgstr "Ogiltigt antal decimaler %d. Behandlar som %d."
 
 #: src/data/por-file-writer.c:159
 #, c-format
@@ -1247,11 +1238,11 @@ msgstr "Fel från psql-källa: %s."
 #: src/data/psql-reader.c:446
 #, c-format
 msgid "Unsupported OID %d.  SYSMIS values will be inserted."
-msgstr "OID som ej stöds: %d.  SYSMIS-värden kommer att infogas."
+msgstr "OID som ej stöds: %d. SYSMIS-värden kommer att infogas."
 
 #: src/data/settings.c:401
 msgid "MXWARNS set to zero.  No further warnings will be given even when potentially problematic situations are encountered."
-msgstr "MXWARNS satt till noll.  Inga vidare varningar kommer att visas, även om potentiellt problematiska situationer uppstår."
+msgstr "MXWARNS satt till noll. Inga vidare varningar kommer att visas, även om potentiellt problematiska situationer uppstår."
 
 #: src/data/settings.c:408
 #, c-format
@@ -1285,12 +1276,12 @@ msgstr "Duplicerad typ 6-post (dokument)."
 #: src/data/sys-file-reader.c:509 src/data/sys-file-reader.c:1354
 #, c-format
 msgid "Unrecognized record type 7, subtype %d.  For help, please send this file to %s and mention that you were using %s."
-msgstr "Okänd post typ 7, subtyp %d.  För hjälp, skicka filen till %s och berättade att du använde %s."
+msgstr "Okänd post typ 7, subtyp %d. För hjälp, skicka filen till %s och berättade att du använde %s."
 
 #: src/data/sys-file-reader.c:529
 #, c-format
 msgid "Record type 7, subtype %d found here has the same type as the record found near offset 0x%llx.  For help, please send this file to %s and mention that you were using %s."
-msgstr "Post typ 7, subtyp 7 %d som finns här har samma typ som posten som finns vid offset 0x%llx.  För att få hjälp, skicka filen till %s och berätta att du använde %s."
+msgstr "Post typ 7, subtyp 7 %d som finns här har samma typ som posten som finns vid offset 0x%llx. För att få hjälp, skicka filen till %s och berätta att du använde %s."
 
 #: src/data/sys-file-reader.c:541
 #, c-format
@@ -1329,7 +1320,7 @@ msgstr "MRSET %zu Räknat värde"
 #: src/data/sys-file-reader.c:773
 #, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Denna systemfil indikerar inte dess teckenkodning.  Använder förvald kodning %s.  För bästa resultat, ange explicit en kodning.  Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
+msgstr "Denna systemfil indikerar inte dess teckenkodning. Använder förvald kodning %s. För bästa resultat, ange en explicit kodning. Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
 
 #: src/data/sys-file-reader.c:857
 #, c-format
@@ -1486,7 +1477,7 @@ msgstr "Extension 11 har felaktigt antal %u (för %zu variabler)."
 #: src/data/sys-file-reader.c:1943
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
-msgstr "Ogiltiga variabelvisningsparametrar för variabel %zu (%s).  Förvalda parametrar ersätter."
+msgstr "Ogiltiga variabelvisningsparametrar för variabel %zu (%s). Förvalda parametrar ersätter."
 
 #: src/data/sys-file-reader.c:1987
 #, c-format
@@ -1568,7 +1559,7 @@ msgstr "Blockerade %d ytterligare varningar för värdeetiketter."
 #: src/data/sys-file-reader.c:2281
 #, c-format
 msgid "Weight variable index %d not in valid range 1...%zu.  Treating file as unweighted."
-msgstr "Viktningsvariabelindex %d inte i giltigt intervall 1...%zu.  Behandlar filen som oviktad."
+msgstr "Viktningsvariabelindex %d inte i giltigt intervall 1...%zu. Behandlar filen som oviktad."
 
 #: src/data/sys-file-reader.c:2291
 #, c-format
@@ -1647,7 +1638,7 @@ msgstr "Ignorerar lång strängs saknat värdepost för numerisk variabel %s."
 
 #: src/data/sys-file-reader.c:2677
 msgid "This file has corrupted metadata written by a buggy version of PSPP.  To fix it, save a new copy of the file."
-msgstr "Den här filen har korrupt metadata som skrivits av en felbenägen version av PSPP.  För att laga den, spara ett nytt exemplar av filen."
+msgstr "Den här filen har korrupt metadata som skrivits av en felbenägen version av PSPP. För att laga den, spara ett nytt exemplar av filen."
 
 #: src/data/sys-file-reader.c:2693
 #, c-format
@@ -1896,7 +1887,7 @@ msgstr "%s (%s)"
 
 #: src/data/variable.c:1351
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
-msgstr "Åtminstone ett fall i datafilen har ett viktningsvärde som var user-missing, system-missing, noll, eller negativt.  Dessa fall ignorerades."
+msgstr "Åtminstone ett fall i datafilen har ett viktningsvärde som var user-missing, system-missing, noll, eller negativt. Dessa fall ignorerades."
 
 #: src/language/command.c:212 src/language/commands/graph.c:698
 #: src/language/commands/graph.c:705 src/language/commands/graph.c:712
@@ -2061,18 +2052,10 @@ msgid "Insert"
 msgstr "Infoga"
 
 #: src/language/command.def:34
-msgid "Matrix"
-msgstr "Matris"
-
-#: src/language/command.def:35
-msgid "Matri Convert"
-msgstr "Matriskonvertering"
-
-#: src/language/command.def:36
 msgid "N of Cases"
 msgstr "N fall"
 
-#: src/language/command.def:37 src/language/commands/binomial.c:188
+#: src/language/command.def:35 src/language/commands/binomial.c:188
 #: src/language/commands/cochran.c:189 src/language/commands/correlations.c:91
 #: src/language/commands/correlations.c:149
 #: src/language/commands/crosstabs.c:1069
@@ -2096,109 +2079,117 @@ msgstr "N fall"
 msgid "N"
 msgstr "N"
 
-#: src/language/command.def:38
+#: src/language/command.def:36
 msgid "New File"
 msgstr "Ny fil"
 
-#: src/language/command.def:39
+#: src/language/command.def:37
 msgid "Output Modify"
 msgstr "Ändra utdata"
 
-#: src/language/command.def:40
+#: src/language/command.def:38
 msgid "Permissions"
 msgstr "Tillstånd"
 
-#: src/language/command.def:41
+#: src/language/command.def:39
 msgid "Preserve"
 msgstr "Bevara"
 
-#: src/language/command.def:42 src/language/command.def:43
+#: src/language/command.def:40 src/language/command.def:41
 msgid "Quit"
 msgstr "Avsluta"
 
-#: src/language/command.def:44
+#: src/language/command.def:42
 msgid "Restore"
 msgstr "Återställ"
 
-#: src/language/command.def:45
+#: src/language/command.def:43
 msgid "Set"
 msgstr "Sätt"
 
-#: src/language/command.def:46
+#: src/language/command.def:44
 msgid "Show"
 msgstr "Visa"
 
-#: src/language/command.def:47
+#: src/language/command.def:45
 msgid "Subtitle"
 msgstr "Undertitel"
 
-#: src/language/command.def:48
+#: src/language/command.def:46
 msgid "Sysfile Info"
 msgstr "Sysfilinfo"
 
-#: src/language/command.def:49 src/output/output-item.c:737
+#: src/language/command.def:47 src/output/output-item.c:737
 msgid "Title"
 msgstr "Titel"
 
-#: src/language/command.def:52
+#: src/language/command.def:50
 msgid "Add Files"
 msgstr "Lägg till filer"
 
-#: src/language/command.def:54 src/language/commands/list.c:81
+#: src/language/command.def:52 src/language/commands/list.c:81
 msgid "Data List"
 msgstr "Datalista"
 
-#: src/language/command.def:55
+#: src/language/command.def:53
 msgid "Get"
 msgstr "Hämta"
 
-#: src/language/command.def:56
+#: src/language/command.def:54
 msgid "Get Data"
 msgstr "Hämta data"
 
-#: src/language/command.def:57
+#: src/language/command.def:55
 msgid "Import"
 msgstr "Importera"
 
-#: src/language/command.def:58
+#: src/language/command.def:56
 msgid "Input Program"
 msgstr "Indataprogram"
 
-#: src/language/command.def:59
+#: src/language/command.def:57
 msgid "Match Files"
 msgstr "Matcha filer"
 
-#: src/language/command.def:60
+#: src/language/command.def:58
 msgid "Matrix Data"
 msgstr "Matrisdata"
 
-#: src/language/command.def:61
+#: src/language/command.def:59
 msgid "Update"
 msgstr "Uppdatera"
 
-#: src/language/command.def:62
+#: src/language/command.def:60
 msgid "Dataset Activate"
 msgstr "Datauppsättning aktivera"
 
-#: src/language/command.def:63
+#: src/language/command.def:61
 msgid "Dataset Declare"
 msgstr "Datauppsättning deklarera"
 
-#: src/language/command.def:64
+#: src/language/command.def:62
 msgid "Dataset Close"
 msgstr "Datauppsättning stäng"
 
-#: src/language/command.def:65
+#: src/language/command.def:63
 msgid "Dataset Copy"
 msgstr "Datauppsättning kopiera"
 
-#: src/language/command.def:66
+#: src/language/command.def:64
 msgid "Dataset Name"
 msgstr "Datauppsättning namn"
 
-#: src/language/command.def:67
+#: src/language/command.def:65
 msgid "Dataset Display"
 msgstr "Datauppsättning visa"
+
+#: src/language/command.def:66
+msgid "Matrix"
+msgstr "Matris"
+
+#: src/language/command.def:67
+msgid "Matrix Convert"
+msgstr "Matriskonvertering"
 
 #: src/language/command.def:70
 msgid "Add Value Labels"
@@ -2369,7 +2360,7 @@ msgstr "Inled data"
 #: src/language/command.def:118 src/language/commands/crosstabs.c:73
 #: src/language/commands/crosstabs.c:939 src/language/commands/ctables.c:330
 #: src/language/commands/frequencies.c:1230 src/language/commands/graph.c:204
-#: src/language/commands/quick-cluster.c:699
+#: src/language/commands/quick-cluster.c:697
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:90
 #: src/ui/gui/psppire-dialog-action-ctables.c:190
 msgid "Count"
@@ -2492,7 +2483,7 @@ msgstr "Urval"
 #: src/ui/gui/psppire-dialog-action-aggregate.c:211
 #: src/ui/gui/psppire-data-window.c:494 src/ui/gui/psppire-data-window.c:498
 #: src/ui/gui/psppire-output-window.c:315
-#: src/ui/gui/psppire-syntax-window.c:670 src/ui/gui/psppire-window.c:447
+#: src/ui/gui/psppire-syntax-window.c:670 src/ui/gui/psppire-window.c:443
 #: src/ui/gui/aggregate.ui:552
 msgid "Save"
 msgstr "Spara"
@@ -3018,7 +3009,7 @@ msgstr "Kan inte använda argumentnamn eller makronyckelord som !DO-variabel."
 #: src/language/lexer/macro.c:1824
 #, c-format
 msgid "!DO loop over list exceeded maximum number of iterations %d.  (Use SET MITERATE to change the limit.)"
-msgstr "!DO-slinga över lista överskred maximalt antal iterationer %d.  (Använd SET MITERATE för att ändra gränsen.)"
+msgstr "!DO-slinga över lista överskred maximalt antal iterationer %d. (Använd SET MITERATE för att ändra gränsen.)"
 
 #: src/language/lexer/macro.c:1849
 msgid "Expected !TO in numerical !DO loop."
@@ -3031,7 +3022,7 @@ msgstr "!BY-värde får inte vara noll."
 #: src/language/lexer/macro.c:1886
 #, c-format
 msgid "Numerical !DO loop exceeded maximum number of iterations %d.  (Use SET MITERATE to change the limit.)"
-msgstr "Numerisk !DO-slinga överskred maximalt antal iterationer %d.  (Använd SET MITERATE för att ändra gränsen.)"
+msgstr "Numerisk !DO-slinga överskred maximalt antal iterationer %d. (Använd SET MITERATE för att ändra gränsen.)"
 
 #: src/language/lexer/macro.c:1907
 msgid "Expected `=' or !IN in !DO loop."
@@ -3044,7 +3035,7 @@ msgstr "!BREAK utanför !DO."
 #: src/language/lexer/macro.c:2088
 #, c-format
 msgid "Maximum nesting level %d exceeded.  (Use SET MNEST to change the limit.)"
-msgstr "Maximal nästlingsnivå %d överskreds.  (Använd SET MNEST för att ändra gränsen.)"
+msgstr "Maximal nästlingsnivå %d överskreds. (Använd SET MNEST för att ändra gränsen.)"
 
 #: src/language/lexer/format-parser.c:87
 msgid "Syntax error expecting valid format specifier."
@@ -3127,7 +3118,7 @@ msgstr "Denna %zu-byte sträng är för lång för variabeln %s med bredd %d."
 #: src/language/lexer/variable-parser.c:86
 #: src/language/lexer/variable-parser.c:783
 #: src/language/lexer/variable-parser.c:803 src/language/commands/graph.c:810
-#: src/language/commands/matrix.c:6066 utilities/pspp-convert.c:84
+#: src/language/commands/matrix.c:6077 utilities/pspp-convert.c:84
 msgid "Syntax error expecting variable name."
 msgstr "Syntaxfel där variabelnamn förväntades."
 
@@ -3141,12 +3132,12 @@ msgstr "%s är inte ett variabelnamn."
 #: src/language/lexer/variable-parser.c:208
 #, c-format
 msgid "%s is not a numeric variable.  It will not be included in the variable list."
-msgstr "%s är inte en numerisk variabel.  Den kommer inte att inkluderas i variabellistan."
+msgstr "%s är inte en numerisk variabel. Den kommer inte att inkluderas i variabellistan."
 
 #: src/language/lexer/variable-parser.c:212
 #, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
-msgstr "%s är inte en strängvariabel.  Den kommer inte att inkluderas i variabellistan."
+msgstr "%s är inte en strängvariabel. Den kommer inte att inkluderas i variabellistan."
 
 #: src/language/lexer/variable-parser.c:217
 #, c-format
@@ -3156,12 +3147,12 @@ msgstr "Scratch-variabler (som %s) tillåts inte här."
 #: src/language/lexer/variable-parser.c:222
 #, c-format
 msgid "%s and %s are not the same type.  All variables in this variable list must be of the same type.  %s will be omitted from the list."
-msgstr "%s och %s är inte samma typ.  Alla variabler i denna variabellista måste vara av samma typ.  %s kommer att utelämnas från listan."
+msgstr "%s och %s är inte samma typ. Alla variabler i denna variabellista måste vara av samma typ. %s kommer att utelämnas från listan."
 
 #: src/language/lexer/variable-parser.c:229
 #, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
-msgstr "%s och %s är strängvariabler med olika bredd.  Alla variabler i denna variabellista måste ha samma bredd.  %s kommer att utelämnas från listan."
+msgstr "%s och %s är strängvariabler med olika bredd. Alla variabler i denna variabellista måste ha samma bredd. %s kommer att utelämnas från listan."
 
 #: src/language/lexer/variable-parser.c:235
 #: src/language/lexer/variable-parser.c:500
@@ -3172,8 +3163,8 @@ msgstr "Variabeln %s förekommer två gånger i variabellistan."
 #: src/language/lexer/variable-parser.c:357
 #: src/language/lexer/variable-parser.c:869
 #, c-format
-msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
-msgstr "%s TO %s är inte en giltig syntax, eftersom %s kommer innan %s i ordboken."
+msgid "%s TO %s is not valid syntax since %s is after %s in the dictionary."
+msgstr "%s TO %s är inte en giltig syntax, eftersom %s kommer efter %s i ordboken."
 
 #: src/language/lexer/variable-parser.c:366
 msgid "With the syntax <a> TO <b>, variables <a> and <b> must be both regular variables or both scratch variables."
@@ -3219,7 +3210,7 @@ msgstr "%s är inte en numerisk variabel."
 
 #: src/language/commands/aggregate.c:246
 msgid "When the input data is presorted, specifying sorting directions with (A) or (D) has no effect.  Output data will be sorted the same way as the input data."
-msgstr "När indatan försorteras har det ingen påverkan om man anger sorteringsriktning med (A) eller (D).  Utdata kommer att sorteras på samma sätt som indatan."
+msgstr "När indatan försorteras har det ingen påverkan om man anger sorteringsriktning med (A) eller (D). Utdata kommer att sorteras på samma sätt som indatan."
 
 #: src/language/commands/aggregate.c:252
 msgid "The PRESORTED subcommand states that the input data is presorted."
@@ -3284,7 +3275,7 @@ msgstr "Dessa är målvariablerna."
 #: src/language/commands/aggregate.c:571
 #, c-format
 msgid "The value arguments passed to the %s function are out of order.  They will be treated as if they had been specified in the correct order."
-msgstr "Värdeargumenten som skickas till funktionen %s står i fel ordning.  De kommer att behandlas som om de hade angivits i korrekt ordning."
+msgstr "Värdeargumenten som skickas till funktionen %s står i fel ordning. De kommer att behandlas som om de hade angivits i korrekt ordning."
 
 #: src/language/commands/aggregate.c:587
 #, c-format
@@ -3430,7 +3421,7 @@ msgstr "Med GROUP kan variabler inte blanda strängvariabler (som %s) och numeri
 
 #: src/language/commands/autorecode.c:243
 msgid "AUTORECODE ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr "AUTORECODE ignorerar TEMPORARY.  Temporära transformationer kommer att göras permanenta."
+msgstr "AUTORECODE ignorerar TEMPORARY. Temporära transformationer kommer att göras permanenta."
 
 #: src/language/commands/autorecode.c:380
 msgid "Recoding grouped variables."
@@ -3496,7 +3487,7 @@ msgstr "Binomialt test"
 #: src/language/commands/frequencies.c:278
 #: src/language/commands/frequencies.c:1315
 #: src/language/commands/frequencies.c:1326
-#: src/language/commands/friedman.c:250 src/language/commands/glm.c:649
+#: src/language/commands/friedman.c:250 src/language/commands/glm.c:652
 #: src/language/commands/jonckheere-terpstra.c:360
 #: src/language/commands/kruskal-wallis.c:265
 #: src/language/commands/kruskal-wallis.c:313
@@ -3510,7 +3501,7 @@ msgstr "Binomialt test"
 #: src/language/commands/npar-summary.c:106 src/language/commands/oneway.c:902
 #: src/language/commands/oneway.c:980 src/language/commands/oneway.c:1079
 #: src/language/commands/oneway.c:1167 src/language/commands/oneway.c:1299
-#: src/language/commands/quick-cluster.c:698
+#: src/language/commands/quick-cluster.c:696
 #: src/language/commands/regression.c:769
 #: src/language/commands/regression.c:801
 #: src/language/commands/regression.c:925
@@ -3574,7 +3565,7 @@ msgstr "Grupp 2"
 #: src/language/commands/chisquare.c:257 src/language/commands/crosstabs.c:1074
 #: src/language/commands/crosstabs.c:1357 src/language/commands/ctables.c:4281
 #: src/language/commands/examine.c:914 src/language/commands/factor.c:1616
-#: src/language/commands/frequencies.c:320 src/language/commands/glm.c:731
+#: src/language/commands/frequencies.c:320 src/language/commands/glm.c:735
 #: src/language/commands/kruskal-wallis.c:301
 #: src/language/commands/logistic.c:1247
 #: src/language/commands/mann-whitney.c:197 src/language/commands/means.c:707
@@ -3651,7 +3642,7 @@ msgstr "Värde"
 #: src/language/commands/descriptives.c:967
 #: src/language/commands/friedman.c:226
 #: src/language/commands/jonckheere-terpstra.c:376
-#: src/language/commands/matrix.c:6029 src/language/commands/matrix.c:8517
+#: src/language/commands/matrix.c:6040 src/language/commands/matrix.c:8528
 #: src/language/commands/npar-summary.c:113 src/language/commands/print.c:454
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
@@ -3677,7 +3668,7 @@ msgstr "Chi-kvadrat"
 #: src/language/commands/chisquare.c:324 src/language/commands/cochran.c:191
 #: src/language/commands/crosstabs.c:1437 src/language/commands/examine.c:662
 #: src/language/commands/factor.c:1971 src/language/commands/friedman.c:257
-#: src/language/commands/glm.c:653 src/language/commands/kruskal-wallis.c:315
+#: src/language/commands/glm.c:656 src/language/commands/kruskal-wallis.c:315
 #: src/language/commands/logistic.c:1085 src/language/commands/median.c:354
 #: src/language/commands/oneway.c:904 src/language/commands/oneway.c:1171
 #: src/language/commands/regression.c:927
@@ -3696,7 +3687,7 @@ msgstr "Asymp. sig."
 
 #: src/language/commands/cochran.c:111
 msgid "More than two values encountered.  Cochran Q test will not be run."
-msgstr "Fler än två värden påträffades.  Cochrans Q-test kommer inte att utföras."
+msgstr "Fler än två värden påträffades. Cochrans Q-test kommer inte att utföras."
 
 #: src/language/commands/cochran.c:153
 #, c-format
@@ -3753,12 +3744,12 @@ msgstr "I filen %s är %s en sträng."
 #: src/language/commands/combine-files.c:699
 #, c-format
 msgid "Combining files with different encodings.  String data (such as in variable `%s') may not be represented correctly."
-msgstr "Kombinerar filer med olika kodningar.  Strängdata (som i variabel '%s') kanske inte visas korrekt."
+msgstr "Kombinerar filer med olika kodningar. Strängdata (som i variabel '%s') kanske inte visas korrekt."
 
 #: src/language/commands/combine-files.c:710
 #, c-format
 msgid "File %s uses encoding %s.  The output will use this encoding."
-msgstr "Filen %s använder kodning %s.  Utdatan kommer att använda denna kodning."
+msgstr "Filen %s använder kodning %s. Utdatan kommer att använda denna kodning."
 
 #: src/language/commands/combine-files.c:715
 #, c-format
@@ -3934,7 +3925,7 @@ msgstr "Fall"
 #: src/language/commands/crosstabs.c:1074 src/language/commands/examine.c:913
 #: src/language/commands/frequencies.c:297
 #: src/language/commands/frequencies.c:1330
-#: src/language/commands/quick-cluster.c:718
+#: src/language/commands/quick-cluster.c:716
 #: src/language/commands/reliability.c:495
 msgid "Valid"
 msgstr "Giltig"
@@ -4510,19 +4501,19 @@ msgstr "Syntaxfel där nummer eller sträng eller intervall förväntades."
 msgid "Syntax error in postcompute expression."
 msgstr "Syntaxfel i efter-beräkningsuttryck."
 
-#: src/language/commands/ctables.c:951 src/language/expressions/parse.c:805
+#: src/language/commands/ctables.c:951 src/language/expressions/parse.c:808
 msgid "The exponentiation operator (`**') is left-associative: `a**b**c' equals `(a**b)**c', not `a**(b**c)'.  To disable this warning, insert parentheses."
-msgstr "Exponentoperatorn ('**') arbetar från vänster: 'a**b**c' motsvarar '(a**b)**c', inte 'a**(b**c)'.  För att inaktivera denna varning, infoga parenteser."
+msgstr "Exponentoperatorn ('**') arbetar från vänster: 'a**b**c' motsvarar '(a**b)**c', inte 'a**(b**c)'. För att inaktivera denna varning, infoga parenteser."
 
 #: src/language/commands/ctables.c:1162
-#, fuzzy, c-format
+#, c-format
 msgid "Summary function %s applies only to multiple response sets."
 msgstr "Sammanfattningsfunktionen %s gäller bara för multipla svarsuppsättningar."
 
 #: src/language/commands/ctables.c:1164
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' is not a multiple response set."
-msgstr "'%s' är inte en multipla svarsuppsättning."
+msgstr "'%s' är inte en multipel svarsuppsättning."
 
 #: src/language/commands/ctables.c:1173
 #, c-format
@@ -4535,7 +4526,6 @@ msgid "'%s' is not a scale variable."
 msgstr "'%s' är inte en skalvariabel."
 
 #: src/language/commands/ctables.c:1243
-#, fuzzy
 msgid "Multiple response set support not implemented."
 msgstr "Stöd för multipla svarsuppsättningar ej implementerat."
 
@@ -4650,14 +4640,14 @@ msgstr "Radkategorier"
 msgid "Column Categories"
 msgstr "Kolumnkategorier"
 
-#: src/language/commands/ctables.c:4634 src/language/commands/matrix.c:5687
-#: src/language/commands/matrix.c:6016 src/language/commands/matrix.c:8535
+#: src/language/commands/ctables.c:4634 src/language/commands/matrix.c:5694
+#: src/language/commands/matrix.c:6027 src/language/commands/matrix.c:8546
 msgid "Rows"
 msgstr "Rader"
 
 #: src/language/commands/ctables.c:4635 src/language/commands/data-parser.c:727
-#: src/language/commands/matrix.c:5689 src/language/commands/matrix.c:6016
-#: src/language/commands/matrix.c:8535 src/language/commands/print.c:451
+#: src/language/commands/matrix.c:5696 src/language/commands/matrix.c:6027
+#: src/language/commands/matrix.c:8546 src/language/commands/print.c:451
 #: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Kolumner"
@@ -4853,7 +4843,7 @@ msgid "Data for variable %s is not valid as format %s: %s"
 msgstr "Data för variabeln %s är inte giltig som format %s: %s"
 
 #: src/language/commands/data-parser.c:543
-#, fuzzy, c-format
+#, c-format
 msgid "Partial case of %d of %d records discarded."
 msgstr "Delvist fall ur %d av %d poster kastades."
 
@@ -5099,7 +5089,7 @@ msgstr "Mappning av variabler till Z-värden"
 msgid "Names"
 msgstr "Namn"
 
-#: src/language/commands/descriptives.c:564 src/language/commands/glm.c:659
+#: src/language/commands/descriptives.c:564 src/language/commands/glm.c:662
 #: src/language/commands/regression.c:932
 msgid "Source"
 msgstr "Källa"
@@ -5108,7 +5098,7 @@ msgstr "Källa"
 msgid "Target"
 msgstr "Destination"
 
-#: src/language/commands/descriptives.c:637
+#: src/language/commands/descriptives.c:652
 #, c-format
 msgid "Internal error processing Z scores.  Please report this to %s."
 msgstr "Internt fel vid behandling av Z-värden. Rapportera detta till %s."
@@ -5213,7 +5203,7 @@ msgid "Statistic"
 msgstr "Statistik"
 
 #: src/language/commands/examine.c:663 src/language/commands/factor.c:1972
-#: src/language/commands/glm.c:656 src/language/commands/logistic.c:1086
+#: src/language/commands/glm.c:659 src/language/commands/logistic.c:1086
 #: src/language/commands/oneway.c:907 src/language/commands/oneway.c:1083
 #: src/language/commands/oneway.c:1302 src/language/commands/regression.c:808
 #: src/language/commands/regression.c:930
@@ -5262,7 +5252,7 @@ msgid "Extreme Values"
 msgstr "Extremvärden"
 
 #: src/language/commands/examine.c:825 src/language/commands/list.c:91
-#: src/language/commands/quick-cluster.c:612
+#: src/language/commands/quick-cluster.c:610
 msgid "Case Number"
 msgstr "Fallnummer"
 
@@ -5350,12 +5340,10 @@ msgid "Initial Eigenvalues"
 msgstr "Initiala Eigen-värden"
 
 #: src/language/commands/factor.c:1629
-#, fuzzy
 msgid "Extraction Sums of Squared Loadings"
 msgstr "Utvinningssummor av kvadratiserade faktorer"
 
 #: src/language/commands/factor.c:1633
-#, fuzzy
 msgid "Rotation Sums of Squared Loadings"
 msgstr "Rotationssummor av kvadratiserade faktorer"
 
@@ -5368,17 +5356,14 @@ msgid "Factor 2"
 msgstr "Faktor 2"
 
 #: src/language/commands/factor.c:1734
-#, fuzzy
 msgid "Anti-Image Matrices"
 msgstr "Motbildsmatriser"
 
 #: src/language/commands/factor.c:1739
-#, fuzzy
 msgid "Anti-image Covariance"
 msgstr "Motbildskovarians"
 
 #: src/language/commands/factor.c:1740
-#, fuzzy
 msgid "Anti-image Correlation"
 msgstr "Motbildskorrelation"
 
@@ -5509,7 +5494,7 @@ msgid "Could not create temporary file for %s."
 msgstr "Kunde inte skapa temporärfil för %s."
 
 #: src/language/commands/flip.c:343
-#, fuzzy, c-format
+#, c-format
 msgid "Error rewinding %s file: %s."
 msgstr "Fel vid tillbakaspolning av %s-fil: %s."
 
@@ -5539,12 +5524,12 @@ msgid "Error writing %s source file: %s."
 msgstr "Fel vid skrivning till %s-källfil: %s."
 
 #: src/language/commands/flip.c:404
-#, fuzzy, c-format
+#, c-format
 msgid "Error rewinding %s source file: %s."
 msgstr "Fel vid tillbakaspolning av %s-källfil: %s."
 
 #: src/language/commands/flip.c:436
-#, fuzzy, c-format
+#, c-format
 msgid "Error reading %s temporary file: %s."
 msgstr "Fel vid läsning av %s temporärfil: %s."
 
@@ -5585,7 +5570,6 @@ msgstr "Utesluter stapeldiagram, som inte har några värden."
 #: src/language/commands/kruskal-wallis.c:263
 #: src/language/commands/mann-whitney.c:182
 #: src/language/commands/wilcoxon.c:229
-#, fuzzy
 msgid "Ranks"
 msgstr "Ranger"
 
@@ -5593,9 +5577,8 @@ msgstr "Ranger"
 #: src/language/commands/kruskal-wallis.c:267
 #: src/language/commands/mann-whitney.c:186
 #: src/language/commands/wilcoxon.c:234
-#, fuzzy
 msgid "Mean Rank"
-msgstr "Medel rang"
+msgstr "Medelrang"
 
 #: src/language/commands/friedman.c:253
 msgid "Kendall's W"
@@ -5634,55 +5617,55 @@ msgstr "I kompatibelt syntaxläge måste strängen QUALIFIER innehålla exakt et
 msgid "%s: Data file dictionary has no variables."
 msgstr "%s: Datafilens ordbok har inga variabler."
 
-#: src/language/commands/glm.c:161
+#: src/language/commands/glm.c:164
 msgid "Multivariate analysis is not yet implemented."
 msgstr "Multivariat analys är ännu inte implementerad."
 
-#: src/language/commands/glm.c:647
+#: src/language/commands/glm.c:650
 msgid "Tests of Between-Subjects Effects"
 msgstr "Test av effekter mellan objekt"
 
-#: src/language/commands/glm.c:650
+#: src/language/commands/glm.c:653
 msgid "Type I Sum Of Squares"
 msgstr "Typ I summa av kvadrater"
 
-#: src/language/commands/glm.c:651
+#: src/language/commands/glm.c:654
 msgid "Type II Sum Of Squares"
 msgstr "Typ II summa av kvadrater"
 
-#: src/language/commands/glm.c:652
+#: src/language/commands/glm.c:655
 msgid "Type III Sum Of Squares"
 msgstr "Typ III summa av kradrater"
 
-#: src/language/commands/glm.c:654 src/language/commands/oneway.c:905
+#: src/language/commands/glm.c:657 src/language/commands/oneway.c:905
 #: src/language/commands/regression.c:928
 msgid "Mean Square"
 msgstr "Medel kvadrat"
 
-#: src/language/commands/glm.c:655 src/language/commands/oneway.c:906
+#: src/language/commands/glm.c:658 src/language/commands/oneway.c:906
 #: src/language/commands/regression.c:929
 #: src/language/commands/t-test-indep.c:262
 msgid "F"
 msgstr "F"
 
-#: src/language/commands/glm.c:660
+#: src/language/commands/glm.c:663
 msgid "Corrected Model"
 msgstr "Korrigerad modell"
 
-#: src/language/commands/glm.c:660
+#: src/language/commands/glm.c:663
 msgid "Model"
 msgstr "Modell"
 
-#: src/language/commands/glm.c:672
+#: src/language/commands/glm.c:675
 msgid "Intercept"
 msgstr "Skärningspunkt"
 
-#: src/language/commands/glm.c:722 src/output/output-item.c:241
-#: src/output/pivot-table.c:989 src/output/spv/spv.c:535
+#: src/language/commands/glm.c:726
+msgctxt "statistics"
 msgid "Error"
 msgstr "Fel"
 
-#: src/language/commands/glm.c:739
+#: src/language/commands/glm.c:743
 msgid "Corrected Total"
 msgstr "Korrigerat total"
 
@@ -5695,7 +5678,7 @@ msgid "Cumulative Count"
 msgstr "Kumulativt antal"
 
 #: src/language/commands/graph.c:290
-#, fuzzy, c-format
+#, c-format
 msgid "%s vs. %s by %s"
 msgstr "%s vs. %s genom %s"
 
@@ -6018,7 +6001,6 @@ msgid "Classification Table"
 msgstr "Klassifikationstabell"
 
 #: src/language/commands/logistic.c:1377
-#, fuzzy
 msgid "Predicted"
 msgstr "Förväntat"
 
@@ -6027,7 +6009,6 @@ msgid "Percentage Correct"
 msgstr "Procent korrekt"
 
 #: src/language/commands/logistic.c:1379
-#, fuzzy
 msgid "Observed"
 msgstr "Observerat"
 
@@ -6040,13 +6021,11 @@ msgid "This command cannot appear outside LOOP...END LOOP."
 msgstr "Detta kommando kan inte förekomma utanför LOOP...END LOOP."
 
 #: src/language/commands/loop.c:183
-#, fuzzy
 msgid "Only one index clause may be specified."
 msgstr "Endast en indexsats får anges."
 
 #: src/language/commands/mann-whitney.c:187
 #: src/language/commands/wilcoxon.c:235
-#, fuzzy
 msgid "Sum of Ranks"
 msgstr "Summa av ranger"
 
@@ -6114,11 +6093,9 @@ msgstr "CELLS ignoreras när VARIABLES inkluderar ROWTYPE_"
 
 #: src/language/commands/matrix-data.c:1157
 msgid "CELLS is required when factor variables are specified and VARIABLES does not include ROWTYPE_."
-msgstr "CERLLS krävs när faktorvariabler anges och VARIABLES inte inkluderar ROWTYPE_."
+msgstr "CELLS krävs när faktorvariabler anges och VARIABLES inte inkluderar ROWTYPE_."
 
 #: src/language/commands/matrix-data.c:1166
-#, fuzzy
-#| msgid "CONTENTS was not specified and VARIABLES does not include ROWTYPE_. Assuming CONTENTS=CORR."
 msgid "CONTENTS was not specified and VARIABLES does not include ROWTYPE_.  Assuming CONTENTS=CORR."
 msgstr "CONTENTS angavs inte och VARIABLES inkluderar inte ROWTYPE_. Antar CONTENTS=CORR."
 
@@ -6182,7 +6159,7 @@ msgstr[1] "Matrisfunktion %s kräver 1 eller 2 argument, men %zu angavs."
 msgid "Matrix function %s requires at least one argument."
 msgstr "Matrisfunktion %s kräver åtminstone ett argument."
 
-#: src/language/commands/matrix.c:1076 src/language/commands/matrix.c:8728
+#: src/language/commands/matrix.c:1076 src/language/commands/matrix.c:8739
 #, c-format
 msgid "Unknown variable %s."
 msgstr "Okänd variabel %s."
@@ -6192,7 +6169,6 @@ msgid "Syntax error expecting matrix expression."
 msgstr "Syntaxfel där matrisuttryck förväntades."
 
 #: src/language/commands/matrix.c:1448
-#, fuzzy
 msgid "Input to CHOL function is not positive-definite."
 msgstr "Indata till CHOL-funktionen är inte positiv-bestämd."
 
@@ -6266,7 +6242,6 @@ msgid "The right-hand operand is a %zu×%zu matrix."
 msgstr "Höger hands operand är en %zu×%zu-matris."
 
 #: src/language/commands/matrix.c:3330
-#, fuzzy
 msgid "Matrices not conformable for multiplication."
 msgstr "Matriser kan inte likformas för multiplikation."
 
@@ -6303,613 +6278,617 @@ msgstr "Alla operander för : måste vara skalor i det heltalsintervall som stö
 msgid "The increment operand to : must be nonzero."
 msgstr "Ökningsoperanden till : måste vara annat än noll."
 
-#: src/language/commands/matrix.c:3529
+#: src/language/commands/matrix.c:3507
+msgid "Matrix cannot be allocated.  Too large?"
+msgstr "Matris kan inte allokeras. För stor?"
+
+#: src/language/commands/matrix.c:3536
 msgid "This expression tries to horizontally join matrices with differing numbers of rows."
 msgstr "Detta uttryck försöker att horisontellt slå ihop matriser med olika antal rader."
 
-#: src/language/commands/matrix.c:3559
+#: src/language/commands/matrix.c:3566
 msgid "This expression tries to vertically join matrices with differing numbers of columns."
 msgstr "Detta uttryck försöker att vertikalt slå ihop matriser med olika antal kolumner."
 
-#: src/language/commands/matrix.c:3624
+#: src/language/commands/matrix.c:3631
 #, c-format
 msgid "Vector index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "Vektorindex måste vara en skala eller en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3631
+#: src/language/commands/matrix.c:3638
 #, c-format
 msgid "Matrix row index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "Matrisens radindex måste vara en skala eller en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3638
+#: src/language/commands/matrix.c:3645
 #, c-format
 msgid "Matrix column index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "Matriskolumnindex måste vara en skala eller en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3660
+#: src/language/commands/matrix.c:3667
 #, c-format
 msgid "Index %g is out of range for vector with %zu elements."
 msgstr "Index %g är utanför vektorns intervall med %zu element."
 
-#: src/language/commands/matrix.c:3666
+#: src/language/commands/matrix.c:3673
 #, c-format
 msgid "%g is not a valid row index for a %zu×%zu matrix."
 msgstr "%g är inte ett giltigt radindex för en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3673
+#: src/language/commands/matrix.c:3680
 #, c-format
 msgid "%g is not a valid column index for a %zu×%zu matrix."
 msgstr "%g är inte ett giltigt kolumnindex för en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3705
+#: src/language/commands/matrix.c:3712
 #, c-format
 msgid "Vector index operator may not be applied to a %zu×%zu matrix."
 msgstr "Vektorindexoperand får inte användas på en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3788
+#: src/language/commands/matrix.c:3795
 #, c-format
 msgid "Function %s argument %zu must be a scalar, not a %zu×%zu matrix."
 msgstr "Funktionen %ss argument %zu måste vara en skala, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3803
+#: src/language/commands/matrix.c:3810
 #, c-format
 msgid "Function %s argument %zu must be a vector, not a %zu×%zu matrix."
 msgstr "Funktionen %ss argument %zu måste vara en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:3854
+#: src/language/commands/matrix.c:3861
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than or equal to argument %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara större än eller lika med argument %zu."
 
-#: src/language/commands/matrix.c:3860
+#: src/language/commands/matrix.c:3867
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than argument %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara större än argumentet %zu."
 
-#: src/language/commands/matrix.c:3866
+#: src/language/commands/matrix.c:3873
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than or equal to argument %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara mindre än eller lika med argumentet %zu."
 
-#: src/language/commands/matrix.c:3872
+#: src/language/commands/matrix.c:3879
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than argument %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara mindre än argumentet %zu."
 
-#: src/language/commands/matrix.c:3878
+#: src/language/commands/matrix.c:3885
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to argument %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s får inte vara lika med argumentet %zu."
 
-#: src/language/commands/matrix.c:3886 src/language/commands/matrix.c:3893
-#: src/language/commands/matrix.c:3941
+#: src/language/commands/matrix.c:3893 src/language/commands/matrix.c:3900
+#: src/language/commands/matrix.c:3948
 #, c-format
 msgid "Argument %zu is %g."
 msgstr "Argumentet %zu är %g."
 
-#: src/language/commands/matrix.c:3889 src/language/commands/matrix.c:3945
+#: src/language/commands/matrix.c:3896 src/language/commands/matrix.c:3952
 #, c-format
 msgid "Row %zu, column %zu of argument %zu is %g."
 msgstr "Rad %zu, kolumn %zu av argumentet %zu är %g."
 
-#: src/language/commands/matrix.c:3907
+#: src/language/commands/matrix.c:3914
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than or equal to %g."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara större än eller lika med %g."
 
-#: src/language/commands/matrix.c:3913
+#: src/language/commands/matrix.c:3920
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than %g."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara större än %g."
 
-#: src/language/commands/matrix.c:3919
+#: src/language/commands/matrix.c:3926
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than or equal to %g."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara mindre än eller lika med %g."
 
-#: src/language/commands/matrix.c:3925
+#: src/language/commands/matrix.c:3932
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than %g."
 msgstr "Argumentet %zu till matrisfunktionen %s måste vara mindre än %g."
 
-#: src/language/commands/matrix.c:3931
+#: src/language/commands/matrix.c:3938
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to %g."
 msgstr "Argumentet %zu till matrisfunktionen %s får inte vara lika med %g."
 
-#: src/language/commands/matrix.c:4014
+#: src/language/commands/matrix.c:4021
 #, c-format
 msgid "Row %zu, column %zu of argument %zu to matrix function %s is %g, which is outside the valid range %c%d,%d%c."
 msgstr "Rad %zu, kolumn %zu av argumentet %zu till matrisfunktionen %s är %g, vilket är utanför det giltiga intervallet %c%d,%d%c."
 
-#: src/language/commands/matrix.c:4023
+#: src/language/commands/matrix.c:4030
 #, c-format
 msgid "Argument %zu to matrix function %s is %g, which is outside the valid range %c%d,%d%c."
 msgstr "Argumentet %zu till matrisfunktionen %s är %g, vilket är utanför det giltiga intervallet %c%d,%d%c."
 
-#: src/language/commands/matrix.c:4040
+#: src/language/commands/matrix.c:4047
 #, c-format
 msgid "Argument %zu to matrix function %s, which must be integer, contains non-integer value %g in row %zu, column %zu."
 msgstr "Argumentet %zu till matrisfunktionen %s, som måste vara ett heltal, innehåller värdet %g som inte är ett heltal i rad %zu, kolumn %zu."
 
-#: src/language/commands/matrix.c:4046
+#: src/language/commands/matrix.c:4053
 #, c-format
 msgid "Argument %zu to matrix function %s, which must be integer, has non-integer value %g."
 msgstr "Argumentet %zu till matrisfunktionen %s, som måste vara ett heltal, har värdet %g som inte är ett heltal."
 
-#: src/language/commands/matrix.c:4395
+#: src/language/commands/matrix.c:4402
 #, c-format
 msgid "Arguments 1 and 2 to %s have dimensions %zu×%zu and %zu×%zu, but %s requires these arguments either to have the same dimensions or for one of them to be a scalar."
 msgstr "Argumenten 1 och 2 till %s har dimensionerna %zu×%zu och %zu×%zu, men %s kräver att dessa argument antingen har samma dimensioner, eller att ett av dem är en skala."
 
-#: src/language/commands/matrix.c:4521
+#: src/language/commands/matrix.c:4528
 #, c-format
 msgid "Uninitialized variable %s used in expression."
 msgstr "Oinitialiserad variabel %s används i uttryck."
 
-#: src/language/commands/matrix.c:4679
+#: src/language/commands/matrix.c:4686
 #, c-format
 msgid "Expression for %s must evaluate to scalar, not a %zu×%zu matrix."
 msgstr "Uttrycket för %s måste utvärderas mot en skala, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:4703
+#: src/language/commands/matrix.c:4710
 #, c-format
 msgid "Expression for %s is outside the supported integer range."
 msgstr "Uttrycket för %s är utanför det heltalsintervall som stöds."
 
-#: src/language/commands/matrix.c:4775 src/language/commands/matrix.c:4857
+#: src/language/commands/matrix.c:4782 src/language/commands/matrix.c:4864
 #, c-format
 msgid "Undefined variable %s."
 msgstr "Odefinierad variabel %s."
 
-#: src/language/commands/matrix.c:4862
+#: src/language/commands/matrix.c:4869
 #, c-format
 msgid "Cannot index %zu×%zu matrix %s."
 msgstr "Kan inte indexera %zu×%zu-mmatrisen %s."
 
-#: src/language/commands/matrix.c:4871
+#: src/language/commands/matrix.c:4878
 #, c-format
 msgid "Can't use vector indexing on %zu×%zu matrix %s."
 msgstr "Kan inte använda vektorindexering på %zu×%zu-matrisen %s."
 
-#: src/language/commands/matrix.c:4905 src/language/commands/matrix.c:4917
-#, fuzzy, c-format
+#: src/language/commands/matrix.c:4912 src/language/commands/matrix.c:4924
+#, c-format
 msgid "Only an %zu-element vector may be assigned to this %zu-element subvector of %s."
 msgstr "Endast ett %zu-elements vektor får tilldelas till detta %zu-elements subvektor på %s."
 
-#: src/language/commands/matrix.c:4909
+#: src/language/commands/matrix.c:4916
 #, c-format
 msgid "The source is an %zu×%zu matrix."
 msgstr "Källan är en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:4920
+#: src/language/commands/matrix.c:4927
 #, c-format
 msgid "The source vector has %zu element."
 msgid_plural "The source vector has %zu elements."
 msgstr[0] "Källvektorn har %zu element."
 msgstr[1] "Källvektorn har %zu element."
 
-#: src/language/commands/matrix.c:4949
+#: src/language/commands/matrix.c:4956
 #, c-format
 msgid "Numbers of indexes for assigning to %s differ from the size of the source matrix."
 msgstr "Antal index att tilldela till %s skiljer sig från storleken av källmatrisen."
 
-#: src/language/commands/matrix.c:4954
+#: src/language/commands/matrix.c:4961
 #, c-format
 msgid "Number of row indexes for assigning to %s differs from number of rows in source matrix."
 msgstr "Antal radindex att tilldela till %s skiljer sig från antalet rader i källmatrisen."
 
-#: src/language/commands/matrix.c:4959
+#: src/language/commands/matrix.c:4966
 #, c-format
 msgid "Number of column indexes for assigning to %s differs from number of columns in source matrix."
 msgstr "Antal kolumnindex att tilldela till %s skiljer sig från antalet kolumner i källmatrisen."
 
-#: src/language/commands/matrix.c:4967
+#: src/language/commands/matrix.c:4974
 #, c-format
 msgid "There is %zu row index."
 msgid_plural "There are %zu row indexes."
 msgstr[0] "Det finns %zu radindex."
 msgstr[1] "Det finns %zu radindex."
 
-#: src/language/commands/matrix.c:4973
+#: src/language/commands/matrix.c:4980
 #, c-format
 msgid "Destination matrix %s has %zu row."
 msgid_plural "Destination matrix %s has %zu rows."
 msgstr[0] "Destinationsmatris %s har %zu rad."
 msgstr[1] "Destinationsmatris %s har %zu rader."
 
-#: src/language/commands/matrix.c:4983
+#: src/language/commands/matrix.c:4990
 #, c-format
 msgid "There is %zu column index."
 msgid_plural "There are %zu column indexes."
 msgstr[0] "Det finns %zu kolumnidnex."
 msgstr[1] "Det finns %zu kolumnindex."
 
-#: src/language/commands/matrix.c:4989
+#: src/language/commands/matrix.c:4996
 #, c-format
 msgid "Destination matrix %s has %zu column."
 msgid_plural "Destination matrix %s has %zu columns."
 msgstr[0] "Destinationsmatris %s har %zu kolumn."
 msgstr[1] "Destinationsmatris %s har %zu kolumner."
 
-#: src/language/commands/matrix.c:4995
+#: src/language/commands/matrix.c:5002
 #, c-format
 msgid "The source matrix is %zu×%zu."
 msgstr "Källmatrisen är %zu×%zu."
 
-#: src/language/commands/matrix.c:5968
+#: src/language/commands/matrix.c:5979
 msgid "BREAK not inside LOOP."
 msgstr "BREAK inte inuti LOOP."
 
-#: src/language/commands/matrix.c:6012
+#: src/language/commands/matrix.c:6023
 msgid "Matrix Variables"
 msgstr "Matrisvariabler"
 
-#: src/language/commands/matrix.c:6014 src/language/commands/matrix.c:8515
+#: src/language/commands/matrix.c:6025 src/language/commands/matrix.c:8526
 #: src/language/commands/set.c:1291 src/language/commands/sys-file-info.c:186
 msgid "Attribute"
 msgstr "Attribut"
 
-#: src/language/commands/matrix.c:6015
+#: src/language/commands/matrix.c:6026
 msgid "Dimension"
 msgstr "Dimension"
 
-#: src/language/commands/matrix.c:6017
+#: src/language/commands/matrix.c:6028
 msgid "Size (kB)"
 msgstr "Storlek (kB)"
 
-#: src/language/commands/matrix.c:6143
+#: src/language/commands/matrix.c:6154
 #, c-format
 msgid "Cannot save %zu×%zu matrix to %s because the first SAVE to %s in this matrix program wrote a %zu-column matrix."
 msgstr "Kan inte spara %zu×%zu-matris till %s eftersom den första SAVE till %s i matrisprogrammet skrev en matris med %zu-kolumner."
 
-#: src/language/commands/matrix.c:6148
+#: src/language/commands/matrix.c:6159
 #, c-format
 msgid "This is the location of the first SAVE to %s."
 msgstr "Detta är platsen för den första SAVE till %s."
 
-#: src/language/commands/matrix.c:6207
+#: src/language/commands/matrix.c:6218
 #, c-format
 msgid "Duplicate variable name %s in SAVE statement."
 msgstr "Duplicerat variabelnamn %s i SAVE-satsen."
 
-#: src/language/commands/matrix.c:6220
+#: src/language/commands/matrix.c:6231
 #, c-format
 msgid "The SAVE command STRINGS subcommand specifies an unknown variable %s."
 msgstr "SAVE-kommandots STRINGS-subkommando anger en okänd variabel %s."
 
-#: src/language/commands/matrix.c:6224
+#: src/language/commands/matrix.c:6235
 #, c-format
 msgid "The SAVE command STRINGS subcommand specifies %zu unknown variable: %s."
 msgid_plural "The SAVE command STRINGS subcommand specifies %zu unknown variables, including %s."
 msgstr[0] "SAVE-kommandots STRINGS-subkommando anger %zu okänd variabel: %s."
 msgstr[1] "SAVE-kommandots STRINGS-subkommando anger %zu okända variabler, inklusive %s."
 
-#: src/language/commands/matrix.c:6383
+#: src/language/commands/matrix.c:6394
 msgid "Ignoring NAMES because VARIABLES was also specified."
 msgstr "Ignorerar NAMES eftersom VARIABLES också angavs."
 
-#: src/language/commands/matrix.c:6556 src/language/commands/matrix.c:7138
+#: src/language/commands/matrix.c:6567 src/language/commands/matrix.c:7149
 #, c-format
 msgid "Field width %d does not evenly divide record width %d."
 msgstr "Fältbredd %d delar inte postens bredd %d jämnt."
 
-#: src/language/commands/matrix.c:6559 src/language/commands/matrix.c:6692
-#: src/language/commands/matrix.c:7141 src/language/commands/matrix.c:7257
+#: src/language/commands/matrix.c:6570 src/language/commands/matrix.c:6703
+#: src/language/commands/matrix.c:7152 src/language/commands/matrix.c:7268
 msgid "This syntax designates the record width."
 msgstr "Syntaxen betecknar postens bredd."
 
-#: src/language/commands/matrix.c:6561 src/language/commands/matrix.c:7143
+#: src/language/commands/matrix.c:6572 src/language/commands/matrix.c:7154
 msgid "This syntax specifies the field width."
 msgstr "Syntaxen anger fältets bredd."
 
-#: src/language/commands/matrix.c:6613 src/language/commands/matrix.c:7186
+#: src/language/commands/matrix.c:6624 src/language/commands/matrix.c:7197
 #, c-format
 msgid "Unknown format %s."
 msgstr "Okänt format %s."
 
-#: src/language/commands/matrix.c:6645
+#: src/language/commands/matrix.c:6656
 msgid "SIZE is required for reading data into a full matrix (as opposed to a submatrix)."
 msgstr "SIZE krävs för att läsa data till en full matris (i motsats till en submatris)."
 
-#: src/language/commands/matrix.c:6648
+#: src/language/commands/matrix.c:6659
 msgid "This expression designates a full matrix."
 msgstr "Uttrycket betecknar en full matris."
 
-#: src/language/commands/matrix.c:6687
+#: src/language/commands/matrix.c:6698
 #, c-format
 msgid "%d repetitions cannot fit in record width %d."
 msgstr "%d upprepningar får inte plats i postbredd %d."
 
-#: src/language/commands/matrix.c:6690 src/language/commands/matrix.c:7255
+#: src/language/commands/matrix.c:6701 src/language/commands/matrix.c:7266
 msgid "This syntax designates the number of repetitions."
 msgstr "Syntaxen betecknar antalet upprepningar."
 
-#: src/language/commands/matrix.c:6700 src/language/commands/matrix.c:7265
+#: src/language/commands/matrix.c:6711 src/language/commands/matrix.c:7276
 msgid "This command specifies two different field widths."
 msgstr "Kommandot anger två olika fältbredder."
 
-#: src/language/commands/matrix.c:6704 src/language/commands/matrix.c:7269
-#: src/language/commands/matrix.c:7306
+#: src/language/commands/matrix.c:6715 src/language/commands/matrix.c:7280
+#: src/language/commands/matrix.c:7317
 #, c-format
 msgid "This syntax specifies %d repetition."
 msgid_plural "This syntax specifies %d repetitions."
 msgstr[0] "Syntaxen anger %d upprepning."
 msgstr[1] "Syntaxen anger %d upprepningar."
 
-#: src/language/commands/matrix.c:6709 src/language/commands/matrix.c:7274
-#: src/language/commands/matrix.c:7311
+#: src/language/commands/matrix.c:6720 src/language/commands/matrix.c:7285
+#: src/language/commands/matrix.c:7322
 #, c-format
 msgid "This syntax designates record width %d, which divided by %d repetitions implies field width %d."
 msgstr "Syntaxen betecknar postbredd %d, vilket delat med %d upprepningar antyder fältbredd %d."
 
-#: src/language/commands/matrix.c:6716 src/language/commands/matrix.c:6719
-#: src/language/commands/matrix.c:7281 src/language/commands/matrix.c:7284
-#: src/language/commands/matrix.c:7319
+#: src/language/commands/matrix.c:6727 src/language/commands/matrix.c:6730
+#: src/language/commands/matrix.c:7292 src/language/commands/matrix.c:7295
+#: src/language/commands/matrix.c:7330
 #, c-format
 msgid "This syntax specifies field width %d."
 msgstr "Syntaxen anger fältbredd %d."
 
-#: src/language/commands/matrix.c:6743
+#: src/language/commands/matrix.c:6754
 #, c-format
 msgid "Error reading \"%.*s\" as format %s for matrix row %zu, column %zu: %s"
 msgstr "Fel vid läsning av \"%.*s\" som format %s för matrisrad %zu, kolumn %zu;: %s"
 
-#: src/language/commands/matrix.c:6765
+#: src/language/commands/matrix.c:6776
 msgid "Matrix data may not contain missing value."
 msgstr "Matrisdata får inte innehålla saknat värde."
 
-#: src/language/commands/matrix.c:6800
+#: src/language/commands/matrix.c:6811
 msgid "Unexpected end of file reading matrix data."
 msgstr "Oväntat filslut vid läsning av matrisdata."
 
-#: src/language/commands/matrix.c:6871
+#: src/language/commands/matrix.c:6882
 #, c-format
 msgid "Trailing garbage following data for matrix row %zu."
 msgstr "Efterföljande skräp efter data för matrisrad %zu."
 
-#: src/language/commands/matrix.c:6897 src/language/commands/matrix.c:6920
+#: src/language/commands/matrix.c:6908 src/language/commands/matrix.c:6931
 #, c-format
 msgid "SIZE must evaluate to a scalar or a 2-element vector, not a %zu×%zu matrix."
 msgstr "SIZE måste utvärderas mot en skala eller en vektor med två element, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:6933
+#: src/language/commands/matrix.c:6944
 #, c-format
 msgid "Matrix dimensions %g×%g specified on SIZE are outside valid range."
 msgstr "Matrisdimensionerna %g×%g som angavs på SIZE är utanför giltigt intervall."
 
-#: src/language/commands/matrix.c:6969
+#: src/language/commands/matrix.c:6980
 msgid "Dimensions specified on SIZE differ from dimensions of destination submatrix."
 msgstr "Dimenrionserna som angavs på SIZE skiljer sig från dimensionerna för destinations-submatrisen."
 
-#: src/language/commands/matrix.c:6972
+#: src/language/commands/matrix.c:6983
 #, c-format
 msgid "SIZE specifies dimensions %zu×%zu."
 msgstr "SIZE anger dimensionerna %zu×%zu."
 
-#: src/language/commands/matrix.c:6975
+#: src/language/commands/matrix.c:6986
 #, c-format
 msgid "Destination submatrix has dimensions %zu×%zu."
 msgstr "Destinations-submartisen har dimensionerna %zu×%zu."
 
-#: src/language/commands/matrix.c:6996
+#: src/language/commands/matrix.c:7007
 #, c-format
 msgid "Cannot read non-square %zu×%zu matrix using READ with MODE=SYMMETRIC."
 msgstr "Kan inte läsa icke-kvadratisk %zu×%zu-matris med READ i MODE=SYMMETRIC."
 
-#: src/language/commands/matrix.c:7300
+#: src/language/commands/matrix.c:7311
 #, c-format
 msgid "This syntax specifies format %s."
 msgstr "Syntaxen anger format %s."
 
-#: src/language/commands/matrix.c:7330
+#: src/language/commands/matrix.c:7341
 #, c-format
 msgid "Format %s is too wide for %zu-byte matrix elements."
 msgstr "Format %s är för brett för %zu-byte matriselement."
 
-#: src/language/commands/matrix.c:7353
+#: src/language/commands/matrix.c:7364
 #, c-format
 msgid "WRITE with MODE=TRIANGULAR requires a square matrix but the matrix to be written has dimensions %zu×%zu."
 msgstr "WRITE i MODE=TRIANGULAR kräver en kvadratisk matris, men matrisen som ska skrivas har dimensionerna %zu×%zu."
 
-#: src/language/commands/matrix.c:7517
+#: src/language/commands/matrix.c:7528
 msgid "Syntax error expecting ACCEPT or OMIT or a number for MISSING."
 msgstr "Syntaxfel för ACCEPT eller OMIT eller ett nummer för MISSING förväntades."
 
-#: src/language/commands/matrix.c:7535
+#: src/language/commands/matrix.c:7546
 msgid "Syntax error expecting OMIT or a number for SYSMIS."
 msgstr "Syntaxfel där OMIT eller ett nummer för SYSMIS förväntades."
 
-#: src/language/commands/matrix.c:7581
+#: src/language/commands/matrix.c:7592
 #, c-format
 msgid "Variable %s is not numeric."
 msgstr "Variabeln %s är inte numerisk."
 
-#: src/language/commands/matrix.c:7636
+#: src/language/commands/matrix.c:7647
 #, c-format
 msgid "Variable %s in case %lld is system-missing."
 msgstr "Variabeln %s i fall %lld är system-missing."
 
-#: src/language/commands/matrix.c:7651
+#: src/language/commands/matrix.c:7662
 #, c-format
 msgid "Variable %s in case %lld has user-missing value %g."
 msgstr "Variableln %s i fall %lld har user-missing-värdet %g."
 
-#: src/language/commands/matrix.c:7691
+#: src/language/commands/matrix.c:7702
 #, c-format
 msgid "The %s command cannot read an empty active file."
 msgstr "Kommandot %s kan inte läsa en tom aktiv fil."
 
-#: src/language/commands/matrix.c:7741
+#: src/language/commands/matrix.c:7752
 #, c-format
 msgid "%s may only be specified on MSAVE if it was specified on the first MSAVE within MATRIX."
 msgstr "%s får bara anges på MSAVE om den angavs på den första MSAVE inuti MATRIX."
 
-#: src/language/commands/matrix.c:7744
+#: src/language/commands/matrix.c:7755
 #, c-format
 msgid "The first MSAVE in MATRIX did not specify %s."
 msgstr "Den första MSAVE i MATRIX angav inte %s."
 
-#: src/language/commands/matrix.c:7747
+#: src/language/commands/matrix.c:7758
 #, c-format
 msgid "This is the specification of %s on a later MSAVE."
 msgstr "Så här anges %s i en senare MSAVE."
 
-#: src/language/commands/matrix.c:7754
+#: src/language/commands/matrix.c:7765
 #, c-format
 msgid "%s must specify the same variables on each MSAVE within a given MATRIX."
 msgstr "%s måste ange samma variabler på varje MSAVE inuti en given MATRIX."
 
-#: src/language/commands/matrix.c:7757
+#: src/language/commands/matrix.c:7768
 #, c-format
 msgid "This is the specification of %s on the first MSAVE."
 msgstr "Så här anges %s i den första MSAVE."
 
-#: src/language/commands/matrix.c:7760
+#: src/language/commands/matrix.c:7771
 #, c-format
 msgid "This is a different specification of %s on a later MSAVE."
 msgstr "Detta är en annan angivelse av %s i en senare MSAVE."
 
-#: src/language/commands/matrix.c:7774
+#: src/language/commands/matrix.c:7785
 msgid "OUTFILE must name the same file on each MSAVE within a single MATRIX command."
 msgstr "OUTFILE måste namnge samma fil på varje MSAVE inuti samma MATRIX-kommando."
 
-#: src/language/commands/matrix.c:7777
+#: src/language/commands/matrix.c:7788
 msgid "This is the OUTFILE on the first MSAVE command."
 msgstr "Detta är OUTFILE på det första MSAVE-kommandot."
 
-#: src/language/commands/matrix.c:7779
+#: src/language/commands/matrix.c:7790
 msgid "This is the OUTFILE on a later MSAVE command."
 msgstr "Detta är OUTFILE på ett senare MSAVE-kommando."
 
-#: src/language/commands/matrix.c:7869
+#: src/language/commands/matrix.c:7880
 #, c-format
 msgid "Variable name %s is reserved."
 msgstr "Variabelnamn %s är reserverat."
 
-#: src/language/commands/matrix.c:7978
+#: src/language/commands/matrix.c:7989
 msgid "FNAMES requires FACTOR."
 msgstr "FNAMES kräver FACTOR."
 
-#: src/language/commands/matrix.c:7983
+#: src/language/commands/matrix.c:7994
 msgid "SNAMES requires SPLIT."
 msgstr "SNAMES kräver SPLIT."
 
-#: src/language/commands/matrix.c:8045
+#: src/language/commands/matrix.c:8056
 #, c-format
 msgid "%s expression must evaluate to vector, not a %zu×%zu matrix."
 msgstr "%s-uttryck måste utvärderas mot en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:8083
+#: src/language/commands/matrix.c:8094
 #, c-format
 msgid "Duplicate or invalid FACTOR variable name %s."
 msgstr "Dulpicerat eller ogiltigt FACTOR-variabelnamn %s."
 
-#: src/language/commands/matrix.c:8094
+#: src/language/commands/matrix.c:8105
 #, c-format
 msgid "Duplicate or invalid variable name %s."
 msgstr "Duplicerat eller ogiltigt variabelnamn %s."
 
-#: src/language/commands/matrix.c:8126
+#: src/language/commands/matrix.c:8137
 #, c-format
 msgid "Matrix on MSAVE has %zu columns but there are %zu variables."
 msgstr "Matris på MSAVE har %zu kolumner, men det finns %zu variabler."
 
-#: src/language/commands/matrix.c:8144
+#: src/language/commands/matrix.c:8155
 #, c-format
 msgid "There are %zu factor variables, but %zu factor values were supplied."
 msgstr "Det finns %zu faktorvariabler, men %zu faktorvärden skickades."
 
-#: src/language/commands/matrix.c:8164
+#: src/language/commands/matrix.c:8175
 #, c-format
 msgid "There are %zu split variables, but %zu split values were supplied."
 msgstr "Det finns %zu delningsvariabler, men %zu delningsvärden skickades."
 
-#: src/language/commands/matrix.c:8300
+#: src/language/commands/matrix.c:8311
 #, c-format
 msgid "Matrix data file lacks %s variable."
 msgstr "Materisdatafil saknar variabeln %s."
 
-#: src/language/commands/matrix.c:8305
+#: src/language/commands/matrix.c:8316
 #, c-format
 msgid "%s variable in matrix data file must be 8-byte string, but it has width %d."
 msgstr "Variabeln %s i matrisdatafilen måste vara en 8-byte sträng, men den har bredden %d."
 
-#: src/language/commands/matrix.c:8382
+#: src/language/commands/matrix.c:8393
 #, c-format
 msgid "Matrix data file contains unknown ROWTYPE_ \"%.*s\"."
 msgstr "Matrisdatafilen innehåller okänd ROWTYPE_ \"%.*s\"."
 
-#: src/language/commands/matrix.c:8399
+#: src/language/commands/matrix.c:8410
 #, c-format
 msgid "Matrix data file contains variable with existing name %s."
 msgstr "Matrisdatafilen innehåller variabel med befintligt namn %s."
 
-#: src/language/commands/matrix.c:8444
+#: src/language/commands/matrix.c:8455
 #, c-format
 msgid "Matrix data file variable %s contains a missing value, which was treated as zero."
 msgid_plural "Matrix data file variable %s contains %zu missing values, which were treated as zero."
 msgstr[0] "Matrisdatafilens variabel %s innehåller ett saknat värde, vilket behandlades som noll."
 msgstr[1] "Matrisdatafilens variabel %s innehåller %zu saknade värden, vilka behandlades som noll."
 
-#: src/language/commands/matrix.c:8473
+#: src/language/commands/matrix.c:8484
 msgid "ROWTYPE_ must precede VARNAME_ in matrix data file."
 msgstr "ROWTYPE_ måste förgå VARNAME_ i matrisdatafilen."
 
-#: src/language/commands/matrix.c:8478
+#: src/language/commands/matrix.c:8489
 msgid "Matrix data file contains no continuous variables."
 msgstr "Matrisdatafilen innehåller inga kontinuerliga variabler."
 
-#: src/language/commands/matrix.c:8488
+#: src/language/commands/matrix.c:8499
 #, c-format
 msgid "Matrix data file contains unexpected string variable %s."
 msgstr "Matrisdatafilen innehåller oväntad strängvariabel %s."
 
-#: src/language/commands/matrix.c:8513
+#: src/language/commands/matrix.c:8524
 msgid "Matrix Variables Created by MGET"
 msgstr "Matrisvariabler skapade av MGET"
 
-#: src/language/commands/matrix.c:8521 src/language/commands/split-file.c:89
+#: src/language/commands/matrix.c:8532 src/language/commands/split-file.c:89
 msgid "Split Values"
 msgstr "Delningsvärden"
 
-#: src/language/commands/matrix.c:8529
+#: src/language/commands/matrix.c:8540
 msgid "Factors"
 msgstr "Faktorer"
 
-#: src/language/commands/matrix.c:8534
+#: src/language/commands/matrix.c:8545
 msgid "Dimensions"
 msgstr "Dimensioner"
 
-#: src/language/commands/matrix.c:8687
+#: src/language/commands/matrix.c:8698
 msgid "Argument of EIGEN must be symmetric."
 msgstr "Argument för EIGEN måste vara symmetriskt."
 
-#: src/language/commands/matrix.c:8758
+#: src/language/commands/matrix.c:8769
 #, c-format
 msgid "SETDIAG destination matrix %s is uninitialized."
 msgstr "SETDIAG destinationsmatris %s är inte initialiserad."
 
-#: src/language/commands/matrix.c:8782
+#: src/language/commands/matrix.c:8793
 #, c-format
 msgid "SETDIAG argument 2 must be a scalar or a vector, not a %zu×%zu matrix."
 msgstr "SETDIAG argument 2 måste vara en skala eller en vektor, inte en %zu×%zu-matris."
 
-#: src/language/commands/matrix.c:9049
+#: src/language/commands/matrix.c:9060
 #, c-format
 msgid "Premature END MATRIX within %s."
 msgstr "För tidigt END MATRIX inuti %s."
 
-#: src/language/commands/matrix.c:9115
+#: src/language/commands/matrix.c:9126
 msgid "Unknown matrix command."
 msgstr "Okänt matriskommando."
 
-#: src/language/commands/matrix.c:9117
+#: src/language/commands/matrix.c:9128
 #, c-format
 msgid "Matrix command %s is not yet implemented."
 msgstr "Matriskommando %s är ännu inte implementerat."
 
-#: src/language/commands/matrix.c:9159
+#: src/language/commands/matrix.c:9170
 msgid "Unexpected end of input expecting matrix command."
 msgstr "Oväntat slut av indata där matriskommando förväntades."
 
@@ -7090,14 +7069,13 @@ msgid "Variables specified on MCGROUP should have the same categories, but %s an
 msgstr "Variablerna som anges på MCGROUP borde ha samma kategorier, men %s och %s (och sannolikt flera) i multipla kategorigruppen %s har olika värdeetiketter för värdet %s."
 
 #: src/language/commands/mrsets.c:507
-#, fuzzy, c-format
+#, c-format
 msgid "No multiple response set named %s."
 msgstr "Ingen multipel svarsuppsättning med namnet %s."
 
 #: src/language/commands/mrsets.c:561
-#, fuzzy
 msgid "The active dataset dictionary does not contain any multiple response sets."
-msgstr "Den aktiva datauppsättningens ordbok innehåller inte några multipla svarsuppsättningar."
+msgstr "Den aktiva datauppsättningens ordbok innehåller inga multipla svarsuppsättningar."
 
 #: src/language/commands/mrsets.c:572 src/language/commands/sys-file-info.c:192
 #: src/language/commands/sys-file-info.c:296
@@ -7325,7 +7303,7 @@ msgid "SPSS-like or Fortran-like format specification expected after variable na
 msgstr "SPSS-lik eller Fortran-lik formatangivelse förväntas efter variabelnamn."
 
 #: src/language/commands/placement-parser.c:129
-#, fuzzy, c-format
+#, c-format
 msgid "The %d columns %d-%d can't be evenly divided into %zu fields."
 msgstr "%d-kolumnerna %d-%d kan inte delas jämnt till %zu fält."
 
@@ -7342,7 +7320,7 @@ msgid "The ending column for a field must be greater than the starting column."
 msgstr "Slutkolumnen för ett fält måste vara större än startkolumnen."
 
 #: src/language/commands/print-space.c:137
-#, fuzzy, c-format
+#, c-format
 msgid "The expression on %s evaluated to the system-missing value."
 msgstr "Uttrycket på %s utvärderades mot system-missing-värdet."
 
@@ -7378,27 +7356,26 @@ msgid "Final Cluster Centers"
 msgstr "Avslutande klustercentra"
 
 #: src/language/commands/quick-cluster.c:531
-#: src/language/commands/quick-cluster.c:608
-#: src/language/commands/quick-cluster.c:609
-#: src/language/commands/quick-cluster.c:705
+#: src/language/commands/quick-cluster.c:606
+#: src/language/commands/quick-cluster.c:607
+#: src/language/commands/quick-cluster.c:703
 msgid "Cluster"
 msgstr "Kluster"
 
-#: src/language/commands/quick-cluster.c:606
-#, fuzzy
+#: src/language/commands/quick-cluster.c:604
 msgid "Cluster Membership"
 msgstr "Klustermedlemmar"
 
-#: src/language/commands/quick-cluster.c:696
+#: src/language/commands/quick-cluster.c:694
 msgid "Number of Cases in each Cluster"
 msgstr "Antal fall i varje kluster"
 
-#: src/language/commands/quick-cluster.c:702
+#: src/language/commands/quick-cluster.c:700
 msgid "Clusters"
 msgstr "Kluster"
 
-#: src/language/commands/quick-cluster.c:810
-#: src/language/commands/quick-cluster.c:836
+#: src/language/commands/quick-cluster.c:808
+#: src/language/commands/quick-cluster.c:834
 #, c-format
 msgid "A variable called `%s' already exists."
 msgstr "En variabel med namnet '%s' finns redan."
@@ -7424,7 +7401,7 @@ msgid "Duplicate variable name %s."
 msgstr "Duplicerat variabelnamn %s."
 
 #: src/language/commands/rank.c:608
-#, fuzzy, c-format
+#, c-format
 msgid "%s of %s by %s"
 msgstr "%s av %s genom %s"
 
@@ -7661,7 +7638,6 @@ msgid "Scale: %s"
 msgstr "Skala: %s"
 
 #: src/language/commands/reliability.c:529
-#, fuzzy
 msgid "Item-Total Statistics"
 msgstr "Objekt-Total statistik"
 
@@ -7674,7 +7650,6 @@ msgid "Scale Variance if Item Deleted"
 msgstr "Skalans varians om objekt tas bort"
 
 #: src/language/commands/reliability.c:534
-#, fuzzy
 msgid "Corrected Item-Total Correlation"
 msgstr "Korrigerad Objekt-Total korrelering"
 
@@ -7739,7 +7714,12 @@ msgstr "%s får inte användas efter %s. Temporära transformationer kommer att 
 msgid "Differing number of variables in old name list (%zu) and in new name list (%zu)."
 msgstr "Olika antal variabler i gammal namnlista (%zu) och i ny namnlista (%zu)."
 
-#: src/language/commands/rename-variables.c:96
+#: src/language/commands/rename-variables.c:101
+#, c-format
+msgid "Variable %s is of class %s, but renaming it to %s would make it of class %s."
+msgstr "Variabeln %s är av klass %s, men att byta namn till %s skulle ändra den till klass %s."
+
+#: src/language/commands/rename-variables.c:116
 #, c-format
 msgid "Renaming would duplicate variable name %s."
 msgstr "Namnbyte skulle duplicera variabelnamnet %s."
@@ -7914,7 +7894,6 @@ msgid "The filter variable must be numeric."
 msgstr "Filtervariabeln måste vara numerisk."
 
 #: src/language/commands/select-if.c:119
-#, fuzzy
 msgid "The filter variable may not be scratch."
 msgstr "Filtervariabeln får inte vara scratch."
 
@@ -7923,7 +7902,6 @@ msgid "ISL (32-bit IEEE 754 single, little-endian)"
 msgstr "ISL (32-bit IEEE 754 enstaka, omvänd byte-ordning)"
 
 #: src/language/commands/set.c:267
-#, fuzzy
 msgid "ISB (32-bit IEEE 754 single, big-endian)"
 msgstr "ISB (32-bit IEEE 754 enstaka, vanlig byte-ordning)"
 
@@ -7932,7 +7910,6 @@ msgid "IDL (64-bit IEEE 754 double, little-endian)"
 msgstr "IDL (64-bit IEEE 754 dubbel, omvänd byte-ordning)"
 
 #: src/language/commands/set.c:273
-#, fuzzy
 msgid "IDB (64-bit IEEE 754 double, big-endian)"
 msgstr "IDB (64-bit IEEE 754 dubbel, vanlig byte-ordning)"
 
@@ -7949,12 +7926,10 @@ msgid "VG (64-bit VAX G, VAX-endian)"
 msgstr "VG (64-bit VAX G, VAX-byte-ordning)"
 
 #: src/language/commands/set.c:287
-#, fuzzy
 msgid "ZS (32-bit IBM Z hexadecimal short, big-endian)"
 msgstr "ZS (32-bit IBM Z hexadecimal kort, vanlig byte-ordning)"
 
 #: src/language/commands/set.c:290
-#, fuzzy
 msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
 msgstr "ZL (64-bit IBM Z hexadecimal lång, vanlig byte-ordning)"
 
@@ -8022,12 +7997,12 @@ msgstr "Syntaxfel där ett inställningsnamn förväntades."
 msgid "Environment Variables"
 msgstr "Miljövariabler"
 
-#: src/language/commands/set.c:1538
+#: src/language/commands/set.c:1542
 #, c-format
 msgid "Too many %s commands without a %s: at most %d levels of saved settings are allowed."
 msgstr "För många %s-subkommandon utan ett %s: som mest tillåts %d nivåer av sparade inställningar."
 
-#: src/language/commands/set.c:1561
+#: src/language/commands/set.c:1565
 #, c-format
 msgid "%s without matching %s."
 msgstr "%s utan matchande %s."
@@ -8074,7 +8049,6 @@ msgid "Integer Format"
 msgstr "Heltalsformat"
 
 #: src/language/commands/sys-file-info.c:206
-#, fuzzy
 msgid "Big Endian"
 msgstr "Rak byte-ordning"
 
@@ -8122,7 +8096,6 @@ msgstr "Dokument"
 
 #: src/language/commands/sys-file-info.c:300
 #: src/language/commands/sys-file-info.c:533
-#, fuzzy
 msgid "(none)"
 msgstr "(inget)"
 
@@ -8195,7 +8168,6 @@ msgid "Variable Value"
 msgstr "Variabelvärde"
 
 #: src/language/commands/sys-file-info.c:680
-#, fuzzy
 msgid "User-missing value"
 msgstr "User-missing-värde"
 
@@ -8449,7 +8421,7 @@ msgstr "Vektorlängd krävs."
 msgid "%s is an existing variable name."
 msgstr "%s är ett befintligt variabelnamn."
 
-#: src/language/commands/vector.c:203
+#: src/language/commands/vector.c:204
 #, c-format
 msgid "Two different vectors add variable %s%zu."
 msgstr "Två olika vektorer lägger till variabeln %s%zu."
@@ -8459,7 +8431,6 @@ msgid "The weighting variable must be numeric."
 msgstr "Viktningsvariabeln måste vara numerisk."
 
 #: src/language/commands/weight.c:56
-#, fuzzy
 msgid "The weighting variable may not be scratch."
 msgstr "Viktningsvariabeln får inte vara scratch."
 
@@ -8468,12 +8439,10 @@ msgid "Sign"
 msgstr "Tecken"
 
 #: src/language/commands/wilcoxon.c:238
-#, fuzzy
 msgid "Negative Ranks"
 msgstr "Negativa ranger"
 
 #: src/language/commands/wilcoxon.c:238
-#, fuzzy
 msgid "Positive Ranks"
 msgstr "Positiva ranger"
 
@@ -8490,7 +8459,7 @@ msgid "Syntax error expecting number or string."
 msgstr "Syntaxfel där nummer eller sträng förväntades."
 
 #: src/language/expressions/helpers.c:44
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid arguments to %s function."
 msgstr "Ogiltiga argument till funktionen %s."
 
@@ -8505,12 +8474,11 @@ msgid "Invalid DATESUM method.  Valid choices are `%s' and `%s'."
 msgstr "Ogiltig DATESUM-metod. Giltiga val är '%s' och '%s'."
 
 #: src/language/expressions/helpers.c:519
-#, fuzzy, c-format
+#, c-format
 msgid "Index outside valid range 1 to %zu, inclusive, for vector %s.  The value will be treated as system-missing."
 msgstr "Index utanför giltigt intervall 1 till %zu, inklusivt, för vektor %s. Värdet kommer att behandlas som system-missing."
 
 #: src/language/expressions/helpers.c:524
-#, fuzzy
 msgid "The index is system-missing."
 msgstr "Detta index är system-missing."
 
@@ -8539,128 +8507,128 @@ msgstr "Typ matchar inte: uttrycket har typ '%s', men ett numeriskt värde kräv
 msgid "Type mismatch: expression has type '%s', but a string value is required."
 msgstr "Typ matchar inte: uttrycket har typ '%s', men ett strängvärde krävs."
 
-#: src/language/expressions/parse.c:638
+#: src/language/expressions/parse.c:641
 #, c-format
 msgid "Both operands of %s must have the same type."
 msgstr "Båda operander i %s måste ha samma typ."
 
-#: src/language/expressions/parse.c:641
+#: src/language/expressions/parse.c:644
 #, c-format
 msgid "Both operands of %s must be numeric."
 msgstr "Båda operander i %s måste vara numeriska."
 
-#: src/language/expressions/parse.c:646 src/language/expressions/parse.c:649
+#: src/language/expressions/parse.c:649 src/language/expressions/parse.c:652
 #, c-format
 msgid "This operand has type '%s'."
 msgstr "Operanden har typ '%s'."
 
-#: src/language/expressions/parse.c:699
+#: src/language/expressions/parse.c:702
 #, c-format
 msgid "The unary %s operator requires a numeric operand."
 msgstr "Den unära operatorn %s kräver en numerisk operand."
 
-#: src/language/expressions/parse.c:702
+#: src/language/expressions/parse.c:705
 #, c-format
 msgid "The operand of %s has type '%s'."
 msgstr "Operanden i %s har typ '%s'."
 
-#: src/language/expressions/parse.c:741
+#: src/language/expressions/parse.c:744
 msgid "Chaining relational operators (e.g. `a < b < c') will not produce the mathematically expected result.  Use the AND logical operator to fix the problem (e.g. `a < b AND b < c').  To disable this warning, insert parentheses."
 msgstr "Att kedja relationella operander (t.ex. 'a < b < c') kommer inte att ge det matematiskt förväntades resultatet. Använd den logiska operatorn AND för att åtgärda problemet (t.ex. 'a < b AND b < c'). För att inaktivera varningen, infoga parenteser."
 
-#: src/language/expressions/parse.c:910
+#: src/language/expressions/parse.c:913
 #, c-format
 msgid "Unknown system variable %s."
 msgstr "Okänd systemvariabel %s."
 
-#: src/language/expressions/parse.c:958
+#: src/language/expressions/parse.c:961
 #, c-format
 msgid "Unknown identifier %s."
 msgstr "Okänd identifierare %s."
 
-#: src/language/expressions/parse.c:996
+#: src/language/expressions/parse.c:999
 msgid "Syntax error parsing expression."
 msgstr "Syntaxfel vid tolkning av uttryck."
 
-#: src/language/expressions/parse.c:1047
+#: src/language/expressions/parse.c:1050
 msgid "A vector index must be numeric."
 msgstr "Ett vektorindex måste vara numeriskt."
 
-#: src/language/expressions/parse.c:1050
+#: src/language/expressions/parse.c:1053
 #, c-format
 msgid "This vector index has type '%s'."
 msgstr "Detta vektorindex har typen '%s'."
 
-#: src/language/expressions/parse.c:1202
+#: src/language/expressions/parse.c:1205
 #, c-format
 msgid "%s must have an odd number of arguments."
 msgstr "%s måste ha ett udda antal argument."
 
-#: src/language/expressions/parse.c:1212
+#: src/language/expressions/parse.c:1215
 #, c-format
 msgid "%s function cannot accept suffix .%d to specify the minimum number of valid arguments."
 msgstr "Funktionen %s kan inte ta suffix .%d för att ange minsta antalet giltiga argument."
 
-#: src/language/expressions/parse.c:1223
+#: src/language/expressions/parse.c:1226
 #, c-format
 msgid "For %s with %d arguments, at most %d (not %d) may be required to be valid."
 msgstr "För %s med %d argument får högst %d (inte %d) krävas för att vara giltig."
 
-#: src/language/expressions/parse.c:1272
+#: src/language/expressions/parse.c:1275
 #, c-format
 msgid "Type mismatch invoking %s as "
 msgstr "Ej matchande typ anropar %s som "
 
-#: src/language/expressions/parse.c:1277
+#: src/language/expressions/parse.c:1280
 msgid "Function invocation "
 msgstr "Funktionsanrop "
 
-#: src/language/expressions/parse.c:1279
+#: src/language/expressions/parse.c:1282
 msgid " does not match any known function.  Candidates are:"
 msgstr " matcher ingen känd funktion. Kandidater är:"
 
-#: src/language/expressions/parse.c:1311
+#: src/language/expressions/parse.c:1314
 #, c-format
 msgid "This argument has type '%s' but '%s' is required."
 msgstr "Argumentet har typen '%s', men '%s' krävs."
 
-#: src/language/expressions/parse.c:1330
+#: src/language/expressions/parse.c:1333
 #, c-format
 msgid "No function or vector named %s."
 msgstr "Ingen funktion eller vektor med namnet %s."
 
-#: src/language/expressions/parse.c:1408
+#: src/language/expressions/parse.c:1411
 #, c-format
 msgid "%s is a PSPP extension."
 msgstr "%s är en PSPP-utökning."
 
-#: src/language/expressions/parse.c:1412
+#: src/language/expressions/parse.c:1415
 #, c-format
 msgid "%s is not available in this version of PSPP."
 msgstr "%s är inte tillgänglig i den här versionen av PSPP."
 
-#: src/language/expressions/parse.c:1419
+#: src/language/expressions/parse.c:1422
 #, c-format
 msgid "%s may not appear after %s."
 msgstr "%s får inte förekomma efter %s."
 
-#: src/libpspp/ext-array.c:66
+#: src/libpspp/ext-array.c:76
 msgid "failed to create temporary file"
 msgstr "kunde inte skapa temporärfil"
 
-#: src/libpspp/ext-array.c:106
+#: src/libpspp/ext-array.c:116
 msgid "seeking in temporary file"
 msgstr "söker i temporärfil"
 
-#: src/libpspp/ext-array.c:125
+#: src/libpspp/ext-array.c:135
 msgid "reading temporary file"
 msgstr "läser temporärfil"
 
-#: src/libpspp/ext-array.c:127
+#: src/libpspp/ext-array.c:137
 msgid "unexpected end of file reading temporary file"
 msgstr "oväntat filslut vid läsning av temporärfil"
 
-#: src/libpspp/ext-array.c:147
+#: src/libpspp/ext-array.c:157
 msgid "writing to temporary file"
 msgstr "skriver till temporärfil"
 
@@ -8869,22 +8837,22 @@ msgstr "%s: kan inte initialisera inflator (%s)"
 msgid "%s: error inflating \"%s\" (%s)"
 msgstr "%s: fel vid inflatering av \"%s\" (%s)"
 
-#: src/libpspp/zip-writer.c:105 utilities/pspp-convert.c:351
+#: src/libpspp/zip-writer.c:106 utilities/pspp-convert.c:351
 #, c-format
 msgid "%s: error opening output file"
 msgstr "%s: fel när utdatafil öppnades"
 
-#: src/libpspp/zip-writer.c:113
+#: src/libpspp/zip-writer.c:114
 #, c-format
 msgid "%s: not writing ZIP file to terminal"
 msgstr "%s: skriver inte ZIP-fil till terminal"
 
-#: src/libpspp/zip-writer.c:193
+#: src/libpspp/zip-writer.c:195
 #, c-format
 msgid "%s: error seeking in output file"
 msgstr "%s: fel vid sökning i utdatafil"
 
-#: src/libpspp/zip-writer.c:320
+#: src/libpspp/zip-writer.c:325
 #, c-format
 msgid "%s: write failed"
 msgstr "%s: kunde inte skriva"
@@ -9145,6 +9113,11 @@ msgstr "%s: '%s' är '%s', vilket inte kunde tolkas som en färg"
 msgid "Chart"
 msgstr "Diagram"
 
+#: src/output/output-item.c:241 src/output/pivot-table.c:989
+#: src/output/spv/spv.c:535
+msgid "Error"
+msgstr "Fel"
+
 #: src/output/output-item.c:242
 msgid "Warning"
 msgstr "Varning"
@@ -9169,14 +9142,14 @@ msgstr "Sidtitel"
 msgid "Log"
 msgstr "Logg"
 
-#: src/output/pivot-table.c:3225
+#: src/output/pivot-table.c:3237
 #, c-format
 msgid "Suppressed %d additional warning about duplicate split values."
 msgid_plural "Suppressed %d additional warnings about duplicate split values."
 msgstr[0] "Blockerade %d ytterligare varning om duplicerade delningsvärden."
 msgstr[1] "Blockerade %d ytterligare varningar om duplicerade delningsvärden."
 
-#: src/output/pivot-table.c:3364
+#: src/output/pivot-table.c:3376
 #, c-format
 msgid "When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: %s"
 msgstr "När SPLIT FILE används måste indatan sorteras efter delningsvariabler (till exempel genom att använda SORT CASES), men multipla körningar av fall med samma delningsvärden hittades, avdelade på fall med olika värden. Varje körning kommer att analyseras för sig. De duplicerade delningsvärdena är: %s"
@@ -9268,8 +9241,8 @@ msgstr "Sök"
 #: src/ui/gui/psppire-dialog-action-aggregate.c:210
 #: src/ui/gui/psppire-data-window.c:497 src/ui/gui/psppire-data-window.c:625
 #: src/ui/gui/psppire-output-window.c:314
-#: src/ui/gui/psppire-syntax-window.c:669 src/ui/gui/psppire-window.c:443
-#: src/ui/gui/psppire-window.c:626
+#: src/ui/gui/psppire-syntax-window.c:669 src/ui/gui/psppire-window.c:439
+#: src/ui/gui/psppire-window.c:622
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -9285,16 +9258,16 @@ msgstr "Återställ"
 msgid "Help"
 msgstr "Hjälp"
 
-#: src/ui/gui/psppire-data-sheet.c:172 src/ui/gui/psppire-data-window.c:1349
+#: src/ui/gui/psppire-data-sheet.c:176 src/ui/gui/psppire-data-window.c:1354
 msgid "_Insert Case"
 msgstr "_Infoga fall"
 
-#: src/ui/gui/psppire-data-sheet.c:180 src/ui/gui/psppire-data-window.c:1402
+#: src/ui/gui/psppire-data-sheet.c:184 src/ui/gui/psppire-data-window.c:1407
 msgid "Cl_ear Cases"
 msgstr "R_ensa fall"
 
 #: src/ui/gui/psppire-data-sheet.c:306 src/ui/gui/psppire-variable-sheet.c:280
-#: src/ui/gui/psppire-data-window.c:1348
+#: src/ui/gui/psppire-data-window.c:1353
 msgid "_Insert Variable"
 msgstr "_Infoga variabel"
 
@@ -9325,7 +9298,7 @@ msgid "Compressed System Files (*.zsav)"
 msgstr "Komprimerade systemfiler (*.zsav)"
 
 #: src/ui/gui/psppire-dialog-action-aggregate.c:230
-#: src/ui/gui/psppire-data-window.c:514 src/ui/gui/psppire-window.c:650
+#: src/ui/gui/psppire-data-window.c:514 src/ui/gui/psppire-window.c:646
 msgid "Portable Files (*.por) "
 msgstr "Portabla filer (*.por) "
 
@@ -9624,7 +9597,6 @@ msgid "Ignore case"
 msgstr "Ignorera fall"
 
 #: src/ui/gui/psppire-search-dialog.c:153 src/ui/gui/find.ui:244
-#, fuzzy
 msgid "Wrap around"
 msgstr "Börja om"
 
@@ -9786,12 +9758,10 @@ msgid "_Value:"
 msgstr "_Värde:"
 
 #: src/ui/gui/psppire-val-chooser.c:288
-#, fuzzy
 msgid "_System Missing"
 msgstr "_System missing"
 
 #: src/ui/gui/psppire-val-chooser.c:289
-#, fuzzy
 msgid "System _or User Missing"
 msgstr "System- e_ller user-missing"
 
@@ -9890,42 +9860,6 @@ msgid ""
 "\n"
 "Non-option arguments are interpreted as syntax files to execute.\n"
 msgstr ""
-"PSPP, ett program för statistisk analys av insamlad data.\n"
-"Användning: %s [ALTERNATIV]... FIL...\n"
-"\n"
-"Argument till långa alternativ verkställs också för motsvarande\n"
-"korta alternativ.\n"
-"\n"
-"Utdata-alternativ:\n"
-"  -o, --output=FIL         skriv utdata till FIL, förvalt format från FILens namn\n"
-"  -O format=FORMAT          åsidosätt format för föregående -o\n"
-"  -O ALTERNATIV=VÄRDE       sätt utdata-alternativ för att anpassa föregående -o\n"
-"  -O device={terminal|lista}    åsidosätt enhetstyp för föregående -o\n"
-"  -e, --error-file=FIL     tillfoga fel, varningar och anmärkningar till FIL\n"
-"  --no-output               avaktivera förvald utdatadrivrutin\n"
-"  --tabel-look=FIL         använd utdatastil läst från FIL\n"
-"Utdataformat som stöds: %s\n"
-"\n"
-"Språkalternativ:\n"
-"  -I, --include=MAPP        tillfoga MAPP till sökväg\n"
-"  -I-, --no-include         rensa sökväg\n"
-"  -r, --no-statrc           avaktivera körning av rc-fil vid start\n"
-"  -a, --algorithm={compatible|enhanced}\n"
-"                            sätt till `compatible' om du vill ha utdata\n"
-"                            beräknad från trasiga algoritmer\n"
-"  -x, --syntax={compatible|enhanced}\n"
-"                            sätt till 'compatible' för att avaktivera PSPP-utökningar\n"
-"  -b, --batch               tolka syntax i batch-läge\n"
-"  -i, --interactive         tolka syntax i interaktivt läge\n"
-"  --syntax-encoding=KODNING   ange kodning för syntaxfiler\n"
-"  -s, --safer               tillåt inte vissa osäkra åtgärder\n"
-"Förvald sökväg: %s\n"
-"\n"
-"Informativ utdata:\n"
-"  -h, --help                visa detta hjälpmeddelande och avsluta\n"
-"  -V, --version             visa versionsinformation och avsluta\n"
-"\n"
-"Icke-alternativargument tolkas som syntaxfiler att köra.\n"
 
 #: src/ui/gui/find-dialog.c:662
 #, c-format
@@ -9940,12 +9874,12 @@ msgstr "Ett program för analys av insamlad data"
 #. who have helped in the translation.
 #: src/ui/gui/help-menu.c:175
 msgid "translator-credits"
-msgstr "Arve Eriksson <031299870@telia.com>, 2025"
+msgstr "Översättning: Arve Eriksson <031299870@telia.com>, 2025, 2026"
 
 #: src/ui/gui/help-menu.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "Help path conversion error: %s"
-msgstr "Hjälp sökvägskonverteringsfel: %s"
+msgstr "Konverteringsfel för hjälpsökväg: %s"
 
 #: src/ui/gui/help-menu.c:249
 #, c-format
@@ -9969,8 +9903,8 @@ msgid "_Reference Manual"
 msgstr "_Referenshandbok"
 
 #: src/ui/gui/main.c:182
-msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  "
-msgstr "PSPP körs bäst på fria plattformar som GNU och GNU/Linux.  "
+msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  This computer is running a non-free operating system, so some features might work sub-optimally.  For best results, use a free system instead."
+msgstr "PSPP körs bäst på fria plattformar som GNU och GNU/Linux. Denna dator kör ett icke-fritt operativsystem, så vissa funktioner kanske inte fungerar optimalt. För bästa resultat, använd ett fritt system istället."
 
 #: src/ui/gui/main.c:184
 msgid "Right click on variable lists to change between viewing the variables' names and their labels."
@@ -10012,7 +9946,7 @@ msgstr "Psppire användartips"
 msgid "_Next Tip"
 msgstr "_Nästa tips"
 
-#: src/ui/gui/main.c:219 src/ui/gui/psppire-data-window.c:1319
+#: src/ui/gui/main.c:219 src/ui/gui/psppire-data-window.c:1324
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "St_äng"
@@ -10117,7 +10051,7 @@ msgstr "Vikta med %s"
 
 #: src/ui/gui/psppire-data-window.c:519
 #: src/ui/gui/psppire-import-assistant.c:370
-#: src/ui/gui/psppire-syntax-window.c:682 src/ui/gui/psppire-window.c:667
+#: src/ui/gui/psppire-syntax-window.c:682 src/ui/gui/psppire-window.c:663
 msgid "All Files"
 msgstr "Alla filer"
 
@@ -10159,141 +10093,141 @@ msgstr "Ange ett nytt namn för datauppsättning \"%s\":"
 msgid "Rename Dataset"
 msgstr "Döp om datauppsättning"
 
-#: src/ui/gui/psppire-data-window.c:1202 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1207 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Fil"
 
-#: src/ui/gui/psppire-data-window.c:1206 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1211 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "_Ny"
 
-#: src/ui/gui/psppire-data-window.c:1213
+#: src/ui/gui/psppire-data-window.c:1218
 msgid "_Syntax"
 msgstr "_Syntax"
 
-#: src/ui/gui/psppire-data-window.c:1216 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1221 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Data"
 
-#: src/ui/gui/psppire-data-window.c:1223 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1228 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Öppna"
 
-#: src/ui/gui/psppire-data-window.c:1226
+#: src/ui/gui/psppire-data-window.c:1231
 msgid "_Import Data..."
 msgstr "_Importera data..."
 
-#: src/ui/gui/psppire-data-window.c:1234 src/ui/gui/logistic.ui:261
+#: src/ui/gui/psppire-data-window.c:1239 src/ui/gui/logistic.ui:261
 #: src/ui/gui/regression.ui:65
 msgid "_Save..."
 msgstr "_Spara..."
 
-#: src/ui/gui/psppire-data-window.c:1237
+#: src/ui/gui/psppire-data-window.c:1242
 msgid "Save _As..."
 msgstr "Spara so_m..."
 
-#: src/ui/gui/psppire-data-window.c:1240
+#: src/ui/gui/psppire-data-window.c:1245
 msgid "_Rename Dataset..."
 msgstr "Dö_p om datauppsättning..."
 
-#: src/ui/gui/psppire-data-window.c:1251
+#: src/ui/gui/psppire-data-window.c:1256
 msgid "_Display Data File Information"
 msgstr "Visa _datafilinformation"
 
-#: src/ui/gui/psppire-data-window.c:1258
+#: src/ui/gui/psppire-data-window.c:1263
 msgid "Working File"
 msgstr "Arbetsfil"
 
-#: src/ui/gui/psppire-data-window.c:1260
+#: src/ui/gui/psppire-data-window.c:1265
 msgid "_External File..."
 msgstr "_Extern fil..."
 
-#: src/ui/gui/psppire-data-window.c:1270
+#: src/ui/gui/psppire-data-window.c:1275
 msgid "_Recently Used Data"
 msgstr "S_enast använd data"
 
-#: src/ui/gui/psppire-data-window.c:1271
+#: src/ui/gui/psppire-data-window.c:1276
 msgid "Recently Used _Files"
 msgstr "Senast använda _filer"
 
-#: src/ui/gui/psppire-data-window.c:1326 src/ui/gui/output-window.ui:87
+#: src/ui/gui/psppire-data-window.c:1331 src/ui/gui/output-window.ui:87
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "A_vsluta"
 
-#: src/ui/gui/psppire-data-window.c:1344 src/ui/gui/output-window.ui:94
+#: src/ui/gui/psppire-data-window.c:1349 src/ui/gui/output-window.ui:94
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "R_edigera"
 
-#: src/ui/gui/psppire-data-window.c:1350
+#: src/ui/gui/psppire-data-window.c:1355
 msgid "_Go To Variable..."
 msgstr "_Gå till variabel..."
 
-#: src/ui/gui/psppire-data-window.c:1351
+#: src/ui/gui/psppire-data-window.c:1356
 msgid "_Go To Case..."
 msgstr "_Gå till fall..."
 
-#: src/ui/gui/psppire-data-window.c:1375 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "Klipp u_t"
 
-#: src/ui/gui/psppire-data-window.c:1384 src/ui/gui/output-window.ui:101
+#: src/ui/gui/psppire-data-window.c:1389 src/ui/gui/output-window.ui:101
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "Ko_piera"
 
-#: src/ui/gui/psppire-data-window.c:1391 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1396 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "_Klistra in"
 
-#: src/ui/gui/psppire-data-window.c:1398
+#: src/ui/gui/psppire-data-window.c:1403
 msgid "Clear _Variables"
 msgstr "Rensa _variabler"
 
-#: src/ui/gui/psppire-data-window.c:1412
+#: src/ui/gui/psppire-data-window.c:1417
 msgid "_Find..."
 msgstr "_Sök..."
 
-#: src/ui/gui/psppire-data-window.c:1418 src/ui/gui/logistic.ui:246
+#: src/ui/gui/psppire-data-window.c:1423 src/ui/gui/logistic.ui:246
 msgid "_Options..."
 msgstr "_Alternativ..."
 
-#: src/ui/gui/psppire-data-window.c:1694
+#: src/ui/gui/psppire-data-window.c:1699
 msgid "Jump to variable"
 msgstr "Hoppa till variabel"
 
-#: src/ui/gui/psppire-data-window.c:1707
+#: src/ui/gui/psppire-data-window.c:1712
 msgid "Jump to a case in the data sheet"
 msgstr "Hoppa till ett fall i data-arket"
 
-#: src/ui/gui/psppire-data-window.c:1721
+#: src/ui/gui/psppire-data-window.c:1726
 msgid "Search for values in the data"
 msgstr "Sök efter värden i datan"
 
-#: src/ui/gui/psppire-data-window.c:1733
+#: src/ui/gui/psppire-data-window.c:1738
 msgid "Create a new case at the current position"
 msgstr "Skapa ett nytt fall vid aktuell position"
 
-#: src/ui/gui/psppire-data-window.c:1745
+#: src/ui/gui/psppire-data-window.c:1750
 msgid "Create a new variable at the current position"
 msgstr "Skapa en ny variabel vid aktuell position"
 
-#: src/ui/gui/psppire-data-window.c:1759
+#: src/ui/gui/psppire-data-window.c:1764
 msgid "Split the active dataset"
 msgstr "Dela den aktiva datauppsättningen"
 
-#: src/ui/gui/psppire-data-window.c:1771
+#: src/ui/gui/psppire-data-window.c:1776
 msgid "Weight cases by variable"
 msgstr "Vikta fall med variabel"
 
-#: src/ui/gui/psppire-data-window.c:1782
+#: src/ui/gui/psppire-data-window.c:1787
 msgid "Show/hide value labels"
 msgstr "Visa/dölj värdeetiketter"
 
-#: src/ui/gui/psppire-data-window.c:1922
+#: src/ui/gui/psppire-data-window.c:1927
 msgid "Data Editor"
 msgstr "Dataeditor"
 
@@ -10494,7 +10428,7 @@ msgstr "Sparade filen '%s'"
 msgid "Save Syntax"
 msgstr "Spara syntax"
 
-#: src/ui/gui/psppire-syntax-window.c:676 src/ui/gui/psppire-window.c:655
+#: src/ui/gui/psppire-syntax-window.c:676 src/ui/gui/psppire-window.c:651
 msgid "Syntax Files (*.sps) "
 msgstr "Syntaxfiler (*.sps) "
 
@@ -10507,33 +10441,33 @@ msgstr "Syntaxeditor"
 msgid "Cannot load syntax file `%s'"
 msgstr "Kan inte läsa in syntaxfil '%s'"
 
-#: src/ui/gui/psppire-window.c:428
+#: src/ui/gui/psppire-window.c:424
 #, c-format
 msgid "Save the changes to `%s' before closing?"
 msgstr "Spara ändringarna till '%s' innan avslut?"
 
-#: src/ui/gui/psppire-window.c:435
+#: src/ui/gui/psppire-window.c:431
 #, c-format
 msgid "If you don't save, changes from the last %ld seconds will be permanently lost."
 msgstr "Om du inte sparar kommer ändringarna den de senaste %ld sekunderna att förloras permanent."
 
-#: src/ui/gui/psppire-window.c:439
+#: src/ui/gui/psppire-window.c:435
 msgid "Close _without saving"
 msgstr "Stäng _utan att spara"
 
-#: src/ui/gui/psppire-window.c:623 src/ui/gui/psppire-window.c:627
+#: src/ui/gui/psppire-window.c:619 src/ui/gui/psppire-window.c:623
 msgid "Open"
 msgstr "Öppna"
 
-#: src/ui/gui/psppire-window.c:632
+#: src/ui/gui/psppire-window.c:628
 msgid "Data and Syntax Files"
 msgstr "Data- och syntaxfiler"
 
-#: src/ui/gui/psppire-window.c:644
+#: src/ui/gui/psppire-window.c:640
 msgid "System Files (*.sav, *.zsav)"
 msgstr "Systemfiler (*.sav, *.zsav)"
 
-#: src/ui/gui/psppire-window.c:661
+#: src/ui/gui/psppire-window.c:657
 msgid "Output Files (*.spv) "
 msgstr "Utdatafiler (*.spv) "
 
@@ -10598,13 +10532,12 @@ msgid "%s: error opening password file"
 msgstr "%s: fel när lösenordsfil öppnades"
 
 #: utilities/pspp-convert.c:430
-#, c-format
+#, fuzzy, c-format
+#| msgid "%s: error opening password file"
 msgid ""
 "\n"
 "%s: password not in file"
-msgstr ""
-"\n"
-"%s: lösenord inte i fil"
+msgstr "%s: fel när lösenordsfil öppnades"
 
 #: utilities/pspp-convert.c:467
 #, c-format
@@ -11723,12 +11656,10 @@ msgid "Sum of case _weights"
 msgstr "Summa av fall_viktningar"
 
 #: src/ui/gui/rank.ui:73
-#, fuzzy
 msgid "Fractional rank as _%"
 msgstr "Fraktionell rang som _%"
 
 #: src/ui/gui/rank.ui:91
-#, fuzzy
 msgid "_Fractional rank"
 msgstr "_Fraktionell rang"
 
@@ -11737,12 +11668,10 @@ msgid "_Savage score"
 msgstr "_Savage-värde"
 
 #: src/ui/gui/rank.ui:124
-#, fuzzy
 msgid "_Rank"
 msgstr "_Rang"
 
 #: src/ui/gui/rank.ui:147
-#, fuzzy
 msgid "N_tiles"
 msgstr "N_block"
 
@@ -11791,7 +11720,6 @@ msgid "_Largest Value"
 msgstr "St_örsta värde"
 
 #: src/ui/gui/rank.ui:639
-#, fuzzy
 msgid "Assign rank 1 to:"
 msgstr "Tilldela rang 1 till:"
 
@@ -11800,7 +11728,6 @@ msgid "_Display summary tables"
 msgstr "Visa sammanfattan_de tabeller"
 
 #: src/ui/gui/rank.ui:681
-#, fuzzy
 msgid "Rank T_ypes"
 msgstr "Rangt_yper"
 
@@ -11825,7 +11752,6 @@ msgid "_High"
 msgstr "_Högsta"
 
 #: src/ui/gui/rank.ui:856
-#, fuzzy
 msgid "_Sequential ranks to unique values"
 msgstr "_Sekventiella ranger till unika värden"
 
@@ -11894,7 +11820,6 @@ msgid "Analysis by groups is off"
 msgstr "Analys per grupp är av"
 
 #: src/ui/gui/recode.ui:134
-#, fuzzy
 msgid "System _Missing"
 msgstr "System _missing"
 
@@ -12393,7 +12318,6 @@ msgid "_Explore..."
 msgstr "_Utforska..."
 
 #: src/ui/gui/data-editor.ui:274
-#, fuzzy
 msgid "_Crosstabs..."
 msgstr "_Korstabuleringar..."
 
@@ -12410,12 +12334,10 @@ msgid "_Means..."
 msgstr "_Medel..."
 
 #: src/ui/gui/data-editor.ui:289
-#, fuzzy
 msgid "_One Sample T Test..."
 msgstr "_Enkelprovs T-test..."
 
 #: src/ui/gui/data-editor.ui:293
-#, fuzzy
 msgid "_Independent Samples T Test..."
 msgstr "_Oberoende prover T-test..."
 
@@ -12640,7 +12562,7 @@ msgid "Current Status: "
 msgstr "Nuvarande status: "
 
 #. TRANSLATORS: This is the application name in the desktop file
-#: doc/org.gnu.pspp.metainfo.xml.in:7 doc/org.gnu.pspp.desktop.in:7
+#: doc/org.gnu.pspp.metainfo.xml.in:7 doc/org.gnu.pspp.desktop.in:6
 msgid "GNU PSPP"
 msgstr "GNU PSPP"
 
@@ -12744,15 +12666,34 @@ msgstr "statistik"
 msgid "Free Software Foundation"
 msgstr "Free Software Foundation"
 
-#: doc/org.gnu.pspp.desktop.in:8
+#: doc/org.gnu.pspp.desktop.in:7
 msgid "Statistical Software"
 msgstr "Statistikmjukvara"
 
-#: doc/org.gnu.pspp.desktop.in:9
+#: doc/org.gnu.pspp.desktop.in:8
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Analysera statistikdata med ett fritt alternativ till SPSS"
 
 #. TRANSLATORS: You must keep all ";" - also at the end of line.
-#: doc/org.gnu.pspp.desktop.in:17
+#: doc/org.gnu.pspp.desktop.in:16
 msgid "statistics;analysis;spss;"
 msgstr "statistik;analys;spss;"
+
+#, c-format
+#~ msgid "License GPLv3+: GNU GPL version 3 or later <%s>.\\"
+#~ msgstr "Licens GPLv3+: GNU GPL version 3 eller senare <%s>.\\"
+
+#, c-format
+#~ msgid "Written by %s, %s, %s,\\"
+#~ msgstr "Skrevs av %s, %s, %s,\\"
+
+#, c-format
+#~ msgid "PSPP, a program for statistical analysis of sampled data.\\"
+#~ msgstr "PSPP, ett program för statistisk analys av insamlad data.\\"
+
+#, c-format
+#~ msgid "\\"
+#~ msgstr "\\"
+
+#~ msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  "
+#~ msgstr "PSPP körs bäst på fria plattformar som GNU och GNU/Linux.  "
