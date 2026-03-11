@@ -91,14 +91,9 @@ UNINSTALL_DATA_HOOKS += uninstall-icons uninstall-ext-icons
 if building_gui
 nodist_src_ui_gui_psppire_DATA = src/ui/gui/icons/splash.png
 
-src/ui/gui/icons/splash.png: $(top_srcdir)/src/ui/gui/icons/splash-t.png $(top_srcdir)/src/ui/gui/icons/splash-r.png Makefile
+src/ui/gui/icons/splash.png: $(top_srcdir)/src/ui/gui/icons/splash-r.png Makefile
 	@$(MKDIR_P) src/ui/gui/icons
-	@case `echo $(VERSION) | $(SED) -e 's/[0-9][0-9]*\.[0-9]*\([0-9]\)\.[0-9][0-9]*/\1/'` in \
-	  [13579]) cp $(top_srcdir)/src/ui/gui/icons/splash-t.png $@ ; \
-	;;\
-	  *) cp $(top_srcdir)/src/ui/gui/icons/splash-r.png $@ ; \
-	;;\
-esac
+	cp $< $@
 
 EXTRA_DIST += $(top_srcdir)/src/ui/gui/artwork/splash.svg $(icons) $(icon_srcs)
 
