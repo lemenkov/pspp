@@ -2,13 +2,13 @@
 # Copyright (C) 2016, 2017, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
 #
-# Meskó Balázs <mesko.balazs@fsf.hu>, 2016, 2017, 2019, 2022, 2024.
+# Meskó Balázs <mesko.balazs@fsf.hu>, 2016, 2017, 2019, 2022, 2024, 2026.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 2.0.1\n"
+"Project-Id-Version: pspp 2.1.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2024-03-21 16:29-0700\n"
-"PO-Revision-Date: 2024-07-10 11:36+0200\n"
+"POT-Creation-Date: 2026-03-04 10:01-0800\n"
+"PO-Revision-Date: 2026-03-14 21:05+0100\n"
 "Last-Translator: Meskó Balázs <mesko.balazs@fsf.hu>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
@@ -17,62 +17,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.8\n"
 
-#: gl/clean-temp.c:234
+#: gl/clean-temp.c:237
 msgid "cannot find a temporary directory, try setting $TMPDIR"
 msgstr "nem található átmeneti könyvtár, próbálja beállítani a $TMPDIR értékét"
 
-#: gl/clean-temp.c:249
+#: gl/clean-temp.c:252
 #, c-format
 msgid "cannot create a temporary directory using template \"%s\""
 msgstr "nem sikerült átmeneti könyvtárat létrehozni a(z) „%s” sablon használatával"
 
-#: gl/clean-temp.c:370
+#: gl/clean-temp.c:373
 #, c-format
 msgid "cannot remove temporary directory %s"
 msgstr "nem sikerült eltávolítani a(z) %s átmeneti könyvtárat"
 
-#: gl/clean-temp-simple.c:296
+#: gl/clean-temp-simple.c:270
 #, c-format
 msgid "cannot remove temporary file %s"
 msgstr "nem sikerült eltávolítani a(z) %s átmeneti fájlt"
 
-#: gl/error.c:194
+#: gl/error.c:208
 msgid "Unknown system error"
 msgstr "Ismeretlen rendszerhiba"
 
-#: gl/getopt.c:278
+#: gl/getopt.c:282
 #, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: a(z) „%s%s” kapcsoló nem egyértelmű\n"
 
-#: gl/getopt.c:284
+#: gl/getopt.c:288
 #, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: a(z) „%s%s” kapcsoló nem egyértelmű; lehetőségek:"
 
-#: gl/getopt.c:319
+#: gl/getopt.c:322
 #, c-format
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: ismeretlen „%s%s” kapcsoló\n"
 
-#: gl/getopt.c:345
+#: gl/getopt.c:348
 #, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: a(z) „%s%s” kapcsoló nem engedélyez argumentumot\n"
 
-#: gl/getopt.c:360
+#: gl/getopt.c:363
 #, c-format
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: a(z) „%s%s” kapcsolóhoz argumentum szükséges\n"
 
-#: gl/getopt.c:621
+#: gl/getopt.c:624
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: ismeretlen kapcsoló -- „%c”\n"
 
-#: gl/getopt.c:636 gl/getopt.c:682
+#: gl/getopt.c:639 gl/getopt.c:685
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: a kapcsolóhoz argumentum szükséges -- „%c”\n"
@@ -2063,18 +2063,10 @@ msgid "Insert"
 msgstr "Beszúrás"
 
 #: src/language/command.def:34
-msgid "Matrix"
-msgstr "Mátrix"
-
-#: src/language/command.def:35
-msgid "Matri Convert"
-msgstr "Mátrix átalakítása"
-
-#: src/language/command.def:36
 msgid "N of Cases"
 msgstr "Esetek száma"
 
-#: src/language/command.def:37 src/language/commands/binomial.c:188
+#: src/language/command.def:35 src/language/commands/binomial.c:188
 #: src/language/commands/cochran.c:189 src/language/commands/correlations.c:91
 #: src/language/commands/correlations.c:149
 #: src/language/commands/crosstabs.c:1069
@@ -2098,109 +2090,117 @@ msgstr "Esetek száma"
 msgid "N"
 msgstr "N"
 
-#: src/language/command.def:38
+#: src/language/command.def:36
 msgid "New File"
 msgstr "Új fájl"
 
-#: src/language/command.def:39
+#: src/language/command.def:37
 msgid "Output Modify"
 msgstr "Kimenet módosítása"
 
-#: src/language/command.def:40
+#: src/language/command.def:38
 msgid "Permissions"
 msgstr "Jogosultságok"
 
-#: src/language/command.def:41
+#: src/language/command.def:39
 msgid "Preserve"
 msgstr "Megőrzés"
 
-#: src/language/command.def:42 src/language/command.def:43
+#: src/language/command.def:40 src/language/command.def:41
 msgid "Quit"
 msgstr "Kilépés"
 
-#: src/language/command.def:44
+#: src/language/command.def:42
 msgid "Restore"
 msgstr "Helyreállítás"
 
-#: src/language/command.def:45
+#: src/language/command.def:43
 msgid "Set"
 msgstr "Beállítás"
 
-#: src/language/command.def:46
+#: src/language/command.def:44
 msgid "Show"
 msgstr "Megjelenítés"
 
-#: src/language/command.def:47
+#: src/language/command.def:45
 msgid "Subtitle"
 msgstr "Alcím"
 
-#: src/language/command.def:48
+#: src/language/command.def:46
 msgid "Sysfile Info"
 msgstr "Rendszerfájl-információk"
 
-#: src/language/command.def:49 src/output/output-item.c:737
+#: src/language/command.def:47 src/output/output-item.c:737
 msgid "Title"
 msgstr "Cím"
 
-#: src/language/command.def:52
+#: src/language/command.def:50
 msgid "Add Files"
 msgstr "Fájlok hozzáadása"
 
-#: src/language/command.def:54 src/language/commands/list.c:81
+#: src/language/command.def:52 src/language/commands/list.c:81
 msgid "Data List"
 msgstr "Adatlista"
 
-#: src/language/command.def:55
+#: src/language/command.def:53
 msgid "Get"
 msgstr "Lekérés"
 
-#: src/language/command.def:56
+#: src/language/command.def:54
 msgid "Get Data"
 msgstr "Adatok lekérése"
 
-#: src/language/command.def:57
+#: src/language/command.def:55
 msgid "Import"
 msgstr "Importálás"
 
-#: src/language/command.def:58
+#: src/language/command.def:56
 msgid "Input Program"
 msgstr "Bemeneti program"
 
-#: src/language/command.def:59
+#: src/language/command.def:57
 msgid "Match Files"
 msgstr "Fájlok illesztése"
 
-#: src/language/command.def:60
+#: src/language/command.def:58
 msgid "Matrix Data"
 msgstr "Mátrixadatok"
 
-#: src/language/command.def:61
+#: src/language/command.def:59
 msgid "Update"
 msgstr "Frissítés"
 
-#: src/language/command.def:62
+#: src/language/command.def:60
 msgid "Dataset Activate"
 msgstr "Adathalmaz aktiválása"
 
-#: src/language/command.def:63
+#: src/language/command.def:61
 msgid "Dataset Declare"
 msgstr "Adathalmaz deklarációja"
 
-#: src/language/command.def:64
+#: src/language/command.def:62
 msgid "Dataset Close"
 msgstr "Adathalmaz bezárása"
 
-#: src/language/command.def:65
+#: src/language/command.def:63
 msgid "Dataset Copy"
 msgstr "Adathalmaz másolása"
 
-#: src/language/command.def:66
+#: src/language/command.def:64
 msgid "Dataset Name"
 msgstr "Adathalmaz neve"
 
-#: src/language/command.def:67
+#: src/language/command.def:65
 msgid "Dataset Display"
 msgstr "Adathalmaz megjelenítése"
+
+#: src/language/command.def:66
+msgid "Matrix"
+msgstr "Mátrix"
+
+#: src/language/command.def:67
+msgid "Matrix Convert"
+msgstr "Mátrix átalakítása"
 
 #: src/language/command.def:70
 msgid "Add Value Labels"
@@ -2373,7 +2373,7 @@ msgstr "Adatok kezdete"
 #: src/language/command.def:118 src/language/commands/crosstabs.c:73
 #: src/language/commands/crosstabs.c:939 src/language/commands/ctables.c:330
 #: src/language/commands/frequencies.c:1230 src/language/commands/graph.c:204
-#: src/language/commands/quick-cluster.c:699
+#: src/language/commands/quick-cluster.c:697
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:90
 #: src/ui/gui/psppire-dialog-action-ctables.c:190
 msgid "Count"
@@ -2499,7 +2499,7 @@ msgstr "Minta"
 #: src/ui/gui/psppire-dialog-action-aggregate.c:211
 #: src/ui/gui/psppire-data-window.c:494 src/ui/gui/psppire-data-window.c:498
 #: src/ui/gui/psppire-output-window.c:315
-#: src/ui/gui/psppire-syntax-window.c:670 src/ui/gui/psppire-window.c:447
+#: src/ui/gui/psppire-syntax-window.c:670 src/ui/gui/psppire-window.c:443
 #: src/ui/gui/aggregate.ui:552
 msgid "Save"
 msgstr "Mentés"
@@ -3135,7 +3135,7 @@ msgstr "Ez a(z) %zu bájtos karakterlánc túl hosszú a(z) %s, %d szélességű
 #: src/language/lexer/variable-parser.c:86
 #: src/language/lexer/variable-parser.c:783
 #: src/language/lexer/variable-parser.c:803 src/language/commands/graph.c:810
-#: src/language/commands/matrix.c:6066 utilities/pspp-convert.c:84
+#: src/language/commands/matrix.c:6077 utilities/pspp-convert.c:84
 msgid "Syntax error expecting variable name."
 msgstr "Szintaktikai hiba: változónév várva."
 
@@ -3180,8 +3180,8 @@ msgstr "A(z) %s változó kétszer szerepel a változólistában."
 #: src/language/lexer/variable-parser.c:357
 #: src/language/lexer/variable-parser.c:869
 #, c-format
-msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
-msgstr "A(z) „%s TO %s” érvénytelen szintaxis, mert a(z) %s megelőzi a(z) %s-t a szótárban."
+msgid "%s TO %s is not valid syntax since %s is after %s in the dictionary."
+msgstr "A(z) „%s TO %s” érvénytelen szintaxis, mert a(z) %s később van a szótárban, mint a(z) %s."
 
 #: src/language/lexer/variable-parser.c:366
 msgid "With the syntax <a> TO <b>, variables <a> and <b> must be both regular variables or both scratch variables."
@@ -3504,7 +3504,7 @@ msgstr "Binomiális próba"
 #: src/language/commands/frequencies.c:278
 #: src/language/commands/frequencies.c:1315
 #: src/language/commands/frequencies.c:1326
-#: src/language/commands/friedman.c:250 src/language/commands/glm.c:649
+#: src/language/commands/friedman.c:250 src/language/commands/glm.c:652
 #: src/language/commands/jonckheere-terpstra.c:360
 #: src/language/commands/kruskal-wallis.c:265
 #: src/language/commands/kruskal-wallis.c:313
@@ -3518,7 +3518,7 @@ msgstr "Binomiális próba"
 #: src/language/commands/npar-summary.c:106 src/language/commands/oneway.c:902
 #: src/language/commands/oneway.c:980 src/language/commands/oneway.c:1079
 #: src/language/commands/oneway.c:1167 src/language/commands/oneway.c:1299
-#: src/language/commands/quick-cluster.c:698
+#: src/language/commands/quick-cluster.c:696
 #: src/language/commands/regression.c:769
 #: src/language/commands/regression.c:801
 #: src/language/commands/regression.c:925
@@ -3582,7 +3582,7 @@ msgstr "2. csoport"
 #: src/language/commands/chisquare.c:257 src/language/commands/crosstabs.c:1074
 #: src/language/commands/crosstabs.c:1357 src/language/commands/ctables.c:4281
 #: src/language/commands/examine.c:914 src/language/commands/factor.c:1616
-#: src/language/commands/frequencies.c:320 src/language/commands/glm.c:731
+#: src/language/commands/frequencies.c:320 src/language/commands/glm.c:735
 #: src/language/commands/kruskal-wallis.c:301
 #: src/language/commands/logistic.c:1247
 #: src/language/commands/mann-whitney.c:197 src/language/commands/means.c:707
@@ -3659,7 +3659,7 @@ msgstr "Érték"
 #: src/language/commands/descriptives.c:967
 #: src/language/commands/friedman.c:226
 #: src/language/commands/jonckheere-terpstra.c:376
-#: src/language/commands/matrix.c:6029 src/language/commands/matrix.c:8517
+#: src/language/commands/matrix.c:6040 src/language/commands/matrix.c:8528
 #: src/language/commands/npar-summary.c:113 src/language/commands/print.c:454
 #: src/language/commands/quick-cluster.c:539 src/language/commands/runs.c:331
 #: src/language/commands/set.c:1424 src/language/commands/split-file.c:93
@@ -3685,7 +3685,7 @@ msgstr "Khí-négyzet"
 #: src/language/commands/chisquare.c:324 src/language/commands/cochran.c:191
 #: src/language/commands/crosstabs.c:1437 src/language/commands/examine.c:662
 #: src/language/commands/factor.c:1971 src/language/commands/friedman.c:257
-#: src/language/commands/glm.c:653 src/language/commands/kruskal-wallis.c:315
+#: src/language/commands/glm.c:656 src/language/commands/kruskal-wallis.c:315
 #: src/language/commands/logistic.c:1085 src/language/commands/median.c:354
 #: src/language/commands/oneway.c:904 src/language/commands/oneway.c:1171
 #: src/language/commands/regression.c:927
@@ -3942,7 +3942,7 @@ msgstr "Esetek"
 #: src/language/commands/crosstabs.c:1074 src/language/commands/examine.c:913
 #: src/language/commands/frequencies.c:297
 #: src/language/commands/frequencies.c:1330
-#: src/language/commands/quick-cluster.c:718
+#: src/language/commands/quick-cluster.c:716
 #: src/language/commands/reliability.c:495
 msgid "Valid"
 msgstr "Érvényes"
@@ -4518,7 +4518,7 @@ msgstr "Szintaktikai hiba: szám, karakterlánc vagy tartomány várva."
 msgid "Syntax error in postcompute expression."
 msgstr "Szintaktikai hiba az utószámítási kifejezésben."
 
-#: src/language/commands/ctables.c:951 src/language/expressions/parse.c:805
+#: src/language/commands/ctables.c:951 src/language/expressions/parse.c:808
 msgid "The exponentiation operator (`**') is left-associative: `a**b**c' equals `(a**b)**c', not `a**(b**c)'.  To disable this warning, insert parentheses."
 msgstr "A hatványozás operátor („**”) balról asszociatív: „a**b**c” „(a**b)**c”-vel egyezik meg, nem pedig „a**(b**c)”-vel. A figyelmeztetés kikapcsolásához szúrjon be zárójeleket."
 
@@ -4657,14 +4657,14 @@ msgstr "Sorkategóriák"
 msgid "Column Categories"
 msgstr "Oszlopkategóriák"
 
-#: src/language/commands/ctables.c:4634 src/language/commands/matrix.c:5687
-#: src/language/commands/matrix.c:6016 src/language/commands/matrix.c:8535
+#: src/language/commands/ctables.c:4634 src/language/commands/matrix.c:5694
+#: src/language/commands/matrix.c:6027 src/language/commands/matrix.c:8546
 msgid "Rows"
 msgstr "Sorok"
 
 #: src/language/commands/ctables.c:4635 src/language/commands/data-parser.c:727
-#: src/language/commands/matrix.c:5689 src/language/commands/matrix.c:6016
-#: src/language/commands/matrix.c:8535 src/language/commands/print.c:451
+#: src/language/commands/matrix.c:5696 src/language/commands/matrix.c:6027
+#: src/language/commands/matrix.c:8546 src/language/commands/print.c:451
 #: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Oszlopok"
@@ -5106,7 +5106,7 @@ msgstr "Változók leképezése Z-pontszámokra"
 msgid "Names"
 msgstr "Nevek"
 
-#: src/language/commands/descriptives.c:564 src/language/commands/glm.c:659
+#: src/language/commands/descriptives.c:564 src/language/commands/glm.c:662
 #: src/language/commands/regression.c:932
 msgid "Source"
 msgstr "Forrás"
@@ -5115,7 +5115,7 @@ msgstr "Forrás"
 msgid "Target"
 msgstr "Cél"
 
-#: src/language/commands/descriptives.c:637
+#: src/language/commands/descriptives.c:652
 #, c-format
 msgid "Internal error processing Z scores.  Please report this to %s."
 msgstr "Belső hiba a Z-pontszámok feldolgozásakor. Jelentse be ide: %s."
@@ -5220,7 +5220,7 @@ msgid "Statistic"
 msgstr "Statisztika"
 
 #: src/language/commands/examine.c:663 src/language/commands/factor.c:1972
-#: src/language/commands/glm.c:656 src/language/commands/logistic.c:1086
+#: src/language/commands/glm.c:659 src/language/commands/logistic.c:1086
 #: src/language/commands/oneway.c:907 src/language/commands/oneway.c:1083
 #: src/language/commands/oneway.c:1302 src/language/commands/regression.c:808
 #: src/language/commands/regression.c:930
@@ -5269,7 +5269,7 @@ msgid "Extreme Values"
 msgstr "Kiugró értékek"
 
 #: src/language/commands/examine.c:825 src/language/commands/list.c:91
-#: src/language/commands/quick-cluster.c:612
+#: src/language/commands/quick-cluster.c:610
 msgid "Case Number"
 msgstr "Esetszám"
 
@@ -5638,55 +5638,55 @@ msgstr "A kompatibilis szintaxis módban, a QUALIFIER karakterlánc pontosan egy
 msgid "%s: Data file dictionary has no variables."
 msgstr "%s: Az adatfájl szótárnak nincsenek változói."
 
-#: src/language/commands/glm.c:161
+#: src/language/commands/glm.c:164
 msgid "Multivariate analysis is not yet implemented."
 msgstr "A többváltozós analízis még nincs megvalósítva."
 
-#: src/language/commands/glm.c:647
+#: src/language/commands/glm.c:650
 msgid "Tests of Between-Subjects Effects"
 msgstr "Alanyok közti hatások próbái"
 
-#: src/language/commands/glm.c:650
+#: src/language/commands/glm.c:653
 msgid "Type I Sum Of Squares"
 msgstr "I. típusú négyzetösszeg"
 
-#: src/language/commands/glm.c:651
+#: src/language/commands/glm.c:654
 msgid "Type II Sum Of Squares"
 msgstr "II. típusú négyzetösszeg"
 
-#: src/language/commands/glm.c:652
+#: src/language/commands/glm.c:655
 msgid "Type III Sum Of Squares"
 msgstr "III. típusú négyzetösszeg"
 
-#: src/language/commands/glm.c:654 src/language/commands/oneway.c:905
+#: src/language/commands/glm.c:657 src/language/commands/oneway.c:905
 #: src/language/commands/regression.c:928
 msgid "Mean Square"
 msgstr "Középérték négyzetet"
 
-#: src/language/commands/glm.c:655 src/language/commands/oneway.c:906
+#: src/language/commands/glm.c:658 src/language/commands/oneway.c:906
 #: src/language/commands/regression.c:929
 #: src/language/commands/t-test-indep.c:262
 msgid "F"
 msgstr "F"
 
-#: src/language/commands/glm.c:660
+#: src/language/commands/glm.c:663
 msgid "Corrected Model"
 msgstr "Javított modell"
 
-#: src/language/commands/glm.c:660
+#: src/language/commands/glm.c:663
 msgid "Model"
 msgstr "Modell"
 
-#: src/language/commands/glm.c:672
+#: src/language/commands/glm.c:675
 msgid "Intercept"
 msgstr "Ordinátatengely-metszet"
 
-#: src/language/commands/glm.c:722 src/output/output-item.c:241
-#: src/output/pivot-table.c:989 src/output/spv/spv.c:535
+#: src/language/commands/glm.c:726
+msgctxt "statistics"
 msgid "Error"
 msgstr "Hiba"
 
-#: src/language/commands/glm.c:739
+#: src/language/commands/glm.c:743
 msgid "Corrected Total"
 msgstr "Javított összesítés"
 
@@ -6180,7 +6180,7 @@ msgstr[1] "A(z) %s mátrixfüggvény 1 vagy 2 argumentumot vár, de %zu lett meg
 msgid "Matrix function %s requires at least one argument."
 msgstr "A(z) %s mátrixfüggvény legalább egy argumentumot vár."
 
-#: src/language/commands/matrix.c:1076 src/language/commands/matrix.c:8728
+#: src/language/commands/matrix.c:1076 src/language/commands/matrix.c:8739
 #, c-format
 msgid "Unknown variable %s."
 msgstr "Ismeretlen %s változó."
@@ -6299,614 +6299,618 @@ msgstr "A : minden operandusának a támogatott egész számú tartományban lé
 msgid "The increment operand to : must be nonzero."
 msgstr "A : növekmény operandusának nem zérusnak kell lennie."
 
-#: src/language/commands/matrix.c:3529
+#: src/language/commands/matrix.c:3507
+msgid "Matrix cannot be allocated.  Too large?"
+msgstr "Nem lehet helyet lefoglalni a mátrixnak. Lehet, hogy túl nagy?"
+
+#: src/language/commands/matrix.c:3536
 msgid "This expression tries to horizontally join matrices with differing numbers of rows."
 msgstr "Ez a kifejezés megpróbál vízszintesen egyesíteni két, eltérő számú sorral rendelkező mátrixot."
 
-#: src/language/commands/matrix.c:3559
+#: src/language/commands/matrix.c:3566
 msgid "This expression tries to vertically join matrices with differing numbers of columns."
 msgstr "Ez a kifejezés megpróbál függőlegesen egyesíteni két, eltérő számú oszloppal rendelkező mátrixot."
 
-#: src/language/commands/matrix.c:3624
+#: src/language/commands/matrix.c:3631
 #, c-format
 msgid "Vector index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "A vektorindexnek skalárnak vagy vektornak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:3631
+#: src/language/commands/matrix.c:3638
 #, c-format
 msgid "Matrix row index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "A mátrix sorindexének skalárnak vagy vektornak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:3638
+#: src/language/commands/matrix.c:3645
 #, c-format
 msgid "Matrix column index must be scalar or vector, not a %zu×%zu matrix."
 msgstr "A mátrix oszlopindexének skalárnak vagy vektornak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:3660
+#: src/language/commands/matrix.c:3667
 #, c-format
 msgid "Index %g is out of range for vector with %zu elements."
 msgstr "A(z) %g index kívül esik a %zu elemű vektor értelmezési tartományán."
 
-#: src/language/commands/matrix.c:3666
+#: src/language/commands/matrix.c:3673
 #, c-format
 msgid "%g is not a valid row index for a %zu×%zu matrix."
 msgstr "A(z) %g nem érvényes sorindex egy %zu×%zu méretű mátrixnál."
 
-#: src/language/commands/matrix.c:3673
+#: src/language/commands/matrix.c:3680
 #, c-format
 msgid "%g is not a valid column index for a %zu×%zu matrix."
 msgstr "A(z) %g nem érvényes oszlopindex egy %zu×%zu méretű mátrixnál."
 
-#: src/language/commands/matrix.c:3705
+#: src/language/commands/matrix.c:3712
 #, c-format
 msgid "Vector index operator may not be applied to a %zu×%zu matrix."
 msgstr "A vektorindex operátor nem alkalmazható %zu×%zu méretű mátrixra."
 
-#: src/language/commands/matrix.c:3788
+#: src/language/commands/matrix.c:3795
 #, c-format
 msgid "Function %s argument %zu must be a scalar, not a %zu×%zu matrix."
 msgstr "A(z) %s függvény %zu. argumentumának skalárnak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:3803
+#: src/language/commands/matrix.c:3810
 #, c-format
 msgid "Function %s argument %zu must be a vector, not a %zu×%zu matrix."
 msgstr "A(z) %s függvény %zu. argumentumának vektornak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:3854
+#: src/language/commands/matrix.c:3861
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than or equal to argument %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának nagyobb vagy egyenlőnek kell lennie, mint a(z) %3$zu. argumentum."
 
-#: src/language/commands/matrix.c:3860
+#: src/language/commands/matrix.c:3867
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than argument %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának nagyobbnak kell lennie, mint a(z) %3$zu. argumentum."
 
-#: src/language/commands/matrix.c:3866
+#: src/language/commands/matrix.c:3873
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than or equal to argument %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának kisebb vagy egyenlőnek kell lennie, mint a(z) %3$zu. argumentum."
 
-#: src/language/commands/matrix.c:3872
+#: src/language/commands/matrix.c:3879
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than argument %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának kisebbnek kell lennie, mint a(z) %3$zu. argumentum."
 
-#: src/language/commands/matrix.c:3878
+#: src/language/commands/matrix.c:3885
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to argument %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának kisebb vagy egyenlőnek kell lennie, mint a(z) %3$zu. argumentum."
 
-#: src/language/commands/matrix.c:3886 src/language/commands/matrix.c:3893
-#: src/language/commands/matrix.c:3941
+#: src/language/commands/matrix.c:3893 src/language/commands/matrix.c:3900
+#: src/language/commands/matrix.c:3948
 #, c-format
 msgid "Argument %zu is %g."
 msgstr "A(z) %zu. argumentum értéke: %g."
 
-#: src/language/commands/matrix.c:3889 src/language/commands/matrix.c:3945
+#: src/language/commands/matrix.c:3896 src/language/commands/matrix.c:3952
 #, c-format
 msgid "Row %zu, column %zu of argument %zu is %g."
 msgstr "A(z) %3$zu. argumentum %1$zu. sorának és %2$zu. oszlopának értéke: %4$g."
 
-#: src/language/commands/matrix.c:3907
+#: src/language/commands/matrix.c:3914
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than or equal to %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának nagyobb vagy egyenlőnek kell lennie, mint %3$g."
 
-#: src/language/commands/matrix.c:3913
+#: src/language/commands/matrix.c:3920
 #, c-format
 msgid "Argument %zu to matrix function %s must be greater than %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának nagyobbnak kell lennie, mint %3$g."
 
-#: src/language/commands/matrix.c:3919
+#: src/language/commands/matrix.c:3926
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than or equal to %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának kisebb vagy egyenlőnek kell lennie, mint %3$g."
 
-#: src/language/commands/matrix.c:3925
+#: src/language/commands/matrix.c:3932
 #, c-format
 msgid "Argument %zu to matrix function %s must be less than %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának kisebbnek kell lennie, mint %3$g."
 
-#: src/language/commands/matrix.c:3931
+#: src/language/commands/matrix.c:3938
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentuma nem lehet egyenlő ezzel: %3$g."
 
-#: src/language/commands/matrix.c:4014
+#: src/language/commands/matrix.c:4021
 #, c-format
 msgid "Row %zu, column %zu of argument %zu to matrix function %s is %g, which is outside the valid range %c%d,%d%c."
 msgstr "A(z) %4$s mátrixfüggvény %3$zu. argumentumának %1$zu. sorában és %2$zu. oszlopában lévő érték %5$g, amely kívül esik az érvényes %6$c%7$d, %8$d%9$c tartományon."
 
-#: src/language/commands/matrix.c:4023
+#: src/language/commands/matrix.c:4030
 #, c-format
 msgid "Argument %zu to matrix function %s is %g, which is outside the valid range %c%d,%d%c."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentumának értéke %3$g, amely kívül esik az érvényes %4$c%5$d, %6$d%7$c tartományon."
 
-#: src/language/commands/matrix.c:4040
+#: src/language/commands/matrix.c:4047
 #, c-format
 msgid "Argument %zu to matrix function %s, which must be integer, contains non-integer value %g in row %zu, column %zu."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentuma, amelynek egész számokat kellene tartalmaznia, a(z) %3$g nem egész értéket tartalmazza a(z) %4$zu. sorának, %5$zu. oszlopában."
 
-#: src/language/commands/matrix.c:4046
+#: src/language/commands/matrix.c:4053
 #, c-format
 msgid "Argument %zu to matrix function %s, which must be integer, has non-integer value %g."
 msgstr "A(z) %2$s mátrixfüggvény %1$zu. argumentuma, amelynek egész számokat kellene tartalmaznia, a(z) %3$g nem egész értéket tartalmazza."
 
-#: src/language/commands/matrix.c:4395
+#: src/language/commands/matrix.c:4402
 #, c-format
 msgid "Arguments 1 and 2 to %s have dimensions %zu×%zu and %zu×%zu, but %s requires these arguments either to have the same dimensions or for one of them to be a scalar."
 msgstr "A(z) %s 1. és 2. argumentumainak méretei %zu×%zu és %zu×%zu, de a(z) %s megköveteli, hogy ezek egyforma méretűek legyenek, vagy hogy az egyikük skalár legyen."
 
-#: src/language/commands/matrix.c:4521
+#: src/language/commands/matrix.c:4528
 #, c-format
 msgid "Uninitialized variable %s used in expression."
 msgstr "A kifejezésben használt „%s” változónak nem lett megadva értéke."
 
-#: src/language/commands/matrix.c:4679
+#: src/language/commands/matrix.c:4686
 #, c-format
 msgid "Expression for %s must evaluate to scalar, not a %zu×%zu matrix."
 msgstr "A(z) %s kifejezésnek skalárra kell kiértékelődnie, nem %zu×%zu méretű mátrixra."
 
-#: src/language/commands/matrix.c:4703
+#: src/language/commands/matrix.c:4710
 #, c-format
 msgid "Expression for %s is outside the supported integer range."
 msgstr "A(z) „%s” kifejezés a támogatott egész számú tartományon kívülre esik."
 
-#: src/language/commands/matrix.c:4775 src/language/commands/matrix.c:4857
+#: src/language/commands/matrix.c:4782 src/language/commands/matrix.c:4864
 #, c-format
 msgid "Undefined variable %s."
 msgstr "Meghatározatlan „%s” változó."
 
-#: src/language/commands/matrix.c:4862
+#: src/language/commands/matrix.c:4869
 #, c-format
 msgid "Cannot index %zu×%zu matrix %s."
 msgstr "A(z) %zu×%zu méretű %s mátrix nem indexelhető."
 
-#: src/language/commands/matrix.c:4871
+#: src/language/commands/matrix.c:4878
 #, c-format
 msgid "Can't use vector indexing on %zu×%zu matrix %s."
 msgstr "A(z) %zu×%zu méretű %s mátrixnál nem használható a vektoros indexelés."
 
-#: src/language/commands/matrix.c:4905 src/language/commands/matrix.c:4917
+#: src/language/commands/matrix.c:4912 src/language/commands/matrix.c:4924
 #, c-format
 msgid "Only an %zu-element vector may be assigned to this %zu-element subvector of %s."
 msgstr "Csak %1$zu-elemű vektor rendelhető a(z) %3$s %2$zu-elemű alvektorához."
 
-#: src/language/commands/matrix.c:4909
+#: src/language/commands/matrix.c:4916
 #, c-format
 msgid "The source is an %zu×%zu matrix."
 msgstr "A forrás egy %zu×%zu méretű mátrix."
 
-#: src/language/commands/matrix.c:4920
+#: src/language/commands/matrix.c:4927
 #, c-format
 msgid "The source vector has %zu element."
 msgid_plural "The source vector has %zu elements."
 msgstr[0] "A forrásvektornak %zu eleme van."
 msgstr[1] "A forrásvektornak %zu eleme van."
 
-#: src/language/commands/matrix.c:4949
+#: src/language/commands/matrix.c:4956
 #, c-format
 msgid "Numbers of indexes for assigning to %s differ from the size of the source matrix."
 msgstr "A(z) %s mátrixhoz történő hozzárendeléshez használt indexek száma eltér a forrásmátrix méretétől."
 
-#: src/language/commands/matrix.c:4954
+#: src/language/commands/matrix.c:4961
 #, c-format
 msgid "Number of row indexes for assigning to %s differs from number of rows in source matrix."
 msgstr "A(z) %s mátrixhoz történő hozzárendeléshez használt sorindexek eltérnek a forrásmátrix soraitól."
 
-#: src/language/commands/matrix.c:4959
+#: src/language/commands/matrix.c:4966
 #, c-format
 msgid "Number of column indexes for assigning to %s differs from number of columns in source matrix."
 msgstr "A(z) %s mátrixhoz történő hozzárendeléshez használt oszlopindexek eltérnek a forrásmátrix oszlopaitól."
 
-#: src/language/commands/matrix.c:4967
+#: src/language/commands/matrix.c:4974
 #, c-format
 msgid "There is %zu row index."
 msgid_plural "There are %zu row indexes."
 msgstr[0] "%zu sorindex van."
 msgstr[1] "%zu sorindex van."
 
-#: src/language/commands/matrix.c:4973
+#: src/language/commands/matrix.c:4980
 #, c-format
 msgid "Destination matrix %s has %zu row."
 msgid_plural "Destination matrix %s has %zu rows."
 msgstr[0] "A(z) %s célmátrixnak %zu sora van."
 msgstr[1] "A(z) %s célmátrixnak %zu sora van."
 
-#: src/language/commands/matrix.c:4983
+#: src/language/commands/matrix.c:4990
 #, c-format
 msgid "There is %zu column index."
 msgid_plural "There are %zu column indexes."
 msgstr[0] "%zu oszlopindex van."
 msgstr[1] "%zu oszlopindex van."
 
-#: src/language/commands/matrix.c:4989
+#: src/language/commands/matrix.c:4996
 #, c-format
 msgid "Destination matrix %s has %zu column."
 msgid_plural "Destination matrix %s has %zu columns."
 msgstr[0] "A(z) %s célmátrixnak %zu oszlopa van."
 msgstr[1] "A(z) %s célmátrixnak %zu oszlopa van."
 
-#: src/language/commands/matrix.c:4995
+#: src/language/commands/matrix.c:5002
 #, c-format
 msgid "The source matrix is %zu×%zu."
 msgstr "A forrásmátrix %zu×%zu méretű."
 
-#: src/language/commands/matrix.c:5968
+#: src/language/commands/matrix.c:5979
 msgid "BREAK not inside LOOP."
 msgstr "A BREAK nem LOOP-on belül szerepel."
 
-#: src/language/commands/matrix.c:6012
+#: src/language/commands/matrix.c:6023
 msgid "Matrix Variables"
 msgstr "Mátrixváltozók"
 
-#: src/language/commands/matrix.c:6014 src/language/commands/matrix.c:8515
+#: src/language/commands/matrix.c:6025 src/language/commands/matrix.c:8526
 #: src/language/commands/set.c:1291 src/language/commands/sys-file-info.c:186
 msgid "Attribute"
 msgstr "Attribútum"
 
-#: src/language/commands/matrix.c:6015
+#: src/language/commands/matrix.c:6026
 msgid "Dimension"
 msgstr "Dimenzió"
 
-#: src/language/commands/matrix.c:6017
+#: src/language/commands/matrix.c:6028
 msgid "Size (kB)"
 msgstr "Méret (kB)"
 
-#: src/language/commands/matrix.c:6143
+#: src/language/commands/matrix.c:6154
 #, c-format
 msgid "Cannot save %zu×%zu matrix to %s because the first SAVE to %s in this matrix program wrote a %zu-column matrix."
 msgstr "A %zu×%zu méretű mátrix nem menthető a(z) %s változóba, mert a mátrixprogram első, %s változóba író SAVE parancsa %zu oszlopos mátrixot írt ki."
 
-#: src/language/commands/matrix.c:6148
+#: src/language/commands/matrix.c:6159
 #, c-format
 msgid "This is the location of the first SAVE to %s."
 msgstr "Ez az első SAVE parancs, amely a(z) %s változóba ír."
 
-#: src/language/commands/matrix.c:6207
+#: src/language/commands/matrix.c:6218
 #, c-format
 msgid "Duplicate variable name %s in SAVE statement."
 msgstr "Ismételt „%s” változónév a SAVE parancsban."
 
-#: src/language/commands/matrix.c:6220
+#: src/language/commands/matrix.c:6231
 #, c-format
 msgid "The SAVE command STRINGS subcommand specifies an unknown variable %s."
 msgstr "A SAVE parancs STRINGS alparancsa a(z) ismeretlen %s változót adja meg."
 
-#: src/language/commands/matrix.c:6224
+#: src/language/commands/matrix.c:6235
 #, c-format
 msgid "The SAVE command STRINGS subcommand specifies %zu unknown variable: %s."
 msgid_plural "The SAVE command STRINGS subcommand specifies %zu unknown variables, including %s."
 msgstr[0] "A SAVE parancs STRINGS alparancsa %zu ismeretlen változót ad meg: %s."
 msgstr[1] "A SAVE parancs STRINGS alparancsa %zu ismeretlen változót ad meg, köztük ezt: %s."
 
-#: src/language/commands/matrix.c:6383
+#: src/language/commands/matrix.c:6394
 msgid "Ignoring NAMES because VARIABLES was also specified."
 msgstr "A NAMES figyelmen kívül hagyása, mert a VARIABLES is meg volt adva."
 
-#: src/language/commands/matrix.c:6556 src/language/commands/matrix.c:7138
+#: src/language/commands/matrix.c:6567 src/language/commands/matrix.c:7149
 #, c-format
 msgid "Field width %d does not evenly divide record width %d."
 msgstr "A(z) %d szélességű mező nem egyenlően osztja fel a(z) %d szélességű rekordot."
 
-#: src/language/commands/matrix.c:6559 src/language/commands/matrix.c:6692
-#: src/language/commands/matrix.c:7141 src/language/commands/matrix.c:7257
+#: src/language/commands/matrix.c:6570 src/language/commands/matrix.c:6703
+#: src/language/commands/matrix.c:7152 src/language/commands/matrix.c:7268
 msgid "This syntax designates the record width."
 msgstr "Ez a szintaktika megadja a rekord szélességét."
 
-#: src/language/commands/matrix.c:6561 src/language/commands/matrix.c:7143
+#: src/language/commands/matrix.c:6572 src/language/commands/matrix.c:7154
 msgid "This syntax specifies the field width."
 msgstr "Ez a szintaktika megadja a mező szélességét."
 
-#: src/language/commands/matrix.c:6613 src/language/commands/matrix.c:7186
+#: src/language/commands/matrix.c:6624 src/language/commands/matrix.c:7197
 #, c-format
 msgid "Unknown format %s."
 msgstr "Ismeretlen %s formátum."
 
-#: src/language/commands/matrix.c:6645
+#: src/language/commands/matrix.c:6656
 msgid "SIZE is required for reading data into a full matrix (as opposed to a submatrix)."
 msgstr "A SIZE szükséges az adatok teljes mátrixba történő beolvasásához (ellentétben egy almátrixszal)."
 
-#: src/language/commands/matrix.c:6648
+#: src/language/commands/matrix.c:6659
 msgid "This expression designates a full matrix."
 msgstr "Ez a kifejezés egy teljes mátrixot jelöl ki."
 
-#: src/language/commands/matrix.c:6687
+#: src/language/commands/matrix.c:6698
 #, c-format
 msgid "%d repetitions cannot fit in record width %d."
 msgstr "%d ismétlődés nem férhet bele egy %d szélességű rekordba."
 
-#: src/language/commands/matrix.c:6690 src/language/commands/matrix.c:7255
+#: src/language/commands/matrix.c:6701 src/language/commands/matrix.c:7266
 msgid "This syntax designates the number of repetitions."
 msgstr "Ez a szintaktika megadja az ismétlések számát."
 
-#: src/language/commands/matrix.c:6700 src/language/commands/matrix.c:7265
+#: src/language/commands/matrix.c:6711 src/language/commands/matrix.c:7276
 msgid "This command specifies two different field widths."
 msgstr "Ez a parancs két különböző mező szélességét adja meg."
 
-#: src/language/commands/matrix.c:6704 src/language/commands/matrix.c:7269
-#: src/language/commands/matrix.c:7306
+#: src/language/commands/matrix.c:6715 src/language/commands/matrix.c:7280
+#: src/language/commands/matrix.c:7317
 #, c-format
 msgid "This syntax specifies %d repetition."
 msgid_plural "This syntax specifies %d repetitions."
 msgstr[0] "Ez a szintaktika %d ismétlést ad meg."
 msgstr[1] "Ez a szintaktika %d ismétlést ad meg."
 
-#: src/language/commands/matrix.c:6709 src/language/commands/matrix.c:7274
-#: src/language/commands/matrix.c:7311
+#: src/language/commands/matrix.c:6720 src/language/commands/matrix.c:7285
+#: src/language/commands/matrix.c:7322
 #, c-format
 msgid "This syntax designates record width %d, which divided by %d repetitions implies field width %d."
 msgstr "Ez a szintaktika a(z) %d karakteres szélességet ad meg, amely %d ismétléssel elosztva %d karakteres szélességet jelent."
 
 # A paraméterek: "RECFORM", "MODE=360"
-#: src/language/commands/matrix.c:6716 src/language/commands/matrix.c:6719
-#: src/language/commands/matrix.c:7281 src/language/commands/matrix.c:7284
-#: src/language/commands/matrix.c:7319
+#: src/language/commands/matrix.c:6727 src/language/commands/matrix.c:6730
+#: src/language/commands/matrix.c:7292 src/language/commands/matrix.c:7295
+#: src/language/commands/matrix.c:7330
 #, c-format
 msgid "This syntax specifies field width %d."
 msgstr "Ez a szintaktika egy %d karakter széles mezőt ad meg."
 
-#: src/language/commands/matrix.c:6743
+#: src/language/commands/matrix.c:6754
 #, c-format
 msgid "Error reading \"%.*s\" as format %s for matrix row %zu, column %zu: %s"
 msgstr "Hiba a(z) „%.*s” %s formátumként történő beolvasása során a mátrix %zu. soránál és %zu oszlopánál: %s"
 
-#: src/language/commands/matrix.c:6765
+#: src/language/commands/matrix.c:6776
 msgid "Matrix data may not contain missing value."
 msgstr "A mátrixadatok nem tartalmazhatnak hiányzó értéket."
 
-#: src/language/commands/matrix.c:6800
+#: src/language/commands/matrix.c:6811
 msgid "Unexpected end of file reading matrix data."
 msgstr "Váratlan fájlvég a mátrixadatok olvasásakor."
 
-#: src/language/commands/matrix.c:6871
+#: src/language/commands/matrix.c:6882
 #, c-format
 msgid "Trailing garbage following data for matrix row %zu."
 msgstr "Záró szemét a mátrix %zu. sora után."
 
-#: src/language/commands/matrix.c:6897 src/language/commands/matrix.c:6920
+#: src/language/commands/matrix.c:6908 src/language/commands/matrix.c:6931
 #, c-format
 msgid "SIZE must evaluate to a scalar or a 2-element vector, not a %zu×%zu matrix."
 msgstr "A SIZE-nak skalárra vagy kételemű vektorra kell kiértékelődnie, nem %zu×%zu méretű mátrixra."
 
-#: src/language/commands/matrix.c:6933
+#: src/language/commands/matrix.c:6944
 #, c-format
 msgid "Matrix dimensions %g×%g specified on SIZE are outside valid range."
 msgstr "A SIZE-nál megadott %g×%g mátrixméret kívül esik az érvényes tartományon."
 
-#: src/language/commands/matrix.c:6969
+#: src/language/commands/matrix.c:6980
 msgid "Dimensions specified on SIZE differ from dimensions of destination submatrix."
 msgstr "A SIZE-nál megadott méretek eltérnek a célnak megadott részmátrix méretétől."
 
-#: src/language/commands/matrix.c:6972
+#: src/language/commands/matrix.c:6983
 #, c-format
 msgid "SIZE specifies dimensions %zu×%zu."
 msgstr "A SIZE a következő méretet adja meg: %zu×%zu."
 
-#: src/language/commands/matrix.c:6975
+#: src/language/commands/matrix.c:6986
 #, c-format
 msgid "Destination submatrix has dimensions %zu×%zu."
 msgstr "A célként megadott almátrix mérete: %zu×%zu."
 
-#: src/language/commands/matrix.c:6996
+#: src/language/commands/matrix.c:7007
 #, c-format
 msgid "Cannot read non-square %zu×%zu matrix using READ with MODE=SYMMETRIC."
 msgstr "A nem négyzetes %zu×%zu méretű mátrix nem olvasható a READ paranccsal, ha MODE=SYMMETRIC van beállítva."
 
-#: src/language/commands/matrix.c:7300
+#: src/language/commands/matrix.c:7311
 #, c-format
 msgid "This syntax specifies format %s."
 msgstr "Ez a szintaktika %s formátumot ad meg."
 
-#: src/language/commands/matrix.c:7330
+#: src/language/commands/matrix.c:7341
 #, c-format
 msgid "Format %s is too wide for %zu-byte matrix elements."
 msgstr "A(z) %s formátum túl széles a(z) %zu bájtos mátrixelemekhez."
 
-#: src/language/commands/matrix.c:7353
+#: src/language/commands/matrix.c:7364
 #, c-format
 msgid "WRITE with MODE=TRIANGULAR requires a square matrix but the matrix to be written has dimensions %zu×%zu."
 msgstr "A WRITE parancshoz MODE=TRIANGULAR beállítás esetén négyzetes mátrix szükséges, de az írandó mátrix %zu×%zu méretű."
 
-#: src/language/commands/matrix.c:7517
+#: src/language/commands/matrix.c:7528
 msgid "Syntax error expecting ACCEPT or OMIT or a number for MISSING."
 msgstr "Szintaktikai hiba: ACCEPT, OMIT vagy szám várva a MISSING értékeként."
 
-#: src/language/commands/matrix.c:7535
+#: src/language/commands/matrix.c:7546
 msgid "Syntax error expecting OMIT or a number for SYSMIS."
 msgstr "Szintaktikai hiba: OMIT vagy szám várva a SYSMIS értékeként."
 
-#: src/language/commands/matrix.c:7581
+#: src/language/commands/matrix.c:7592
 #, c-format
 msgid "Variable %s is not numeric."
 msgstr "A(z) %s változó nem numerikus."
 
-#: src/language/commands/matrix.c:7636
+#: src/language/commands/matrix.c:7647
 #, c-format
 msgid "Variable %s in case %lld is system-missing."
 msgstr "A(z) %s változó értéke hiányzik a(z) %lld. esetnél."
 
-#: src/language/commands/matrix.c:7651
+#: src/language/commands/matrix.c:7662
 #, c-format
 msgid "Variable %s in case %lld has user-missing value %g."
 msgstr "A(z) %1$s változó a(z) %3$g hiányzónak tekintendő értéket tartalmazza a(z) %2$lld. esetnél."
 
-#: src/language/commands/matrix.c:7691
+#: src/language/commands/matrix.c:7702
 #, c-format
 msgid "The %s command cannot read an empty active file."
 msgstr "A(z) %s parancs nem tud üres, aktív fájlt olvasni."
 
-#: src/language/commands/matrix.c:7741
+#: src/language/commands/matrix.c:7752
 #, c-format
 msgid "%s may only be specified on MSAVE if it was specified on the first MSAVE within MATRIX."
 msgstr "A(z) %s csak egyszer adható meg az MSAVE-en, ha meg lett adva az első MSAVE-nél a MATRIX parancson belül."
 
-#: src/language/commands/matrix.c:7744
+#: src/language/commands/matrix.c:7755
 #, c-format
 msgid "The first MSAVE in MATRIX did not specify %s."
 msgstr "A MATRIX első MSAVE parancs nem adta meg ezt: %s."
 
-#: src/language/commands/matrix.c:7747
+#: src/language/commands/matrix.c:7758
 #, c-format
 msgid "This is the specification of %s on a later MSAVE."
 msgstr "Ez a(z) %s megadása egy későbbi MSAVE parancsnál."
 
-#: src/language/commands/matrix.c:7754
+#: src/language/commands/matrix.c:7765
 #, c-format
 msgid "%s must specify the same variables on each MSAVE within a given MATRIX."
 msgstr "A(z) %s parancsnak ugyanazokat a változókat kell megadnia minden egyes MSAVE parancsnál az adott MATRIX parancsban."
 
-#: src/language/commands/matrix.c:7757
+#: src/language/commands/matrix.c:7768
 #, c-format
 msgid "This is the specification of %s on the first MSAVE."
 msgstr "Ez a(z) %s megadása első az első MSAVE parancsnál."
 
-#: src/language/commands/matrix.c:7760
+#: src/language/commands/matrix.c:7771
 #, c-format
 msgid "This is a different specification of %s on a later MSAVE."
 msgstr "Ez a(z) %s egy másik megadása egy későbbi MSAVE parancsnál."
 
-#: src/language/commands/matrix.c:7774
+#: src/language/commands/matrix.c:7785
 msgid "OUTFILE must name the same file on each MSAVE within a single MATRIX command."
 msgstr "Az OUTFILE-nak ugyanazt a fájlt kell megadnia minden MSAVE-nél egy adott MATRIX parancsban."
 
-#: src/language/commands/matrix.c:7777
+#: src/language/commands/matrix.c:7788
 msgid "This is the OUTFILE on the first MSAVE command."
 msgstr "Ez az OUTFILE az első MSAVE parancsnál."
 
-#: src/language/commands/matrix.c:7779
+#: src/language/commands/matrix.c:7790
 msgid "This is the OUTFILE on a later MSAVE command."
 msgstr "Ez az OUTFILE egy későbbi MSAVE parancsnál."
 
-#: src/language/commands/matrix.c:7869
+#: src/language/commands/matrix.c:7880
 #, c-format
 msgid "Variable name %s is reserved."
 msgstr "A(z) %s változónév a rendszer számára van fenntartva."
 
-#: src/language/commands/matrix.c:7978
+#: src/language/commands/matrix.c:7989
 msgid "FNAMES requires FACTOR."
 msgstr "A FNAMES-hez szükséges a FACTOR."
 
-#: src/language/commands/matrix.c:7983
+#: src/language/commands/matrix.c:7994
 msgid "SNAMES requires SPLIT."
 msgstr "Az SNAMES-hez szükséges a SPLIT."
 
-#: src/language/commands/matrix.c:8045
+#: src/language/commands/matrix.c:8056
 #, c-format
 msgid "%s expression must evaluate to vector, not a %zu×%zu matrix."
 msgstr "A(z) %s kifejezésnek vektorrá kell kiértékelődnie, nem %zu×%zu méretű mátrixra."
 
-#: src/language/commands/matrix.c:8083
+#: src/language/commands/matrix.c:8094
 #, c-format
 msgid "Duplicate or invalid FACTOR variable name %s."
 msgstr "Ismételt vagy érvénytelen FACTOR változónév: %s."
 
-#: src/language/commands/matrix.c:8094
+#: src/language/commands/matrix.c:8105
 #, c-format
 msgid "Duplicate or invalid variable name %s."
 msgstr "Ismételt vagy érvénytelen változónév: %s."
 
-#: src/language/commands/matrix.c:8126
+#: src/language/commands/matrix.c:8137
 #, c-format
 msgid "Matrix on MSAVE has %zu columns but there are %zu variables."
 msgstr "A mátrixnak az MSAVE-nél %zu oszlopa van, de %zu változó van."
 
-#: src/language/commands/matrix.c:8144
+#: src/language/commands/matrix.c:8155
 #, c-format
 msgid "There are %zu factor variables, but %zu factor values were supplied."
 msgstr "%zu faktorváltozó van, de %zu faktorérték lett megadva."
 
-#: src/language/commands/matrix.c:8164
+#: src/language/commands/matrix.c:8175
 #, c-format
 msgid "There are %zu split variables, but %zu split values were supplied."
 msgstr "%zu felosztási változó van, de %zu felosztási érték lett megadva."
 
-#: src/language/commands/matrix.c:8300
+#: src/language/commands/matrix.c:8311
 #, c-format
 msgid "Matrix data file lacks %s variable."
 msgstr "A mátrix adathalmazból hiányzik a(z) %s változó."
 
-#: src/language/commands/matrix.c:8305
+#: src/language/commands/matrix.c:8316
 #, c-format
 msgid "%s variable in matrix data file must be 8-byte string, but it has width %d."
 msgstr "A mátrixadatfájlban lévő %s változónak 8 bájtos karakterláncnak kell lennie, de %d szélességű."
 
-#: src/language/commands/matrix.c:8382
+#: src/language/commands/matrix.c:8393
 #, c-format
 msgid "Matrix data file contains unknown ROWTYPE_ \"%.*s\"."
 msgstr "A mátrixadatfájl ismeretlen ROWTYPE_-ot tartalmaz: „%.*s”."
 
-#: src/language/commands/matrix.c:8399
+#: src/language/commands/matrix.c:8410
 #, c-format
 msgid "Matrix data file contains variable with existing name %s."
 msgstr "A mátrixadatfájl a(z) %s meglévő nevű változót tartalmazza."
 
-#: src/language/commands/matrix.c:8444
+#: src/language/commands/matrix.c:8455
 #, c-format
 msgid "Matrix data file variable %s contains a missing value, which was treated as zero."
 msgid_plural "Matrix data file variable %s contains %zu missing values, which were treated as zero."
 msgstr[0] "A(z) %s mátrixadatfájl-változó hiányzó értéket tartalmaz, amely zérusként lett kezelve."
 msgstr[1] "A(z) %s mátrixadatfájl-változó %zu hiányzó értéket tartalmaz, amely zérusként lett kezelve."
 
-#: src/language/commands/matrix.c:8473
+#: src/language/commands/matrix.c:8484
 msgid "ROWTYPE_ must precede VARNAME_ in matrix data file."
 msgstr "A ROWTYPE_-nak meg kell előznie a VARNAME_-et a mátrixadatfájlban."
 
-#: src/language/commands/matrix.c:8478
+#: src/language/commands/matrix.c:8489
 msgid "Matrix data file contains no continuous variables."
 msgstr "A mátrixadatfájlnak nincsenek folytonos változói."
 
-#: src/language/commands/matrix.c:8488
+#: src/language/commands/matrix.c:8499
 #, c-format
 msgid "Matrix data file contains unexpected string variable %s."
 msgstr "A mátrixadatfájl váratlan karakterlánc-változót tartalmaz: %s."
 
-#: src/language/commands/matrix.c:8513
+#: src/language/commands/matrix.c:8524
 msgid "Matrix Variables Created by MGET"
 msgstr "MGET által létrehozott mátrixváltozók"
 
-#: src/language/commands/matrix.c:8521 src/language/commands/split-file.c:89
+#: src/language/commands/matrix.c:8532 src/language/commands/split-file.c:89
 msgid "Split Values"
 msgstr "Értékek felosztása"
 
-#: src/language/commands/matrix.c:8529
+#: src/language/commands/matrix.c:8540
 msgid "Factors"
 msgstr "Faktorok"
 
-#: src/language/commands/matrix.c:8534
+#: src/language/commands/matrix.c:8545
 msgid "Dimensions"
 msgstr "Méretek"
 
-#: src/language/commands/matrix.c:8687
+#: src/language/commands/matrix.c:8698
 msgid "Argument of EIGEN must be symmetric."
 msgstr "Az EIGEN argumentumának szimmetrikusnak kell lennie."
 
-#: src/language/commands/matrix.c:8758
+#: src/language/commands/matrix.c:8769
 #, c-format
 msgid "SETDIAG destination matrix %s is uninitialized."
 msgstr "A SETDIAG %s célmátrixa nincs definiálva."
 
-#: src/language/commands/matrix.c:8782
+#: src/language/commands/matrix.c:8793
 #, c-format
 msgid "SETDIAG argument 2 must be a scalar or a vector, not a %zu×%zu matrix."
 msgstr "A SETDIAG 2. argumentumának skalárnak vagy vektornak kell lennie, nem %zu×%zu méretű mátrixnak."
 
-#: src/language/commands/matrix.c:9049
+#: src/language/commands/matrix.c:9060
 #, c-format
 msgid "Premature END MATRIX within %s."
 msgstr "Korai END MATRIX a(z) %s parancson belül."
 
-#: src/language/commands/matrix.c:9115
+#: src/language/commands/matrix.c:9126
 msgid "Unknown matrix command."
 msgstr "Ismeretlen mátrixparancs."
 
-#: src/language/commands/matrix.c:9117
+#: src/language/commands/matrix.c:9128
 #, c-format
 msgid "Matrix command %s is not yet implemented."
 msgstr "A(z) %s mátrixparancs még nincs megvalósítva."
 
-#: src/language/commands/matrix.c:9159
+#: src/language/commands/matrix.c:9170
 msgid "Unexpected end of input expecting matrix command."
 msgstr "A bemenet váratlanul véget ért, mátrixparancsot várva."
 
@@ -7374,26 +7378,26 @@ msgid "Final Cluster Centers"
 msgstr "Végső klaszterközéppontok"
 
 #: src/language/commands/quick-cluster.c:531
-#: src/language/commands/quick-cluster.c:608
-#: src/language/commands/quick-cluster.c:609
-#: src/language/commands/quick-cluster.c:705
+#: src/language/commands/quick-cluster.c:606
+#: src/language/commands/quick-cluster.c:607
+#: src/language/commands/quick-cluster.c:703
 msgid "Cluster"
 msgstr "Klaszter"
 
-#: src/language/commands/quick-cluster.c:606
+#: src/language/commands/quick-cluster.c:604
 msgid "Cluster Membership"
 msgstr "Klasztertagság"
 
-#: src/language/commands/quick-cluster.c:696
+#: src/language/commands/quick-cluster.c:694
 msgid "Number of Cases in each Cluster"
 msgstr "Esetek száma az egyes klaszterekben"
 
-#: src/language/commands/quick-cluster.c:702
+#: src/language/commands/quick-cluster.c:700
 msgid "Clusters"
 msgstr "Klaszterek"
 
-#: src/language/commands/quick-cluster.c:810
-#: src/language/commands/quick-cluster.c:836
+#: src/language/commands/quick-cluster.c:808
+#: src/language/commands/quick-cluster.c:834
 #, c-format
 msgid "A variable called `%s' already exists."
 msgstr "Már létezik „%s” nevű változó."
@@ -7732,7 +7736,12 @@ msgstr "A(z) %s nem használható %s után. Az átmeneti transzformációk végl
 msgid "Differing number of variables in old name list (%zu) and in new name list (%zu)."
 msgstr "A változók száma eltér a régi névlistában (%zu) és az új névlistában (%zu)."
 
-#: src/language/commands/rename-variables.c:96
+#: src/language/commands/rename-variables.c:101
+#, c-format
+msgid "Variable %s is of class %s, but renaming it to %s would make it of class %s."
+msgstr "A(z) %s változó %s osztályú, de ha átnevezné %s névre, akkor %s osztályúvá válna."
+
+#: src/language/commands/rename-variables.c:116
 #, c-format
 msgid "Renaming would duplicate variable name %s."
 msgstr "Az átnevezés megismételné a(z) %s változónevet."
@@ -8010,12 +8019,12 @@ msgstr "Szintaktikai hiba: egy beállítás neve várva."
 msgid "Environment Variables"
 msgstr "Környezeti változók"
 
-#: src/language/commands/set.c:1538
+#: src/language/commands/set.c:1542
 #, c-format
 msgid "Too many %s commands without a %s: at most %d levels of saved settings are allowed."
 msgstr "Túl sok %s parancs %s nélkül: legfeljebb %d szintnyi mentett beállítás engedélyezett."
 
-#: src/language/commands/set.c:1561
+#: src/language/commands/set.c:1565
 #, c-format
 msgid "%s without matching %s."
 msgstr "%s összetartozó %s nélkül."
@@ -8434,7 +8443,7 @@ msgstr "A vektorhossz szükséges."
 msgid "%s is an existing variable name."
 msgstr "%s egy létező változónév."
 
-#: src/language/commands/vector.c:203
+#: src/language/commands/vector.c:204
 #, c-format
 msgid "Two different vectors add variable %s%zu."
 msgstr "Két különböző vektor adja hozzá a(z) %s%zu változót."
@@ -8520,128 +8529,128 @@ msgstr "Típuseltérés: a kifejezés „%s” típusú, de itt egy numerikus é
 msgid "Type mismatch: expression has type '%s', but a string value is required."
 msgstr "Típuseltérés: a kifejezés „%s” típusú, de itt egy karakterlánc érték szükséges."
 
-#: src/language/expressions/parse.c:638
+#: src/language/expressions/parse.c:641
 #, c-format
 msgid "Both operands of %s must have the same type."
 msgstr "A(z) %s operandusainak egyező típusúnak kell lenniük."
 
-#: src/language/expressions/parse.c:641
+#: src/language/expressions/parse.c:644
 #, c-format
 msgid "Both operands of %s must be numeric."
 msgstr "A(z) %s mindkét operandusának numerikusnak kell lennie."
 
-#: src/language/expressions/parse.c:646 src/language/expressions/parse.c:649
+#: src/language/expressions/parse.c:649 src/language/expressions/parse.c:652
 #, c-format
 msgid "This operand has type '%s'."
 msgstr "Ezen operandus típusa „%s”."
 
-#: src/language/expressions/parse.c:699
+#: src/language/expressions/parse.c:702
 #, c-format
 msgid "The unary %s operator requires a numeric operand."
 msgstr "A(z) %s egyváltozós operátorhoz numerikus operandus szükséges."
 
-#: src/language/expressions/parse.c:702
+#: src/language/expressions/parse.c:705
 #, c-format
 msgid "The operand of %s has type '%s'."
 msgstr "A(z) %s operandusa „%s” típusú."
 
-#: src/language/expressions/parse.c:741
+#: src/language/expressions/parse.c:744
 msgid "Chaining relational operators (e.g. `a < b < c') will not produce the mathematically expected result.  Use the AND logical operator to fix the problem (e.g. `a < b AND b < c').  To disable this warning, insert parentheses."
 msgstr "A relációs operátorok láncolása (pl. „a < b < c”) nem a matematikailag várt eredményt adja. Használja az AND logikai operátort a probléma megoldására (pl. „a < b AND b < c”). A figyelmeztetés kikapcsolásához szúrjon be zárójeleket."
 
-#: src/language/expressions/parse.c:910
+#: src/language/expressions/parse.c:913
 #, c-format
 msgid "Unknown system variable %s."
 msgstr "Ismeretlen %s rendszerváltozó."
 
-#: src/language/expressions/parse.c:958
+#: src/language/expressions/parse.c:961
 #, c-format
 msgid "Unknown identifier %s."
 msgstr "Ismeretlen %s azonosító."
 
-#: src/language/expressions/parse.c:996
+#: src/language/expressions/parse.c:999
 msgid "Syntax error parsing expression."
 msgstr "Szintaktikai hiba a kifejezés feldolgozásakor."
 
-#: src/language/expressions/parse.c:1047
+#: src/language/expressions/parse.c:1050
 msgid "A vector index must be numeric."
 msgstr "A vektorindexnek numerikusnak kell lennie."
 
-#: src/language/expressions/parse.c:1050
+#: src/language/expressions/parse.c:1053
 #, c-format
 msgid "This vector index has type '%s'."
 msgstr "A vektorindex „%s” típusú."
 
-#: src/language/expressions/parse.c:1202
+#: src/language/expressions/parse.c:1205
 #, c-format
 msgid "%s must have an odd number of arguments."
 msgstr "A(z) %s páratlan számú argumentummal kell rendelkezzen a listában."
 
-#: src/language/expressions/parse.c:1212
+#: src/language/expressions/parse.c:1215
 #, c-format
 msgid "%s function cannot accept suffix .%d to specify the minimum number of valid arguments."
 msgstr "A(z) %s függvény nem fogadja el az érvényes argumentumok legkisebb számát meghatározó .%d utótagot."
 
-#: src/language/expressions/parse.c:1223
+#: src/language/expressions/parse.c:1226
 #, c-format
 msgid "For %s with %d arguments, at most %d (not %d) may be required to be valid."
 msgstr "A(z) %s %d argumentummal történő használatakor, legfeljebb %d argumentum érvényessége követelhető meg (%d nem)."
 
-#: src/language/expressions/parse.c:1272
+#: src/language/expressions/parse.c:1275
 #, c-format
 msgid "Type mismatch invoking %s as "
 msgstr "Típuseltérés a(z) %s meghívásakor ekként: "
 
-#: src/language/expressions/parse.c:1277
+#: src/language/expressions/parse.c:1280
 msgid "Function invocation "
 msgstr "A függvényhívás "
 
-#: src/language/expressions/parse.c:1279
+#: src/language/expressions/parse.c:1282
 msgid " does not match any known function.  Candidates are:"
 msgstr " egyetlen ismert függvényt sem. A jelöltek:"
 
-#: src/language/expressions/parse.c:1311
+#: src/language/expressions/parse.c:1314
 #, c-format
 msgid "This argument has type '%s' but '%s' is required."
 msgstr "Az argumentum „%s” típusú, de „%s” szükséges."
 
-#: src/language/expressions/parse.c:1330
+#: src/language/expressions/parse.c:1333
 #, c-format
 msgid "No function or vector named %s."
 msgstr "Nem található %s nevű függvény vagy vektor."
 
-#: src/language/expressions/parse.c:1408
+#: src/language/expressions/parse.c:1411
 #, c-format
 msgid "%s is a PSPP extension."
 msgstr "A(z) %s egy PSPP kiegészítő."
 
-#: src/language/expressions/parse.c:1412
+#: src/language/expressions/parse.c:1415
 #, c-format
 msgid "%s is not available in this version of PSPP."
 msgstr "A(z) %s nem érhető el a PSPP ezen verziójában."
 
-#: src/language/expressions/parse.c:1419
+#: src/language/expressions/parse.c:1422
 #, c-format
 msgid "%s may not appear after %s."
 msgstr "A(z) %s nem szerepelhet a(z) %s után."
 
-#: src/libpspp/ext-array.c:66
+#: src/libpspp/ext-array.c:76
 msgid "failed to create temporary file"
 msgstr "átmeneti fájl létrehozása sikertelen"
 
-#: src/libpspp/ext-array.c:106
+#: src/libpspp/ext-array.c:116
 msgid "seeking in temporary file"
 msgstr "pozicionálás az átmeneti fájlban"
 
-#: src/libpspp/ext-array.c:125
+#: src/libpspp/ext-array.c:135
 msgid "reading temporary file"
 msgstr "átmeneti fájl olvasása"
 
-#: src/libpspp/ext-array.c:127
+#: src/libpspp/ext-array.c:137
 msgid "unexpected end of file reading temporary file"
 msgstr "váratlan fájlvég az átmeneti fájl olvasásakor"
 
-#: src/libpspp/ext-array.c:147
+#: src/libpspp/ext-array.c:157
 msgid "writing to temporary file"
 msgstr "átmeneti fájl írása"
 
@@ -8850,22 +8859,22 @@ msgstr "%s: a felfújó nem készíthető elő (%s)"
 msgid "%s: error inflating \"%s\" (%s)"
 msgstr "%s: hiba a(z) „%s” felfújásakor (%s)"
 
-#: src/libpspp/zip-writer.c:105 utilities/pspp-convert.c:351
+#: src/libpspp/zip-writer.c:106 utilities/pspp-convert.c:351
 #, c-format
 msgid "%s: error opening output file"
 msgstr "%s: hiba a kimeneti fájl megnyitásakor"
 
-#: src/libpspp/zip-writer.c:113
+#: src/libpspp/zip-writer.c:114
 #, c-format
 msgid "%s: not writing ZIP file to terminal"
 msgstr "%s: a ZIP-fájl nem lesz a terminálra írva"
 
-#: src/libpspp/zip-writer.c:193
+#: src/libpspp/zip-writer.c:195
 #, c-format
 msgid "%s: error seeking in output file"
 msgstr "%s: hiba a kimeneti fájlban pozicionáláskor"
 
-#: src/libpspp/zip-writer.c:320
+#: src/libpspp/zip-writer.c:325
 #, c-format
 msgid "%s: write failed"
 msgstr "%s: írás sikertelen"
@@ -9126,6 +9135,11 @@ msgstr "%s: a(z) „%s” „%s” típusú, amely nem értelmezhető színként
 msgid "Chart"
 msgstr "Diagram"
 
+#: src/output/output-item.c:241 src/output/pivot-table.c:989
+#: src/output/spv/spv.c:535
+msgid "Error"
+msgstr "Hiba"
+
 #: src/output/output-item.c:242
 msgid "Warning"
 msgstr "Figyelmeztetés"
@@ -9150,14 +9164,14 @@ msgstr "Oldalcím"
 msgid "Log"
 msgstr "Napló"
 
-#: src/output/pivot-table.c:3225
+#: src/output/pivot-table.c:3237
 #, c-format
 msgid "Suppressed %d additional warning about duplicate split values."
 msgid_plural "Suppressed %d additional warnings about duplicate split values."
 msgstr[0] "%d további ismételt felosztási értékekre vonatkozó figyelmeztetés elrejtve."
 msgstr[1] "%d további ismételt felosztási értékekre vonatkozó figyelmeztetés elrejtve."
 
-#: src/output/pivot-table.c:3364
+#: src/output/pivot-table.c:3376
 #, c-format
 msgid "When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: %s"
 msgstr "Ha a SPLIT FILE érvényben van, akkor a bemeneti adatokat felosztási változók szerint kell rendezni (például SORT CASES használatával), de ugyanazokat a felosztási értékeket használó esetek többszöri futtatásakor más értékeknél osztotta fel. Minden futtatás külön lesz elemezve. Az ismételt felosztási értékek ezek: %s"
@@ -9249,8 +9263,8 @@ msgstr "Keresés"
 #: src/ui/gui/psppire-dialog-action-aggregate.c:210
 #: src/ui/gui/psppire-data-window.c:497 src/ui/gui/psppire-data-window.c:625
 #: src/ui/gui/psppire-output-window.c:314
-#: src/ui/gui/psppire-syntax-window.c:669 src/ui/gui/psppire-window.c:443
-#: src/ui/gui/psppire-window.c:626
+#: src/ui/gui/psppire-syntax-window.c:669 src/ui/gui/psppire-window.c:439
+#: src/ui/gui/psppire-window.c:622
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -9266,16 +9280,16 @@ msgstr "Visszaállítás"
 msgid "Help"
 msgstr "Súgó"
 
-#: src/ui/gui/psppire-data-sheet.c:172 src/ui/gui/psppire-data-window.c:1349
+#: src/ui/gui/psppire-data-sheet.c:176 src/ui/gui/psppire-data-window.c:1354
 msgid "_Insert Case"
 msgstr "_Eset beszúrása"
 
-#: src/ui/gui/psppire-data-sheet.c:180 src/ui/gui/psppire-data-window.c:1402
+#: src/ui/gui/psppire-data-sheet.c:184 src/ui/gui/psppire-data-window.c:1407
 msgid "Cl_ear Cases"
 msgstr "Esetek _törlése"
 
 #: src/ui/gui/psppire-data-sheet.c:306 src/ui/gui/psppire-variable-sheet.c:280
-#: src/ui/gui/psppire-data-window.c:1348
+#: src/ui/gui/psppire-data-window.c:1353
 msgid "_Insert Variable"
 msgstr "_Változó beszúrása"
 
@@ -9306,7 +9320,7 @@ msgid "Compressed System Files (*.zsav)"
 msgstr "Tömörített rendszerfájlok (*.zsav)"
 
 #: src/ui/gui/psppire-dialog-action-aggregate.c:230
-#: src/ui/gui/psppire-data-window.c:514 src/ui/gui/psppire-window.c:650
+#: src/ui/gui/psppire-data-window.c:514 src/ui/gui/psppire-window.c:646
 msgid "Portable Files (*.por) "
 msgstr "Hordozható fájlok (*.por) "
 
@@ -9956,8 +9970,8 @@ msgid "_Reference Manual"
 msgstr "_Referencia-kézikönyv"
 
 #: src/ui/gui/main.c:182
-msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  "
-msgstr "Az PSPP legjobban szabad platformokon fut, mint a GNU és a GNU/Linux. "
+msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  This computer is running a non-free operating system, so some features might work sub-optimally.  For best results, use a free system instead."
+msgstr "A PSPP szabad platformokon fut a legjobban, mint a GNU és a GNU/Linux. Ez a számítógép nem szabad operációs rendszert futtat, így előfordulhat, hogy egyes funkciók nem optimálisan működnek. A legjobb eredmény érdekében használjon szabad rendszert."
 
 #: src/ui/gui/main.c:184
 msgid "Right click on variable lists to change between viewing the variables' names and their labels."
@@ -9999,7 +10013,7 @@ msgstr "Psppire felhasználói tipp"
 msgid "_Next Tip"
 msgstr "_Következő tipp"
 
-#: src/ui/gui/main.c:219 src/ui/gui/psppire-data-window.c:1319
+#: src/ui/gui/main.c:219 src/ui/gui/psppire-data-window.c:1324
 #: src/ui/gui/output-window.ui:82
 msgid "_Close"
 msgstr "_Bezárás"
@@ -10104,7 +10118,7 @@ msgstr "Súly e szerint: %s"
 
 #: src/ui/gui/psppire-data-window.c:519
 #: src/ui/gui/psppire-import-assistant.c:370
-#: src/ui/gui/psppire-syntax-window.c:682 src/ui/gui/psppire-window.c:667
+#: src/ui/gui/psppire-syntax-window.c:682 src/ui/gui/psppire-window.c:663
 msgid "All Files"
 msgstr "Minden fájl"
 
@@ -10146,141 +10160,141 @@ msgstr "Adjon egy új nevet a(z) „%s” adathalmaznak:"
 msgid "Rename Dataset"
 msgstr "Adathalmaz átnevezése"
 
-#: src/ui/gui/psppire-data-window.c:1202 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1207 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Fájl"
 
-#: src/ui/gui/psppire-data-window.c:1206 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1211 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "Ú_j"
 
-#: src/ui/gui/psppire-data-window.c:1213
+#: src/ui/gui/psppire-data-window.c:1218
 msgid "_Syntax"
 msgstr "Szinta_xis"
 
-#: src/ui/gui/psppire-data-window.c:1216 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1221 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Adatok"
 
-#: src/ui/gui/psppire-data-window.c:1223 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1228 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Megnyitás"
 
-#: src/ui/gui/psppire-data-window.c:1226
+#: src/ui/gui/psppire-data-window.c:1231
 msgid "_Import Data..."
 msgstr "Adatok _importálása…"
 
-#: src/ui/gui/psppire-data-window.c:1234 src/ui/gui/logistic.ui:261
+#: src/ui/gui/psppire-data-window.c:1239 src/ui/gui/logistic.ui:261
 #: src/ui/gui/regression.ui:65
 msgid "_Save..."
 msgstr "_Mentés…"
 
-#: src/ui/gui/psppire-data-window.c:1237
+#: src/ui/gui/psppire-data-window.c:1242
 msgid "Save _As..."
 msgstr "Men_tés másként…"
 
-#: src/ui/gui/psppire-data-window.c:1240
+#: src/ui/gui/psppire-data-window.c:1245
 msgid "_Rename Dataset..."
 msgstr "Adathalmaz át_nevezése…"
 
-#: src/ui/gui/psppire-data-window.c:1251
+#: src/ui/gui/psppire-data-window.c:1256
 msgid "_Display Data File Information"
 msgstr "_Adatfájl információk megjelenítése"
 
-#: src/ui/gui/psppire-data-window.c:1258
+#: src/ui/gui/psppire-data-window.c:1263
 msgid "Working File"
 msgstr "Munkafájl"
 
-#: src/ui/gui/psppire-data-window.c:1260
+#: src/ui/gui/psppire-data-window.c:1265
 msgid "_External File..."
 msgstr "_Külső fájl…"
 
-#: src/ui/gui/psppire-data-window.c:1270
+#: src/ui/gui/psppire-data-window.c:1275
 msgid "_Recently Used Data"
 msgstr "Nemrég _használt adatok"
 
-#: src/ui/gui/psppire-data-window.c:1271
+#: src/ui/gui/psppire-data-window.c:1276
 msgid "Recently Used _Files"
 msgstr "Nemrég használt _fájlok"
 
-#: src/ui/gui/psppire-data-window.c:1326 src/ui/gui/output-window.ui:87
+#: src/ui/gui/psppire-data-window.c:1331 src/ui/gui/output-window.ui:87
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "_Kilépés"
 
-#: src/ui/gui/psppire-data-window.c:1344 src/ui/gui/output-window.ui:94
+#: src/ui/gui/psppire-data-window.c:1349 src/ui/gui/output-window.ui:94
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "Sz_erkesztés"
 
-#: src/ui/gui/psppire-data-window.c:1350
+#: src/ui/gui/psppire-data-window.c:1355
 msgid "_Go To Variable..."
 msgstr "_Ugrás változóhoz…"
 
-#: src/ui/gui/psppire-data-window.c:1351
+#: src/ui/gui/psppire-data-window.c:1356
 msgid "_Go To Case..."
 msgstr "Ugrás _esethez…"
 
-#: src/ui/gui/psppire-data-window.c:1375 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "Ki_vágás"
 
-#: src/ui/gui/psppire-data-window.c:1384 src/ui/gui/output-window.ui:101
+#: src/ui/gui/psppire-data-window.c:1389 src/ui/gui/output-window.ui:101
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "_Másolás"
 
-#: src/ui/gui/psppire-data-window.c:1391 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1396 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "_Beillesztés"
 
-#: src/ui/gui/psppire-data-window.c:1398
+#: src/ui/gui/psppire-data-window.c:1403
 msgid "Clear _Variables"
 msgstr "_Változók törlése"
 
-#: src/ui/gui/psppire-data-window.c:1412
+#: src/ui/gui/psppire-data-window.c:1417
 msgid "_Find..."
 msgstr "_Keresés…"
 
-#: src/ui/gui/psppire-data-window.c:1418 src/ui/gui/logistic.ui:246
+#: src/ui/gui/psppire-data-window.c:1423 src/ui/gui/logistic.ui:246
 msgid "_Options..."
 msgstr "_Beállítások…"
 
-#: src/ui/gui/psppire-data-window.c:1694
+#: src/ui/gui/psppire-data-window.c:1699
 msgid "Jump to variable"
 msgstr "Ugrás változóhoz"
 
-#: src/ui/gui/psppire-data-window.c:1707
+#: src/ui/gui/psppire-data-window.c:1712
 msgid "Jump to a case in the data sheet"
 msgstr "Esethez ugrás a munkafüzetben"
 
-#: src/ui/gui/psppire-data-window.c:1721
+#: src/ui/gui/psppire-data-window.c:1726
 msgid "Search for values in the data"
 msgstr "Értékek keresése az adatokban"
 
-#: src/ui/gui/psppire-data-window.c:1733
+#: src/ui/gui/psppire-data-window.c:1738
 msgid "Create a new case at the current position"
 msgstr "Egy új eset létrehozása a jelenlegi pozíciónál"
 
-#: src/ui/gui/psppire-data-window.c:1745
+#: src/ui/gui/psppire-data-window.c:1750
 msgid "Create a new variable at the current position"
 msgstr "Egy új változó létrehozása a jelenlegi pozíciónál"
 
-#: src/ui/gui/psppire-data-window.c:1759
+#: src/ui/gui/psppire-data-window.c:1764
 msgid "Split the active dataset"
 msgstr "Az aktív adathalmaz felosztása"
 
-#: src/ui/gui/psppire-data-window.c:1771
+#: src/ui/gui/psppire-data-window.c:1776
 msgid "Weight cases by variable"
 msgstr "Esetek súlyozása változóval"
 
-#: src/ui/gui/psppire-data-window.c:1782
+#: src/ui/gui/psppire-data-window.c:1787
 msgid "Show/hide value labels"
 msgstr "Értékcímkék megjelenítése/elrejtése"
 
-#: src/ui/gui/psppire-data-window.c:1922
+#: src/ui/gui/psppire-data-window.c:1927
 msgid "Data Editor"
 msgstr "Adatszerkesztő"
 
@@ -10481,7 +10495,7 @@ msgstr "Mentett fájl „%s”"
 msgid "Save Syntax"
 msgstr "Szintaxis mentése"
 
-#: src/ui/gui/psppire-syntax-window.c:676 src/ui/gui/psppire-window.c:655
+#: src/ui/gui/psppire-syntax-window.c:676 src/ui/gui/psppire-window.c:651
 msgid "Syntax Files (*.sps) "
 msgstr "Szintaxisfájlok (*.sps) "
 
@@ -10494,33 +10508,33 @@ msgstr "Szintaxisszerkesztő"
 msgid "Cannot load syntax file `%s'"
 msgstr "Nem tölthető be a(z) „%s” szintaxisfájl"
 
-#: src/ui/gui/psppire-window.c:428
+#: src/ui/gui/psppire-window.c:424
 #, c-format
 msgid "Save the changes to `%s' before closing?"
 msgstr "Menti a(z) „%s” módosításait bezárás előtt?"
 
-#: src/ui/gui/psppire-window.c:435
+#: src/ui/gui/psppire-window.c:431
 #, c-format
 msgid "If you don't save, changes from the last %ld seconds will be permanently lost."
 msgstr "Ha nem menti, akkor az elmúlt %ld másodperc módosításai végleg elvesznek."
 
-#: src/ui/gui/psppire-window.c:439
+#: src/ui/gui/psppire-window.c:435
 msgid "Close _without saving"
 msgstr "Bezárás mentés _nélkül"
 
-#: src/ui/gui/psppire-window.c:623 src/ui/gui/psppire-window.c:627
+#: src/ui/gui/psppire-window.c:619 src/ui/gui/psppire-window.c:623
 msgid "Open"
 msgstr "Megnyitás"
 
-#: src/ui/gui/psppire-window.c:632
+#: src/ui/gui/psppire-window.c:628
 msgid "Data and Syntax Files"
 msgstr "Adat- és szintaxis fájlok"
 
-#: src/ui/gui/psppire-window.c:644
+#: src/ui/gui/psppire-window.c:640
 msgid "System Files (*.sav, *.zsav)"
 msgstr "Rendszerfájlok (*.sav, *.zsav)"
 
-#: src/ui/gui/psppire-window.c:661
+#: src/ui/gui/psppire-window.c:657
 msgid "Output Files (*.spv) "
 msgstr "Kimeneti fájlok (*.spv) "
 
@@ -12616,7 +12630,7 @@ msgid "Current Status: "
 msgstr "Jelenlegi állapot: "
 
 #. TRANSLATORS: This is the application name in the desktop file
-#: doc/org.gnu.pspp.metainfo.xml.in:7 doc/org.gnu.pspp.desktop.in:7
+#: doc/org.gnu.pspp.metainfo.xml.in:7 doc/org.gnu.pspp.desktop.in:6
 msgid "GNU PSPP"
 msgstr "GNU PSPP"
 
@@ -12720,18 +12734,21 @@ msgstr "statisztika"
 msgid "Free Software Foundation"
 msgstr "Free Software Foundation"
 
-#: doc/org.gnu.pspp.desktop.in:8
+#: doc/org.gnu.pspp.desktop.in:7
 msgid "Statistical Software"
 msgstr "Statisztikai szoftver"
 
-#: doc/org.gnu.pspp.desktop.in:9
+#: doc/org.gnu.pspp.desktop.in:8
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Statisztikai adatok elemzése az SPSS szabad alternatívájával"
 
 #. TRANSLATORS: You must keep all ";" - also at the end of line.
-#: doc/org.gnu.pspp.desktop.in:17
+#: doc/org.gnu.pspp.desktop.in:16
 msgid "statistics;analysis;spss;"
 msgstr "statisztika;elemzés;spss;"
+
+#~ msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  "
+#~ msgstr "Az PSPP legjobban szabad platformokon fut, mint a GNU és a GNU/Linux. "
 
 #, c-format
 #~ msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
@@ -12971,9 +12988,6 @@ msgstr "statisztika;elemzés;spss;"
 
 #~ msgid "Duplicate variable name."
 #~ msgstr "Ismételt változónév."
-
-#~ msgid "PSPP runs best on free platforms such as GNU and GNU/Linux.  Windows is a non-free system.  As such, certain features might work sub-optimally.  For best results use a free system instead."
-#~ msgstr "A PSPP szabad platformokon fut a legjobban, mint a GNU vagy a GNU/Linux. A Windows nem szabad operációs rendszer. És mint ilyen, előfordulhat, hogy egyes funkciók nem optimálisan működhetnek. A legjobb eredmény érdekében használjon szabad rendszert."
 
 #~ msgid "Text Search"
 #~ msgstr "Szövegkeresés"
