@@ -4380,8 +4380,8 @@ time.days(-1) => -86400.00
 
 time.days(0.5) => 43200.00
 
-evaluate.sps:6.17-6.30: error: DEBUG EVALUATE: Type mismatch invoking TIME.
-DAYS(number) as time.days(string).
+evaluate.sps:6.17-6.30: error: DEBUG EVALUATE: Type mismatch invoking
+TIME.DAYS(number) as time.days(string).
     6 | DEBUG EVALUATE /time.days('x').
       |                 ^~~~~~~~~~~~~~
 
@@ -4603,8 +4603,8 @@ ctime.minutes($sysmis) => sysmis
 
 ctime.seconds($sysmis) => sysmis
 
-evaluate.sps:15.17-15.31: error: DEBUG EVALUATE: Type mismatch invoking CTIME.
-DAYS(number) as ctime.days(string).
+evaluate.sps:15.17-15.31: error: DEBUG EVALUATE: Type mismatch invoking
+CTIME.DAYS(number) as ctime.days(string).
    15 | DEBUG EVALUATE /ctime.days('a').
       |                 ^~~~~~~~~~~~~~~
 
@@ -4615,8 +4615,8 @@ but 'number' is required.
 
 ctime.days('a') => error
 
-evaluate.sps:16.17-16.32: error: DEBUG EVALUATE: Type mismatch invoking CTIME.
-HOURS(number) as ctime.hours(string).
+evaluate.sps:16.17-16.32: error: DEBUG EVALUATE: Type mismatch invoking
+CTIME.HOURS(number) as ctime.hours(string).
    16 | DEBUG EVALUATE /ctime.hours('b').
       |                 ^~~~~~~~~~~~~~~~
 
@@ -4627,8 +4627,8 @@ but 'number' is required.
 
 ctime.hours('b') => error
 
-evaluate.sps:17.17-17.34: error: DEBUG EVALUATE: Type mismatch invoking CTIME.
-MINUTES(number) as ctime.minutes(string).
+evaluate.sps:17.17-17.34: error: DEBUG EVALUATE: Type mismatch invoking
+CTIME.MINUTES(number) as ctime.minutes(string).
    17 | DEBUG EVALUATE /ctime.minutes('c').
       |                 ^~~~~~~~~~~~~~~~~~
 
@@ -4639,8 +4639,8 @@ but 'number' is required.
 
 ctime.minutes('c') => error
 
-evaluate.sps:18.17-18.34: error: DEBUG EVALUATE: Type mismatch invoking CTIME.
-SECONDS(number) as ctime.seconds(string).
+evaluate.sps:18.17-18.34: error: DEBUG EVALUATE: Type mismatch invoking
+CTIME.SECONDS(number) as ctime.seconds(string).
    18 | DEBUG EVALUATE /ctime.seconds('d').
       |                 ^~~~~~~~~~~~~~~~~~
 
@@ -4720,8 +4720,8 @@ for opt in OPT NOOPT; do
     AS_BOX([$opt])
     sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
     AT_CHECK([pspp --testing-mode evaluate.sps], [1], [dnl
-evaluate.sps:3.17-3.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-DMY(integer, integer, integer) as date.dmy(string, number, number).
+evaluate.sps:3.17-3.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.DMY(integer, integer, integer) as date.dmy(string, number, number).
     3 | DEBUG EVALUATE /date.dmy('a',1,2).
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -4732,8 +4732,8 @@ but 'integer' is required.
 
 date.dmy('a',1,2) => error
 
-evaluate.sps:4.17-4.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-DMY(integer, integer, integer) as date.dmy(number, string, number).
+evaluate.sps:4.17-4.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.DMY(integer, integer, integer) as date.dmy(number, string, number).
     4 | DEBUG EVALUATE /date.dmy(1,'a',2).
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -4744,8 +4744,8 @@ but 'integer' is required.
 
 date.dmy(1,'a',2) => error
 
-evaluate.sps:5.17-5.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-DMY(integer, integer, integer) as date.dmy(number, number, string).
+evaluate.sps:5.17-5.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.DMY(integer, integer, integer) as date.dmy(number, number, string).
     5 | DEBUG EVALUATE /date.dmy(1,2,'a').
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5027,8 +5027,8 @@ ctime.days(date.mdy(10,$sysmis,$sysmis)) => sysmis
 
 ctime.days(date.mdy($sysmis,$sysmis,$sysmis)) => sysmis
 
-evaluate.sps:41.17-41.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MDY(integer, integer, integer) as date.mdy(string, number, number).
+evaluate.sps:41.17-41.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MDY(integer, integer, integer) as date.mdy(string, number, number).
    41 | DEBUG EVALUATE /date.mdy('a',1,2).
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5039,8 +5039,8 @@ but 'integer' is required.
 
 date.mdy('a',1,2) => error
 
-evaluate.sps:42.17-42.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MDY(integer, integer, integer) as date.mdy(number, string, number).
+evaluate.sps:42.17-42.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MDY(integer, integer, integer) as date.mdy(number, string, number).
    42 | DEBUG EVALUATE /date.mdy(1,'a',2).
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5051,8 +5051,8 @@ but 'integer' is required.
 
 date.mdy(1,'a',2) => error
 
-evaluate.sps:43.17-43.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MDY(integer, integer, integer) as date.mdy(number, number, string).
+evaluate.sps:43.17-43.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MDY(integer, integer, integer) as date.mdy(number, number, string).
    43 | DEBUG EVALUATE /date.mdy(1,2,'a').
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5160,8 +5160,8 @@ ctime.days(date.moyr(1,$sysmis)) => sysmis
 
 ctime.days(date.moyr($sysmis,$sysmis)) => sysmis
 
-evaluate.sps:13.17-13.35: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MOYR(integer, integer) as date.moyr(string, number).
+evaluate.sps:13.17-13.35: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MOYR(integer, integer) as date.moyr(string, number).
    13 | DEBUG EVALUATE /date.moyr('a',2000).
       |                 ^~~~~~~~~~~~~~~~~~~
 
@@ -5172,8 +5172,8 @@ but 'integer' is required.
 
 date.moyr('a',2000) => error
 
-evaluate.sps:14.17-14.32: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MOYR(integer, integer) as date.moyr(number, string).
+evaluate.sps:14.17-14.32: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MOYR(integer, integer) as date.moyr(number, string).
    14 | DEBUG EVALUATE /date.moyr(5,'a').
       |                 ^~~~~~~~~~~~~~~~
 
@@ -5184,8 +5184,8 @@ but 'integer' is required.
 
 date.moyr(5,'a') => error
 
-evaluate.sps:15.17-15.34: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-MOYR(integer, integer) as date.moyr(string, string).
+evaluate.sps:15.17-15.34: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.MOYR(integer, integer) as date.moyr(string, string).
    15 | DEBUG EVALUATE /date.moyr('a','b').
       |                 ^~~~~~~~~~~~~~~~~~
 
@@ -5249,8 +5249,8 @@ ctime.days(date.qyr(1,$sysmis)) => sysmis
 
 ctime.days(date.qyr($sysmis,$sysmis)) => sysmis
 
-evaluate.sps:10.17-10.34: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-QYR(integer, integer) as date.qyr(string, number).
+evaluate.sps:10.17-10.34: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.QYR(integer, integer) as date.qyr(string, number).
    10 | DEBUG EVALUATE /date.qyr('a',2000).
       |                 ^~~~~~~~~~~~~~~~~~
 
@@ -5261,8 +5261,8 @@ but 'integer' is required.
 
 date.qyr('a',2000) => error
 
-evaluate.sps:11.17-11.31: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-QYR(integer, integer) as date.qyr(number, string).
+evaluate.sps:11.17-11.31: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.QYR(integer, integer) as date.qyr(number, string).
    11 | DEBUG EVALUATE /date.qyr(5,'a').
       |                 ^~~~~~~~~~~~~~~
 
@@ -5273,8 +5273,8 @@ but 'integer' is required.
 
 date.qyr(5,'a') => error
 
-evaluate.sps:12.17-12.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-QYR(integer, integer) as date.qyr(string, string).
+evaluate.sps:12.17-12.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.QYR(integer, integer) as date.qyr(string, string).
    12 | DEBUG EVALUATE /date.qyr('a','b').
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5333,8 +5333,8 @@ ctime.days(date.wkyr(1,$sysmis)) => sysmis
 
 ctime.days(date.wkyr($sysmis,$sysmis)) => sysmis
 
-evaluate.sps:10.17-10.35: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-WKYR(integer, integer) as date.wkyr(string, number).
+evaluate.sps:10.17-10.35: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.WKYR(integer, integer) as date.wkyr(string, number).
    10 | DEBUG EVALUATE /date.wkyr('a',1999).
       |                 ^~~~~~~~~~~~~~~~~~~
 
@@ -5345,8 +5345,8 @@ but 'integer' is required.
 
 date.wkyr('a',1999) => error
 
-evaluate.sps:11.17-11.32: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-WKYR(integer, integer) as date.wkyr(number, string).
+evaluate.sps:11.17-11.32: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.WKYR(integer, integer) as date.wkyr(number, string).
    11 | DEBUG EVALUATE /date.wkyr(5,'a').
       |                 ^~~~~~~~~~~~~~~~
 
@@ -5357,8 +5357,8 @@ but 'integer' is required.
 
 date.wkyr(5,'a') => error
 
-evaluate.sps:12.17-12.34: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-WKYR(integer, integer) as date.wkyr(string, string).
+evaluate.sps:12.17-12.34: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.WKYR(integer, integer) as date.wkyr(string, string).
    12 | DEBUG EVALUATE /date.wkyr('a','b').
       |                 ^~~~~~~~~~~~~~~~~~
 
@@ -5427,8 +5427,8 @@ ctime.days(date.yrday($sysmis,1)) => sysmis
 
 ctime.days(date.yrday($sysmis,$sysmis)) => sysmis
 
-evaluate.sps:11.17-11.36: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-YRDAY(integer, integer) as date.yrday(number, string).
+evaluate.sps:11.17-11.36: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.YRDAY(integer, integer) as date.yrday(number, string).
    11 | DEBUG EVALUATE /date.yrday(1999,'a').
       |                 ^~~~~~~~~~~~~~~~~~~~
 
@@ -5439,8 +5439,8 @@ but 'integer' is required.
 
 date.yrday(1999,'a') => error
 
-evaluate.sps:12.17-12.33: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-YRDAY(integer, integer) as date.yrday(string, number).
+evaluate.sps:12.17-12.33: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.YRDAY(integer, integer) as date.yrday(string, number).
    12 | DEBUG EVALUATE /date.yrday('a',5).
       |                 ^~~~~~~~~~~~~~~~~
 
@@ -5451,8 +5451,8 @@ but 'integer' is required.
 
 date.yrday('a',5) => error
 
-evaluate.sps:13.17-13.35: error: DEBUG EVALUATE: Type mismatch invoking DATE.
-YRDAY(integer, integer) as date.yrday(string, string).
+evaluate.sps:13.17-13.35: error: DEBUG EVALUATE: Type mismatch invoking
+DATE.YRDAY(integer, integer) as date.yrday(string, string).
    13 | DEBUG EVALUATE /date.yrday('a','b').
       |                 ^~~~~~~~~~~~~~~~~~~
 
@@ -5546,8 +5546,8 @@ xdate.date(date.mdy(7,18,2094) + time.hms(1,56,51)) / 86400 => 186917.00
 
 xdate.date(123.4) => 0.00
 
-evaluate.sps:24.17-24.30: error: DEBUG EVALUATE: Type mismatch invoking XDATE.
-DATE(number) as xdate.date(string).
+evaluate.sps:24.17-24.30: error: DEBUG EVALUATE: Type mismatch invoking
+XDATE.DATE(number) as xdate.date(string).
    24 | DEBUG EVALUATE /xdate.date('').
       |                 ^~~~~~~~~~~~~~
 
@@ -5642,8 +5642,8 @@ xdate.hour(1) => 0.00
 
 xdate.hour($sysmis) => sysmis
 
-evaluate.sps:26.17-26.30: error: DEBUG EVALUATE: Type mismatch invoking XDATE.
-HOUR(number) as xdate.hour(string).
+evaluate.sps:26.17-26.30: error: DEBUG EVALUATE: Type mismatch invoking
+XDATE.HOUR(number) as xdate.hour(string).
    26 | DEBUG EVALUATE /xdate.hour('').
       |                 ^~~~~~~~~~~~~~
 
@@ -7236,44 +7236,44 @@ ctime.days(datesum(date.mdy(1,31,1900), 12, 'months') - date.mdy(1,1,1900)) =>
 ctime.days(datesum(date.mdy(1,31,1900), 13.9, 'months') - date.mdy(1,1,1900))
 => 423.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 1, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 61.00
+ctime.days(datesum(date.mdy(1,31,1900), 1, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 61.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 2, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 89.00
+ctime.days(datesum(date.mdy(1,31,1900), 2, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 89.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 3.2, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 120.00
+ctime.days(datesum(date.mdy(1,31,1900), 3.2, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 120.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 4, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 150.00
+ctime.days(datesum(date.mdy(1,31,1900), 4, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 150.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 5, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 181.00
+ctime.days(datesum(date.mdy(1,31,1900), 5, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 181.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 6, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 211.00
+ctime.days(datesum(date.mdy(1,31,1900), 6, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 211.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 7, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 242.00
+ctime.days(datesum(date.mdy(1,31,1900), 7, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 242.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 8, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 273.00
+ctime.days(datesum(date.mdy(1,31,1900), 8, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 273.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 9, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 303.00
+ctime.days(datesum(date.mdy(1,31,1900), 9, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 303.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 10, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 334.00
+ctime.days(datesum(date.mdy(1,31,1900), 10, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 334.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 11, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 364.00
+ctime.days(datesum(date.mdy(1,31,1900), 11, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 364.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 12, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 395.00
+ctime.days(datesum(date.mdy(1,31,1900), 12, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 395.00
 
-ctime.days(datesum(date.mdy(1,31,1900), 13, 'months', 'rollover') - date.
-mdy(1,1,1900)) => 426.00
+ctime.days(datesum(date.mdy(1,31,1900), 13, 'months', 'rollover') -
+date.mdy(1,1,1900)) => 426.00
 ])
 done
 AT_CLEANUP
@@ -7354,44 +7354,44 @@ ctime.days(datesum(date.mdy(1,31,1904), 12, 'months') - date.mdy(1,1,1904)) =>
 ctime.days(datesum(date.mdy(1,31,1904), 13, 'months') - date.mdy(1,1,1904)) =>
 424.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 1, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 61.00
+ctime.days(datesum(date.mdy(1,31,1904), 1, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 61.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 2, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 90.00
+ctime.days(datesum(date.mdy(1,31,1904), 2, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 90.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 3, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 121.00
+ctime.days(datesum(date.mdy(1,31,1904), 3, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 121.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 4, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 151.00
+ctime.days(datesum(date.mdy(1,31,1904), 4, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 151.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 5, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 182.00
+ctime.days(datesum(date.mdy(1,31,1904), 5, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 182.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 6, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 212.00
+ctime.days(datesum(date.mdy(1,31,1904), 6, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 212.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 7, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 243.00
+ctime.days(datesum(date.mdy(1,31,1904), 7, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 243.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 8, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 274.00
+ctime.days(datesum(date.mdy(1,31,1904), 8, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 274.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 9, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 304.00
+ctime.days(datesum(date.mdy(1,31,1904), 9, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 304.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 10, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 335.00
+ctime.days(datesum(date.mdy(1,31,1904), 10, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 335.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 11, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 365.00
+ctime.days(datesum(date.mdy(1,31,1904), 11, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 365.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 12, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 396.00
+ctime.days(datesum(date.mdy(1,31,1904), 12, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 396.00
 
-ctime.days(datesum(date.mdy(1,31,1904), 13, 'months', 'rollover') - date.
-mdy(1,1,1904)) => 427.00
+ctime.days(datesum(date.mdy(1,31,1904), 13, 'months', 'rollover') -
+date.mdy(1,1,1904)) => 427.00
 ])
 done
 AT_CLEANUP
@@ -7481,17 +7481,17 @@ for opt in OPT NOOPT; do
     AS_BOX([$opt])
     sed "s/opt/$opt/" < evaluate-base.sps > evaluate.sps
     AT_CHECK([pspp --testing-mode evaluate.sps], [0], [dnl
-ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'days') - (date.
-mdy(8,2,1819) + time.hms(1,2,3))) => 5.00
+ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'days') -
+(date.mdy(8,2,1819) + time.hms(1,2,3))) => 5.00
 
-ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'weeks') - (date.
-mdy(8,2,1819) + time.hms(1,2,3))) => 35.00
+ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'weeks') -
+(date.mdy(8,2,1819) + time.hms(1,2,3))) => 35.00
 
-ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'months') - (date.
-mdy(8,2,1819) + time.hms(1,2,3))) => 153.00
+ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'months') -
+(date.mdy(8,2,1819) + time.hms(1,2,3))) => 153.00
 
-ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'years') - (date.
-mdy(8,2,1819) + time.hms(1,2,3))) => 1827.00
+ctime.days(datesum(date.mdy(8,2,1819) + time.hms(1,2,3), 5, 'years') -
+(date.mdy(8,2,1819) + time.hms(1,2,3))) => 1827.00
 ])
 done
 AT_CLEANUP
