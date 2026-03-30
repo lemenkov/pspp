@@ -389,9 +389,11 @@ spvxml_parse_attributes (struct spvxml_node_context *nctx)
        a < &nctx->attrs[nctx->n_attrs]; a++)
     {
       if (a->required && !a->value)
-        spvxml_attr_error (nctx, "Missing required attribute \"%s\".",
-                           a->name);
-      return;
+        {
+          spvxml_attr_error (nctx, "Missing required attribute \"%s\".",
+                             a->name);
+          return;
+        }
     }
 }
 
