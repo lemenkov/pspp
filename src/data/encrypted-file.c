@@ -443,7 +443,16 @@ fill_buffer (struct encrypted_file *f)
   /* If we're at end of file then check the padding and trim it off. */
   if (f->error == EOF)
     {
-      unsigned int pad = check_padding (&f->plaintext[f->n - 16]);
+      if (f->readable < 16)
+        {
+          msg (ME, _("%s: encrypted file truncated"),
+               fh_get_file_name (f->fh));
+          f->error = EIO;
+          f->readable = 0;
+          return;
+        }
+
+      unsigned int pad = check_padding (&f->plaintext[f->readable - 16]);
       if (!pad)
         {
           msg (ME, _("%s: encrypted file corrupted (ends with bad padding)"),
