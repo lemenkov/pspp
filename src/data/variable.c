@@ -1111,7 +1111,8 @@ var_get_leave (const struct variable *v)
 static void
 var_set_leave_quiet (struct variable *v, bool leave)
 {
-  assert (leave || !var_must_leave (v));
+  if (var_must_leave (v))
+    leave = true;
   v->leave = leave;
 }
 
