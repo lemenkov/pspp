@@ -74,6 +74,9 @@ static bool
 parse_variables_option (const char *arg, struct dictionary *dict,
                         struct variable ***vars, size_t *n_vars)
 {
+  *vars = NULL;
+  *n_vars = 0;
+
   struct lexer *lexer = lex_create ();
   lex_append (lexer, lex_reader_for_string (arg, locale_charset ()));
   lex_get (lexer);
