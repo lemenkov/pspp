@@ -201,7 +201,14 @@ main (int argc, char *argv[])
           break;
 
         case 'l':
-          length = atoi (optarg);
+          {
+            char *end;
+            errno = 0;
+            long int l = strtol (optarg, &end, 10);
+            if (errno || l < 1 || l > 1024 || *end != '\0')
+              error (1, 0, _("invalid password length \"%s\""), optarg);
+            length = l;
+          }
           break;
 
         case OPT_PASSWORD_LIST:
