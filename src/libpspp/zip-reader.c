@@ -269,6 +269,14 @@ zip_member_read_all (struct zip_reader *zr, const char *member_name,
       return error;
     }
 
+  if (zm->ucomp_size == 0)
+    {
+      *datap = NULL;
+      *np = 0;
+      zip_member_finish (zm);
+      return NULL;
+    }
+
   *datap = xmalloc (zm->ucomp_size);
   *np = zm->ucomp_size;
 
@@ -723,8 +731,8 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
 
   if (inf->zss.avail_in == 0)
     {
-      int bytes_read;
-      int bytes_to_read;
+      size_t bytes_read;
+      size_t bytes_to_read;
       int pad = 0;
 
       if (inf->state == 0)
@@ -736,13 +744,16 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
           inf->state++;
         }
 
-      bytes_to_read = zm->comp_size - inf->ucomp_bytes_read;
-
-      if (bytes_to_read == 0)
+      if (inf->ucomp_bytes_read >= zm->comp_size)
         return 0;
+
+      bytes_to_read = zm->comp_size - inf->ucomp_bytes_read;
 
       if (bytes_to_read > UCOMPSIZE)
         bytes_to_read = UCOMPSIZE;
+
+      if (bytes_to_read <= (size_t) pad)
+        return 0;
 
       bytes_read = fread (inf->ucomp + pad, 1, bytes_to_read - pad, zm->fp);
       if (!bytes_read && !zm->error)
