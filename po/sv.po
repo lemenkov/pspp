@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: pspp 2.1.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2026-03-04 10:01-0800\n"
-"PO-Revision-Date: 2026-03-07 08:37+0100\n"
+"PO-Revision-Date: 2026-06-09 05:59+0200\n"
 "Last-Translator: Arve Eriksson <031299870@telia.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -105,6 +105,9 @@ msgid ""
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr ""
+"Licens GPLv3+: GNU GPL version 3 eller senare <%s>.\n"
+"Detta är fri mjukvara: du har friheten att ändra och vidaredistribuera den.\n"
+"Det finns INGEN GARANTI, i enlighet med vad lagtext tillåter.\n"
 
 #. TRANSLATORS: %s denotes an author name.
 #: gl/version-etc.c:105
@@ -128,81 +131,91 @@ msgstr "Skrevs av %s, %s, och %s.\n"
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:120
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:127
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:134
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s, %s och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:142
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s, %s, %s och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:150
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s, %s, %s, %s\n"
+"och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:159
-#, fuzzy, c-format
-#| msgid "Written by %s, %s, and %s.\n"
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s, and %s.\n"
-msgstr "Skrevs av %s, %s, och %s.\n"
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s och %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
 #. ca. 16 screen columns and that a screen line has ca. 80 columns.
 #: gl/version-etc.c:170
-#, fuzzy, c-format
-#| msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, %s, or %s."
+#, c-format
 msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s, %s, and others.\n"
-msgstr "Syntaxfel där %s, %s, %s, %s, %s, %s, %s, eller %s förväntades."
+msgstr ""
+"Skrevs av %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s, %s med flera.\n"
 
 #. TRANSLATORS: The placeholder indicates the bug-reporting address
 #. for this package.  Please add _another line_ saying
@@ -1138,7 +1151,7 @@ msgstr "Strängvariabel %s med bredd %d har ogiltig formatspecifikation %s."
 #: src/data/por-file-reader.c:656
 #, c-format
 msgid "%s: Bad format specifier byte (%d).  Variable will be assigned a default format."
-msgstr "%s: Felaktig formatspecifikationsbyte (%d).  Variabeln kommer att tilldelas ett förvalt format."
+msgstr "%s: Felaktig formatspecifikationsbyte (%d).  Variabeln kommer att tilldelas ett standardformat."
 
 #: src/data/por-file-reader.c:675
 msgid "Expected variable count record."
@@ -1320,7 +1333,7 @@ msgstr "MRSET %zu Räknat värde"
 #: src/data/sys-file-reader.c:773
 #, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Denna systemfil indikerar inte dess teckenkodning. Använder förvald kodning %s. För bästa resultat, ange en explicit kodning. Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
+msgstr "Denna systemfil indikerar inte dess teckenkodning. Använder standardkodningen %s. För bästa resultat, ange en explicit kodning. Använd SYSFILE INFO med ENCODING=\"DETECT\" för att analysera möjliga kodningar."
 
 #: src/data/sys-file-reader.c:857
 #, c-format
@@ -1477,7 +1490,7 @@ msgstr "Extension 11 har felaktigt antal %u (för %zu variabler)."
 #: src/data/sys-file-reader.c:1943
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
-msgstr "Ogiltiga variabelvisningsparametrar för variabel %zu (%s). Förvalda parametrar ersätter."
+msgstr "Ogiltiga variabelvisningsparametrar för variabel %zu (%s). Standardparametrar ersätter."
 
 #: src/data/sys-file-reader.c:1987
 #, c-format
@@ -9642,7 +9655,7 @@ msgstr "Föredra variabeletiketter"
 
 #: src/ui/gui/psppire-dictview.c:725
 msgid "Default sort order"
-msgstr "Förvald sorteringsordning"
+msgstr "Standardsorteringsordning"
 
 #: src/ui/gui/psppire-dictview.c:731
 msgid "Unsorted (dictionary order)"
@@ -9860,6 +9873,42 @@ msgid ""
 "\n"
 "Non-option arguments are interpreted as syntax files to execute.\n"
 msgstr ""
+"PSPP, ett program för statistisk analys av insamlad data.\n"
+"Användning: %s [ALTERNATIV]... FIL...\n"
+"\n"
+"Argument till långa alternativ verkställs också för motsvarande\n"
+"korta alternativ.\n"
+"\n"
+"Utdata-alternativ:\n"
+"  -o, --output=FIL         skriv utdata till FIL, standardformat från FILens namn\n"
+"  -O format=FORMAT          åsidosätt format för föregående -o\n"
+"  -O ALTERNATIV=VÄRDE       sätt utdata-alternativ för att anpassa föregående -o\n"
+"  -O device={terminal|listing}  åsidosätt enhetstyp för föregående -o\n"
+"  -e, --error-file=FIL     tillfoga fel, varningar och anmärkningar till FIL\n"
+"  --no-output               avaktivera standarddrivrutin för utdata\n"
+"  --tabel-look=FIL         använd utdatastil läst från FIL\n"
+"Utdataformat som stöds: %s\n"
+"\n"
+"Språkalternativ:\n"
+"  -I, --include=MAPP        tillfoga MAPP till sökväg\n"
+"  -I-, --no-include         rensa sökväg\n"
+"  -r, --no-statrc           avaktivera körning av rc-fil vid start\n"
+"  -a, --algorithm={compatible|enhanced}\n"
+"                            sätt till `compatible' om du vill ha utdata\n"
+"                            beräknad från trasiga algoritmer\n"
+"  -x, --syntax={compatible|enhanced}\n"
+"                            sätt till 'compatible' för att avaktivera PSPP-utökningar\n"
+"  -b, --batch               tolka syntax i batch-läge\n"
+"  -i, --interactive         tolka syntax i interaktivt läge\n"
+"  --syntax-encoding=KODNING   ange kodning för syntaxfiler\n"
+"  -s, --safer               tillåt inte vissa osäkra åtgärder\n"
+"Standardsökväg: %s\n"
+"\n"
+"Informativ utdata:\n"
+"  -h, --help                visa detta hjälpmeddelande och avsluta\n"
+"  -V, --version             visa versionsinformation och avsluta\n"
+"\n"
+"Icke-alternativargument tolkas som syntaxfiler att köra.\n"
 
 #: src/ui/gui/find-dialog.c:662
 #, c-format
@@ -10532,12 +10581,13 @@ msgid "%s: error opening password file"
 msgstr "%s: fel när lösenordsfil öppnades"
 
 #: utilities/pspp-convert.c:430
-#, fuzzy, c-format
-#| msgid "%s: error opening password file"
+#, c-format
 msgid ""
 "\n"
 "%s: password not in file"
-msgstr "%s: fel när lösenordsfil öppnades"
+msgstr ""
+"\n"
+"%s: lösenord finns ej i fil"
 
 #: utilities/pspp-convert.c:467
 #, c-format
@@ -11641,7 +11691,7 @@ msgstr "Uppstartsalternativ"
 
 #: src/ui/gui/options.ui:323
 msgid "Default"
-msgstr "Förval"
+msgstr "Standard"
 
 #: src/ui/gui/paired-samples.ui:147
 msgid "_Test Pair(s):"
