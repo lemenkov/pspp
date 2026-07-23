@@ -5673,7 +5673,7 @@ ctables_execute (struct dataset *ds, struct casereader *input,
       for (struct ccase *c = casereader_read (group); c;
            case_unref (c), c = casereader_read (group))
         {
-          double d_weight = dict_get_rounded_case_weight (dict, c, &warn_on_invalid);
+          double d_weight = dict_get_case_weight (dict, c, &warn_on_invalid);
           double e_weight = (ct->e_weight
                              ? var_force_valid_weight (ct->e_weight,
                                                        case_num (c, ct->e_weight),
