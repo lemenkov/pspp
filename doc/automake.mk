@@ -199,7 +199,7 @@ PHONY += \
 	figure-pdfs \
 	figure-pngs
 
-$(top_builddir)/doc/pspp.info:  $(FIGURE_PNGS)
+$(top_builddir)/doc/pspp.info:  $(FIGURE_PNGS) $(FIGURE_TXTS)
 $(top_builddir)/doc/pspp.ps:    $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.dvi:   $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.html:  $(FIGURE_HTMLS)
