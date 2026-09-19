@@ -384,9 +384,11 @@ variables always have a defined value, even if it is only a string of
 spaces.
 
 Variables, whether numeric or string, can have designated
-@dfn{user-missing values}.  Every user-missing value is an actual value
-for that variable.  However, most of the time user-missing values are
-treated in the same way as the system-missing value.
+@dfn{user-missing values}.  Every user-missing value is an actual
+value for that variable.  Any variables can have up to three
+user-missing values; numeric variables can also have a range of
+missing values.  Most of the time, user-missing values are treated in
+the same way as the system-missing value.
 
 For more information on missing values, see the following sections:
 @ref{Datasets}, @ref{MISSING VALUES}, @ref{Expressions}.  See also the
