@@ -129,7 +129,7 @@ struct dsc_var
   {
     const struct variable *v;         /* Variable to calculate on. */
     char *z_name;                     /* Name for z-score variable. */
-    double valid, missing;        /* Valid, missing counts. */
+    double valid;                     /* Valid count. */
     struct moments *moments;    /* Moments. */
     double min, max;            /* Maximum and mimimum values. */
     double stats[DSC_N_STATS];        /* All the stats' values. */
@@ -149,7 +149,7 @@ struct dsc_proc
 
     /* Accumulated results. */
     double missing_listwise;    /* Sum of weights of cases missing listwise. */
-    double valid;               /* Sum of weights of valid cases. */
+    double valid_listwise;      /* Sum of weights of valid cases. */
     bool bad_warn;               /* Warn if bad weight found. */
     enum dsc_statistic sort_by_stat; /* Statistic to sort by; -1: name. */
     enum subcase_direction sort_direction;
@@ -770,14 +770,14 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
     {
       struct dsc_var *dv = &dsc->vars[i];
 
-      dv->valid = dv->missing = 0.0;
+      dv->valid = 0.0;
       if (dv->moments != NULL)
         moments_clear (dv->moments);
       dv->min = DBL_MAX;
       dv->max = -DBL_MAX;
     }
   dsc->missing_listwise = 0.;
-  dsc->valid = 0.;
+  dsc->valid_listwise = 0.;
 
   /* First pass to handle most of the work. */
   casenumber count = 0;
@@ -801,7 +801,8 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
           if (dsc->missing_type == DSC_LISTWISE)
             continue;
         }
-      dsc->valid += weight;
+      else
+        dsc->valid_listwise += weight;
 
       for (size_t i = 0; i < dsc->n_vars; i++)
         {
@@ -809,10 +810,8 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
           double x = case_num (c, dv->v);
 
           if (var_is_num_missing (dv->v, x) & dsc->exclude)
-            {
-              dv->missing += weight;
-              continue;
-            }
+            continue;
+          dv->valid += weight;
 
           if (dv->moments != NULL)
             moments_pass_one (dv->moments, x, weight);
@@ -882,8 +881,7 @@ calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
       for (size_t j = 0; j < DSC_N_STATS; j++)
         dv->stats[j] = SYSMIS;
 
-      double W = dsc->valid - dv->missing;
-      dv->valid = W;
+      double W = dv->valid;
 
       if (dv->moments != NULL)
         moments_calculate (dv->moments, NULL,
@@ -989,7 +987,7 @@ display (struct dsc_proc *dsc)
 
   int row = pivot_category_create_leaves (
     variables->root, N_("Valid N (listwise)"), N_("Missing N (listwise)"));
-  pivot_table_put2 (table, 0, row, pivot_value_new_number (dsc->valid));
+  pivot_table_put2 (table, 0, row, pivot_value_new_number (dsc->valid_listwise));
   pivot_table_put2 (table, 0, row + 1,
                     pivot_value_new_number (dsc->missing_listwise));
   pivot_table_submit (table);
