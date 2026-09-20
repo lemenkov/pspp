@@ -693,8 +693,8 @@ check_encodings (struct comb_proc *proc, struct lexer *lexer)
     if (var_is_alpha (dict_get_var (proc->dict, i)))
       {
         for (size_t j = 1; j < proc->n_files; j++)
-          if (strcmp (dict_get_encoding (proc->files[j - 1].dict),
-                      dict_get_encoding (proc->files[j].dict)))
+          if (strcasecmp (dict_get_encoding (proc->files[j - 1].dict),
+                          dict_get_encoding (proc->files[j].dict)))
             {
               msg (MW, _("Combining files with different encodings.  "
                          "String data (such as in variable `%s') "
