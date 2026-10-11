@@ -950,6 +950,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 
   /* If requested, set a transformation to append the cluster and
      distance values to the current dataset.  */
+  qc.dict = dataset_dict (ds);
   if (qc.save_trans_data)
     {
       struct save_trans_data *std = qc.save_trans_data;
