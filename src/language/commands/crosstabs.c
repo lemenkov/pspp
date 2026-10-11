@@ -491,7 +491,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   for (size_t i = 0; i < CRS_N_CELLS; i++)
     if (proc.cells & (1u << i))
       proc.a_cells[proc.n_cells++] = i;
-  assert (proc.n_cells < CRS_N_CELLS);
+  assert (proc.n_cells <= CRS_N_CELLS);
 
   /* Missing values. */
   if (proc.mode == GENERAL && !proc.exclude)
