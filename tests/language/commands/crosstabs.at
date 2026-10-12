@@ -744,7 +744,7 @@ AT_CLEANUP
 
 
 dnl This example comes from http://www.ats.ucla.edu/stat/spss/whatstat/whatstat.htm#chisq
-AT_SETUP([CROSSTABS Fisher Exact Test])
+AT_SETUP([CROSSTABS Fisher Exact Test - 2])
 
 AT_DATA([fisher-exact.sps], [dnl
 SET FORMAT F12.3.
@@ -2084,4 +2084,126 @@ crosstabs.sps:21: error: CROSSTABS: At least one crosstabulation must be request
 
 error: CROSSTABS: At end of input: Syntax error expecting `BEGIN DATA'.
 ])
+AT_CLEANUP
+
+dnl From https://lists.gnu.org/archive/html/bug-gnu-pspp/2026-10/msg00003.html
+AT_SETUP([CROSSTABS Fisher Exact Test - 2])
+
+AT_DATA([fisher-exact.sps], [dnl
+DATA LIST LIST /a b w1 w2 w3 w4.
+BEGIN DATA
+1 1 2 3 1 5
+1 2 1 1 5 1
+2 1 1 1 4 1
+2 2 8 6 2 5
+END DATA.
+WEIGHT BY w1.
+CROSSTABS a BY b /STATISTICS=CHISQ.
+WEIGHT BY w2.
+CROSSTABS a BY b /STATISTICS=CHISQ.
+WEIGHT BY w3.
+CROSSTABS a BY b /STATISTICS=CHISQ.
+WEIGHT BY w4.
+CROSSTABS a BY b /STATISTICS=CHISQ.
+])
+
+AT_CHECK([pspp -o pspp.csv -o pspp.txt fisher-exact.sps])
+AT_CHECK([cat pspp.csv], [0], [Table: Reading free-form data from INLINE.
+Variable,Format
+a,F8.0
+b,F8.0
+w1,F8.0
+w2,F8.0
+w3,F8.0
+w4,F8.0
+
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+a × b,12.00,100.0%,.00,.0%,12.00,100.0%
+
+Table: a × b
+,,,b,,Total
+,,,1.00,2.00,
+a,1.00,Count,2.00,1.00,3.00
+,2.00,Count,1.00,8.00,9.00
+Total,,Count,3.00,9.00,12.00
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Pearson Chi-Square,3.70,1.00,.054,,
+Likelihood Ratio,3.40,1.00,.065,,
+Fisher's Exact Test,,,,.127,.127
+Continuity Correction,1.33,1.00,.248,,
+Linear-by-Linear Association,3.40,1.00,.065,,
+N of Valid Cases,12.00,,,,
+
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+a × b,11.00,100.0%,.00,.0%,11.00,100.0%
+
+Table: a × b
+,,,b,,Total
+,,,1.00,2.00,
+a,1.00,Count,3.00,1.00,4.00
+,2.00,Count,1.00,6.00,7.00
+Total,,Count,4.00,7.00,11.00
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Pearson Chi-Square,4.05,1.00,.044,,
+Likelihood Ratio,4.18,1.00,.041,,
+Fisher's Exact Test,,,,.088,.088
+Continuity Correction,1.86,1.00,.173,,
+Linear-by-Linear Association,3.69,1.00,.055,,
+N of Valid Cases,11.00,,,,
+
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+a × b,12.00,100.0%,.00,.0%,12.00,100.0%
+
+Table: a × b
+,,,b,,Total
+,,,1.00,2.00,
+a,1.00,Count,1.00,5.00,6.00
+,2.00,Count,4.00,2.00,6.00
+Total,,Count,5.00,7.00,12.00
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Pearson Chi-Square,3.09,1.00,.079,,
+Likelihood Ratio,3.26,1.00,.071,,
+Fisher's Exact Test,,,,.242,.121
+Continuity Correction,1.37,1.00,.242,,
+Linear-by-Linear Association,2.83,1.00,.093,,
+N of Valid Cases,12.00,,,,
+
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+a × b,12.00,100.0%,.00,.0%,12.00,100.0%
+
+Table: a × b
+,,,b,,Total
+,,,1.00,2.00,
+a,1.00,Count,5.00,1.00,6.00
+,2.00,Count,1.00,5.00,6.00
+Total,,Count,6.00,6.00,12.00
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Pearson Chi-Square,5.33,1.00,.021,,
+Likelihood Ratio,5.82,1.00,.016,,
+Fisher's Exact Test,,,,.080,.040
+Continuity Correction,3.00,1.00,.083,,
+Linear-by-Linear Association,4.89,1.00,.027,,
+N of Valid Cases,12.00,,,,
+])
+
 AT_CLEANUP

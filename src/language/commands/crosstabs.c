@@ -2100,10 +2100,10 @@ calc_fisher (int a, int b, int c, int d, double *fisher1, double *fisher2)
     *fisher1 += Pr (a - xt, b + xt, c + xt, d - xt);
 
   *fisher2 = *fisher1;
-  for (int xt = 1; xt <= b; xt++)
+  for (int xt = 1; xt <= MIN (b, c); xt++)
     {
       double p = Pr (a + xt, b - xt, c - xt, d + xt);
-      if (p < pn1)
+      if (p <= pn1 * (1 + 1e-7))
         *fisher2 += p;
     }
 }
