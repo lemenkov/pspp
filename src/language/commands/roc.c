@@ -898,7 +898,7 @@ show_auc (struct roc_state *rs, const struct cmd_roc *roc)
           se /= rs[i].n1 * rs[i].n2;
           se = sqrt (se);
 
-          double ci = 1 - roc->ci / 100.0;
+          double ci = (1 - roc->ci / 100.0) / 2.0;
           double yy = gsl_cdf_gaussian_Qinv (ci, se);
 
           double sd_0_5 = sqrt ((rs[i].n1 + rs[i].n2 + 1) /

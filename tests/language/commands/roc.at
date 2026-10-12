@@ -54,7 +54,7 @@ Negative,5,50.000
 Table: Area Under the Curve
 Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 99% Confidence Interval,
 ,,,,Lower Bound,Upper Bound
-x,.910,.030,.000,.839,.981
+x,.910,.030,.000,.832,.988
 
 Table: Coordinates of the Curve
 Test variable,Positive if greater than or equal to,Sensitivity,1 - Specificity
@@ -105,8 +105,8 @@ Negative,5,50.000
 Table: Area Under the Curve
 Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
 ,,,,Lower Bound,Upper Bound
-x,.910,.030,.000,.860,.960
-y,.697,.052,.001,.611,.783
+x,.910,.030,.000,.850,.970
+y,.697,.052,.001,.594,.800
 
 Table: Coordinates of the Curve
 Test variable,Positive if greater than or equal to,Sensitivity,1 - Specificity
@@ -177,7 +177,7 @@ Negative,14,14.000
 Table: Area Under the Curve
 Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
 ,,,,Lower Bound,Upper Bound
-x,.490,.111,.927,.307,.673
+x,.490,.111,.927,.272,.708
 ])
 AT_CLEANUP
 
@@ -347,5 +347,44 @@ AT_CHECK([pspp -O format=csv roc.sps], [1], [dnl
 "roc.sps:26.16-26.17: error: ROC: Syntax error expecting MISSING, PLOT, PRINT, or CRITERIA.
    26 | ROC x BY y(5)/ **.
       |                ^~"
+])
+AT_CLEANUP
+
+dnl Test supplied by Johannes Weingartner at
+dnl https://lists.gnu.org/archive/html/bug-gnu-pspp/2026-10/msg00003.html
+AT_SETUP([ROC confidence interval])
+AT_DATA([roc.sps], [dnl
+DATA LIST LIST /score (F8.0) diag (A8).
+BEGIN DATA
+3 yes
+5 yes
+7 yes
+8 yes
+9 yes
+2 no
+4 no
+5 no
+6 no
+3 no
+END DATA.
+ROC score BY diag ('yes') /PLOT=NONE /PRINT=SE /CRITERIA=CI(95).
+])
+AT_CHECK([pspp -o pspp.csv roc.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Reading free-form data from INLINE.
+Variable,Format
+score,F8.0
+diag,A8
+
+Table: Case Summary
+diag,Valid N (listwise),
+,Unweighted,Weighted
+Positive,5,5.00
+Negative,5,5.00
+
+Table: Area Under the Curve
+Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
+,,,,Lower Bound,Upper Bound
+score,.80,.15,.117,.51,1.09
 ])
 AT_CLEANUP
