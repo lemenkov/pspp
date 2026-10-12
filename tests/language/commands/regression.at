@@ -14,9 +14,9 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
-AT_BANNER([LINEAR REGRESSION])
+AT_BANNER([REGRESSION])
 
-AT_SETUP([LINEAR REGRESSION - basic])
+AT_SETUP([REGRESSION - basic])
 AT_DATA([regression.sps], [dnl
 set format = F22.3.
 data list notable list / v0 to v2.
@@ -75,7 +75,7 @@ v0,v1,v2,RES1,PRED1
 AT_CLEANUP
 
 
-AT_SETUP([LINEAR REGRESSION - one save])
+AT_SETUP([REGRESSION - one save])
 AT_DATA([regression.sps], [dnl
 set format = F22.3.
 data list notable list / v0 to v2.
@@ -148,7 +148,7 @@ AT_CLEANUP
 
 
 # Test to ensure that the /SAVE subcommand works properly when SPLIT is active
-AT_SETUP([LINEAR REGRESSION - SAVE vs SPLITS])
+AT_SETUP([REGRESSION - SAVE vs SPLITS])
 
 # Generate some test data based on a linear model
 AT_DATA([gen-data.sps], [dnl
@@ -241,7 +241,7 @@ AT_CLEANUP
 
 # Test that the procedure behaves sensibly when presented with
 # multiple dependent variables
-AT_SETUP([LINEAR REGRESSION multiple dependent variables])
+AT_SETUP([REGRESSION multiple dependent variables])
 AT_DATA([regression.sps], [dnl
 set seed = 2.
 input program.
@@ -273,7 +273,7 @@ AT_CHECK([sed -e 's/ycopy/y/g' second | diff first -], [0], [])
 AT_CLEANUP
 
 # Tests the QR decomposition used by the REGRESSION command.
-AT_SETUP([LINEAR REGRESSION test of QR decomposition])
+AT_SETUP([REGRESSION test of QR decomposition])
 AT_DATA([regression.sps], [dnl
 data list list / v0 to v1.
 begin data
@@ -1806,7 +1806,7 @@ v1,1.37,.72,.05,1.89,.059
 
 AT_CLEANUP
 
-AT_SETUP([LINEAR REGRESSION no crash on all missing])
+AT_SETUP([REGRESSION no crash on all missing])
 AT_DATA([regcrash.sps], [dnl
 data list list /x * y.
 begin data.
@@ -1832,7 +1832,7 @@ AT_CLEANUP
 
 
 
-AT_SETUP([LINEAR REGRESSION missing dependent variable])
+AT_SETUP([REGRESSION missing dependent variable])
 
 dnl Test for a bug where missing values in the dependent variable were not being
 dnl ignored like they should have been.
@@ -1889,7 +1889,7 @@ AT_CHECK([diff pspp.csv pspp-ref.csv])
 
 AT_CLEANUP
 
-AT_SETUP([LINEAR REGRESSION with invalid syntax (and empty dataset)])
+AT_SETUP([REGRESSION with invalid syntax (and empty dataset)])
 
 AT_DATA([ss.sps], [dnl
 data list notable list / v0 to v2.
@@ -1909,7 +1909,7 @@ AT_CLEANUP
 
 dnl The following example comes from
 dnl http://www.ats.ucla.edu/stat/spss/output/reg_spss%28long%29.htm
-AT_SETUP([LINEAR REGRESSION coefficient confidence interval])
+AT_SETUP([REGRESSION coefficient confidence interval])
 
 AT_DATA([conf.sps], [dnl
 set format = F22.3.
@@ -2151,7 +2151,7 @@ AT_CLEANUP
 
 
 dnl Checks for regression against bug #44877.
-AT_SETUP([LINEAR REGRESSION crash with long string variables])
+AT_SETUP([REGRESSION crash with long string variables])
 AT_DATA([regression.sps], [dnl
 SET DECIMAL=DOT.
 
@@ -2201,7 +2201,7 @@ AT_CLEANUP
 
 
 dnl Test for a crash which happened on bad input syntax
-AT_SETUP([LINEAR REGRESSION -- Empty Parentheses])
+AT_SETUP([REGRESSION -- Empty Parentheses])
 
 AT_DATA([empty-parens.sps], [dnl
 set format = F22.3.
@@ -2226,7 +2226,7 @@ AT_CLEANUP
 
 
 
-AT_SETUP([LINEAR REGRESSION varibles on ENTER subcommand])
+AT_SETUP([REGRESSION varibles on ENTER subcommand])
 AT_DATA([regression.sps], [dnl
 SET FORMAT=F10.3.
 
@@ -2282,7 +2282,7 @@ AT_CLEANUP
 
 
 
-AT_SETUP([LINEAR REGRESSION /ORIGIN])
+AT_SETUP([REGRESSION /ORIGIN])
 AT_DATA([regression-origin.sps], [dnl
 SET FORMAT=F10.3.
 
@@ -2385,7 +2385,7 @@ Mean time between failures (months) ,3.01,.20,.94,15.21,.000
 AT_CLEANUP
 
 
-AT_SETUP([LINEAR REGRESSION vif])
+AT_SETUP([REGRESSION vif])
 AT_DATA([regression-vif.sps], [dnl
 SET FORMAT=F10.3.
 
@@ -2438,7 +2438,6 @@ regression /variables=competence_x1 motivation_x2
 	/dependent=performance_y
 	.
 ])
-
 
 AT_CHECK([pspp -O format=csv regression-vif.sps], [0], [dnl
 Table: Model Summary (performance_y)
