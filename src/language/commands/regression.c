@@ -994,7 +994,7 @@ reg_stats_bcov (const struct linreg * c, const struct variable *var)
   for (size_t i = 0; i < linreg_n_coeffs (c); i++)
     for (size_t k = 0; k < linreg_n_coeffs (c); k++)
       {
-        double cov = gsl_matrix_get (linreg_cov (c), MIN (i, k), MAX (i, k));
+        double cov = gsl_matrix_get (linreg_cov (c), MIN (i, k) + 1, MAX (i, k) + 1);
         pivot_table_put3 (table, k, i, 0, pivot_value_new_number (cov));
       }
 
