@@ -1759,13 +1759,13 @@ display_crosstabulation (struct crosstabs_proc *proc,
       if (!xt->row_tot[r] && proc->mode != INTEGER)
         continue;
 
-      double expected_value = xt->row_tot[r] / xt->total;
+      double column_percentage = xt->row_tot[r] / xt->total * 100.0;
       double entries[CRS_N_CELLS] = {
         [CRS_CL_COUNT] = xt->row_tot[r],
         [CRS_CL_ROW] = 100.0,
-        [CRS_CL_COLUMN] = expected_value * 100.,
-        [CRS_CL_TOTAL] = expected_value * 100.,
-        [CRS_CL_EXPECTED] = expected_value,
+        [CRS_CL_COLUMN] = column_percentage,
+        [CRS_CL_TOTAL] = column_percentage,
+        [CRS_CL_EXPECTED] = xt->row_tot[r],
         [CRS_CL_RESIDUAL] = SYSMIS,
         [CRS_CL_SRESIDUAL] = SYSMIS,
         [CRS_CL_ASRESIDUAL] = SYSMIS,
@@ -1791,13 +1791,13 @@ display_crosstabulation (struct crosstabs_proc *proc,
         continue;
 
       double ct = c < n_cols ? xt->col_tot[c] : xt->total;
-      double expected_value = ct / xt->total;
+      double row_percentage = ct / xt->total * 100.0;
       double entries[CRS_N_CELLS] = {
         [CRS_CL_COUNT] = ct,
-        [CRS_CL_ROW] = expected_value * 100.0,
+        [CRS_CL_ROW] = row_percentage,
         [CRS_CL_COLUMN] = 100.0,
-        [CRS_CL_TOTAL] = expected_value * 100.,
-        [CRS_CL_EXPECTED] = expected_value,
+        [CRS_CL_TOTAL] = row_percentage,
+        [CRS_CL_EXPECTED] = ct,
         [CRS_CL_RESIDUAL] = SYSMIS,
         [CRS_CL_SRESIDUAL] = SYSMIS,
         [CRS_CL_ASRESIDUAL] = SYSMIS,
