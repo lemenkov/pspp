@@ -29,6 +29,7 @@
 #include "data/dictionary.h"
 #include "data/format.h"
 #include "data/subcase.h"
+#include "data/val-type.h"
 #include "language/command.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/value-parser.h"
@@ -769,6 +770,8 @@ descriptives_report (const struct examine *cmd, int iact_idx)
           moments_calculate (es->mom, &m0, &m1, &m2, &m3, &m4);
           double tval = gsl_cdf_tdist_Qinv ((1.0 - cmd->conf) / 2.0, m0 - 1.0);
 
+          double semean = calc_semean (m2, m0);
+
           struct entry
             {
               int stat_idx;
@@ -777,22 +780,22 @@ descriptives_report (const struct examine *cmd, int iact_idx)
             }
           entries[] = {
             { 0, 0, m1 },
-            { 0, 1, calc_semean (m2, m0) },
-            { 1, 0, m1 - tval * calc_semean (m2, m0) },
-            { 2, 0, m1 + tval * calc_semean (m2, m0) },
+            { 0, 1, semean },
+            { 1, 0, semean != SYSMIS ? m1 - tval * semean : SYSMIS },
+            { 2, 0, semean != SYSMIS ? m1 + tval * semean : SYSMIS },
             { 3, 0, trimmed_mean_calculate (es->trimmed_mean) },
             { 4, 0, percentile_calculate (es->quartiles[1]) },
             { 5, 0, m2 },
-            { 6, 0, sqrt (m2) },
+            { 6, 0, m2 != SYSMIS ? sqrt (m2) : SYSMIS },
             { 7, 0, es->minima[0].val },
             { 8, 0, es->maxima[0].val },
             { 9, 0, es->maxima[0].val - es->minima[0].val },
             { 10, 0, (percentile_calculate (es->quartiles[2]) -
                       percentile_calculate (es->quartiles[0])) },
             { 11, 0, m3 },
-            { 11, 1, calc_seskew (m0) },
+            { 11, 1, m3 != SYSMIS ? calc_seskew (m0) : SYSMIS },
             { 12, 0, m4 },
-            { 12, 1, calc_sekurt (m0) },
+            { 12, 1, m4 != SYSMIS ? calc_sekurt (m0) : SYSMIS },
           };
           for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
             {

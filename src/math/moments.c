@@ -459,7 +459,10 @@ moments1_destroy (struct moments1 *m)
 double
 calc_semean (double variance, double W)
 {
-  return sqrt (variance / W);
+  if (variance == SYSMIS || W == SYSMIS)
+    return SYSMIS;
+  double semean = sqrt (variance / W);
+  return isfinite (semean) ? semean : SYSMIS;
 }
 
 /* Returns the standard error of the skewness for the given total
@@ -470,6 +473,8 @@ calc_semean (double variance, double W)
 double
 calc_seskew (double W)
 {
+  if (W == SYSMIS)
+    return SYSMIS;
   return sqrt ((6. * W * (W - 1.)) / ((W - 2.) * (W + 1.) * (W + 3.)));
 }
 
@@ -482,6 +487,8 @@ calc_seskew (double W)
 double
 calc_sekurt (double W)
 {
+  if (W == SYSMIS)
+    return SYSMIS;
   return sqrt ((4. * (pow2 (W) - 1.) * pow2 (calc_seskew (W)))
                / ((W - 3.) * (W + 5.)));
 }
