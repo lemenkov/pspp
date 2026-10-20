@@ -28,6 +28,7 @@
 #include "data/casewriter.h"
 #include "data/dataset.h"
 #include "data/dictionary.h"
+#include "data/format.h"
 #include "data/subcase.h"
 #include "data/transformations.h"
 #include "data/variable.h"
@@ -983,6 +984,19 @@ listwise_missing (struct dsc_proc *dsc, const struct ccase *c)
 
 static algo_compare_func descriptives_compare_dsc_vars;
 
+static struct pivot_value *
+pivot_value_with_extra_decimals (double d, const struct variable *v, int n_extra)
+{
+  struct fmt_spec f = var_get_print_format (v);
+  f.w = 40;
+  f.d += n_extra;
+  fmt_fix_output (&f);
+
+  struct pivot_value *pv = pivot_value_new_number (d);
+  pv->numeric.format = f;
+  return pv;
+}
+
 /* Displays a table of descriptive statistics for DSC. */
 static void
 display (struct dsc_proc *dsc)
@@ -1021,9 +1035,28 @@ display (struct dsc_proc *dsc)
         if (dsc->show_stats & (1UL << j))
           {
             union value v = { .f = dv->stats[j] };
-            struct pivot_value *pv = (j == DSC_MIN || j == DSC_MAX
-                                      ? pivot_value_new_var_value (dv->v, &v)
-                                      : pivot_value_new_number (dv->stats[j]));
+            struct pivot_value *pv;
+
+            switch (j) {
+            case DSC_MEAN:
+              pv = pivot_value_with_extra_decimals (dv->stats[j], dv->v, 2);
+              break;
+
+            case DSC_SEMEAN:
+            case DSC_STDDEV:
+              pv = pivot_value_with_extra_decimals (dv->stats[j], dv->v, 3);
+              break;
+
+            case DSC_MIN:
+            case DSC_MAX:
+              pv = pivot_value_new_var_value (dv->v, &v);
+              pivot_value_set_show (pv, SETTINGS_VALUE_SHOW_VALUE);
+              break;
+
+            default:
+              pv = pivot_value_new_number (dv->stats[j]);
+              break;
+            }
             pivot_table_put2 (table, column++, row, pv);
           }
     }

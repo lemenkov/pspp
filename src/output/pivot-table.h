@@ -835,6 +835,7 @@ void pivot_value_sort_footnotes (struct pivot_value *);
 /* Numeric formats. */
 void pivot_value_set_rc (const struct pivot_table *, struct pivot_value *,
                          const char *rc);
+void pivot_value_set_show (struct pivot_value *, enum settings_value_show show);
 
 /* Converting a pivot_value to a string for display. */
 char *pivot_value_to_string (const struct pivot_value *,

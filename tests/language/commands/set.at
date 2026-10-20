@@ -35,7 +35,7 @@ AT_CHECK([pspp -O format=csv set.pspp], [1], [dnl
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,3,2.00,1.00,1.00,3.00
+x,3,2.0000,1.00000,1.00,3.00
 Valid N (listwise),3,,,,
 Missing N (listwise),0,,,,
 ])
@@ -482,20 +482,20 @@ Settings
 ╰─────┴─────────╯
 
 Descriptive Statistics
-╭────────────────────┬─┬────┬───────┬───────┬───────╮
-│                    │N│Mean│Std Dev│Minimum│Maximum│
-├────────────────────┼─┼────┼───────┼───────┼───────┤
-│x                   │3│2.00│   1.00│   1.00│   3.00│
-│Valid N (listwise)  │3│    │       │       │       │
-│Missing N (listwise)│0│    │       │       │       │
-╰────────────────────┴─┴────┴───────┴───────┴───────╯
+╭────────────────────┬─┬──────┬───────┬───────┬───────╮
+│                    │N│ Mean │Std Dev│Minimum│Maximum│
+├────────────────────┼─┼──────┼───────┼───────┼───────┤
+│x                   │3│2.0000│1.00000│   1.00│   3.00│
+│Valid N (listwise)  │3│      │       │       │       │
+│Missing N (listwise)│0│      │       │       │       │
+╰────────────────────┴─┴──────┴───────┴───────┴───────╯
 
 Settings
 TLOOK no-lines.stt
 
 Descriptive Statistics
-                     N Mean Std Dev Minimum Maximum
-x                    3 2.00    1.00    1.00    3.00
+                     N  Mean  Std Dev Minimum Maximum
+x                    3 2.0000 1.00000    1.00    3.00
 Valid N (listwise)   3
 Missing N (listwise) 0
 
@@ -505,12 +505,12 @@ Settings
 ╰─────┴─────────╯
 
 Descriptive Statistics
-╭────────────────────┬─┬────┬───────┬───────┬───────╮
-│                    │N│Mean│Std Dev│Minimum│Maximum│
-├────────────────────┼─┼────┼───────┼───────┼───────┤
-│x                   │3│2.00│   1.00│   1.00│   3.00│
-│Valid N (listwise)  │3│    │       │       │       │
-│Missing N (listwise)│0│    │       │       │       │
-╰────────────────────┴─┴────┴───────┴───────┴───────╯
+╭────────────────────┬─┬──────┬───────┬───────┬───────╮
+│                    │N│ Mean │Std Dev│Minimum│Maximum│
+├────────────────────┼─┼──────┼───────┼───────┼───────┤
+│x                   │3│2.0000│1.00000│   1.00│   3.00│
+│Valid N (listwise)  │3│      │       │       │       │
+│Missing N (listwise)│0│      │       │       │       │
+╰────────────────────┴─┴──────┴───────┴───────┴───────╯
 ])
 AT_CLEANUP

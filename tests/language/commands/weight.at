@@ -88,7 +88,7 @@ BVAR,1,6-10,F5.0
 
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-AVAR,730,31.515,.405,10.937,119.608,2.411,.181,1.345,.090,76.000,18,94,23006.00
+AVAR,730,31.52,.405,10.937,119.608,2.411,.181,1.345,.090,76.000,18,94,23006.00
 Valid N (listwise),730,,,,,,,,,,,,
 Missing N (listwise),0,,,,,,,,,,,,
 

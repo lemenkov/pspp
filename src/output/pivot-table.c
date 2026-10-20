@@ -3077,6 +3077,31 @@ pivot_value_set_rc (const struct pivot_table *table, struct pivot_value *value,
     pivot_table_use_rc (table, rc,
                         &value->numeric.format, &value->numeric.honor_small);
 }
+
+/* Sets the "show" value in VALUE to SHOW.
+
+   Text and template values don't have such a value, so this function does
+   nothing for them. */
+void
+pivot_value_set_show (struct pivot_value *value, enum settings_value_show show)
+{
+  switch (value->type)
+    {
+    case PIVOT_VALUE_NUMERIC:
+      value->numeric.show = show;
+      break;
+    case PIVOT_VALUE_STRING:
+      value->string.show = show;
+      break;
+    case PIVOT_VALUE_VARIABLE:
+      value->variable.show = show;
+      break;
+    case PIVOT_VALUE_TEXT:
+    case PIVOT_VALUE_TEMPLATE:
+    default:
+      break;
+    }
+}
 
 /* pivot_value_ex. */
 

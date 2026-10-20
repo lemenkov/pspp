@@ -59,23 +59,23 @@ V16,1,17-17,F1.0
 
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V0,10,3.80,.84,2.66,7.07,-.03,1.33,.89,.69,8.00,1,9,38.00
-V1,10,4.60,.96,3.03,9.16,-1.39,1.33,-.03,.69,9.00,0,9,46.00
-V2,10,4.10,1.16,3.67,13.43,-2.02,1.33,.48,.69,8.00,1,9,41.00
-V3,10,4.10,.87,2.77,7.66,-2.05,1.33,.42,.69,7.00,1,8,41.00
-V4,10,7.00,.47,1.49,2.22,7.15,1.33,-2.52,.69,5.00,3,8,70.00
-V5,10,4.90,1.03,3.25,10.54,-1.40,1.33,-.20,.69,9.00,0,9,49.00
-V6,10,5.90,.80,2.51,6.32,-.29,1.33,-.96,.69,7.00,1,8,59.00
-V7,10,4.70,1.10,3.47,12.01,-1.99,1.33,-.16,.69,9.00,0,9,47.00
-V8,10,4.10,1.10,3.48,12.10,-1.93,1.33,.37,.69,9.00,0,9,41.00
-V9,10,4.30,.87,2.75,7.57,-.87,1.33,.73,.69,8.00,1,9,43.00
-V10,10,5.50,.85,2.68,7.17,-1.84,1.33,-.33,.69,7.00,2,9,55.00
-V11,10,6.50,.78,2.46,6.06,-1.28,1.33,-.89,.69,6.00,3,9,65.00
-V12,10,7.90,.60,1.91,3.66,5.24,1.33,-2.21,.69,6.00,3,9,79.00
-V13,10,4.30,.99,3.13,9.79,-1.25,1.33,.33,.69,9.00,0,9,43.00
-V14,10,3.60,1.01,3.20,10.27,-.96,1.33,.81,.69,9.00,0,9,36.00
-V15,10,3.70,.92,2.91,8.46,-1.35,1.33,.71,.69,7.00,1,8,37.00
-V16,10,6.40,.91,2.88,8.27,-1.14,1.33,-.92,.69,7.00,2,9,64.00
+V0,10,3.80,.841,2.658,7.07,-.03,1.33,.89,.69,8.00,1,9,38.00
+V1,10,4.60,.957,3.026,9.16,-1.39,1.33,-.03,.69,9.00,0,9,46.00
+V2,10,4.10,1.159,3.665,13.43,-2.02,1.33,.48,.69,8.00,1,9,41.00
+V3,10,4.10,.875,2.767,7.66,-2.05,1.33,.42,.69,7.00,1,8,41.00
+V4,10,7.00,.471,1.491,2.22,7.15,1.33,-2.52,.69,5.00,3,8,70.00
+V5,10,4.90,1.027,3.247,10.54,-1.40,1.33,-.20,.69,9.00,0,9,49.00
+V6,10,5.90,.795,2.514,6.32,-.29,1.33,-.96,.69,7.00,1,8,59.00
+V7,10,4.70,1.096,3.466,12.01,-1.99,1.33,-.16,.69,9.00,0,9,47.00
+V8,10,4.10,1.100,3.479,12.10,-1.93,1.33,.37,.69,9.00,0,9,41.00
+V9,10,4.30,.870,2.751,7.57,-.87,1.33,.73,.69,8.00,1,9,43.00
+V10,10,5.50,.847,2.677,7.17,-1.84,1.33,-.33,.69,7.00,2,9,55.00
+V11,10,6.50,.778,2.461,6.06,-1.28,1.33,-.89,.69,6.00,3,9,65.00
+V12,10,7.90,.605,1.912,3.66,5.24,1.33,-2.21,.69,6.00,3,9,79.00
+V13,10,4.30,.989,3.129,9.79,-1.25,1.33,.33,.69,9.00,0,9,43.00
+V14,10,3.60,1.013,3.204,10.27,-.96,1.33,.81,.69,9.00,0,9,36.00
+V15,10,3.70,.920,2.908,8.46,-1.35,1.33,.71,.69,7.00,1,8,37.00
+V16,10,6.40,.909,2.875,8.27,-1.14,1.33,-.92,.69,7.00,2,9,64.00
 Valid N (listwise),10,,,,,,,,,,,,
 Missing N (listwise),0,,,,,,,,,,,,
 ])
@@ -103,9 +103,9 @@ descript all/stat=all/format=serial.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,1,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
-V2,2,2.50,.50,.71,.50,.  ,.  ,.  ,.  ,1.00,2,3,5.00
-V3,3,3.00,.58,1.00,1.00,.  ,.  ,.00,1.22,2.00,2,4,9.00
+V1,1,2.00,.   ,.   ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
+V2,2,2.50,.500,.707,.50,.  ,.  ,.  ,.  ,1.00,2,3,5.00
+V3,3,3.00,.577,1.000,1.00,.  ,.  ,.00,1.22,2.00,2,4,9.00
 Valid N (listwise),1,,,,,,,,,,,,
 Missing N (listwise),6,,,,,,,,,,,,
 ])
@@ -119,9 +119,9 @@ descript all/stat=all/format=serial/missing=include.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,5,1.20,.20,.45,.20,5.00,2.00,2.24,.91,1.00,1,2,6.00
-V2,5,1.60,.40,.89,.80,.31,2.00,1.26,.91,2.00,1,3,8.00
-V3,5,2.20,.58,1.30,1.70,-1.49,2.00,.54,.91,3.00,1,4,11.00
+V1,5,1.20,.200,.447,.20,5.00,2.00,2.24,.91,1.00,1,2,6.00
+V2,5,1.60,.400,.894,.80,.31,2.00,1.26,.91,2.00,1,3,8.00
+V3,5,2.20,.583,1.304,1.70,-1.49,2.00,.54,.91,3.00,1,4,11.00
 Valid N (listwise),4,,,,,,,,,,,,
 Missing N (listwise),3,,,,,,,,,,,,
 ])
@@ -135,9 +135,9 @@ descript all/stat=all/format=serial/missing=listwise.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,1,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
-V2,1,3.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,3,3,3.00
-V3,1,4.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,4,4,4.00
+V1,1,2.00,.   ,.   ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
+V2,1,3.00,.   ,.   ,.  ,.  ,.  ,.  ,.  ,.00,3,3,3.00
+V3,1,4.00,.   ,.   ,.  ,.  ,.  ,.  ,.  ,.00,4,4,4.00
 Valid N (listwise),1,,,,,,,,,,,,
 Missing N (listwise),6,,,,,,,,,,,,
 ])
@@ -151,9 +151,9 @@ descript all/stat=all/format=serial/missing=listwise include.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,4,1.25,.25,.50,.25,4.00,2.62,2.00,1.01,1.00,1,2,5.00
-V2,4,1.75,.48,.96,.92,-1.29,2.62,.85,1.01,2.00,1,3,7.00
-V3,4,2.50,.65,1.29,1.67,-1.20,2.62,.00,1.01,3.00,1,4,10.00
+V1,4,1.25,.250,.500,.25,4.00,2.62,2.00,1.01,1.00,1,2,5.00
+V2,4,1.75,.479,.957,.92,-1.29,2.62,.85,1.01,2.00,1,3,7.00
+V3,4,2.50,.645,1.291,1.67,-1.20,2.62,.00,1.01,3.00,1,4,10.00
 Valid N (listwise),4,,,,,,,,,,,,
 Missing N (listwise),3,,,,,,,,,,,,
 ])
@@ -178,7 +178,7 @@ descript all/stat=mean.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean
-X,6,2.500
+X,6,2.50
 Valid N (listwise),6,
 Missing N (listwise),0,
 ])
@@ -208,7 +208,7 @@ DESCRIPTIVES /VAR=abc.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-abc,6,3.00,.84,2.00,4.00
+abc,6,3.0000,.83666,2.00,4.00
 Valid N (listwise),6,,,,
 Missing N (listwise),0,,,,
 ])
@@ -236,8 +236,8 @@ b,Zb
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-a,3,2.00,1.00,1.00,3.00
-b,3,60.00,10.00,50.00,70.00
+a,3,2.0000,1.00000,1.00,3.00
+b,3,60.0000,10.00000,50.00,70.00
 Valid N (listwise),2,,,,
 Missing N (listwise),3,,,,
 
@@ -274,8 +274,8 @@ b,Zb
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-a,3,2.00,1.00,1.00,3.00
-b,3,60.00,10.00,50.00,70.00
+a,3,2.0000,1.00000,1.00,3.00
+b,3,60.0000,10.00000,50.00,70.00
 Valid N (listwise),3,,,,
 Missing N (listwise),3,,,,
 
@@ -325,8 +325,8 @@ group,1.00
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-a,3,2.00,1.00,1.00,3.00
-b,3,60.00,10.00,50.00,70.00
+a,3,2.0000,1.00000,1.00,3.00
+b,3,60.0000,10.00000,50.00,70.00
 Valid N (listwise),2,,,,
 Missing N (listwise),3,,,,
 
@@ -336,8 +336,8 @@ group,2.00
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-a,4,300.00,182.57,100.00,500.00
-b,4,8000.00,1825.74,6000.00,10000.00
+a,4,300.0000,182.57419,100.00,500.00
+b,4,8000.0000,1825.74186,6000.00,10000.00
 Valid N (listwise),3,,,,
 Missing N (listwise),3,,,,
 
@@ -347,8 +347,8 @@ group,3.00
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-a,0,.  ,.  ,.  ,.  @&t@
-b,0,.  ,.  ,.  ,.  @&t@
+a,0,.    ,.     ,.  ,.  @&t@
+b,0,.    ,.     ,.  ,.  @&t@
 Valid N (listwise),0,,,,
 Missing N (listwise),1,,,,
 
@@ -415,7 +415,7 @@ abc,Zabc
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-abc,6,3.00,.84,2.00,4.00
+abc,6,3.0000,.83666,2.00,4.00
 Valid N (listwise),6,,,,
 Missing N (listwise),1,,,,
 
@@ -465,9 +465,9 @@ z,Zz
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,6,3.50,1.87,1.00,6.00
-y,6,7.00,3.74,2.00,12.00
-z,6,7.00,3.74,2.00,12.00
+x,6,3.5000,1.87083,1.00,6.00
+y,6,7.0000,3.74166,2.00,12.00
+z,6,7.0000,3.74166,2.00,12.00
 Valid N (listwise),6,,,,
 Missing N (listwise),0,,,,
 
@@ -559,9 +559,9 @@ AT_CHECK([pspp -o pspp.csv -o pspp.txt descriptives.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-Sex of subject  ,40,.45,.50,Male,Female
-Weight in kilograms ,40,72.12,26.70,-55.6,92.1
-Height in millimeters   ,40,1677.12,262.87,179,1903
+Sex of subject  ,40,.45,.504,0,1
+Weight in kilograms ,40,72.120,26.7049,-55.6,92.1
+Height in millimeters   ,40,1677.12,262.869,179,1903
 Valid N (listwise),40,,,,
 Missing N (listwise),0,,,,
 ])
@@ -640,8 +640,8 @@ DESCRIPTIVES x y.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,3,2.00,1.00,1.00,3.00
-y,2,2.50,2.12,1.00,4.00
+x,3,2.0000,1.00000,1.00,3.00
+y,2,2.5000,2.12132,1.00,4.00
 Valid N (listwise),1,,,,
 Missing N (listwise),3,,,,
 ])

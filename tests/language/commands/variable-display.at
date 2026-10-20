@@ -267,43 +267,43 @@ AT_CHECK([pspp -o pspp.csv -o pspp.txt var-labels.sps])
 AT_CHECK([cat pspp.csv], [0],[dnl
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,4,2.50,1.29,1.00,4.00
-y,4,250.00,129.10,100.00,400.00
+x,4,2.5000,1.29099,1.00,4.00
+y,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,4,2.50,1.29,1.00,4.00
-y,4,250.00,129.10,100.00,400.00
+x,4,2.5000,1.29099,1.00,4.00
+y,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,4,2.50,1.29,1.00,4.00
-y,4,250.00,129.10,100.00,400.00
+x,4,2.5000,1.29099,1.00,4.00
+y,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x,4,2.50,1.29,1.00,4.00
-y,4,250.00,129.10,100.00,400.00
+x,4,2.5000,1.29099,1.00,4.00
+y,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-foo,4,2.50,1.29,1.00,4.00
-bar,4,250.00,129.10,100.00,400.00
+foo,4,2.5000,1.29099,1.00,4.00
+bar,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 
 Table: Descriptive Statistics
 ,N,Mean,Std Dev,Minimum,Maximum
-x foo,4,2.50,1.29,1.00,4.00
-y bar,4,250.00,129.10,100.00,400.00
+x foo,4,2.5000,1.29099,1.00,4.00
+y bar,4,250.0000,129.09944,100.00,400.00
 Valid N (listwise),4,,,,
 Missing N (listwise),0,,,,
 ])
