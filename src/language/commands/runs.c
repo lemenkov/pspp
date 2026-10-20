@@ -205,7 +205,7 @@ runs_execute (const struct dataset *ds,
             casereader_destroy (reader);
             reader = casewriter_make_reader (writer);
 
-            median = percentile_create (0.5, cc);
+            median = percentile_create (0.5, cc, PC_HAVERAGE);
             os = &median->parent;
 
             order_stats_accumulate (&os, 1,
@@ -214,7 +214,7 @@ runs_execute (const struct dataset *ds,
                                     var,
                                     exclude);
 
-            run->cutpoint = percentile_calculate (median, PC_HAVERAGE);
+            run->cutpoint = percentile_calculate (median);
             statistic_destroy (&median->parent.parent);
           }
       }

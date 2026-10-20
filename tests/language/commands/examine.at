@@ -366,7 +366,7 @@ X,3,100.0%,0,.0%,3,100.0%
 Table: Percentiles
 ,,Percentiles,,,,,,
 ,,5,10,25,50,75,90,95
-X,Weighted Average,.40,.80,2.00,5.00,8.00,8.00,8.00
+X,Weighted Average,2.00,2.00,2.00,5.00,8.00,8.00,8.00
 ,Tukey's Hinges,,,3.50,5.00,6.50,,
 
 Table: Case Processing Summary
@@ -378,7 +378,7 @@ X,3,100.0%,0,.0%,3,100.0%
 Table: Percentiles
 ,,Percentiles,,,,,,
 ,,5,10,25,50,75,90,95
-X,Weighted Average,.30,.60,1.50,3.50,5.75,7.10,7.55
+X,Weighted Average,2.00,2.00,2.00,3.50,5.75,7.10,7.55
 ,Tukey's Hinges,,,3.50,5.00,6.50,,
 
 Table: Case Processing Summary
@@ -390,7 +390,7 @@ X,3,100.0%,0,.0%,3,100.0%
 Table: Percentiles
 ,,Percentiles,,,,,,
 ,,5,10,25,50,75,90,95
-X,Weighted Average,.00,.00,2.00,5.00,5.00,8.00,8.00
+X,Weighted Average,2.00,2.00,2.00,5.00,5.00,8.00,8.00
 ,Tukey's Hinges,,,3.50,5.00,6.50,,
 
 Table: Case Processing Summary

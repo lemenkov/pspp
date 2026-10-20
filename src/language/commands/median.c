@@ -173,7 +173,7 @@ median_execute (const struct dataset *ds,
 
           rr = casewriter_make_reader (writer);
 
-          ptl = percentile_create (0.5, cc);
+          ptl = percentile_create (0.5, cc, PC_HAVERAGE);
           os = &ptl->parent;
 
           order_stats_accumulate (&os, 1,
@@ -182,7 +182,7 @@ median_execute (const struct dataset *ds,
                                   var,
                                   exclude);
 
-          median = percentile_calculate (ptl, PC_HAVERAGE);
+          median = percentile_calculate (ptl);
           statistic_destroy (&ptl->parent.parent);
         }
 

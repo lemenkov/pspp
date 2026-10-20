@@ -455,10 +455,10 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
           const struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
-          double median = percentile_calculate (es[v].quartiles[1], cmd->pc_alg);
+          double median = percentile_calculate (es[v].quartiles[1]);
 
-          double iqr = percentile_calculate (es[v].quartiles[2], cmd->pc_alg) -
-            percentile_calculate (es[v].quartiles[0], cmd->pc_alg);
+          double iqr = percentile_calculate (es[v].quartiles[2]) -
+            percentile_calculate (es[v].quartiles[0]);
 
           spreadlevel_plot_add (sl, iqr, median);
         }
@@ -627,8 +627,7 @@ percentiles_report (const struct examine *cmd, int iact_idx)
               indexes[0] = pc_idx;
 
               indexes[1] = 0;
-              double value = percentile_calculate (es->percentiles[pc_idx],
-                                                   cmd->pc_alg);
+              double value = percentile_calculate (es->percentiles[pc_idx]);
               pivot_table_put (table, indexes, table->n_dimensions,
                                pivot_value_new_number (value));
 
@@ -782,14 +781,14 @@ descriptives_report (const struct examine *cmd, int iact_idx)
             { 1, 0, m1 - tval * calc_semean (m2, m0) },
             { 2, 0, m1 + tval * calc_semean (m2, m0) },
             { 3, 0, trimmed_mean_calculate (es->trimmed_mean) },
-            { 4, 0, percentile_calculate (es->quartiles[1], cmd->pc_alg) },
+            { 4, 0, percentile_calculate (es->quartiles[1]) },
             { 5, 0, m2 },
             { 6, 0, sqrt (m2) },
             { 7, 0, es->minima[0].val },
             { 8, 0, es->maxima[0].val },
             { 9, 0, es->maxima[0].val - es->minima[0].val },
-            { 10, 0, (percentile_calculate (es->quartiles[2], cmd->pc_alg) -
-                      percentile_calculate (es->quartiles[0], cmd->pc_alg)) },
+            { 10, 0, (percentile_calculate (es->quartiles[2]) -
+                      percentile_calculate (es->quartiles[0])) },
             { 11, 0, m3 },
             { 11, 1, calc_seskew (m0) },
             { 12, 0, m4 },
@@ -1190,9 +1189,9 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
         struct order_stats **os = XCALLOC (n_os, struct order_stats *);
         os[0] = &es[v].trimmed_mean->parent;
 
-        es[v].quartiles[0] = percentile_create (0.25, es[v].cc);
-        es[v].quartiles[1] = percentile_create (0.5,  es[v].cc);
-        es[v].quartiles[2] = percentile_create (0.75, es[v].cc);
+        es[v].quartiles[0] = percentile_create (0.25, es[v].cc, examine->pc_alg);
+        es[v].quartiles[1] = percentile_create (0.5,  es[v].cc, examine->pc_alg);
+        es[v].quartiles[2] = percentile_create (0.75, es[v].cc, examine->pc_alg);
 
         os[1] = &es[v].quartiles[0]->parent;
         os[2] = &es[v].quartiles[1]->parent;
@@ -1203,7 +1202,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 
         for (i = 0; i < examine->n_percentiles; ++i)
           {
-            es[v].percentiles[i] = percentile_create (examine->ptiles[i] / 100.00, es[v].cc);
+            es[v].percentiles[i] = percentile_create (examine->ptiles[i] / 100.00, es[v].cc, examine->pc_alg);
             os[5 + i] = &es[v].percentiles[i]->parent;
           }
 

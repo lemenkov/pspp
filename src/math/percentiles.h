@@ -48,17 +48,11 @@ struct percentile
   double ptile;
   double w;
 
-  /* Mutable */
-  double g1;
-  double g1_star;
-
-  double g2;
-  double g2_star;
-
-  struct k k[2];
+  struct k k;
+  enum pc_alg algorithm;
 };
 
-struct percentile *percentile_create (double p, double W);
-double percentile_calculate (const struct percentile *, enum pc_alg);
+struct percentile *percentile_create (double p, double W, enum pc_alg);
+double percentile_calculate (const struct percentile *);
 
 #endif  /* percentiles.h */

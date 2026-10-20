@@ -29,100 +29,51 @@
 
 /* Return the value of the percentile. */
 double
-percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
+percentile_calculate (const struct percentile *ptl)
 {
-  struct percentile *mutable = CONST_CAST (struct percentile *, ptl);
-  const struct order_stats *os = &ptl->parent;
+  const struct k *k = &ptl->k;
 
-  if (ptl->g1 == SYSMIS)
-    mutable->g1 = (os->k[0].tc - os->k[0].cc) / os->k[0].c_p1;
+  if (k->c == 0.0)
+    return k->c_p1 == 0.0 ? SYSMIS : k->y_p1;
+  else if (k->c_p1 == 0.0)
+    return k->y;
 
-  if (ptl->g1_star == SYSMIS)
-    mutable->g1_star = os->k[0].tc - os->k[0].cc;
+  double tc = k->tc;   /* Wp or (W + 1)p */
 
-  if (ptl->g2 == SYSMIS)
-    {
-      if (os->k[1].c == 0)
-        mutable->g2 = os->k[1].tc / os->k[1].c_p1;
-      else if (os->k[1].c_p1 == 0)
-        mutable->g2 = 0;
-      else
-        mutable->g2 = (os->k[1].tc - os->k[1].cc) / os->k[1].c_p1;
-    }
+  double g = (tc - k->cc) / k->c_p1;
+  double g_star = tc - k->cc;
 
-  if (ptl->g2_star == SYSMIS)
-    {
-      if (os->k[1].c == 0)
-        mutable->g2_star = os->k[1].tc;
-      else if (os->k[1].c_p1 == 0)
-        mutable->g2_star = 0;
-      else
-        mutable->g2_star = os->k[1].tc - os->k[1].cc;
-    }
-
-  switch (alg)
+  switch (ptl->algorithm)
     {
     case PC_WAVERAGE:
-      if (ptl->g1_star >= 1.0)
-        return os->k[0].y_p1;
+    case PC_HAVERAGE:
+      if (g_star >= 1.0)
+        return k->y_p1;
+      else if (k->c_p1 >= 1.0)
+        return (1 - g_star) * k->y + g_star * k->y_p1;
       else
-        {
-          double a = (os->k[0].y == SYSMIS) ? 0 : os->k[0].y;
-
-          if (os->k[0].c_p1 >= 1.0)
-            return (1 - ptl->g1_star) * a + ptl->g1_star * os->k[0].y_p1;
-          else
-            return (1 - ptl->g1) * a + ptl->g1 * os->k[0].y_p1;
-        }
+        return (1 - g) * k->y + g * k->y_p1;
       break;
 
     case PC_ROUND:
-      {
-        double a = (os->k[0].y == SYSMIS) ? 0 : os->k[0].y;
-
-        if (os->k[0].c_p1 >= 1.0)
-          return (ptl->g1_star < 0.5) ? a : os->k[0].y_p1;
-        else
-          return (ptl->g1 < 0.5) ? a : os->k[0].y_p1;
-      }
+      if (k->c_p1 >= 1.0)
+        return (g_star < 0.5) ? k->y : k->y_p1;
+      else
+        return (g < 0.5) ? k->y : k->y_p1;
       break;
 
     case PC_EMPIRICAL:
-      if (ptl->g1_star == 0)
-        return os->k[0].y;
+      if (g_star == 0)
+        return k->y;
       else
-        return os->k[0].y_p1;
-      break;
-
-    case PC_HAVERAGE:
-      if (ptl->g2_star >= 1.0)
-        {
-          return os->k[1].y_p1;
-        }
-      else
-        {
-          double a = (os->k[1].y == SYSMIS) ? 0 : os->k[1].y;
-
-          if (os->k[1].c_p1 >= 1.0)
-            {
-              if (ptl->g2_star == 0)
-                return os->k[1].y;
-
-              return (1 - ptl->g2_star) * a + ptl->g2_star * os->k[1].y_p1;
-            }
-          else
-            {
-              return (1 - ptl->g2) * a + ptl->g2 * os->k[1].y_p1;
-            }
-        }
-
+        return k->y_p1;
       break;
 
     case PC_AEMPIRICAL:
-      if (ptl->g1_star == 0)
-        return (os->k[0].y + os->k[0].y_p1)/ 2.0;
+      if (g_star == 0)
+        return (k->y + k->y_p1)/ 2.0;
       else
-        return os->k[0].y_p1;
+        return k->y_p1;
       break;
 
     default:
@@ -147,7 +98,7 @@ destroy (struct statistic *stat)
    W is the total sum of weights in the data set.
 */
 struct percentile *
-percentile_create (double p, double W)
+percentile_create (double p, double W, enum pc_alg algorithm)
 {
   assert (p >= 0);
   assert (p <= 1.0);
@@ -158,17 +109,17 @@ percentile_create (double p, double W)
       .parent = {
         .destroy = destroy
       },
-      .k = ptl->k,
-      .n_k = 2,
+      .k = &ptl->k,
+      .n_k = 1,
     },
     .ptile = p,
     .w = W,
-    .g1 = SYSMIS,
-    .g1_star = SYSMIS,
-    .g2 = SYSMIS,
-    .g2_star = SYSMIS,
-    .k[0] = { .tc = W * p, .y = SYSMIS, .y_p1 = SYSMIS },
-    .k[1] = { .tc = (W + 1.0) * p, .y = SYSMIS, .y_p1 = SYSMIS },
+    .algorithm = algorithm,
+    .k = {
+      .tc = (algorithm == PC_HAVERAGE ? W + 1.0 : W) * p,
+      .y = SYSMIS,
+      .y_p1 = SYSMIS
+    },
   };
   return ptl;
 }

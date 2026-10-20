@@ -2847,10 +2847,10 @@ ctables_summary_value (struct ctables_area *areas[N_CTATS],
           s->writer = NULL;
 
           struct percentile *ptile = percentile_create (
-            ss->function == CTSF_PTILE ? ss->percentile : 0.5, s->ovalid);
+            ss->function == CTSF_PTILE ? ss->percentile : 0.5, s->ovalid, PC_HAVERAGE);
           struct order_stats *os = &ptile->parent;
           order_stats_accumulate_idx (&os, 1, reader, 1, 0);
-          s->ovalue = percentile_calculate (ptile, PC_HAVERAGE);
+          s->ovalue = percentile_calculate (ptile);
           statistic_destroy (&ptile->parent.parent);
         }
       return s->ovalue;

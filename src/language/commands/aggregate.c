@@ -971,7 +971,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
           {
             if (av->writer)
               {
-                struct percentile *median = percentile_create (0.5, av->W);
+                struct percentile *median = percentile_create (0.5, av->W, PC_HAVERAGE);
                 struct order_stats *os = &median->parent;
                 struct casereader *sorted_reader = casewriter_make_reader (av->writer);
                 av->writer = NULL;
@@ -981,7 +981,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
                                         av->weight,
                                         av->subject,
                                         av->exclude);
-                av->dbl = percentile_calculate (median, PC_HAVERAGE);
+                av->dbl = percentile_calculate (median);
                 statistic_destroy (&median->parent.parent);
               }
             v->f = av->dbl;
