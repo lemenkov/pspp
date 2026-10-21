@@ -274,6 +274,300 @@ Cronbach's Alpha,N of Items
 AT_CLEANUP
 
 
+AT_SETUP([RELIABILITY with one case])
+AT_DATA([reliability.sps], [dnl
+data list notable list  /var1 *
+	var2  *
+	var6  *
+	var7  *
+	var8  *
+	var9  *
+	var11 *
+	var12 *
+	var15 *
+	var16 *
+	var17 *
+	var19 *
+	.
+
+begin data.
+6 7 7 5 7 7 7 7 7 7 6 6
+end data.
+
+RELIABILITY
+  /VARIABLES=var2 var8 var15 var17 var6
+  /SCALE('Everything') var6 var8 var15 var17
+  /MODEL=ALPHA.
+
+RELIABILITY
+  /VARIABLES=var6 var8 var15 var17
+  /SCALE('Nothing') ALL
+  /MODEL=SPLIT(2)
+ .
+
+RELIABILITY
+  /VARIABLES=var2 var6 var8 var15 var17 var19
+  /SCALE('Totals') var6 var8 var15 var17
+  /SUMMARY = total
+  /STATISTICS = DESCRIPTIVES COVARIANCES
+ .
+
+
+RELIABILITY
+  /VARIABLES=var6 var8 var15 var17
+  .
+])
+AT_CHECK([pspp reliability.sps], [0], [dnl
+Scale: Everything
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |1| 100.0%|
+|Excluded|0|    .0%|
+|Total   |1| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+
+Scale: Nothing
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |1| 100.0%|
+|Excluded|0|    .0%|
+|Total   |1| 100.0%|
++--------+-+-------+
+
+             Reliability Statistics
++--------------------------------------------+-+
+|Cronbach's Alpha           Part 1 Value     |.|
+|                                  N of Items|2|
+|                          ------------------+-+
+|                           Part 2 Value     |.|
+|                                  N of Items|2|
+|                          ------------------+-+
+|                           Total N of Items |4|
++--------------------------------------------+-+
+|Correlation Between Forms                   |.|
++--------------------------------------------+-+
+|Spearman-Brown Coefficient Equal Length     |.|
+|                          ------------------+-+
+|                           Unequal Length   |.|
++--------------------------------------------+-+
+|Guttman Split-Half Coefficient              |.|
++--------------------------------------------+-+
+
+reliability.sps:34.4-34.40: warning: RELIABILITY: The STATISTICS subcommand is
+not yet implemented.  No statistics will be produced.
+   34 |   /STATISTICS = DESCRIPTIVES COVARIANCES
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Scale: Totals
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |1| 100.0%|
+|Excluded|0|    .0%|
+|Total   |1| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+
+                             Item-Total Statistics
++-----+--------------+-----------------+-------------------+------------------+
+|     | Scale Mean if|Scale Variance if|  Corrected Item-  | Cronbach's Alpha |
+|     | Item Deleted |   Item Deleted  | Total Correlation |  if Item Deleted |
++-----+--------------+-----------------+-------------------+------------------+
+|var6 |         20.00|                .|                  .|                 .|
+|var8 |         20.00|                .|                  .|                 .|
+|var15|         20.00|                .|                  .|                 .|
+|var17|         21.00|                .|                  .|                 .|
++-----+--------------+-----------------+-------------------+------------------+
+
+Scale: ANY
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |1| 100.0%|
+|Excluded|0|    .0%|
+|Total   |1| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+])
+AT_CLEANUP
+
+AT_SETUP([RELIABILITY with two cases])
+AT_DATA([reliability.sps], [dnl
+data list notable list  /var1 *
+	var2  *
+	var6  *
+	var7  *
+	var8  *
+	var9  *
+	var11 *
+	var12 *
+	var15 *
+	var16 *
+	var17 *
+	var19 *
+	.
+
+begin data.
+6 7 7 5 7 7 7 7 7 7 6 6
+6 7 7 6 7 6 7 5 6 5 7 7
+end data.
+
+RELIABILITY
+  /VARIABLES=var2 var8 var15 var17 var6
+  /SCALE('Everything') var6 var8 var15 var17
+  /MODEL=ALPHA.
+
+RELIABILITY
+  /VARIABLES=var6 var8 var15 var17
+  /SCALE('Nothing') ALL
+  /MODEL=SPLIT(2)
+ .
+
+RELIABILITY
+  /VARIABLES=var2 var6 var8 var15 var17 var19
+  /SCALE('Totals') var6 var8 var15 var17
+  /SUMMARY = total
+  /STATISTICS = DESCRIPTIVES COVARIANCES
+ .
+
+
+RELIABILITY
+  /VARIABLES=var6 var8 var15 var17
+  .
+])
+AT_CHECK([pspp reliability.sps], [0], [dnl
+Scale: Everything
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |2| 100.0%|
+|Excluded|0|    .0%|
+|Total   |2| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+
+Scale: Nothing
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |2| 100.0%|
+|Excluded|0|    .0%|
+|Total   |2| 100.0%|
++--------+-+-------+
+
+             Reliability Statistics
++--------------------------------------------+-+
+|Cronbach's Alpha           Part 1 Value     |.|
+|                                  N of Items|2|
+|                          ------------------+-+
+|                           Part 2 Value     |.|
+|                                  N of Items|2|
+|                          ------------------+-+
+|                           Total N of Items |4|
++--------------------------------------------+-+
+|Correlation Between Forms                   |.|
++--------------------------------------------+-+
+|Spearman-Brown Coefficient Equal Length     |.|
+|                          ------------------+-+
+|                           Unequal Length   |.|
++--------------------------------------------+-+
+|Guttman Split-Half Coefficient              |.|
++--------------------------------------------+-+
+
+reliability.sps:35.4-35.40: warning: RELIABILITY: The STATISTICS subcommand is
+not yet implemented.  No statistics will be produced.
+   35 |   /STATISTICS = DESCRIPTIVES COVARIANCES
+      |    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Scale: Totals
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |2| 100.0%|
+|Excluded|0|    .0%|
+|Total   |2| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+
+                             Item-Total Statistics
++-----+--------------+-----------------+-------------------+------------------+
+|     | Scale Mean if|Scale Variance if|  Corrected Item-  | Cronbach's Alpha |
+|     | Item Deleted |   Item Deleted  | Total Correlation |  if Item Deleted |
++-----+--------------+-----------------+-------------------+------------------+
+|var6 |         20.00|              .00|                  .|                 .|
+|var8 |         20.00|              .00|                  .|                 .|
+|var15|         20.50|              .50|              -1.00|               .00|
+|var17|         20.50|              .50|              -1.00|               .00|
++-----+--------------+-----------------+-------------------+------------------+
+
+Scale: ANY
+
+Case Processing Summary
++--------+-+-------+
+|Cases   |N|Percent|
++--------+-+-------+
+|Valid   |2| 100.0%|
+|Excluded|0|    .0%|
+|Total   |2| 100.0%|
++--------+-+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|               .|         4|
++----------------+----------+
+])
+AT_CLEANUP
+
+
 dnl This was causing a AT.
 AT_SETUP([RELIABILITY bad syntax])
 AT_DATA([bad-syntax.sps], [dnl

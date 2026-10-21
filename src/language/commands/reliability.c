@@ -559,8 +559,12 @@ reliability_summary_total (const struct reliability *rel)
         s->alpha,
       };
       for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
-        pivot_table_put2 (table, i, var_idx,
-                          pivot_value_new_number (entries[i]));
+        {
+          double entry = entries[i];
+          if (!isfinite (entry))
+            entry = SYSMIS;
+          pivot_table_put2 (table, i, var_idx, pivot_value_new_number (entry));
+        }
     }
 
   pivot_table_submit (table);
@@ -582,7 +586,8 @@ reliability_statistics (const struct reliability *rel)
                               N_("N of Items"), PIVOT_RC_COUNT);
 
       const struct cronbach *s = &rel->sc[0];
-      pivot_table_put1 (table, 0, pivot_value_new_number (s->alpha));
+      double alpha = isfinite (s->alpha) ? s->alpha : SYSMIS;
+      pivot_table_put1 (table, 0, pivot_value_new_number (alpha));
       pivot_table_put1 (table, 1, pivot_value_new_number (s->n_items));
     }
   else
@@ -636,7 +641,12 @@ reliability_statistics (const struct reliability *rel)
         g,
       };
       for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
-        pivot_table_put1 (table, i, pivot_value_new_number (entries[i]));
+        {
+          double entry = entries[i];
+          if (!isfinite (entry))
+            entry = SYSMIS;
+          pivot_table_put1 (table, i, pivot_value_new_number (entry));
+        }
     }
 
   pivot_table_submit (table);
