@@ -1271,6 +1271,10 @@ begin data.
 1 1 0
 1 1 0
 1 1 1
+2 2 2
+. 3 3
+4 . 4
+5 5 .
 end data.
 
 npar tests
@@ -1279,16 +1283,20 @@ npar tests
 
 AT_CHECK([pspp -O format=csv mcnemar.sps], [0], [dnl
 Table: v1 & v2
-v1,v2,
+v1[[a]],v2[[b]],
 ,.000,1.000
 .000,4,9
 1.000,2,5
+"Footnote: a. This variable is not dichotomous, but the McNemar test is only appropriate for dichotomous variables.  2 cases with other than the two stated values were ignored."
+"Footnote: b. This variable is not dichotomous, but the McNemar test is only appropriate for dichotomous variables.  2 cases with other than the two stated values were ignored."
 
 Table: v1 & junk
-v1,junk,
+v1[[a]],junk[[b]],
 ,.000,1.000
 .000,8,5
 1.000,2,5
+"Footnote: a. This variable is not dichotomous, but the McNemar test is only appropriate for dichotomous variables.  2 cases with other than the two stated values were ignored."
+"Footnote: b. This variable is not dichotomous, but the McNemar test is only appropriate for dichotomous variables.  2 cases with other than the two stated values were ignored."
 
 Table: Test Statistics
 ,N,Exact Sig. (2-tailed),Exact Sig. (1-tailed),Point Probability

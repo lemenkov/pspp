@@ -44,8 +44,10 @@
 
 struct mcnemar
 {
-  union value val0;
-  union value val1;
+  size_t invalid_values;        /* Number of cases with invalid values. */
+
+  union value val0;             /* First value of dichotomous variable. */
+  union value val1;             /* Second value of dichotomous variable. */
 
   double n00;
   double n01;
@@ -140,9 +142,7 @@ mcnemar_execute (const struct dataset *ds,
               mc[i].n11 += weight;
             }
           else
-            {
-              msg (ME, _("The McNemar test is appropriate only for dichotomous variables"));
-            }
+            mc[i].invalid_values++;
         }
     }
 
@@ -175,9 +175,21 @@ output_freq_table (variable_pair *vp,
   struct pivot_dimension *vars[2];
   for (int i = 0; i < 2; i++)
     {
+      struct pivot_value *value = pivot_value_new_variable ((*vp)[i]);
+      if (param->invalid_values > 0)
+        {
+          struct pivot_footnote *footnote = pivot_table_create_footnote (
+            table,
+            pivot_value_new_text_format (
+              N_("This variable is not dichotomous, but the McNemar test is "
+                 "only appropriate for dichotomous variables.  %zu cases with "
+                 "other than the two stated values were ignored."),
+              param->invalid_values));
+          pivot_value_add_footnote (value, footnote);
+        }
+
       vars[i] = pivot_dimension_create__ (
-        table, i ? PIVOT_AXIS_COLUMN : PIVOT_AXIS_ROW,
-        pivot_value_new_variable ((*vp)[i]));
+        table, i ? PIVOT_AXIS_COLUMN : PIVOT_AXIS_ROW, value);
       vars[i]->root->show_label = true;
 
       for (int j = 0; j < 2; j++)
