@@ -21,6 +21,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdlib.h>
 
 #include "data/data-out.h"
@@ -2784,6 +2785,32 @@ pivot_value_set_cell_style (struct pivot_value *value,
   *ex->cell_style = *cell_style;
 }
 
+struct pivot_argument SENTINEL (0)
+(pivot_argument_create) (struct pivot_value *value, ...)
+{
+  va_list args;
+  va_start (args, value);
+  size_t n = 1;
+  while (va_arg (args, struct pivot_value *) != NULL)
+    n++;
+  va_end (args);
+
+  struct pivot_value **values = xmalloc (n * sizeof *values);
+  size_t i = 0;
+  values[i++] = value;
+  va_start (args, value);
+  for (i = 1; i < n; i++)
+    values[i] = va_arg (args, struct pivot_value *);
+  va_end (args);
+
+  struct pivot_argument a = (struct pivot_argument)
+    {
+      .n = n,
+      .values = values,
+    };
+  return a;
+}
+
 void
 pivot_argument_copy (struct pivot_argument *dst,
                      const struct pivot_argument *src)
@@ -2914,6 +2941,25 @@ pivot_value_new_text_format (const char *format, ...)
   };
   return value;
 }
+
+struct pivot_value *
+pivot_value_new_template (const char *template,
+                          struct pivot_argument *args, size_t n)
+{
+  struct pivot_value *a = xmalloc (sizeof *a);
+  char *template_copy = xstrdup (template);
+  *a = (struct pivot_value) {
+    .template = {
+      .type = PIVOT_VALUE_TEMPLATE,
+      .n_args = n,
+      .args = xmemdup (args, n * sizeof *args),
+      .local = template_copy,
+      .id = template_copy,
+    }
+  };
+  return a;
+}
+
 
 /* Returns a new pivot_value that represents X.
 

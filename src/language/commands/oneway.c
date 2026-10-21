@@ -1308,12 +1308,16 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
                                 N_("Lower Bound"), PIVOT_RC_OTHER,
                                 N_("Upper Bound"), PIVOT_RC_OTHER);
 
-  struct pivot_dimension *j_family = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("(J) Family"));
+  struct pivot_argument arg = pivot_argument_create (pivot_value_new_variable (cmd->indep_var));
+  struct pivot_dimension *j_family = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW,
+    pivot_value_new_template ("(J) ^1", &arg, 1));
   j_family->root->show_label = true;
 
-  struct pivot_dimension *i_family = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("(I) Family"));
+  arg = pivot_argument_create (pivot_value_new_variable (cmd->indep_var));
+  struct pivot_dimension *i_family = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW,
+    pivot_value_new_template ("(I) ^1", &arg, 1));
   i_family->root->show_label = true;
 
   const struct per_var_ws *pvw = &ws->vws[v];

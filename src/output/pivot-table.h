@@ -828,6 +828,11 @@ struct pivot_value *pivot_value_new_text_format (const char *, ...)
 struct pivot_value *pivot_value_new_user_text (const char *, size_t length);
 struct pivot_value *pivot_value_new_user_text_nocopy (char *);
 
+/* Template values. */
+struct pivot_value *pivot_value_new_template (
+  const char *template, struct pivot_argument *, size_t n);
+
+
 /* Footnotes. */
 void pivot_value_add_footnote (struct pivot_value *, const struct pivot_footnote *);
 void pivot_value_sort_footnotes (struct pivot_value *);
@@ -865,6 +870,10 @@ struct pivot_argument
     struct pivot_value **values;
   };
 
+struct pivot_argument pivot_argument_create (struct pivot_value *, ...)
+  SENTINEL (0);
+#define pivot_argument_create(...) \
+  pivot_argument_create(__VA_ARGS__, NULL_SENTINEL)
 void pivot_argument_uninit (struct pivot_argument *);
 void pivot_argument_copy (struct pivot_argument *,
                           const struct pivot_argument *);
