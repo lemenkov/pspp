@@ -839,16 +839,22 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
       double base_entries[] = {
         linreg_intercept (c),
         std_err,
-        0.0,
-        t_stat,
-        2.0 * gsl_cdf_tdist_Q (fabs (t_stat),
-                               linreg_n_obs (c) - linreg_n_coeffs (c)),
       };
 
       size_t col = 0;
       for (size_t i = 0; i < sizeof base_entries / sizeof *base_entries; i++)
         pivot_table_put2 (table, col++, var_idx,
                           pivot_value_new_number (base_entries[i]));
+
+      col++;
+      double base_entries2[] = {
+        t_stat,
+        2.0 * gsl_cdf_tdist_Q (fabs (t_stat),
+                               linreg_n_obs (c) - linreg_n_coeffs (c)),
+      };
+      for (size_t i = 0; i < sizeof base_entries2 / sizeof *base_entries2; i++)
+        pivot_table_put2 (table, col++, var_idx,
+                          pivot_value_new_number (base_entries2[i]));
 
       if (cmd->stats & STATS_CI)
         {

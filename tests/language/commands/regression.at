@@ -55,7 +55,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,.000,.930,.380
+(Constant),2.191,2.357,,.930,.380
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -110,7 +110,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,.000,.930,.380
+(Constant),2.191,2.357,,.930,.380
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -127,7 +127,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,.000,.930,.380
+(Constant),2.191,2.357,,.930,.380
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -1800,7 +1800,7 @@ Total,98673.63,1499,,,
 Table: Coefficients (v0)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),1.24,.42,.00,2.95,.003
+(Constant),1.24,.42,,2.95,.003
 v1,1.37,.72,.05,1.89,.059
 ])
 
@@ -2139,7 +2139,7 @@ Total,19507.500,199,,,
 Table: Coefficients (science)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.,95% Confidence Interval for B,
 ,B,Std. Error,Beta,,,Lower Bound,Upper Bound
-(Constant),12.325,3.194,.000,3.859,.000,6.027,18.624
+(Constant),12.325,3.194,,3.859,.000,6.027,18.624
 math,.389,.074,.368,5.252,.000,.243,.535
 female,-2.010,1.023,-.101,-1.965,.051,-4.027,.007
 socst,.050,.062,.054,.801,.424,-.073,.173
@@ -2187,7 +2187,7 @@ Total,4275.00,3,,,
 Table: Coefficients (X1)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),85.45,10.16,.00,8.41,.004
+(Constant),85.45,10.16,,8.41,.004
 Y,-3.73,.91,-.95,-4.10,.055
 
 Table: Data List
@@ -2274,7 +2274,7 @@ Total,1036.563,18,,,
 Table: Coefficients (value)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),.927,2.247,.000,.413,.685
+(Constant),.927,2.247,,.413,.685
 number,.611,.192,.612,3.189,.005
 ])
 
@@ -2361,7 +2361,7 @@ Total,10731.20,29,,,
 Table: Coefficients (Mean time to repair (hours) )
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),10.59,3.11,.00,3.40,.002
+(Constant),10.59,3.11,,3.40,.002
 Mean time between failures (months) ,3.02,.20,.95,14.88,.000
 Ratio of working to non-working time,-1.12,3.69,-.02,-.30,.763
 
@@ -2378,7 +2378,7 @@ Total,10731.20,29,,,
 Table: Coefficients (Mean time to repair (hours) )
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),9.90,2.10,.00,4.71,.000
+(Constant),9.90,2.10,,4.71,.000
 Mean time between failures (months) ,3.01,.20,.94,15.21,.000
 ])
 
@@ -2413,7 +2413,7 @@ x2,F8.0
 Table: Coefficients (y)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),1.4586,.9327,.0000,1.5640,.156
+(Constant),1.4586,.9327,,1.5640,.156
 x1,1.0160,.1807,.7960,5.6225,.001
 x2,.3531,.2185,.2287,1.6155,.150
 
@@ -2492,7 +2492,7 @@ Total,855.100,39,,,
 Table: Coefficients (performance_y)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.,Collinearity Statistics,
 ,B,Std. Error,Beta,,,Tolerance,VIF
-(Constant),7.220,4.020,.000,1.796,.080,,
+(Constant),7.220,4.020,,1.796,.080,,
 competence_x1,.432,.166,.358,2.609,.013,.552,1.812
 motivation_x2,.453,.125,.499,3.636,.001,.552,1.812
 ])
