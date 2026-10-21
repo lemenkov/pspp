@@ -753,8 +753,12 @@ for variant in be le; do
 GET FILE='sys-file.sav'.
 MRSETS /DISPLAY NAME=ALL.
 ])
-  AT_CHECK([pspp -o pspp.csv sys-file.sps])
+  AT_CHECK([pspp -o pspp.csv sys-file.sps], [0], [dnl
+note: MRSETS is implemented but no other commands support multiple response sets yet.
+])
   AT_CHECK([cat pspp.csv], [0], [dnl
+note: MRSETS is implemented but no other commands support multiple response sets yet.
+
 Table: Multiple Response Sets
 Name,Label,Encoding,Counted Value,Member Variables
 $a,my mcgroup,Categories,,"あ
@@ -2592,6 +2596,8 @@ MRSETS /DISPLAY NAME=ALL.
 warning: `sys-file.sav': Invalid multiple response set name `b'.
 
 warning: `sys-file.sav': Invalid multiple response set name `e'.
+
+note: MRSETS is implemented but no other commands support multiple response sets yet.
 
 Table: Multiple Response Sets
 Name,Label,Encoding,Counted Value,Member Variables

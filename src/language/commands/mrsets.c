@@ -49,7 +49,15 @@ cmd_mrsets (struct lexer *lexer, struct dataset *ds)
 {
   struct dictionary *dict = dataset_dict (ds);
 
-  while (lex_match (lexer, T_SLASH))
+  static bool issued_mrset_note;
+  if (!issued_mrset_note)
+    {
+      issued_mrset_note = true;
+      msg (MN, _("MRSETS is implemented but no other commands "
+                 "support multiple response sets yet."));
+    }
+
+    while (lex_match (lexer, T_SLASH))
     {
       bool ok;
 

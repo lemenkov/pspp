@@ -65,6 +65,8 @@ MRSETS
 ]])
 
 m4_define([DEFINE_MRSETS_OUTPUT], [dnl
+note: MRSETS is implemented but no other commands support multiple response sets yet.
+
 "mrsets.sps:23.16-23.22: warning: MRSETS: Variables w and z specified as part of multiple dichotomy group $a have the same variable label.  Categories represented by these variables will not be distinguishable in output.
    23 |      VARIABLES=w x y z
       |                ^~~~~~~"
@@ -99,6 +101,8 @@ m4_define([DEFINE_MRSETS_OUTPUT], [dnl
 ])
 
 m4_define([MRSETS_DISPLAY_OUTPUT], [dnl
+note: MRSETS is implemented but no other commands support multiple response sets yet.
+
 Table: Multiple Response Sets
 Name,Label,Encoding,Counted Value,Member Variables
 $a,First multiple dichotomy group,Dichotomies,5,"w
@@ -270,6 +274,8 @@ MRSETS /DELETE NAME=**.
 MRSETS /DISPLAY NAME=ALL.
 ])
 AT_CHECK([pspp -O format=csv mrsets.sps], [1], [dnl
+note: MRSETS is implemented but no other commands support multiple response sets yet.
+
 "mrsets.sps:19.22-19.23: error: MRSETS: Syntax error expecting `='.
    19 | MRSETS /MDGROUP NAME **.
       |                      ^~"
