@@ -55,7 +55,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,,.930,.380
+(Constant),2.191,2.357,,.930,.384
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -110,7 +110,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,,.930,.380
+(Constant),2.191,2.357,,.930,.384
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -127,7 +127,7 @@ Total,215.256,9,,,
 Table: Coefficients (v2)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),2.191,2.357,,.930,.380
+(Constant),2.191,2.357,,.930,.384
 v0,1.813,1.053,.171,1.722,.129
 v1,-3.427,.332,-1.026,-10.334,.000
 
@@ -2187,7 +2187,7 @@ Total,4275.00,3,,,
 Table: Coefficients (X1)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),85.45,10.16,,8.41,.004
+(Constant),85.45,10.16,,8.41,.014
 Y,-3.73,.91,-.95,-4.10,.055
 
 Table: Data List
@@ -2413,7 +2413,7 @@ x2,F8.0
 Table: Coefficients (y)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),1.4586,.9327,,1.5640,.156
+(Constant),1.4586,.9327,,1.5640,.162
 x1,1.0160,.1807,.7960,5.6225,.001
 x2,.3531,.2185,.2287,1.6155,.150
 
@@ -2492,7 +2492,7 @@ Total,855.100,39,,,
 Table: Coefficients (performance_y)
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.,Collinearity Statistics,
 ,B,Std. Error,Beta,,,Tolerance,VIF
-(Constant),7.220,4.020,,1.796,.080,,
+(Constant),7.220,4.020,,1.796,.081,,
 competence_x1,.432,.166,.358,2.609,.013,.552,1.812
 motivation_x2,.453,.125,.499,3.636,.001,.552,1.812
 ])

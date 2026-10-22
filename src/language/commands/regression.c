@@ -850,7 +850,7 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
       double base_entries2[] = {
         t_stat,
         2.0 * gsl_cdf_tdist_Q (fabs (t_stat),
-                               linreg_n_obs (c) - linreg_n_coeffs (c)),
+                               linreg_n_obs (c) - linreg_n_coeffs (c) - 1),
       };
       for (size_t i = 0; i < sizeof base_entries2 / sizeof *base_entries2; i++)
         pivot_table_put2 (table, col++, var_idx,
