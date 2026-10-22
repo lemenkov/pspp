@@ -942,6 +942,7 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
     }
 
   gsl_eigen_symmv (ws->r, ws->eval, ws->evec, ws->eigen_ws);
+  gsl_eigen_symmv_sort (ws->eval, ws->evec, GSL_EIGEN_SORT_ABS_DESC);
 
   gsl_matrix_view mv = gsl_matrix_submatrix (ws->evec, 0, 0, ws->evec->size1, ws->n_factors);
 
