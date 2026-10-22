@@ -1912,6 +1912,38 @@ x,4,24.000,29.500,65.000,15.902,-2.232,.026
 
 AT_CLEANUP
 
+dnl Test from Johannes Weingartner.
+AT_SETUP([NPAR TESTS Jonckheere-Terpstra - 2])
+AT_DATA([jt.sps], [dnl
+DATA LIST LIST NOTABLE/g t.
+BEGIN DATA.
+1 1
+1 2
+1 2
+1 4
+2 2
+2 3
+2 5
+2 5
+3 3
+3 5
+3 6
+3 6
+END DATA.
+NPAR TESTS /J-T=t BY g(1,3).
+])
+AT_CHECK([pspp jt.sps], [0], [dnl
+                            Jonckheere-Terpstra Test
++-+---------+--+------------+-----------+--------------+-----------+----------+
+| |Number of|  |            |           |Std. Deviation|           |  Asymp.  |
+| |levels in|  |Observed J-T|  Mean J-T |    of J-T    |  Std. J-T | Sig. (2- |
+| |    g    | N|  Statistic | Statistic |   Statistic  | Statistic |  tailed) |
++-+---------+--+------------+-----------+--------------+-----------+----------+
+|t|        3|12|       40.50|      24.00|          6.70|       2.46|      .014|
++-+---------+--+------------+-----------+--------------+-----------+----------+
+])
+AT_CLEANUP
+
 dnl Checks that (PAIRED) can have lists where the same
 dnl variable appears more than once.
 AT_SETUP([NPAR TESTS (PAIRED)])

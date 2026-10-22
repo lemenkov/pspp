@@ -123,15 +123,7 @@ u (const struct group_data *grp0, const struct group_data *grp1)
               break;
             }
           else
-            {
-#if 1
-              usum += w0 * ((grp1->cc - prev_cc1) / 2.0);
-#else
-              usum += w0 * (grp1->cc - (prev_cc1 + cc1) / 2.0);
-#endif
-              case_unref (c1);
-              break;
-            }
+            usum += w0 * ((cc1 - prev_cc1) / 2.0);
 
           prev_cc1 = cc1;
         }
@@ -139,7 +131,6 @@ u (const struct group_data *grp0, const struct group_data *grp1)
       prev_cc0 = cc0;
     }
   casereader_destroy (r0);
-
   return usum;
 }
 
