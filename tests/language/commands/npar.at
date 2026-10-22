@@ -666,6 +666,46 @@ Point Probability,.250,.312
 ])
 AT_CLEANUP
 
+dnl From Johannes Weingartner.
+dnl This checks that the two-sided exact P-value is capped at 1.0.
+AT_SETUP([NPAR TESTS SIGN - two-sided exact P-value])
+AT_DATA([npar.sps], [dnl
+DATA LIST FREE /a b.
+BEGIN DATA
+0 1
+0 1
+0 1
+0 1
+0 1
+1 0
+1 0
+1 0
+1 0
+1 0
+END DATA.
+NPAR TESTS /SIGN=a WITH b (PAIRED).
+])
+AT_CHECK([pspp npar.sps], 0, [dnl
+          Frequencies
++--------------------------+--+
+|                          | N|
++--------------------------+--+
+|a - b Negative Differences| 5|
+|      Positive Differences| 5|
+|      Ties                | 0|
+|      Total               |10|
++--------------------------+--+
+
+       Test Statistics
++---------------------+-----+
+|                     |a - b|
++---------------------+-----+
+|Exact Sig. (2-tailed)|1.000|
+|Exact Sig. (1-tailed)| .623|
+|Point Probability    | .246|
++---------------------+-----+
+])
+AT_CLEANUP
 
 AT_SETUP([NPAR Kruskal-Wallis test])
 
@@ -1304,6 +1344,51 @@ v1 & v2,20,.065,.033,.027
 v1 & junk,20,.453,.227,.164
 ])
 
+AT_CLEANUP
+
+dnl From Johannes Weingartner.
+dnl This checks that the two-sided exact P-value is capped at 1.0.
+AT_SETUP([NPAR TESTS McNemar - two-sided exact P-value])
+AT_DATA([mcnemar.sps], [dnl
+DATA LIST FREE /a b.
+BEGIN DATA
+0 1
+1 0
+0 1
+1 0
+0 1
+1 0
+0 1
+1 0
+0 1
+1 0
+0 1
+1 0
+0 1
+1 0
+0 0
+1 1
+END DATA.
+NPAR TESTS /MCNEMAR=a WITH b (PAIRED).
+])
+AT_CHECK([pspp mcnemar.sps], [0], [dnl
+     a & b
++----+--------+
+|    |    b   |
+|    +---+----+
+|a   |.00|1.00|
++----+---+----+
+|.00 |  1|   7|
+|1.00|  7|   1|
++----+---+----+
+
+                             Test Statistics
++-----+--+---------------------+---------------------+-----------------+
+|     | N|Exact Sig. (2-tailed)|Exact Sig. (1-tailed)|Point Probability|
++-----+--+---------------------+---------------------+-----------------+
+|a & b|16|                1.000|                 .605|              .21|
++-----+--+---------------------+---------------------+-----------------+
+])
 AT_CLEANUP
 
 

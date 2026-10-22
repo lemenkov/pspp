@@ -252,7 +252,7 @@ output_statistics_table (const struct two_sample_test *t2s,
 
       double point = gsl_ran_binomial_pdf (mc[i].n01, 0.5,
                                            mc[i].n01 + mc[i].n10);
-      double entries[] = { n, 2.0 * sig, sig, point };
+      double entries[] = { n, MIN (1.0, 2.0 * sig), sig, point };
       for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
         pivot_table_put2 (table, j, pair_idx,
                           pivot_value_new_number (entries[j]));

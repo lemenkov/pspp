@@ -113,7 +113,7 @@ output_statistics_table (const struct two_sample_test *t2s,
       int pair_idx = add_pair_leaf (pairs, vp);
 
       const struct sign_test_params *p = &param[i];
-      double values[] = { p->one_tailed_sig * 2,
+      double values[] = { MIN (p->one_tailed_sig * 2, 1.0),
                           p->one_tailed_sig,
                           p->point_prob };
       for (size_t j = 0; j < sizeof values / sizeof *values; j++)
