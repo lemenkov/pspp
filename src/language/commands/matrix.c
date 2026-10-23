@@ -21,9 +21,12 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_statistics_double.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_vector_double.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -276,6 +279,7 @@ matrix_var_set (struct matrix_var *var, gsl_matrix *value)
     F(CMIN,     "CMIN",     m_m, NULL)                                  \
     F(CMAX,     "CMAX",     m_m, NULL)                                  \
     F(COS,      "COS",      m_e, NULL)                                  \
+    F(COV,      "COV",      m_m, NULL)                                  \
     F(CSSQ,     "CSSQ",     m_m, NULL)                                  \
     F(CSUM,     "CSUM",     m_m, NULL)                                  \
     F(DESIGN,   "DESIGN",   m_mn, NULL)                                 \
@@ -1491,6 +1495,32 @@ static double
 matrix_eval_COS (double d)
 {
   return cos (d);
+}
+
+static gsl_matrix *
+matrix_eval_COV (gsl_matrix *m)
+{
+  if (m->size1 == 0 || m->size2 == 0)
+    return gsl_matrix_alloc (0, 0);
+
+  gsl_matrix *result = gsl_matrix_alloc (m->size2, m->size2);
+  for (size_t i = 0; i < m->size2; i++)
+    {
+      gsl_vector col = gsl_matrix_const_column (m, i).vector;
+      gsl_matrix_set (result, i, i,
+                      gsl_stats_variance (col.data, col.stride, col.size));
+    }
+  for (size_t y = 1; y < m->size2; y++)
+    for (size_t x = 0; x < y; x++)
+      {
+        gsl_vector a = gsl_matrix_const_column (m, x).vector;
+        gsl_vector b = gsl_matrix_const_column (m, y).vector;
+        double cov = gsl_stats_covariance (
+          a.data, a.stride, b.data, b.stride, a.size);
+        gsl_matrix_set (result, y, x, cov);
+        gsl_matrix_set (result, x, y, cov);
+      }
+  return result;
 }
 
 static gsl_matrix *

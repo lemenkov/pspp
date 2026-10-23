@@ -1457,6 +1457,21 @@ equivalent to @code{MSUM(DIAG(@var{M}))}.
 @t{TRACE(MDIAG(1:5)) @result{} 15}
 @end deffn
 
+@deffn {Matrix Function} COV (@var{M})
+Returns a symmetric matrix whose diagonal elements are the variance of
+the each column in @var{M} and whose off-diagonal elements are the
+covariance of the two columns of the element's row and column.  For
+example, if @var{M} is a @math{2@times{}@var{n}} matrix, the result is
+a @math{2@times{}2} matrix @t{@{a, b; b, c@}}, where @t{a} is the
+variance of @var{M}'s first column, @t{b} is the covariance between
+@var{M}'s two columns, and @t{c} is the variance of @var{M}'s second
+column.
+
+@t{COV(@{80, 70; 63, 20; 100, 50@})} @result{} @{343, 260; 260, 633.33@}
+
+@code{COV} is a PSPP extension.
+@end deffn
+
 @node Matrix Property Functions
 @subsubsection Matrix Property Functions
 
