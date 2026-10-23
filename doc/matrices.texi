@@ -1403,15 +1403,19 @@ result will be different (given different seeds):
 @deffnx {Matrix Function} CMAX (@var{M})
 @deffnx {Matrix Function} CSUM (@var{M})
 @deffnx {Matrix Function} CSSQ (@var{M})
+@deffnx {Matrix Function} MEAN (@var{M})
 Returns a row vector with the same number of columns as @var{M}, in
-which each element is the minimum, maximum, sum, or sum of squares,
-respectively, of the elements in the same column of @var{M}.
+which each element is the minimum, maximum, sum, sum of squares, or
+mean, respectively, of the elements in the same column of @var{M}.
 
-@t{CMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{1, 2, 3@}} @*
-@t{CMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{7, 8, 9@}} @*
-@t{CSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{12, 15, 18@}} @*
-@t{CSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{66, 93, 126@}}
+@t{CMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{1, 2, 3@}} @*
+@t{CMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{7, 8, 9@}} @*
+@t{CSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{12, 15, 18@}} @*
+@t{CSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{66, 93, 126@}}
+@t{MEAN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{4, 5, 6@}}
 @end deffn
+
+@code{MEAN} is a PSPP extension.
 
 @deffn {Matrix Function} MMIN (@var{M})
 @deffnx {Matrix Function} MMAX (@var{M})
@@ -1420,10 +1424,10 @@ respectively, of the elements in the same column of @var{M}.
 Returns the minimum, maximum, sum, or sum of squares, respectively, of
 the elements of @var{M}.
 
-@t{MMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 1} @*
-@t{MMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 9} @*
-@t{MSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 45} @*
-@t{MSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} 285}
+@t{MMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} 1} @*
+@t{MMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} 9} @*
+@t{MSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} 45} @*
+@t{MSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} 285}
 @end deffn
 
 @deffn {Matrix Function} RMIN (@var{M})
@@ -1434,10 +1438,10 @@ Returns a column vector with the same number of rows as @var{M}, in
 which each element is the minimum, maximum, sum, or sum of squares,
 respectively, of the elements in the same row of @var{M}.
 
-@t{RMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{1; 4; 7@}} @*
-@t{RMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{3; 6; 9@}} @*
-@t{RSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{6; 15; 24@}} @*
-@t{RSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@} @result{} @{14; 77; 194@}}
+@t{RMIN(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{1; 4; 7@}} @*
+@t{RMAX(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{3; 6; 9@}} @*
+@t{RSUM(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{6; 15; 24@}} @*
+@t{RSSQ(@{1, 2, 3; 4, 5, 6; 7, 8, 9@}) @result{} @{14; 77; 194@}}
 @end deffn
 
 @deffn {Matrix Function} SSCP (@var{M})

@@ -294,6 +294,7 @@ matrix_var_set (struct matrix_var *var, gsl_matrix *value)
     F(MAGIC,    "MAGIC",    m_d, "ai>=3")                               \
     F(MAKE,     "MAKE",     m_ddd, "ai>=0 bi>=0")                       \
     F(MDIAG,    "MDIAG",    m_v, NULL)                                  \
+    F(MEAN,     "MEAN",     m_m, NULL)                                  \
     F(MMAX,     "MMAX",     d_m, NULL)                                  \
     F(MMIN,     "MMIN",     d_m, NULL)                                  \
     F(MOD,      "MOD",      m_md, "b!=0")                               \
@@ -2088,6 +2089,28 @@ matrix_eval_MDIAG (gsl_vector *v)
   gsl_vector diagonal = gsl_matrix_diagonal (m).vector;
   gsl_vector_memcpy (&diagonal, v);
   return m;
+}
+
+static gsl_matrix *
+matrix_eval_MEAN (gsl_matrix *m)
+{
+  if (m->size1 == 0)
+    return m;
+  else if (!m->size2)
+    return gsl_matrix_alloc (1, 0);
+
+  gsl_matrix *result = gsl_matrix_alloc (1, m->size2);
+  for (size_t x = 0; x < m->size2; x++)
+    {
+      double sum = 0;
+      for (size_t y = 0; y < m->size1; y++)
+        {
+          double d = gsl_matrix_get (m, y, x);
+          sum += d;
+        }
+      gsl_matrix_set (result, 0, x, sum / m->size1);
+    }
+  return result;
 }
 
 static double

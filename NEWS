@@ -9,6 +9,8 @@ Changes since 2.1.2:
 
  * Bug fixes.
 
+ * MATRIX: New MEAN extension function.
+
 Changes from 2.1.1 to 2.1.2:
 
  * Translation updates.

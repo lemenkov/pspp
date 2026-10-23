@@ -2082,7 +2082,7 @@ AT_CHECK([pspp matrix.sps], [0], [dnl
 ])
 AT_CLEANUP
 
-AT_SETUP([MATRIX - MAKE MDIAG MMAX MMIN MOD])
+AT_SETUP([MATRIX - MAKE MDIAG MEAN MMAX MMIN MOD])
 AT_DATA([matrix.sps], [dnl
 MATRIX.
 PRINT MAKE(1, 2, 3).
@@ -2092,6 +2092,8 @@ PRINT MAKE(2, 3, 5).
 PRINT MDIAG({1, 2, 3, 4}).
 PRINT MDIAG({1; 2; 3; 4}).
 PRINT MDIAG({1, 2; 3, 4}).
+
+PRINT MEAN({1, 2; 3, 4; 5, 6}).
 
 PRINT MMAX({55, 44; 66, 11}).
 
@@ -2134,6 +2136,9 @@ vector, not a 2×2 matrix.
     8 | PRINT MDIAG({1, 2; 3, 4}).
       |             ^~~~~~~~~~~~
 
+MEAN({1, 2; 3, 4; 5, 6})
+  3  4
+
 MMAX({55, 44; 66, 11})
   66
 
@@ -2155,9 +2160,9 @@ MOD({-5, -4, -3, -2, -1, 0}, -3)
 MOD({5, 4, 3, 2, 1, 0}, 1.5)
     .5   1.0    .0    .5   1.0    .0
 
-matrix.sps:19.7-19.32: error: MATRIX: Argument 2 to matrix function MOD must
+matrix.sps:21.7-21.32: error: MATRIX: Argument 2 to matrix function MOD must
 not be equal to 0.
-   19 | PRINT MOD({5, 4, 3, 2, 1, 0}, 0).
+   21 | PRINT MOD({5, 4, 3, 2, 1, 0}, 0).
       |       ^~~~~~~~~~~~~~~~~~~~~~~~~~
 ])
 AT_CLEANUP
