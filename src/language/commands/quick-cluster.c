@@ -281,6 +281,7 @@ kmeans_initial_centers (struct Kmeans *kmeans,
           if (var_is_value_missing (qc->vars[j], val) & qc->exclude)
             {
               missing = true;
+              case_unref (c);
               break;
             }
 
@@ -294,7 +295,10 @@ kmeans_initial_centers (struct Kmeans *kmeans,
         continue;
 
       if (!qc->initial)
-        break;
+        {
+          case_unref (c);
+          break;
+        }
 
       int mn, mm;
       double m = matrix_mindist (kmeans->centers, &mn, &mm);
