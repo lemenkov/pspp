@@ -7,7 +7,8 @@
 #
 # Cronologia traducerii fișierului „pspp”:
 # Traducerea inițială, făcută de R-GC, pentru versiunea pspp 2.0.1 (38% - tradus), iul-2025.
-# Traducerea inițială, făcută de R-GC, pentru versiunea pspp 2.1.0 (62% - tradus), sep-2026.
+# Completare traducere, făcută de R-GC, pentru versiunea pspp 2.1.0 (62% - tradus), sep-2026.
+# Completare traducere, făcută de R-GC, pentru versiunea pspp 2.1.0 (72% - tradus), noi-2026.
 # Completare traducere, făcută de X, pentru versiunea Y, (?% - tradus), Z(luna-anul).
 # Actualizare a traducerii pentru versiunea Y, făcută de X, Z(luna-anul).
 #
@@ -16,7 +17,7 @@ msgstr ""
 "Project-Id-Version: pspp 2.1.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2026-03-04 10:01-0800\n"
-"PO-Revision-Date: 2026-09-23 02:01+0200\n"
+"PO-Revision-Date: 2026-11-03 00:33+0100\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
 "Language: ro\n"
@@ -6961,27 +6962,27 @@ msgstr "Ultima"
 
 #: src/language/commands/means-calc.c:458
 msgid "Percent N"
-msgstr ""
+msgstr "Procent din N"
 
 #: src/language/commands/means-calc.c:459
 msgid "Percent Sum"
-msgstr ""
+msgstr "Procent din sumă"
 
 #: src/language/commands/means-calc.c:461
 msgid "Harmonic Mean"
-msgstr ""
+msgstr "Media armonică"
 
 #: src/language/commands/means-calc.c:462
 msgid "Geom. Mean"
-msgstr ""
+msgstr "Media geometrică"
 
 #: src/language/commands/means.c:703
 msgid "Included"
-msgstr ""
+msgstr "Inclus"
 
 #: src/language/commands/means.c:705 src/language/commands/reliability.c:495
 msgid "Excluded"
-msgstr ""
+msgstr "Exclus"
 
 #: src/language/commands/means.c:754
 msgid "Report"
@@ -6990,128 +6991,128 @@ msgstr "Raport"
 #: src/language/commands/means.c:837
 #, c-format
 msgid "The table \"%s\" has no non-empty control variables.  No result for this table will be displayed."
-msgstr ""
+msgstr "Tabelul „%s” nu are nicio variabilă de control nevidă. Nu va fi afișat niciun rezultat pentru acest tabel."
 
 #: src/language/commands/median.c:316
 msgid "> Median"
-msgstr ""
+msgstr "> Mediană"
 
 #: src/language/commands/median.c:316
 msgid "≤ Median"
-msgstr ""
+msgstr "≤ Mediană"
 
 #: src/language/commands/missing-values.c:83
 msgid "Too many numeric missing values.  At most three individual values or one value and one range are allowed."
-msgstr ""
+msgstr "Prea multe valori numerice lipsă. Sunt permise cel mult trei valori individuale sau o valoare individuală și un interval."
 
 #: src/language/commands/missing-values.c:109
 #, c-format
 msgid "Truncating missing value to maximum acceptable length (%d bytes)."
-msgstr ""
+msgstr "Se trunchiază valoarea lipsă la lungimea maximă acceptată (%d octeți)."
 
 #: src/language/commands/missing-values.c:122
 msgid "Too many string missing values.  At most three individual values are allowed."
-msgstr ""
+msgstr "Prea multe valori lipsă de tip șir. Sunt permise cel mult trei valori individuale."
 
 #: src/language/commands/missing-values.c:147
 #, c-format
 msgid "Cannot assign string missing values to numeric variable %s."
-msgstr ""
+msgstr "Nu se pot atribui valori lipsă de tip șir variabilei numerice %s."
 
 #: src/language/commands/missing-values.c:151
 #, c-format
 msgid "Missing values are too long to assign to variable %s with width %d."
-msgstr ""
+msgstr "Valorile lipsă sunt prea lungi pentru a fi atribuite variabilei %s cu lățimea %d."
 
 #: src/language/commands/mrsets.c:132
 msgid "At least two variables are required."
-msgstr ""
+msgstr "Sunt necesare cel puțin două variabile."
 
 #: src/language/commands/mrsets.c:167
 msgid "Numeric VALUE must be an integer."
-msgstr ""
+msgstr "Valoarea numerică VALUE, trebuie să fie un număr întreg."
 
 #: src/language/commands/mrsets.c:197
 msgid "Syntax error expecting integer or string."
-msgstr ""
+msgstr "Eroare de sintaxă; se aștepta un număr întreg sau un șir de caractere."
 
 #: src/language/commands/mrsets.c:250
 msgid "VARIABLES and VALUE must have the same type."
-msgstr ""
+msgstr "VARIABLES și VALUE trebuie să fie de același tip."
 
 #: src/language/commands/mrsets.c:253
 msgid "These are string variables."
-msgstr ""
+msgstr "Acestea sunt variabile de tip șir de caractere."
 
 #: src/language/commands/mrsets.c:256
 msgid "These are numeric variables."
-msgstr ""
+msgstr "Acestea sunt variabile numerice."
 
 #: src/language/commands/mrsets.c:259
 msgid "This is a string value."
-msgstr ""
+msgstr "Aceasta este o valoare de tip șir de caractere."
 
 #: src/language/commands/mrsets.c:262
 msgid "This is a numeric value."
-msgstr ""
+msgstr "Aceasta este o valoare numerică."
 
 #: src/language/commands/mrsets.c:281
 msgid "The VALUE string must be no longer than the narrowest variable in the group."
-msgstr ""
+msgstr "Șirul VALUE nu trebuie să fie mai lung decât variabila cu lățimea cea mai mică(scurtă) din grup."
 
 #: src/language/commands/mrsets.c:284
 #, c-format
 msgid "The VALUE string is %d bytes long."
-msgstr ""
+msgstr "Șirul VALUE are lungimea de %d octeți."
 
 #: src/language/commands/mrsets.c:287
 #, c-format
 msgid "Variable %s has a width of %d bytes."
-msgstr ""
+msgstr "Variabila %s are lungimea de %d octeți."
 
 #: src/language/commands/mrsets.c:298
 #, c-format
 msgid "MDGROUP subcommand for group %s specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE."
-msgstr ""
+msgstr "Subcomanda MDGROUP pentru grupul %s specifică LABELSOURCE=VARLABEL, dar nu și CATEGORYLABELS=COUNTEDVALUES. Se ignoră LABELSOURCE."
 
 #: src/language/commands/mrsets.c:305
 #, c-format
 msgid "MDGROUP subcommand for group %s specifies both LABEL and LABELSOURCE, but only one of these subcommands may be used at a time.  Ignoring LABELSOURCE."
-msgstr ""
+msgstr "Subcomanda MDGROUP pentru grupul %s specifică atât LABEL, cât și LABELSOURCE, însă numai una dintre aceste subcomenzi poate fi utilizată la un moment dat. Se ignoră LABELSOURCE."
 
 #: src/language/commands/mrsets.c:311 src/language/commands/mrsets.c:313
 #, c-format
 msgid "Here is the %s setting."
-msgstr ""
+msgstr "Iată configurarea %s."
 
 #: src/language/commands/mrsets.c:350
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s have the same variable label.  Categories represented by these variables will not be distinguishable in output."
-msgstr ""
+msgstr "Variabilele %s și %s, specificate ca parte a grupului de dicotomii multiple %s, au aceeași etichetă de variabilă. Categoriile reprezentate de aceste variabile nu vor putea fi diferențiate în rezultatele afișate."
 
 #: src/language/commands/mrsets.c:376
 #, c-format
 msgid "Variable %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output."
-msgstr ""
+msgstr "Variabila %s, specificată ca parte a grupului de dicotomii multiple %s (care are CATEGORYLABELS=COUNTEDVALUES), nu are o etichetă de valoare pentru valoarea sa numărată. Această categorie nu va putea fi diferențiată în rezultatele afișate."
 
 #: src/language/commands/mrsets.c:390
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output."
-msgstr ""
+msgstr "Variabilele %s și %s, specificate ca parte a grupului de dicotomii multiple %s (care are CATEGORYLABELS=COUNTEDVALUES), au aceeași etichetă de valoare pentru valoarea calculată a grupului. Aceste categorii nu vor putea fi diferențiate în rezultatele afișate."
 
 #: src/language/commands/mrsets.c:447
 #, c-format
 msgid "Variables specified on MCGROUP should have the same categories, but %s and %s (and possibly others) in multiple category group %s have different value labels for value %s."
-msgstr ""
+msgstr "Variabilele specificate în MCGROUP ar trebui să aibă aceleași categorii, însă variabilele %s și %s (și posibil altele) din grupul de categorii multiple %s au etichete de valoare diferite pentru valoarea %s."
 
 #: src/language/commands/mrsets.c:507
 #, c-format
 msgid "No multiple response set named %s."
-msgstr ""
+msgstr "Nu a fost găsit niciun set de răspunsuri multiple numit %s."
 
 #: src/language/commands/mrsets.c:561
 msgid "The active dataset dictionary does not contain any multiple response sets."
-msgstr ""
+msgstr "Dicționarul setului de date activ nu conține niciun set de răspunsuri multiple."
 
 #: src/language/commands/mrsets.c:572 src/language/commands/sys-file-info.c:192
 #: src/language/commands/sys-file-info.c:296
@@ -7128,11 +7129,11 @@ msgstr "Codificarea"
 
 #: src/language/commands/mrsets.c:572
 msgid "Counted Value"
-msgstr ""
+msgstr "Valoarea calculată"
 
 #: src/language/commands/mrsets.c:572
 msgid "Member Variables"
-msgstr ""
+msgstr "Variabile membre"
 
 #: src/language/commands/mrsets.c:575 src/language/commands/sys-file-info.c:435
 #: src/language/commands/sys-file-info.c:573 src/ui/gui/psppire-var-info.c:44
@@ -7142,32 +7143,32 @@ msgstr "Nume"
 
 #: src/language/commands/mrsets.c:592
 msgid "Dichotomies"
-msgstr ""
+msgstr "Dicotomii"
 
 #: src/language/commands/npar.c:421
 #, c-format
 msgid "Syntax error expecting %s, %s, %s or a number."
-msgstr ""
+msgstr "Eroare de sintaxă; se aștepta %s, %s, %s sau un număr."
 
 #: src/language/commands/npar.c:584
 #, c-format
 msgid "%d expected values were given, but the specified range (%d-%d) requires exactly %d values."
-msgstr ""
+msgstr "Au fost furnizate %d valori așteptate, dar intervalul specificat (%d-%d) necesită exact %d valori."
 
 #: src/language/commands/npar.c:765 src/language/commands/t-test-parser.c:179
 #, c-format
 msgid "PAIRED was specified, but the number of variables preceding WITH (%zu) does not match the number following (%zu)."
-msgstr ""
+msgstr "A fost specificată opțiunea PAIRED, dar numărul de variabile care precedă WITH (%zu) nu corespunde numărului de variabile care îi urmează (%zu)."
 
 #: src/language/commands/numeric.c:71
 #, c-format
 msgid "Format type %s may not be used with a numeric variable."
-msgstr ""
+msgstr "Tipul de format %s nu poate fi utilizat cu o variabilă numerică."
 
 #: src/language/commands/numeric.c:90 src/language/commands/numeric.c:150
 #, c-format
 msgid "There is already a variable named %s."
-msgstr ""
+msgstr "Există deja o variabilă cu numele %s."
 
 #: src/language/commands/oneway.c:357
 msgid "LSD"
@@ -7179,38 +7180,38 @@ msgstr "HSD de Tukey"
 
 #: src/language/commands/oneway.c:359 src/ui/gui/oneway.ui:595
 msgid "Bonferroni"
-msgstr ""
+msgstr "Bonferroni"
 
 #: src/language/commands/oneway.c:360 src/ui/gui/oneway.ui:646
 msgid "Scheffé"
-msgstr ""
+msgstr "Scheffé"
 
 #: src/language/commands/oneway.c:361
 msgid "Games-Howell"
-msgstr ""
+msgstr "Games-Howell"
 
 #: src/language/commands/oneway.c:362 src/ui/gui/oneway.ui:663
 msgid "Šidák"
-msgstr ""
+msgstr "Šidák"
 
 #: src/language/commands/oneway.c:498
 msgid "Unknown post hoc analysis method."
-msgstr ""
+msgstr "Metodă necunoscută de analiză post hoc."
 
 #: src/language/commands/oneway.c:778
 #, c-format
 msgid "Dependent variable %s has no non-missing values.  No analysis for this variable will be done."
-msgstr ""
+msgstr "Variabila dependentă %s nu are nicio valoare care să nu fie lipsă. Nu va fi efectuată nicio analiză pentru această variabilă."
 
 #: src/language/commands/oneway.c:855
 #, c-format
 msgid "In contrast list %zu, the number of coefficients (%zu) does not equal the number of groups (%d). This contrast list will be ignored."
-msgstr ""
+msgstr "În lista de contraste %zu, numărul de coeficienți (%zu) nu este egal cu numărul de grupuri (%d). Această listă de contraste va fi ignorată."
 
 #: src/language/commands/oneway.c:867
 #, c-format
 msgid "Coefficients for contrast %zu do not total zero"
-msgstr ""
+msgstr "Coeficienții pentru contrastul %zu nu însumează zero"
 
 #: src/language/commands/oneway.c:900
 msgid "ANOVA"
@@ -7218,7 +7219,7 @@ msgstr "ANOVA"
 
 #: src/language/commands/oneway.c:903 src/language/commands/regression.c:926
 msgid "Sum of Squares"
-msgstr ""
+msgstr "Suma pătratelor"
 
 #: src/language/commands/oneway.c:909 src/language/commands/sys-file-info.c:227
 #: src/ui/gui/psppire-var-sheet-header.c:58 src/ui/gui/compute.ui:304
@@ -7227,35 +7228,35 @@ msgstr "Tip"
 
 #: src/language/commands/oneway.c:910
 msgid "Between Groups"
-msgstr ""
+msgstr "Dintre grupuri"
 
 #: src/language/commands/oneway.c:910
 msgid "Within Groups"
-msgstr ""
+msgstr "În cadrul grupurilor"
 
 #: src/language/commands/oneway.c:1004 src/language/commands/oneway.c:1186
 msgid "Dependent Variable"
-msgstr ""
+msgstr "Variabilă dependentă"
 
 #: src/language/commands/oneway.c:1077
 msgid "Test of Homogeneity of Variances"
-msgstr ""
+msgstr "Testul de omogenitate a varianțelor"
 
 #: src/language/commands/oneway.c:1080
 msgid "Levene Statistic"
-msgstr ""
+msgstr "Statistica Levene"
 
 #: src/language/commands/oneway.c:1081
 msgid "df1"
-msgstr ""
+msgstr "gl1 (grad de libertate 1)"
 
 #: src/language/commands/oneway.c:1082
 msgid "df2"
-msgstr ""
+msgstr "gl2 (grad de libertate 2)"
 
 #: src/language/commands/oneway.c:1121
 msgid "Contrast Coefficients"
-msgstr ""
+msgstr "Coeficienți de contrast"
 
 #: src/language/commands/oneway.c:1128 src/language/commands/oneway.c:1175
 msgid "Contrast"
@@ -7263,11 +7264,11 @@ msgstr "Contrast"
 
 #: src/language/commands/oneway.c:1165
 msgid "Contrast Tests"
-msgstr ""
+msgstr "Teste de contrast"
 
 #: src/language/commands/oneway.c:1168
 msgid "Value of Contrast"
-msgstr ""
+msgstr "Valoarea contrastului"
 
 #: src/language/commands/oneway.c:1170 src/language/commands/regression.c:807
 #: src/language/commands/t-test-indep.c:266
@@ -7278,37 +7279,37 @@ msgstr "t"
 
 #: src/language/commands/oneway.c:1181
 msgid "Assumption"
-msgstr ""
+msgstr "Presupunere"
 
 #: src/language/commands/oneway.c:1182
 msgid "Assume equal variances"
-msgstr ""
+msgstr "Se presupun varianțe egale"
 
 #: src/language/commands/oneway.c:1183
 msgid "Does not assume equal variances"
-msgstr ""
+msgstr "Nu se presupun varianțe egale"
 
 #: src/language/commands/oneway.c:1294
 #, c-format
 msgid "Multiple Comparisons (%s)"
-msgstr ""
+msgstr "Comparații multiple (%s)"
 
 #: src/language/commands/oneway.c:1300
 msgid "Mean Difference (I - J)"
-msgstr ""
+msgstr "Diferența mediilor (I - J)"
 
 #: src/language/commands/oneway.c:1305
 #, c-format
 msgid "%g%% Confidence Interval"
-msgstr ""
+msgstr "Interval de încredere de %g%%"
 
 #: src/language/commands/oneway.c:1312
 msgid "(J) Family"
-msgstr ""
+msgstr "(J) Familia"
 
 #: src/language/commands/oneway.c:1316
 msgid "(I) Family"
-msgstr ""
+msgstr "(I) Familia"
 
 #: src/language/commands/oneway.c:1332
 msgid "Test"
@@ -7317,137 +7318,137 @@ msgstr "Testare"
 #: src/language/commands/output.c:113
 #, c-format
 msgid "Unknown cell class %s."
-msgstr ""
+msgstr "Clasă de celule necunoscută: %s."
 
 #: src/language/commands/permissions.c:115
 #, c-format
 msgid "Cannot read permissions for %s: %s"
-msgstr ""
+msgstr "Nu au putut fi citite permisiunile pentru %s: %s."
 
 #: src/language/commands/permissions.c:129
 #, c-format
 msgid "Cannot change permissions for %s: %s"
-msgstr ""
+msgstr "Nu au putut fi modificate permisiunile pentru %s: %s."
 
 #: src/language/commands/placement-parser.c:96
 #, c-format
 msgid "Number of variables specified (%zu) differs from number of variable formats (%zu)."
-msgstr ""
+msgstr "Numărul de variabile specificate (%zu) diferă de numărul de formate de variabilă (%zu)."
 
 #: src/language/commands/placement-parser.c:106
 msgid "SPSS-like or Fortran-like format specification expected after variable names."
-msgstr ""
+msgstr "După numele variabilelor se așteaptă o specificație de format de tip SPSS sau Fortran."
 
 #: src/language/commands/placement-parser.c:129
 #, c-format
 msgid "The %d columns %d-%d can't be evenly divided into %zu fields."
-msgstr ""
+msgstr "Cele %d coloane (%d-%d) nu pot fi împărțite uniform în %zu câmpuri."
 
 #: src/language/commands/placement-parser.c:335
 msgid "Column positions for fields must be positive."
-msgstr ""
+msgstr "Pozițiile coloanelor pentru câmpuri trebuie să fie numere pozitive."
 
 #: src/language/commands/placement-parser.c:338
 msgid "Column positions for fields must not be negative."
-msgstr ""
+msgstr "Pozițiile coloanelor pentru câmpuri nu trebuie să fie numere negative."
 
 #: src/language/commands/placement-parser.c:391
 msgid "The ending column for a field must be greater than the starting column."
-msgstr ""
+msgstr "Coloana finală a unui câmp trebuie să fie mai mare decât coloana inițială."
 
 #: src/language/commands/print-space.c:137
 #, c-format
 msgid "The expression on %s evaluated to the system-missing value."
-msgstr ""
+msgstr "Expresia din %s a fost evaluată la valoarea lipsă de sistem."
 
 #: src/language/commands/print-space.c:141
 #, c-format
 msgid "The expression on %s evaluated to %g."
-msgstr ""
+msgstr "Expresia din %s a fost evaluată la %g."
 
 #: src/language/commands/print.c:214
 #, c-format
 msgid "%s is required when binary formats are specified."
-msgstr ""
+msgstr "%s este obligatoriu atunci când sunt specificate formate binare."
 
 #: src/language/commands/print.c:299
 #, c-format
 msgid "Output calls for %d records but %zu specified on RECORDS subcommand."
-msgstr ""
+msgstr "Rezultatul necesită %d înregistrări, dar în subcomanda RECORDS au fost specificate %zu."
 
 #: src/language/commands/print.c:448
 msgid "Print Summary"
-msgstr ""
+msgstr "Afișează rezumatul"
 
 #: src/language/commands/print.c:478
 msgid "N of Records"
-msgstr ""
+msgstr "Numărul de înregistrări"
 
 #: src/language/commands/quick-cluster.c:527
 msgid "Initial Cluster Centers"
-msgstr ""
+msgstr "Centrele inițiale ale grupurilor"
 
 #: src/language/commands/quick-cluster.c:528
 msgid "Final Cluster Centers"
-msgstr ""
+msgstr "Centrele finale ale grupurilor"
 
 #: src/language/commands/quick-cluster.c:531
 #: src/language/commands/quick-cluster.c:606
 #: src/language/commands/quick-cluster.c:607
 #: src/language/commands/quick-cluster.c:703
 msgid "Cluster"
-msgstr ""
+msgstr "Grup"
 
 #: src/language/commands/quick-cluster.c:604
 msgid "Cluster Membership"
-msgstr ""
+msgstr "Apartenența la grup"
 
 #: src/language/commands/quick-cluster.c:694
 msgid "Number of Cases in each Cluster"
-msgstr ""
+msgstr "Numărul de cazuri din fiecare grup"
 
 #: src/language/commands/quick-cluster.c:700
 msgid "Clusters"
-msgstr ""
+msgstr "Grupuri"
 
 #: src/language/commands/quick-cluster.c:808
 #: src/language/commands/quick-cluster.c:834
 #, c-format
 msgid "A variable called `%s' already exists."
-msgstr ""
+msgstr "Există deja o variabilă numită „%s”."
 
 #: src/language/commands/rank.c:213
 #, c-format
 msgid "Cannot generate variable name for ranking %s with %s.  All candidates in use."
-msgstr ""
+msgstr "Nu s-a putut genera un nume de variabilă pentru clasarea %s cu %s. Toate numele posibile sunt deja folosite."
 
 #: src/language/commands/rank.c:316
 #, c-format
 msgid "Too many variables in %s clause."
-msgstr ""
+msgstr "Există prea multe variabile în clauza %s."
 
 #: src/language/commands/rank.c:318
 #, c-format
 msgid "Variable %s already exists."
-msgstr ""
+msgstr "Variabila %s există deja."
 
 #: src/language/commands/rank.c:320 src/language/expressions/evaluate.c:193
 #, c-format
 msgid "Duplicate variable name %s."
-msgstr ""
+msgstr "Numele variabilei %s este duplicat."
 
 #: src/language/commands/rank.c:608
 #, c-format
 msgid "%s of %s by %s"
-msgstr ""
+msgstr "%s din %s după %s"
 
 #: src/language/commands/rank.c:758
 msgid "Variables Created by RANK"
-msgstr ""
+msgstr "Variabile create de RANK"
 
 #: src/language/commands/rank.c:760 src/language/commands/rank.c:761
 msgid "New Variable"
-msgstr ""
+msgstr "Variabilă nouă"
 
 #: src/language/commands/rank.c:761
 msgid "Function"
@@ -7455,128 +7456,128 @@ msgstr "Funcție"
 
 #: src/language/commands/rank.c:762
 msgid "Fraction"
-msgstr ""
+msgstr "Fracție"
 
 #: src/language/commands/rank.c:762
 msgid "Grouping Variables"
-msgstr ""
+msgstr "Variabile de grupare"
 
 #: src/language/commands/rank.c:765 src/language/commands/rank.c:766
 msgid "Existing Variable"
-msgstr ""
+msgstr "Variabilă existentă"
 
 #: src/language/commands/recode.c:293
 msgid "CONVERT requires string input values."
-msgstr ""
+msgstr "CONVERT necesită ca valorile de intrare să fie de tip șir."
 
 #: src/language/commands/recode.c:299
 msgid "Output values must be all numeric or all string."
-msgstr ""
+msgstr "Valorile de ieșire trebuie să fie toate numerice sau toate de tip șir."
 
 #: src/language/commands/recode.c:313
 msgid "This output value is numeric."
-msgstr ""
+msgstr "Această valoare de ieșire este numerică."
 
 #: src/language/commands/recode.c:315
 msgid "This output value is string."
-msgstr ""
+msgstr "Această valoare de ieșire este de tip șir."
 
 #: src/language/commands/recode.c:374
 #, c-format
 msgid "%s is not allowed with string variables."
-msgstr ""
+msgstr "%s nu este permisă cu variabile de tip șir."
 
 #: src/language/commands/recode.c:439
 msgid "Syntax error expecting output value."
-msgstr ""
+msgstr "Eroare de sintaxă: se așteaptă o valoare de ieșire."
 
 #: src/language/commands/recode.c:487
 msgid "Source and target variable counts must match."
-msgstr ""
+msgstr "Numărul variabilelor sursă și al celor țintă trebuie să coincidă."
 
 #: src/language/commands/recode.c:489
 #, c-format
 msgid "There is %zu source variable."
 msgid_plural "There are %zu source variables."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Există %zu variabilă sursă."
+msgstr[1] "Există %zu variabile sursă."
+msgstr[2] "Există %zu de variabile sursă."
 
 #: src/language/commands/recode.c:494
 #, c-format
 msgid "There is %zu target variable."
 msgid_plural "There are %zu target variables."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Există %zu variabilă țintă."
+msgstr[1] "Există %zu variabile țintă."
+msgstr[2] "Există %zu de variabile țintă."
 
 #: src/language/commands/recode.c:509
 msgid "All string variables specified on INTO must already exist.  (Use the STRING command to create a string variable.)"
-msgstr ""
+msgstr "Toate variabilele de tip șir specificate în INTO trebuie să existe deja; (utilizați comanda STRING pentru a crea o variabilă de tip șir)."
 
 #: src/language/commands/recode.c:513
 #, c-format
 msgid "There is no variable named %s."
-msgstr ""
+msgstr "Nu există nicio variabilă cu numele %s."
 
 #: src/language/commands/recode.c:529
 msgid "INTO is required with numeric input values and string output values."
-msgstr ""
+msgstr "INTO este necesară în cazul valorilor de intrare numerice și al valorilor de ieșire de tip șir."
 
 #: src/language/commands/recode.c:533
 msgid "INTO is required with string input values and numeric output values."
-msgstr ""
+msgstr "INTO este necesară în cazul valorilor de intrare de tip șir și al valorilor de ieșire numerice."
 
 #: src/language/commands/recode.c:546
 #, c-format
 msgid "Type mismatch: cannot store string data in numeric variable %s."
-msgstr ""
+msgstr "Nepotrivire de tip: nu se pot stoca date de tip șir în variabila numerică %s."
 
 #: src/language/commands/recode.c:550
 #, c-format
 msgid "Type mismatch: cannot store numeric data in string variable %s."
-msgstr ""
+msgstr "Nepotrivire de tip: nu se pot stoca date numerice în variabila de tip șir %s."
 
 #: src/language/commands/recode.c:589
 msgid "At least one target variable is too narrow for the output values."
-msgstr ""
+msgstr "Cel puțin o variabilă țintă are o lățime prea mică pentru valorile de ieșire."
 
 #: src/language/commands/recode.c:592
 #, c-format
 msgid "This output value has width %d."
-msgstr ""
+msgstr "Această valoare de ieșire are lățimea %d."
 
 #: src/language/commands/recode.c:595
 #, c-format
 msgid "Target variable %s only has width %d."
-msgstr ""
+msgstr "Variabila țintă %s are o lățime de doar %d."
 
 #: src/language/commands/regression.c:213
 #: src/language/commands/regression.c:219
 #, c-format
 msgid "VARIABLES may not appear after %s"
-msgstr ""
+msgstr "VARIABLES nu poate apărea după %s"
 
 #: src/language/commands/regression.c:379
 msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr ""
+msgstr "REGRESSION cu SAVE ignoră TEMPORARY. Transformările temporare vor deveni permanente."
 
 #: src/language/commands/regression.c:384
 msgid "REGRESSION with SAVE ignores FILTER.  All cases will be processed."
-msgstr ""
+msgstr "REGRESSION cu SAVE ignoră FILTER. Vor fi procesate toate cazurile."
 
 #: src/language/commands/regression.c:506
 msgid "The dependent variable is equal to the independent variable. The least squares line is therefore Y=X. Standard errors and related statistics may be meaningless."
-msgstr ""
+msgstr "Variabila dependentă este egală cu variabila independentă. Prin urmare, linia celor mai mici pătrate este Y = X. Erorile standard și statisticile aferente pot fi lipsite de semnificație."
 
 #: src/language/commands/regression.c:683
 msgid "No valid data found. This command was skipped."
-msgstr ""
+msgstr "Nu s-au găsit date valide. Această comandă a fost omisă."
 
 #: src/language/commands/regression.c:765
 #, c-format
 msgid "Model Summary (%s)"
-msgstr ""
+msgstr "Sumarul modelului (%s)"
 
 #: src/language/commands/regression.c:770
 #: src/ui/gui/psppire-dialog-action-regression.c:42
@@ -7585,53 +7586,53 @@ msgstr "R"
 
 #: src/language/commands/regression.c:770
 msgid "R Square"
-msgstr ""
+msgstr "R-pătrat"
 
 #: src/language/commands/regression.c:770
 msgid "Adjusted R Square"
-msgstr ""
+msgstr "R-pătrat ajustat"
 
 #: src/language/commands/regression.c:771
 msgid "Std. Error of the Estimate"
-msgstr ""
+msgstr "Eroarea standard a estimări"
 
 #: src/language/commands/regression.c:797
 #, c-format
 msgid "Coefficients (%s)"
-msgstr ""
+msgstr "Coeficienți (%s)"
 
 #: src/language/commands/regression.c:803
 msgid "Unstandardized Coefficients"
-msgstr ""
+msgstr "Coeficienți nestandardizați"
 
 #: src/language/commands/regression.c:806
 msgid "Standardized Coefficients"
-msgstr ""
+msgstr "Coeficienți standardizați"
 
 #: src/language/commands/regression.c:806
 msgid "Beta"
-msgstr ""
+msgstr "Beta"
 
 #: src/language/commands/regression.c:813
 #, c-format
 msgid "%g%% Confidence Interval for B"
-msgstr ""
+msgstr "Interval de încredere %g%% pentru B"
 
 #: src/language/commands/regression.c:821
 msgid "Collinearity Statistics"
-msgstr ""
+msgstr "Statistici de coliniaritate"
 
 #: src/language/commands/regression.c:822
 msgid "Tolerance"
-msgstr ""
+msgstr "Toleranța"
 
 #: src/language/commands/regression.c:822
 msgid "VIF"
-msgstr ""
+msgstr "VIF"
 
 #: src/language/commands/regression.c:835
 msgid "(Constant)"
-msgstr ""
+msgstr "(Constantă)"
 
 #: src/language/commands/regression.c:922
 #, c-format
@@ -7641,7 +7642,7 @@ msgstr "ANOVA (%s)"
 #: src/language/commands/regression.c:977
 #, c-format
 msgid "Coefficient Correlations (%s)"
-msgstr ""
+msgstr "Corelații între coeficienți (%s)"
 
 #: src/language/commands/regression.c:984
 msgid "Models"
@@ -7649,27 +7650,27 @@ msgstr "Modele"
 
 #: src/language/commands/regression.c:992
 msgid "Covariances"
-msgstr ""
+msgstr "Covarianțe"
 
 #: src/language/commands/reliability.c:152
 msgid "Reliability on a single variable is not useful."
-msgstr ""
+msgstr "Fiabilitatea bazată pe o singură variabilă nu este utilă."
 
 #: src/language/commands/reliability.c:260
 msgid "The STATISTICS subcommand is not yet implemented.  No statistics will be produced."
-msgstr ""
+msgstr "Subcomanda STATISTICS nu este încă implementată; nu se va genera nicio statistică."
 
 #: src/language/commands/reliability.c:276
 msgid "The split point must be less than the number of variables."
-msgstr ""
+msgstr "Punctul de divizare trebuie să fie mai mic decât numărul de variabile."
 
 #: src/language/commands/reliability.c:279
 #, c-format
 msgid "There is %zu variable."
 msgid_plural "There are %zu variables."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Există %zu variabilă."
+msgstr[1] "Există %zu variabile."
+msgstr[2] "Există %zu de variabile."
 
 #: src/language/commands/reliability.c:476
 #, c-format
@@ -7678,184 +7679,184 @@ msgstr "Scala: %s"
 
 #: src/language/commands/reliability.c:529
 msgid "Item-Total Statistics"
-msgstr ""
+msgstr "Statistici item-total"
 
 #: src/language/commands/reliability.c:532
 msgid "Scale Mean if Item Deleted"
-msgstr ""
+msgstr "Media scalei dacă itemul este șters"
 
 #: src/language/commands/reliability.c:533
 msgid "Scale Variance if Item Deleted"
-msgstr ""
+msgstr "Varianța scalei dacă itemul este șters"
 
 #: src/language/commands/reliability.c:534
 msgid "Corrected Item-Total Correlation"
-msgstr ""
+msgstr "Corelația item-total corectată"
 
 #: src/language/commands/reliability.c:535
 msgid "Cronbach's Alpha if Item Deleted"
-msgstr ""
+msgstr "Alpha de Cronbach dacă itemul este șters"
 
 #: src/language/commands/reliability.c:574
 msgid "Reliability Statistics"
-msgstr ""
+msgstr "Statistici de fiabilitate"
 
 #: src/language/commands/reliability.c:581
 #: src/language/commands/reliability.c:593
 msgid "Cronbach's Alpha"
-msgstr ""
+msgstr "Alpha de Cronbach"
 
 #: src/language/commands/reliability.c:582
 #: src/language/commands/reliability.c:596
 #: src/language/commands/reliability.c:599
 msgid "N of Items"
-msgstr ""
+msgstr "Număr de itemi"
 
 #: src/language/commands/reliability.c:594
 msgid "Part 1"
-msgstr ""
+msgstr "Partea 1"
 
 #: src/language/commands/reliability.c:597
 msgid "Part 2"
-msgstr ""
+msgstr "Partea 2"
 
 #: src/language/commands/reliability.c:601
 msgid "Total N of Items"
-msgstr ""
+msgstr "Nr. total de itemi"
 
 #: src/language/commands/reliability.c:603
 msgid "Correlation Between Forms"
-msgstr ""
+msgstr "Corelația dintre forme"
 
 #: src/language/commands/reliability.c:606
 msgid "Spearman-Brown Coefficient"
-msgstr ""
+msgstr "Coeficient Spearman-Brown”"
 
 #: src/language/commands/reliability.c:607
 msgid "Equal Length"
-msgstr ""
+msgstr "Lungime egală"
 
 #: src/language/commands/reliability.c:608
 msgid "Unequal Length"
-msgstr ""
+msgstr "Lungime inegală"
 
 #: src/language/commands/reliability.c:610
 msgid "Guttman Split-Half Coefficient"
-msgstr ""
+msgstr "Coeficientul de înjumătățire Guttman"
 
 #: src/language/commands/rename-variables.c:50
 #, c-format
 msgid "%s may not be used after %s.  Temporary transformations will be made permanent."
-msgstr ""
+msgstr "%s nu poate fi utilizat după %s; transformările temporare vor deveni permanente."
 
 #: src/language/commands/rename-variables.c:79
 #, c-format
 msgid "Differing number of variables in old name list (%zu) and in new name list (%zu)."
-msgstr ""
+msgstr "Număr diferit de variabile între vechea listă de nume (%zu) și noua listă de nume (%zu)."
 
 #: src/language/commands/rename-variables.c:101
 #, c-format
 msgid "Variable %s is of class %s, but renaming it to %s would make it of class %s."
-msgstr ""
+msgstr "Variabila %s este de clasa %s, dar redenumirea acesteia în %s ar face-o să fie de clasa %s."
 
 #: src/language/commands/rename-variables.c:116
 #, c-format
 msgid "Renaming would duplicate variable name %s."
-msgstr ""
+msgstr "Redenumirea ar duce la duplicarea numelui de variabilă %s."
 
 #: src/language/commands/repeat.c:108
 #, c-format
 msgid "Dummy variable name `%s' hides dictionary variable `%s'."
-msgstr ""
+msgstr "Numele variabilei fictive „%s” ascunde variabila din dicționar „%s”."
 
 #: src/language/commands/repeat.c:112
 #, c-format
 msgid "Dummy variable name `%s' is given twice."
-msgstr ""
+msgstr "Numele variabilei fictive „%s” este specificat de două ori."
 
 #: src/language/commands/repeat.c:140
 msgid "Syntax error expecting substitution values."
-msgstr ""
+msgstr "Eroare de sintaxă, se așteptau valorile de substituire."
 
 #: src/language/commands/repeat.c:148
 msgid "Syntax error expecting `/' or end of command."
-msgstr ""
+msgstr "Eroare de sintaxă: se aștepta „/” sau sfârșitul comenzii."
 
 #: src/language/commands/repeat.c:159
 msgid "Each dummy variable must have the same number of substitutions."
-msgstr ""
+msgstr "Fiecare variabilă fictivă trebuie să aibă același număr de substituiri."
 
 #: src/language/commands/repeat.c:163 src/language/commands/repeat.c:168
 #, c-format
 msgid "Dummy variable %s had %zu substitution."
 msgid_plural "Dummy variable %s had %zu substitutions."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Variabila fictivă %s a avut %zu substituire."
+msgstr[1] "Variabila fictivă %s a avut %zu substituiri."
+msgstr[2] "Variabila fictivă %s a avut %zu de substituiri."
 
 #: src/language/commands/repeat.c:274
 msgid "Syntax error expecting END REPEAT."
-msgstr ""
+msgstr "Eroare de sintaxă, se aștepta END REPEAT."
 
 #: src/language/commands/repeat.c:285
 #, c-format
 msgid "Expansion %zu of %zu"
-msgstr ""
+msgstr "Expandarea %zu din %zu"
 
 #: src/language/commands/repeat.c:359
 msgid "Ranges may only have integer bounds."
-msgstr ""
+msgstr "Intervalele pot avea ca limite doar numere întregi."
 
 #: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
-msgstr ""
+msgstr "%ld TO %ld este un interval nevalid."
 
 #: src/language/commands/repeat.c:422
 #, c-format
 msgid "No matching %s."
-msgstr ""
+msgstr "Nu există nicio potrivire pentru %s."
 
 #: src/language/commands/roc.c:862
 msgid "Area Under the Curve"
-msgstr ""
+msgstr "Aria de sub curbă"
 
 #: src/language/commands/roc.c:866
 msgid "Area"
-msgstr "Zona"
+msgstr "Aria"
 
 #: src/language/commands/roc.c:872
 msgid "Asymptotic Sig."
-msgstr ""
+msgstr "Semnif. asimptotică"
 
 #: src/language/commands/roc.c:875
 #, c-format
 msgid "Asymp. %g%% Confidence Interval"
-msgstr ""
+msgstr "Interval de încredere asimptotic %g%%”"
 
 #: src/language/commands/roc.c:883
 msgid "Variable under test"
-msgstr ""
+msgstr "Variabilă testată"
 
 #: src/language/commands/roc.c:921
 msgid "Case Summary"
-msgstr ""
+msgstr "Rezumatul cazurilor"
 
 #: src/language/commands/roc.c:925
 msgid "Unweighted"
-msgstr ""
+msgstr "Neponderat"
 
 #: src/language/commands/roc.c:926
 msgid "Weighted"
-msgstr ""
+msgstr "Ponderat"
 
 #: src/language/commands/roc.c:959
 msgid "Coordinates of the Curve"
-msgstr ""
+msgstr "Coordonatele curbei"
 
 #: src/language/commands/roc.c:962
 msgid "Positive if greater than or equal to"
-msgstr ""
+msgstr "Pozitivă dacă este mai mare sau egală cu"
 
 #: src/language/commands/roc.c:963 src/output/charts/roc-chart-cairo.c:38
 msgid "Sensitivity"
@@ -7863,7 +7864,7 @@ msgstr "Sensibilitate"
 
 #: src/language/commands/roc.c:963 src/output/charts/roc-chart-cairo.c:37
 msgid "1 - Specificity"
-msgstr ""
+msgstr "1 - Specificitate"
 
 #: src/language/commands/roc.c:966
 msgid "Coordinates"
@@ -7871,129 +7872,128 @@ msgstr "Coordonate"
 
 #: src/language/commands/roc.c:970
 msgid "Test variable"
-msgstr ""
+msgstr "Variabilă de testare"
 
 #: src/language/commands/runs.c:169
 #, c-format
 msgid "Multiple modes exist for variable `%s'.  Using %.*g as the threshold value."
-msgstr ""
+msgstr "Există moduri multiple pentru variabila „%s”. Se utilizează %.*g ca valoare de prag."
 
 #: src/language/commands/runs.c:314 src/ui/gui/runs.ui:24
 msgid "Runs Test"
-msgstr ""
+msgstr "Testul seriilor"
 
 #: src/language/commands/runs.c:319
 msgid "Test Value"
-msgstr ""
+msgstr "Valoare de test"
 
 #: src/language/commands/runs.c:320
 msgid "Test Value (mode)"
-msgstr ""
+msgstr "Valoare de test (mod)"
 
 #: src/language/commands/runs.c:321
 msgid "Test Value (mean)"
-msgstr ""
+msgstr "Valoare de test (medie)"
 
 #: src/language/commands/runs.c:322
 msgid "Test Value (median)"
-msgstr ""
+msgstr "Valoare de test (mediană)"
 
 #: src/language/commands/runs.c:323
 msgid "Cases < Test Value"
-msgstr ""
+msgstr "Cazuri < valoarea de test"
 
 #: src/language/commands/runs.c:324
 msgid "Cases ≥ Test Value"
-msgstr ""
+msgstr "Cazuri ≥ valoarea de test"
 
 #: src/language/commands/runs.c:325
 msgid "Total Cases"
-msgstr ""
+msgstr "Total cazuri"
 
 #: src/language/commands/runs.c:326
 msgid "Number of Runs"
-msgstr ""
+msgstr "Număr de serii"
 
 #: src/language/commands/save-translate.c:149
 #: src/language/commands/save-translate.c:164
 #, c-format
 msgid "The %s string must contain exactly one character."
-msgstr ""
+msgstr "Șirul %s trebuie să conțină exact un caracter."
 
 #: src/language/commands/save-translate.c:237
 #, c-format
 msgid "Output file `%s' exists but %s was not specified."
-msgstr ""
+msgstr "Fișierul de ieșire „%s” există, dar %s nu a fost specificat."
 
 #: src/language/commands/save.c:308
 msgid "The OUTFILE or METADATA subcommand is required."
-msgstr ""
+msgstr "Este necesară subcomanda OUTFILE sau METADATA."
 
 #: src/language/commands/select-if.c:112
 msgid "The filter variable must be numeric."
-msgstr ""
+msgstr "Variabila de filtrare trebuie să fie numerică."
 
 #: src/language/commands/select-if.c:119
 msgid "The filter variable may not be scratch."
-msgstr ""
+msgstr "Variabila de filtrare nu poate fi una temporară."
 
 #: src/language/commands/set.c:264
 msgid "ISL (32-bit IEEE 754 single, little-endian)"
-msgstr ""
+msgstr "ISL (IEEE 754 cu precizie simplă pe 32 de biți, little-endian)"
 
 #: src/language/commands/set.c:267
 msgid "ISB (32-bit IEEE 754 single, big-endian)"
-msgstr ""
+msgstr "ISB (IEEE 754 cu precizie simplă pe 32 de biți, big-endian)"
 
 #: src/language/commands/set.c:270
 msgid "IDL (64-bit IEEE 754 double, little-endian)"
-msgstr ""
+msgstr "IDL (IEEE 754 cu precizie dublă pe 64 de biți, little-endian)"
 
 #: src/language/commands/set.c:273
 msgid "IDB (64-bit IEEE 754 double, big-endian)"
-msgstr ""
+msgstr "IDB (IEEE 754 cu precizie dublă pe 64 de biți, big-endian)"
 
 #: src/language/commands/set.c:277
 msgid "VF (32-bit VAX F, VAX-endian)"
-msgstr ""
+msgstr "VF (VAX F pe 32 de biți, VAX-endian)"
 
 #: src/language/commands/set.c:280
 msgid "VD (64-bit VAX D, VAX-endian)"
-msgstr ""
+msgstr "VD (VAX D pe 64 de biți, VAX-endian)"
 
 #: src/language/commands/set.c:283
 msgid "VG (64-bit VAX G, VAX-endian)"
-msgstr ""
+msgstr "VG (VAX G pe 64 de biți, VAX-endian)"
 
 #: src/language/commands/set.c:287
 msgid "ZS (32-bit IBM Z hexadecimal short, big-endian)"
-msgstr ""
+msgstr "ZS (IBM Z hexazecimal scurt pe 32 de biți, big-endian)"
 
 #: src/language/commands/set.c:290
 msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
-msgstr ""
+msgstr "ZL (IBM Z hexazecimal lung pe 64 de biți, big-endian)"
 
 #: src/language/commands/set.c:502
 #, c-format
 msgid "Syntax error expecting %s or year."
-msgstr ""
+msgstr "Eroare de sintaxă, se aștepta %s sau an."
 
 #: src/language/commands/set.c:549
 #, c-format
 msgid "%s requires numeric output format as an argument.  Specified format %s is of type string."
-msgstr ""
+msgstr "%s necesită un format de ieșire numeric ca argument. Formatul specificat %s este de tip șir."
 
 #: src/language/commands/set.c:623
 msgid "Syntax error expecting ON or OFF or a file name."
-msgstr ""
+msgstr "Eroare de sintaxă, se aștepta ON, OFF sau un nume de fișier."
 
 #: src/language/commands/set.c:696
 #, c-format
 msgid "%s is not a recognized encoding or locale name"
-msgstr ""
+msgstr "%s nu este un nume de codificare sau de configurare regională recunoscut"
 
 #: src/language/commands/set.c:1251
-#, fuzzy
 msgid "Settings"
 msgstr "Opțiuni"
 
@@ -8011,71 +8011,71 @@ msgstr "Versiunea"
 
 #: src/language/commands/set.c:1294
 msgid "Host System"
-msgstr ""
+msgstr "Sistem gazdă"
 
 #: src/language/commands/set.c:1295
 msgid "Build System"
-msgstr ""
+msgstr "Sistem de compilare"
 
 #: src/language/commands/set.c:1298
 msgid "Locale Directory"
-msgstr ""
+msgstr "Director de configurări regionale"
 
 #: src/language/commands/set.c:1301 src/ui/gui/options.ui:401
 msgid "Journal File"
-msgstr ""
+msgstr "Fișier jurnal"
 
 #: src/language/commands/set.c:1303
 msgid "Compiler Version"
-msgstr ""
+msgstr "Versiune compilator"
 
 #: src/language/commands/set.c:1381 src/language/commands/set.c:1493
 #: src/language/commands/set.c:1500
 msgid "Syntax error expecting the name of a setting."
-msgstr ""
+msgstr "Eroare de sintaxă, se aștepta numele unei opțiuni."
 
 #: src/language/commands/set.c:1423
 msgid "Environment Variables"
-msgstr ""
+msgstr "Variabile de mediu"
 
 #: src/language/commands/set.c:1542
 #, c-format
 msgid "Too many %s commands without a %s: at most %d levels of saved settings are allowed."
-msgstr ""
+msgstr "Prea multe comenzi %s fără o %s: sunt permise cel mult %d niveluri de opțiuni salvate."
 
 #: src/language/commands/set.c:1565
 #, c-format
 msgid "%s without matching %s."
-msgstr ""
+msgstr "%s fără un/o %s corespondent(ă)."
 
 #: src/language/commands/sign.c:72
 msgid "Differences"
-msgstr ""
+msgstr "Diferențe"
 
 #: src/language/commands/sign.c:73
 msgid "Negative Differences"
-msgstr ""
+msgstr "Diferențe negative"
 
 #: src/language/commands/sign.c:74
 msgid "Positive Differences"
-msgstr ""
+msgstr "Diferențe pozitive"
 
 #: src/language/commands/sign.c:75 src/language/commands/wilcoxon.c:239
 msgid "Ties"
-msgstr ""
+msgstr "Valori egale"
 
 #: src/language/commands/sort-criteria.c:90
 #, c-format
 msgid "Variable %s specified twice in sort criteria."
-msgstr ""
+msgstr "Variabila %s a fost specificată de două ori în criteriile de sortare."
 
 #: src/language/commands/split-file.c:68
 msgid "At most 8 split variables may be specified."
-msgstr ""
+msgstr "Pot fi specificate cel mult 8 variabile de segmentare."
 
 #: src/language/commands/sys-file-info.c:185
 msgid "File Information"
-msgstr ""
+msgstr "Informații despre fișier"
 
 #: src/language/commands/sys-file-info.c:188
 msgid "File"
@@ -8087,43 +8087,43 @@ msgstr "Creat"
 
 #: src/language/commands/sys-file-info.c:204
 msgid "Integer Format"
-msgstr ""
+msgstr "Format pentru numere întregi"
 
 #: src/language/commands/sys-file-info.c:206
 msgid "Big Endian"
-msgstr ""
+msgstr "Big Endian"
 
 #: src/language/commands/sys-file-info.c:207
 msgid "Little Endian"
-msgstr ""
+msgstr "Little Endian"
 
 #: src/language/commands/sys-file-info.c:210
 msgid "Real Format"
-msgstr ""
+msgstr "Format pentru numere în virgulă mobilă"
 
 #: src/language/commands/sys-file-info.c:212
 msgid "IEEE 754 LE."
-msgstr ""
+msgstr "IEEE 754 little-endian"
 
 #: src/language/commands/sys-file-info.c:213
 msgid "IEEE 754 BE."
-msgstr ""
+msgstr "IEEE 754 big-endian"
 
 #: src/language/commands/sys-file-info.c:214
 msgid "VAX D."
-msgstr ""
+msgstr "VAX D."
 
 #: src/language/commands/sys-file-info.c:215
 msgid "VAX G."
-msgstr ""
+msgstr "VAX G."
 
 #: src/language/commands/sys-file-info.c:216
 msgid "IBM 390 Hex Long."
-msgstr ""
+msgstr "IBM 390 Hex Long."
 
 #: src/language/commands/sys-file-info.c:234
 msgid "Not weighted"
-msgstr ""
+msgstr "Neponderat"
 
 #: src/language/commands/sys-file-info.c:236
 msgid "Compression"
@@ -8137,17 +8137,16 @@ msgstr "Documente"
 
 #: src/language/commands/sys-file-info.c:300
 #: src/language/commands/sys-file-info.c:533
-#, fuzzy
 msgid "(none)"
-msgstr "(nicio opțiune)"
+msgstr "(nimic)"
 
 #: src/language/commands/sys-file-info.c:388
 msgid "No variables to display."
-msgstr ""
+msgstr "Nu există variabile de afișat."
 
 #: src/language/commands/sys-file-info.c:414
 msgid "No macros to display."
-msgstr ""
+msgstr "Nu există macrocomenzi de afișat."
 
 #: src/language/commands/sys-file-info.c:427
 msgid "Macros"
@@ -8155,19 +8154,19 @@ msgstr "Macrocomenzi"
 
 #: src/language/commands/sys-file-info.c:432
 msgid "Source Location"
-msgstr ""
+msgstr "Locația sursei"
 
 #: src/language/commands/sys-file-info.c:466
 msgid "No variable sets defined."
-msgstr ""
+msgstr "Nu sunt definite seturi de variabile."
 
 #: src/language/commands/sys-file-info.c:470
 msgid "Variable Sets"
-msgstr ""
+msgstr "Seturi de variabile"
 
 #: src/language/commands/sys-file-info.c:474
 msgid "Variable Set and Position"
-msgstr ""
+msgstr "Setul de variabile și poziția"
 
 #: src/language/commands/sys-file-info.c:501
 #: src/ui/gui/psppire-spreadsheet-model.c:246
@@ -8180,7 +8179,7 @@ msgstr "Poziția"
 
 #: src/language/commands/sys-file-info.c:559 src/ui/gui/psppire-var-info.c:47
 msgid "Measurement Level"
-msgstr ""
+msgstr "Nivel de măsurare"
 
 #: src/language/commands/sys-file-info.c:560 src/ui/gui/psppire-var-info.c:48
 #: src/ui/gui/psppire-var-sheet-header.c:85
@@ -8199,35 +8198,35 @@ msgstr "Aliniere"
 #: src/language/commands/sys-file-info.c:563
 #: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-var-info.c:51
 msgid "Print Format"
-msgstr ""
+msgstr "Format de imprimare"
 
 #: src/language/commands/sys-file-info.c:564 src/ui/gui/psppire-var-info.c:52
 msgid "Write Format"
-msgstr ""
+msgstr "Format de scriere"
 
 #: src/language/commands/sys-file-info.c:676
 msgid "Variable Value"
-msgstr ""
+msgstr "Valoarea variabilei"
 
 #: src/language/commands/sys-file-info.c:680
 msgid "User-missing value"
-msgstr ""
+msgstr "Valoare lipsă introdusă de utilizator"
 
 #: src/language/commands/sys-file-info.c:796
 msgid "Variable and Dataset Attributes"
-msgstr ""
+msgstr "Atribute ale variabilelor și seturilor de date"
 
 #: src/language/commands/sys-file-info.c:802
 msgid "Variable and Name"
-msgstr ""
+msgstr "Variabilă și nume"
 
 #: src/language/commands/sys-file-info.c:805
 msgid "(dataset)"
-msgstr ""
+msgstr "(set de date)"
 
 #: src/language/commands/sys-file-info.c:825
 msgid "No vectors defined."
-msgstr ""
+msgstr "Nu sunt definiți vectori."
 
 #: src/language/commands/sys-file-info.c:835
 msgid "Vectors"
@@ -8235,21 +8234,21 @@ msgstr "Vectori"
 
 #: src/language/commands/sys-file-info.c:839
 msgid "Vector and Position"
-msgstr ""
+msgstr "Vector și poziție"
 
 #: src/language/commands/sys-file-info.c:1101
 msgid "No valid encodings found."
-msgstr ""
+msgstr "Nu s-au găsit codificări valide."
 
 #: src/language/commands/sys-file-info.c:1107
 #, c-format
 msgid "Usable encodings for %s."
-msgstr ""
+msgstr "Codificări utilizabile pentru %s."
 
 #: src/language/commands/sys-file-info.c:1111
 #, c-format
 msgid "Encodings that can successfully read %s (by specifying the encoding name on the GET command's ENCODING subcommand).  Encodings that yield identical text are listed together."
-msgstr ""
+msgstr "Codificări care pot citi corect %s (prin specificarea numelui codificării în subcomanda ENCODING a comenzii GET). Codificările care generează același text sunt listate împreună."
 
 #: src/language/commands/sys-file-info.c:1116
 #: src/language/commands/sys-file-info.c:1117
@@ -8259,11 +8258,11 @@ msgstr "Codificări"
 #: src/language/commands/sys-file-info.c:1146
 #, c-format
 msgid "%s Encoded Text Strings"
-msgstr ""
+msgstr "Șiruri de text codificate %s"
 
 #: src/language/commands/sys-file-info.c:1151
 msgid "Text strings in the file dictionary that the previously listed encodings interpret differently, along with the interpretations."
-msgstr ""
+msgstr "Șiruri de text din dicționarul fișierului pe care codificările enumerate anterior le interpretează în mod diferit, împreună cu interpretările respective."
 
 #: src/language/commands/sys-file-info.c:1154 src/output/output-item.c:715
 #: src/output/output-item.c:744 src/ui/gui/psppire-import-textfile.c:271
@@ -8276,7 +8275,7 @@ msgstr "Scopul"
 
 #: src/language/commands/t-test-indep.c:190
 msgid "Group Statistics"
-msgstr ""
+msgstr "Statistici de grup"
 
 #: src/language/commands/t-test-indep.c:200 src/output/output-item.c:235
 msgid "Group"
@@ -8284,80 +8283,80 @@ msgstr "Grup"
 
 #: src/language/commands/t-test-indep.c:256
 msgid "Independent Samples Test"
-msgstr ""
+msgstr "Testul pentru eșantioane independente"
 
 #: src/language/commands/t-test-indep.c:261
 msgid "Levene's Test for Equality of Variances"
-msgstr ""
+msgstr "Testul lui Levene pentru egalitatea varianțelor"
 
 #: src/language/commands/t-test-indep.c:265
 msgid "T-Test for Equality of Means"
-msgstr ""
+msgstr "Testul T pentru egalitatea mediilor"
 
 #: src/language/commands/t-test-indep.c:269
 #: src/language/commands/t-test-one-sample.c:77
 msgid "Mean Difference"
-msgstr ""
+msgstr "Diferența mediilor"
 
 #: src/language/commands/t-test-indep.c:270
 msgid "Std. Error Difference"
-msgstr ""
+msgstr "Eroarea standard a diferenței"
 
 #: src/language/commands/t-test-indep.c:273
 #, no-c-format
 msgid "95% Confidence Interval of the Difference"
-msgstr ""
+msgstr "Interval de încredere de 95% pentru diferență"
 
 #: src/language/commands/t-test-indep.c:277
 msgid "Assumptions"
-msgstr ""
+msgstr "Presupuneri"
 
 #: src/language/commands/t-test-indep.c:278
 msgid "Equal variances assumed"
-msgstr ""
+msgstr "Se presupune că varianțele sunt egale"
 
 #: src/language/commands/t-test-indep.c:279
 msgid "Equal variances not assumed"
-msgstr ""
+msgstr "Nu se presupune că varianțele sunt egale"
 
 #: src/language/commands/t-test-one-sample.c:64
 msgid "One-Sample Test"
-msgstr ""
+msgstr "Testul pe un singur eșantion"
 
 #: src/language/commands/t-test-one-sample.c:71
 #, c-format
 msgid "Test Value = %.*g"
-msgstr ""
+msgstr "Valoarea testului = %.*g"
 
 #: src/language/commands/t-test-one-sample.c:80
 #: src/language/commands/t-test-paired.c:246
 #, c-format
 msgid "%g%% Confidence Interval of the Difference"
-msgstr ""
+msgstr "Interval de încredere de %g%% pentru diferență"
 
 #: src/language/commands/t-test-one-sample.c:122
 msgid "One-Sample Statistics"
-msgstr ""
+msgstr "Statistici pe un singur eșantion"
 
 #: src/language/commands/t-test-paired.c:147
 msgid "Paired Sample Statistics"
-msgstr ""
+msgstr "Statistici pentru eșantioane perechi"
 
 #: src/language/commands/t-test-paired.c:163
 #: src/language/commands/t-test-paired.c:205
 #: src/language/commands/t-test-paired.c:263
 #, c-format
 msgid "Pair %zu"
-msgstr ""
+msgstr "Perechea %zu"
 
 #: src/language/commands/t-test-paired.c:190
 msgid "Paired Samples Correlations"
-msgstr ""
+msgstr "Corelații pentru eșantioane perechi"
 
 #: src/language/commands/t-test-paired.c:208
 #, c-format
 msgid "%s & %s"
-msgstr ""
+msgstr "%s și %s"
 
 #: src/language/commands/t-test-paired.c:234
 msgid "Paired Samples Test"

@@ -3,15 +3,14 @@
 # This file is distributed under the same license as the pspp package.
 # Rihards Priedītis <rprieditis@gmail.com>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pspp 2.1.3\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2026-10-23 09:42-0700\n"
-"PO-Revision-Date: 2026-10-30 19:15+0200\n"
+"PO-Revision-Date: 2026-11-07 21:01+0200\n"
 "Last-Translator: Rihards Priedītis <rprieditis@gmail.com>\n"
-"Language-Team: Latvian <translation-team-lv@lists.sourceforge.net>\n"
+"Language-Team: Latvian <translation-team-lv@googlegroups.com>\n"
 "Language: lv\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "MIME-Version: 1.0\n"
@@ -46,12 +45,12 @@ msgstr "Nezināma sistēmas kļūda"
 #: gl/getopt.c:283
 #, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: opcija '%s%s' ir neskaidra\n"
+msgstr "%s: opcija '%s%s' ir neviennozīmīga\n"
 
 #: gl/getopt.c:289
 #, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: opcija '%s%s' ir neskaidra; iespējamās vērtības:"
+msgstr "%s: opcija '%s%s' ir neviennozīmīga; iespējamās vērtības:"
 
 #: gl/getopt.c:323
 #, c-format
@@ -81,12 +80,12 @@ msgstr "%s: opcijai ir nepieciešams arguments -- '%c'\n"
 #: gl/version-etc.c:74
 #, c-format
 msgid "Packaged by %s (%s)\n"
-msgstr "Pakotājs ar %s (%s)\n"
+msgstr "Sapakojis %s (%s)\n"
 
 #: gl/version-etc.c:77
 #, c-format
 msgid "Packaged by %s\n"
-msgstr "Pakotājs ar %s\n"
+msgstr "Sapakojis %s\n"
 
 #. TRANSLATORS: Translate "(C)" to the copyright symbol
 #. (C-in-a-circle), if this symbol is available in the user's
@@ -111,19 +110,19 @@ msgstr ""
 #: gl/version-etc.c:106
 #, c-format
 msgid "Written by %s.\n"
-msgstr "Autors %s.\n"
+msgstr "Autors: %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #: gl/version-etc.c:110
 #, c-format
 msgid "Written by %s and %s.\n"
-msgstr "Autori %s un %s.\n"
+msgstr "Autori: %s un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #: gl/version-etc.c:114
 #, c-format
 msgid "Written by %s, %s, and %s.\n"
-msgstr "Autori %s, %s un %s.\n"
+msgstr "Autori: %s, %s un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
 #. You can use line breaks, estimating that each author name occupies
@@ -134,7 +133,7 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "and %s.\n"
 msgstr ""
-"Autori %s, %s, %s,\n"
+"Autori: %s, %s, %s\n"
 "un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
@@ -146,7 +145,7 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "%s, and %s.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
 "%s un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
@@ -158,7 +157,7 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, and %s.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
 "%s, %s un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
@@ -170,7 +169,7 @@ msgid ""
 "Written by %s, %s, %s,\n"
 "%s, %s, %s, and %s.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
 "%s, %s, %s un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
@@ -183,8 +182,8 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "and %s.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
-"%s, %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
+"%s, %s, %s, %s\n"
 "un %s.\n"
 
 #. TRANSLATORS: Each %s denotes an author name.
@@ -197,7 +196,7 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "%s, and %s.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s un %s.\n"
 
@@ -211,7 +210,7 @@ msgid ""
 "%s, %s, %s, %s,\n"
 "%s, %s, and others.\n"
 msgstr ""
-"Rakstījis %s, %s, %s,\n"
+"Autori: %s, %s, %s,\n"
 "%s, %s, %s, %s,\n"
 "%s, %s un citi.\n"
 
@@ -261,7 +260,7 @@ msgstr "Nederīga regulārā izteiksme"
 
 #: gl/regcomp.c:137
 msgid "Invalid collation character"
-msgstr "Nederīga salīdzināšanas rakstzīme"
+msgstr "Nederīga kārtošanas rakstzīme"
 
 #: gl/regcomp.c:140
 msgid "Invalid character class name"
@@ -269,7 +268,7 @@ msgstr "Nederīgs rakstzīmju klases nosaukums"
 
 #: gl/regcomp.c:143
 msgid "Trailing backslash"
-msgstr "Aizmugurējā slīpsvītra"
+msgstr "Noslēdzošā atpakaļvērstā slīpsvītra"
 
 #: gl/regcomp.c:146
 msgid "Invalid back reference"
@@ -277,15 +276,15 @@ msgstr "Nederīga atpakaļatsauce"
 
 #: gl/regcomp.c:149
 msgid "Unmatched [, [^, [:, [., or [="
-msgstr "Neatbilstošs [, [^, [:, [., vai [="
+msgstr "Nesapārota [, [^, [:, [., vai [="
 
 #: gl/regcomp.c:152
 msgid "Unmatched ( or \\("
-msgstr "Nesavienota ( vai \\("
+msgstr "Nesapārota ( vai \\("
 
 #: gl/regcomp.c:155
 msgid "Unmatched \\{"
-msgstr "Nesavienota \\{"
+msgstr "Nesapārota \\{"
 
 #: gl/regcomp.c:158
 msgid "Invalid content of \\{\\}"
@@ -293,7 +292,7 @@ msgstr "Nederīgs \\{\\} saturs"
 
 #: gl/regcomp.c:161
 msgid "Invalid range end"
-msgstr "Nederīgs diapazona beigu punkts"
+msgstr "Nederīgas diapazona beigas"
 
 #: gl/regcomp.c:164
 msgid "Memory exhausted"
@@ -305,7 +304,7 @@ msgstr "Nederīga iepriekšējā regulārā izteiksme"
 
 #: gl/regcomp.c:170
 msgid "Premature end of regular expression"
-msgstr "Pāragrs regulārās izteiksmes beigas"
+msgstr "Priekšlaicīgas regulārās izteiksmes beigas"
 
 #: gl/regcomp.c:173
 msgid "Regular expression too big"
@@ -313,7 +312,7 @@ msgstr "Regulārā izteiksme ir pārāk liela"
 
 #: gl/regcomp.c:176
 msgid "Unmatched ) or \\)"
-msgstr "Nesavienota ) vai \\)"
+msgstr "Nesapārota ) vai \\)"
 
 #: gl/regcomp.c:669
 msgid "No previous regular expression"
@@ -332,7 +331,7 @@ msgstr "Kļūda, lasot `%s': %s."
 #: src/data/any-reader.c:114
 #, c-format
 msgid "`%s' is not a system or portable file."
-msgstr "`%s' nav sistēmas vai pārnēsājams fails."
+msgstr "`%s' nav sistēmas vai portatīvs fails."
 
 #: src/data/any-reader.c:123 src/data/any-writer.c:67
 msgid "The inline file is not allowed here."
@@ -341,7 +340,7 @@ msgstr "Iekļautais fails šeit nav atļauts."
 #: src/data/any-reader.c:205
 #, c-format
 msgid "Cannot read from dataset %s because no dictionary or data has been written to it yet."
-msgstr "Nevar nolasīt no datu kopas %s, jo vēl nav uzrakstīta vārdnīca vai dati."
+msgstr "Nevar nolasīt no datu kopas %s, jo vēl nav ierakstīta vārdnīca vai dati."
 
 #: src/data/any-reader.c:260 src/language/commands/dataset.c:255
 msgid "Dataset"
@@ -393,7 +392,7 @@ msgstr "Lauka saturs nav skaitlisks."
 
 #: src/data/data-in.c:383 src/data/data-in.c:559
 msgid "Number followed by garbage."
-msgstr "Skaitlis, kam seko nevajadzīgi simboli."
+msgstr "Skaitlim seko lieki dati."
 
 #: src/data/data-in.c:396
 msgid "Invalid numeric syntax."
@@ -409,11 +408,11 @@ msgstr "Pārāk mazs skaitlis iestatīts kā nulle."
 
 #: src/data/data-in.c:430
 msgid "All characters in field must be digits."
-msgstr "Visiem lauka simboliem jābūt cipariem."
+msgstr "Visām lauka rakstzīmēm jābūt cipariem."
 
 #: src/data/data-in.c:449
 msgid "Unrecognized character in field."
-msgstr "Laukā atpazīts neatpazīts simbols."
+msgstr "Laukā ir neatpazīta rakstzīme."
 
 #: src/data/data-in.c:470 src/data/data-in.c:733
 msgid "Field must have even length."
@@ -425,7 +424,7 @@ msgstr "Laukā jābūt tikai heksadecimāliem cipariem."
 
 #: src/data/data-in.c:548
 msgid "Invalid zoned decimal syntax."
-msgstr "Nederīga zonas decimāldaļu sintakse."
+msgstr "Nederīga zonētā decimālskaitļa sintakse."
 
 #: src/data/data-in.c:648 src/data/data-in.c:654
 msgid "Invalid syntax for P field."
@@ -442,7 +441,7 @@ msgstr "Dienai (%ld) jābūt no 1 līdz 31."
 
 #: src/data/data-in.c:836
 msgid "Delimiter expected between fields in date."
-msgstr "Datuma laukos sagaidāms atdalītājs."
+msgstr "Starp datuma laukiem gaidīts atdalītājs."
 
 #: src/data/data-in.c:910
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
@@ -456,16 +455,16 @@ msgstr "Gadam (%ld) jābūt no 1582 līdz 19999."
 #: src/data/data-in.c:948
 #, c-format
 msgid "Trailing garbage `%.*s' following date."
-msgstr "Papildu simboli `%.*s' pēc datuma."
+msgstr "Lieki dati `%.*s' pēc datuma."
 
 #: src/data/data-in.c:962
 msgid "Julian day must have exactly three digits."
-msgstr "Jūlija dienai jābūt tieši trīs cipariem."
+msgstr "Jūliāna dienai jābūt tieši trīs cipariem."
 
 #: src/data/data-in.c:964
 #, c-format
 msgid "Julian day (%ld) must be between 1 and 366."
-msgstr "Jūlija dienai (%ld) jābūt starp 1 un 366."
+msgstr "Jūliāna dienai (%ld) jābūt starp 1 un 366."
 
 #: src/data/data-in.c:988
 #, c-format
@@ -479,7 +478,7 @@ msgstr "Nedēļai (%ld) jābūt starp 1 un 53."
 
 #: src/data/data-in.c:1021
 msgid "Delimiter expected between fields in time."
-msgstr "Laika laukos sagaidāms atdalītājs."
+msgstr "Starp laika laukiem gaidīts atdalītājs."
 
 #: src/data/data-in.c:1041
 #, c-format
@@ -488,12 +487,12 @@ msgstr "Minūtei (%ld) jābūt starp 0 un 59."
 
 #: src/data/data-in.c:1079
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
-msgstr "Nepazīts nedēļas dienas nosaukums. Jānorāda vismaz pirmie divi angļu valodas nedēļas dienas nosaukuma burti."
+msgstr "Neatpazīts nedēļas dienas nosaukums. Jānorāda vismaz pirmie divi angļu valodas nedēļas dienas nosaukuma burti."
 
 #: src/data/data-in.c:1214
 #, c-format
 msgid "`%c' expected in date field."
-msgstr "Datuma laukā sagaidāms `%c'."
+msgstr "Datuma laukā gaidīts `%c'."
 
 #: src/data/data-out.c:585
 #, c-format
@@ -542,7 +541,7 @@ msgstr "%s: šifrētais fails ir bojāts (beidzas ar nepilnīgu %u baitu šifrē
 #: src/data/encrypted-file.c:449
 #, c-format
 msgid "%s: encrypted file corrupted (ends with bad padding)"
-msgstr "%s: šifrētais fails ir bojāts (beidzas ar nepareizu polsterējumu)"
+msgstr "%s: šifrētais fails ir bojāts (beidzas ar nepareizu aizpildījumu)"
 
 #: src/data/file-handle-def.c:281 src/language/commands/dataset.c:268
 msgid "active dataset"
@@ -566,7 +565,7 @@ msgstr "Neizdevās atkārtoti atvērt %s kā %s."
 #: src/data/file-name.c:134
 #, c-format
 msgid "Not opening pipe file `%s' because %s option set."
-msgstr "Netiek atvērts caurules fails `%s', jo ir iestatīta opcija %s."
+msgstr "Netiek atvērts cauruļvada fails `%s', jo ir iestatīta opcija %s."
 
 #: src/data/format.c:364
 #, c-format
@@ -605,31 +604,31 @@ msgstr[2] "Ievades formāts %s norāda %d decimālvietas, bet %s nepieļauj deci
 #, c-format
 msgid "Output format %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "Output format %s specifies %d decimal places, but %s does not allow any decimals."
-msgstr[0] "Izvades formāts %s norāda %d decimālzīmes, bet %s nepieļauj decimāldaļas."
-msgstr[1] "Izvades formāts %s norāda %d decimālzīmi, bet %s nepieļauj decimāldaļas."
-msgstr[2] "Izvades formāts %s norāda %d decimālzīmes, bet %s nepieļauj decimāldaļas."
+msgstr[0] "Izvades formāts %s norāda %d decimālvietu, bet %s nepieļauj decimāldaļas."
+msgstr[1] "Izvades formāts %s norāda %d decimālvietu, bet %s nepieļauj decimāldaļas."
+msgstr[2] "Izvades formāts %s norāda %d decimālvietas, bet %s nepieļauj decimāldaļas."
 
 #: src/data/format.c:412
 #, c-format
 msgid "Input format %s specifies %d decimal place, but width %d allows at most %d decimals."
 msgid_plural "Input format %s specifies %d decimal places, but width %d allows at most %d decimals."
-msgstr[0] "Ievades formāts %s norāda %d decimālzīmes, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
-msgstr[1] "Ievades formāts %s norāda %d decimālzīmi, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
-msgstr[2] "Ievades formāts %s norāda %d decimālzīmes, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
+msgstr[0] "Ievades formāts %s norāda %d decimālvietu, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
+msgstr[1] "Ievades formāts %s norāda %d decimālvietu, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
+msgstr[2] "Ievades formāts %s norāda %d decimālvietas, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
 
 #: src/data/format.c:419
 #, c-format
 msgid "Output format %s specifies %d decimal place, but width %d allows at most %d decimals."
 msgid_plural "Output format %s specifies %d decimal places, but width %d allows at most %d decimals."
-msgstr[0] "Izvades formāts %s norāda %d decimālzīmes, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
-msgstr[1] "Izvades formāts %s norāda %d decimālzīmi, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
-msgstr[2] "Izvades formāts %s norāda %d decimālzīmes, bet platums %d pieļauj ne vairāk kā %d decimālzīmes."
+msgstr[0] "Izvades formāts %s norāda %d decimālvietu, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
+msgstr[1] "Izvades formāts %s norāda %d decimālvietu, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
+msgstr[2] "Izvades formāts %s norāda %d decimālvietas, bet platums %d pieļauj ne vairāk kā %d decimālvietas."
 
 #: src/data/format.c:428
 #, c-format
 msgid "Input format %s specifies %d decimal place, but width %d does not allow for any decimals."
 msgid_plural "Input format %s specifies %d decimal places, but width %d does not allow for any decimals."
-msgstr[0] "Ievades formāts %s norāda %d decimālvietas, bet platums %d nepieļauj decimāldaļas."
+msgstr[0] "Ievades formāts %s norāda %d decimālvietu, bet platums %d nepieļauj decimāldaļas."
 msgstr[1] "Ievades formāts %s norāda %d decimālvietu, bet platums %d nepieļauj decimāldaļas."
 msgstr[2] "Ievades formāts %s norāda %d decimālvietas, bet platums %d nepieļauj decimāldaļas."
 
@@ -637,19 +636,19 @@ msgstr[2] "Ievades formāts %s norāda %d decimālvietas, bet platums %d nepieļ
 #, c-format
 msgid "Output format %s specifies %d decimal place, but width %d does not allow for any decimals."
 msgid_plural "Output format %s specifies %d decimal places, but width %d does not allow for any decimals."
-msgstr[0] "Izvades formāts %s norāda %d decimālvietas, bet platums %d nepieļauj decimāldaļas."
+msgstr[0] "Izvades formāts %s norāda %d decimālvietu, bet platums %d nepieļauj decimāldaļas."
 msgstr[1] "Izvades formāts %s norāda %d decimālvietu, bet platums %d nepieļauj decimāldaļas."
 msgstr[2] "Izvades formāts %s norāda %d decimālvietas, bet platums %d nepieļauj decimāldaļas."
 
 #: src/data/format.c:507
 #, c-format
 msgid "String variable %s is not compatible with numeric format %s."
-msgstr "Teksta mainīgais %s nav saderīgs ar skaitlisko formātu %s."
+msgstr "Virknes mainīgais %s nav saderīgs ar skaitlisko formātu %s."
 
 #: src/data/format.c:510
 #, c-format
 msgid "String variables are not compatible with numeric format %s."
-msgstr "Teksta mainīgie nav saderīgi ar skaitlisko formātu %s."
+msgstr "Virknes mainīgie nav saderīgi ar skaitlisko formātu %s."
 
 #: src/data/format.c:516
 #, c-format
@@ -664,12 +663,12 @@ msgstr "Skaitliskie mainīgie nav saderīgi ar teksta formātu %s."
 #: src/data/format.c:559
 #, c-format
 msgid "String variable %s with width %d is not compatible with format %s.  Use format %s instead."
-msgstr "Teksta mainīgais %s ar platumu %d nav saderīgs ar formātu %s. Tā vietā izmantojiet formātu %s."
+msgstr "Virknes mainīgais %s ar platumu %d nav saderīgs ar formātu %s. Tā vietā izmantojiet formātu %s."
 
 #: src/data/format.c:564
 #, c-format
 msgid "String variable with width %d is not compatible with format %s.  Use format %s instead."
-msgstr "Teksta mainīgais ar platumu %d nav saderīgs ar formātu %s. Tā vietā izmantojiet formātu %s."
+msgstr "Virknes mainīgais ar platumu %d nav saderīgs ar formātu %s. Tā vietā izmantojiet formātu %s."
 
 #: src/data/format.c:1159 src/language/command.def:101
 #: src/ui/gui/var-type-dialog.ui:48
@@ -819,7 +818,7 @@ msgstr "Atver %s rakstīšanai: %s."
 #: src/data/make-file.c:228
 #, c-format
 msgid "Opening stream for %s: %s."
-msgstr "Atver straumi priekš %s: %s."
+msgstr "Atver %s straumi: %s."
 
 #: src/data/make-file.c:260
 #, c-format
@@ -923,7 +922,7 @@ msgstr "Faila etiķete"
 #: src/data/pc+-file-reader.c:419
 #, c-format
 msgid "Using default encoding %s to read this SPSS/PC+ system file.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Tiek izmantota noklusējuma kodējuma %s šī SPSS/PC+ sistēmas faila lasīšanai. Lai iegūtu labākos rezultātus, norādiet kodējumu tieši. Izmantojiet SYSFILE INFO ar ENCODING=\"DETECT\", lai analizētu iespējamos kodējumus."
+msgstr "Šī SPSS/PC+ sistēmas faila lasīšanai tiek izmantots noklusējuma kodējums %s. Lai iegūtu labākos rezultātus, norādiet kodējumu eksplicīti. Izmantojiet SYSFILE INFO ar ENCODING=\"DETECT\", lai analizētu iespējamos kodējumus."
 
 #: src/data/pc+-file-reader.c:471 src/data/sys-file-reader.c:901
 #, c-format
@@ -997,7 +996,7 @@ msgstr "Mainīgā etiķete ar garumu %u, kas sākas ar nobīdi %u etiķešu iera
 #: src/data/pc+-file-reader.c:707
 #, c-format
 msgid "Record 1 has length %u (expected %u)."
-msgstr "Ieraksta 1 garums ir %u (paredzēts %u)."
+msgstr "Ieraksta 1 garums ir %u (gaidīts %u)."
 
 #: src/data/pc+-file-reader.c:739
 #, c-format
@@ -1041,7 +1040,7 @@ msgstr "Kļūda, lasot gadījumu no faila %s."
 #: src/data/pc+-file-reader.c:1104 src/data/sys-file-reader.c:2991
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
-msgstr "Iespējama saspiestu datu bojājums: virknē ir saspiests vesels skaitlis (opkods %d)."
+msgstr "Iespējams saspiesto datu bojājums: virknē ir saspiests vesels skaitlis (opkods %d)."
 
 #: src/data/pc+-file-reader.c:1146 src/data/sys-file-reader.c:3292
 #, c-format
@@ -1065,7 +1064,7 @@ msgstr "Negaidītas faila beigas."
 #: src/data/pc+-file-reader.c:1292 src/data/sys-file-reader.c:3577
 #, c-format
 msgid "%s: seek failed (%s)."
-msgstr "%s: meklēšana neizdevās (%s)."
+msgstr "%s: pārvietošana (seek) neizdevās (%s)."
 
 #: src/data/pc+-file-reader.c:1342
 msgid "SPSS/PC+ System File"
@@ -1103,11 +1102,11 @@ msgstr "Radās kļūda, atverot `%s' lasīšanai kā portatīvo failu: %s."
 
 #: src/data/por-file-reader.c:306
 msgid "Data record expected."
-msgstr "Paredzēts datu ieraksts."
+msgstr "Gaidīts datu ieraksts."
 
 #: src/data/por-file-reader.c:404
 msgid "Number expected."
-msgstr "Paredzēts skaitlis."
+msgstr "Gaidīts skaitlis."
 
 #: src/data/por-file-reader.c:432
 msgid "Missing numeric terminator."
@@ -1130,7 +1129,7 @@ msgstr "%s: Nav portatīvs fails."
 #: src/data/por-file-reader.c:566
 #, c-format
 msgid "Unrecognized version code `%c'."
-msgstr "Nepazīts versijas kods `%c'."
+msgstr "Neatpazīts versijas kods `%c'."
 
 #: src/data/por-file-reader.c:579
 #, c-format
@@ -1145,12 +1144,12 @@ msgstr "Nepareizs laika virknes garums %zu."
 #: src/data/por-file-reader.c:644
 #, c-format
 msgid "Numeric variable %s has invalid format specifier %s."
-msgstr "Skaitliskajam mainīgajam %s ir nederīgs formāta norādītājs %s."
+msgstr "Skaitliskajam mainīgajam %s ir nederīgs formāta specifikators %s."
 
 #: src/data/por-file-reader.c:648
 #, c-format
 msgid "String variable %s with width %d has invalid format specifier %s."
-msgstr "Virknes mainīgajam %s ar platumu %d ir nederīgs formāta norādītājs %s."
+msgstr "Virknes mainīgajam %s ar platumu %d ir nederīgs formāta specifikators %s."
 
 #: src/data/por-file-reader.c:656
 #, c-format
@@ -1159,7 +1158,7 @@ msgstr "%s: Nederīgs formāta specifikatora baits (%d). Mainīgajam tiks pieš�
 
 #: src/data/por-file-reader.c:675
 msgid "Expected variable count record."
-msgstr "Paredzēts mainīgo skaita ieraksts."
+msgstr "Gaidīts mainīgo skaita ieraksts."
 
 #: src/data/por-file-reader.c:679
 #, c-format
@@ -1173,7 +1172,7 @@ msgstr "Svara mainīgā nosaukums (%s) ir saīsināts."
 
 #: src/data/por-file-reader.c:703
 msgid "Expected variable record."
-msgstr "Paredzēts mainīgā ieraksts."
+msgstr "Gaidīts mainīgā ieraksts."
 
 #: src/data/por-file-reader.c:707
 #, c-format
@@ -1207,7 +1206,7 @@ msgstr "Nevar piešķirt vērtību etiķetes mainīgajiem %s un %s, kuriem ir da
 
 #: src/data/por-file-reader.c:949
 msgid "SPSS Portable File"
-msgstr "SPSS pārnēsājamais fails"
+msgstr "SPSS portatīvais fails"
 
 #: src/data/por-file-writer.c:139
 #, c-format
@@ -1217,16 +1216,16 @@ msgstr "Nederīgs decimālciparu skaits %d. Tiek apstrādāts kā %d."
 #: src/data/por-file-writer.c:159
 #, c-format
 msgid "Error opening `%s' for writing as a portable file: %s."
-msgstr "Kļūda, atverot `%s' rakstīšanai kā pārnēsājamu failu: %s."
+msgstr "Kļūda, atverot `%s' rakstīšanai kā portatīvu failu: %s."
 
 #: src/data/por-file-writer.c:505
 #, c-format
 msgid "An I/O error occurred writing portable file `%s'."
-msgstr "Ievades/izvades kļūda, rakstot pārnēsājamo failu `%s'."
+msgstr "Ievades/izvades kļūda, rakstot portatīvo failu `%s'."
 
 #: src/data/psql-reader.c:48
 msgid "Support for reading postgres databases was not compiled into this installation of PSPP"
-msgstr "Šajā PSPP instalācijā netika iekļauts atbalsts PostgreSQL datu bāzu lasīšanai"
+msgstr "Šajā PSPP instalācijā netika iekļauts atbalsts PostgreSQL datubāzu lasīšanai"
 
 #: src/data/psql-reader.c:236
 msgid "Memory error whilst opening psql source"
@@ -1264,12 +1263,12 @@ msgstr "MXWARNS iestatīts uz nulli. Netiks izdoti turpmāki brīdinājumi, pat 
 #: src/data/settings.c:408
 #, c-format
 msgid "Warnings re-enabled. %d warnings will be issued before aborting syntax processing."
-msgstr "Brīdinājumi atkal ieslēgti. Tiks izdoti %d brīdinājumi pirms sintakses apstrādes pārtraukšanas."
+msgstr "Brīdinājumi atkal iespējoti. Tiks izdoti %d brīdinājumi pirms sintakses apstrādes pārtraukšanas."
 
 #: src/data/settings.c:620
 #, c-format
 msgid "Custom currency string `%s' for %s does not contain exactly three periods or commas (or it contains both)."
-msgstr "Pielāgota valūtas virkne `%s' priekš %s nesatur tieši trīs punktus vai komatus (vai tajā ir abi)."
+msgstr "Pielāgotā valūtas virkne `%s' (%s) nesatur tieši trīs punktus vai komatus (vai satur abus)."
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -1337,7 +1336,7 @@ msgstr "MRSET %zu saskaitītā vērtība"
 #: src/data/sys-file-reader.c:773
 #, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Šis sistēmas fails nenorāda savu rakstzīmju kodējumu. Tiek izmantots noklusējuma kodējums %s. Lai iegūtu labākos rezultātus, norādiet kodējumu tieši. Izmantojiet SYSFILE INFO ar ENCODING=\"DETECT\", lai analizētu iespējamos kodējumus."
+msgstr "Šis sistēmas fails nenorāda savu rakstzīmju kodējumu. Tiek izmantots noklusējuma kodējums %s. Lai iegūtu labākos rezultātus, norādiet kodējumu eksplicīti. Izmantojiet SYSFILE INFO ar ENCODING=\"DETECT\", lai analizētu iespējamos kodējumus."
 
 #: src/data/sys-file-reader.c:857
 #, c-format
@@ -1350,7 +1349,7 @@ msgstr "Šis nav SPSS sistēmas fails."
 
 #: src/data/sys-file-reader.c:1038
 msgid "Compression bias is not the usual value of 100, or system file uses unrecognized floating-point format."
-msgstr "Kompresijas novirze nav parastā vērtība 100, vai sistēmas fails izmanto neatpazītu peldošā punkta formātu."
+msgstr "Saspiešanas novirze nav parastā vērtība 100, vai sistēmas fails izmanto neatpazītu peldošā komata formātu."
 
 #: src/data/sys-file-reader.c:1113
 msgid "Variable label indicator field is not 0 or 1."
@@ -1386,17 +1385,17 @@ msgstr "Dokumenta rindu skaitam (%d) jābūt lielākam par 0 un mazākam par %d.
 #: src/data/sys-file-reader.c:1328
 #, c-format
 msgid "Record type 7, subtype %d has bad size %u (expected %d)."
-msgstr "Ieraksta tips 7, apakštips %d ir ar nepareizu izmēru %u (paredzēts %d)."
+msgstr "Ieraksta tips 7, apakštips %d ir ar nepareizu izmēru %u (gaidīts %d)."
 
 #: src/data/sys-file-reader.c:1332
 #, c-format
 msgid "Record type 7, subtype %d has bad count %u (expected %d)."
-msgstr "Ieraksta tips 7, apakštips %d ir ar nepareizu skaitu %u (paredzēts %d)."
+msgstr "Ieraksta tips 7, apakštips %d ir ar nepareizu skaitu %u (gaidīts %d)."
 
 #: src/data/sys-file-reader.c:1434
 #, c-format
 msgid "Renaming variable with invalid or duplicate name `%s' to `%s'."
-msgstr "Pārdēvē mainīgo ar nederīgu vai dublētu nosaukumu `%s` uz `%s`."
+msgstr "Pārdēvē mainīgo ar nederīgu vai dublētu nosaukumu `%s' uz `%s'."
 
 #: src/data/sys-file-reader.c:1504
 msgid "Missing string continuation record."
@@ -1419,7 +1418,7 @@ msgstr "Turpmākie nederīgo formātu brīdinājumi tiek apspiesti."
 #: src/data/sys-file-reader.c:1600
 #, c-format
 msgid "Floating-point representation indicated by system file (%d) differs from expected (%d)."
-msgstr "Sistēmas failā norādītais peldošā punkta attēlojums (%d) atšķiras no gaidītā (%d)."
+msgstr "Sistēmas failā norādītais peldošā komata attēlojums (%d) atšķiras no gaidītā (%d)."
 
 #: src/data/sys-file-reader.c:1616
 #, c-format
@@ -1464,7 +1463,7 @@ msgstr "Trūkst jaunas rindas, parsējot mainīgo nosaukumus pozīcijā %zu MRSE
 #: src/data/sys-file-reader.c:1804
 #, c-format
 msgid "Invalid multiple response set name `%s'."
-msgstr "Nederīgs vairāku atbilžu kopas nosaukums `%s`."
+msgstr "Nederīgs vairāku atbilžu kopas nosaukums `%s'."
 
 #: src/data/sys-file-reader.c:1837
 #, c-format
@@ -1489,7 +1488,7 @@ msgstr "MRSET %s ir tikai viens mainīgais."
 #: src/data/sys-file-reader.c:1910
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
-msgstr "Paplašinājumam 11 ir nepareizs skaits %u (priekš %zu mainīgajiem)."
+msgstr "Paplašinājumam 11 ir nepareizs skaits %u (%zu mainīgajiem)."
 
 #: src/data/sys-file-reader.c:1943
 #, c-format
@@ -1524,7 +1523,7 @@ msgstr "Ļoti gara virkne %s pārsniedz vārdnīcu."
 #: src/data/sys-file-reader.c:2110
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
-msgstr "Ļoti garai virknei ar platumu %ld ir segments %d ar platumu %d (paredzēts %d)."
+msgstr "Ļoti garai virknei ar platumu %ld ir segments %d ar platumu %d (gaidīts %d)."
 
 #: src/data/sys-file-reader.c:2167
 #, c-format
@@ -1561,12 +1560,12 @@ msgstr "Vērtību etiķetes nevar pievienot garām virknes mainīgajiem (piemēr
 #: src/data/sys-file-reader.c:2239
 #, c-format
 msgid "Duplicate value label for %g on %s."
-msgstr "Dublēta vērtības etiķete %g priekš %s."
+msgstr "Dublēta vērtības etiķete %g mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2244 src/data/sys-file-reader.c:2591
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
-msgstr "Dublēta vērtības etiķete `%.*s' priekš %s."
+msgstr "Dublēta vērtības etiķete `%.*s' mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2267
 #, c-format
@@ -1576,17 +1575,17 @@ msgstr "Apspiesti %d papildu brīdinājumi par vērtību etiķetēm."
 #: src/data/sys-file-reader.c:2281
 #, c-format
 msgid "Weight variable index %d not in valid range 1...%zu.  Treating file as unweighted."
-msgstr "Svēruma mainīgā indekss %d nav derīgā diapazonā 1...%zu. Fails tiek uzskatīts par nesvērtu."
+msgstr "Svara mainīgā indekss %d nav derīgā diapazonā 1...%zu. Fails tiek uzskatīts par nesvērtu."
 
 #: src/data/sys-file-reader.c:2291
 #, c-format
 msgid "Weight variable index %d refers to long string continuation.  Treating file as unweighted."
-msgstr "Svēruma mainīgā indekss %d attiecas uz garā teksta turpinājumu. Fails tiek uzskatīts par nesvērtu."
+msgstr "Svara mainīgā indekss %d attiecas uz garās virknes turpinājumu. Fails tiek uzskatīts par nesvērtu."
 
 #: src/data/sys-file-reader.c:2299
 #, c-format
 msgid "Ignoring string variable `%s' set as weighting variable."
-msgstr "Ignorēts teksta mainīgais `%s', kas iestatīts kā svēruma mainīgais."
+msgstr "Ignorēts virknes mainīgais `%s', kas iestatīts kā svara mainīgais."
 
 #: src/data/sys-file-reader.c:2336
 #, c-format
@@ -1596,7 +1595,7 @@ msgstr "Kļūda, parsējot atribūta vērtību %s[%d]."
 #: src/data/sys-file-reader.c:2350
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
-msgstr "Atribūta vērtība %s[%d] nav citēta: %s."
+msgstr "Atribūta vērtība %s[%d] nav pēdiņās: %s."
 
 #: src/data/sys-file-reader.c:2363
 #, c-format
@@ -1621,37 +1620,37 @@ msgstr "Paplašinājuma ieraksta apakštips %d beidzas negaidīti."
 #: src/data/sys-file-reader.c:2522
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
-msgstr "Ignorēts gara teksta vērtības etiķetes ieraksts nezināmam mainīgajam %s."
+msgstr "Ignorēts garās virknes vērtības etiķetes ieraksts nezināmam mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2527
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
-msgstr "Ignorēts gara teksta vērtības etiķetes ieraksts skaitliskam mainīgajam %s."
+msgstr "Ignorēts garās virknes vērtības etiķetes ieraksts skaitliskam mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2534
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
-msgstr "Ignorēts gara teksta vērtības etiķetes ieraksts mainīgajam %s, jo ieraksta platums (%d) neatbilst mainīgā platumam (%d)."
+msgstr "Ignorēts garās virknes vērtības etiķetes ieraksts mainīgajam %s, jo ieraksta platums (%d) neatbilst mainīgā platumam (%d)."
 
 #: src/data/sys-file-reader.c:2564
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
-msgstr "Ignorēta gara teksta vērtības etiķete %zu mainīgajam %s ar platumu %d, kam ir nepareizs vērtības platums %zu."
+msgstr "Ignorēta garās virknes vērtības etiķete %zu mainīgajam %s ar platumu %d, kam ir nepareizs vērtības platums %zu."
 
 #: src/data/sys-file-reader.c:2638
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
-msgstr "Garā teksta trūkstošo vērtību ieraksts norāda, ka mainīgajam %s ir %d trūkstošās vērtības, bet atļautas ir tikai 1 līdz 3 trūkstošās vērtības."
+msgstr "Garās virknes trūkstošo vērtību ieraksts norāda, ka mainīgajam %s ir %d trūkstošās vērtības, bet atļautas ir tikai 1 līdz 3 trūkstošās vērtības."
 
 #: src/data/sys-file-reader.c:2648
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
-msgstr "Ignorē garā teksta trūkstošās vērtības ierakstu nezināmam mainīgajam %s."
+msgstr "Ignorē garās virknes trūkstošās vērtības ierakstu nezināmam mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2653
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
-msgstr "Ignorē garā teksta trūkstošās vērtības ierakstu skaitliskajam mainīgajam %s."
+msgstr "Ignorē garās virknes trūkstošās vērtības ierakstu skaitliskajam mainīgajam %s."
 
 #: src/data/sys-file-reader.c:2677
 msgid "This file has corrupted metadata written by a buggy version of PSPP.  To fix it, save a new copy of the file."
@@ -1660,7 +1659,7 @@ msgstr "Šim failam ir bojāti metadati, ko uzrakstījusi kļūdaina PSPP versij
 #: src/data/sys-file-reader.c:2693
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
-msgstr "Ignorē garā teksta trūkstošo vērtību %zu mainīgajam %s, ar platumu %d, kam ir nepareizs vērtības platums %zu."
+msgstr "Ignorē garās virknes trūkstošo vērtību %zu mainīgajam %s, ar platumu %d, kam ir nepareizs vērtības platums %zu."
 
 #: src/data/sys-file-reader.c:2745
 #, c-format
@@ -1673,12 +1672,12 @@ msgstr "Fails beidzas ar daļēju virknes vērtību."
 
 #: src/data/sys-file-reader.c:2937
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
-msgstr "Iespējama saspiestu datu bojāšanās: skaitliskajā laukā parādās saspiestas atstarpes."
+msgstr "Iespējams saspiesto datu bojājums: skaitliskajā laukā parādās saspiestas atstarpes."
 
 #: src/data/sys-file-reader.c:3088
 #, c-format
 msgid "Suppressed %d additional related warnings."
-msgstr "Apslēpti %d papildu saistīti brīdinājumi."
+msgstr "Apspiesti %d papildu saistīti brīdinājumi."
 
 #: src/data/sys-file-reader.c:3134 src/data/sys-file-reader.c:3151
 #, c-format
@@ -1708,7 +1707,7 @@ msgstr "Pozīcijā %zu sagaida atstarpi pēc %zu baitu virknes."
 #: src/data/sys-file-reader.c:3535
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
-msgstr "Nepareiza ZLIB datu galvenes nobīde %#llx (sagaidīja %#llx)."
+msgstr "Nepareiza ZLIB datu galvenes nobīde %#llx (gaidīts %#llx)."
 
 #: src/data/sys-file-reader.c:3543
 #, c-format
@@ -1738,22 +1737,22 @@ msgstr "ZLIB beigu daļas \"nulle\" laukam ir vērtība, kas nav nulle: %lld."
 #: src/data/sys-file-reader.c:3640
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
-msgstr "ZLIB beigās norādīts negaidīts %u baitu bloka izmērs."
+msgstr "ZLIB beigu daļā norādīts negaidīts %u baitu bloka izmērs."
 
 #: src/data/sys-file-reader.c:3648
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
-msgstr "%lld baitu ZLIB beigās norādīti %u datu bloki (paredzēti %lld)."
+msgstr "%lld baitu ZLIB beigu daļā norādīti %u datu bloki (gaidīti %lld)."
 
 #: src/data/sys-file-reader.c:3673
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
-msgstr "ZLIB bloka deskriptors %u ziņoja nesaspiestu datu novietojumu %#llx, kad tika gaidīts %#llx."
+msgstr "ZLIB bloka deskriptors %u ziņoja nesaspiestu datu nobīdi %#llx, kad tika gaidīts %#llx."
 
 #: src/data/sys-file-reader.c:3682
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
-msgstr "ZLIB bloka deskriptors %u ziņoja saspiestu datu novietojumu %#llx, kad tika gaidīts %#llx."
+msgstr "ZLIB bloka deskriptors %u ziņoja saspiestu datu nobīdi %#llx, kad tika gaidīts %#llx."
 
 #: src/data/sys-file-reader.c:3692
 #, c-format
@@ -1773,7 +1772,7 @@ msgstr "ZLIB bloka deskriptors %u ziņo saspiesto izmēru %u un nesaspiesto izm�
 #: src/data/sys-file-reader.c:3724
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
-msgstr "ZLIB beigas atrodas novietojumā %#llx, bet %#llx būtu gaidāms no bloku deskriptoriem."
+msgstr "ZLIB beigas atrodas nobīdē %#llx, bet %#llx būtu gaidīts no bloku deskriptoriem."
 
 #: src/data/sys-file-reader.c:3743
 #, c-format
@@ -1831,7 +1830,7 @@ msgstr "ZLIB straumes saspiešana neizdevās (%s)."
 #: src/data/sys-file-writer.c:1536
 #, c-format
 msgid "%s: Seek failed (%s)."
-msgstr "%s: Meklēšana neizdevās (%s)."
+msgstr "%s: Pārvietošana (seek) neizdevās (%s)."
 
 #: src/data/variable.c:58
 msgid "Left"
@@ -1904,7 +1903,7 @@ msgstr "%s (%s)"
 
 #: src/data/variable.c:1351
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
-msgstr "Vismaz vienam gadījumam datu failā bija svērtā vērtība, kas bija lietotāja trūkstoša, sistēmas trūkstoša, nulle vai negatīva. Šie gadījumi tika ignorēti."
+msgstr "Vismaz vienam gadījumam datu failā svara vērtība bija lietotāja norādīta kā trūkstoša, sistēmas norādīta kā trūkstoša, nulle vai negatīva. Šie gadījumi tika ignorēti."
 
 #: src/language/command.c:212 src/language/commands/graph.c:698
 #: src/language/commands/graph.c:705 src/language/commands/graph.c:712
@@ -1930,7 +1929,7 @@ msgstr "%s var izmantot tikai paplašinātās sintakses režīmā."
 
 #: src/language/command.c:357
 msgid "Syntax error expecting command name."
-msgstr "Sintakses kļūda, gaidot komandas nosaukumu."
+msgstr "Sintakses kļūda: gaidīts komandas nosaukums."
 
 #: src/language/command.c:360
 #, c-format
@@ -1940,12 +1939,12 @@ msgstr "Nezināma komanda `%s'."
 #: src/language/command.c:392
 #, c-format
 msgid "%s is allowed only before the active dataset has been defined."
-msgstr "%s ir atļauts tikai pirms aktīvā datu kopuma definēšanas."
+msgstr "%s ir atļauts tikai pirms aktīvā datu kopas definēšanas."
 
 #: src/language/command.c:395
 #, c-format
 msgid "%s is allowed only after the active dataset has been defined."
-msgstr "%s ir atļauts tikai pēc aktīvā datu kopuma definēšanas."
+msgstr "%s ir atļauts tikai pēc aktīvā datu kopas definēšanas."
 
 #: src/language/command.c:398 src/language/command.c:401
 #, c-format
@@ -1955,12 +1954,12 @@ msgstr "%s ir atļauts tikai %s iekšienē."
 #: src/language/command.c:407 src/language/command.c:411
 #, c-format
 msgid "%s is allowed only before the active dataset has been defined or inside %s."
-msgstr "%s ir atļauts tikai pirms aktīvā datu kopuma definēšanas vai %s iekšienē."
+msgstr "%s ir atļauts tikai pirms aktīvā datu kopas definēšanas vai %s iekšienē."
 
 #: src/language/command.c:415 src/language/command.c:419
 #, c-format
 msgid "%s is allowed only after the active dataset has been defined or inside %s."
-msgstr "%s ir atļauts tikai pēc aktīvā datu kopuma definēšanas vai %s iekšienē."
+msgstr "%s ir atļauts tikai pēc aktīvā datu kopas definēšanas vai %s iekšienē."
 
 #: src/language/command.c:423
 #, c-format
@@ -2010,7 +2009,7 @@ msgstr "Kļūda, dzēšot `%s': %s."
 
 #: src/language/command.def:18
 msgid "Close File Handle"
-msgstr "Aizvērt faila apstrādātāju"
+msgstr "Aizvērt faila rokturi"
 
 #: src/language/command.def:19
 msgid "Cache"
@@ -2494,7 +2493,7 @@ msgstr "ROC"
 
 #: src/language/command.def:145 src/ui/gui/var-type-dialog.ui:293
 msgid "Sample"
-msgstr "Paraugs"
+msgstr "Izlase"
 
 #: src/language/command.def:146
 #: src/ui/gui/psppire-dialog-action-aggregate.c:211
@@ -2564,47 +2563,47 @@ msgstr "Beigt ciklu"
 #: src/language/lexer/lexer.c:566
 #, c-format
 msgid "Syntax error expecting %s."
-msgstr "Sintakses kļūda, gaidīts %s."
+msgstr "Sintakses kļūda: gaidīts %s."
 
 #: src/language/lexer/lexer.c:570
 #, c-format
 msgid "Syntax error expecting %s or %s."
-msgstr "Sintakses kļūda, gaidīts %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s vai %s."
 
 #: src/language/lexer/lexer.c:575
 #, c-format
 msgid "Syntax error expecting %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:580
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:585
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:590
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s, %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s, %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:596
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s, %s, %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s, %s, %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:603
 #, c-format
 msgid "Syntax error expecting %s, %s, %s, %s, %s, %s, %s, or %s."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s, %s, %s, %s, %s vai %s."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s, %s, %s, %s, %s vai %s."
 
 #: src/language/lexer/lexer.c:618
 #, c-format
 msgid "Syntax error expecting one of the following: %s."
-msgstr "Sintakses kļūda, gaidīts viens no šiem: %s."
+msgstr "Sintakses kļūda: gaidīts viens no šiem: %s."
 
 #: src/language/lexer/lexer.c:639 src/language/lexer/lexer.c:641
 #, c-format
@@ -2629,26 +2628,26 @@ msgstr "Trūkst nepieciešamās %s norādes apakškomandā %s."
 #: src/language/lexer/lexer.c:694 src/language/commands/autorecode.c:211
 #: src/language/commands/print-space.c:88 src/language/commands/select-if.c:59
 msgid "Syntax error expecting end of command."
-msgstr "Sintakses kļūda, gaidīta komandas beigas."
+msgstr "Sintakses kļūda: gaidītas komandas beigas."
 
 #: src/language/lexer/lexer.c:896
 msgid "Syntax error expecting string."
-msgstr "Sintakses kļūda, gaidīta virkne."
+msgstr "Sintakses kļūda: gaidīta virkne."
 
 #: src/language/lexer/lexer.c:925 src/language/lexer/lexer.c:957
 #: src/language/lexer/lexer.c:1043
 msgid "Syntax error expecting integer."
-msgstr "Sintakses kļūda, gaidīts vesels skaitlis."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis."
 
 #: src/language/lexer/lexer.c:955 src/language/lexer/lexer.c:1040
 #, c-format
 msgid "Syntax error expecting integer for %s."
-msgstr "Sintakses kļūda, gaidīts vesels skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:962
 #, c-format
 msgid "Syntax error expecting %ld for %s."
-msgstr "Sintakses kļūda, gaidīts %ld priekš %s."
+msgstr "Sintakses kļūda: gaidīts %ld (%s)."
 
 #: src/language/lexer/lexer.c:964
 #, c-format
@@ -2658,7 +2657,7 @@ msgstr "Sintakses kļūda: gaidīts %ld."
 #: src/language/lexer/lexer.c:969
 #, c-format
 msgid "Syntax error expecting %ld or %ld for %s."
-msgstr "Sintakses kļūda: gaidīts %ld vai %ld priekš %s."
+msgstr "Sintakses kļūda: gaidīts %ld vai %ld (%s)."
 
 #: src/language/lexer/lexer.c:972
 #, c-format
@@ -2668,7 +2667,7 @@ msgstr "Sintakses kļūda: gaidīts %ld vai %ld."
 #: src/language/lexer/lexer.c:984
 #, c-format
 msgid "Syntax error expecting integer between %ld and %ld for %s."
-msgstr "Sintakses kļūda: gaidīts vesels skaitlis no %ld līdz %ld priekš %s."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis no %ld līdz %ld (%s)."
 
 #: src/language/lexer/lexer.c:988
 #, c-format
@@ -2678,7 +2677,7 @@ msgstr "Sintakses kļūda: gaidīts vesels skaitlis no %ld līdz %ld."
 #: src/language/lexer/lexer.c:997
 #, c-format
 msgid "Syntax error expecting non-negative integer for %s."
-msgstr "Sintakses kļūda: gaidīts nenegatīvs vesels skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts nenegatīvs vesels skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:1001
 msgid "Syntax error expecting non-negative integer."
@@ -2687,7 +2686,7 @@ msgstr "Sintakses kļūda: gaidīts nenegatīvs vesels skaitlis."
 #: src/language/lexer/lexer.c:1007
 #, c-format
 msgid "Syntax error expecting positive integer for %s."
-msgstr "Sintakses kļūda: gaidīts pozitīvs vesels skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts pozitīvs vesels skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:1011
 msgid "Syntax error expecting positive integer."
@@ -2696,7 +2695,7 @@ msgstr "Sintakses kļūda: gaidīts pozitīvs vesels skaitlis."
 #: src/language/lexer/lexer.c:1017
 #, c-format
 msgid "Syntax error expecting integer %ld or greater for %s."
-msgstr "Sintakses kļūda: gaidīts vesels skaitlis %ld vai lielāks priekš %s."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis %ld vai lielāks (%s)."
 
 #: src/language/lexer/lexer.c:1021
 #, c-format
@@ -2706,7 +2705,7 @@ msgstr "Sintakses kļūda: gaidīts vesels skaitlis %ld vai lielāks."
 #: src/language/lexer/lexer.c:1029
 #, c-format
 msgid "Syntax error expecting integer less than or equal to %ld for %s."
-msgstr "Sintakses kļūda: gaidīts vesels skaitlis mazāks vai vienāds ar %ld priekš %s."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis mazāks vai vienāds ar %ld (%s)."
 
 #: src/language/lexer/lexer.c:1033
 #, c-format
@@ -2727,12 +2726,12 @@ msgstr "Sintakses kļūda: gaidīts skaitlis."
 #: src/language/lexer/lexer.c:1333 src/language/lexer/lexer.c:1387
 #, c-format
 msgid "Syntax error expecting number for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:1086
 #, c-format
 msgid "Syntax error expecting number %g for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis %g priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis %g (%s)."
 
 #: src/language/lexer/lexer.c:1089
 #, c-format
@@ -2742,7 +2741,7 @@ msgstr "Sintakses kļūda: gaidīts skaitlis %g."
 #: src/language/lexer/lexer.c:1100
 #, c-format
 msgid "Syntax error expecting number between %g and %g for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis no %g līdz %g priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis no %g līdz %g (%s)."
 
 #: src/language/lexer/lexer.c:1104
 #, c-format
@@ -2752,7 +2751,7 @@ msgstr "Sintakses kļūda: gaidīts skaitlis no %g līdz %g."
 #: src/language/lexer/lexer.c:1113 src/language/lexer/lexer.c:1196
 #, c-format
 msgid "Syntax error expecting non-negative number for %s."
-msgstr "Sintakses kļūda: gaidīts nenegatīvs skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts nenegatīvs skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:1117 src/language/lexer/lexer.c:1200
 msgid "Syntax error expecting non-negative number."
@@ -2761,7 +2760,7 @@ msgstr "Sintakses kļūda: gaidīts nenegatīvs skaitlis."
 #: src/language/lexer/lexer.c:1123 src/language/lexer/lexer.c:1206
 #, c-format
 msgid "Syntax error expecting number %g or greater for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis %g vai lielāks priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis %g vai lielāks (%s)."
 
 #: src/language/lexer/lexer.c:1127 src/language/lexer/lexer.c:1210
 #, c-format
@@ -2771,7 +2770,7 @@ msgstr "Sintakses kļūda: gaidīts skaitlis %g vai lielāks."
 #: src/language/lexer/lexer.c:1135
 #, c-format
 msgid "Syntax error expecting number less than or equal to %g for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis mazāks vai vienāds ar %g priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis mazāks vai vienāds ar %g (%s)."
 
 #: src/language/lexer/lexer.c:1139
 #, c-format
@@ -2781,76 +2780,76 @@ msgstr "Sintakses kļūda: gaidīts skaitlis mazāks vai vienāds ar %g."
 #: src/language/lexer/lexer.c:1184
 #, c-format
 msgid "Syntax error expecting number in [%g,%g) for %s."
-msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā [%g,%g) priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā [%g,%g) (%s)."
 
 #: src/language/lexer/lexer.c:1188
 #, c-format
 msgid "Syntax error expecting number in [%g,%g)."
-msgstr "Sintakses kļūda: sagaidāms skaitlis diapazonā [%g,%g)."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā [%g,%g)."
 
 #: src/language/lexer/lexer.c:1218 src/language/lexer/lexer.c:1377
 #, c-format
 msgid "Syntax error expecting number less than %g for %s."
-msgstr "Sintakses kļūda: sagaidāms skaitlis, mazāks par %g, priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis, mazāks par %g (%s)."
 
 #: src/language/lexer/lexer.c:1221 src/language/lexer/lexer.c:1381
 #, c-format
 msgid "Syntax error expecting number less than %g."
-msgstr "Sintakses kļūda: sagaidāms skaitlis, mazāks par %g."
+msgstr "Sintakses kļūda: gaidīts skaitlis, mazāks par %g."
 
 #: src/language/lexer/lexer.c:1265
 #, c-format
 msgid "Syntax error expecting number in (%g,%g] for %s."
-msgstr "Sintakses kļūda: sagaidāms skaitlis diapazonā (%g,%g] priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā (%g,%g] (%s)."
 
 #: src/language/lexer/lexer.c:1269
 #, c-format
 msgid "Syntax error expecting number in (%g,%g]."
-msgstr "Sintakses kļūda: sagaidāms skaitlis diapazonā (%g,%g]."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā (%g,%g]."
 
 #: src/language/lexer/lexer.c:1277 src/language/lexer/lexer.c:1357
 #, c-format
 msgid "Syntax error expecting positive number for %s."
-msgstr "Sintakses kļūda: sagaidāms pozitīvs skaitlis priekš %s."
+msgstr "Sintakses kļūda: gaidīts pozitīvs skaitlis (%s)."
 
 #: src/language/lexer/lexer.c:1281 src/language/lexer/lexer.c:1360
 msgid "Syntax error expecting positive number."
-msgstr "Sintakses kļūda: sagaidāms pozitīvs skaitlis."
+msgstr "Sintakses kļūda: gaidīts pozitīvs skaitlis."
 
 #: src/language/lexer/lexer.c:1286 src/language/lexer/lexer.c:1366
 #, c-format
 msgid "Syntax error expecting number greater than %g for %s."
-msgstr "Sintakses kļūda: sagaidāms skaitlis, lielāks par %g, priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis, lielāks par %g (%s)."
 
 #: src/language/lexer/lexer.c:1290 src/language/lexer/lexer.c:1370
 #, c-format
 msgid "Syntax error expecting number greater than %g."
-msgstr "Sintakses kļūda: sagaidāms skaitlis, lielāks par %g."
+msgstr "Sintakses kļūda: gaidīts skaitlis, lielāks par %g."
 
 #: src/language/lexer/lexer.c:1298
 #, c-format
 msgid "Syntax error expecting number %g or less for %s."
-msgstr "Sintakses kļūda: sagaidāms skaitlis %g vai mazāks priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis %g vai mazāks (%s)."
 
 #: src/language/lexer/lexer.c:1301
 #, c-format
 msgid "Syntax error expecting number %g or less."
-msgstr "Sintakses kļūda: sagaidāms skaitlis %g vai mazāks."
+msgstr "Sintakses kļūda: gaidīts skaitlis %g vai mazāks."
 
 #: src/language/lexer/lexer.c:1345
 #, c-format
 msgid "Syntax error expecting number in (%g,%g) for %s."
-msgstr "Sintakses kļūda: sagaidāms skaitlis diapazonā (%g,%g) priekš %s."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā (%g,%g) (%s)."
 
 #: src/language/lexer/lexer.c:1349
 #, c-format
 msgid "Syntax error expecting number in (%g,%g)."
-msgstr "Sintakses kļūda: sagaidāms skaitlis diapazonā (%g,%g)."
+msgstr "Sintakses kļūda: gaidīts skaitlis diapazonā (%g,%g)."
 
 #: src/language/lexer/lexer.c:1404 src/language/commands/define.c:176
 #: src/language/commands/define.c:182
 msgid "Syntax error expecting identifier."
-msgstr "Sintakses kļūda: sagaidāms identifikators."
+msgstr "Sintakses kļūda: gaidīts identifikators."
 
 #: src/language/lexer/lexer.c:1805
 #, c-format
@@ -2902,12 +2901,12 @@ msgstr "makro `%s' izvēršanas iekšienē,"
 #: src/language/lexer/macro.c:611
 #, c-format
 msgid "Reached end of command expecting %zu more token in argument %s to macro %s."
-msgstr "Sasniegtas komandas beigas, gaidot vēl %zu žetonu argumentā %s makro %s."
+msgstr "Sasniegtas komandas beigas, gaidot vēl %zu marķieri argumentā %s makro %s."
 
 #: src/language/lexer/macro.c:613
 #, c-format
 msgid "Reached end of command expecting %zu more tokens in argument %s to macro %s."
-msgstr "Sasniegtas komandas beigas, gaidot vēl %zu žetonus argumentā %s makro %s."
+msgstr "Sasniegtas komandas beigas, gaidot vēl %zu marķieris argumentā %s makro %s."
 
 #: src/language/lexer/macro.c:623
 #, c-format
@@ -2931,7 +2930,7 @@ msgstr "Arguments %s makro %s izsaukumā norādīts vairākkārt."
 #: src/language/lexer/macro.c:1000
 #, c-format
 msgid "`,' or `)' expected in call to macro function %s."
-msgstr "Makro funkcijas %s izsaukumā gaidīts `,' vai `)' ."
+msgstr "Makro funkcijas %s izsaukumā gaidīts `,' vai `)'."
 
 #: src/language/lexer/macro.c:1006
 #, c-format
@@ -2951,7 +2950,7 @@ msgstr "Makro funkcija %s pieņem divus argumentus (nevis %zu)."
 #: src/language/lexer/macro.c:1147
 #, c-format
 msgid "Macro function %s takes two or three arguments (not %zu)."
-msgstr "Makro funkcijai %s jābūt diviem vai trim argumentiem (nevis %zu)."
+msgstr "Makro funkcija %s pieņem divus vai trīs argumentus (nevis %zu)."
 
 #: src/language/lexer/macro.c:1152
 #, c-format
@@ -3056,7 +3055,7 @@ msgstr "Pārsniegts maksimālais ligzdotības līmenis %d. (Lai mainītu ierobe�
 
 #: src/language/lexer/format-parser.c:87
 msgid "Syntax error expecting valid format specifier."
-msgstr "Sintakses kļūda, gaidīts derīgs formāta norādītājs."
+msgstr "Sintakses kļūda: gaidīts derīgs formāta specifikators."
 
 #: src/language/lexer/format-parser.c:118
 #: src/language/lexer/format-parser.c:145 src/language/commands/data-list.c:498
@@ -3069,11 +3068,11 @@ msgstr "Nezināms formāta tips `%s'."
 #: src/language/lexer/format-parser.c:124
 #, c-format
 msgid "Format specifier `%s' lacks required width."
-msgstr "Formāta norādītājam `%s' trūkst nepieciešamā platuma."
+msgstr "Formāta specifikatoram `%s' trūkst nepieciešamā platuma."
 
 #: src/language/lexer/format-parser.c:140
 msgid "Syntax error expecting format type."
-msgstr "Sintakses kļūda, gaidīts formāta tips."
+msgstr "Sintakses kļūda: gaidīts formāta tips."
 
 #: src/language/lexer/scan.c:95
 #, c-format
@@ -3137,7 +3136,7 @@ msgstr "Šī %zu baitu virkne ir pārāk gara mainīgajam %s ar platumu %d."
 #: src/language/lexer/variable-parser.c:799 src/language/commands/graph.c:810
 #: src/language/commands/matrix.c:6131 utilities/pspp-convert.c:84
 msgid "Syntax error expecting variable name."
-msgstr "Sintakses kļūda: sagaidāms mainīgā nosaukums."
+msgstr "Sintakses kļūda: gaidīts mainīgā nosaukums."
 
 #: src/language/lexer/variable-parser.c:96
 #: src/language/lexer/variable-parser.c:845
@@ -3154,7 +3153,7 @@ msgstr "%s nav skaitlisks mainīgais. Tas netiks iekļauts mainīgo sarakstā."
 #: src/language/lexer/variable-parser.c:205
 #, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
-msgstr "%s nav teksta mainīgais. Tas netiks iekļauts mainīgo sarakstā."
+msgstr "%s nav virknes mainīgais. Tas netiks iekļauts mainīgo sarakstā."
 
 #: src/language/lexer/variable-parser.c:210
 #, c-format
@@ -3169,7 +3168,7 @@ msgstr "%s un %s nav viena veida. Visiem mainīgajiem šajā sarakstā jābūt v
 #: src/language/lexer/variable-parser.c:222
 #, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
-msgstr "%s un %s ir teksta mainīgie ar atšķirīgu platumu. Visiem mainīgajiem šajā mainīgo sarakstā jābūt vienāda platuma. %s tiks izlaists no saraksta."
+msgstr "%s un %s ir virknes mainīgie ar atšķirīgu platumu. Visiem mainīgajiem šajā mainīgo sarakstā jābūt vienāda platuma. %s tiks izlaists no saraksta."
 
 #: src/language/lexer/variable-parser.c:228
 #: src/language/lexer/variable-parser.c:496
@@ -3210,11 +3209,11 @@ msgstr "`%s' nevar izmantot ar TO, jo tas nebeidzas ar ciparu."
 #: src/language/lexer/variable-parser.c:480
 #, c-format
 msgid "Numeric suffix on `%s' is larger than supported with TO."
-msgstr "Skaitliskā sufiksa vērtība `%s' ir lielāka nekā atbalstīta ar TO."
+msgstr "Skaitliskais piedēklis `%s' ir lielāks, nekā TO atbalsta."
 
 #: src/language/lexer/variable-parser.c:581
 msgid "Prefixes don't match in use of TO convention."
-msgstr "Prefiksi neatbilst TO konvencijas izmantošanā."
+msgstr "TO konvencijas izmantošanā priedēkļi neatbilst."
 
 #: src/language/lexer/variable-parser.c:587
 msgid "Bad bounds in use of TO convention."
@@ -3243,7 +3242,7 @@ msgstr "Ievades datiem jābūt iepriekš sakārtotiem, jo apakškomanda OUTFILE 
 
 #: src/language/commands/aggregate.c:387
 msgid "Syntax error expecting aggregation function."
-msgstr "Sintakses kļūda — gaidīta agregācijas funkcija."
+msgstr "Sintakses kļūda: gaidīta agregācijas funkcija."
 
 #: src/language/commands/aggregate.c:401
 #, c-format
@@ -3253,12 +3252,12 @@ msgstr "Nezināma agregācijas funkcija %s."
 #: src/language/commands/aggregate.c:498
 #, c-format
 msgid "Missing argument %zu to %s."
-msgstr "Trūkst arguments %zu priekš %s."
+msgstr "Trūkst argumenta %zu funkcijai %s."
 
 #: src/language/commands/aggregate.c:505
 #, c-format
 msgid "Arguments to %s must be of same type as source variables."
-msgstr "Argumentiem priekš %s jābūt tāda paša tipa kā avota mainīgajiem."
+msgstr "Funkcijas %s argumentiem jābūt tāda paša tipa kā avota mainīgajiem."
 
 #: src/language/commands/aggregate.c:511
 msgid "The argument is numeric."
@@ -3548,11 +3547,11 @@ msgstr "Kategorija"
 
 #: src/language/commands/binomial.c:189
 msgid "Observed Prop."
-msgstr "Novērotā proporcija."
+msgstr "Novērotā proporcija"
 
 #: src/language/commands/binomial.c:190
 msgid "Test Prop."
-msgstr "Testa proporcija."
+msgstr "Testa proporcija"
 
 #: src/language/commands/binomial.c:192 src/language/commands/crosstabs.c:1439
 #: src/language/commands/mcnemar.c:236 src/language/commands/sign.c:103
@@ -3730,7 +3729,7 @@ msgstr "Šo komandu nedrīkst izmantot pēc TEMPORARY, ja aktīvā datu kopa ir 
 
 #: src/language/commands/combine-files.c:278
 msgid "Multiple IN subcommands for a single FILE or TABLE."
-msgstr "Vairākas IN apakškomandas vienam FAILAM vai TABULAI."
+msgstr "Vairākas IN apakškomandas vienam FILE vai TABLE."
 
 #: src/language/commands/combine-files.c:382
 #, c-format
@@ -3751,12 +3750,12 @@ msgstr "Mainīgajam %s ir dažādi tipi dažādos failos."
 #: src/language/commands/combine-files.c:676
 #, c-format
 msgid "In file %s, %s is numeric."
-msgstr "Failā %s, %s ir skaitlisks."
+msgstr "Failā %s mainīgais %s ir skaitlisks."
 
 #: src/language/commands/combine-files.c:680
 #, c-format
 msgid "In file %s, %s is a string."
-msgstr "Failā %s, %s ir virkne."
+msgstr "Failā %s mainīgais %s ir virkne."
 
 #: src/language/commands/combine-files.c:699
 #, c-format
@@ -3871,12 +3870,12 @@ msgstr "Nav norādīti mainīgie."
 
 #: src/language/commands/count.c:125
 msgid "Destination cannot be a string variable."
-msgstr "Mērķis nevar būt teksta mainīgais."
+msgstr "Mērķis nevar būt virknes mainīgais."
 
 #: src/language/commands/crosstabs.c:74
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:94
 msgid "Expected"
-msgstr "Paredzēts"
+msgstr "Gaidītais"
 
 #: src/language/commands/crosstabs.c:75 src/language/commands/ctables.c:340
 msgid "Row %"
@@ -3906,11 +3905,11 @@ msgstr "Jāpieprasa vismaz viena krusttabula (izmantojot apakškomandu TABLES)."
 #: src/language/commands/crosstabs.c:500
 #, c-format
 msgid "Missing mode %s not allowed in general mode.  Assuming %s."
-msgstr "Trūkstošais režīms %s nav atļauts vispārējā režīmā. Tiek pieņemts %s."
+msgstr "Trūkstošo vērtību režīms %s nav atļauts vispārējā režīmā. Tiek pieņemts %s."
 
 #: src/language/commands/crosstabs.c:590
 msgid "Syntax error expecting subcommand name or variable name."
-msgstr "Sintakses kļūda, gaidīts apakškomandas nosaukums vai mainīgā nosaukums."
+msgstr "Sintakses kļūda: gaidīts apakškomandas nosaukums vai mainīgā nosaukums."
 
 #: src/language/commands/crosstabs.c:622
 msgid "Too many cross-tabulation variables or dimensions."
@@ -3960,7 +3959,7 @@ msgstr "Krusttabulācija"
 #: src/language/commands/crosstabs.c:1157
 #, c-format
 msgid "Crosstabulation %s contained no non-missing cases."
-msgstr "Krusttabulācijā %s nebija neviena ne-trūkstoša gadījuma."
+msgstr "Krusttabulācijā %s nebija neviena netrūkstoša gadījuma."
 
 #: src/language/commands/crosstabs.c:1343
 msgid "Missing value"
@@ -3976,7 +3975,7 @@ msgstr "Pīrsona hī kvadrāts"
 
 #: src/language/commands/crosstabs.c:1428
 msgid "Likelihood Ratio"
-msgstr "Varbūtības attiecība"
+msgstr "Ticamības attiecība"
 
 #: src/language/commands/crosstabs.c:1429
 msgid "Fisher's Exact Test"
@@ -4023,7 +4022,7 @@ msgstr "Aptuvenais T"
 #: src/language/commands/crosstabs.c:1460
 #: src/language/commands/crosstabs.c:1545
 msgid "Approx. Sig."
-msgstr "Aptuvenā nozīmība."
+msgstr "Aptuvenā nozīmība"
 
 #: src/language/commands/crosstabs.c:1465
 #: src/language/commands/crosstabs.c:1550
@@ -4036,7 +4035,7 @@ msgstr "Fi"
 
 #: src/language/commands/crosstabs.c:1466
 msgid "Cramer's V"
-msgstr "Kremera V"
+msgstr "Krāmera V"
 
 #: src/language/commands/crosstabs.c:1466
 msgid "Contingency Coefficient"
@@ -4074,7 +4073,7 @@ msgstr "Pīrsona R"
 
 #: src/language/commands/crosstabs.c:1475
 msgid "Measure of Agreement"
-msgstr "Vienošanās mērs"
+msgstr "Saskaņas mērs"
 
 #: src/language/commands/crosstabs.c:1476
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:83
@@ -4138,7 +4137,7 @@ msgstr "Somersa d"
 
 #: src/language/commands/crosstabs.c:1558
 msgid "Nominal by Interval"
-msgstr "Nomināls pēc intervāla"
+msgstr "Nomināls ar intervālu"
 
 #: src/language/commands/crosstabs.c:1559
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:84
@@ -4148,7 +4147,7 @@ msgstr "Eta"
 #: src/language/commands/crosstabs.c:1969
 #, c-format
 msgid "Odds Ratio for %s"
-msgstr "Iespējamību attiecība priekš %s"
+msgstr "Izredžu attiecība (%s)"
 
 #: src/language/commands/crosstabs.c:1978
 #, c-format
@@ -4161,7 +4160,7 @@ msgstr "Atbalsts LCL, UCL un SE kopsavilkuma funkcijām vēl nav ieviests."
 
 #: src/language/commands/ctables.c:298
 msgid "Syntax error expecting summary function name."
-msgstr "Sintakses kļūda — gaidīts kopsavilkuma funkcijas nosaukums."
+msgstr "Sintakses kļūda: gaidīts kopsavilkuma funkcijas nosaukums."
 
 #: src/language/commands/ctables.c:330
 msgid "Adjusted Count"
@@ -4225,7 +4224,7 @@ msgstr "Tabulas derīgo N %"
 
 #: src/language/commands/ctables.c:348
 msgid "Unweighted Table Valid N %"
-msgstr "Neizsvērtās tabulas derīgo N %"
+msgstr "Nesvērtās tabulas derīgo N %"
 
 #: src/language/commands/ctables.c:349
 msgid "Layer Valid N %"
@@ -4233,7 +4232,7 @@ msgstr "Slāņa derīgo N %"
 
 #: src/language/commands/ctables.c:349
 msgid "Unweighted Layer Valid N %"
-msgstr "Neizsvērtā slāņa derīgo N %"
+msgstr "Nesvērtā slāņa derīgo N %"
 
 #: src/language/commands/ctables.c:350
 msgid "Layer Row Valid N %"
@@ -4241,7 +4240,7 @@ msgstr "Slāņa rindas derīgo N %"
 
 #: src/language/commands/ctables.c:350
 msgid "Unweighted Layer Row Valid N %"
-msgstr "Neizsvērtās slāņa rindas derīgo N %"
+msgstr "Nesvērtās slāņa rindas derīgo N %"
 
 #: src/language/commands/ctables.c:351
 msgid "Layer Column Valid N %"
@@ -4249,7 +4248,7 @@ msgstr "Slāņa kolonnas derīgo N %"
 
 #: src/language/commands/ctables.c:351
 msgid "Unweighted Layer Column Valid N %"
-msgstr "Neizsvērtās slāņa kolonnas derīgo N %"
+msgstr "Nesvērtās slāņa kolonnas derīgo N %"
 
 #: src/language/commands/ctables.c:352
 msgid "Subtable Valid N %"
@@ -4257,7 +4256,7 @@ msgstr "Apakštabulas derīgo N %"
 
 #: src/language/commands/ctables.c:352
 msgid "Unweighted Subtable Valid N %"
-msgstr "Neizsvērtās apakštabulas derīgo N %"
+msgstr "Nesvērtās apakštabulas derīgo N %"
 
 #: src/language/commands/ctables.c:353
 msgid "Row Valid N %"
@@ -4265,7 +4264,7 @@ msgstr "Rindas derīgo N %"
 
 #: src/language/commands/ctables.c:353
 msgid "Unweighted Row Valid N %"
-msgstr "Neizsvērtās rindas derīgo N %"
+msgstr "Nesvērtās rindas derīgo N %"
 
 #: src/language/commands/ctables.c:354
 msgid "Column Valid N %"
@@ -4273,7 +4272,7 @@ msgstr "Kolonnas derīgo N %"
 
 #: src/language/commands/ctables.c:354
 msgid "Unweighted Column Valid N %"
-msgstr "Neizsvērtās kolonnas derīgo N %"
+msgstr "Nesvērtās kolonnas derīgo N %"
 
 #: src/language/commands/ctables.c:361
 msgid "Table Total N %"
@@ -4281,7 +4280,7 @@ msgstr "Tabulas kopējais N %"
 
 #: src/language/commands/ctables.c:361
 msgid "Unweighted Table Total N %"
-msgstr "Neizsvērtās tabulas kopējais N %"
+msgstr "Nesvērtās tabulas kopējais N %"
 
 #: src/language/commands/ctables.c:362
 msgid "Layer Total N %"
@@ -4289,7 +4288,7 @@ msgstr "Slāņa kopējais N %"
 
 #: src/language/commands/ctables.c:362
 msgid "Unweighted Layer Total N %"
-msgstr "Neizsvērtā slāņa kopējais N %"
+msgstr "Nesvērtā slāņa kopējais N %"
 
 #: src/language/commands/ctables.c:363
 msgid "Layer Row Total N %"
@@ -4297,39 +4296,39 @@ msgstr "Slāņa rindas kopējais N %"
 
 #: src/language/commands/ctables.c:363
 msgid "Unweighted Layer Row Total N %"
-msgstr "Neizsvērtās slāņa rindas kopējais N %"
+msgstr "Nesvērtās slāņa rindas kopējais N %"
 
 #: src/language/commands/ctables.c:364
 msgid "Layer Column Total N %"
-msgstr "Slāņa kolonnas kopsumma N %"
+msgstr "Slāņa kolonnas kopējais N %"
 
 #: src/language/commands/ctables.c:364
 msgid "Unweighted Layer Column Total N %"
-msgstr "Nesvērtā slāņa kolonnas kopsumma N %"
+msgstr "Nesvērtā slāņa kolonnas kopējais N %"
 
 #: src/language/commands/ctables.c:365
 msgid "Subtable Total N %"
-msgstr "Apakštabulas kopsumma N %"
+msgstr "Apakštabulas kopējais N %"
 
 #: src/language/commands/ctables.c:365
 msgid "Unweighted Subtable Total N %"
-msgstr "Nesvērtā apakštabulas kopsumma N %"
+msgstr "Nesvērtā apakštabulas kopējais N %"
 
 #: src/language/commands/ctables.c:366
 msgid "Row Total N %"
-msgstr "Rindas kopsumma N %"
+msgstr "Rindas kopējais N %"
 
 #: src/language/commands/ctables.c:366
 msgid "Unweighted Row Total N %"
-msgstr "Nesvērtā rindas kopsumma N %"
+msgstr "Nesvērtā rindas kopējais N %"
 
 #: src/language/commands/ctables.c:367
 msgid "Column Total N %"
-msgstr "Kolonnas kopsumma N %"
+msgstr "Kolonnas kopējais N %"
 
 #: src/language/commands/ctables.c:367
 msgid "Unweighted Column Total N %"
-msgstr "Nesvērtā kolonnas kopsumma N %"
+msgstr "Nesvērtā kolonnas kopējais N %"
 
 #: src/language/commands/ctables.c:371 src/language/commands/descriptives.c:121
 #: src/language/commands/examine.c:737 src/language/commands/frequencies.c:109
@@ -4406,7 +4405,7 @@ msgstr "Summa"
 
 #: src/language/commands/ctables.c:381
 msgid "Unweighted Sum"
-msgstr "Neizsvērtā summa"
+msgstr "Nesvērtā summa"
 
 #: src/language/commands/ctables.c:382
 msgid "Total N"
@@ -4418,7 +4417,7 @@ msgstr "Koriģētais kopējais N"
 
 #: src/language/commands/ctables.c:384
 msgid "Unweighted Total N"
-msgstr "Neizsvērtais kopējais N"
+msgstr "Nesvērtais kopējais N"
 
 #: src/language/commands/ctables.c:385
 msgid "Valid N"
@@ -4430,7 +4429,7 @@ msgstr "Koriģētais derīgais N"
 
 #: src/language/commands/ctables.c:387
 msgid "Unweighted Valid N"
-msgstr "Neizsvērtais derīgais N"
+msgstr "Nesvērtais derīgais N"
 
 #: src/language/commands/ctables.c:388 src/language/commands/descriptives.c:114
 #: src/language/commands/examine.c:736 src/language/commands/frequencies.c:102
@@ -4442,7 +4441,7 @@ msgstr "Dispersija"
 
 #: src/language/commands/ctables.c:388
 msgid "Unweighted Variance"
-msgstr "Neizsvērtā dispersija"
+msgstr "Nesvērtā dispersija"
 
 #: src/language/commands/ctables.c:392
 msgid "Table Sum %"
@@ -4450,7 +4449,7 @@ msgstr "Tabulas summa %"
 
 #: src/language/commands/ctables.c:392
 msgid "Unweighted Table Sum %"
-msgstr "Neizsvērtā tabulas summa %"
+msgstr "Nesvērtā tabulas summa %"
 
 #: src/language/commands/ctables.c:393
 msgid "Layer Sum %"
@@ -4458,7 +4457,7 @@ msgstr "Slāņa summa %"
 
 #: src/language/commands/ctables.c:393
 msgid "Unweighted Layer Sum %"
-msgstr "Neizsvērtā slāņa summa %"
+msgstr "Nesvērtā slāņa summa %"
 
 #: src/language/commands/ctables.c:394
 msgid "Layer Row Sum %"
@@ -4466,7 +4465,7 @@ msgstr "Slāņa rindas summa %"
 
 #: src/language/commands/ctables.c:394
 msgid "Unweighted Layer Row Sum %"
-msgstr "Neizsvērtā slāņa rindas summa %"
+msgstr "Nesvērtā slāņa rindas summa %"
 
 #: src/language/commands/ctables.c:395
 msgid "Layer Column Sum %"
@@ -4474,7 +4473,7 @@ msgstr "Slāņa kolonnas summa %"
 
 #: src/language/commands/ctables.c:395
 msgid "Unweighted Layer Column Sum %"
-msgstr "Neizsvērtā slāņa kolonnas summa %"
+msgstr "Nesvērtā slāņa kolonnas summa %"
 
 #: src/language/commands/ctables.c:396
 msgid "Subtable Sum %"
@@ -4482,7 +4481,7 @@ msgstr "Apakštabulas summa %"
 
 #: src/language/commands/ctables.c:396
 msgid "Unweighted Subtable Sum %"
-msgstr "Neizsvērtā apakštabulas summa %"
+msgstr "Nesvērtā apakštabulas summa %"
 
 #: src/language/commands/ctables.c:397
 msgid "Row Sum %"
@@ -4490,7 +4489,7 @@ msgstr "Rindas summa %"
 
 #: src/language/commands/ctables.c:397
 msgid "Unweighted Row Sum %"
-msgstr "Neizsvērtā rindas summa %"
+msgstr "Nesvērtā rindas summa %"
 
 #: src/language/commands/ctables.c:398
 msgid "Column Sum %"
@@ -4498,7 +4497,7 @@ msgstr "Kolonnas summa %"
 
 #: src/language/commands/ctables.c:398
 msgid "Unweighted Column Sum %"
-msgstr "Neizsvērtā kolonnas summa %"
+msgstr "Nesvērtā kolonnas summa %"
 
 #: src/language/commands/ctables.c:429
 #, c-format
@@ -4508,7 +4507,7 @@ msgstr "Procentile %.2f"
 #: src/language/commands/ctables.c:430
 #, c-format
 msgid "Unweighted Percentile %.2f"
-msgstr "Neizsvērtā procentile %.2f"
+msgstr "Nesvērtā procentile %.2f"
 
 #: src/language/commands/ctables.c:894
 msgid "Syntax error expecting number or string or range."
@@ -4535,12 +4534,12 @@ msgstr "'%s' nav vairāku atbilžu kopa."
 #: src/language/commands/ctables.c:1173
 #, c-format
 msgid "Summary function %s applies only to scale variables."
-msgstr "Kopsavilkuma funkcija %s attiecas tikai uz skalārajiem mainīgajiem."
+msgstr "Kopsavilkuma funkcija %s attiecas tikai uz skalas mainīgajiem."
 
 #: src/language/commands/ctables.c:1175
 #, c-format
 msgid "'%s' is not a scale variable."
-msgstr "'%s' nav skalārais mainīgais."
+msgstr "'%s' nav skalas mainīgais."
 
 #: src/language/commands/ctables.c:1243
 msgid "Multiple response set support not implemented."
@@ -4559,7 +4558,7 @@ msgstr "Izvades formāts %s prasa platumu 2 vai lielāku."
 #: src/language/commands/ctables.c:1322
 #, c-format
 msgid "Output format %s requires width greater than decimals."
-msgstr "Izvades formāts %s prasa platumu, kas ir lielāks par decimālzīmēm."
+msgstr "Izvades formāts %s prasa platumu, kas ir lielāks par decimālvietu skaitu."
 
 #: src/language/commands/ctables.c:1482
 msgid "Cannot nest scale variables."
@@ -4592,7 +4591,7 @@ msgstr "Nezināms postcompute &%s."
 
 #: src/language/commands/ctables.c:1894
 msgid "Syntax error expecting category specification."
-msgstr "Sintakses kļūda, gaidīta kategorijas specifikācija."
+msgstr "Sintakses kļūda: gaidīta kategorijas specifikācija."
 
 #: src/language/commands/ctables.c:1912
 #, c-format
@@ -4603,9 +4602,9 @@ msgstr "Neizdevās parsēt kategorijas specifikāciju kā formātu %s: %s."
 #, c-format
 msgid "These categories include %zu instance of SUBTOTAL or HSUBTOTAL, so references from computed categories must refer to subtotals by position, e.g. SUBTOTAL[1]."
 msgid_plural "These categories include %zu instances of SUBTOTAL or HSUBTOTAL, so references from computed categories must refer to subtotals by position, e.g. SUBTOTAL[1]."
-msgstr[0] "Šīs kategorijas ietver %zu STARPSUMMAS vai HSTARPSUMMAS gadījumu, tāpēc aprēķinātās kategorijas atsaucēm uz starpsummām jābūt norādītām pēc pozīcijas, piemēram, STARPSUMMA[1]."
-msgstr[1] "Šīs kategorijas ietver %zu STARPSUMMU vai HSTARPSUMMU gadījumus, tāpēc aprēķinātās kategorijas atsaucēm uz starpsummām jābūt norādītām pēc pozīcijas, piemēram, STARPSUMMA[1]."
-msgstr[2] "Šīs kategorijas ietver %zu STARPSUMMAS vai HSTARPSUMMAS gadījumu, tāpēc aprēķinātās kategorijas atsaucēm uz starpsummām jābūt norādītām pēc pozīcijas, piemēram, STARPSUMMA[1]."
+msgstr[0] "Šīs kategorijas ietver %zu SUBTOTAL vai HSUBTOTAL gadījumu, tāpēc aprēķināto kategoriju atsaucēm uz starpsummām jānorāda pozīcija, piemēram, SUBTOTAL[1]."
+msgstr[1] "Šīs kategorijas ietver %zu SUBTOTAL vai HSUBTOTAL gadījumu, tāpēc aprēķināto kategoriju atsaucēm uz starpsummām jānorāda pozīcija, piemēram, SUBTOTAL[1]."
+msgstr[2] "Šīs kategorijas ietver %zu SUBTOTAL vai HSUBTOTAL gadījumus, tāpēc aprēķināto kategoriju atsaucēm uz starpsummām jānorāda pozīcija, piemēram, SUBTOTAL[1]."
 
 #: src/language/commands/ctables.c:2260
 msgid "This is the reference that lacks a position."
@@ -4639,7 +4638,7 @@ msgstr "Šo kategorijas specifikāciju var piemērot tikai virknes mainīgajiem,
 
 #: src/language/commands/ctables.c:4178
 msgid "Data-dependent sorting is not implemented."
-msgstr "Datu atkarīgā šķirošana nav ieviesta."
+msgstr "Datu atkarīgā kārtošana nav ieviesta."
 
 #: src/language/commands/ctables.c:4342
 #, c-format
@@ -4676,7 +4675,7 @@ msgstr "Slāņi"
 
 #: src/language/commands/ctables.c:4978
 msgid "Category labels may not be moved to another axis when sorting by a summary function."
-msgstr "Kategoriju etiķetes nevar pārvietot uz citu asi, veicot šķirošanu pēc kopsavilkuma funkcijas."
+msgstr "Kategoriju etiķetes nevar pārvietot uz citu asi, veicot kārtošanu pēc kopsavilkuma funkcijas."
 
 #: src/language/commands/ctables.c:4981 src/language/commands/ctables.c:4998
 #: src/language/commands/ctables.c:5019 src/language/commands/ctables.c:5031
@@ -4686,12 +4685,12 @@ msgstr "Šī sintakse pārvieto kategoriju etiķetes uz citu asi."
 
 #: src/language/commands/ctables.c:4983
 msgid "This syntax requests sorting by a summary function."
-msgstr "Šī sintakse pieprasa šķirošanu pēc kopsavilkuma funkcijas."
+msgstr "Šī sintakse pieprasa kārtošanu pēc kopsavilkuma funkcijas."
 
 #: src/language/commands/ctables.c:4994
 #, c-format
 msgid "To move category labels from one axis to another, the variables whose labels are to be moved must be categorical, but %s is scale."
-msgstr "Lai pārvietotu kategoriju etiķetes no vienas ass uz otru, mainīgajiem, kuru etiķetes tiek pārvietotas, jābūt kategoriskiem, bet %s ir skalārs."
+msgstr "Lai pārvietotu kategoriju etiķetes no vienas ass uz otru, mainīgajiem, kuru etiķetes tiek pārvietotas, jābūt kategoriskiem, bet %s ir skalas mainīgais."
 
 #: src/language/commands/ctables.c:5012
 #, c-format
@@ -4711,7 +4710,7 @@ msgstr "Lai pārvietotu kategoriju etiķetes no vienas ass uz otru, mainīgajiem
 #: src/language/commands/ctables.c:5770
 #, c-format
 msgid "New definition of &%s will override the previous definition."
-msgstr "Jaunā &%s definīcija ignorēs iepriekšējo definīciju."
+msgstr "Jaunā &%s definīcija aizstās iepriekšējo definīciju."
 
 #: src/language/commands/ctables.c:5773
 msgid "This is the previous definition."
@@ -4736,19 +4735,19 @@ msgstr "Jānorāda vismaz viens mainīgais."
 
 #: src/language/commands/ctables.c:6369
 msgid "Scale variables may appear only on one axis."
-msgstr "Mēroga mainīgie var parādīties tikai vienā asī."
+msgstr "Skalas mainīgie var parādīties tikai vienā asī."
 
 #: src/language/commands/ctables.c:6372
 msgid "This scale variable appears on the rows axis."
-msgstr "Šis mēroga mainīgais atrodas rindu asī."
+msgstr "Šis skalas mainīgais atrodas rindu asī."
 
 #: src/language/commands/ctables.c:6375
 msgid "This scale variable appears on the columns axis."
-msgstr "Šis mēroga mainīgais atrodas kolonnu asī."
+msgstr "Šis skalas mainīgais atrodas kolonnu asī."
 
 #: src/language/commands/ctables.c:6378
 msgid "This scale variable appears on the layer axis."
-msgstr "Šis mēroga mainīgais atrodas slāņu asī."
+msgstr "Šis skalas mainīgais atrodas slāņu asī."
 
 #: src/language/commands/ctables.c:6394
 msgid "Summaries may appear only on one axis."
@@ -4768,7 +4767,7 @@ msgstr "Šim mainīgajam slāņu asī ir kopsavilkums."
 
 #: src/language/commands/ctables.c:6406
 msgid "This is a scale variable, so it always has a summary even if the syntax does not explicitly specify one."
-msgstr "Šis ir mēroga mainīgais, tāpēc tam vienmēr ir kopsavilkums, pat ja sintakse to nav skaidri norādījusi."
+msgstr "Šis ir skalas mainīgais, tāpēc tam vienmēr ir kopsavilkums, pat ja sintakse to nav eksplicīti norādījusi."
 
 #: src/language/commands/ctables.c:6507
 msgid "ROWLABELS and COLLABELS may not both be specified."
@@ -4805,7 +4804,7 @@ msgstr "Var norādīt tikai vienu no FIXED, FREE vai LIST."
 
 #: src/language/commands/data-list.c:221
 msgid "Syntax error expecting TAB or delimiter string."
-msgstr "Sintakses kļūda - gaidīts TAB vai atdalītāja virkne."
+msgstr "Sintakses kļūda: gaidīts TAB vai atdalītāja virkne."
 
 #: src/language/commands/data-list.c:265
 msgid "Encoding should not be specified for inline data. It will be ignored."
@@ -4849,11 +4848,11 @@ msgstr "Nav norādīts neviens lauks. Nepieciešams norādīt vismaz vienu."
 #: src/language/commands/data-parser.c:406
 #: src/language/commands/data-parser.c:415
 msgid "Quoted string extends beyond end of line."
-msgstr "Citētā virkne pārsniedz rindas beigas."
+msgstr "Pēdiņās ietvertā virkne pārsniedz rindas beigas."
 
 #: src/language/commands/data-parser.c:440
 msgid "Missing delimiter following quoted string."
-msgstr "Trūkst atdalītāja pēc citētās virknes."
+msgstr "Trūkst atdalītāja pēc pēdiņās ietvertās virknes."
 
 #: src/language/commands/data-parser.c:513
 #, c-format
@@ -4863,7 +4862,7 @@ msgstr "Dati mainīgajam %s nav derīgi formātā %s: %s"
 #: src/language/commands/data-parser.c:543
 #, c-format
 msgid "Partial case of %d of %d records discarded."
-msgstr "Daļējs gadījums no %d no %d ierakstiem ir atmests."
+msgstr "Atmests daļējs gadījums: %d no %d ierakstiem."
 
 #: src/language/commands/data-parser.c:636
 #, c-format
@@ -4873,7 +4872,7 @@ msgstr "Daļējs gadījums atmests. Pirmais trūkstošais mainīgais bija %s."
 #: src/language/commands/data-parser.c:680
 #, c-format
 msgid "Missing value(s) for all variables from %s onward.  These will be filled with the system-missing value or blanks, as appropriate."
-msgstr "Trūkst vērtību(-as) visiem mainīgajiem, sākot no %s. Tās tiks aizpildītas ar sistēmas trūkstošo vērtību vai tukšumiem, kā nepieciešams."
+msgstr "Visiem mainīgajiem, sākot no %s, trūkst vērtību. Tās tiks aizpildītas ar sistēmas trūkstošo vērtību vai tukšumiem, kā piemērots."
 
 #: src/language/commands/data-parser.c:702
 msgid "Record ends in data not part of any field."
@@ -4883,9 +4882,9 @@ msgstr "Ieraksts beidzas ar datiem, kas nepieder nevienam laukam."
 #, c-format
 msgid "Reading %d record from %s."
 msgid_plural "Reading %d records from %s."
-msgstr[0] "Tiek lasīts %d ierakstu no %s."
-msgstr[1] "Tiek lasīti %d ieraksts no %s."
-msgstr[2] "Tiek lasīti %d ierakstu no %s."
+msgstr[0] "Tiek lasīti %d ierakstu no %s."
+msgstr[1] "Tiek lasīts %d ieraksts no %s."
+msgstr[2] "Tiek lasīti %d ieraksti no %s."
 
 #: src/language/commands/data-parser.c:727 src/language/commands/print.c:451
 msgid "Record"
@@ -4927,7 +4926,7 @@ msgstr "Trūkst %s, nolasot iekļautos datus. Tas, visticamāk, norāda uz trūk
 #: src/language/commands/data-reader.c:386
 #, c-format
 msgid "Error reading file %s: %s."
-msgstr "Kļūda nolasot failu %s: %s."
+msgstr "Kļūda, nolasot failu %s: %s."
 
 #: src/language/commands/data-reader.c:260
 #, c-format
@@ -5005,7 +5004,7 @@ msgstr "Atļauts tikai viens no !TOKENS, !CHAREND, !ENCLOSE vai !CMDEND."
 
 #: src/language/commands/define.c:103
 msgid "Syntax error expecting macro body or !ENDDEFINE."
-msgstr "Sintakses kļūda – gaidīts makro pamatteksts vai !ENDDEFINE."
+msgstr "Sintakses kļūda: gaidīts makro pamatteksts vai !ENDDEFINE."
 
 #: src/language/commands/define.c:212
 msgid "Positional parameters must precede keyword parameters."
@@ -5017,7 +5016,7 @@ msgstr "Šeit ir iepriekšējais atslēgvārda parametrs."
 
 #: src/language/commands/define.c:228
 msgid "Keyword macro parameter must be named in definition without \"!\" prefix."
-msgstr "Makro atslēgvārda parametrs definīcijā jānosauc bez prefiksa \"!\"."
+msgstr "Makro atslēgvārda parametrs definīcijā jānosauc bez priedēkļa \"!\"."
 
 #: src/language/commands/define.c:237
 #, c-format
@@ -5051,7 +5050,7 @@ msgstr "%s nevar izmantot, lai dzēstu visus mainīgos no aktīvās datu kopas v
 #: src/language/commands/t-test-paired.c:154
 #: src/language/commands/t-test-paired.c:243
 msgid "S.E. Mean"
-msgstr "S.E. Vidējā Vērtība"
+msgstr "S.E. vidējā vērtība"
 
 #: src/language/commands/descriptives.c:113
 #: src/language/commands/frequencies.c:101
@@ -5065,7 +5064,7 @@ msgstr "Standartnovirze"
 #: src/ui/gui/psppire-dialog-action-descriptives.c:47
 #: src/ui/gui/psppire-dialog-action-frequencies.c:50
 msgid "Kurtosis"
-msgstr "Kurtosis"
+msgstr "Ekscess"
 
 #: src/language/commands/descriptives.c:116
 #: src/language/commands/frequencies.c:104
@@ -5099,7 +5098,7 @@ msgstr "Z-vērtība no %s"
 
 #: src/language/commands/descriptives.c:581
 msgid "Ran out of generic names for Z-score variables.  There are only 126 generic names: ZSC001-ZSC099, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
-msgstr "Izsīkušas vispārīgās Z-vērtības mainīgo nosaukumu opcijas. Ir tikai 126 vispārīgi nosaukumi: ZSC001-ZSC099, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
+msgstr "Izsmelti vispārīgie Z-vērtību mainīgo nosaukumi. Ir tikai 126 vispārīgi nosaukumi: ZSC001-ZSC099, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
 
 #: src/language/commands/descriptives.c:599
 msgid "Mapping of Variables to Z-scores"
@@ -5153,16 +5152,16 @@ msgstr " (trūkst)"
 #: src/language/commands/examine.c:215
 #, c-format
 msgid "Boxplot of %s vs. %s"
-msgstr "Kastu diagramma %s pret %s"
+msgstr "Kastes diagramma %s pret %s"
 
 #: src/language/commands/examine.c:221 src/language/commands/examine.c:328
 #, c-format
 msgid "Boxplot of %s"
-msgstr "Kastu diagramma %s"
+msgstr "Kastes diagramma: %s"
 
 #: src/language/commands/examine.c:311
 msgid "Boxplot"
-msgstr "Kastu diagramma"
+msgstr "Kastes diagramma"
 
 #: src/language/commands/examine.c:408
 msgid "Not creating NP plot because data set is empty."
@@ -5171,7 +5170,7 @@ msgstr "NP diagramma netiek veidota, jo datu kopa ir tukša."
 #: src/language/commands/examine.c:468
 #, c-format
 msgid "Not creating spreadlevel chart for %s"
-msgstr "Neizveido izkliedes līmeņa diagrammu priekš %s"
+msgstr "Netiek veidota %s izkliedes līmeņa diagramma"
 
 #: src/language/commands/examine.c:575
 msgid "User-missing value."
@@ -5300,7 +5299,7 @@ msgstr "Matricas ievadei %s jābūt COV vai CORR"
 
 #: src/language/commands/factor.c:1394
 msgid "Factor analysis on a single variable is not useful."
-msgstr "Faktoru analīze uz viena mainīgā nav noderīga."
+msgstr "Faktoru analīze ar vienu mainīgo nav noderīga."
 
 #: src/language/commands/factor.c:1496
 msgid "Component Number"
@@ -5351,11 +5350,11 @@ msgstr "Sākotnējās īpašvērtības"
 
 #: src/language/commands/factor.c:1630
 msgid "Extraction Sums of Squared Loadings"
-msgstr "Iegūto kvadrātu summas"
+msgstr "Ekstrakcijas slodžu kvadrātu summas"
 
 #: src/language/commands/factor.c:1634
 msgid "Rotation Sums of Squared Loadings"
-msgstr "Rotācijas kvadrātu summas"
+msgstr "Rotācijas slodžu kvadrātu summas"
 
 #: src/language/commands/factor.c:1696
 msgid "Factor Correlation Matrix"
@@ -5425,12 +5424,12 @@ msgstr "Aptuvenais Hī kvadrāts"
 #: src/language/commands/factor.c:2019
 #, c-format
 msgid "The %s criteria result in zero factors extracted. Therefore no analysis will be performed."
-msgstr "%s kritēriji rezultējas ar nulles izvilkto faktoru skaitu. Tāpēc analīze netiks veikta."
+msgstr "%s kritēriji dod nulle izgūtu faktoru. Tāpēc analīze netiks veikta."
 
 #: src/language/commands/factor.c:2026
 #, c-format
 msgid "The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."
-msgstr "%s kritēriji rezultējas ar lielāku faktoru skaitu nekā mainīgo, kas nav jēgpilni. Analīze netiks veikta."
+msgstr "%s kritēriji dod vairāk faktoru nekā mainīgo, kas nav jēgpilni. Analīze netiks veikta."
 
 #: src/language/commands/factor.c:2118
 msgid "Component Matrix"
@@ -5442,7 +5441,7 @@ msgstr "Faktoru matrica"
 
 #: src/language/commands/factor.c:2123
 msgid "Pattern Matrix"
-msgstr "Rakstu matrica"
+msgstr "Modeļa matrica"
 
 #: src/language/commands/factor.c:2132
 msgid "Structure Matrix"
@@ -5501,7 +5500,7 @@ msgstr "%s ignorē %s. Pagaidu transformācijas tiks padarītas pastāvīgas."
 #: src/language/commands/flip.c:155
 #, c-format
 msgid "Could not create temporary file for %s."
-msgstr "Neizdevās izveidot pagaidu failu priekš %s."
+msgstr "Neizdevās izveidot %s pagaidu failu."
 
 #: src/language/commands/flip.c:343
 #, c-format
@@ -5526,7 +5525,7 @@ msgstr "Negaidītas faila beigas, nolasot %s failu."
 #: src/language/commands/flip.c:381
 #, c-format
 msgid "Error seeking %s source file: %s."
-msgstr "Kļūda, meklējot %s avota failu: %s."
+msgstr "Kļūda, pārvietojot (seek) %s avota failu: %s."
 
 #: src/language/commands/flip.c:389
 #, c-format
@@ -5565,16 +5564,16 @@ msgstr "Kumulatīvais procents"
 #: src/language/commands/frequencies.c:1207
 #, c-format
 msgid "Omitting pie chart for %s, which has only %d unique values."
-msgstr "Izlaiž tortes diagrammu priekš %s, kurai ir tikai %d unikālas vērtības."
+msgstr "Izlaiž %s sektoru diagrammu, jo tam ir tikai %d unikālas vērtības."
 
 #: src/language/commands/frequencies.c:1210
 #, c-format
 msgid "Omitting pie chart for %s, which has over 50 unique values."
-msgstr "Izlaiž tortes diagrammu priekš %s, kurai ir vairāk nekā 50 unikālas vērtības."
+msgstr "Izlaiž %s sektoru diagrammu, jo tam ir vairāk nekā 50 unikālu vērtību."
 
 #: src/language/commands/frequencies.c:1226
 msgid "Omitting bar chart, which has no values."
-msgstr "Izlaiž joslu diagrammu, kurai nav vērtību."
+msgstr "Izlaiž joslu diagrammu, jo tai nav vērtību."
 
 #: src/language/commands/friedman.c:220
 #: src/language/commands/kruskal-wallis.c:263
@@ -5588,7 +5587,7 @@ msgstr "Rangi"
 #: src/language/commands/mann-whitney.c:186
 #: src/language/commands/wilcoxon.c:234
 msgid "Mean Rank"
-msgstr "Vidējā Rangs"
+msgstr "Vidējais rangs"
 
 #: src/language/commands/friedman.c:253
 msgid "Kendall's W"
@@ -5620,7 +5619,7 @@ msgstr "Ignorēta novecojusi IMPORTCASES apakškomanda. (N OF CASES vai SAMPLE v
 
 #: src/language/commands/get-data.c:479
 msgid "In compatible syntax mode, the QUALIFIER string must contain exactly one character."
-msgstr "Saderīgās sintakses režīmā QUALIFIER virknei jāsatur tieši viens rakstzīme."
+msgstr "Saderīgās sintakses režīmā QUALIFIER virknei jāsatur tieši viena rakstzīme."
 
 #: src/language/commands/get.c:132
 #, c-format
@@ -5677,7 +5676,7 @@ msgstr "Kļūda"
 
 #: src/language/commands/glm.c:743
 msgid "Corrected Total"
-msgstr "Koriģētais kopsumma"
+msgstr "Koriģētā kopsumma"
 
 #: src/language/commands/graph.c:205
 msgid "Percentage"
@@ -5734,7 +5733,7 @@ msgstr "/dev/null: Neizdevās atvērt (%s)."
 #: src/language/commands/host.c:116
 #, c-format
 msgid "Couldn't fork: %s."
-msgstr "Neizdevās izveidot atzaru: %s."
+msgstr "Neizdevās atzarot procesu (fork): %s."
 
 #: src/language/commands/host.c:126
 msgid "Failed to set process group."
@@ -5742,12 +5741,12 @@ msgstr "Neizdevās iestatīt procesa grupu."
 
 #: src/language/commands/host.c:144
 msgid "Failed to set timeout."
-msgstr "Neizdevās iestatīt noildzi."
+msgstr "Neizdevās iestatīt noilgumu."
 
 #: src/language/commands/host.c:211
 #, c-format
 msgid "While running \"%s\", waiting for child process failed (%s)."
-msgstr "Izpildot \"%s\", neizdevās gaidīt bērna procesu (%s)."
+msgstr "Izpildot \"%s\", neizdevās gaidīt bērnprocesu (%s)."
 
 #: src/language/commands/host.c:221
 #, c-format
@@ -5794,7 +5793,7 @@ msgstr "Nevar atrast `%s' iekļaušanas failu meklēšanas ceļā."
 #: src/language/commands/inpt-pgm.c:127
 #, c-format
 msgid "Unexpected end-of-file within %s."
-msgstr "Negaidīta faila beigas %s ietvaros."
+msgstr "Negaidītas faila beigas %s ietvaros."
 
 #: src/language/commands/inpt-pgm.c:146
 #, c-format
@@ -5843,7 +5842,7 @@ msgstr "Asimpt. nozīm. (2-pusējs)"
 
 #: src/language/commands/ks-one-sample.c:274 src/ui/gui/ks-one-sample.ui:24
 msgid "One-Sample Kolmogorov-Smirnov Test"
-msgstr "Viena parauga Kolmogorova-Smirnova tests"
+msgstr "Vienas izlases Kolmogorova-Smirnova tests"
 
 #: src/language/commands/ks-one-sample.c:284
 msgid "Uniform Parameters"
@@ -5879,7 +5878,7 @@ msgstr "Negatīvā"
 
 #: src/language/commands/ks-one-sample.c:312
 msgid "Kolmogorov-Smirnov Z"
-msgstr "Koļmogorova-Smirnova Z"
+msgstr "Kolmogorova-Smirnova Z"
 
 #: src/language/commands/logistic.c:327
 msgid "All predicted values are either 1 or 0"
@@ -5892,7 +5891,7 @@ msgstr "Atkarīgā mainīgā vērtības nav dihotomiskas."
 #: src/language/commands/logistic.c:614
 #, c-format
 msgid "Category %s does not have at least two distinct values. Logistic regression will not be run."
-msgstr "Kategorijai %s nav vismaz divu atšķirīgu vērtību. Logistiskā regresija netiks veikta."
+msgstr "Kategorijai %s nav vismaz divu atšķirīgu vērtību. Loģistiskā regresija netiks veikta."
 
 #: src/language/commands/logistic.c:674
 #, c-format
@@ -5948,7 +5947,7 @@ msgstr "Exp(B)"
 #: src/language/commands/logistic.c:1092
 #, c-format
 msgid "%d%% CI for Exp(B)"
-msgstr "%d%% CI priekš Exp(B)"
+msgstr "Exp(B) %d%% TI"
 
 #: src/language/commands/logistic.c:1100 src/language/commands/logistic.c:1381
 msgid "Step 1"
@@ -5964,7 +5963,7 @@ msgstr "Modeļa kopsavilkums"
 
 #: src/language/commands/logistic.c:1212
 msgid "-2 Log likelihood"
-msgstr "-2 Log varbūtība"
+msgstr "-2 Log ticamība"
 
 #: src/language/commands/logistic.c:1213
 msgid "Cox & Snell R Square"
@@ -5980,7 +5979,7 @@ msgstr "Solis"
 
 #: src/language/commands/logistic.c:1246
 msgid "Unweighted Cases"
-msgstr "Neizsvērtie gadījumi"
+msgstr "Nesvērtie gadījumi"
 
 #: src/language/commands/logistic.c:1247
 msgid "Included in Analysis"
@@ -6156,13 +6155,13 @@ msgid "Matrix function %s requires %zu argument."
 msgid_plural "Matrix function %s requires %zu arguments."
 msgstr[0] "Matricas funkcijai %s nepieciešams %zu argumentu."
 msgstr[1] "Matricas funkcijai %s nepieciešami %zu arguments."
-msgstr[2] "Matricas funkcijai %s nepieciešams %zu argumenti."
+msgstr[2] "Matricas funkcijai %s nepieciešami %zu argumenti."
 
 #: src/language/commands/matrix.c:1006
 #, c-format
 msgid "Matrix function %s requires 1 or 2 arguments, but %zu was provided."
 msgid_plural "Matrix function %s requires 1 or 2 arguments, but %zu were provided."
-msgstr[0] "Matricas funkcijai %s nepieciešams 1 vai 2 argumenti, bet tika norādīti %zu."
+msgstr[0] "Matricas funkcijai %s nepieciešami 1 vai 2 argumenti, bet tika norādīti %zu."
 msgstr[1] "Matricas funkcijai %s nepieciešami 1 vai 2 argumenti, bet tika norādīts %zu."
 msgstr[2] "Matricas funkcijai %s nepieciešami 1 vai 2 argumenti, bet tika norādīti %zu."
 
@@ -6178,7 +6177,7 @@ msgstr "Nezināms mainīgais %s."
 
 #: src/language/commands/matrix.c:1099
 msgid "Syntax error expecting matrix expression."
-msgstr "Sintakses kļūda – gaidīta matricas izteiksme."
+msgstr "Sintakses kļūda: gaidīta matricas izteiksme."
 
 #: src/language/commands/matrix.c:1454
 msgid "Input to CHOL function is not positive-definite."
@@ -6288,7 +6287,7 @@ msgstr "Visiem : operandiem jābūt skalāriem atbalstītā veselo skaitļu diap
 
 #: src/language/commands/matrix.c:3550
 msgid "The increment operand to : must be nonzero."
-msgstr "Operandam pie : palielinājumam jābūt atšķirīgam no nulles."
+msgstr "Operatora : soļa operandam jābūt atšķirīgam no nulles."
 
 #: src/language/commands/matrix.c:3561
 msgid "Matrix cannot be allocated.  Too large?"
@@ -6340,12 +6339,12 @@ msgstr "Vektora indeksa operators nevar tikt pielietots %zu×%zu matricai."
 #: src/language/commands/matrix.c:3849
 #, c-format
 msgid "Function %s argument %zu must be a scalar, not a %zu×%zu matrix."
-msgstr "Funkcijas %s arguments %zu jābūt skalāram, nevis %zu×%zu matricai."
+msgstr "Funkcijas %s argumentam %zu jābūt skalāram, nevis %zu×%zu matricai."
 
 #: src/language/commands/matrix.c:3864
 #, c-format
 msgid "Function %s argument %zu must be a vector, not a %zu×%zu matrix."
-msgstr "Funkcijas %s arguments %zu jābūt vektoram, nevis %zu×%zu matricai."
+msgstr "Funkcijas %s argumentam %zu jābūt vektoram, nevis %zu×%zu matricai."
 
 #: src/language/commands/matrix.c:3915
 #, c-format
@@ -6370,7 +6369,7 @@ msgstr "Argumentam %zu matricas funkcijā %s jābūt mazākam par argumentu %zu.
 #: src/language/commands/matrix.c:3939
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to argument %zu."
-msgstr "Argumentam %zu matricas funkcijā %s nedrīkst būt vienādam ar argumentu %zu."
+msgstr "Argumentam %zu matricas funkcijā %s nedrīkst būt vienāds ar argumentu %zu."
 
 #: src/language/commands/matrix.c:3947 src/language/commands/matrix.c:3954
 #: src/language/commands/matrix.c:4002
@@ -6406,7 +6405,7 @@ msgstr "Argumentam %zu matricas funkcijā %s jābūt mazākam par %g."
 #: src/language/commands/matrix.c:3992
 #, c-format
 msgid "Argument %zu to matrix function %s must not be equal to %g."
-msgstr "Argumentam %zu matricas funkcijā %s nedrīkst būt vienādam ar %g."
+msgstr "Argumentam %zu matricas funkcijā %s nedrīkst būt vienāds ar %g."
 
 #: src/language/commands/matrix.c:4075
 #, c-format
@@ -6421,7 +6420,7 @@ msgstr "Arguments %zu matricas funkcijā %s ir %g, kas atrodas ārpus derīgā d
 #: src/language/commands/matrix.c:4101
 #, c-format
 msgid "Argument %zu to matrix function %s, which must be integer, contains non-integer value %g in row %zu, column %zu."
-msgstr "Argumentu %zu matricas funkcijai %s, kurai ir jābūt veselam skaitlim, satur nederīgu veselā skaitļa vērtību %g rindā %zu, kolonnā %zu."
+msgstr "Argumentā %zu matricas funkcijai %s, kam jābūt veselam skaitlim, ir nevesela vērtība %g rindā %zu, kolonnā %zu."
 
 #: src/language/commands/matrix.c:4107
 #, c-format
@@ -6441,7 +6440,7 @@ msgstr "Izteiksmē izmantots neinicializēts mainīgais %s."
 #: src/language/commands/matrix.c:4740
 #, c-format
 msgid "Expression for %s must evaluate to scalar, not a %zu×%zu matrix."
-msgstr "Izteiksmei %s jānovērtē skalāram, nevis %zu×%zu matricai."
+msgstr "Izteiksmei %s jānovērtējas kā skalārs, nevis %zu×%zu matrica."
 
 #: src/language/commands/matrix.c:4764
 #, c-format
@@ -6567,7 +6566,7 @@ msgstr "Šī ir pirmā SAVE uz %s atrašanās vieta."
 #: src/language/commands/matrix.c:6272
 #, c-format
 msgid "Duplicate variable name %s in SAVE statement."
-msgstr "Dublēts mainīgā nosaukums %s SAVE paziņojumā."
+msgstr "Dublēts mainīgā nosaukums %s SAVE priekšrakstā."
 
 #: src/language/commands/matrix.c:6285
 #, c-format
@@ -6589,7 +6588,7 @@ msgstr "Ignorē NAMES, jo tika norādīts arī VARIABLES."
 #: src/language/commands/matrix.c:6621 src/language/commands/matrix.c:7203
 #, c-format
 msgid "Field width %d does not evenly divide record width %d."
-msgstr "Lauka platums %d nedalās vienmērīgi ar ieraksta platumu %d."
+msgstr "Lauka platums %d nav ieraksta platuma %d dalītājs."
 
 #: src/language/commands/matrix.c:6624 src/language/commands/matrix.c:6757
 #: src/language/commands/matrix.c:7206 src/language/commands/matrix.c:7322
@@ -6659,17 +6658,17 @@ msgstr "Matricas datos nedrīkst būt trūkstošas vērtības."
 
 #: src/language/commands/matrix.c:6865
 msgid "Unexpected end of file reading matrix data."
-msgstr "Negaidīta faila beigas, nolasot matricas datus."
+msgstr "Negaidītas faila beigas, nolasot matricas datus."
 
 #: src/language/commands/matrix.c:6936
 #, c-format
 msgid "Trailing garbage following data for matrix row %zu."
-msgstr "Atlikušās liekās vērtības pēc matricas rindas %zu datiem."
+msgstr "Lieki dati pēc matricas rindas %zu datiem."
 
 #: src/language/commands/matrix.c:6962 src/language/commands/matrix.c:6985
 #, c-format
 msgid "SIZE must evaluate to a scalar or a 2-element vector, not a %zu×%zu matrix."
-msgstr "SIZE jānovērtē kā skalāram vai 2 elementu vektoram, nevis %zu×%zu matricai."
+msgstr "SIZE jānovērtējas kā skalārs vai 2 elementu vektors, nevis %zu×%zu matrica."
 
 #: src/language/commands/matrix.c:6998
 #, c-format
@@ -6712,11 +6711,11 @@ msgstr "WRITE ar MODE=TRIANGULAR prasa kvadrātveida matricu, bet rakstāmajai m
 
 #: src/language/commands/matrix.c:7582
 msgid "Syntax error expecting ACCEPT or OMIT or a number for MISSING."
-msgstr "Sintakses kļūda – gaidīts ACCEPT, OMIT vai skaitlis priekš MISSING."
+msgstr "Sintakses kļūda: gaidīts ACCEPT, OMIT vai skaitlis (MISSING)."
 
 #: src/language/commands/matrix.c:7600
 msgid "Syntax error expecting OMIT or a number for SYSMIS."
-msgstr "Sintakses kļūda – gaidīts OMIT vai skaitlis priekš SYSMIS."
+msgstr "Sintakses kļūda: gaidīts OMIT vai skaitlis (SYSMIS)."
 
 #: src/language/commands/matrix.c:7646
 #, c-format
@@ -6796,7 +6795,7 @@ msgstr "SNAMES nepieciešams SPLIT."
 #: src/language/commands/matrix.c:8110
 #, c-format
 msgid "%s expression must evaluate to vector, not a %zu×%zu matrix."
-msgstr "%s izteiksmei jānovērtē kā vektoram, nevis %zu×%zu matricai."
+msgstr "%s izteiksmei jānovērtējas kā vektors, nevis %zu×%zu matrica."
 
 #: src/language/commands/matrix.c:8148
 #, c-format
@@ -6847,8 +6846,8 @@ msgstr "Matricas datu fails satur mainīgo ar esošo nosaukumu %s."
 #, c-format
 msgid "Matrix data file variable %s contains a missing value, which was treated as zero."
 msgid_plural "Matrix data file variable %s contains %zu missing values, which were treated as zero."
-msgstr[0] "Matricas datu faila mainīgais %s satur %zu trūkstoši vērtībi, kas tika uzskatītas par nullēm."
-msgstr[1] "Matricas datu faila mainīgais %s satur %zu trūkstošu vērtību, kas tika uzskatītas par nullēm."
+msgstr[0] "Matricas datu faila mainīgais %s satur %zu trūkstošu vērtību, kas tika uzskatītas par nullēm."
+msgstr[1] "Matricas datu faila mainīgais %s satur %zu trūkstošu vērtību, kas tika uzskatīta par nulli."
 msgstr[2] "Matricas datu faila mainīgais %s satur %zu trūkstošas vērtības, kas tika uzskatītas par nullēm."
 
 #: src/language/commands/matrix.c:8538
@@ -6910,7 +6909,7 @@ msgstr "Matricas komanda %s vēl nav ieviesta."
 
 #: src/language/commands/matrix.c:9224
 msgid "Unexpected end of input expecting matrix command."
-msgstr "Negaidīta ievades beigas, gaidot matricas komandu."
+msgstr "Negaidītas ievades beigas, gaidot matricas komandu."
 
 #: src/language/commands/mcnemar.c:184
 #, c-format
@@ -6930,7 +6929,7 @@ msgstr "Pāri"
 
 #: src/language/commands/mconvert.c:82
 msgid "No active file is defined and no external file is specified on MATRIX=IN."
-msgstr "Nav definēta aktīva datne un nav norādīta ārēja datne MATRIX=IN."
+msgstr "Nav definēts aktīvs fails, un MATRIX=IN nav norādīts ārējs fails."
 
 #: src/language/commands/means-calc.c:443
 msgid "Group Median"
@@ -6946,7 +6945,7 @@ msgstr "Pēdējais"
 
 #: src/language/commands/means-calc.c:458
 msgid "Percent N"
-msgstr "Procenti N"
+msgstr "N procenti"
 
 #: src/language/commands/means-calc.c:459
 msgid "Percent Sum"
@@ -6975,7 +6974,7 @@ msgstr "Pārskats"
 #: src/language/commands/means.c:837
 #, c-format
 msgid "The table \"%s\" has no non-empty control variables.  No result for this table will be displayed."
-msgstr "Tabulai \"%s\" nav nevienas tukšas kontroles mainīgās. Šīs tabulas rezultāts netiks parādīts."
+msgstr "Tabulai \"%s\" nav neviena netukša kontroles mainīgā. Šīs tabulas rezultāts netiks parādīts."
 
 #: src/language/commands/median.c:316
 msgid "> Median"
@@ -7022,7 +7021,7 @@ msgstr "Skaitliskajai VALUE vērtībai jābūt veselam skaitlim."
 
 #: src/language/commands/mrsets.c:205
 msgid "Syntax error expecting integer or string."
-msgstr "Sintakses kļūda, gaidīts vesels skaitlis vai virkne."
+msgstr "Sintakses kļūda: gaidīts vesels skaitlis vai virkne."
 
 #: src/language/commands/mrsets.c:258
 msgid "VARIABLES and VALUE must have the same type."
@@ -7076,22 +7075,22 @@ msgstr "Šeit ir %s iestatījums."
 #: src/language/commands/mrsets.c:358
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s have the same variable label.  Categories represented by these variables will not be distinguishable in output."
-msgstr "Mainīgajiem %s un %s, kas norādīti kā daļa no vairāku dihotomiju grupas %s, ir vienāds mainīgā nosaukums. Šo mainīgo kategorijas izvades datos nebūs atšķiramas."
+msgstr "Mainīgajiem %s un %s, kas norādīti kā daļa no vairāku dihotomiju grupas %s, ir vienāda mainīgā etiķete. Šo mainīgo kategorijas izvades datos nebūs atšķiramas."
 
 #: src/language/commands/mrsets.c:384
 #, c-format
 msgid "Variable %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output."
-msgstr "Mainīgajam %s, kas norādīts kā daļa no vairāku dihotomiju grupas %s (kurai ir CATEGORYLABELS=COUNTEDVALUES), nav vērtības nosaukuma tā skaitītajai vērtībai. Šī kategorija izvades datos nebūs atšķirama."
+msgstr "Mainīgajam %s, kas norādīts kā daļa no vairāku dihotomiju grupas %s (kurai ir CATEGORYLABELS=COUNTEDVALUES), nav vērtības etiķetes tā skaitītajai vērtībai. Šī kategorija izvades datos nebūs atšķirama."
 
 #: src/language/commands/mrsets.c:398
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output."
-msgstr "Mainīgajiem %s un %s, kas norādīti kā daļa no vairāku dihotomiju grupas %s (kurai ir CATEGORYLABELS=COUNTEDVALUES), ir vienāds vērtības nosaukums grupas skaitītajai vērtībai. Šīs kategorijas izvades datos nebūs atšķiramas."
+msgstr "Mainīgajiem %s un %s, kas norādīti kā daļa no vairāku dihotomiju grupas %s (kurai ir CATEGORYLABELS=COUNTEDVALUES), ir vienāda vērtības etiķete grupas skaitītajai vērtībai. Šīs kategorijas izvades datos nebūs atšķiramas."
 
 #: src/language/commands/mrsets.c:455
 #, c-format
 msgid "Variables specified on MCGROUP should have the same categories, but %s and %s (and possibly others) in multiple category group %s have different value labels for value %s."
-msgstr "MCGROUP norādītajiem mainīgajiem vajadzētu būt vienādām kategorijām, taču %s un %s (un, iespējams, citiem) vairāku kategoriju grupā %s ir dažādi vērtību nosaukumi vērtībai %s."
+msgstr "MCGROUP norādītajiem mainīgajiem vajadzētu būt vienādām kategorijām, taču %s un %s (un, iespējams, citiem) vairāku kategoriju grupā %s ir dažādas vērtību etiķetes vērtībai %s."
 
 #: src/language/commands/mrsets.c:515
 #, c-format
@@ -7121,7 +7120,7 @@ msgstr "Skaitītā vērtība"
 
 #: src/language/commands/mrsets.c:580
 msgid "Member Variables"
-msgstr "Dalībmainīgie"
+msgstr "Kopas mainīgie"
 
 #: src/language/commands/mrsets.c:583 src/language/commands/sys-file-info.c:435
 #: src/language/commands/sys-file-info.c:573 src/ui/gui/psppire-var-info.c:44
@@ -7136,7 +7135,7 @@ msgstr "Dihotomijas"
 #: src/language/commands/npar.c:421
 #, c-format
 msgid "Syntax error expecting %s, %s, %s or a number."
-msgstr "Sintakses kļūda, gaidīts %s, %s, %s vai skaitlis."
+msgstr "Sintakses kļūda: gaidīts %s, %s, %s vai skaitlis."
 
 #: src/language/commands/npar.c:584
 #, c-format
@@ -7189,7 +7188,7 @@ msgstr "Nezināma post hoc analīzes metode."
 #: src/language/commands/oneway.c:778
 #, c-format
 msgid "Dependent variable %s has no non-missing values.  No analysis for this variable will be done."
-msgstr "Atkarīgajam mainīgajam %s nav vērtību. Šim mainīgajam analīze netiks veikta."
+msgstr "Atkarīgajam mainīgajam %s nav netrūkstošu vērtību. Šim mainīgajam analīze netiks veikta."
 
 #: src/language/commands/oneway.c:855
 #, c-format
@@ -7220,7 +7219,7 @@ msgstr "Starp grupām"
 
 #: src/language/commands/oneway.c:910
 msgid "Within Groups"
-msgstr "Grupās"
+msgstr "Grupu iekšienē"
 
 #: src/language/commands/oneway.c:1004 src/language/commands/oneway.c:1186
 msgid "Dependent Variable"
@@ -7303,12 +7302,12 @@ msgstr "Nezināma šūnas klase %s."
 #: src/language/commands/permissions.c:115
 #, c-format
 msgid "Cannot read permissions for %s: %s"
-msgstr "Neizdevās nolasīt atļaujas priekš %s: %s"
+msgstr "Neizdevās nolasīt %s atļaujas: %s"
 
 #: src/language/commands/permissions.c:129
 #, c-format
 msgid "Cannot change permissions for %s: %s"
-msgstr "Neizdevās mainīt atļaujas priekš %s: %s"
+msgstr "Neizdevās mainīt %s atļaujas: %s"
 
 #: src/language/commands/placement-parser.c:96
 #, c-format
@@ -7317,12 +7316,12 @@ msgstr "Norādītais mainīgo skaits (%zu) atšķiras no mainīgo formātu skait
 
 #: src/language/commands/placement-parser.c:106
 msgid "SPSS-like or Fortran-like format specification expected after variable names."
-msgstr "Pēc mainīgo nosaukumiem paredzēta SPSS vai Fortran līdzīga formāta specifikācija."
+msgstr "Pēc mainīgo nosaukumiem gaidīta SPSS vai Fortran līdzīga formāta specifikācija."
 
 #: src/language/commands/placement-parser.c:129
 #, c-format
 msgid "The %d columns %d-%d can't be evenly divided into %zu fields."
-msgstr "Colonas %d (%d-%d) nevar vienlīdzīgi sadalīt %zu laukos."
+msgstr "%d kolonnas %d-%d nevar vienmērīgi sadalīt %zu laukos."
 
 #: src/language/commands/placement-parser.c:335
 msgid "Column positions for fields must be positive."
@@ -7339,7 +7338,7 @@ msgstr "Lauka beigu kolonnai jābūt lielākai par sākuma kolonnu."
 #: src/language/commands/print-space.c:137
 #, c-format
 msgid "The expression on %s evaluated to the system-missing value."
-msgstr "Izteiksme %s tika novērtēta kā sistēmai trūkstošā vērtība."
+msgstr "Izteiksme %s tika novērtēta kā sistēmas trūkstošā vērtība."
 
 #: src/language/commands/print-space.c:141
 #, c-format
@@ -7469,7 +7468,7 @@ msgstr "%s nav atļauts ar virknes tipa mainīgajiem."
 
 #: src/language/commands/recode.c:439
 msgid "Syntax error expecting output value."
-msgstr "Sintakses kļūda — gaidīta izvades vērtība."
+msgstr "Sintakses kļūda: gaidīta izvades vērtība."
 
 #: src/language/commands/recode.c:487
 msgid "Source and target variable counts must match."
@@ -7479,7 +7478,7 @@ msgstr "Avota un mērķa mainīgo skaitam jāsakrīt."
 #, c-format
 msgid "There is %zu source variable."
 msgid_plural "There are %zu source variables."
-msgstr[0] "Ir %zu avotu mainīgo."
+msgstr[0] "Ir %zu avota mainīgo."
 msgstr[1] "Ir %zu avota mainīgais."
 msgstr[2] "Ir %zu avota mainīgie."
 
@@ -7487,7 +7486,7 @@ msgstr[2] "Ir %zu avota mainīgie."
 #, c-format
 msgid "There is %zu target variable."
 msgid_plural "There are %zu target variables."
-msgstr[0] "Ir %zu mērķu mainīgo."
+msgstr[0] "Ir %zu mērķa mainīgo."
 msgstr[1] "Ir %zu mērķa mainīgais."
 msgstr[2] "Ir %zu mērķa mainīgie."
 
@@ -7536,15 +7535,15 @@ msgstr "Mērķa mainīgajam %s ir tikai platums %d."
 #: src/language/commands/regression.c:219
 #, c-format
 msgid "VARIABLES may not appear after %s"
-msgstr "MAINĪGIE nedrīkst parādīties pēc %s"
+msgstr "VARIABLES nedrīkst parādīties pēc %s"
 
 #: src/language/commands/regression.c:379
 msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr "REGRESIJA ar SAGLABĀT ignorē TEMPORARY. Pagaidu transformācijas tiks padarītas pastāvīgas."
+msgstr "REGRESSION ar SAVE ignorē TEMPORARY. Pagaidu transformācijas tiks padarītas pastāvīgas."
 
 #: src/language/commands/regression.c:384
 msgid "REGRESSION with SAVE ignores FILTER.  All cases will be processed."
-msgstr "REGRESIJA ar SAGLABĀT ignorē FILTER. Tiks apstrādāti visi gadījumi."
+msgstr "REGRESSION ar SAVE ignorē FILTER. Tiks apstrādāti visi gadījumi."
 
 #: src/language/commands/regression.c:506
 msgid "The dependent variable is equal to the independent variable. The least squares line is therefore Y=X. Standard errors and related statistics may be meaningless."
@@ -7596,7 +7595,7 @@ msgstr "Beta"
 #: src/language/commands/regression.c:813
 #, c-format
 msgid "%g%% Confidence Interval for B"
-msgstr "%g%% ticamības intervāls B"
+msgstr "%g%% ticamības intervāls (B)"
 
 #: src/language/commands/regression.c:821
 msgid "Collinearity Statistics"
@@ -7634,7 +7633,7 @@ msgstr "Kovariācijas"
 
 #: src/language/commands/reliability.c:152
 msgid "Reliability on a single variable is not useful."
-msgstr "Uzticamība vienā mainīgajā nav noderīga."
+msgstr "Uzticamības analīze ar vienu mainīgo nav noderīga."
 
 #: src/language/commands/reliability.c:260
 msgid "The STATISTICS subcommand is not yet implemented.  No statistics will be produced."
@@ -7659,23 +7658,23 @@ msgstr "Skala: %s"
 
 #: src/language/commands/reliability.c:529
 msgid "Item-Total Statistics"
-msgstr "Vienību-kopējā statistika"
+msgstr "Vienumu un kopsummas statistika"
 
 #: src/language/commands/reliability.c:532
 msgid "Scale Mean if Item Deleted"
-msgstr "Skalas vidējais, ja vienība dzēsta"
+msgstr "Skalas vidējais, ja vienums dzēsts"
 
 #: src/language/commands/reliability.c:533
 msgid "Scale Variance if Item Deleted"
-msgstr "Skalas dispersija, ja vienība dzēsta"
+msgstr "Skalas dispersija, ja vienums dzēsts"
 
 #: src/language/commands/reliability.c:534
 msgid "Corrected Item-Total Correlation"
-msgstr "Koriģētā vienību-kopējā korelācija"
+msgstr "Koriģētā vienuma un kopsummas korelācija"
 
 #: src/language/commands/reliability.c:535
 msgid "Cronbach's Alpha if Item Deleted"
-msgstr "Kronbaha alfa, ja vienība dzēsta"
+msgstr "Kronbaha alfa, ja vienums dzēsts"
 
 #: src/language/commands/reliability.c:578
 msgid "Reliability Statistics"
@@ -7690,7 +7689,7 @@ msgstr "Kronbaha alfa"
 #: src/language/commands/reliability.c:601
 #: src/language/commands/reliability.c:604
 msgid "N of Items"
-msgstr "Vienību skaits"
+msgstr "Vienumu skaits"
 
 #: src/language/commands/reliability.c:599
 msgid "Part 1"
@@ -7756,11 +7755,11 @@ msgstr "Fiktīvā mainīgā nosaukums `%s' ir norādīts divreiz."
 
 #: src/language/commands/repeat.c:140
 msgid "Syntax error expecting substitution values."
-msgstr "Sintakses kļūda, gaidot aizvietošanas vērtības."
+msgstr "Sintakses kļūda: gaidītas aizvietošanas vērtības."
 
 #: src/language/commands/repeat.c:148
 msgid "Syntax error expecting `/' or end of command."
-msgstr "Sintakses kļūda, gaidot `/' vai komandas beigas."
+msgstr "Sintakses kļūda: gaidīts `/' vai komandas beigas."
 
 #: src/language/commands/repeat.c:159
 msgid "Each dummy variable must have the same number of substitutions."
@@ -7776,7 +7775,7 @@ msgstr[2] "Fiktīvajam mainīgajam %s bija %zu aizvietojumi."
 
 #: src/language/commands/repeat.c:274
 msgid "Syntax error expecting END REPEAT."
-msgstr "Sintakses kļūda, gaidot END REPEAT."
+msgstr "Sintakses kļūda: gaidīts END REPEAT."
 
 #: src/language/commands/repeat.c:285
 #, c-format
@@ -7790,7 +7789,7 @@ msgstr "Diapazoniem var būt tikai veselu skaitļu robežas."
 #: src/language/commands/repeat.c:374
 #, c-format
 msgid "%ld TO %ld is an invalid range."
-msgstr "%ld LĪDZ %ld ir nederīgs diapazons."
+msgstr "%ld TO %ld ir nederīgs diapazons."
 
 #: src/language/commands/repeat.c:422
 #, c-format
@@ -7807,7 +7806,7 @@ msgstr "Laukums"
 
 #: src/language/commands/roc.c:872
 msgid "Asymptotic Sig."
-msgstr "Asimptotiskais Sig."
+msgstr "Asimptotiskā nozīmība"
 
 #: src/language/commands/roc.c:875
 #, c-format
@@ -7824,7 +7823,7 @@ msgstr "Gadījuma kopsavilkums"
 
 #: src/language/commands/roc.c:925
 msgid "Unweighted"
-msgstr "Neizsvērts"
+msgstr "Nesvērts"
 
 #: src/language/commands/roc.c:926
 msgid "Weighted"
@@ -7857,11 +7856,11 @@ msgstr "Testa mainīgais"
 #: src/language/commands/runs.c:169
 #, c-format
 msgid "Multiple modes exist for variable `%s'.  Using %.*g as the threshold value."
-msgstr "Mainīgajam `%s' pastāv vairāki režīmi. Kā sliekšņa vērtība tiek izmantota %.*g."
+msgstr "Mainīgajam `%s' pastāv vairākas modas. Kā sliekšņa vērtība tiek izmantota %.*g."
 
 #: src/language/commands/runs.c:314 src/ui/gui/runs.ui:24
 msgid "Runs Test"
-msgstr "Pārlaižu tests"
+msgstr "Sēriju tests"
 
 #: src/language/commands/runs.c:319
 msgid "Test Value"
@@ -7869,7 +7868,7 @@ msgstr "Testa vērtība"
 
 #: src/language/commands/runs.c:320
 msgid "Test Value (mode)"
-msgstr "Testa vērtība (režīms)"
+msgstr "Testa vērtība (moda)"
 
 #: src/language/commands/runs.c:321
 msgid "Test Value (mean)"
@@ -7893,13 +7892,13 @@ msgstr "Kopējie gadījumi"
 
 #: src/language/commands/runs.c:326
 msgid "Number of Runs"
-msgstr "Pārlēcienu skaits"
+msgstr "Sēriju skaits"
 
 #: src/language/commands/save-translate.c:149
 #: src/language/commands/save-translate.c:164
 #, c-format
 msgid "The %s string must contain exactly one character."
-msgstr "Virknei %s jāsatur tieši viens simbols."
+msgstr "Virknei %s jāsatur tieši viens rakstzīme."
 
 #: src/language/commands/save-translate.c:237
 #, c-format
@@ -7920,19 +7919,19 @@ msgstr "Filtra mainīgais nedrīkst būt pagaidu."
 
 #: src/language/commands/set.c:264
 msgid "ISL (32-bit IEEE 754 single, little-endian)"
-msgstr "ISL (32 bitu IEEE 754 vienkāršā, mazā-endian)"
+msgstr "ISL (32 bitu IEEE 754 vienkāršā, little-endian)"
 
 #: src/language/commands/set.c:267
 msgid "ISB (32-bit IEEE 754 single, big-endian)"
-msgstr "ISB (32 bitu IEEE 754 vienkāršā, lielā-endian)"
+msgstr "ISB (32 bitu IEEE 754 vienkāršā, big-endian)"
 
 #: src/language/commands/set.c:270
 msgid "IDL (64-bit IEEE 754 double, little-endian)"
-msgstr "IDL (64 bitu IEEE 754 dubultā, mazā-endian)"
+msgstr "IDL (64 bitu IEEE 754 dubultā, little-endian)"
 
 #: src/language/commands/set.c:273
 msgid "IDB (64-bit IEEE 754 double, big-endian)"
-msgstr "IDB (64 bitu IEEE 754 dubultā, lielā-endian)"
+msgstr "IDB (64 bitu IEEE 754 dubultā, big-endian)"
 
 #: src/language/commands/set.c:277
 msgid "VF (32-bit VAX F, VAX-endian)"
@@ -7948,16 +7947,16 @@ msgstr "VG (64 bitu VAX G, VAX-endian)"
 
 #: src/language/commands/set.c:287
 msgid "ZS (32-bit IBM Z hexadecimal short, big-endian)"
-msgstr "ZS (32 bitu IBM Z heksadecimālā īsā, lielā-endian)"
+msgstr "ZS (32 bitu IBM Z heksadecimālā īsā, big-endian)"
 
 #: src/language/commands/set.c:290
 msgid "ZL (64-bit IBM Z hexadecimal long, big-endian)"
-msgstr "ZL (64 bitu IBM Z heksadecimālā garā, lielā-endian)"
+msgstr "ZL (64 bitu IBM Z heksadecimālā garā, big-endian)"
 
 #: src/language/commands/set.c:502
 #, c-format
 msgid "Syntax error expecting %s or year."
-msgstr "Sintakses kļūda: gaidāms %s vai gads."
+msgstr "Sintakses kļūda: gaidīts %s vai gads."
 
 #: src/language/commands/set.c:549
 #, c-format
@@ -7966,12 +7965,12 @@ msgstr "%s pieprasa skaitlisku izvades formātu kā argumentu. Norādītais form
 
 #: src/language/commands/set.c:623
 msgid "Syntax error expecting ON or OFF or a file name."
-msgstr "Sintakses kļūda: gaidāms ON, OFF vai faila nosaukums."
+msgstr "Sintakses kļūda: gaidīts ON, OFF vai faila nosaukums."
 
 #: src/language/commands/set.c:696
 #, c-format
 msgid "%s is not a recognized encoding or locale name"
-msgstr "%s nav atpazīts kodējums vai lokalizācijas nosaukums"
+msgstr "%s nav atpazīts kodējums vai lokāles nosaukums"
 
 #: src/language/commands/set.c:1251
 msgid "Settings"
@@ -7999,7 +7998,7 @@ msgstr "Būvēšanas sistēma"
 
 #: src/language/commands/set.c:1298
 msgid "Locale Directory"
-msgstr "Lokalizācijas direktorija"
+msgstr "Lokāles direktorija"
 
 #: src/language/commands/set.c:1301 src/ui/gui/options.ui:401
 msgid "Journal File"
@@ -8012,7 +8011,7 @@ msgstr "Kompilatora versija"
 #: src/language/commands/set.c:1381 src/language/commands/set.c:1493
 #: src/language/commands/set.c:1500
 msgid "Syntax error expecting the name of a setting."
-msgstr "Sintakses kļūda: gaidāms iestatījuma nosaukums."
+msgstr "Sintakses kļūda: gaidīts iestatījuma nosaukums."
 
 #: src/language/commands/set.c:1423
 msgid "Environment Variables"
@@ -8047,11 +8046,11 @@ msgstr "Neizšķirti"
 #: src/language/commands/sort-criteria.c:90
 #, c-format
 msgid "Variable %s specified twice in sort criteria."
-msgstr "Mainīgais %s norādīts divreiz šķirošanas kritērijos."
+msgstr "Mainīgais %s norādīts divreiz kārtošanas kritērijos."
 
 #: src/language/commands/split-file.c:68
 msgid "At most 8 split variables may be specified."
-msgstr "Var norādīt ne vairāk kā 8 sadalītos mainīgos."
+msgstr "Var norādīt ne vairāk kā 8 sadalīšanas mainīgos."
 
 #: src/language/commands/sys-file-info.c:185
 msgid "File Information"
@@ -8107,7 +8106,7 @@ msgstr "Nav svērts"
 
 #: src/language/commands/sys-file-info.c:236
 msgid "Compression"
-msgstr "Kompresija"
+msgstr "Saspiešana"
 
 #: src/language/commands/sys-file-info.c:246
 #: src/language/commands/sys-file-info.c:527
@@ -8173,7 +8172,7 @@ msgstr "Platums"
 
 #: src/language/commands/sys-file-info.c:562 src/ui/gui/psppire-var-info.c:50
 msgid "Alignment"
-msgstr "Izlīdzināšana"
+msgstr "Līdzināšana"
 
 #: src/language/commands/sys-file-info.c:563
 #: src/language/commands/sys-file-info.c:837 src/ui/gui/psppire-var-info.c:51
@@ -8218,22 +8217,22 @@ msgstr "Vektors un pozīcija"
 
 #: src/language/commands/sys-file-info.c:1101
 msgid "No valid encodings found."
-msgstr "Nav atrastas derīgas kodēšanas metodes."
+msgstr "Nav atrastas derīgas kodējumi."
 
 #: src/language/commands/sys-file-info.c:1107
 #, c-format
 msgid "Usable encodings for %s."
-msgstr "Lietojamās kodēšanas metodes priekš %s."
+msgstr "Lietojamie %s kodējumi."
 
 #: src/language/commands/sys-file-info.c:1111
 #, c-format
 msgid "Encodings that can successfully read %s (by specifying the encoding name on the GET command's ENCODING subcommand).  Encodings that yield identical text are listed together."
-msgstr "Kodēšanas metodes, kas var veiksmīgi nolasīt %s (norādot kodēšanas nosaukumu GET komandas ENCODING apakškomandā). Kodēšanas metodes, kas rada identisku tekstu, ir uzskaitītas kopā."
+msgstr "Kodējumi, kas var veiksmīgi nolasīt %s (norādot kodēšanas nosaukumu GET komandas ENCODING apakškomandā). Kodējumi, kas rada identisku tekstu, ir uzskaitītas kopā."
 
 #: src/language/commands/sys-file-info.c:1116
 #: src/language/commands/sys-file-info.c:1117
 msgid "Encodings"
-msgstr "Kodēšanas metodes"
+msgstr "Kodējumi"
 
 #: src/language/commands/sys-file-info.c:1146
 #, c-format
@@ -8242,7 +8241,7 @@ msgstr "%s kodētas teksta virknes"
 
 #: src/language/commands/sys-file-info.c:1151
 msgid "Text strings in the file dictionary that the previously listed encodings interpret differently, along with the interpretations."
-msgstr "Teksta virknes faila vārdnīcā, kuras iepriekš uzskaitītās kodēšanas metodes interpretē atšķirīgi, kopā ar interpretācijām."
+msgstr "Teksta virknes faila vārdnīcā, kuras iepriekš uzskaitītās kodējumi interpretē atšķirīgi, kopā ar interpretācijām."
 
 #: src/language/commands/sys-file-info.c:1154 src/output/output-item.c:715
 #: src/output/output-item.c:744 src/ui/gui/psppire-import-textfile.c:271
@@ -8263,7 +8262,7 @@ msgstr "Grupa"
 
 #: src/language/commands/t-test-indep.c:256
 msgid "Independent Samples Test"
-msgstr "Neatkarīgo paraugu tests"
+msgstr "Neatkarīgo izlašu tests"
 
 #: src/language/commands/t-test-indep.c:261
 msgid "Levene's Test for Equality of Variances"
@@ -8280,7 +8279,7 @@ msgstr "Vidējā atšķirība"
 
 #: src/language/commands/t-test-indep.c:270
 msgid "Std. Error Difference"
-msgstr "Standarta kļūdas atšķirība"
+msgstr "Atšķirības standartkļūda"
 
 #: src/language/commands/t-test-indep.c:273
 #, no-c-format
@@ -8301,7 +8300,7 @@ msgstr "Vienādas dispersijas nav pieņemtas"
 
 #: src/language/commands/t-test-one-sample.c:64
 msgid "One-Sample Test"
-msgstr "Viena parauga tests"
+msgstr "Vienas izlases tests"
 
 #: src/language/commands/t-test-one-sample.c:71
 #, c-format
@@ -8316,11 +8315,11 @@ msgstr "%g%% ticamības intervāls starpībai"
 
 #: src/language/commands/t-test-one-sample.c:122
 msgid "One-Sample Statistics"
-msgstr "Viena parauga statistika"
+msgstr "Vienas izlases statistika"
 
 #: src/language/commands/t-test-paired.c:147
 msgid "Paired Sample Statistics"
-msgstr "Pārī savienotu paraugu statistika"
+msgstr "Pāru izlašu statistika"
 
 #: src/language/commands/t-test-paired.c:163
 #: src/language/commands/t-test-paired.c:205
@@ -8331,7 +8330,7 @@ msgstr "Pāris %zu"
 
 #: src/language/commands/t-test-paired.c:190
 msgid "Paired Samples Correlations"
-msgstr "Pārī savienotu paraugu korelācijas"
+msgstr "Pāru izlašu korelācijas"
 
 #: src/language/commands/t-test-paired.c:208
 #, c-format
@@ -8340,11 +8339,11 @@ msgstr "%s & %s"
 
 #: src/language/commands/t-test-paired.c:234
 msgid "Paired Samples Test"
-msgstr "Pārī savienotu paraugu tests"
+msgstr "Pāru izlašu tests"
 
 #: src/language/commands/t-test-paired.c:240
 msgid "Paired Differences"
-msgstr "Pārī savienotas starpības"
+msgstr "Pāru starpības"
 
 #: src/language/commands/t-test-paired.c:266
 #, c-format
@@ -8402,7 +8401,7 @@ msgstr "Pieprasītā pārdēvēšana dublē mainīgā nosaukumu %s."
 
 #: src/language/commands/trim.c:157
 msgid "Cannot DROP all variables from dictionary."
-msgstr "Nevar DZĒST visus mainīgos no vārdnīcas."
+msgstr "DROP nevar izmest visus mainīgos no vārdnīcas."
 
 #: src/language/commands/value-labels.c:153
 #, c-format
@@ -8451,11 +8450,11 @@ msgstr "Divi dažādi vektori pievieno mainīgo %s%zu."
 
 #: src/language/commands/weight.c:50
 msgid "The weighting variable must be numeric."
-msgstr "Svēruma mainīgajam jābūt skaitliskam."
+msgstr "Svara mainīgajam jābūt skaitliskam."
 
 #: src/language/commands/weight.c:56
 msgid "The weighting variable may not be scratch."
-msgstr "Svēruma mainīgais nedrīkst būt starpposma."
+msgstr "Svara mainīgais nedrīkst būt pagaidu."
 
 #: src/language/commands/wilcoxon.c:237
 msgid "Sign"
@@ -8475,7 +8474,7 @@ msgstr "Pārāk daudz pāru, lai aprēķinātu precīzu nozīmīgumu"
 
 #: src/language/tests/moments-test.c:50
 msgid "Syntax error expecting weight value."
-msgstr "Sintakses kļūda: gaidīta svēruma vērtība."
+msgstr "Sintakses kļūda: gaidīta svara vērtība."
 
 #: src/language/expressions/evaluate.c:179
 msgid "Syntax error expecting number or string."
@@ -8489,7 +8488,7 @@ msgstr "Nederīgi argumenti funkcijai %s."
 #: src/language/expressions/helpers.c:117
 #, c-format
 msgid "Unrecognized date unit `%.*s'.  Valid date units are `%s', `%s', `%s', `%s', `%s', `%s', `%s', and `%s'."
-msgstr "Nepazīta datuma vienība `%.*s'. Derīgas datuma vienības ir `%s', `%s', `%s', `%s', `%s', `%s', `%s' un `%s'."
+msgstr "Neatpazīta datuma vienība `%.*s'. Derīgas datuma vienības ir `%s', `%s', `%s', `%s', `%s', `%s', `%s' un `%s'."
 
 #: src/language/expressions/helpers.c:273
 #, c-format
@@ -8503,7 +8502,7 @@ msgstr "Indekss ārpus derīgā diapazona no 1 līdz %zu, ieskaitot, vektoram %s
 
 #: src/language/expressions/helpers.c:524
 msgid "The index is system-missing."
-msgstr "Indekss sistēmā trūkst."
+msgstr "Indekss ir sistēmas trūkstošs."
 
 #: src/language/expressions/helpers.c:527
 #, c-format
@@ -8533,12 +8532,12 @@ msgstr "Tipu neatbilstība: izteiksmei ir tips '%s', bet ir nepieciešama virkne
 #: src/language/expressions/parse.c:641
 #, c-format
 msgid "Both operands of %s must have the same type."
-msgstr "Abiem %s operanda operāndiem jābūt vienāda tipa."
+msgstr "Abiem %s operandiem jābūt vienāda tipa."
 
 #: src/language/expressions/parse.c:644
 #, c-format
 msgid "Both operands of %s must be numeric."
-msgstr "Abiem %s operanda operāndiem jābūt skaitliskiem."
+msgstr "Abiem %s operandiem jābūt skaitliskiem."
 
 #: src/language/expressions/parse.c:649 src/language/expressions/parse.c:652
 #, c-format
@@ -8590,12 +8589,12 @@ msgstr "%s jābūt nepāra skaitam argumentu."
 #: src/language/expressions/parse.c:1215
 #, c-format
 msgid "%s function cannot accept suffix .%d to specify the minimum number of valid arguments."
-msgstr "%s funkcija nevar pieņemt sufiksu .%d, lai norādītu minimālo derīgo argumentu skaitu."
+msgstr "%s funkcija nevar pieņemt piedēkli .%d, lai norādītu minimālo derīgo argumentu skaitu."
 
 #: src/language/expressions/parse.c:1226
 #, c-format
 msgid "For %s with %d arguments, at most %d (not %d) may be required to be valid."
-msgstr "Funkcijai %s ar %d argumentiem, ne vairāk kā %d (nevis %d) var būt obligāti jābūt derīgiem."
+msgstr "Funkcijai %s ar %d argumentiem drīkst pieprasīt, lai derīgi būtu ne vairāk kā %d (nevis %d)."
 
 #: src/language/expressions/parse.c:1275
 #, c-format
@@ -8649,7 +8648,7 @@ msgstr "lasīšana no pagaidu faila"
 
 #: src/libpspp/ext-array.c:137
 msgid "unexpected end of file reading temporary file"
-msgstr "neparedzēta pagaidu faila beigu sasniegšana, lasot pagaidu failu"
+msgstr "negaidītas faila beigas, lasot pagaidu failu"
 
 #: src/libpspp/ext-array.c:157
 msgid "writing to temporary file"
@@ -8782,7 +8781,7 @@ msgstr "piezīme"
 #: src/libpspp/message.c:548
 #, c-format
 msgid "Notes (%d) exceed limit (%d).  Suppressing further notes."
-msgstr "Piezīmes (%d) pārsniedz ierobežojumu (%d). Turpmākās piezīmes tiks slēptas."
+msgstr "Piezīmes (%d) pārsniedz ierobežojumu (%d). Turpmākās piezīmes tiks apspiestas."
 
 #: src/libpspp/message.c:556
 #, c-format
@@ -8873,7 +8872,7 @@ msgstr "%s: ZIP fails netiek rakstīts terminālī"
 #: src/libpspp/zip-writer.c:195
 #, c-format
 msgid "%s: error seeking in output file"
-msgstr "%s: kļūda, meklējot izvades failā"
+msgstr "%s: kļūda, pārvietojoties (seek) izvades failā"
 
 #: src/libpspp/zip-writer.c:325
 #, c-format
@@ -8966,7 +8965,7 @@ msgstr "Stabiņu diagramma"
 #: src/output/charts/np-plot-cairo.c:37
 #, c-format
 msgid "Normal Q-Q Plot of %s"
-msgstr "Normālā Q-Q diagramma no %s"
+msgstr "Normālā Q-Q diagramma: %s"
 
 #: src/output/charts/np-plot-cairo.c:38 src/output/charts/np-plot-cairo.c:68
 msgid "Observed Value"
@@ -8974,12 +8973,12 @@ msgstr "Novērotā vērtība"
 
 #: src/output/charts/np-plot-cairo.c:39
 msgid "Expected Normal"
-msgstr "Paredzētā normālā"
+msgstr "Gaidītā normālā"
 
 #: src/output/charts/np-plot-cairo.c:67
 #, c-format
 msgid "Detrended Normal Q-Q Plot of %s"
-msgstr "Detrendētā normālā Q-Q diagramma no %s"
+msgstr "Detrendētā normālā Q-Q diagramma: %s"
 
 #: src/output/charts/np-plot-cairo.c:69
 msgid "Dev from Normal"
@@ -9009,7 +9008,7 @@ msgstr "Izkliedes diagramma %s"
 
 #: src/output/charts/scree-cairo.c:36
 msgid "Scree Plot"
-msgstr "Izkliedes diagramma"
+msgstr "Nogāzes diagramma"
 
 #: src/output/charts/scree-cairo.c:38
 msgid "Eigenvalue"
@@ -9018,7 +9017,7 @@ msgstr "Īpašvērtība"
 #: src/output/charts/spreadlevel-cairo.c:37
 #, c-format
 msgid "Spread vs. Level Plot of %s"
-msgstr "Izkliedes pret līmeņa diagramma no %s"
+msgstr "Izkliedes un līmeņa diagramma: %s"
 
 #: src/output/charts/spreadlevel-cairo.c:38
 msgid "Level"
@@ -9169,14 +9168,14 @@ msgstr "Žurnāls"
 #, c-format
 msgid "Suppressed %d additional warning about duplicate split values."
 msgid_plural "Suppressed %d additional warnings about duplicate split values."
-msgstr[0] "Apslēpts %d papildu brīdinājumus par dublētām sadalīšanas vērtībām."
-msgstr[1] "Apslēpti %d papildu brīdinājumu par dublētām sadalīšanas vērtībām."
-msgstr[2] "Apslēpti %d papildus brīdinājumus par dublētām sadalīšanas vērtībām."
+msgstr[0] "Apspiests %d papildu brīdinājumu par dublētām sadalīšanas vērtībām."
+msgstr[1] "Apspiests %d papildu brīdinājums par dublētām sadalīšanas vērtībām."
+msgstr[2] "Apspiesti %d papildu brīdinājumi par dublētām sadalīšanas vērtībām."
 
 #: src/output/pivot-table.c:3447
 #, c-format
 msgid "When SPLIT FILE is in effect, the input data must be sorted by the split variables (for example, using SORT CASES), but multiple runs of cases with the same split values were found separated by cases with different values.  Each run will be analyzed separately.  The duplicate split values are: %s"
-msgstr "Ja SPLIT FILE ir spēkā, ievades datiem jābūt sakārtotiem pēc sadalīšanas mainīgajiem (piemēram, izmantojot SORT CASES), taču tika atrasti vairāki gadījumi ar vienādām sadalīšanas vērtībām, kas ir atdalīti ar gadījumiem ar atšķirīgām vērtībām. Katrs gadījums tiks analizēts atsevišķi. Dublētās sadalīšanas vērtības ir: %s"
+msgstr "Ja SPLIT FILE ir spēkā, ievades datiem jābūt sakārtotiem pēc sadalīšanas mainīgajiem (piemēram, izmantojot SORT CASES), taču tika atrastas vairākas gadījumu sērijas ar vienādām sadalīšanas vērtībām, ko atdala gadījumi ar atšķirīgām vērtībām. Katra sērija tiks analizēta atsevišķi. Dublētās sadalīšanas vērtības ir: %s"
 
 #. TRANSLATORS: Do not translate this string.  If the script of your language
 #. reads from right to left (eg Persian, Arabic, Hebrew etc), then replace
@@ -9288,7 +9287,7 @@ msgstr "_Ievietot gadījumu"
 
 #: src/ui/gui/psppire-data-sheet.c:184 src/ui/gui/psppire-data-window.c:1407
 msgid "Cl_ear Cases"
-msgstr "No_dzēst gadījumus"
+msgstr "N_otīrīt gadījumus"
 
 #: src/ui/gui/psppire-data-sheet.c:306 src/ui/gui/psppire-variable-sheet.c:280
 #: src/ui/gui/psppire-data-window.c:1353
@@ -9297,7 +9296,7 @@ msgstr "_Ievietot mainīgo"
 
 #: src/ui/gui/psppire-data-sheet.c:315 src/ui/gui/psppire-variable-sheet.c:289
 msgid "Cl_ear Variables"
-msgstr "N_o dzēst mainīgos"
+msgstr "Notīrīt _mainīgos"
 
 #: src/ui/gui/psppire-data-sheet.c:327
 msgid "Sort _Ascending"
@@ -9349,7 +9348,7 @@ msgstr "Hī kvadrāts"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:71
 msgid "Pearson chi-square, likelihood ratio, Fisher’s exact test, continuity correction, linear-by-linear association."
-msgstr "Pīrsona hī kvadrāts, varbūtības attiecība, Fišera precīzais tests, nepārtrauktības korekcija, lineāra asociācija."
+msgstr "Pīrsona hī kvadrāts, ticamības attiecība, Fišera precīzais tests, nepārtrauktības korekcija, lineārā ar lineāro asociācija."
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:74
 msgid "Phi and Cramer's V"
@@ -9401,7 +9400,7 @@ msgstr "D"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:82
 msgid "Somer's d"
-msgstr "Somera d"
+msgstr "Somersa d"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:83
 msgid "Cohen's Kappa"
@@ -9441,7 +9440,7 @@ msgstr "Kopējais procents"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:94
 msgid "Expected value"
-msgstr "Paredzamā vērtība"
+msgstr "Gaidītā vērtība"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:96
 msgid "Standardized Residual"
@@ -9461,7 +9460,7 @@ msgstr "Vidējās vērtības standarta kļūda"
 
 #: src/ui/gui/psppire-dialog-action-descriptives.c:47
 msgid "Kurtosis and standard error of kurtosis"
-msgstr "Kurtosis un kurtosis standarta kļūda"
+msgstr "Ekscess un ekscesa standarta kļūda"
 
 #: src/ui/gui/psppire-dialog-action-descriptives.c:48
 msgid "Skewness and standard error of skewness"
@@ -9482,7 +9481,7 @@ msgstr "Šķībuma standarta kļūda"
 
 #: src/ui/gui/psppire-dialog-action-frequencies.c:51
 msgid "Standard error of the kurtosis"
-msgstr "Kurtosis standarta kļūda"
+msgstr "Ekscesa standarta kļūda"
 
 #: src/ui/gui/psppire-dialog-action-oneway.c:175
 #, c-format
@@ -9496,7 +9495,7 @@ msgstr "O_pcijas..."
 
 #: src/ui/gui/psppire-dialog-action-paired.c:164
 msgid "Paired Samples T Test"
-msgstr "Pāru paraugu T tests"
+msgstr "Pāru izlašu T tests"
 
 #: src/ui/gui/psppire-dialog-action-recode-different.c:327
 msgid "Recode into Different Variables"
@@ -9588,7 +9587,7 @@ msgstr "Testa veids"
 
 #: src/ui/gui/psppire-dialog-action-two-sample.c:185
 msgid "_Wilcoxon"
-msgstr "_Vilkoksa"
+msgstr "_Vilkoksona"
 
 #: src/ui/gui/psppire-dialog-action-two-sample.c:186
 msgid "_Sign"
@@ -9600,7 +9599,7 @@ msgstr "_Maknemāra"
 
 #: src/ui/gui/psppire-dialog-action-two-sample.c:205
 msgid "Two-Related-Samples Tests"
-msgstr "Divu saistīto paraugu testi"
+msgstr "Divu saistīto izlašu testi"
 
 #: src/ui/gui/psppire-dialog-action-weight.c:74 src/ui/gui/weight.ui:83
 #: src/ui/gui/weight.ui:211
@@ -9622,11 +9621,11 @@ msgstr "Ignorēt reģistru"
 
 #: src/ui/gui/psppire-search-dialog.c:153 src/ui/gui/find.ui:244
 msgid "Wrap around"
-msgstr "Aplauzt"
+msgstr "Turpināt no sākuma"
 
 #: src/ui/gui/psppire-search-dialog.c:156
 msgid "Match whole words only"
-msgstr "Sakrist tikai ar veseliem vārdiem"
+msgstr "Tikai veseli vārdi"
 
 #: src/ui/gui/psppire-search-dialog.c:159
 msgid "Search forward"
@@ -9702,7 +9701,7 @@ msgstr "dalīt"
 
 #: src/ui/gui/psppire-keypad.c:359
 msgid "raise x to the power of y"
-msgstr "x pakāpē y"
+msgstr "kāpināt x pakāpē y"
 
 #: src/ui/gui/psppire-keypad.c:370
 msgid "is greater than"
@@ -9795,11 +9794,11 @@ msgstr "Diapa_zons:"
 
 #: src/ui/gui/psppire-val-chooser.c:291
 msgid "Range, _LOWEST thru value"
-msgstr "Diapazons, no ZEMĀKĀS _līdz vērtībai"
+msgstr "Diapazons, LOWEST _līdz vērtībai"
 
 #: src/ui/gui/psppire-val-chooser.c:292
 msgid "Range, value thru _HIGHEST"
-msgstr "Diapazons, no vērtības līdz _AUGSTĀKĀJAI"
+msgstr "Diapazons, vērtība līdz _HIGHEST"
 
 #: src/ui/gui/psppire-val-chooser.c:293
 msgid "_All other values"
@@ -9812,11 +9811,11 @@ msgstr "Var%d"
 
 #: src/ui/gui/psppire-var-sheet-header.c:64
 msgid "Decimal"
-msgstr "Decimāls"
+msgstr "Decimālvietas"
 
 #: src/ui/gui/psppire-var-sheet-header.c:79
 msgid "Align"
-msgstr "Izlīdzināt"
+msgstr "Līdzinājums"
 
 #: src/ui/gui/psppire-var-sheet-header.c:82
 msgid "Measure"
@@ -9890,27 +9889,32 @@ msgstr ""
 "Argumenti garajām opcijām attiecas arī uz atbilstošajām īsajām opcijām.\n"
 "\n"
 "Izvades opcijas:\n"
-"  -o, --output=FAILS         izvade uz FAILS, noklusējuma formāts no faila nosaukuma\n"
-"  -O format=FORMĀTS         pārraksta formātu iepriekšējai -o opcijai\n"
+"  -o, --output=FAILS        izvade uz FAILS, noklusējuma formāts no faila\n"
+"                            nosaukuma\n"
+"  -O format=FORMĀTS         aizstāj formātu iepriekšējai -o opcijai\n"
 "  -O OPCIJA=VĒRTĪBA         iestata izvades opciju, lai pielāgotu iepriekšējo -o\n"
-"  -O device={terminal|listing}  pārraksta ierīces tipu iepriekšējai -o opcijai\n"
-"  -e, --error-file=FAILS     pievieno kļūdas, brīdinājumus un piezīmes FAILS\n"
-"  --no-output               atslēdz noklusējuma izvades draiveri\n"
+"  -O device={terminal|listing}  aizstāj ierīces tipu iepriekšējai -o opcijai\n"
+"  -e, --error-file=FAILS    pievieno kļūdas, brīdinājumus un piezīmes failam\n"
+"                            FAILS\n"
+"  --no-output               atspējo noklusējuma izvades draiveri\n"
 "  --table-look=FAILS        izmanto izvades stilu, kas nolasīts no FAILS\n"
 "Atbalstītie izvades formāti: %s\n"
 "\n"
 "Valodas opcijas:\n"
-"  -I, --include=DIREKTORIJA  pievieno DIREKTORIJU meklēšanas ceļam\n"
+"  -I, --include=DIREKTORIJA\n"
+"                            pievieno DIREKTORIJA meklēšanas ceļam\n"
 "  -I-, --no-include         notīra meklēšanas ceļu\n"
-"  -r, --no-statrc           atslēdz rc faila palaišanu startējot\n"
+"  -r, --no-statrc           atspējo rc faila palaišanu startējot\n"
 "  -a, --algorithm={compatible|enhanced}\n"
 "                            iestata uz `compatible', ja vēlaties izvadi,\n"
 "                            kas aprēķināta ar bojātiem algoritmiem\n"
 "  -x, --syntax={compatible|enhanced}\n"
-"                            iestata uz `compatible', lai atslēgtu PSPP paplašinājumus\n"
+"                            iestata uz `compatible', lai atspējotu PSPP\n"
+"                            paplašinājumus\n"
 "  -b, --batch               interpretē sintaksi pakešu režīmā\n"
 "  -i, --interactive         interpretē sintaksi interaktīvā režīmā\n"
-"  --syntax-encoding=KODĒJUMS  norāda sintakses failu kodējumu\n"
+"  --syntax-encoding=KODĒJUMS\n"
+"                            norāda sintakses failu kodējumu\n"
 "  -s, --safer               neļauj dažas nedrošas darbības\n"
 "Noklusējuma meklēšanas ceļš: %s\n"
 "\n"
@@ -9979,11 +9983,11 @@ msgstr "Importējiet savas izklājlapas tieši, izmantojot izvēlni \"Fails | Im
 
 #: src/ui/gui/main.c:187
 msgid "For an easy way to convert string variables into numerically encoded variables, use \"Automatic Recode\"  which preserves the variable names as labels."
-msgstr "Lai vienkārši pārveidotu teksta mainīgos par skaitliski kodētiem mainīgajiem, izmantojiet \"Automātisko pārkodēšanu\", kas saglabā mainīgo nosaukumus kā etiķetes."
+msgstr "Lai vienkārši pārveidotu virknes mainīgos par skaitliski kodētiem mainīgajiem, izmantojiet \"Automātisko pārkodēšanu\", kas saglabā mainīgo nosaukumus kā etiķetes."
 
 #: src/ui/gui/main.c:188
 msgid "When browsing large data sets, use \"Windows | Split\" to see both ends of the data in the same view."
-msgstr "Pārlūkojot lielus datu kopumus, izmantojiet \"Logi | Sadalīt\", lai vienā skatā redzētu abus datu galus."
+msgstr "Pārlūkojot lielus datu kopas, izmantojiet \"Logi | Sadalīt\", lai vienā skatā redzētu abus datu galus."
 
 #: src/ui/gui/main.c:189
 msgid "Export your reports to ODT format for easy editing with the Libreoffice.org suite."
@@ -10082,7 +10086,7 @@ msgstr "Mainīgo skats"
 
 #: src/ui/gui/psppire-data-window.c:176
 msgid "Transformations Pending"
-msgstr "Gaida pārveidojumus"
+msgstr "Neizpildītas transformācijas"
 
 #: src/ui/gui/psppire-data-window.c:192
 msgid "Filter off"
@@ -10183,7 +10187,7 @@ msgstr "_Importēt datus..."
 #: src/ui/gui/psppire-data-window.c:1239 src/ui/gui/logistic.ui:261
 #: src/ui/gui/regression.ui:65
 msgid "_Save..."
-msgstr "_Saglabāt..."
+msgstr "Sa_glabāt..."
 
 #: src/ui/gui/psppire-data-window.c:1242
 msgid "Save _As..."
@@ -10298,7 +10302,7 @@ msgstr "Automātiski noteikt"
 
 #: src/ui/gui/psppire-encoding-selector.c:147
 msgid "Locale Encoding"
-msgstr "Lokalizācijas kodējums"
+msgstr "Lokāles kodējums"
 
 #: src/ui/gui/psppire-encoding-selector.c:177
 msgid "Character Encoding: "
@@ -10380,25 +10384,25 @@ msgstr ""
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
-msgstr[0] "Atlasītajā failā ir %'lu teksta rindu. "
-msgstr[1] "Atlasītajā failā ir %'lu tekstu rinda. "
-msgstr[2] "Atlasītajā failā ir %'lu tekstu rindas. "
+msgstr[0] "Atlasītajā failā ir %'lu teksta rindu.  "
+msgstr[1] "Atlasītajā failā ir %'lu teksta rinda.  "
+msgstr[2] "Atlasītajā failā ir %'lu teksta rindas.  "
 
 #: src/ui/gui/psppire-import-textfile.c:341
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
-msgstr[0] "Atlasītajā failā ir aptuveni %'lu tekstu rindu. "
-msgstr[1] "Atlasītajā failā ir aptuveni %'lu tekstu rinda. "
-msgstr[2] "Atlasītajā failā ir aptuveni %'lu tekstu rindas. "
+msgstr[0] "Atlasītajā failā ir aptuveni %'lu teksta rindu.  "
+msgstr[1] "Atlasītajā failā ir aptuveni %'lu teksta rinda.  "
+msgstr[2] "Atlasītajā failā ir aptuveni %'lu teksta rindas.  "
 
 #: src/ui/gui/psppire-import-textfile.c:347
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
-msgstr[0] "Tiks parādītas tikai pirmās %zu failu rindu priekšskatīšanai nākamajos ekrānos. "
-msgstr[1] "Tiks parādīta tikai pirmā %zu failu rinda priekšskatīšanai nākamajos ekrānos. "
-msgstr[2] "Tiks parādītas tikai pirmās %zu failu rindas priekšskatīšanai nākamajos ekrānos. "
+msgstr[0] "Nākamajos ekrānos priekšskatījumam tiks parādītas tikai %zu pirmās faila rindas.  "
+msgstr[1] "Nākamajos ekrānos priekšskatījumam tiks parādīta tikai %zu pirmā faila rinda.  "
+msgstr[2] "Nākamajos ekrānos priekšskatījumam tiks parādītas tikai %zu pirmās faila rindas.  "
 
 #: src/ui/gui/psppire-import-textfile.c:356
 msgid "You may choose below how much of the file should actually be imported."
@@ -10412,7 +10416,7 @@ msgstr "Tikai pirmie %4d gadījumi"
 #: src/ui/gui/psppire-import-textfile.c:376
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
-msgstr "Tikai pirmie %3d %% no faila (aptuveni)"
+msgstr "Tikai pirmie %3d %% faila (aptuveni)"
 
 #: src/ui/gui/psppire-import-textfile.c:404
 msgid "Select the Lines to Import"
@@ -10663,7 +10667,7 @@ msgstr "Datu agregēšana"
 
 #: src/ui/gui/aggregate.ui:125
 msgid "_Break variable(s)"
-msgstr "_Sadalīt mainīgo(s)"
+msgstr "_Pārtraukuma mainīgais(-ie)"
 
 #: src/ui/gui/aggregate.ui:177
 msgid "Variable Name: "
@@ -10691,11 +10695,11 @@ msgstr "Agregētie mainīgie"
 
 #: src/ui/gui/aggregate.ui:456
 msgid "_Add aggregated variables to the active dataset"
-msgstr "_Pievienot agregētos mainīgos aktīvajam datu kopumam"
+msgstr "Pievienot agregētos _mainīgos aktīvajai datu kopai"
 
 #: src/ui/gui/aggregate.ui:473
 msgid "_Replace the current dataset with the aggregated variables"
-msgstr "_Aizvietot pašreizējo datu kopumu ar agregētajiem mainīgajiem"
+msgstr "_Aizvietot pašreizējo datu kopu ar agregētajiem mainīgajiem"
 
 #: src/ui/gui/aggregate.ui:491
 msgid "_Write a new data file containing only the aggregated variables"
@@ -10707,15 +10711,15 @@ msgstr "etiķete"
 
 #: src/ui/gui/aggregate.ui:580
 msgid "File is _already sorted on break variable(s)"
-msgstr "Fails _jau ir sakārtots pēc sadalīšanas mainīgā(-iem)"
+msgstr "Fails _jau ir sakārtots pēc pārtraukuma mainīgā(-iem)"
 
 #: src/ui/gui/aggregate.ui:596
 msgid "Sort file before a_ggregating"
-msgstr "Kārtot failu pirms _agregēšanas"
+msgstr "_Kārtot failu pirms agregēšanas"
 
 #: src/ui/gui/aggregate.ui:617
 msgid "Options for very large datasets"
-msgstr "Opcijas ļoti lieliem datu kopumiem"
+msgstr "Opcijas ļoti lielām datu kopām"
 
 #: src/ui/gui/autorecode.ui:24
 msgid "Automatic Recode"
@@ -10759,7 +10763,7 @@ msgstr "_Testa mainīgo saraksts:"
 
 #: src/ui/gui/binomial.ui:160 src/ui/gui/chi-square.ui:281
 msgid "_Get from data"
-msgstr "_Iegūt no datiem"
+msgstr "Iegūt no _datiem"
 
 #: src/ui/gui/binomial.ui:181 src/ui/gui/indep-samples.ui:150
 msgid "_Cut point:"
@@ -10827,7 +10831,7 @@ msgstr "Stabiņu diagramma"
 
 #: src/ui/gui/barchart.ui:112
 msgid "Category A_xis:"
-msgstr "Kategoriju A_ss:"
+msgstr "Kategoriju a_ss:"
 
 #: src/ui/gui/barchart.ui:140
 msgid "_N of cases"
@@ -10839,7 +10843,7 @@ msgstr "_Kumulatīvais gadījumu skaits"
 
 #: src/ui/gui/barchart.ui:174
 msgid "Other _summary function"
-msgstr "Cita _kopsavilkuma funkcija"
+msgstr "_Cita kopsavilkuma funkcija"
 
 #: src/ui/gui/barchart.ui:191
 msgid "% of c_ases"
@@ -10859,7 +10863,7 @@ msgstr "Stabiņi attēlo"
 
 #: src/ui/gui/barchart.ui:340
 msgid "Category C_luster:"
-msgstr "Kategoriju _klasteris:"
+msgstr "Ka_tegoriju klasteris:"
 
 #: src/ui/gui/correlation.ui:24
 msgid "Bivariate Correlations"
@@ -10887,7 +10891,7 @@ msgstr "_Divpusējs"
 
 #: src/ui/gui/correlation.ui:241
 msgid "One-tai_led"
-msgstr "Vienpusējs"
+msgstr "Vien_pusējs"
 
 #: src/ui/gui/correlation.ui:262
 msgid "Test of Significance"
@@ -10907,7 +10911,7 @@ msgstr "Skaitliskie _mainīgie:"
 
 #: src/ui/gui/count.ui:147
 msgid "_Target Variable:"
-msgstr "_Mērķa mainīgais:"
+msgstr "M_ērķa mainīgais:"
 
 #: src/ui/gui/count.ui:178
 msgid "Target _Label:"
@@ -11003,11 +11007,11 @@ msgstr "_Vērtības"
 
 #: src/ui/gui/chi-square.ui:159
 msgid "Expected Values:"
-msgstr "Paredzamās vērtības:"
+msgstr "Gaidītās vērtības:"
 
 #: src/ui/gui/chi-square.ui:204
 msgid "Test _Variables"
-msgstr "Testa _Mainīgie"
+msgstr "Testa _mainīgie"
 
 #: src/ui/gui/chi-square.ui:298
 msgid "Use _specified range"
@@ -11019,11 +11023,11 @@ msgstr "_Apakšējā:"
 
 #: src/ui/gui/chi-square.ui:337
 msgid "_Upper:"
-msgstr "_Augšējā:"
+msgstr "A_ugšējā:"
 
 #: src/ui/gui/chi-square.ui:381
 msgid "Expected Range:"
-msgstr "Paredzamais diapazons:"
+msgstr "Gaidītais diapazons:"
 
 #: src/ui/gui/descriptives.ui:131 src/ui/gui/factor.ui:801
 #: src/ui/gui/recode.ui:641
@@ -11040,7 +11044,7 @@ msgstr "_Izslēgt visu gadījumu, ja trūkst kāds no atlasītajiem mainīgajiem
 
 #: src/ui/gui/descriptives.ui:247
 msgid "_Include user-missing data in analysis"
-msgstr "_Iekļaut lietotāja trūkstošos datus analīzē"
+msgstr "Iekļaut _lietotāja trūkstošos datus analīzē"
 
 #: src/ui/gui/descriptives.ui:264
 msgid "Save _Z-scores of selected variables as new variables"
@@ -11080,7 +11084,7 @@ msgstr "Izpētīt: Opcijas"
 
 #: src/ui/gui/examine.ui:440 src/ui/gui/t-test.ui:80
 msgid "Exclude cases _listwise"
-msgstr "Izslēgt gadījumus _sarakstveidīgi"
+msgstr "Izslēgt gadījumus _sarakstveidā"
 
 #: src/ui/gui/examine.ui:457
 msgid "Exclude cases _pairwise"
@@ -11104,7 +11108,7 @@ msgstr "Atkarīgie kopā"
 
 #: src/ui/gui/examine.ui:617
 msgid "Boxplots"
-msgstr "Kastu diagrammas"
+msgstr "Kastes diagrammas"
 
 #: src/ui/gui/examine.ui:635 src/ui/gui/histogram.ui:24
 msgid "Histogram"
@@ -11156,11 +11160,11 @@ msgstr "Nepārveidots"
 
 #: src/ui/gui/examine.ui:785
 msgid "Spread vs Level with Levene Test"
-msgstr "Izkliede pret līmeni ar Levēna testu"
+msgstr "Izkliede pret līmeni ar Levena testu"
 
 #: src/ui/gui/examine.ui:823
 msgid "Explore: Statistics"
-msgstr "Izpēte: Statistika"
+msgstr "Izpētīt: Statistika"
 
 #: src/ui/gui/examine.ui:845 src/ui/gui/oneway.ui:431
 msgid "_Descriptives"
@@ -11232,7 +11236,7 @@ msgstr "_Metode: "
 
 #: src/ui/gui/factor.ui:346
 msgid "Co_rrelation matrix"
-msgstr "Ko_rrelācijas matrica"
+msgstr "Ko_relācijas matrica"
 
 #: src/ui/gui/factor.ui:362
 msgid "Co_variance matrix"
@@ -11244,11 +11248,11 @@ msgstr "Analizēt"
 
 #: src/ui/gui/factor.ui:408
 msgid "_Unrotated factor solution"
-msgstr "_Nepagrieztais faktoru risinājums"
+msgstr "_Nerotētais faktoru risinājums"
 
 #: src/ui/gui/factor.ui:424
 msgid "_Scree plot"
-msgstr "_Izkliedes grafiks"
+msgstr "Nogāzes _diagramma"
 
 #: src/ui/gui/factor.ui:527
 msgid "_Number of factors:"
@@ -11312,7 +11316,7 @@ msgstr "_Nekad"
 
 #: src/ui/gui/frequencies.ui:104
 msgid "If no _more than "
-msgstr "Ja ne _vairāk kā "
+msgstr "_Ja ne vairāk kā "
 
 #: src/ui/gui/frequencies.ui:125 src/ui/gui/frequencies.ui:453
 msgid "100"
@@ -11340,7 +11344,7 @@ msgstr "Augošs _biežums"
 
 #: src/ui/gui/frequencies.ui:244
 msgid "Descending f_requency"
-msgstr "Dilstošs b_iežums"
+msgstr "_Dilstošs biežums"
 
 #: src/ui/gui/frequencies.ui:267
 msgid "Order by"
@@ -11364,7 +11368,7 @@ msgstr "_Procenti"
 
 #: src/ui/gui/frequencies.ui:408
 msgid "Exclude values _below "
-msgstr "Izslēgt vērtī_bas zem "
+msgstr "_Izslēgt vērtības zem "
 
 #: src/ui/gui/frequencies.ui:422
 msgid "Exclude values _above "
@@ -11392,19 +11396,19 @@ msgstr "<b>Histogrammas</b>"
 
 #: src/ui/gui/frequencies.ui:554
 msgid "Draw _bar charts"
-msgstr "Zīmēt _joslu diagrammas"
+msgstr "Zīmēt _stabiņu diagrammas"
 
 #: src/ui/gui/frequencies.ui:574
 msgid "<b>Bar Charts</b>"
-msgstr "<b>Joslu diagrammas</b>"
+msgstr "<b>Stabiņu diagrammas</b>"
 
 #: src/ui/gui/frequencies.ui:599
 msgid "Draw _pie charts"
-msgstr "Zīmēt _sektoru diagrammas"
+msgstr "_Zīmēt sektoru diagrammas"
 
 #: src/ui/gui/frequencies.ui:615
 msgid "Include slices for _missing values"
-msgstr "Iekļaut šķēlumus _trūkstošām vērtībām"
+msgstr "Iekļaut sektorus _trūkstošām vērtībām"
 
 #: src/ui/gui/frequencies.ui:635
 msgid "<b>Pie Charts</b>"
@@ -11428,7 +11432,7 @@ msgstr "Di_agrammas..."
 
 #: src/ui/gui/frequencies.ui:822
 msgid "Frequency _Tables..."
-msgstr "Biežumu _tabulas..."
+msgstr "_Biežumu tabulas..."
 
 #: src/ui/gui/histogram.ui:126
 msgid "_Display normal curve"
@@ -11452,7 +11456,7 @@ msgstr "_Izmantot norādītās vērtības:"
 
 #: src/ui/gui/indep-samples.ui:259
 msgid "Independent-Samples T Test"
-msgstr "Neatkarīgo paraugu T tests"
+msgstr "Neatkarīgo izlašu T tests"
 
 #: src/ui/gui/indep-samples.ui:319
 msgid "_Define Groups..."
@@ -11472,11 +11476,11 @@ msgstr "_Augšējā robeža:"
 
 #: src/ui/gui/k-independent.ui:77
 msgid "_Lower limit:"
-msgstr "_Apakšējā robeža:"
+msgstr "Apakšējā _robeža:"
 
 #: src/ui/gui/k-independent.ui:136
 msgid "Tests for Several Independent Samples"
-msgstr "Testi vairākiem neatkarīgiem paraugiem"
+msgstr "Testi vairākām neatkarīgām izlasēm"
 
 #: src/ui/gui/k-independent.ui:208 src/ui/gui/ks-one-sample.ui:131
 msgid "Test _Variable List:"
@@ -11492,7 +11496,7 @@ msgstr "_Kruskala-Valisa H"
 
 #: src/ui/gui/k-independent.ui:382 src/ui/gui/runs.ui:140
 msgid "_Median"
-msgstr "_Mediāna"
+msgstr "M_ediāna"
 
 #: src/ui/gui/k-means.ui:24
 msgid "K-Means Cluster Analysis"
@@ -11504,7 +11508,7 @@ msgstr "Klaster_u skaits: "
 
 #: src/ui/gui/k-related.ui:24
 msgid "Tests for Several Related Samples"
-msgstr "Testi vairākiem saistītiem paraugiem"
+msgstr "Testi vairākām saistītām izlasēm"
 
 #: src/ui/gui/k-related.ui:113
 msgid "_Test Variables:"
@@ -11512,7 +11516,7 @@ msgstr "_Testa mainīgie:"
 
 #: src/ui/gui/k-related.ui:145
 msgid "_Friedman"
-msgstr "_Frīdmans"
+msgstr "_Frīdmena"
 
 #: src/ui/gui/k-related.ui:161
 msgid "_Kendall's W"
@@ -11520,7 +11524,7 @@ msgstr "_Kendala W"
 
 #: src/ui/gui/k-related.ui:177
 msgid "_Cochran's Q"
-msgstr "_Kohrena Q"
+msgstr "Kohrāna _Q"
 
 #: src/ui/gui/ks-one-sample.ui:163
 msgid "_Normal"
@@ -11548,7 +11552,7 @@ msgstr "Loģistiskā regresija: Opcijas"
 
 #: src/ui/gui/logistic.ui:66
 msgid "CI for _exp(B): "
-msgstr "CI priekš _exp(B): "
+msgstr "_exp(B) TI: "
 
 #: src/ui/gui/logistic.ui:97
 msgid "%"
@@ -11588,11 +11592,11 @@ msgstr "_Diskrētas trūkstošās vērtības"
 
 #: src/ui/gui/missing-val-dialog.ui:172
 msgid "_Low:"
-msgstr "_Zema:"
+msgstr "_Zemā:"
 
 #: src/ui/gui/missing-val-dialog.ui:197
 msgid "_High:"
-msgstr "_Augsts:"
+msgstr "_Augstā:"
 
 #: src/ui/gui/missing-val-dialog.ui:221
 msgid "Di_screte value:"
@@ -11600,7 +11604,7 @@ msgstr "Di_skrēta vērtība:"
 
 #: src/ui/gui/missing-val-dialog.ui:245
 msgid "_Range plus one optional discrete missing value"
-msgstr "Diapazons plus viena izvēles diskrēta trūkstošā vērtība"
+msgstr "Diapazons _plus viena neobligāta diskrēta trūkstošā vērtība"
 
 #: src/ui/gui/oneway.ui:21
 msgid "One-Way ANOVA: Contrasts"
@@ -11664,7 +11668,7 @@ msgstr "Rādīt _etiķetes"
 
 #: src/ui/gui/options.ui:76
 msgid "Display _Names"
-msgstr "Rādīt _vārdus"
+msgstr "Rādīt _nosaukumus"
 
 #: src/ui/gui/options.ui:102
 msgid "Sort by L_abel"
@@ -11684,7 +11688,7 @@ msgstr "Mainīgo saraksti"
 
 #: src/ui/gui/options.ui:190
 msgid "Ma_ximize"
-msgstr "Ma_ksimizēt"
+msgstr "M_aksimizēt"
 
 #: src/ui/gui/options.ui:205
 msgid "_Raise"
@@ -11712,43 +11716,43 @@ msgstr "Noklusējums"
 
 #: src/ui/gui/paired-samples.ui:147
 msgid "_Test Pair(s):"
-msgstr "_Testa pāris/pāri:"
+msgstr "_Testa pāris(-i):"
 
 #: src/ui/gui/rank.ui:26
 msgid "Rank Cases: Types"
-msgstr "Gadījumu rangs: veidi"
+msgstr "Rangēt gadījumus: tipi"
 
 #: src/ui/gui/rank.ui:56
 msgid "Sum of case _weights"
-msgstr "Gadījumu svaru summa"
+msgstr "Gadījumu _svaru summa"
 
 #: src/ui/gui/rank.ui:73
 msgid "Fractional rank as _%"
-msgstr "Daļējais rangs kā %"
+msgstr "Daļējais rangs kā _%"
 
 #: src/ui/gui/rank.ui:91
 msgid "_Fractional rank"
-msgstr "Daļējais rangs"
+msgstr "_Daļējais rangs"
 
 #: src/ui/gui/rank.ui:108
 msgid "_Savage score"
-msgstr "Savage rezultāts"
+msgstr "S_avage punkti"
 
 #: src/ui/gui/rank.ui:124
 msgid "_Rank"
-msgstr "Rangs"
+msgstr "_Rangs"
 
 #: src/ui/gui/rank.ui:147
 msgid "N_tiles"
-msgstr "N-tiles"
+msgstr "N_tiles"
 
 #: src/ui/gui/rank.ui:195
 msgid "_Proportion Estimates"
-msgstr "Proporciju aprēķini"
+msgstr "_Proporciju aprēķini"
 
 #: src/ui/gui/rank.ui:213
 msgid "_Normal Scores"
-msgstr "Normālie rezultāti"
+msgstr "_Normālie punkti"
 
 #: src/ui/gui/rank.ui:252
 msgid "_Blom"
@@ -11772,7 +11776,7 @@ msgstr "Proporciju aprēķina formula"
 
 #: src/ui/gui/rank.ui:370
 msgid "Rank Cases"
-msgstr "Kārtot gadījumus pēc ranga"
+msgstr "Rangēt gadījumus"
 
 #: src/ui/gui/rank.ui:437
 msgid "_By:"
@@ -11780,7 +11784,7 @@ msgstr "_Pēc:"
 
 #: src/ui/gui/rank.ui:597
 msgid "_Smallest Value"
-msgstr "_Mazākā vērtība"
+msgstr "M_azākā vērtība"
 
 #: src/ui/gui/rank.ui:615
 msgid "_Largest Value"
@@ -11800,11 +11804,11 @@ msgstr "Ranga t_ipi"
 
 #: src/ui/gui/rank.ui:696
 msgid "_Ties..."
-msgstr "_Vienādi..."
+msgstr "_Vienādās vērtības..."
 
 #: src/ui/gui/rank.ui:758
 msgid "Rank Cases: Ties"
-msgstr "Kārtot gadījumus: Vienādi"
+msgstr "Rangēt gadījumus: vienādās vērtības"
 
 #: src/ui/gui/rank.ui:793
 msgid "_Mean"
@@ -11824,7 +11828,7 @@ msgstr "_Secīgi rangi unikālām vērtībām"
 
 #: src/ui/gui/rank.ui:880
 msgid "Rank Assigned to Ties"
-msgstr "Rangs piešķirts vienādajiem"
+msgstr "Vienādām vērtībām piešķirtais rangs"
 
 #: src/ui/gui/runs.ui:155
 msgid "M_ean"
@@ -11840,7 +11844,7 @@ msgstr "_Pielāgots:"
 
 #: src/ui/gui/runs.ui:230
 msgid "Cut Point"
-msgstr "Griešanas punkts"
+msgstr "Robežvērtība"
 
 #: src/ui/gui/sort.ui:101
 msgid "Sort by:"
@@ -11856,7 +11860,7 @@ msgstr "Kārtošanas secība"
 
 #: src/ui/gui/split-file.ui:103
 msgid "Anal_yze all cases.  Do not create groups."
-msgstr "Analizēt visus gadījumus. Neveidot grupas."
+msgstr "_Analizēt visus gadījumus. Neveidot grupas."
 
 #: src/ui/gui/split-file.ui:121
 msgid "Compare _groups."
@@ -11888,7 +11892,7 @@ msgstr "Analīze pa grupām ir izslēgta"
 
 #: src/ui/gui/recode.ui:134
 msgid "System _Missing"
-msgstr "Sistēma _Trūkst"
+msgstr "_Sistēmas trūkstošā"
 
 #: src/ui/gui/recode.ui:149
 msgid "Co_py old values"
@@ -11920,7 +11924,7 @@ msgstr "_Etiķete:"
 
 #: src/ui/gui/recode.ui:559
 msgid "Chan_ge"
-msgstr "_Mainīt"
+msgstr "Mainī_t"
 
 #: src/ui/gui/recode.ui:587
 msgid "Output Variable"
@@ -11964,7 +11968,7 @@ msgstr "Uzticamības analīze"
 
 #: src/ui/gui/reliability.ui:143
 msgid "_Items:"
-msgstr "_Vienības:"
+msgstr "_Vienumi:"
 
 #: src/ui/gui/reliability.ui:164
 msgid "_Model: "
@@ -11972,11 +11976,11 @@ msgstr "_Modelis: "
 
 #: src/ui/gui/reliability.ui:211
 msgid "_Variables in first split:"
-msgstr "_Mainīgie pirmajā sadalījumā:"
+msgstr "Mainīgie _pirmajā sadalījumā:"
 
 #: src/ui/gui/reliability.ui:258
 msgid "Show _descriptives for scale if item is deleted"
-msgstr "Rādīt _aprakstošos datus skalai, ja vienība ir dzēsta"
+msgstr "Rādīt _aprakstošos datus skalai, ja vienums ir dzēsts"
 
 #: src/ui/gui/roc.ui:145
 msgid "_Test Variable:"
@@ -11988,7 +11992,7 @@ msgstr "_Stāvokļa mainīgais:"
 
 #: src/ui/gui/roc.ui:202
 msgid "_Value of state variable:"
-msgstr "_Stāvokļa mainīgā vērtība:"
+msgstr "Stāvokļa _mainīgā vērtība:"
 
 #: src/ui/gui/roc.ui:249
 msgid "ROC C_urve"
@@ -11996,15 +12000,15 @@ msgstr "ROC l_īkne"
 
 #: src/ui/gui/roc.ui:269
 msgid "_With diagonal reference line"
-msgstr "Ar diagonālo atskaites līniju"
+msgstr "_Ar diagonālo atskaites līniju"
 
 #: src/ui/gui/roc.ui:293
 msgid "Standard _Error and Confidence Interval"
-msgstr "Standarta kļūda un ticamības intervāls"
+msgstr "Standarta _kļūda un ticamības intervāls"
 
 #: src/ui/gui/roc.ui:309
 msgid "_Coordinate points of the ROC Curve"
-msgstr "ROC līknes _koordinātu punkti"
+msgstr "_ROC līknes koordinātu punkti"
 
 #: src/ui/gui/scatterplot.ui:25
 msgid "Scatterplot"
@@ -12088,11 +12092,11 @@ msgstr "Neatlasītie gadījumi ir"
 
 #: src/ui/gui/select-cases.ui:700
 msgid "Select Cases: Random Sample"
-msgstr "Atlasīt gadījumus: Nejaušs paraugs"
+msgstr "Atlasīt gadījumus: nejauša izlase"
 
 #: src/ui/gui/select-cases.ui:763
 msgid "Sample Size"
-msgstr "Parauga lielums"
+msgstr "Izlases lielums"
 
 #: src/ui/gui/spreadsheet-import.ui:41
 msgid "Choose below the sheet number and the cell range that you wish to import."
@@ -12100,7 +12104,7 @@ msgstr "Zemāk izvēlieties lapas numuru un šūnu diapazonu, ko vēlaties impor
 
 #: src/ui/gui/spreadsheet-import.ui:78
 msgid "Importing file: "
-msgstr "Importē fails: "
+msgstr "Importē failu: "
 
 #: src/ui/gui/spreadsheet-import.ui:118
 msgid "Use the first selected row as _variable names"
@@ -12120,11 +12124,11 @@ msgstr "Opcijas"
 
 #: src/ui/gui/t-test.ui:62
 msgid "Exclude cases _analysis by analysis"
-msgstr "Izslēgt gadījumus _analīze pēc analīzes"
+msgstr "Izslēgt gadījumus katrai _analīzei atsevišķi"
 
 #: src/ui/gui/t-test.ui:146
 msgid "One - Sample T Test"
-msgstr "Viena parauga T tests"
+msgstr "Vienas izlases T tests"
 
 #: src/ui/gui/t-test.ui:265
 msgid "Test _Value: "
@@ -12156,7 +12160,7 @@ msgid ""
 "\n"
 "\tThe selected file contains N lines of text.  Only the first M of these will be shown for preview purposes in the following screens.  You may choose below how much of the file should actually be imported."
 msgstr ""
-"Šis palīgs jums palīdzēs importēt datus PSPP no teksta faila, kur katrs gadījums ir atsevišķā rindā  un lauki ir atdalīti ar tabulatoriem, komatiem vai citiem atdalītājiem.\n"
+"Šis palīgs jums palīdzēs importēt datus PSPP no teksta faila, kur katrs gadījums ir atsevišķā rindā un lauki ir atdalīti ar tabulācijām, komatiem vai citiem atdalītājiem.\n"
 "\n"
 "\tAtlasītajā failā ir N teksta rindas.  Tikai pirmās M no tām tiks parādītas priekšskatījumam turpmākajos ekrānos.  Zemāk varat izvēlēties, cik lielu daļu faila faktiski importēt."
 
@@ -12182,7 +12186,7 @@ msgstr "P_unktsvītra (;)"
 
 #: src/ui/gui/text-data-import.ui:359
 msgid "P_ipe (|)"
-msgstr "S_vītra (|)"
+msgstr "_Vertikāla svītra (|)"
 
 #: src/ui/gui/text-data-import.ui:374
 msgid "H_yphen (-)"
@@ -12194,7 +12198,7 @@ msgstr "K_omats (,)"
 
 #: src/ui/gui/text-data-import.ui:404
 msgid "_Colon (:)"
-msgstr "K_ols (:)"
+msgstr "_Kols (:)"
 
 #: src/ui/gui/text-data-import.ui:419
 msgid "Ban_g (!)"
@@ -12282,11 +12286,11 @@ msgstr "Filtra lietošanas statusa apgabals"
 
 #: src/ui/gui/data-editor.ui:106
 msgid "Weight Status Area"
-msgstr "Svēruma statusa apgabals"
+msgstr "Svara statusa apgabals"
 
 #: src/ui/gui/data-editor.ui:132
 msgid "Split File Status Area"
-msgstr "Sadalītā faila statusa zona"
+msgstr "Sadalītā faila statusa apgabals"
 
 #: src/ui/gui/data-editor.ui:154
 msgid "_View"
@@ -12350,7 +12354,7 @@ msgstr "S_kaitīt..."
 
 #: src/ui/gui/data-editor.ui:231
 msgid "Ran_k Cases..."
-msgstr "Ran_dēt gadījumus..."
+msgstr "Ran_gēt gadījumus..."
 
 #: src/ui/gui/data-editor.ui:235
 msgid "Auto_matic Recode..."
@@ -12366,7 +12370,7 @@ msgstr "Pārkodēt _citos mainīgajos..."
 
 #: src/ui/gui/data-editor.ui:251
 msgid "_Run Pending Transforms"
-msgstr "_Izpildīt gaidošās transformācijas"
+msgstr "_Izpildīt neizpildītās transformācijas"
 
 #: src/ui/gui/data-editor.ui:257
 msgid "_Analyze"
@@ -12402,15 +12406,15 @@ msgstr "_Vidējās vērtības..."
 
 #: src/ui/gui/data-editor.ui:289
 msgid "_One Sample T Test..."
-msgstr "_Viena parauga T tests..."
+msgstr "_Vienas izlases T tests..."
 
 #: src/ui/gui/data-editor.ui:293
 msgid "_Independent Samples T Test..."
-msgstr "_Neatkarīgo paraugu T tests..."
+msgstr "_Neatkarīgo izlašu T tests..."
 
 #: src/ui/gui/data-editor.ui:297
 msgid "_Paired Samples T Test..."
-msgstr "_Saistīto paraugu T tests..."
+msgstr "_Pāru izlašu T tests..."
 
 #: src/ui/gui/data-editor.ui:301
 msgid "One Way _ANOVA..."
@@ -12422,7 +12426,7 @@ msgstr "_Vienfaktoru analīze..."
 
 #: src/ui/gui/data-editor.ui:310
 msgid "Bivariate _Correlation..."
-msgstr "Divfaktoru _korelācija..."
+msgstr "Divmainīgu _korelācija..."
 
 #: src/ui/gui/data-editor.ui:314
 msgid "_K-Means Cluster..."
@@ -12434,7 +12438,7 @@ msgstr "_Faktoru analīze..."
 
 #: src/ui/gui/data-editor.ui:322
 msgid "Re_liability..."
-msgstr "Ticamība..."
+msgstr "Uz_ticamība..."
 
 #: src/ui/gui/data-editor.ui:326
 msgid "_Regression"
@@ -12466,19 +12470,19 @@ msgstr "_Sērijas..."
 
 #: src/ui/gui/data-editor.ui:354
 msgid "_1 Sample K-S..."
-msgstr "_1 parauga K-S..."
+msgstr "_1 izlases K-S..."
 
 #: src/ui/gui/data-editor.ui:358
 msgid "_2 Related Samples..."
-msgstr "_2 saistītie paraugi..."
+msgstr "_2 saistītās izlases..."
 
 #: src/ui/gui/data-editor.ui:362
 msgid "_K Related Samples..."
-msgstr "_K saistītie paraugi..."
+msgstr "_K saistītās izlases..."
 
 #: src/ui/gui/data-editor.ui:366
 msgid "K _Independent Samples..."
-msgstr "K _Neatkarīgie paraugi..."
+msgstr "K _neatkarīgās izlases..."
 
 #: src/ui/gui/data-editor.ui:372
 msgid "ROC Cur_ve..."
@@ -12610,7 +12614,7 @@ msgstr "Platums:"
 
 #: src/ui/gui/var-type-dialog.ui:396
 msgid "Decimal Places:"
-msgstr "Decimālzīmes:"
+msgstr "Decimālvietas:"
 
 #: src/ui/gui/weight.ui:24
 msgid "Weight Cases"
@@ -12639,7 +12643,7 @@ msgstr "GNU PSPP ir programma izlases datu statistiskai analīzei"
 
 #: doc/org.gnu.pspp.metainfo.xml.in:10
 msgid "GNU PSPP is a program for the statistical analysis of sampled data. It is a Free replacement for the proprietary program SPSS, and appears very similar to it with a few exceptions. The most important of these exceptions are, that there are no “time bombs”; your copy of PSPP will not “expire” or deliberately stop working in the future. Neither are there any artificial limits on the number of cases or variables which you can use. There are no additional packages to purchase in order to get “advanced” functions; all functionality that PSPP currently supports is in the core package."
-msgstr "GNU PSPP ir programma izlases datu statistiskai analīzei. Tā ir bezmaksas aizstājēja patentētajai programmai SPSS un izskatās tai ļoti līdzīga, ar dažiem izņēmumiem. Vissvarīgākais no šiem izņēmumiem ir tas, ka nav \"laika bumbu\"; jūsu PSPP kopija \"nebeigsies\" vai apzināti nepārtrauks darboties nākotnē. Nav arī nekādu mākslīgu ierobežojumu lietojamo gadījumu vai mainīgo skaitam. Nav papildu pakotņu, kas būtu jāiegādājas, lai iegūtu \"uzlabotas\" funkcijas; visa funkcionalitāte, ko PSPP pašlaik atbalsta, ir pamata pakotnē."
+msgstr "GNU PSPP ir programma izlases datu statistiskai analīzei. Tā ir brīva aizstājēja īpašnieciskajai programmai SPSS un izskatās tai ļoti līdzīga, ar dažiem izņēmumiem. Vissvarīgākais no šiem izņēmumiem ir tas, ka nav “laika bumbu”; jūsu PSPP kopija “nebeigsies” vai apzināti nepārtrauks darboties nākotnē. Nav arī nekādu mākslīgu ierobežojumu lietojamo gadījumu vai mainīgo skaitam. Nav papildu pakotņu, kas būtu jāiegādājas, lai iegūtu “uzlabotas” funkcijas; visa funkcionalitāte, ko PSPP pašlaik atbalsta, ir pamata pakotnē."
 
 #: doc/org.gnu.pspp.metainfo.xml.in:11
 msgid "PSPP is a stable and reliable application. It can perform descriptive statistics, T-tests, anova, linear and logistic regression, measures of association, cluster analysis, reliability and factor analysis, non-parametric tests and more. Its backend is designed to perform its analyses as fast as possible, regardless of the size of the input data. You can use PSPP with its graphical interface or the more traditional syntax commands."
@@ -12675,11 +12679,11 @@ msgstr "Savietojamība ar: LibreOffice, Apache OpenOffice, Gnumeric un citu brī
 
 #: doc/org.gnu.pspp.metainfo.xml.in:20
 msgid "Easy data import from spreadsheets, text files and database sources"
-msgstr "Vienkārša datu importēšana no izklājlapām, teksta failiem un datu bāzu avotiem"
+msgstr "Vienkārša datu importēšana no izklājlapām, teksta failiem un datubāzu avotiem"
 
 #: doc/org.gnu.pspp.metainfo.xml.in:21
 msgid "The capability to open, analyse and edit two or more datasets concurrently"
-msgstr "Spēja atvērt, analizēt un rediģēt divus vai vairākus datu kopumus vienlaicīgi"
+msgstr "Spēja atvērt, analizēt un rediģēt divus vai vairākus datu kopas vienlaicīgi"
 
 #: doc/org.gnu.pspp.metainfo.xml.in:22
 msgid "A user interface supporting all common character sets"
@@ -12719,7 +12723,7 @@ msgstr "PSPP ir īpaši paredzēta statistiķiem, sociālajiem zinātniekiem un 
 
 #: doc/org.gnu.pspp.metainfo.xml.in:32
 msgid "The Flatpak for PSPP includes graphical and command-line interfaces. To use the command-line interface, run: <code>flatpak run --command=pspp org.gnu.pspp</code>."
-msgstr "Flatpak priekš PSPP ietver gan grafisko, gan komandrindas saskarni. Lai izmantotu komandrindas saskarni, palaidiet: <code>flatpak run --command=pspp org.gnu.pspp</code>."
+msgstr "PSPP Flatpak pakotne ietver gan grafisko, gan komandrindas saskarni. Lai izmantotu komandrindas saskarni, palaidiet: <code>flatpak run --command=pspp org.gnu.pspp</code>."
 
 #: doc/org.gnu.pspp.metainfo.xml.in:43
 msgid "GNU PSPP Variable View"
@@ -12739,7 +12743,7 @@ msgstr "Statistiskā programmatūra"
 
 #: doc/org.gnu.pspp.desktop.in:8
 msgid "Analyze statistical data with a free alternative to SPSS"
-msgstr "Analizējiet statistiskos datus ar bezmaksas alternatīvu SPSS"
+msgstr "Analizējiet statistiskos datus ar brīvu alternatīvu SPSS"
 
 #. TRANSLATORS: You must keep all ";" - also at the end of line.
 #: doc/org.gnu.pspp.desktop.in:16
